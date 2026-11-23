@@ -1,0 +1,11 @@
+# riapplib-applock-current-file.test.bas: the reference library returns the
+# lock of the first argument whatever was read last (the locks are addresses:
+# only the verdicts are declared)
+fixed-orig = 1103
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.lock_of_current_file.lock_f2" = "== fail"
+"check.lock_of_current_file.lock_f3" = "== fail"
+"check.lock_of_current_file.lock_none_left" = "== fail"
+"check.lock_of_current_file.lock_out_of_range" = "== fail"

@@ -1,0 +1,14 @@
+# riapplib-window-range.test.bas: with runtime error checking for the
+# announced error; the reference library has no error check, the case runs on
+fixed-orig = 1097
+rwe = ["riapplib"]
+runtime-errors = "on"
+
+[asserts]
+"check.window_16.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.window_16.refused" = "== fail"
+requester = "count == 0"
+"end.case" = "exists"
+"check.window_16.not_refused" = "== fail"

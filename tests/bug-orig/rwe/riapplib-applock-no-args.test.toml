@@ -1,0 +1,8 @@
+# riapplib-applock-no-args.test.bas: the reference library returns the
+# marker the argument list points to
+fixed-orig = 522
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.no_arguments.lock" = "== fail"
+"check.no_arguments.lock.actual" = "== $12345678"
