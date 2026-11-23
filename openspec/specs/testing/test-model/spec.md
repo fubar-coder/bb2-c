@@ -7,9 +7,13 @@ key, an input and an expected output, and the verdict per case is the diff
 of the actual output against the expected one. The model is written for
 all suites (library tests, blitz2 corpus, bug-orig tests, TED); it is
 implemented for the library tests, the bug-orig tests (change
-bug-orig-test-model) and the corpus (change corpus-test-model). TED already splits fixed tests this way (the `; @fixed #N`
-tests run with combination Cc in `all` and with C5 in `originals`, task 9.9
-of the archived change `2026-11-12-expected-results-testing`).
+bug-orig-test-model) and the corpus (change corpus-test-model). TED already
+splits fixed tests this way (the `; @fixed #N` tests run with combination
+Cc in `all` and with C5 in `originals`, task 9.9 of the archived change
+`2026-11-12-expected-results-testing`). Blitz programs that judge themselves
+with the test library (`testing/basic-testlib`) are tests of the model too:
+their checks are the cases, their expectation is in the source and the
+configuration.
 
 ## Requirements
 

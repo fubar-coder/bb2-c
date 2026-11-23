@@ -3,7 +3,8 @@
 ## Purpose
 Provides the build of the previous commit that the acceptance rule of
 2026-11-01 compares with, so that "byte-identical unless intended" is a
-test and not a manual step.
+test and not a manual step. It covers the results of the build and the tests
+of the BASIC test model (`testing/basic-test-runner`).
 
 ## Requirements
 
