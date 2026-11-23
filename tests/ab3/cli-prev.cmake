@@ -31,12 +31,15 @@ file(REMOVE_RECURSE ${WORK})
 file(MAKE_DIRECTORY ${WORK})
 
 set(common -DAMIGA_RUN=${AMIGA_RUN} -DRESULTS=${RESULTS} -DREQTRAP=${REQTRAP} -DINJECT=${INJECT}
-	-DCONFIG=exe -DCASES=${CASES} -DAB3=${AB3} "-DSOURCES=${SOURCES}" -DUSERLIB=${USERLIB}
+	-DCONFIG=exe -DCASES=${CASES} -DAB3=${AB3} -DUSERLIB=${USERLIB}
 	-DTIMEOUT=${TIMEOUT} -DCOMPILE_ONLY=ON)
+# SOURCES is a list and stays out of `common`: expanded there, its semicolons would split it and a
+# session would get only the first source; quoted in the command it is one argument
 execute_process(
-	COMMAND ${CMAKE_COMMAND} ${common} -DBLITZ2_DIR=${BLITZ2_DIR} -DWORK=${WORK}/cur
-		-P ${CMAKE_CURRENT_LIST_DIR}/cli.cmake
-	COMMAND ${CMAKE_COMMAND} ${common} -DBLITZ2_DIR=${PREV_BLITZ2_DIR} -DWORK=${WORK}/prev
+	COMMAND ${CMAKE_COMMAND} ${common} "-DSOURCES=${SOURCES}" -DBLITZ2_DIR=${BLITZ2_DIR}
+		-DWORK=${WORK}/cur -P ${CMAKE_CURRENT_LIST_DIR}/cli.cmake
+	COMMAND ${CMAKE_COMMAND} ${common} "-DSOURCES=${SOURCES}" -DBLITZ2_DIR=${PREV_BLITZ2_DIR}
+		-DWORK=${WORK}/prev
 		-P ${CMAKE_CURRENT_LIST_DIR}/cli.cmake
 	RESULTS_VARIABLE rcs ERROR_VARIABLE msg OUTPUT_QUIET)
 string(STRIP "${msg}" msg)
@@ -91,6 +94,13 @@ foreach(c IN LISTS cases)
 			file(READ ${WORK}/${w}/test/out/${name}.txt text_${w})
 		else()
 			set(text_${w} "no output")
+		endif()
+	endforeach()
+	foreach(w cur prev)
+		# a case whose source a session cannot read compares nothing: a failure, not "the same"
+		if(text_${w} MATCHES "cannot read the source")
+			message(STATUS "FAIL ${name}: the ${w} session cannot read the source")
+			math(EXPR errors "${errors} + 1")
 		endif()
 	endforeach()
 	if(NOT text_cur STREQUAL text_prev)

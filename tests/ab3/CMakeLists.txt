@@ -836,10 +836,18 @@ ab3_cli(ab3_cli_ref_broken ref "${broken}" WANT_FAIL)
 # cli-prev.cmake with broken input on one case (atoi; cli-prev-test.cmake): no prev build needed.
 # same: nothing differs; differs: prev's blitz2-ab3 is another program, the case fails and the
 # entry to quote is named; intended: the same difference listed; stale: nothing differs and the
-# case is listed
-foreach(mode same differs intended stale)
+# case is listed; second: a case of the second source is compiled in both sessions (prev = this build,
+# its compiler output must be there); unreadable: a case whose source does not exist fails
+foreach(mode same differs intended stale second unreadable)
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/ab3_cli_prev_${mode})
-	file(WRITE ${work}.cases "atoi|Blitz3|atoi.ab3||${cli_dir}/atoi.expect\n")
+	set(prev_cases "atoi|Blitz3|atoi.ab3||${cli_dir}/atoi.expect\n")
+	if(mode STREQUAL "second")
+		# the second source of the block (a file of SOURCES, not one of AmiBlitz3's tests)
+		string(APPEND prev_cases "byte_fraction_bitop|Blitz3|byte_fraction_bitop.ab3||${cli_dir}/byte_fraction_bitop.expect\n")
+	elseif(mode STREQUAL "unreadable")
+		string(APPEND prev_cases "no_such_source|Blitz3|no_such_source.ab3||${cli_dir}/atoi.expect\n")
+	endif()
+	file(WRITE ${work}.cases "${prev_cases}")
 	set(sources ${cli_sources} ${cli_made} ${ab3_dev_sources})
 	string(REPLACE ";" "$<SEMICOLON>" sources "${sources}")
 	add_test(NAME ab3_cli_prev_${mode} COMMAND ${CMAKE_COMMAND} -DMODE=${mode} -DAMIGA_RUN=${AMIGA_RUN}
