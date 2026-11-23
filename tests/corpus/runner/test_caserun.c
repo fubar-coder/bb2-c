@@ -562,8 +562,9 @@ static void test_prev_pass(void)
     CHECK(p && !strstr(p, "intended=blitz2_y_prev"));
     CHECK(p && !strstr(p, "intended=corpus"));
     CHECK(p && !strstr(p, "intended=blitz2_x_prev:x-runerrsx"));
-    /* what belongs to a run is gone */
-    CHECK(p && !strstr(p, "cell=") && !strstr(p, "launcher=") && !strstr(p, "rcput=") && !strstr(p, "hang_")
+    /* what belongs to a run is gone; rcput stays (a Kickstart 1.x compile needs it) */
+    CHECK(p && has(p, "rcput=/b/rcput"));
+    CHECK(p && !strstr(p, "cell=") && !strstr(p, "launcher=") && !strstr(p, "hang_")
           && !strstr(p, "serial=") && !strstr(p, "runargs=") && !strstr(p, "launcherargs=")
           && !strstr(p, "floppy=") && !strstr(p, "/w/x"));
     free(p);
