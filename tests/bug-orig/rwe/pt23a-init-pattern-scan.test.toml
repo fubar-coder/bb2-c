@@ -1,0 +1,8 @@
+# pt23a-init-pattern-scan.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 477
+rwe = ["ritrackerlib"]
+files = ["pt.mod|@TESTDATA@/pt23a-init-pattern-scan.mod"]
+
+[deviations."compiler=orig210"]
+"check.pattern_scan.sample_1_start" = "== fail"
+"check.pattern_scan.sample_1_start.actual" = "== $2043C"

@@ -1,0 +1,10 @@
+# pt23a-9xx-twice-ciatrklib.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 473
+rwe = ["ciatrklib"]
+files = ["pt.mod|@TESTDATA@/pt23a-9xx-twice-ciatrklib.mod"]
+
+[deviations."compiler=orig210"]
+"check.offset_twice.start" = "== fail"
+"check.offset_twice.start.actual" = "== 1024"
+"check.offset_twice.length" = "== fail"
+"check.offset_twice.length.actual" = "== 1488"

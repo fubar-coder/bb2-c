@@ -1,0 +1,8 @@
+# pt23a-repeat-word.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 479
+rwe = ["ritrackerlib"]
+files = ["pt.mod|@TESTDATA@/pt23a-repeat-word.mod"]
+
+[deviations."compiler=orig210"]
+"check.repeat_word.loop_offset" = "== fail"
+"check.repeat_word.loop_offset.actual" = "== 0"

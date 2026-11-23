@@ -1,0 +1,8 @@
+# pt23a-arpeggio-overrun-ciatrklib.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 474
+rwe = ["ciatrklib"]
+files = ["pt.mod|@TESTDATA@/pt23a-arpeggio-overrun-ciatrklib.mod"]
+
+[deviations."compiler=orig210"]
+"check.arpeggio.arpeggio_period" = "== fail"
+"check.arpeggio.arpeggio_period.actual" = "== 802"

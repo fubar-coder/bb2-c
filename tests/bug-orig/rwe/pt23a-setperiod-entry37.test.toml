@@ -1,0 +1,10 @@
+# pt23a-setperiod-entry37.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 481
+rwe = ["ritrackerlib"]
+files = ["pt.mod|@TESTDATA@/pt23a-setperiod-entry37.mod"]
+
+[deviations."compiler=orig210"]
+"check.entry_37.voice_0_period" = "== fail"
+"check.entry_37.voice_0_period.actual" = "== 802"
+"check.entry_37.voice_1_period" = "== fail"
+"check.entry_37.voice_1_period.actual" = "== 4096"
