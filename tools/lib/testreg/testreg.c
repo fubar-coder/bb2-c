@@ -301,6 +301,9 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         for (size_t i = 0; i < s->value.nlist; i++)
             if (!has(&t.labels, s->value.list[i]) && push(&t.labels, s->value.list[i]))
                 goto oom;
+    /* a known flaky test: the label finds it; the verdict stays the runner's */
+    if (tc_get(conf, "flaky") && !has(&t.labels, "flaky") && push(&t.labels, "flaky"))
+        goto oom;
     if ((s = tc_get(conf, "cost"))) {
         t.has_cost = 1;
         t.cost_configured = 1;
