@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
--1
-count 32 block 32
-same block
-count 32
-rc=0

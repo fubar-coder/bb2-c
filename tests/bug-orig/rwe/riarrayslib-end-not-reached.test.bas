@@ -8,26 +8,24 @@
 ; to 0 - an array without elements.
 ; Correct: FillArray on an array without elements writes nothing (the
 ; element at the start stays 0), the program goes on.
-; @fixed #882
-; @rwe riarrayslib
-; @pass timeout=30
 DEFTYPE .l
-z=0
-Dim a.l(99)
-b=&a(0)
-p=&z
-h=0
-For i=-32 To 32
-  If h=0
-    If Peek.l(p+i*2)=b
-      If Peek.l(p+i*2+4)=400 Then h=p+i*2
+
+!TestCase{empty_array}
+  z=0
+  Dim a.l(99)
+  b=&a(0)
+  p=&z
+  h=0
+  For i=-32 To 32
+    If h=0
+      If Peek.l(p+i*2)=b
+        If Peek.l(p+i*2+4)=400 Then h=p+i*2
+      EndIf
     EndIf
-  EndIf
-Next
-If h=0 Then NPrint "no header" : End
-Poke.l h+4,0
-NPrint "before"
-FillArray a(),$12345678
-NPrint "after"
-NPrint a(0)
-End
+  Next
+  !Require{h<>0,"array_header"}
+  Poke.l h+4,0
+  FillArray a(),$12345678
+  !Check{-1,"fill_returned"}
+  !CheckEq{a(0),0,"first_element"}
+!EndTestCase
