@@ -6,13 +6,13 @@
 ; colour count, so a list is 502 bytes with the height or with the colours
 ; in its size (#890).
 ; Correct: nothing is left allocated.
-; @fixed #891
-; @rwe ridisplaylib
-; @pass runwrap=@INJECT@|track
 DEFTYPE .l
-For i=1 To 10
-  c=InitView(32,5,8,32)
-  If c=0 Then NPrint "no list"
-Next
-NPrint "lists made"
-End
+
+!TestCase{ten_lists}
+  k=0
+  For i=1 To 10
+    c=InitView(32,5,8,32)
+    If c=0 Then k+1
+  Next
+  !CheckEq{k,0,"lists_failed"}
+!EndTestCase

@@ -7,21 +7,19 @@
 ; A600 (68000).
 ; Correct: InitView works on a 68000 and writes the register moves
 ; $008E,$2C81, $0090,$2CC1, $0092,$0038, $0094,$00D0.
-; @fixed #889
-; @rwe ridisplaylib
-; @machine a600
-; @pass timeout=30
 DEFTYPE .l
-NPrint "before"
-c=InitView(256,5,8,32)
-If c=0 Then NPrint "no list" : End
-Restore moves
-k=0
-For i=0 To 7
-  Read m
-  If (Peek.w(c+i*2) AND $FFFF)=m Then k+1
-Next
-NPrint "moves right ",k
-End
-moves:
-Data.l $8E,$2C81,$90,$2CC1,$92,$38,$94,$D0
+
+.moves
+  Data.l $8E,$2C81,$90,$2CC1,$92,$38,$94,$D0
+
+!TestCase{moves_on_68000}
+  c=InitView(256,5,8,32)
+  !Check{c<>0,"list"}
+  Restore moves
+  k=0
+  For i=0 To 7
+    Read m
+    If (Peek.w(c+i*2) AND $FFFF)=m Then k+1
+  Next
+  !CheckEq{k,8,"moves_right"}
+!EndTestCase

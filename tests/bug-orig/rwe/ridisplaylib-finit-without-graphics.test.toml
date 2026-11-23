@@ -1,0 +1,12 @@
+# ridisplaylib-finit-without-graphics.test.bas: through inject, which fails
+# every open of graphics.library and tracks the allocations the process
+# leaves; the original leaves the last copper list
+fixed-orig = 891
+rwe = ["ridisplaylib"]
+runwrap = "@INJECT@|openlibfail=graphics.library track"
+
+[asserts]
+inject = "contains \"track: 0 allocations left, 0 bytes\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"track: 1 allocations left, 502 bytes\""

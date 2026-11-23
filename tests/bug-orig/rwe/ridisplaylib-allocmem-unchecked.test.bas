@@ -9,20 +9,19 @@
 ; restored at once.
 ; Correct: InitView returns 0 and writes nothing; nothing is freed at the
 ; end.
-; @fixed #888
-; @rwe ridisplaylib
-; @pass runwrap=@INJECT@|allocfail=2342-2350/chip
 DEFTYPE .l
-Dim o.l(3),n.l(3)
-Disable_
-For i=0 To 3 : o(i)=Peek.l(i*4) : Next
-r=InitView(256,8,8,256)
-For i=0 To 3 : n(i)=Peek.l(i*4) : Poke.l i*4,o(i) : Next
-Enable_
-k=0
-For i=0 To 3
-  If n(i)<>o(i) Then k=1
-Next
-If k Then NPrint "low memory written" Else NPrint "low memory kept"
-NPrint r
-End
+
+!TestCase{allocation_fails}
+  Dim o.l(3),n.l(3)
+  Disable_
+  For i=0 To 3 : o(i)=Peek.l(i*4) : Next
+  r=InitView(256,8,8,256)
+  For i=0 To 3 : n(i)=Peek.l(i*4) : Poke.l i*4,o(i) : Next
+  Enable_
+  k=0
+  For i=0 To 3
+    If n(i)<>o(i) Then k=1
+  Next
+  !CheckEq{k,0,"low_memory_changed"}
+  !CheckEq{r,0,"result"}
+!EndTestCase

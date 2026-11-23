@@ -8,10 +8,9 @@
 ; equals the colour count, so the list is 502 bytes with the height or
 ; with the colours in its size (#890).
 ; Correct: nothing is left allocated.
-; @fixed #891
-; @rwe ridisplaylib
-; @pass runwrap=@INJECT@|openlibfail=graphics.library track
 DEFTYPE .l
-c=InitView(32,5,8,32)
-If c=0 Then NPrint "no list" Else NPrint "list made"
-End
+
+!TestCase{one_list}
+  c=InitView(32,5,8,32)
+  !Check{c<>0,"list_made"}
+!EndTestCase
