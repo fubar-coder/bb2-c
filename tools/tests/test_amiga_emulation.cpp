@@ -1,7 +1,8 @@
 /*
  * test_amiga_emulation - configuration and script of amiga_emulation
  * (no emulator), the slots that limit the runs, the snapshot mode's
- * configuration, key, pruning and the purge of one owner's snapshots.
+ * configuration, key, pruning, the marks of failed restores and the
+ * purge of one owner's snapshots.
  */
 #include <cerrno>
 #include <csignal>
@@ -9,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <ftw.h>
 #include <snitch/snitch.hpp>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -479,22 +481,73 @@ static void snapshot_prune(void)
     put_file(path, 4);
     snprintf(path, sizeof path, "%s/snap-.uss", dir);
     put_file(path, 4);
-    /* save-*.uss, then the two oldest */
+    /* the marks of a failed restore (.nostart): of a snapshot that is
+       pruned now, of one that stays, of one that is gone already */
+    for (i = 0; i < 4; i += 2) {
+        snprintf(path, sizeof path, "%s/%s.nostart", dir, names[i]);
+        put_file(path, 0);
+    }
+    snprintf(path, sizeof path, "%s/snap-0000000000000009.uss.nostart", dir);
+    put_file(path, 0);
+    /* save-*.uss, then the two oldest (the marks are not counted) */
     CHECK(amiga_emulation_snapshot_prune(dir, 2) == 3);
     for (i = 0; i < 4; i++) {
         snprintf(path, sizeof path, "%s/%s", dir, names[i]);
         CHECK(!access(path, F_OK) == (i >= 2));
     }
+    snprintf(path, sizeof path, "%s/%s.nostart", dir, names[0]);
+    CHECK(access(path, F_OK) && errno == ENOENT);
+    snprintf(path, sizeof path, "%s/snap-0000000000000009.uss.nostart", dir);
+    CHECK(access(path, F_OK) && errno == ENOENT);
+    snprintf(path, sizeof path, "%s/%s.nostart", dir, names[2]);
+    CHECK(!access(path, F_OK));
+    /* names[2] pruned: its mark with it */
+    CHECK(amiga_emulation_snapshot_prune(dir, 1) == 1);
+    CHECK(access(path, F_OK) && errno == ENOENT);
     snprintf(path, sizeof path, "%s/other.uss", dir);
     CHECK(!access(path, F_OK));
-    CHECK(amiga_emulation_snapshot_prune(dir, 2) == 0);
-    CHECK(amiga_emulation_snapshot_prune(dir, 0) == 2);
+    CHECK(amiga_emulation_snapshot_prune(dir, 1) == 0);
+    CHECK(amiga_emulation_snapshot_prune(dir, 0) == 1);
     remove(path);
     snprintf(path, sizeof path, "%s/snap-.uss", dir);
     remove(path);
     CHECK(rmdir(dir) == 0);
     /* broken: no directory */
     CHECK(amiga_emulation_snapshot_prune(dir, 2) == -1);
+}
+
+static int rm_entry(const char *path, const struct stat *st, int flag, struct FTW *ftw)
+{
+    (void)st; (void)flag; (void)ftw;
+    remove(path);
+    return 0;
+}
+
+/* a kept snapshot whose restore gets no start: kept with a mark the first
+   time, removed with the mark the second; a start in between removes the
+   mark. */
+static void snapshot_marks(void)
+{
+    char dir[] = "/tmp/amiga-emulation-marks-XXXXXX", snap[128], mark[160];
+
+    CHECK(mkdtemp(dir) != nullptr);
+    snprintf(snap, sizeof snap, "%s/snap-1-2-3.uss", dir);
+    snprintf(mark, sizeof mark, "%s.nostart", snap);
+    put_file(snap, 4);
+    CHECK(amiga_emulation_snapshot_no_start(snap, 0) == 0);
+    CHECK(!access(snap, F_OK) && !access(mark, F_OK));
+    /* a restore that starts: the mark goes, the next failure keeps it again */
+    CHECK(amiga_emulation_snapshot_no_start(snap, 1) == 0);
+    CHECK(!access(snap, F_OK) && access(mark, F_OK) && errno == ENOENT);
+    CHECK(amiga_emulation_snapshot_no_start(snap, 0) == 0);
+    CHECK(!access(snap, F_OK) && !access(mark, F_OK));
+    /* the second in a row: both removed */
+    CHECK(amiga_emulation_snapshot_no_start(snap, 0) == 1);
+    CHECK(access(snap, F_OK) && errno == ENOENT && access(mark, F_OK) && errno == ENOENT);
+    /* broken: the mark cannot be made (no directory) */
+    snprintf(mark, sizeof mark, "%s/none/snap-1-2-3.uss", dir);
+    CHECK(amiga_emulation_snapshot_no_start(mark, 0) == -1);
+    nftw(dir, rm_entry, 8, FTW_DEPTH | FTW_PHYS);
 }
 
 /* a/b/c, malloc'd (the test case fails without memory) */
@@ -602,6 +655,17 @@ static void snapshot_purge(void)
     /* the other owner's: 2 per slot */
     CHECK(amiga_emulation_snapshot_purge(other) == 4);
     CHECK(amiga_emulation_snapshot_purge(nullptr) == 2);
+    /* the owner's mark .nostart in a slot goes; it is not counted */
+    snprintf(path, sizeof path, "%s/amiga-emulation-slots", rt);
+    n = amiga_emulation_snapshot_name(own, 7, 0x10);
+    a = n ? str_cat3(path, "/slot-1/", n) : nullptr;
+    b = a ? str_cat3(a, ".nostart", "") : nullptr;
+    put_file(b, 0);
+    free(n);
+    CHECK(amiga_emulation_snapshot_purge(own) == 0);
+    CHECK(b && access(b, F_OK) && errno == ENOENT);
+    free(a);
+    free(b);
     for (i = 0; i < ng; i++)
         free(gone[i]);
     for (i = 0; i < nk; i++) {
@@ -1167,6 +1231,7 @@ TEST_CASE("amiga_emulation: configuration, script, slots and snapshot helpers", 
     snapshot_drop_stale();
     snapshot_prune();
     snapshot_purge();
+    snapshot_marks();
     cpu_halted();
     hang_check();
 

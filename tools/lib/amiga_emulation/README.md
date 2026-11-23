@@ -206,7 +206,8 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   * the slot's pruning drops it, the 24 most recently used per slot
     staying;
   * by hand: `amiga_run --purge-snapshots [BUILDDIR]` removes the
-    `snap-*`/`save-*` files of one owner in all slots and nothing else
+    `snap-*`/`save-*` files (with the marks `.nostart`) of one owner in
+    all slots and nothing else
     (`amiga_emulation_snapshot_purge`; without `BUILDDIR`
     `$AMIGA_EMULATION_OWNER`, unset the snapshots without owner; no slot
     directory yet is not an error), e.g. after a change of this code that
@@ -219,12 +220,25 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   every start, so nothing of an earlier session reaches it.
 * **A restore that fails** (no `SNAP:started` within 15 s, also when
   `TEST:` takes no file, or Amiberry ends) is dropped and the session
-  boots cold without snapshot. The state file is removed only when
-  Amiberry ended or booted instead (it cannot load it); without a start
-  in time it stays (a restore on a busy host can be that slow) and the
-  next session tries it again. A state file that does not begin as a
-  savestate (`ASF `) is removed before the restore; the session saves
-  anew. A test mount called `SNAP` also means a cold boot.
+  boots cold without snapshot. The state file is removed when Amiberry
+  ended or booted instead (it cannot load it). Without a start in time
+  (a restore on a busy host can be that slow, but some saved states never
+  start: seen 2026-11-23 in two slots, each restore lost 15 s):
+  * a state the session has just saved is removed and saved again, from
+    a new cold boot; at most `AMIGA_EMULATION_SNAP_SAVES` (2) saves per
+    session, then it is removed and the session boots cold;
+  * a state an earlier session saved stays the first time, with an empty
+    mark `snap-…uss.nostart` beside it, and the next session tries it
+    again; if that restore gets no start either, the state and the mark
+    are removed and the next session saves anew. A restore that starts
+    removes the mark (`amiga_emulation_snapshot_no_start`).
+
+  So no slot keeps a state that always falls back. A state file that does
+  not begin as a savestate (`ASF `) is removed before the restore; the
+  session saves anew. A test mount called `SNAP` also means a cold boot.
+  The library's tests shorten the 15 s with
+  `AMIGA_EMULATION_SNAP_RESTORE_GRACE` (seconds) for the restores that
+  are to fail.
 * **The supervisor:** every session (also without snapshot) is driven by
   a process of its own that the library forks at the start: it starts
   Amiberry, saves and restores, falls back, ends the session at

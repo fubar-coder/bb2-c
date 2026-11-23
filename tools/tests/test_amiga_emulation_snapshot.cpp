@@ -6,9 +6,9 @@
  * read-only mount through the slot's links); a copy of the hardfile, then
  * the same copy with another modification time, each boot and save anew
  * and remove the stale snapshot; a state whose restore gets no start is
- * kept (the session boots cold, the next one restores it), a file that is
- * no savestate is removed and the session saves anew, `cold` boots
- * without snapshot.  After every session
+ * kept the first time (the session boots cold) and removed the second, a
+ * file that is no savestate is removed and the session saves anew, `cold`
+ * boots without snapshot.  After every session
  * the slot has no links or SNAP: left.  Exit 77 (skipped) without
  * Amiberry or the data.  The second session runs this program again with
  * the hidden test case "restored session" (the directory in
@@ -80,7 +80,8 @@ static double now(void)
     return ts.tv_sec + ts.tv_nsec / 1e9;
 }
 
-/* the snap-*.uss in the slot (the last one's name into path) */
+/* the snap-*.uss in the slot (the last one's name into path), not their
+   marks snap-*.uss.nostart */
 static int snapshots(char *path, size_t len)
 {
     DIR *d = opendir(slot);
@@ -90,7 +91,8 @@ static int snapshots(char *path, size_t len)
     if (!d)
         return 0;
     while ((de = readdir(d)) != NULL)
-        if (!strncmp(de->d_name, "snap-", 5)) {
+        if (!strncmp(de->d_name, "snap-", 5) && strlen(de->d_name) > 9
+            && !strcmp(de->d_name + strlen(de->d_name) - 4, ".uss")) {
             snprintf(path, len, "%s/%s", slot, de->d_name);
             n++;
         }
@@ -348,17 +350,26 @@ TEST_CASE("amiga_emulation_snapshot: save, restore, stale and broken states", "[
 
     /* broken: a restored state whose TEST: takes no file (here: the
        check writes to a volume that does not exist) gets no start, the
-       session boots cold; the state file stays (no start in time can
-       also be a busy host), the next session restores it */
+       session boots cold; the state file stays the first time (no start
+       in time can also be a busy host), with a mark beside it; the second
+       time in a row it is removed, the next session saves anew.  The
+       restores that are to fail get 5 s, not 15. */
     CHECK(snapshots(path, sizeof path) == 1);
     setenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME", "NOSUCHVOLUME", 1);
+    setenv("AMIGA_EMULATION_SNAP_RESTORE_GRACE", "5", 1);
     CHECK(session("notest", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
-    unsetenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME");
     CHECK(log && strstr(log, "restore failed (no start)") && strstr(log, "kept, boot cold"));
     CHECK(snapshots(path, sizeof path) == 1);
     CHECK(slot_clean());
     free(log);
-    CHECK(session("again", emu, 0, AMIGA_EMULATION_SNAP_RESTORED, &log, &secs) == 1);
+    CHECK(session("notest2", emu, 0, AMIGA_EMULATION_SNAP_FALLBACK, &log, &secs) == 1);
+    unsetenv("AMIGA_EMULATION_SNAP_CHECK_VOLUME");
+    unsetenv("AMIGA_EMULATION_SNAP_RESTORE_GRACE");
+    CHECK(log && strstr(log, "restore failed (no start)") && strstr(log, "removed (no start twice), boot cold"));
+    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(slot_clean());
+    free(log);
+    CHECK(session("again", emu, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs) == 1);
     free(log);
     CHECK(slot_clean());
 
