@@ -263,7 +263,8 @@ unless an assertion or a declared deviation names the announcement.
 A build step SHALL register the ctest tests from the sources and their
 resolved configurations, without the emulator: one test per case and side,
 where the side tells whether the cells need original material (the original
-compiler or the CD's libraries). A side without cells SHALL NOT be
+compiler or the CD's libraries), and the bundle tests of
+`testing/basic-test-bundles`. A side without cells SHALL NOT be
 registered. Labels, time limit, cost and fixtures SHALL come from the
 configuration; the step SHALL depend on every configuration file it read.
 
@@ -924,3 +925,62 @@ the further elements of the list.
 #### Scenario: An existing alternative keeps its meaning
 - **WHEN** a test declares `abnormal = ["session == timeout", "rc not exists"]`
 - **THEN** it is one named alternative with these two assertions, as before
+
+### Requirement: The environment's time limit in the session key
+A cell without `timeout` SHALL share an emulator session with the cells
+that set `timeout` to the environment's time limit, as if it set that
+value, and the registration SHALL group such cells as the runner does. A
+cell without `timeout` in an environment without a time limit SHALL keep
+a key of its own value "unset".
+
+#### Scenario: Left to the environment and set to the same value
+- **WHEN** the environment's time limit is 90 seconds, cell A of a test sets no `timeout` and cell B of the same test sets `timeout = 90`, both on the same machine
+- **THEN** A and B run in one session
+
+#### Scenario: Another value
+- **WHEN** cell A sets no `timeout` and cell B sets `timeout = 30` in an environment with the time limit 90
+- **THEN** A and B run in two sessions
+
+### Requirement: The cases that may share a session with other sources
+A case SHALL be a member of a run shared with other sources only if it is
+on the side without original material, its source has exactly one cell on
+that side, that cell has no session of its own (`isolate`, `serial`),
+needs no test-local data and no run from the editor, does not set
+`hang-after` in its configuration, its session key is
+that of the default settings with the time limit of the environment, 30 or
+60 seconds, and the case would not run on its own in the run of all cases.
+
+#### Scenario: A plain case
+- **WHEN** a source with one cell on the side port and the default settings has a case that asserts only check results
+- **THEN** that case may share a session with other sources
+
+#### Scenario: A case that asserts the output
+- **WHEN** the same source has a case that asserts the printed output
+- **THEN** that case does not share a session with other sources
+
+#### Scenario: A test that sets hang-after
+- **WHEN** a source with one port cell and otherwise the default settings sets `hang-after = 20`
+- **THEN** none of its cases shares a session with other sources
+
+#### Scenario: Two cells on the side
+- **WHEN** a source has the cells `port,cd` and `port,clib`
+- **THEN** none of its cases shares a session with other sources
+
+### Requirement: A served run is no run of the measured COST
+For the measured COST and the statistics of the test runs, a run of a case
+test served from its bundle SHALL NOT count as a run of that test, and a
+test whose runs were all served SHALL keep its entry of the previous file
+of measured COSTs. A bundle test SHALL get its entry from its own sessions
+as any test.
+
+#### Scenario: A served case keeps its cost
+- **WHEN** a case test has the entry 2, and the runs of a full refresh served it from its bundle every time
+- **THEN** the refreshed file gives it 2
+
+#### Scenario: Served once, alone twice
+- **WHEN** a case test was served in one run and ran alone with 2 and 4 seconds in two others
+- **THEN** its entry is 3
+
+#### Scenario: A bundle gets its own entry
+- **WHEN** a bundle test's run has warm sessions of 3 seconds in all
+- **THEN** the refreshed file gives the bundle 3
