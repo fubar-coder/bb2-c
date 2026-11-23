@@ -1,0 +1,15 @@
+# compiler-optreqprep-allocmem.test.bas: inject fails the first AllocMem of
+# 64 bytes chip memory; the correct result is no compile and a session that
+# ends; the original writes to address 0 and the session ends as a halt
+fixed-orig = 8
+wrap = "@INJECT@|allocfail=64-64/chip/1"
+timeout = 30
+
+[asserts]
+compile = "== none"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+session = "== halt"

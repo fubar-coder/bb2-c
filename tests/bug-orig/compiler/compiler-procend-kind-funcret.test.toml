@@ -1,0 +1,13 @@
+# compiler-procend-kind-funcret.test.bas: the correct result is a failed
+# compile (Illegal Procedure return at the Function Return line) and
+# nothing runs; the original refuses the line too, but as a Type Mismatch
+fixed-orig = 940
+
+[asserts]
+compile = "== \"error 7 Illegal Procedure return\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 7 Type Mismatch\""

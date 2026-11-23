@@ -1,0 +1,13 @@
+# compiler-pushput-leak.test.bas: the object buffer is 1024 bytes (job line)
+# and the compiler runs through inject with track; the program compiles in
+# both compilers and runs; the correct result is that blitz2 leaves no
+# allocation behind, the original leaves the 12 bytes of the saved code
+fixed-orig = 14
+wrap = "@INJECT@|track"
+jobline = ["objbuf=1024"]
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 1 allocations left, 12 bytes\ninject:   12 bytes, flags $1\n\""

@@ -1,0 +1,9 @@
+# compiler-expr-depth-prec.test.bas: the shell's default stack, on Kickstart 1.3
+machine = "a500"
+stack = 4000
+
+[asserts]
+compile = "== \"error 16 Precedence Stack Overflow\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
