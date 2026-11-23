@@ -1,0 +1,10 @@
+# ridebuglib-name-copy-empty.test.bas: with runtime error checking (the
+# commands work in their error check routines); the original copies the
+# bytes behind the empty name
+fixed-orig = 612
+rwe = ["ridebuglib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.empty_name.from_9" = "== fail"
+"check.empty_name.from_9.actual" = "== \"behind\""

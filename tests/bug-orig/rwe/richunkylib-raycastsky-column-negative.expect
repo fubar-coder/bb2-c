@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-column 0: 170
-REQUESTER: AutoRequest body "RaycastSky column below 0" *
-rc=0

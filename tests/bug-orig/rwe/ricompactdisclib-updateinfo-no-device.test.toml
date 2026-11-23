@@ -1,0 +1,8 @@
+# ricompactdisclib-updateinfo-no-device.test.bas: the original returns the
+# caller's a0 + 5, an address in the program's memory (it depends on the
+# layout of the program, so only the failing check is declared)
+fixed-orig = 587
+rwe = ["ricompactdisclib"]
+
+[deviations."compiler=orig210"]
+"check.no_device.result" = "== fail"

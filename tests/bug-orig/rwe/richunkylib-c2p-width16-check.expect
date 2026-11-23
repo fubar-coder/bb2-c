@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-48x10: row 1 of plane 0 128
-REQUESTER: AutoRequest body "Chunky bitmap width not a multiple of 16" *
-rc=0

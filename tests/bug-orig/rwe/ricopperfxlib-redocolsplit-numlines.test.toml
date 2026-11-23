@@ -1,0 +1,15 @@
+# ricopperfxlib-redocolsplit-numlines.test.bas: with runtime error checking for
+# the announced errors; the original raises none for -1 (it rewrites 65536
+# lines) and stops at the division by zero for 0, where its program ends
+fixed-orig = 589
+rwe = ["ricopperfxlib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.numlines.refused_minus1" = "== fail"
+"check.numlines.marker_kept" = "== fail"
+"check.numlines.marker_kept.actual" = "== 305399981"
+"check.numlines.refused_zero" = "== fail"
+requester = "contains \"GURU! - Division by Zero\""
+"end.case" = "not exists"

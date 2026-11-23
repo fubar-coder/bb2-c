@@ -1,0 +1,8 @@
+# ricommoditieslib-waitcommodity-ccr.test.bas: the original's WaitCommodity
+# returns the second message and leaves it queued
+fixed-orig = 566
+rwe = ["ricommoditieslib"]
+
+[deviations."compiler=orig210"]
+"check.queued.wait_id" = "== fail"
+"check.queued.wait_id.actual" = "== 2"

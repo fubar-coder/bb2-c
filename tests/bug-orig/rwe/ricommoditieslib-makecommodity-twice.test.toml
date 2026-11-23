@@ -1,0 +1,8 @@
+# ricommoditieslib-makecommodity-twice.test.bas: the original makes a second
+# broker
+fixed-orig = 560
+rwe = ["ricommoditieslib"]
+
+[deviations."compiler=orig210"]
+"check.second_call.second_refused" = "== fail"
+"check.second_call.second_refused.actual" = "== -1"

@@ -1,0 +1,10 @@
+# ricopperfxlib-docolsplit-result.test.bas: the original returns the cols_adr
+# argument (an address of the program) without a custom space, and the red
+# step of the gradient with one
+fixed-orig = 592
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.results.no_space" = "== fail"
+"check.results.space" = "== fail"
+"check.results.space.actual" = "== 24474"

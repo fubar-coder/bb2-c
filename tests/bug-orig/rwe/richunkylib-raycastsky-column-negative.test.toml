@@ -1,0 +1,12 @@
+# richunkylib-raycastsky-column-negative.test.bas: with runtime error checking
+# for the announced error; the original raises none and copies the byte
+# before the texture (the marker $55 = 85)
+fixed-orig = 887
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.column.refused" = "== fail"
+"check.column.column_minus1" = "== fail"
+"check.column.column_minus1.actual" = "== 85"

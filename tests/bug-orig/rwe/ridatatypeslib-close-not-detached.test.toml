@@ -1,0 +1,9 @@
+# ridatatypeslib-close-not-detached.test.bas: the original's second
+# AttachDataType returns 0
+fixed-orig = 599
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-close-not-detached.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.two_attaches.second_attach" = "== fail"
+"check.two_attaches.second_attach.actual" = "== 0"

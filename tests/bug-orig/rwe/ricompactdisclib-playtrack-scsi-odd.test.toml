@@ -1,0 +1,16 @@
+# ricompactdisclib-playtrack-scsi-odd.test.bas: on the A600 (68000) the
+# original's odd access is an address error; the session of its own ends in
+# the timeout
+fixed-orig = 579
+rwe = ["ricompactdisclib"]
+machine = "a600"
+timeout = 60
+uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

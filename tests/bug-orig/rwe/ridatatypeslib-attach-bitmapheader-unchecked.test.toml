@@ -1,0 +1,9 @@
+# ridatatypeslib-attach-bitmapheader-unchecked.test.bas: the original attaches
+# the object with the size 0 x 0
+fixed-orig = 595
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-attach-bitmapheader-unchecked.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.attach_size.attached_0x0" = "== fail"
+"check.attach_size.attached_0x0.actual" = "== -1"

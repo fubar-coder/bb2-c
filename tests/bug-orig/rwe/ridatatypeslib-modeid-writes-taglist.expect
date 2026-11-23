@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-bitmap -1
-same mode -1
-list kept -1
-rc=0

@@ -1,0 +1,11 @@
+# ridatatypeslib-palette-result.test.bas: the original takes the attribute
+# address of SetDataTypeAttr for the colour table
+fixed-orig = 607
+rwe = ["ridatatypeslib"]
+files = ["t.txt|@TESTDATA@/ridatatypeslib-palette-result.txt"]
+
+[deviations."compiler=orig210"]
+"check.text_object.result" = "== fail"
+"check.text_object.result.actual" = "== -1"
+"check.text_object.colour0_kept" = "== fail"
+"check.text_object.colour0_kept.actual" = "== 0"

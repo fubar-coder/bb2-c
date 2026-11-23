@@ -1,0 +1,9 @@
+# ridatatypeslib-create-without-file.test.bas: the original makes an object of
+# the name of the file closed before
+fixed-orig = 601
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-create-without-file.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.create.after_close" = "== fail"
+"check.create.after_close.actual" = "== -1"

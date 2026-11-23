@@ -1,0 +1,11 @@
+# ridebuglib-name-no-limit.test.bas: with runtime error checking (the commands
+# work in their error check routines); the original executes the
+# overwritten check code: an illegal instruction
+fixed-orig = 613
+rwe = ["ridebuglib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.long_name.survived" = "== not-run"
+requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"

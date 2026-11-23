@@ -1,0 +1,8 @@
+# ricommoditieslib-exchange-type.test.bas: the original takes the hotkey
+# message of hotkey 15 for CXCMD_DISABLE
+fixed-orig = 555
+rwe = ["ricommoditieslib"]
+
+[deviations."compiler=orig210"]
+"check.hotkey_15.disable" = "== fail"
+"check.hotkey_15.disable.actual" = "== -1"
