@@ -2,7 +2,7 @@
 // (tools/lib/testpp, testdriver.c): the order of the spec
 // testing/basic-test-interface (macro text, TLBegin with the result file,
 // the jump over the copied text, the batch init only if a case is
-// selected, the selected cases in source order, the batch end, End), a
+// selected, the selected cases in source order, the batch cleanup, End), a
 // selected case the source does not have, the map of the driver's lines
 // to the source's lines and calls - and the refusals (deliberately broken
 // input: a result name that cannot stand in a string literal, a case name
@@ -58,8 +58,8 @@ static const std::string source = "#n=1\n"
                                   "!TestCase{b}\n"
                                   "  !Check{g=5}\n"
                                   "!EndTestCase\n"
-                                  "!TestBatchEnd\n"
-                                  "!EndTestBatchEnd";   // no LF at the end
+                                  "!TestBatchCleanup\n"
+                                  "!EndTestBatchCleanup";   // no LF at the end
 
 static const std::string head = std::string(macros) + "TLBegin \"CORPUS:c0/out/x.result\"\nGoto tc__skip\n";
 static const std::string body = "#n=1\n"
@@ -72,8 +72,8 @@ static const std::string body = "#n=1\n"
                                 "!TestCase{b}\n"
                                 "  !Check{1,g=5}\n"
                                 "!EndTestCase\n"
-                                "!TestBatchEnd\n"
-                                "!EndTestBatchEnd\n";
+                                "!TestBatchCleanup\n"
+                                "!EndTestBatchCleanup\n";
 
 TEST_CASE("testdriver: one case selected", "[testdriver]")
 {
@@ -96,7 +96,7 @@ TEST_CASE("testdriver: the cases in source order, not in the order given", "[tes
     CHECK(x.text() == head + body + ".tc__skip\nGosub tc__init\nGosub tc_a\nGosub tc_b\nGosub tc__final\nEnd\n");
 }
 
-TEST_CASE("testdriver: no case selected calls neither the batch init nor the batch end", "[testdriver]")
+TEST_CASE("testdriver: no case selected calls neither the batch init nor the batch cleanup", "[testdriver]")
 {
     drv x(source, {});
 

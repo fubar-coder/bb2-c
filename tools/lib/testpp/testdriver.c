@@ -144,7 +144,7 @@ int tp_driver_write(const struct tp_source *src, const struct tp_driver_params *
                 if (called(d, dp->cases[i]))
                     goto oom;
             }
-        if (src->final_line) {
+        if (src->cleanup_line) {
             add(&o, "Gosub tc__final\n", 16);
             if (called(d, "final"))
                 goto oom;

@@ -423,7 +423,7 @@ char *cr_compile_mapped(const char *result, const struct tp_driver *d, const cha
         if (where
             && !(*where = str_printf("the driver's call of %s%s (line %lu): %s - is it in %s?",
                                      !strcmp(name, "init") ? "the batch init" : !strcmp(name, "final")
-                                                                                 ? "the batch end"
+                                                                                 ? "the batch cleanup"
                                                                                  : "case ",
                                      !strcmp(name, "init") || !strcmp(name, "final") ? "" : name, dl, msg, file)))
             return NULL;

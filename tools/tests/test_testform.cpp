@@ -89,9 +89,9 @@ TEST_CASE("testform: a good source", "[testform]")
                "  CNIF 1 : x=1 : CELSE : x=2 : CEND\n"
                "!EndTestCase\n"
                "CEND\n"
-               "!TestBatchEnd\n"
+               "!TestBatchCleanup\n"
                "  helper{1}\n"
-               "!EndTestBatchEnd\n")
+               "!EndTestBatchCleanup\n")
           == "");
 }
 
@@ -125,7 +125,7 @@ TEST_CASE("testform: pairing in source order", "[testform]")
     refused("!TestCase{a}\n!EndTestCase\n!TestCase{b}\nx=1\n", "x.test.bas:3: the case b (line 3) has no !EndTestCase");
     // the wrong closing macro
     refused("!TestBatchInit\n!EndTestCase\n" + ok_case, "x.test.bas:2: !EndTestCase closes the batch init (line 1)");
-    refused("!TestCase{a}\n!EndTestBatchEnd\n", "x.test.bas:2: !EndTestBatchEnd closes the case a (line 1)");
+    refused("!TestCase{a}\n!EndTestBatchCleanup\n", "x.test.bas:2: !EndTestBatchCleanup closes the case a (line 1)");
     refused(ok_case + "!EndTestBatchInit\n", "x.test.bas:3: !EndTestBatchInit without a batch init before it");
     refused("!TestBatchInit\n" + ok_case,
             "x.test.bas:2: the batch init (line 1) has no !EndTestBatchInit");
@@ -139,9 +139,10 @@ TEST_CASE("testform: the order of the blocks", "[testform]")
             "x.test.bas:3: the batch init must stand before the first case");
     refused("!TestBatchInit\n!EndTestBatchInit\n!TestBatchInit\n!EndTestBatchInit\n" + ok_case,
             "x.test.bas:3: a second batch init (the first in line 1)");
-    refused("!TestBatchEnd\n!EndTestBatchEnd\n" + ok_case, "x.test.bas:3: a case after the batch end (line 1)");
-    refused(ok_case + "!TestBatchEnd\n!EndTestBatchEnd\n!TestBatchEnd\n!EndTestBatchEnd\n",
-            "x.test.bas:5: a second batch end (the first in line 3)");
+    refused("!TestBatchCleanup\n!EndTestBatchCleanup\n" + ok_case,
+            "x.test.bas:3: a case after the batch cleanup (line 1)");
+    refused(ok_case + "!TestBatchCleanup\n!EndTestBatchCleanup\n!TestBatchCleanup\n!EndTestBatchCleanup\n",
+            "x.test.bas:5: a second batch cleanup (the first in line 3)");
 }
 
 TEST_CASE("testform: nothing crosses a block", "[testform]")
@@ -180,6 +181,10 @@ TEST_CASE("testform: executable code outside the blocks", "[testform]")
             "x.test.bas:4: executable code outside the blocks: Return");
     refused("INCLUDE \"x.bb2\"\n" + ok_case, "x.test.bas:1: executable code outside the blocks: INCLUDE \"x.bb2\"");
     refused("!Twice{x}\n" + ok_case, "x.test.bas:1: executable code outside the blocks: !Twice{x}");
+    // no block macro: TestBatchEnd is no name of the batch cleanup
+    refused(ok_case + "!TestBatchEnd\n!EndTestBatchEnd\n",
+            "x.test.bas:3: executable code outside the blocks: !TestBatchEnd\n"
+            "x.test.bas:4: executable code outside the blocks: !EndTestBatchEnd");
 }
 
 TEST_CASE("testform: case names", "[testform]")
@@ -199,6 +204,8 @@ TEST_CASE("testform: case names", "[testform]")
     refused(ok_case + ok_case, "x.test.bas:3: the case name a is used twice (line 1)");
     refused("!TestBatchInit\n!EndTestBatchInit\n!TestCase{init}\n!EndTestCase\n",
             "x.test.bas:3: the case name init is the namespace of the batch init");
+    refused("!TestCase{cleanup}\n!EndTestCase\n!TestBatchCleanup\n!EndTestBatchCleanup\n",
+            "x.test.bas:1: the case name cleanup is the namespace of the batch cleanup");
     // names that are fine: a token as a part of the name, digits, _
     CHECK(form("!TestCase{free_list}\n!EndTestCase\n!TestCase{shape2}\n!EndTestCase\n!TestCase{init}\n!EndTestCase\n")
           == "");

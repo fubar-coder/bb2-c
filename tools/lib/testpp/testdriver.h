@@ -14,7 +14,7 @@
  *      copied line by line, so a compile error keeps its line,
  *   5. behind the label `.tc__skip` calls with `Gosub` the batch init
  *      (only if the source has one and a case is selected), each selected
- *      case (`tc_NAME`) and the batch end (only if the source has one and
+ *      case (`tc_NAME`) and the batch cleanup (only if the source has one and
  *      a case is selected),
  *   6. and ends (`End`).
  *

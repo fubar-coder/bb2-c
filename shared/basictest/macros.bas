@@ -23,12 +23,12 @@ Macro EndTestCase
   TLBlockEnd : Return
   .tc_end_`@
 End Macro
-Macro TestBatchEnd
+Macro TestBatchCleanup
   Dc.l tc__final_end
   .tc__final
   If TLFinal=0 Then Return
 End Macro
-Macro EndTestBatchEnd
+Macro EndTestBatchCleanup
   TLBlockEnd : Return
   .tc__final_end
 End Macro

@@ -11,8 +11,8 @@ libs = ["cd", "clib"]
 [asserts]
 "check.init.base" = "== ok"
 "check.init.base.expected" = "== 10"
-"check.end.final" = "== ok"
-"check.end.final.expected" = "== 1000"
+"check.cleanup.final" = "== ok"
+"check.cleanup.final.expected" = "== 1000"
 
 [asserts."case=first"]
 "check.first.one" = "== ok"

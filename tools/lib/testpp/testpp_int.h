@@ -47,8 +47,8 @@ enum tp_block {
     TP_B_END_INIT,              /* !EndTestBatchInit */
     TP_B_CASE,                  /* !TestCase{NAME} */
     TP_B_END_CASE,              /* !EndTestCase */
-    TP_B_FINAL,                 /* !TestBatchEnd */
-    TP_B_END_FINAL              /* !EndTestBatchEnd */
+    TP_B_CLEANUP,               /* !TestBatchCleanup */
+    TP_B_END_CLEANUP            /* !EndTestBatchCleanup */
 };
 
 /* the block macro the statement l[s..e) starts with (TP_B_NONE: none);

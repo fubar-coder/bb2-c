@@ -1,7 +1,7 @@
 ---
 title: The test library
 weight: 5
-description: Every macro a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions and expected runtime errors - with what each records, how cases, procedures, the batch init and the batch end are written, the placeholders, and the known limits.
+description: Every macro a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions and expected runtime errors - with what each records, how cases, procedures, the batch init and the batch cleanup are written, the placeholders, and the known limits.
 ---
 
 A [test that judges itself]({{< relref "self-judging-tests" >}}) checks
@@ -22,11 +22,11 @@ A source has three kinds of blocks, in this order:
 |---|---|---|
 | batch init | `!TestBatchInit` ... `!EndTestBatchInit` | at most one, before the first case |
 | case | `!TestCase{NAME}` ... `!EndTestCase` | one or more |
-| batch end | `!TestBatchEnd` ... `!EndTestBatchEnd` | at most one, after the last case |
+| batch cleanup | `!TestBatchCleanup` ... `!EndTestBatchCleanup` | at most one, after the last case |
 
 Each macro stands on a line of its own; only a comment may follow it.
 Every run executes **one case**: the driver calls the batch init (if the
-source has one), then the case the run is for, then the batch end (if the
+source has one), then the case the run is for, then the batch cleanup (if the
 source has one).
 
 ```basic
@@ -41,9 +41,9 @@ source has one).
   !CheckEq{a*3,21,"product"}
 !EndTestCase
 
-!TestBatchEnd
+!TestBatchCleanup
   !Check{1,"done"}
-!EndTestBatchEnd
+!EndTestBatchCleanup
 ```
 
 A block is a subroutine of one program, called with `Gosub`. So the
@@ -231,7 +231,7 @@ values of its first failed pass.
 A check in a procedure belongs to the procedure: in an assertion it is
 named `check.PROCEDURE.NAME`, and its line in the result file belongs to
 whichever case called the procedure. Such a procedure must not have the
-name of a case, nor `init` or `end`.
+name of a case, nor `init` or `cleanup`.
 
 ```basic
 Statement check_width{w.l}

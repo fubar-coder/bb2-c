@@ -73,7 +73,7 @@ comment may follow it on the line):
 |---|---|---|
 | batch init | `!TestBatchInit` … `!EndTestBatchInit` | at most one, before the first case |
 | case | `!TestCase{NAME}` … `!EndTestCase` | one or more; `NAME` starts with a letter, holds no `__` and is no token |
-| batch end | `!TestBatchEnd` … `!EndTestBatchEnd` | at most one, after the last case |
+| batch cleanup | `!TestBatchCleanup` … `!EndTestBatchCleanup` | at most one, after the last case |
 
 It checks with these macros; each takes a name as an extra last argument,
 a string literal, under which the check is reported:
@@ -128,7 +128,7 @@ their values are evaluated in that type.
 The runner's preprocessor gives every check, precondition and announcement
 a number `K`, counted from 0 over the whole source in source order, writes
 it as the first argument and removes the name and the message. It keeps
-the table of `K`, the namespace (case, procedure, `init`, `end`), the name,
+the table of `K`, the namespace (case, procedure, `init`, `cleanup`), the name,
 the line and the checked expression for the report; nothing of that text
 reaches the program:
 
@@ -173,7 +173,7 @@ The driver the runner writes holds the macro text
 (`shared/basictest/macros.bas`), calls `TLBegin` with the name of the
 result file, jumps over the preprocessed text of the source, and then calls
 with `Gosub` the batch init (only if the source has one and a case is
-selected), each selected case in source order and the batch end (only if
+selected), each selected case in source order and the batch cleanup (only if
 the source has one), and ends. In the macro text a case is a subroutine
 `tc_NAME`: its opening macro refers with `Dc.l` to the label `tc_end_N`
 its closing macro defines, so a case without its closing macro does not
@@ -208,7 +208,7 @@ routines name:
   library closes the block and its call returns a second time.
 * A failed precondition in the batch init breaks every case: each case
   the driver calls gets `block case NAME`, the precondition's `require`
-  entry again and `blockend`, and does not run; the batch end does not
+  entry again and `blockend`, and does not run; the batch cleanup does not
   run and writes nothing.
 * A failed check in the batch init fails every case: each case gets the
   first failed check of the init again, after its `block` entry, and
@@ -400,7 +400,7 @@ word       = "ok" | "fail" | "not-run" | "done" | "timeout" | "halt" | "none"
 ```
 
 Blanks may stand around the operator and the value. `NAMESPACE` is the
-case, the procedure, `init` or `end` a check stands in, `NAME` the check's
+case, the procedure, `init` or `cleanup` a check stands in, `NAME` the check's
 name (a check that a configuration names must have one).
 
 | Query | What | Predicates |
@@ -516,7 +516,7 @@ A source holds declarations and blocks, nothing else (the build refuses
 the rest, naming file and line):
 
 * **Blocks**, each macro on a line of its own (a comment may follow):
-  at most one batch init, one or more cases, at most one batch end, in
+  at most one batch init, one or more cases, at most one batch cleanup, in
   this order. A case is a subroutine the driver calls (`Gosub`), so
   `SetErr`, `SetInt`, local `Dim List`s and labels work in it; a loop,
   `Select` or block `If` must not cross the start or end of a block, and
@@ -533,13 +533,13 @@ the rest, naming file and line):
   end in `_originals` and is no token of any library set (case ignored;
   `on`, `add` or `count` are tokens). A check that a configuration names
   needs a name (the last argument, a string literal); a name is unique in
-  its namespace (the case, the procedure, `init`, `end`).
+  its namespace (the case, the procedure, `init`, `cleanup`).
 * **What runs**: the driver calls the batch init only if a case is
-  selected, then the case of the test, then the batch end. Cases share
+  selected, then the case of the test, then the batch cleanup. Cases share
   the program's globals (they are subroutines of one program), so each
   case sets up what it uses; the batch init only provides data the cases
   read. A check in a procedure belongs to the case that runs it; a
-  procedure with checks must not be named like a case, `init` or `end`.
+  procedure with checks must not be named like a case, `init` or `cleanup`.
 * **Preconditions and checks**: `!Require{COND}` is the setup (a failed
   one ends the block at once: the case is BROKEN, the tested behaviour
   was not reached; in the batch init it breaks every case); `!Check...`
