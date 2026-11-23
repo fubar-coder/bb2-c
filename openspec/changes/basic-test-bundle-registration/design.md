@@ -103,3 +103,19 @@ After `basic-test-bundle-key`; parallel with `basic-test-bundle-runner`
   of decision 4's coverage rule).
 - A bundle's COST when no member has one (none configured, none measured,
   no open bug): none, as for its members.
+
+## The comparison run (tasks 4.1, 4.2; coordinator, 2026-11-23)
+
+`ctest --preset all` and `bug-orig`, once with bundles and once with
+`BASIC_TEST_BUNDLE=OFF`, on the same build (prev 9b7e4e336 with the round's
+PREV_INTENDED):
+
+| | with bundles | without |
+|---|---|---|
+| `all` | 2005 tests (41 bundles), 100 % passed, 478 s | 1965 tests, 100 % passed, 521 s |
+| `bug-orig` | 25 tests (1 bundle), 18 fail on purpose, 6.3 s | 24 tests, the same 18, 6.4 s |
+
+Of the 580 members, 565 were served from their bundle (558 in `all`, 7 in
+`bug-orig`); the others ran alone. Every one of the 1965 + 24 case tests has
+the same status and the same case verdicts with and without bundles (no
+difference). Logs and JUnit files: `~/.local/share/bb2-c-work/bundle-compare/`.

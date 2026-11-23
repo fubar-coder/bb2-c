@@ -28,8 +28,8 @@ No original bug: no bug-orig test, no `Fixes #N`. Builds on
 
 ## 5. Documents
 
-- [ ] 5.1 `tests/corpus/runner/README.md` (bundle and served mode, the store), `caserun.h` head comment, `tests/README.md` "Running and reading a test" (a served case's output) and "Preconditions of the program's environment" (the sentence on `CELL0:`: in a bundle a path in `CORPUS:` is `BUNDLE:cN/...`, and a cell can see the other cells' directories). Verify: coordinator's review.
+- [x] 5.1 `tests/corpus/runner/README.md` (bundle and served mode, the store), `caserun.h` head comment, `tests/README.md` "Running and reading a test" (a served case's output) and "Preconditions of the program's environment" (the sentence on `CELL0:`: in a bundle a path in `CORPUS:` is `BUNDLE:cN/...`, and a cell can see the other cells' directories). Verify: coordinator's review.
 
 ## 6. Commit and report
 
-- [ ] 6.1 One commit. Report: the spike's results, the measurement, the files, the inputs of the key as built. Verify: `git show --stat`.
+- [x] 6.1 One commit. Report: the spike's results, the measurement, the files, the inputs of the key as built. Verify: `git show --stat`.

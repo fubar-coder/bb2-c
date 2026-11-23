@@ -22,13 +22,13 @@ task 0.1, showed it works): no padding, a bundle of one case is ordinary.
 
 ## 4. With the runner merged
 
-- [ ] 4.1 `ctest --preset all -R '^(blitz2_|regression_)'` with bundles. Verify: pass; the report gives the number of bundles, members and served cases and the wall time against the same selection with `BASIC_TEST_BUNDLE=OFF`.
-- [ ] 4.2 The comparison run (decision 5): `all` and `bug-orig`, with and without bundles, the verdict of every member compared. Verify: no difference; the list of compared members in the report. A difference: stop and report.
+- [x] 4.1 `ctest --preset all -R '^(blitz2_|regression_)'` with bundles. Verify: pass; the report gives the number of bundles, members and served cases and the wall time against the same selection with `BASIC_TEST_BUNDLE=OFF`.
+- [x] 4.2 The comparison run (decision 5): `all` and `bug-orig`, with and without bundles, the verdict of every member compared. Verify: no difference; the list of compared members in the report. A difference: stop and report.
 
 ## 5. Documents
 
-- [ ] 5.1 `tests/README.md` (bundle tests: what they are, that a case test is served or runs alone, selection by `-R`/`-L`, the switch), `tools/testreg/README.md`, `TODO.md` (the TODO line on the generated tests names the bundles as done for the first set; `corpus_exprmatrix` stays open). Verify: coordinator's review.
+- [x] 5.1 `tests/README.md` (bundle tests: what they are, that a case test is served or runs alone, selection by `-R`/`-L`, the switch), `tools/testreg/README.md`, `TODO.md` (the TODO line on the generated tests names the bundles as done for the first set; `corpus_exprmatrix` stays open). Verify: coordinator's review.
 
 ## 6. Commit and report
 
-- [ ] 6.1 One commit. Report: the numbers of 4.1, the comparison of 4.2, the files. Verify: `git show --stat`.
+- [x] 6.1 One commit. Report: the numbers of 4.1, the comparison of 4.2, the files. Verify: `git show --stat`.
