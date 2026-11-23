@@ -203,3 +203,28 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   `seriallib_closeserial_abortio__abort_write_originals`, is a fixed test,
   `fixed-orig = 258`, whose cell port,cd timed out there; it passes again
   in three runs, unrelated to this task).
+- **Task 4.1, the header `; @fixed-orig #N`** (D5; the user's answers of
+  2026-11-23, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+  "Group 4: four answers on the rename" and "Group 4: the other
+  recommendations"). Renamed: 150 compiler tests (82 of them written by
+  the expression matrix's generator, which writes the new name), the 41
+  TED bug-orig tests, the 5 `ted_ab` scripts with
+  `; @fixed-orig #NNN PAIR...` and the 5 lint scripts, and the 16 fake
+  tests of the selftests; no library or RWE test had the header any more.
+  The tests left in the old form are more than TED and compile-only: of
+  the 151 compiler tests 103 are compile-only, 46 runnable ones are the
+  expression matrix's (generated in the old form) and two others
+  (`compiler-panic-remtask`, `compiler-racing-stripe-wide`); the 130
+  port regression tests (`regression/`) are of the old form too, without
+  the header. The old name is refused with the new one by
+  `check-fixed-orig.cmake` (configure; `bug_orig_fixed_old_name_broken`)
+  and by `tedab` (`ted_ab_lint_fixed_wrong`,
+  `bug_orig_ted_fixed_wrong_lint`); a directive name may hold `-` now
+  (`tedab.c`). `bugorigcmp` keeps reading the old name (and `/port`
+  with it), since the base of fix-scope may be an older tree: fix-scope
+  over the rename reports 0 changed cases. `openspec validate --strict`
+  warns of the two MODIFIED requirements of `testing/bug-fix-workflow`
+  ("What a fix delivers", "A fix changes only the expectations of its
+  issue"): they are copied whole and were over 500 characters already in
+  the main spec; not split here (a split needs the user's answer, as for
+  `split-long-requirements`).
