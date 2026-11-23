@@ -1,0 +1,14 @@
+# windowslib-taglist-overflow.test.bas: the CD's libraries overwrite the
+# code of WindowFont; the program's trap handler records the illegal
+# instruction and ends the program, so the case has no end entry and the
+# check behind WindowFont does not run
+fixed-orig = 317
+timeout = 60
+
+[asserts]
+"check.tag_list_21_pairs.no_illegal_instruction" = "== not-run"
+
+[deviations."libs=cd"]
+"check.tag_list_21_pairs.windowfont_returns" = "== not-run"
+"check.tag_list_21_pairs.no_illegal_instruction" = "== fail"
+"end.case" = "not exists"

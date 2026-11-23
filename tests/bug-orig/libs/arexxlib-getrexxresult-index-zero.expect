@@ -1,4 +1,0 @@
-[run]
-before
-REQUESTER: AutoRequest body "Illegal Result Number" *
-rc=0

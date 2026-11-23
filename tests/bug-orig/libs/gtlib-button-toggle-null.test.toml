@@ -1,0 +1,6 @@
+# gtlib-button-toggle-null.test.bas: the CD's libraries set bit 0 of address
+# 14
+fixed-orig = 171
+
+[deviations."libs=cd"]
+"check.toggle_without_gadget.address_14_unchanged" = "== fail"

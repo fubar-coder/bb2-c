@@ -1,0 +1,11 @@
+# gtlib-optional-values-stay.test.bas: the CD's libraries give the second
+# gadgets the values of the first ones
+fixed-orig = 169
+
+[deviations."libs=cd"]
+"check.second_without_value.cycle_second" = "== fail"
+"check.second_without_value.cycle_second.actual" = "== 2"
+"check.second_without_value.mx_second" = "== fail"
+"check.second_without_value.mx_second.actual" = "== 1"
+"check.second_without_value.string_second_length" = "== fail"
+"check.second_without_value.string_second_length.actual" = "== 3"

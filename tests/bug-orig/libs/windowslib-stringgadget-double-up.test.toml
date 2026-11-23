@@ -1,0 +1,7 @@
+# windowslib-stringgadget-double-up.test.bas: the CD's libraries report the
+# real gadget up as well
+fixed-orig = 311
+
+[deviations."libs=cd"]
+"check.down_up_up.event_4" = "== fail"
+"check.down_up_up.event_4.actual" = "== $40"

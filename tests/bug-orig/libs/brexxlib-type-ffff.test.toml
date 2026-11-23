@@ -1,0 +1,10 @@
+# brexxlib-type-ffff.test.bas: the CD's libraries record an event with code
+# $FFFF between the two
+fixed-orig = 102
+
+[deviations."libs=cd"]
+"check.unconvertible_char.event_2_code" = "== fail"
+"check.unconvertible_char.event_2_code.actual" = "== $FFFF"
+"check.unconvertible_char.event_2_qualifier" = "== fail"
+"check.unconvertible_char.event_2_qualifier.actual" = "== 1"
+"check.unconvertible_char.event_3_none" = "== fail"

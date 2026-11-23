@@ -1,0 +1,6 @@
+# intuifontlib-loadfont-name-leak.test.bas: the CD's libraries never free the
+# copies of the font name
+fixed-orig = 198
+
+[deviations."libs=cd"]
+"check.name_copies.lost_under_200" = "== fail"

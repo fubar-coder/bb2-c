@@ -1,0 +1,10 @@
+# brexxlib-playwait.test.bas: the CD's libraries wait in PlayWait forever
+# (the run is ended as a hang)
+fixed-orig = 99
+timeout = 30
+
+[deviations."libs=cd"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

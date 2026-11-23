@@ -1,0 +1,15 @@
+# gtlib-a3-tag-list.test.bas: the CD's libraries write the rest of the
+# expression at the tag list: the length is right, the contents are not
+fixed-orig = 328
+
+[deviations."libs=cd"]
+"check.string_expressions.get_char_1" = "== fail"
+"check.string_expressions.get_char_1.actual" = "== 66"
+"check.string_expressions.get_char_2" = "== fail"
+"check.string_expressions.get_char_2.actual" = "== 0"
+"check.string_expressions.get_char_3" = "== fail"
+"check.string_expressions.get_char_3.actual" = "== 112"
+"check.string_expressions.set_char_2" = "== fail"
+"check.string_expressions.set_char_2.actual" = "== 0"
+"check.string_expressions.set_char_3" = "== fail"
+"check.string_expressions.set_char_3.actual" = "== 112"

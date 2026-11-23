@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-first [two] result2 0 -1
-second []
-rc=0

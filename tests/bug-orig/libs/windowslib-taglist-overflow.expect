@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-x 100 width 120
-font ok
-rc=0

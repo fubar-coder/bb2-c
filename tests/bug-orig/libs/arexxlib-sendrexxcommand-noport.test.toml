@@ -1,0 +1,11 @@
+# arexxlib-sendrexxcommand-noport.test.bas: through inject, which answers
+# the alert; the CD's libraries leave the interrupts disabled
+fixed-orig = 55
+runwrap = "@INJECT@|alerts"
+
+[asserts]
+inject = "contains \"alert: SORRY CAN NOT FIND THE REXXPORT\""
+
+[deviations."libs=cd"]
+"check.interrupts_after_alert.idnestcnt" = "== fail"
+"check.interrupts_after_alert.idnestcnt.actual" = "== 0"

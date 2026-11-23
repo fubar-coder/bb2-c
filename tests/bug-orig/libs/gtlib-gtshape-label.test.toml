@@ -1,0 +1,8 @@
+# gtlib-gtshape-label.test.bas: the CD's libraries give the shape gadget the
+# label of the button before
+fixed-orig = 172
+timeout = 60
+
+[deviations."libs=cd"]
+"check.shape_label.shape_label_none" = "== fail"
+"check.shape_label.shape_label_differs" = "== fail"

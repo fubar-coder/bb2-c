@@ -1,0 +1,6 @@
+# asllib-title-leak.test.bas: the CD's libraries never free the copies of
+# the title and the pattern
+fixed-orig = 63
+
+[deviations."libs=cd"]
+"check.twenty_calls.no_leak" = "== fail"

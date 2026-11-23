@@ -1,0 +1,9 @@
+# gtlib-gtpalette-tagmore.test.bas: the CD's libraries ignore the colour and
+# lose the GTTags list
+fixed-orig = 168
+
+[deviations."libs=cd"]
+"check.palette_colour.colour_first" = "== fail"
+"check.palette_colour.colour_first.actual" = "== 0"
+"check.palette_colour.offset_second" = "== fail"
+"check.palette_colour.offset_second.actual" = "== 0"

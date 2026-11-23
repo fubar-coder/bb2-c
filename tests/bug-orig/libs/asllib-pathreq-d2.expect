@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-result [RAM:f] path [RAM:]
-vectors kept
-rc=0

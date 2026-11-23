@@ -1,0 +1,8 @@
+# arexxlib-fillrexxmsg-17-slots.test.bas: the CD's libraries write the 17th
+# value to rm_PassPort and clear the host field
+fixed-orig = 49
+
+[deviations."libs=cd"]
+"check.seventeen_values.fill_passport_zero" = "== fail"
+"check.seventeen_values.clear_passport_kept" = "== fail"
+"check.seventeen_values.clear_host_kept" = "== fail"

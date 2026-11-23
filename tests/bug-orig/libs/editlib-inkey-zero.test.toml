@@ -1,0 +1,9 @@
+# editlib-inkey-zero.test.bas: the CD's libraries return the caller's d6 as
+# the length
+fixed-orig = 128
+
+[deviations."libs=cd"]
+"check.zero_count.length_d6_5" = "== fail"
+"check.zero_count.length_d6_5.actual" = "== 5"
+"check.zero_count.length_d6_3" = "== fail"
+"check.zero_count.length_d6_3.actual" = "== 3"

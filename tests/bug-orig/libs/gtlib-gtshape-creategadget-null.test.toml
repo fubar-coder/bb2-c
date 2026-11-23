@@ -1,0 +1,7 @@
+# gtlib-gtshape-creategadget-null.test.bas: the CD's libraries change the
+# exception vectors 3-6
+fixed-orig = 327
+
+[deviations."libs=cd"]
+"check.shape_without_screen.vectors_changed" = "== fail"
+"check.shape_without_screen.vectors_changed.actual" = "== 3"

@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-colour 3
-offset 2
-colour 0
-rc=0

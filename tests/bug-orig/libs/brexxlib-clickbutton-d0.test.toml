@@ -1,0 +1,7 @@
+# brexxlib-clickbutton-d0.test.bas: the CD's libraries record the right
+# button for the release
+fixed-orig = 97
+
+[deviations."libs=cd"]
+"check.tape_events.event_2_code" = "== fail"
+"check.tape_events.event_2_code.actual" = "== $E9"

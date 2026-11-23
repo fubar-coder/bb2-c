@@ -1,0 +1,7 @@
+# gtlib-gtshape-image.test.bas: the CD's libraries give the first gadget the
+# select image of the last one
+fixed-orig = 173
+
+[deviations."libs=cd"]
+"check.two_gadgets.gadget_1_select" = "== fail"
+"check.two_gadgets.gadget_1_select.actual" = "== 3"

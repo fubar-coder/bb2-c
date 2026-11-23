@@ -1,0 +1,9 @@
+# brexxlib-loadtape-unchecked.test.bas: the file goes to CORPUS:; the CD's
+# libraries take "ABCDE" as the start time
+fixed-orig = 101
+
+[deviations."libs=cd"]
+"check.short_file.start_time_high" = "== fail"
+"check.short_file.start_time_high.actual" = "== $41424344"
+"check.short_file.start_time_low" = "== fail"
+"check.short_file.start_time_low.actual" = "== $45000000"

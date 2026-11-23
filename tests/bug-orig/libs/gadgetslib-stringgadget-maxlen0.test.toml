@@ -1,0 +1,14 @@
+# gadgetslib-stringgadget-maxlen0.test.bas: with runtime error checking; the
+# CD's libraries have no check and clear 64 KB behind the buffer
+fixed-orig = 165
+runtime-errors = "on"
+
+[asserts]
+"check.maxlen_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.maxlen_zero.refused" = "== fail"
+requester = "count == 0"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

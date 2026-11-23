@@ -1,0 +1,12 @@
+# windowslib-windowtags-pairs-limit.test.bas: with runtime error checking;
+# the port refuses the 16 pairs, the CD's libraries open the window
+fixed-orig = 961
+runtime-errors = "on"
+
+[asserts]
+"check.sixteen_pairs.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.sixteen_pairs.refused" = "== fail"
+"check.sixteen_pairs.not_refused" = "== fail"
+requester = "count == 0"

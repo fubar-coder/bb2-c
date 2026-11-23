@@ -1,0 +1,6 @@
+# brexxlib-addtape-mode.test.bas: the CD's libraries end the recording
+fixed-orig = 96
+
+[deviations."libs=cd"]
+"check.record_abs_mouse.status_recording" = "== fail"
+"check.record_abs_mouse.status_recording.actual" = "== 0"

@@ -1,0 +1,9 @@
+# asllib-free-null-request.test.bas: the CD's libraries call FreeFileRequest
+# with the 0 requester
+fixed-orig = 403
+
+[deviations."libs=cd"]
+"check.free_without_request.free_calls" = "== fail"
+"check.free_without_request.free_calls.actual" = "== 1"
+"check.free_without_request.freed_requester_untouched" = "== fail"
+"check.free_without_request.freed_requester_untouched.actual" = "== 0"

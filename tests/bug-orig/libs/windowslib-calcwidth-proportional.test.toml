@@ -1,0 +1,7 @@
+# windowslib-calcwidth-proportional.test.bas: the line editor places the
+# cursor wrongly in the CD's libraries; the printed line and the edited one
+# differ in pixels
+fixed-orig = 321
+
+[deviations."libs=cd"]
+"check.proportional_edit.same_pixels" = "== fail"

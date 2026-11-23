@@ -1,0 +1,14 @@
+# menuslib-menuchecked-sub-loops.test.bas: the CD's libraries do not find
+# the checked subitem; the walk for (0,1,1) runs on from the item into
+# the memory behind the lists and does not return in the layout of this
+# program (the run is ended as a hang, the check behind it does not run)
+fixed-orig = 217
+
+[deviations."libs=cd"]
+"check.checked_subitems.item_1_sub_0" = "== fail"
+"check.checked_subitems.item_1_sub_0.actual" = "== 0"
+"check.checked_subitems.item_1_sub_1" = "== not-run"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

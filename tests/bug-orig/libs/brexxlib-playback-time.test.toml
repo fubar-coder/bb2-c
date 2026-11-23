@@ -1,0 +1,16 @@
+# brexxlib-playback-time.test.bas: through inject, whose input handler
+# stamps the events and sends the keys; the CD's libraries play the tape's
+# event behind the later one
+fixed-orig = 100
+files = ["tape|@TESTDATA@/brexxlib-playback-time.tape"]
+runwrap = "@INJECT@|keys=BREXX/20@1,A0@1,33@3,B3@3"
+timeout = 60
+
+[asserts]
+inject = "contains \"keys: sent\""
+
+[deviations."libs=cd"]
+"check.tape_between_keys.key_2" = "== fail"
+"check.tape_between_keys.key_2.actual" = "== $33"
+"check.tape_between_keys.key_3" = "== fail"
+"check.tape_between_keys.key_3.actual" = "== $35"

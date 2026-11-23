@@ -1,0 +1,9 @@
+# arexxlib-getstring-a3.test.bas: the CD's libraries write the rest of the
+# expression one byte too far
+fixed-orig = 52
+
+[deviations."libs=cd"]
+"check.string_expressions.command_char_4" = "== fail"
+"check.string_expressions.command_char_4.actual" = "== 0"
+"check.string_expressions.result_char_4" = "== fail"
+"check.string_expressions.result_char_4.actual" = "== 0"

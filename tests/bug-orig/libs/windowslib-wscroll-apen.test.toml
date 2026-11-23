@@ -1,0 +1,8 @@
+# windowslib-wscroll-apen.test.bas: the CD's libraries set the A pen to 0
+fixed-orig = 315
+
+[deviations."libs=cd"]
+"check.a_pen.pen_after_wscroll" = "== fail"
+"check.a_pen.pen_after_wscroll.actual" = "== 0"
+"check.a_pen.pen_after_wprintscroll" = "== fail"
+"check.a_pen.pen_after_wprintscroll.actual" = "== 0"

@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-file requester flags 1
-path requester flags 0
-rc=0

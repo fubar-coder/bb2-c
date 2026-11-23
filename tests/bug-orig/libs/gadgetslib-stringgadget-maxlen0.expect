@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Maxlen MUST be greater than zero" *
-rc=0

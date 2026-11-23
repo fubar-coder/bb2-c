@@ -1,0 +1,15 @@
+# asllib-screenreq-freed.test.bas: the CD's libraries return the requester
+# after freeing it; the first 16 bytes are overwritten
+fixed-orig = 60
+
+[deviations."libs=cd"]
+"check.freed_requester.display_id" = "== fail"
+"check.freed_requester.display_id.actual" = "== $FFFFFFFF"
+"check.freed_requester.width" = "== fail"
+"check.freed_requester.width.actual" = "== -1"
+"check.freed_requester.height" = "== fail"
+"check.freed_requester.height.actual" = "== -1"
+"check.freed_requester.depth" = "== fail"
+"check.freed_requester.depth.actual" = "== -1"
+"check.freed_requester.overscan" = "== fail"
+"check.freed_requester.overscan.actual" = "== -1"

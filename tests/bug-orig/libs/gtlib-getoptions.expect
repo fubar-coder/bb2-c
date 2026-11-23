@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-labels 100
-lost under 8000 -1
-inject: rc=0
-rc=0

@@ -1,0 +1,15 @@
+# arexxlib-createargstring-len.test.bas: the string buffer of the program is
+# raised to 150000 bytes; the CD's libraries copy only the low word of the
+# length
+fixed-orig = 57
+jobline = ["strbuf=150000"]
+
+[deviations."libs=cd"]
+"check.string_70000.block_size" = "== fail"
+"check.string_70000.block_size.actual" = "== 70009"
+"check.string_70000.ra_length" = "== fail"
+"check.string_70000.ra_length.actual" = "== 4464"
+"check.string_70000.char_4464" = "== fail"
+"check.string_70000.char_4464.actual" = "== 0"
+"check.string_70000.char_65534" = "== fail"
+"check.string_70000.char_65534.actual" = "== 0"

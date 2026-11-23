@@ -1,0 +1,16 @@
+# fontlib-loadblitzfont-not-closed.test.bas: the error handler holds the
+# check and ends the program, so the case has no end entry and the check
+# behind LoadBlitzFont does not run; the CD's libraries leave the refused
+# font open (accessors 1)
+fixed-orig = 150
+# the open font stays in the font list of the session: a cell with the CD's
+# libraries counts what the cell before left open, so each has its own
+isolate = ["libs=cd"]
+
+[asserts]
+"end.case" = "not exists"
+"check.refused_font.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.refused_font.diamond_8_accessors" = "== fail"
+"check.refused_font.diamond_8_accessors.actual" = "== 1"

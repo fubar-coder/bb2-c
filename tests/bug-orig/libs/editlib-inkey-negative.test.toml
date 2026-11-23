@@ -1,0 +1,17 @@
+# editlib-inkey-negative.test.bas: with runtime error checking; the file goes
+# to CORPUS:; the port refuses the negative count, the CD's libraries do
+# not come back (the run is ended as a hang)
+fixed-orig = 1031
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.negative_count.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.negative_count.refused" = "== fail"
+requester = "count == 0"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

@@ -1,0 +1,7 @@
+# windowslib-qualifier-long.test.bas: the CD's libraries leave the upper
+# word of d0 in the result
+fixed-orig = 313
+
+[deviations."libs=cd"]
+"check.upper_word.qualifier" = "== fail"
+"check.upper_word.qualifier.actual" = "== $12340000"

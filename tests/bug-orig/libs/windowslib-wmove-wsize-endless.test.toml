@@ -1,0 +1,10 @@
+# windowslib-wmove-wsize-endless.test.bas: the CD's libraries wait forever in
+# WSize (the run is ended as a hang; no check runs, no end entry)
+fixed-orig = 320
+timeout = 60
+
+[deviations."libs=cd"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
