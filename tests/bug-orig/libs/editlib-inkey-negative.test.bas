@@ -11,17 +11,19 @@
 ; session times out).
 ; Correct: the error check refuses the negative count: "Can't Inkey$ a
 ; negative number of Characters!".
-; @fixed #1031
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
-If WriteFile(0,"RAM:editlib-inkey-negative") Then FileOutput 0 : Print "xy" : CloseFile 0
-DefaultOutput
-If ReadFile(0,"RAM:editlib-inkey-negative")=0 Then NPrint "no file" : End
-NPrint "before"
-FileInput 0
-a$=Inkey$(-1)
-DefaultInput
-CloseFile 0
-NPrint "len ",Len(a$)
-End
+DEFTYPE .l
+
+!TestCase{negative_count}
+  ok=WriteFile(0,"CORPUS:editlib-inkey-negative")
+  !Require{ok,"file_written"}
+  FileOutput 0 : Print "xy" : CloseFile 0
+  DefaultOutput
+  ok=ReadFile(0,"CORPUS:editlib-inkey-negative")
+  !Require{ok,"file_read"}
+  FileInput 0
+  !ExpectError{"Can't Inkey$ a negative number of Characters!","refused"}
+  a$=Inkey$(-1)
+  !Check{0,"not_refused"}
+  DefaultInput
+  CloseFile 0
+!EndTestCase

@@ -3,8 +3,11 @@
 ; string: a string of a random length.  Here d6 is set to 5 and 3 right
 ; before the call (inline assembler).
 ; Correct: Inkey$(0) reads nothing and is the empty string.
-; @fixed #128
-; @configs clib
-MOVEQ #5,d6 : NPrint "len ",Len(Inkey$(0))
-MOVEQ #3,d6 : a$=Inkey$(0) : NPrint "[",a$,"]"
-End
+DEFTYPE .l
+
+!TestCase{zero_count}
+  MOVEQ #5,d6 : l1=Len(Inkey$(0))
+  MOVEQ #3,d6 : a$=Inkey$(0) : l2=Len(a$)
+  !CheckEq{l1,0,"length_d6_5"}
+  !CheckEq{l2,0,"length_d6_3"}
+!EndTestCase

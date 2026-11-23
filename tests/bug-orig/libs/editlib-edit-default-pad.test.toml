@@ -1,0 +1,7 @@
+# editlib-edit-default-pad.test.bas: the CD's libraries lose the last
+# character of the default (9 and 2)
+fixed-orig = 129
+
+[deviations."libs=cd"]
+"check.default_pad.edit_9_5" = "== fail"
+"check.default_pad.edit_25" = "== fail"

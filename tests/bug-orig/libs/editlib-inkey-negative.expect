@@ -1,4 +1,0 @@
-[run]
-before
-REQUESTER: AutoRequest body "Can't Inkey$ a negative number of Characters!" *
-rc=0
