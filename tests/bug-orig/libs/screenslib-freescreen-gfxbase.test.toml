@@ -1,0 +1,17 @@
+# screenslib-freescreen-gfxbase.test.bas: the original calls FreeDBufInfo
+# through garbage: a crash with the "Software Failure" requester (the
+# session runs into its timeout; each cell with the CD's libraries has its
+# own session).  The old recording noted that more or less of the requester
+# (even none) is written before the session ends; both cells showed it
+# here.
+fixed-orig = 247
+timeout = 30
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.second_screen.after" = "== not-run"
