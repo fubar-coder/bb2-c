@@ -1,0 +1,13 @@
+# rilesdebuglib-fprint-bitmap-check.test.bas: with runtime error checking for
+# the announced error; the original raises none and prints
+fixed-orig = 707
+rwe = ["rilesdebuglib"]
+runtime-errors = "on"
+
+[asserts]
+"check.narrow_bitmap.printed" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.narrow_bitmap.refused" = "== fail"
+"check.narrow_bitmap.printed" = "== fail"
+requester = "count == 0"

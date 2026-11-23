@@ -1,0 +1,10 @@
+# rilesdebuglib-processstring-no-position.test.bas: the original reads the
+# text at address 0
+fixed-orig = 719
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.no_position.before_initparse" = "== fail"
+"check.no_position.before_initparse.actual" = "== \"ABC\""
+"check.no_position.after_last_argument" = "== fail"
+"check.no_position.after_last_argument.actual" = "== \"ABC\""

@@ -1,0 +1,12 @@
+# rilesdebuglib-getcustomregadr-prefix.test.bas: the original matches a name
+# by its prefix and never finds a name of 8 characters
+fixed-orig = 713
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.names.longer_name" = "== fail"
+"check.names.longer_name.actual" = "== 150"
+"check.names.deniseid" = "== fail"
+"check.names.deniseid.actual" = "== -1"
+"check.names.spr7datb" = "== fail"
+"check.names.spr7datb.actual" = "== -1"

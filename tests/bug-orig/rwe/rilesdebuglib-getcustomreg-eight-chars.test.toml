@@ -1,0 +1,8 @@
+# rilesdebuglib-getcustomreg-eight-chars.test.bas: the original writes the
+# next name's first character behind the name and builds on it
+fixed-orig = 712
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.bltcon0l.name_and_next_part" = "== fail"
+"check.bltcon0l.name_and_next_part.actual" = "== \"BLTCON0LB\""

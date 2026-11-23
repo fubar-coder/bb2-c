@@ -1,0 +1,10 @@
+# rilesdebuglib-finverse-detoke.test.bas: the original's FPrintDetoke is not
+# inverted by FInverse 1 and its marker clears the setting
+fixed-orig = 706
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.inverse.detoke_after_finverse_1" = "== fail"
+"check.inverse.detoke_after_finverse_1.actual" = "== 1"
+"check.inverse.fprint_after_marker" = "== fail"
+"check.inverse.fprint_after_marker.actual" = "== 1"
