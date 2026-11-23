@@ -10,8 +10,8 @@
 ; (sanity: one short line, no error) and for 1 point.
 ; Correct: the error check refuses the count: "Poly needs at least 2
 ; Points".  The original draws the 65536 lines.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 Function.l nset{}
   pl.l=Peek.l(Addr BitMap(0)+8) : n.l=0
@@ -29,6 +29,7 @@ End Function
   !Check{nset{}<=2,"two_points"}
   Cls
   Poke.w p+4,0
+  !ExpectError{"Poly needs at least 2 Points","refused"}
   Poly 1,p,1
   !Check{0,"after"}
 !EndTestCase
