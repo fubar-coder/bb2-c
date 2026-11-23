@@ -1,0 +1,9 @@
+# utillib-taskname-a6.test.bas: the second SystemDate of the original goes
+# through exec's base and halts the machine
+fixed-orig = 1060
+
+[deviations."libs=cd"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

@@ -1,0 +1,9 @@
+# utillib-taskname-no-name.test.bas: the original copies the text from
+# address 0
+fixed-orig = 297
+
+[deviations."libs=cd"]
+"check.no_name.empty_length" = "== fail"
+"check.no_name.empty_length.actual" = "== 3"
+"check.no_name.empty_name" = "== fail"
+"check.no_name.empty_name.actual" = "== \"ABC\""

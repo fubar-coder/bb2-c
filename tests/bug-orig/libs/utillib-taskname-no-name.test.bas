@@ -6,14 +6,16 @@
 ; with its 0 is put at address 0 first (the long there is restored at
 ; once), so the original's result is known: "ABC".
 ; Correct: a task without a name has the empty name: length 0.
-; @fixed #297
-; @configs clib
 DEFTYPE .l
-Dim t.l(24)
-o=Peek.l(0)
-Poke.l 0,$41424300
-a$=TaskName$(&t(0))
-Poke.l 0,o
-NPrint "len ",Len(a$)," [",a$,"]"
-NPrint "own ",Len(TaskName$(0))>0
-End
+
+!TestCase{no_name}
+  Dim t.l(24)
+  o=Peek.l(0)
+  Poke.l 0,$41424300
+  a$=TaskName$(&t(0))
+  Poke.l 0,o
+  n=Len(a$)
+  !CheckEq{n,0,"empty_length"}
+  !CheckStrEq{a$,"","empty_name"}
+  !Check{Len(TaskName$(0))>0,"own_name"}
+!EndTestCase

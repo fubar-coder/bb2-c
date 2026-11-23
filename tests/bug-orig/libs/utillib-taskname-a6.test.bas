@@ -6,11 +6,11 @@
 ; call goes through exec's base.
 ; Correct: the sum of the two dates and the length of the name is what the
 ; parts give one by one.
-; @fixed #1060
-; @configs clib
 DEFTYPE .l
-c=SystemDate
-n=Len(TaskName$(0))
-a=SystemDate+Len(TaskName$(0))+SystemDate
-NPrint "sum right ",a=c+n+c
-End
+
+!TestCase{a6_kept}
+  c=SystemDate
+  n=Len(TaskName$(0))
+  a=SystemDate+Len(TaskName$(0))+SystemDate
+  !Check{a=c+n+c,"sum_right"}
+!EndTestCase

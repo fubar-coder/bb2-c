@@ -10,17 +10,15 @@
 ; 0, no name).
 ; Correct: the own port passes; the error check refuses the other one
 ; with "Port Not Created By CreateMsgPort".
-; @fixed #1041
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
 DEFTYPE .l
-p=CreateMsgPort("")
-DeleteMsgPort p
-NPrint "own port deleted"
-m$=String$(Chr$(0),48) : q=&m$+8
-Poke.b q+8,4
-Poke.l q+20,q+24 : Poke.l q+28,q+20
-DeleteMsgPort q
-NPrint "foreign port deleted"
-End
+
+!TestCase{foreign_port}
+  p=CreateMsgPort("")
+  DeleteMsgPort p
+  m$=String$(Chr$(0),48) : q=&m$+8
+  Poke.b q+8,4
+  Poke.l q+20,q+24 : Poke.l q+28,q+20
+  !ExpectError{"Port Not Created By CreateMsgPort","refused"}
+  DeleteMsgPort q
+  !Check{0,"not_refused"}
+!EndTestCase

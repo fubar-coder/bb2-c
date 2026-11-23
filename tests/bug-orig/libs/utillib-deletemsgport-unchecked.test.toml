@@ -1,0 +1,7 @@
+# utillib-deletemsgport-unchecked.test.bas: the original does not reply the
+# queued message
+fixed-orig = 299
+
+[deviations."libs=cd"]
+"check.queued_message.replied" = "== fail"
+"check.queued_message.replied.actual" = "== 0"

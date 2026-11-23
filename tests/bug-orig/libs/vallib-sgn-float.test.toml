@@ -1,0 +1,10 @@
+# vallib-sgn-float.test.bas: the original's Sgn of every float is 1
+fixed-orig = 301
+
+[deviations."libs=cd"]
+"check.sgn_of_float.zero" = "== fail"
+"check.sgn_of_float.zero.actual" = "== 1"
+"check.sgn_of_float.negative" = "== fail"
+"check.sgn_of_float.negative.actual" = "== 1"
+"check.sgn_of_float.small_negative" = "== fail"
+"check.sgn_of_float.small_negative.actual" = "== 1"
