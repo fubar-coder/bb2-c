@@ -403,3 +403,42 @@ the driver `tools/lib/testpp/testdriver.h`; the build step
   gives the expected entries with 1.95, 2.10 with an RWE user library (its
   reference), the port with the CD's libraries and the port with the RWE
   variant's C libraries.
+
+## Findings of the prev comparison
+
+Tasks 7.2-7.5 (`corpusrun case --write-driver` and `--prev`,
+`cmake/prev.cmake` `prev_compile_model_test`, `basic_test_register(...
+PREV REGEX [PREV_EXCLUDE ID...])`).
+
+- **The driver** is written by every build, not only with a prev build
+  (`model-drivers/ID.bb2` and `ID.bas` in the directory's build
+  directory): a source whose driver cannot be written fails the build
+  (`blitz2_selftest_model_driver_broken` runs the command of the step on
+  such a source), and the self tests run without a prev build. The token
+  list with RWE user libraries goes to a directory of its own beside the
+  driver (`ID.bb2.d`), since the drivers of a directory are written at
+  the same time.
+- **What a compile takes from its cell**: the pass of the first cell of
+  the side port with the value of `runtime-errors` (`cr_cell_pass`), less
+  what belongs to a run (launcher, rcput, the hang check, serial, runwrap,
+  runargs, launcherargs, the debugger module, the floppies), with
+  `mask_traps=on` for a job line `run=` (as `prev_compile_test`).
+- **The bug-orig sources** compared are those of the old form: the area
+  `compiler/` and `regression/compiler-*`, without the four ids of
+  `prev_not_compared` (`PREV_EXCLUDE`); the tests with RWE user libraries
+  are refused by the runner (the old form left them out).
+- **Broken input** (without a prev build, `selftest/model-prev.test.bas`):
+  the same compiler passes; `hangstub` as the prev compiler (a result
+  that differs: none) fails naming the compile, and passes when it is
+  named; an entry without a difference and an entry for a compile the
+  test does not have fail as STALE. With `-DBLITZ2_PREV`
+  `blitz2_model_numbering_prev` passes (two sessions, 4 s).
+- **Cost**: two sessions per compile (about 2 s each, both at once), so a
+  test with both values of `runtime-errors` takes four; the old form's
+  plain sources shared the two sessions of `compiler_prev`. For round U4
+  (about 100 compiler tests) that is about 200 more sessions with a prev
+  build; batching the drivers of a directory into one pass is possible
+  later (one pass per value of `runtime-errors`, the names stay).
+- **Time limit**: the ctest time limit assumes the default session limit
+  (`BASIC_TEST_TIMEOUT`); a test with a larger `timeout` of its own is
+  not known when CMake configures.

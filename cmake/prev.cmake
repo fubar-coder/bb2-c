@@ -26,6 +26,9 @@
 #   corpus_cd_prev:PATH          a source of the CD (corpus_cd_ab3_prev: likewise)
 #   compiler_prev:ID             a compiler test source (tests/blitz2, the compiler's
 #   bug_orig_ID_prev:ID          bug-orig tests: prev_compile_test below)
+#   blitz2_ID_prev:ID            a test of the BASIC test model (ID.test.bas): its
+#   blitz2_ID_prev:ID-runerrs    driver without, with runtime error checking
+#                                (prev_compile_model_test below)
 #   site_examples_run:NAME       an example of the site (a pass of tests/site-examples)
 #   ab3_cli_prev:CASE            a case of ab3_cli (tests/ab3/cli-prev.cmake)
 # The entries are checked by the tools (tools/lib/previntended).
@@ -247,6 +250,46 @@ function(prev_compile_plain_pass)
 	add_test(NAME compiler_prev COMMAND ${CORPUSRUN} pass ${work}.pass)
 	math(EXPR limit "${PREV_COMPILE_TIMEOUT} * 2 + 60 + 2 * ${EMULATION_QUEUE_WAIT}")
 	set_tests_properties(compiler_prev PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+endfunction()
+
+# The comparison of a test of the BASIC test model (ID.test.bas, cmake/basic-test-model.cmake;
+# change basic-test-runner D10): the driver of all its cases, which the build writes, compiled by
+# this build's compiler and by the previous commit's, once per value of runtime-errors among the
+# cells without original material, the executables (or compile results) the same: corpusrun case
+# --prev (tests/corpus/runner/caserun.h), passes of corpus.h with run=off and the configurations
+# clib and prev (exe:clib).  The compiles are named ID and ID-runerrs, the entries of PREV_INTENDED
+# NAME:ID and NAME:ID-runerrs; an entry of NAME that names no compile of the test is stale.
+#
+# prev_compile_model_test(NAME SOURCE DRIVER):  NAME the ctest name (PREFIX_ID_prev), SOURCE
+#   ID.test.bas, DRIVER its driver (basic_test_driver).  Without a prev build nothing is configured.
+# prev_model_test_command(VAR NAME SOURCE DRIVER PREV_BLITZ2 PREV_LIBS): the command (also for the
+#   self tests with another prev compiler, tests/blitz2/CMakeLists.txt), with the PREV_INTENDED
+#   entries
+function(prev_model_test_command var name src driver prev_blitz2 prev_libs)
+	set(cmd ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source ${src} --prev --driver ${driver}
+		--test ${name} --prev-blitz2 ${prev_blitz2} --prev-libs ${prev_libs})
+	if(PREV_INTENDED STREQUAL "ON")
+		list(APPEND cmd --intended ON)
+	elseif(PREV_INTENDED AND NOT PREV_INTENDED STREQUAL "OFF")
+		foreach(f IN LISTS PREV_INTENDED)
+			if(f MATCHES ":")
+				list(APPEND cmd --intended ${f})
+			endif()
+		endforeach()
+	endif()
+	set(${var} ${cmd} PARENT_SCOPE)
+endfunction()
+function(prev_compile_model_test name src driver)
+	if(NOT PREV_REQUESTED)
+		return()
+	endif()
+	prev_register(${name})
+	prev_model_test_command(cmd ${name} ${src} ${driver} ${PREV_BLITZ2_DIR}/blitz2 ${PREV_BLITZ2_DIR})
+	add_test(NAME ${name} COMMAND ${cmd})
+	# two compiles (runtime error checking off and on), each two sessions, maybe one after the
+	# other, each maybe waiting for a slot
+	math(EXPR limit "${BASIC_TEST_TIMEOUT} * 4 + 60 + 4 * ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
 endfunction()
 
 # The tests that compare with the prev build and take PREV_INTENDED entries (not the corpus
