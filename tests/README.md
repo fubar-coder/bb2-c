@@ -560,6 +560,14 @@ name (a check that a configuration names must have one).
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`
 any characters, `#` a decimal number, `\c` the character `c`).
 
+**What `requester` sees** (a limit, see `TODO.md`): reqtrap
+(`tests/corpus/amiga/reqtrap.c`) writes each requester as a line
+`REQUESTER: ...` of the program's output, and the query takes only that
+line. A requester text with a line break (an EasyRequest whose text has
+several lines) ends there for the query: its further lines, the gadgets (`gadgets "..."`) and the answer
+are not in `requester` but in `output`. Write a `contains` or `matches`
+on the first line of the text, or use `count`.
+
 **Writing a predicate in TOML.** The predicate is a TOML string, so its
 own quotes are `\"`: `inject = "contains \"written behind\""`; a quote
 that belongs to the compared text needs the escape of both levels
