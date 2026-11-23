@@ -229,3 +229,19 @@ model files.
   so the judge, `cr_case_alone` and `--print-config` see the same set;
   `cr_cell_clean` takes such a cell as clean without an exit code
   (`tj_obs.editor_run`).
+- **racing-stripe-wide does not fit one `compile.log contains`** (task
+  3.3; D5's point came true): the two blocks the test judges (the
+  PROGRESS/STRIPE/GUARD lines of j000 and of j001) are not joined by fixed
+  lines only: each block follows its job's `RESULT ID ok SIZE` line, and
+  the size of the executable is the driver's (it changes with the driver
+  and `testlib`). One assertion per query can hold one block, not both.
+  The test stays in the old form until the user chooses (report of the
+  implementation): a further query (D5's "a further query is additive",
+  e.g. the log without the sizes of the RESULT lines, or one query per
+  job), or the move with only j001's block judged (j000's empty bitmap
+  then unchecked: a narrowing), or the old form for good.
+- **macro-textlen-max on the original**: with `macrobuf=100000` every
+  compile of a driver by 1.95 hangs (#336, as compiler-macrobuff-size), so
+  the old "Macro too Big" is not reached; the deviation is the hang
+  (`compile == none`, `session == timeout`), with `isolate` for 1.95 (the
+  hang ended the shared session before the cell port,cd had run).

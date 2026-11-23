@@ -4,13 +4,10 @@
 ; past the constants, to the end of the hunk. fixconsts leaves it as loaded,
 ; and the compile's freelabels (from lastrescon) follows it and frees what
 ; it finds there. One constant: the hunk ends right behind it, and with
-; inject pad behind every allocation (also LoadSeg's) come zeros: the
-; FreeMem of a "label" at the hunk's end is reported, not done.
+; inject pad behind every allocation (also LoadSeg's; the compiler runs
+; through inject) come zeros: the FreeMem of a "label" at the hunk's end
+; is reported, not done.
 ; Correct: no FreeMem inside the resident (next of the last constant 0).
-; @fixed #34
-; @pass wrap=@INJECT@|pad
-; @pass file=r.bb2|@TESTDATA@/compiler-resconsts-last-next.res
-; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res
-NPrint #width
-NPrint "done"
-End
+!TestCase{resident_constant}
+  !CheckEq{#width,320,"width"}
+!EndTestCase

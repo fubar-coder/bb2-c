@@ -5,14 +5,9 @@
 ; of 23 bytes that sets b=7: 65535 bytes of text, with the ':' before End
 ; Macro 65536 gathered in the Macro Buffer of 100000 bytes. The original
 ; always has a macrobuff of 8192 bytes (#336) and reports "Macro too Big".
-; Correct: it compiles, the whole text is expanded, the program prints 7,
-; and the compiler frees what it allocated (inject track).
-; @fixed #964
-; @pass wrap=@INJECT@|track
-; @pass jobline=macrobuf=100000
-; @pass timeout=30
-; @hang-after 0
-b.l=0
+; Correct: it compiles, the whole text is expanded (b is 7 behind it),
+; and the compiler frees what it allocated (inject track: the compiler runs
+; through inject).
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -878,6 +873,9 @@ a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxx":b=7
 End Macro
-!big
-NPrint b
-End
+
+!TestCase{longest_text}
+  b.l=0
+  !big
+  !CheckEq{b,7,"expanded"}
+!EndTestCase

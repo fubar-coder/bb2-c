@@ -1,0 +1,22 @@
+# compiler-macro-textlen-max.test.bas: the compiler runs through inject with
+# track (the query compile.inject), the Macro Buffer of the defaults 100000
+# bytes.  The original's Macro Buffer keeps its 8192 bytes, and with another
+# size every compile of a driver hangs (#336, as compiler-macrobuff-size):
+# the old test's "Macro too Big" is not reached, the session ends at its
+# limit; a session of its own for the original compiler
+fixed-orig = 964
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=100000"]
+isolate = ["compiler=orig195"]
+timeout = 30
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"compile.inject" = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
