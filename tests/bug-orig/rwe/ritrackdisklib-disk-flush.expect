@@ -1,5 +1,0 @@
-[run]
-WriteSector: 0
-after MotorOff: 0 WRITTEN
-after CloseDisk: 0 WRITTEN
-rc=0

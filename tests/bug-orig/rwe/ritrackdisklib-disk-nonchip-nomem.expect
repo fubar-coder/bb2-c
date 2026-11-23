@@ -1,6 +1,0 @@
-[run]
-chip left: 0
-ReadSector 1,0,fb: 31 FB
-WriteSector 1,0,fb: 31
-ReadSector 1,0,fb: 0 SECTOR 0000
-rc=0

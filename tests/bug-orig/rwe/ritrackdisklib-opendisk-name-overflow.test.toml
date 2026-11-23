@@ -1,0 +1,9 @@
+# ritrackdisklib-opendisk-name-overflow.test.bas: the original halts the CPU
+# when finit closes the unit with the overwritten request pointer
+fixed-orig = 860
+rwe = ["ritrackdisklib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
