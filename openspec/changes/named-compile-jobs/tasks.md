@@ -25,7 +25,7 @@ programs touched); emulator tests as named.
 ## 4. The users
 
 - [x] 4.1 `compiler/compiler-panic-remtask` and `rwe/rishapeslib-cludged-shape-pop`: `@DATA:victim.bas@` in `jobline`, the comments without `b000`; verify: panic-remtask REPRODUCED in `ctest --preset bug-orig -R compiler-panic-remtask` and its originals side as declared; rishapeslib keeps its verdicts on both sides (`ctest --preset emulator -R rishapeslib-cludged-shape-pop`, originals with the CD)
-- [ ] 4.2 `compiler/compiler-racing-stripe-wide` (#980) to `ID.test.bas`/`ID.test.toml` (design D6), the old files removed and the includes kept as test data in the same commit, `docs/testing-old-form.md` section 5 without it; verify: FIXED on the side port, the original cells pass as declared (with the CD), the prev comparison (`-DBLITZ2_PREV=ON`) passes for it, fix-scope reports only the move
+- [x] 4.2 `compiler/compiler-racing-stripe-wide` (#980) to `ID.test.bas`/`ID.test.toml` (design D6), the old files removed and the includes kept as test data in the same commit, `docs/testing-old-form.md` section 5 without it; verify: FIXED on the side port, the original cells pass as declared (with the CD), the prev comparison (`-DBLITZ2_PREV=ON`) passes for it, fix-scope reports only the move
 
 ## Workflow follow-up
 
