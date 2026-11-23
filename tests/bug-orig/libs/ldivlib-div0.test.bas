@@ -4,12 +4,20 @@
 ; positive.
 ; Correct: the result has the sign of the dividend: -$7FFFFFFF for a
 ; negative dividend, $7FFFFFFF for a positive one and for 0.
-; @fixed #200
-; @configs clib
-a.l=-5 : b.l=0
-NPrint "a ",a/b
-a=5 : NPrint "b ",a/b
-a=0 : NPrint "c ",a/b
-q.q=-5 : r.q=0 : s.q=q/r : NPrint "d ",Hex$(Peek.l(&s))
-q=5 : s=q/r : NPrint "e ",Hex$(Peek.l(&s))
-End
+DEFTYPE .l
+
+!TestCase{long_div0}
+  a=-5 : b=0
+  !CheckEq{a/b,-2147483647,"negative"}
+  a=5
+  !CheckEq{a/b,2147483647,"positive"}
+  a=0
+  !CheckEq{a/b,2147483647,"zero"}
+!EndTestCase
+
+!TestCase{quick_div0}
+  q.q=-5 : r.q=0 : s.q=q/r
+  !CheckEq{Peek.l(&s),$80000001,"negative"}
+  q=5 : s=q/r
+  !CheckEq{Peek.l(&s),$7FFFFFFF,"positive"}
+!EndTestCase

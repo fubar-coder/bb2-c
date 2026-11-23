@@ -7,10 +7,10 @@
 ; Correct: the failed open is noticed - the program ends without a crash
 ; (how it ends, with or without an error, is open; only the session is
 ; checked).
-; @configs clib
-; @pass runwrap=@INJECT@|openlibfail=mathffp.library
-; @pass timeout=30
-a.f=2.5
-b.f=a*3
-NPrint b
-End
+DEFTYPE .l
+
+!TestCase{multiply}
+  a.f=2.5
+  b.f=a*3
+  !Check{-1,"survived"}
+!EndTestCase

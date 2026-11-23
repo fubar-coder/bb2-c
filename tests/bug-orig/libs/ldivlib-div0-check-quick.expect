@@ -1,5 +1,0 @@
-[run]
-3.5
-before
-REQUESTER: AutoRequest body "GURU! - Division by Zero" *
-rc=0

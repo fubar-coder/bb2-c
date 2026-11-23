@@ -5,14 +5,13 @@
 ; division by 0 is the debugger's "GURU! - Division by Zero".
 ; Correct: with runtime error checking the division by 0 is "Division by
 ; Zero" (the error check of longdiv); a valid division first.
-; @fixed #200
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
-a.l=7 : b.l=2
-NPrint a/b
-b=0
-NPrint "before"
-c.l=a/b
-NPrint "after ",c
-End
+DEFTYPE .l
+
+!TestCase{divisor_zero}
+  a=7 : b=2
+  !CheckEq{a/b,3,"valid"}
+  b=0
+  !ExpectError{"Division by Zero","refused"}
+  c=a/b
+  !Check{0,"after"}
+!EndTestCase

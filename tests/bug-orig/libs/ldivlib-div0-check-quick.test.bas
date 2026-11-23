@@ -5,14 +5,14 @@
 ; division by 0 is the debugger's "GURU! - Division by Zero".
 ; Correct: with runtime error checking the division by 0 is "Division by
 ; Zero" (the error check of quickdiv); a valid division first.
-; @fixed #200
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
-a.q=7 : b.q=2
-NPrint a/b
-b=0
-NPrint "before"
-c.q=a/b
-NPrint "after ",c
-End
+DEFTYPE .l
+
+!TestCase{divisor_zero}
+  a.q=7 : b.q=2
+  t.q=a/b
+  !CheckQEq{t,3.5,"valid"}
+  b=0
+  !ExpectError{"Division by Zero","refused"}
+  c.q=a/b
+  !Check{0,"after"}
+!EndTestCase

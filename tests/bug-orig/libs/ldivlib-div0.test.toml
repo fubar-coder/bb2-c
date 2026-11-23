@@ -1,0 +1,8 @@
+# ldivlib-div0.test.bas: the original returns $7FFFFFFF for a negative dividend
+fixed-orig = 200
+
+[deviations."libs=cd"]
+"check.long_div0.negative" = "== fail"
+"check.long_div0.negative.actual" = "== 2147483647"
+"check.quick_div0.negative" = "== fail"
+"check.quick_div0.negative.actual" = "== $7FFFFFFF"

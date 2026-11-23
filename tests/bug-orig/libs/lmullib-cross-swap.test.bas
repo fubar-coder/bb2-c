@@ -5,11 +5,18 @@
 ; the product being cut to 32 bits.
 ; Correct: the product modulo 2^32: 196608*30000 = 1603272704,
 ; -196608*30000 = -1603272704, the Quick 300*300 = $5F900000.
-; @fixed #199
-; @configs clib
-a.l=196608 : b.l=30000
-NPrint "a ",a*b
-a=-196608 : NPrint "b ",a*b
-c.q=300 : d.q=300 : e.q=c*d : NPrint "c ",Hex$(Peek.l(&e))
-c=-300 : e=c*d : NPrint "d ",Hex$(Peek.l(&e))
-End
+DEFTYPE .l
+
+!TestCase{long_product}
+  a=196608 : b=30000
+  !CheckEq{a*b,1603272704,"positive"}
+  a=-196608
+  !CheckEq{a*b,-1603272704,"negative"}
+!EndTestCase
+
+!TestCase{quick_product}
+  c.q=300 : d.q=300 : e.q=c*d
+  !CheckEq{Peek.l(&e),$5F900000,"positive"}
+  c=-300 : e=c*d
+  !CheckEq{Peek.l(&e),$A0700000,"negative"}
+!EndTestCase
