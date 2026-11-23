@@ -1,0 +1,20 @@
+# rundebuglib-ctrlc-edit.test.bas: with runtime error checking; the
+# original's child is not stopped
+fixed-orig = 43
+runtime-errors = "on"
+timeout = 60
+
+[data]
+"child-s.bas" = "basic-compile"
+"child-f.bas" = "basic-compile"
+"input.txt" = "copy"
+
+[deviations."libs=cd"]
+"check.edit_str.rc" = "== fail"
+"check.edit_str.rc.actual" = "== 0"
+"check.edit_str.printed" = "== fail"
+"check.edit_str.printed.actual" = "== \"edit$ not stopped\n\""
+"check.edit_num.rc" = "== fail"
+"check.edit_num.rc.actual" = "== 0"
+"check.edit_num.printed" = "== fail"
+"check.edit_num.printed.actual" = "== \"edit not stopped\n\""

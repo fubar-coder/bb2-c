@@ -26,6 +26,10 @@
  *   broken       REASON                   the library's state is broken
  *   incomplete                            the finit found a block open
  *   end                                   the finit
+ *   run          K                        a program is started (!RunProgram)
+ *   runend       K RC|-                   it returned: its return code (a
+ *                                         long value), `-` where the system
+ *                                         gives none (Kickstart 1.x)
  *
  * K and a length are decimal (0 to 4294967295, no sign, no leading zero),
  * a long value (also the 32 bits of a quick or an FFP float) and a CRC32
@@ -74,7 +78,9 @@ enum basictest_kind {
     BASICTEST_INCOMPLETE,
     BASICTEST_END,
     BASICTEST_CHECKQ,
-    BASICTEST_CHECKFLT
+    BASICTEST_CHECKFLT,
+    BASICTEST_RUN,
+    BASICTEST_RUNEND
 };
 
 /** @brief The blocks of a `block` entry. */
@@ -102,6 +108,8 @@ struct basictest_str {
  *   require       k (always broken)
  *   expect-error  k
  *   broken        reason
+ *   run           k
+ *   runend        k, ok (1: the return code is known), actual (it)
  */
 struct basictest_entry {
     int kind;                   /* enum basictest_kind */

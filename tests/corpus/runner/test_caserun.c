@@ -593,6 +593,48 @@ static void test_prev_pass(void)
     stale = cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur);
     CHECK(stale && !strcmp(stale, "blitz2_x_prev:x-runerrs"));
     CHECK(!cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur));
+    /* the data sources of a test (change basic-test-local-data): source=SRC|ID/FILE and their
+       entries; a pass of the data alone has no driver source */
+    {
+        static const char *const dsrc[] = { "/w/d/b002.bb2", "/w/d/b003.bb2" };
+        static const char *const dname[] = { "x/child.bas", "x/errs.bas-runerrs" };
+        static const char *const dent[] = { "blitz2_x_prev:x/child.bas", "other_prev:x/errs.bas-runerrs", "ON" };
+
+        CHECK(cr_prev_data("blitz2_x_prev", dsrc, dname, 2, dent, 3, &p) == 0);
+        CHECK(p && !strcmp(p, "source=/w/d/b002.bb2|x/child.bas\nintended=blitz2_x_prev:x/child.bas\n"
+                              "source=/w/d/b003.bb2|x/errs.bas-runerrs\n"));
+        free(p);
+        CHECK(cr_prev_data("blitz2_x_prev", dsrc, dname, 0, dent, 3, &p) == 0 && p && !*p);
+        free(p);
+        CHECK(cr_prev_pass("config=c0|ref|/b|/d|/a\nsource=/s.bb2\n", "t_prev", "", "/w", NULL, "/p/b", "/p", NULL,
+                           0, &p, err, sizeof err) == 0);
+        CHECK(p && !strstr(p, "source="));
+        free(p);
+        /* a source with its name parses (corpus.h source=PATH|NAME) */
+        {
+            struct corpus_pass cp2;
+            char perr[400];
+
+            CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nrun=off\nconfig=clib|ref|/b|/d|/a\nconfig=prev|exe:clib|/p|/q|/r\n"
+                               "source=/w/d/b002.bb2|x/child.bas\nsource=/w/x.bb2\n", &cp2, perr, sizeof perr) == 0);
+            {
+                char *n0 = corpus_source_name(&cp2, 0), *n1 = corpus_source_name(&cp2, 1);
+
+                CHECK(n0 && !strcmp(n0, "x/child.bas") && n1 && !strcmp(n1, "x"));
+                free(n0);
+                free(n1);
+                n0 = corpus_source_file(&cp2, 0);
+                n1 = corpus_source_file(&cp2, 1);
+                CHECK(n0 && !strcmp(n0, "n000") && n1 && !strcmp(n1, "x"));
+                free(n0);
+                free(n1);
+            }
+            corpus_free(&cp2);
+            CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nrun=off\nconfig=clib|ref|/b|/d|/a\nconfig=prev|exe:clib|/p|/q|/r\n"
+                               "source=/w/d/b002.bb2|../child\n", &cp2, perr, sizeof perr) == -1
+                  && strstr(perr, "source=PATH[|NAME]"));
+        }
+    }
 }
 
 /* ------------------------------------------------- the run of all cases */
@@ -652,6 +694,28 @@ static void test_case_alone(void)
     CHECK(alone_of(&t, &src, "b") == 0);
     CHECK(alone_of(&t, &src, "e") == 1);
     unload(&t);
+    tp_free(&src);
+    /* a case that starts a program runs on its own (basic-test-local-data);
+       one started in a procedure makes every case run on its own */
+    put("al/r.test.bas", "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
+                         "!TestCase{r}\n  *p.TLRun=!RunProgram{\"Echo x\",\"x\"}\n!EndTestCase\n");
+    put("al/p.test.bas", "Statement st{}\n  *p.TLRun=!RunProgram{\"Echo x\"}\nEnd Statement\n"
+                         "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n");
+    if (!process("al/r.test.bas", &src)) {
+        load(&t, "al/r.test.bas", ENV_RUNNER);
+        CHECK(alone_of(&t, &src, "a") == 0);
+        CHECK(alone_of(&t, &src, "r") == 1);
+        unload(&t);
+        tp_free(&src);
+    }
+    if (!process("al/p.test.bas", &src)) {
+        load(&t, "al/p.test.bas", ENV_RUNNER);
+        CHECK(alone_of(&t, &src, "a") == 1);
+        unload(&t);
+        tp_free(&src);
+    }
+    if (process("al/s.test.bas", &src))
+        return;
     for (size_t q = 0; q < sizeof whole / sizeof whole[0]; q++) {
         char *toml = str_printf("[asserts.\"case=b\"]\n%s = \"%s\"\n", whole[q][0], whole[q][1]);
 
@@ -1129,6 +1193,79 @@ static void test_side_status(void)
     tp_free(&src);
 }
 
+/* the pass lines of the test-local data (cr_data_pass, change
+   basic-test-local-data D3): copy and mktestdata as files, a data source of
+   the cell's build configuration in its job list, the others in compile
+   parts of their own, one per build configuration */
+static void test_data_pass(void)
+{
+    static const char *const built[] = { "/w/d/in.txt", "/w/d/d001", "/w/d/b002.bb2", "/w/d/b003.bb2",
+                                         "/w/d/b004.bb2", "/w/d/b005.bb2" };
+    struct t t;
+    char err[600], *p;
+
+    put("data/tests.toml", "root = true\n");
+    put("data/x.test.bas", "!TestCase{a}\n!EndTestCase\n");
+    put("data/x.test.toml",
+        "[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n"
+        "[data]\n\"in.txt\" = \"copy\"\n\"cmap.spec\" = \"mktestdata\"\n\"same.bas\" = \"basic-compile\"\n"
+        "[data.\"port.bas\"]\naction = \"basic-compile\"\ncompiler = \"port\"\n"
+        "[data.\"runerr.bas\"]\naction = \"basic-compile\"\nruntime-errors = \"on\"\n"
+        "[data.\"port2.bas\"]\naction = \"basic-compile\"\ncompiler = \"port\"\n");
+    load(&t, "data/x.test.bas", ENV_RUNNER);
+    if (!t.ok)
+        return;
+    /* the cell port,clib: port.bas and port2.bas are the cell's, runerr.bas a part */
+    CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "port,clib"), &t.env, built, &p, err, sizeof err) == 0);
+    CHECK(p && !strcmp(p, "file=x.test/in.txt|/w/d/in.txt\n"
+                          "file=x.test/cmap|/w/d/d001\n"
+                          "build_job=-|/w/d/b002.bb2|x.test/same\n"
+                          "build_job=-|/w/d/b003.bb2|x.test/port\n"
+                          "build=x.test/.build-1|/b/blitz2|/b/deflibs|/b/acidlibs|on\n"
+                          "build_job=x.test/.build-1|/w/d/b004.bb2|x.test/runerr\n"
+                          "build_job=-|/w/d/b005.bb2|x.test/port2\n"));
+    free(p);
+    /* the cell orig195,cd: the two port sources share one part */
+    CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, built, &p, err, sizeof err) == 0);
+    CHECK(p && !strcmp(p, "file=x.test/in.txt|/w/d/in.txt\n"
+                          "file=x.test/cmap|/w/d/d001\n"
+                          "build_job=-|/w/d/b002.bb2|x.test/same\n"
+                          "build=x.test/.build-1|/b/blitz2|/cd/DEFLIBS|/cd/ACIDLIBS|off\n"
+                          "build_job=x.test/.build-1|/w/d/b003.bb2|x.test/port\n"
+                          "build=x.test/.build-2|/b/ref/blitz2|/cd/DEFLIBS|/cd/ACIDLIBS|on\n"
+                          "build_job=x.test/.build-2|/w/d/b004.bb2|x.test/runerr\n"
+                          "build_job=x.test/.build-1|/w/d/b005.bb2|x.test/port2\n"));
+    /* the pass with them parses */
+    {
+        char *cp = NULL, *all;
+        struct corpus_pass cpass;
+        char perr[400];
+
+        CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, "c0", "/w/run", "/w/run/test.bb2", &cp,
+                           err, sizeof err) == 0);
+        all = str_printf("%s%s", cp ? cp : "", p ? p : "");
+        int parsed = all && corpus_parse(all, &cpass, perr, sizeof perr) == 0;
+
+        CHECK(parsed);
+        if (parsed) {
+            CHECK(cpass.nbuilds == 2 && cpass.nbjobs == 4 && !cpass.bjobs[0].part
+                  && !strcmp(cpass.bjobs[1].part, "x.test/.build-1"));
+            corpus_free(&cpass);
+        }
+        free(all);
+        free(cp);
+    }
+    free(p);
+    unload(&t);
+    /* a runner value the environment lacks */
+    load(&t, "data/x.test.bas", "[runner]\nblitz2 = \"/b/blitz2\"\n");
+    if (t.ok) {
+        CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, built, &p, err, sizeof err) == -1
+              && strstr(err, "no runner value"));
+        unload(&t);
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1158,6 +1295,7 @@ int main(int argc, char **argv)
     test_isolate_keys();
     test_verdict_order();
     test_side_status();
+    test_data_pass();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

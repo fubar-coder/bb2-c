@@ -1,0 +1,10 @@
+# palettelib-make4bitrgbs-lowbyte.test.bas: the original's 4 bit colours
+# are black
+fixed-orig = 224
+
+[data]
+"child.bas" = "basic-compile"
+
+[deviations."libs=cd"]
+"check.agamode_zero.printed" = "== fail"
+"check.agamode_zero.printed.actual" = "== \"exec 37\ncols 0,0,0 0,0,0 0,0,0\n\""

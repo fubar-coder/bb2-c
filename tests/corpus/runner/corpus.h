@@ -104,7 +104,14 @@
  *                     file is an error before any session (exit status 2).
  *                     Not with run=off or expect=.  corpus_update writes the
  *                     files instead (corpusrun pass --update-expect)
- *   source=PATH       a tokenised source (NAME.bb2), any number
+ *   source=PATH[|NAME]
+ *                     a tokenised source (NAME.bb2), any number; with NAME
+ *                     (a path inside the volume, e.g. ID/child.bas: the
+ *                     data source of a test of the BASIC test model in the
+ *                     comparison with the prev build) its name in the report
+ *                     and the PREV_INTENDED entries (its files in the volume
+ *                     are src/nNNN.bb2 and out/nNNN, NNN its number among
+ *                     the sources)
  *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
  *                     entries, lib/previntended)
  *   intended=ENTRY    a PREV_INTENDED entry (TEST:NAME, or ON; any number;
@@ -236,6 +243,22 @@
  *                     corpusrun case, never run by corpus_run, which judges
  *                     nothing of it.  Not with expect=, expect_dir=, orig=,
  *                     fixed=, regression=on, record=, gate=, publish=
+ *   build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off
+ *                     with cell=on: a compile part of the cell's own (the
+ *                     data of a test that another build configuration
+ *                     compiles, change basic-test-local-data): BLITZ2, the
+ *                     ted= stub and the libraries staged in CORPUS:DIR/blitz2/
+ *                     (DIR inside the volume, e.g. ID.test/.build-1), its job
+ *                     list CORPUS:DIR/jobs (log CORPUS:DIR/session.log,
+ *                     runtime error checking on or off), compiled before the
+ *                     cell's compile with blitz2: assigned to it, the output
+ *                     CORPUS:DIR/blitz2.out with rc=N behind it; any number
+ *   build_job=PART|SRC|DEST
+ *                     with cell=on: the tokenised source SRC staged and
+ *                     compiled to CORPUS:DEST (parent directories made), as
+ *                     job bNNN (NNN its number among these lines, from 000)
+ *                     of the cell's job list (PART -) or of the part PART
+ *                     (the DIR of a build= line); any number
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -298,6 +321,7 @@ struct corpus_pass {
     struct corpus_config *configs;
     size_t nconfigs;
     char **sources;
+    char **source_names;                /* source=PATH|NAME: NAME, NULL: corpus_name */
     size_t nsources;
     char **mount_name, **mount_dir;
     size_t nmounts;
@@ -308,6 +332,26 @@ struct corpus_pass {
     char **uae;                         /* KEY=VALUE */
     size_t nuae;
     char *floppy[CORPUS_FLOPPIES];      /* floppy=N|SRC: the image of drive DFN, NULL = none */
+    struct corpus_build *builds;        /* build=: the compile parts of a cell */
+    size_t nbuilds;
+    struct corpus_build_job *bjobs;     /* build_job=: the data sources of a cell */
+    size_t nbjobs;
+};
+
+/* build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off (cell=on): a compile part of its
+   own before the cell's compile, its compiler in CORPUS:DIR/blitz2/ */
+struct corpus_build {
+    char *dir, *blitz2, *deflibs, *acidlibs;
+    int runtime_errors;
+};
+
+/* build_job=PART|SRC|DEST (cell=on): the tokenised source SRC compiled to
+   CORPUS:DEST, in the cell's job list (PART "-") or in the part PART (the
+   DIR of a build= line); its job is bNNN, NNN its number among the
+   build_job= lines */
+struct corpus_build_job {
+    char *part;                         /* NULL: the cell's job list */
+    char *src, *dest;
 };
 
 
@@ -409,6 +453,15 @@ int corpus_expect_diff(const uint8_t *want, size_t wlen, const uint8_t *got, siz
 
 /* the name of a source without directory and .bb2 (malloc'd) */
 char *corpus_name(const char *source);
+
+/* the name of source i of p: the NAME of source=PATH|NAME, else
+   corpus_name (malloc'd) */
+char *corpus_source_name(const struct corpus_pass *p, size_t i);
+
+/* the name of the files of source i in the volume: corpus_name, or nNNN
+   (NNN = i) for a source=PATH|NAME (src/nNNN.bb2, out/nNNN: a NAME with a
+   directory would meet the file of another source); malloc'd */
+char *corpus_source_file(const struct corpus_pass *p, size_t i);
 
 /* zero the 8 bytes behind every trap #1 ($4E41) and trap #4 ($4E44) */
 void corpus_mask_traps(uint8_t *data, size_t len);

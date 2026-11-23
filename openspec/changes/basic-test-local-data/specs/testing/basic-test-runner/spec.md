@@ -66,7 +66,7 @@ A case that holds a `!RunProgram` SHALL run on its own in the run of all cases. 
 - **THEN** the query `requester` of that case holds it, and no other case of the source is judged from that run
 
 ### Requirement: Queries of a started program
-The queries `run.NS.NAME` (`done` it returned, `open` it did not, `not-run`), `run.NS.NAME.rc` (its return code; `CMP integer`, `exists`) and `run.NS.NAME.output` (what it wrote; the string predicates) SHALL judge the program the `!RunProgram` named `NAME` started; they are for what the case cannot check itself (a run that does not return, its output then). The default SHALL be `run.NS.NAME == done` for every one that ran; the return code has no default (the case checks it with `r\rc`).
+The queries `run.NS.NAME` (`done` it returned, `open` it did not, `not-run`), `run.NS.NAME.rc` (its return code; `CMP integer`, `exists`) and `run.NS.NAME.output` (what it wrote; the string predicates) SHALL judge the program the `!RunProgram` named `NAME` started; they are for what the case cannot check itself (a run that does not return, its output then). The default SHALL be `run.NS.NAME == done` for every one that ran; the return code has no default (the case checks it with `*r\rc`).
 
 #### Scenario: The output of a child that hangs
 - **WHEN** a started child prints `cols 0,0,0` and then hangs until the hang check ends the session

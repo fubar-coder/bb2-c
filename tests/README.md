@@ -88,6 +88,13 @@ a string literal, under which the check is reported:
 | `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
 | `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
 
+A case starts a program with `!RunProgram{COMMAND$}` (also with a name as
+an extra last argument), which stands in an expression:
+`*r.TLRun=!RunProgram{"@TESTDIR@/child <NIL:","child"}` runs the command
+line and gives the address of its result, the NewType `TLRun` of the macro
+text, whose fields the case checks through the pointer, `*r\FIELD`
+([A started program](#a-started-program)).
+
 `COND` of `!Check` and `!Require` is evaluated in a Long context. With
 the original compilers a Quick variable or function value fetched while
 the type so far is Long (the Long parameter, or a Long left operand) is
@@ -141,6 +148,7 @@ reaches the program:
 | `!CheckStrEq{ACTUAL$,EXPECTED$}` | `!CheckStrEq{K,ACTUAL$,EXPECTED$}` |
 | `!Require{COND}` | `!Require{K,COND}` |
 | `!ExpectError{"MESSAGE"}` | `!ExpectError{K}` |
+| `!RunProgram{COMMAND$}` | `!RunProgram{K,COMMAND$}` (also inside an expression) |
 
 The example above becomes:
 
@@ -192,12 +200,15 @@ end have the fixed labels `tc__init`, `tc__init_end`, `tc__final` and
 | `TLCheckStr K,expected$,actual$` | `!CheckStrEq` | |
 | `TLRequire K,cond` | `!Require` | |
 | `TLExpectError K` | `!ExpectError` | |
+| `r=TLRunProgram(K,command$)` | `!RunProgram` | starts the command line, gives the address of its result (below) |
 | (finit) | the end of the program | writes `incomplete` if a block is open, then `end` |
 
 The library is `libs/userlibs/testlib` (user library 81, built as
 `variants/bb2-2.10/userlibs/testlib/testlib.obj`; its logic `tlcore.c`
 has the host test `testlib_core`). Between `TLBegin` and the end of the
-run it allocates and frees nothing, and every routine keeps `d2`-`d7`
+run it allocates and frees nothing but in `TLRunProgram` (what the system
+and the started program take is theirs; the library opens and closes the
+program's output file and `NIL:` around the start), and every routine keeps `d2`-`d7`
 and `a2`-`a6` besides the registers of the register rule (the free
 memory is the same before and after each routine with the result file
 on `CORPUS:out/`; a handler that keeps the file in the Amiga's memory
@@ -228,6 +239,60 @@ routines name:
   name or with one too long for a line is written as `?`, followed by
   `case without a name` or `case name too long`. A state whose guard words a wild write changed writes `broken
   state damaged` once; after that only the finit writes, its `end`.
+
+### A started program
+
+`TLRunProgram(K,command$)` (the macro `!RunProgram{K,COMMAND$}`) writes
+`run K`, runs the command line as a shell takes it (arguments and
+redirections; the input is `NIL:` unless the line redirects it) with its
+output to `CORPUS:out/run-K.out`, waits for its end (there is no time
+limit: the session's hang check ends a program that hangs), writes
+`runend K` with the return code, and gives the address of its result. From
+Kickstart 2.0 it runs the line with dos `SystemTagList`, which gives the
+return code; on Kickstart 1.x with `Execute`, which gives none: the entry
+is `runend K -` then. Outside a block and in Blitz mode (also under
+`Forbid` or `Disable`) it starts nothing and writes `broken` with the
+reason `run outside a block` or `run in Blitz mode`. The macro text
+declares the result:
+
+```
+NEWTYPE .TLRun
+  rc.l          ; the return code, 0 if unknown
+  rcknown.w     ; -1: the system gave it; 0: it gave none (Kickstart 1.x)
+  cut.w         ; -1: printed holds only the first 1024 bytes
+  size.l        ; the bytes the program wrote
+  printed.s     ; the first 1024 bytes of its output, as they are
+End NEWTYPE
+```
+
+The result is one static block of the library, and the string of
+`printed` (a Blitz string: its length as a long before the characters, a
+0 behind them) is in the library's static memory. Read it through the
+pointer (`*r\rc`, `x$=*r\printed`, `!CheckStrEq{*r\printed,...}`; `r\rc`
+without the `*` is another variable and does not compile) and never assign
+to a field: the program would free the library's memory. A later
+`!RunProgram` overwrites the block, so the address of an earlier run then
+shows the later one: a case that needs both copies the first
+(`a$=*r\printed`, `c=*r\rc`). An output longer than 1024 bytes is cut
+(`cut` -1, `size` the whole length; the query `run.NS.NAME.output` sees
+the whole file). The shell's own line for a return code at or above the
+fail limit (`CMD failed returncode 20`) is part of the output. A case that
+starts a program runs on its own in the run of all cases, so the
+requesters, the crash or the hang of the program are that case's
+observations.
+
+A case that starts `@TESTDIR@/child` (`K` 0), which returns 20, and checks
+`*r\rc` (`K` 1) gives:
+
+```basictest-result
+begin	1
+block	case	ctrlc
+run	0
+runend	0	$00000014
+check	1	ok	$00000014	$00000014
+blockend
+end
+```
 
 ### The result file
 
@@ -262,6 +327,8 @@ string value by length and CRC32, so they hold for cut values as well;
 | `expect-error` | `K` | |
 | `blockend` | | the block ended |
 | `broken` | a reason (string value) | |
+| `run` | `K` | a program is started (`!RunProgram`) |
+| `runend` | `K`, the return code (a long value) or `-` | it returned; `-` where the system gives no return code (Kickstart 1.x) |
 | `incomplete` | | the program ended inside a block |
 | `end` | | the last entry |
 
@@ -346,9 +413,45 @@ The keys from `compiler` to `jobline` are the **run settings**; `labels`,
 `cost` and `fixtures` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, `extension`, the tables `deviations` and `ends`) in a `tests.toml` or `root` in an
+`fixed`, `extension`, the tables `deviations`, `ends` and `data`) in a `tests.toml` or `root` in an
 `ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
 `fixed` must have none.
+
+**Test-local data.** A test may bring its own files: the directory
+`ID.test/` beside `ID.test.bas` (change `basic-test-local-data`). Its
+`ID.test.toml` declares each file in the table `data`, by its path
+relative to `ID.test/` (subdirectories allowed; no `..`, no `:`, no
+absolute path), with a build action; the data belong to one test, so the
+table is refused in a `tests.toml`. A file of `ID.test/` that the table
+does not declare, and a declared one that is not there, are errors of the
+registration. Each cell finds the built files under `CORPUS:ID.test/`
+(the placeholder `@TESTDIR@`) before its program runs.
+
+| Action | The file | What the cell gets | Options |
+|---|---|---|---|
+| `basic-compile` | `NAME.bas`, a Blitz source | the executable `CORPUS:ID.test/NAME`, compiled in the cell's emulator session before the driver | `compiler` (`same`, `port`, `orig195`, `orig210`), `libs` (`same`, `cd`, `clib`), `runtime-errors` (`same`, `on`, `off`); `same`, the cell's value, by default |
+| `copy` | any file | the file as it is | none |
+| `mktestdata` | `NAME.spec` | `NAME`, made on the host by `tools/mktestdata` | none |
+
+The short form `"FILE" = "ACTION"` in `[data]` takes the action with its
+defaults; a table `[data."FILE"]` per file sets the action and the
+options, one per line. A data source of `basic-compile` is tokenised with
+the cell's token list and gets the placeholders of a test source, but no
+check macro (its program has no result file). An unknown action or
+option, an option the action does not take, a value that is none of the
+option's, and a fixed option that needs original material (a compiler
+other than `port`, or `libs = "cd"`) in a test with a cell of the side
+port are errors naming file, line and key.
+
+```toml
+# an example, not a file of the tree: libs/editlib-edit-eof.test.toml
+[data]
+"input.txt" = "copy"
+
+[data."child.bas"]
+action = "basic-compile"
+runtime-errors = "on"
+```
 
 **The matrix.** The table `matrix` names the axes: each key a run
 setting that is no list, each value a non-empty list of its values as
@@ -391,13 +494,14 @@ An assertion judges what the program cannot state itself: a key `QUERY =
 query      = "rc" | "requester" | "compile" | "compile.log" | "output"
            | "serial" | "inject" | "session" | "end.case" | "end.run"
            | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
+           | "data." FILE | "run." NAMESPACE "." NAME [ ".rc" | ".output" ]
 predicate  = CMP value | ["not "] "contains" string | "matches" string
            | ["not "] "exists" | "count" CMP integer
 CMP        = "==" | "!=" | "<" | "<=" | ">" | ">="
 value      = integer | string | word
 integer    = ["-"] digits | "$" 1*8 hex-digits     ; "$": 32 bits, signed
 string     = '"' { char | '\"' | '\\' } '"'
-word       = "ok" | "fail" | "not-run" | "done" | "timeout" | "halt" | "none"
+word       = "ok" | "fail" | "not-run" | "done" | "open" | "timeout" | "halt" | "none"
 ```
 
 Blanks may stand around the operator and the value. `NAMESPACE` is the
@@ -413,6 +517,10 @@ name (a check that a configuration names must have one).
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
+| `data.FILE` | the compile of the data source `ID.test/FILE` ([Test-local data](#the-run-configuration)): `ok`, `error LINE MESSAGE` (the line of the data source) or `none`; by default `== ok`, and a result its assertion does not ask for makes the cases of the cell BROKEN | as `compile` |
+| `run.NS.NAME` | the program the `!RunProgram` named `NAME` in `NS` started, for what the case cannot check itself: `done` it returned, `open` it did not (it hung or crashed), `not-run`; by default `== done` for every program that ran | `==`/`!=` with `done`, `open`, `not-run` |
+| `run.NS.NAME.rc` | its return code (no default: the case checks `*r\rc`); where the system gave none (`runend K -`) the cell cannot be judged | `CMP integer`, `exists` |
+| `run.NS.NAME.output` | what it wrote, `CORPUS:out/run-K.out`, also when it did not return | `==`/`!=` string, `contains`, `matches`, `exists` |
 | `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string (decided by the length and CRC32 of the whole value, also of a cut one), `contains`, `matches` (strings; only on a value the library did not cut to fit the line: on a cut one the cell cannot be judged); a cut value is reported as its start with `(cut, length N)` |
 
 `contains` holds if the text (a requester, for `requester`) holds the
@@ -464,7 +572,7 @@ layout (it returns or hangs, crashes or not) declares its ends in the
 table `ends."SELECTOR"` of the test's own file: a required `reason` and
 under every other key a named alternative, a non-empty list of `QUERY
 PREDICATE` (the grammar above; the queries `session`, `rc`, `requester`,
-`end.case`, `end.run`, `output`, `check.*`). It is a declared deviation:
+`end.case`, `end.run`, `output`, `check.*`, `run.*`). It is a declared deviation:
 it applies where the deviations apply, counts for `fixed-orig` and
 `extension`, and is refused with `fixed` and in a `tests.toml`. There the
 queries the alternatives name leave the other assertions and the
@@ -518,6 +626,7 @@ model](#moving-a-bug-orig-test-to-the-model).
 |---|---|
 | `DIR/ID.test.bas` | the source: declarations and blocks (below); `ID` lower-case kebab-case |
 | `DIR/ID.test.toml` | its own configuration (optional): the run settings, the matrix, the assertions; `fixed-orig`/`fixed` and the deviations only here |
+| `DIR/ID.test/` | its own data (optional): the files its `ID.test.toml` declares in the table `data`, each with a build action ([Test-local data](#the-run-configuration)); a cell finds them built under `CORPUS:ID.test/` (`@TESTDIR@`) |
 | `DIR/tests.toml` | a directory's configuration, inherited by the tests below it |
 | `tests/tests.toml` | the root (`root = true`): the search for configuration files stops here |
 
@@ -534,8 +643,8 @@ original compiler or the CD's libraries; label `originals`). `PREFIX` is
 `bug_orig_` (`tests/bug-orig`, `regression/` `regression_`) or `blitz2_`;
 `-` of the id becomes `_`. The list is complete after the build, as with
 `gtest_discover_tests`: `ctest -N` before it does not show a new test.
-A changed source or configuration file registers again in the next
-build. A bug-orig test (all areas but `regression/`) must declare a
+A changed source or configuration file, or a file of `ID.test/` changed,
+added or removed, registers again in the next build. A bug-orig test (all areas but `regression/`) must declare a
 deviation of the original; without one it is BROKEN.
 
 ### Writing a test source
@@ -627,10 +736,11 @@ the rest, naming file and line):
   library keeps `d2`-`d7` and `a2`-`a6`, but not what the compiler leaves
   in other registers or in the string buffer).
 * **Placeholders**: `@LINE@` (the source line), `@CASE@` (the case the
-  line stands in), `@TEST@` (the id) and `@TESTDATA@` (`CORPUS:data`,
-  where `files = ["data/NAME|@TESTDATA@/NAME"]` stages test data) are
-  replaced in code and strings, not in comments; any other `@NAME@` is
-  refused.
+  line stands in), `@TEST@` (the id), `@TESTDATA@` (`CORPUS:data`,
+  where `files = ["data/NAME|@TESTDATA@/NAME"]` stages test data) and
+  `@TESTDIR@` (`CORPUS:ID.test`, the test's own data) are replaced in code
+  and strings, not in comments; any other `@NAME@` is refused. A data
+  source of `ID.test/` gets the same placeholders.
 
 Known limits of the compiler that a test meets (open issues):
 
@@ -2142,7 +2252,15 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     `model-prev-runerrs`: fail, STALE); `blitz2_model_driver_all_cases`
     (the driver calls every case) and `blitz2_selftest_model_driver_broken`
     (the command of the build step fails on a source whose driver cannot
-    be written).
+    be written). The data sources of the test's own data (`ID.test/FILE` of
+    the action `basic-compile`, change `basic-test-local-data`) are compiled
+    in the pass of their setting of `runtime-errors` (the cell's, or the
+    one their option fixes; a pass of their own when no cell of the side
+    has it), named `ID/FILE` and, with runtime error checking,
+    `ID/FILE-runerrs` (`selftest/model-local-data.test.bas`:
+    `blitz2_selftest_model_local_data_prev`, and with `hangstub` and the
+    driver's compiles named `_differs_prev`: fails naming the data
+    sources).
   * `ab3_cli_prev_N`: the cases of the block `ab3_cli_N` compiled by the
     previous commit's `blitz2-ab3` (`tests/ab3/cli-prev.cmake`, `cli.cmake`
     with `COMPILE_ONLY`; two emulator sessions at the same time): the
@@ -2170,6 +2288,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
 | `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
 | `blitz2_ID_prev:ID`, `blitz2_ID_prev:ID-runerrs` (and `bug_orig_`, `regression_`) for a test of the BASIC test model | its driver of all cases compiled without, with runtime error checking: the executable or the compile result of `prev` may differ from `clib`'s |
+| `blitz2_ID_prev:ID/FILE`, `blitz2_ID_prev:ID/FILE-runerrs` (and `bug_orig_`, `regression_`) | a data source `ID.test/FILE` of the test compiled without, with runtime error checking: the same |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
 | `corpus_exprmatrix_NAME:SOURCE`, `corpus_exprmatrix_runerr_NAME:SOURCE` | the source of a corpus pass of the expression matrix (one pass per source, e.g. `corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01`): its `prev` configuration may differ from `clib` |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
@@ -2878,6 +2997,32 @@ cells.
   line; name the moved tests in the commit message instead. A case the
   move changes in place (an old case with the same key whose value
   differs) is the one to look at.
+* **A test that starts a program.** An old test whose program runs
+  itself as a child (`NumPars`, `Par$`, dos `Execute` of its own name from
+  `GetProgramName`) moves with its child as test-local data: the child's
+  part of the program becomes `ID.test/child.bas` (the action
+  `basic-compile` in the table `data`; a file it reads becomes a `copy`
+  file), and the case starts it with `*r.TLRun=!RunProgram{"@TESTDIR@/child
+  <NIL:","child"}` ([A started program](#a-started-program)). The child
+  prints as before; the case checks `*r\rc` and `*r\printed` (the whole
+  output as one `!CheckStrEq`, the shell's line `CMD failed returncode N`
+  included), and the deviations declare the original's values with
+  `.actual`. The child's requesters, crash or hang are the case's: its
+  `requester`, and for a child that does not return `"run.CASE.child" =
+  "== open"` with `run.CASE.child.output`, `session`, `end.case`. What the
+  parent did around the start (a patched exec version, a moved VBR, a
+  trap vector of its own, a second program in the background with `Run`)
+  stays in the case around the `!RunProgram`; assembler and its data
+  stand in the case behind a `Goto`. On Kickstart 1.x the system gives no
+  return code (`*r\rcknown` 0). The moved examples:
+  `libs/editlib-edit-eof` (input from `NIL:`), `libs/rundebuglib-ctrlc-edit`
+  (input from a `copy` file, return code 20), `libs/rundebuglib-supertrap-d0-lost`
+  (a trap handler of the case), `libs/rundebuglib-two-programs` (a second
+  child in the background; the original's run stays open),
+  `libs/palettelib-make4bitrgbs-lowbyte` (exec's version patched),
+  `libs/multi-68010-vbr` (Kickstart 1.3, the original's child crashes) and
+  the case `end_of_program_run` of `libs/rundebuglib-printerr-numeric-code`
+  (a child that runs off its end).
 
 **Checklist for a move.**
 

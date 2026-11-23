@@ -539,6 +539,15 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
                               d->file, t->line);
             continue;
         }
+        if (!strcmp(name, "data")) {
+            if (!f->own)
+                return tc_err(err, errlen, "%s:%u: data is a table of a single test, valid only in its ID.test.toml "
+                              "(the data belong to one ID.test.bas)", d->file, t->line);
+            if (t->npath > 2)
+                return tc_err(err, errlen, "%s:%u: the table [data] has no sub tables but one per file "
+                              "([data.\"FILE\"])", d->file, t->line);
+            continue;           /* the entries: collect_data */
+        }
         if (!strcmp(name, "ends")) {
             int reason = 0;
             size_t alts = 0;
@@ -592,6 +601,8 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
                 return -1;
             continue;
         }
+        if (!strcmp(e->table[0], "data"))
+            continue;           /* collect_data */
         if (!strcmp(e->table[0], "ends")) {
             if (!strcmp(e->key, "reason")) {
                 if (e->value.type != TT_STRING || !*e->value.str)
@@ -636,6 +647,12 @@ void tc_free(struct tc_config *c)
     for (size_t i = 0; i < c->nends; i++)
         tc_tabkey_free(&c->ends[i]);
     free(c->ends);
+    for (size_t i = 0; i < c->ndata; i++) {
+        free(c->data[i].file);
+        for (int k = 0; k < TC_DO_N; k++)
+            free(c->data[i].opt[k]);
+    }
+    free(c->data);
     for (size_t i = 0; i < c->nfiles; i++)
         free(c->files[i]);
     free(c->files);
@@ -752,6 +769,8 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
                 struct tc_tabkey **v;
                 size_t *n, j;
 
+                if (!strcmp(tab, "data"))
+                    continue;           /* collect_data */
                 if (!strcmp(tab, "matrix")) {
                     v = &c->matrix;
                     n = &c->nmatrix;
@@ -782,6 +801,202 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
             }
         }
     }
+    return 0;
+}
+
+/* ------------------------------------------------------------ test-local data */
+
+static const char *const dactions[] = { "basic-compile", "copy", "mktestdata" };
+static const char *const dopts[TC_DO_N] = { "compiler", "libs", "runtime-errors" };
+static const char *const dvalues[TC_DO_N] = { "same|port|orig195|orig210", "same|cd|clib", "same|on|off" };
+
+const char *tc_daction_name(int action)
+{
+    return action >= 0 && action < (int)(sizeof dactions / sizeof dactions[0]) ? dactions[action] : "?";
+}
+
+const char *tc_dopt_name(int opt)
+{
+    return opt >= 0 && opt < TC_DO_N ? dopts[opt] : "?";
+}
+
+char *tc_data_result(const struct tc_data *d)
+{
+    const char *suffix = d->action == TC_DA_BASIC_COMPILE ? ".bas" : d->action == TC_DA_MKTESTDATA ? ".spec" : "";
+    size_t n = strlen(d->file), sl = strlen(suffix);
+    char *r;
+
+    if (sl && n > sl && !strcmp(d->file + n - sl, suffix))
+        n -= sl;
+    if ((r = malloc(n + 1))) {
+        memcpy(r, d->file, n);
+        r[n] = 0;
+    }
+    return r;
+}
+
+static int in_values(const char *values, const char *v)
+{
+    struct tc_keydef def = { 0 };
+
+    def.values = values;
+    return tc_enum_ok(&def, v);
+}
+
+static int daction_of(const char *name)
+{
+    for (size_t i = 0; i < sizeof dactions / sizeof dactions[0]; i++)
+        if (!strcmp(dactions[i], name))
+            return (int)i;
+    return -1;
+}
+
+/* a path relative to ID.test/: not empty, not absolute, no ":" or "\",
+   no empty, "." or ".." part; msg the reason */
+static int data_path_ok(const char *p, char *msg, size_t msglen)
+{
+    const char *s = p;
+
+    if (!*p)
+        return snprintf(msg, msglen, "an empty path"), 0;
+    if (*p == '/')
+        return snprintf(msg, msglen, "an absolute path (the path is relative to the test's directory ID.test/)"), 0;
+    if (strchr(p, ':'))
+        return snprintf(msg, msglen, "a \":\" in the path (an Amiga path)"), 0;
+    if (strchr(p, '\\'))
+        return snprintf(msg, msglen, "a \"\\\" in the path"), 0;
+    for (;;) {
+        const char *e = strchr(s, '/');
+        size_t n = e ? (size_t)(e - s) : strlen(s);
+
+        if (n == 0)
+            return snprintf(msg, msglen, "an empty part of the path"), 0;
+        if ((n == 1 && s[0] == '.') || (n == 2 && s[0] == '.' && s[1] == '.'))
+            return snprintf(msg, msglen, "a part \"%.*s\" of the path (the data stay in ID.test/)", (int)n, s), 0;
+        if (!e)
+            return 1;
+        s = e + 1;
+    }
+}
+
+static struct tc_data *find_data(const struct tc_config *c, const char *file)
+{
+    for (size_t i = 0; i < c->ndata; i++)
+        if (!strcmp(c->data[i].file, file))
+            return &c->data[i];
+    return NULL;
+}
+
+static int add_data(struct tc_config *c, const char *file, int action, unsigned line)
+{
+    struct tc_data *v = realloc(c->data, (c->ndata + 1) * sizeof *v);
+
+    if (!v)
+        return -1;
+    c->data = v;
+    v += c->ndata;
+    memset(v, 0, sizeof *v);
+    v->action = action;
+    v->at.file = c->files[0];
+    v->at.line = line;
+    if (!(v->file = tc_strdup(file)))
+        return -1;
+    c->ndata++;
+    return 0;
+}
+
+static int by_line(const void *a, const void *b)
+{
+    const struct tc_data *x = a, *y = b;
+
+    return (x->at.line > y->at.line) - (x->at.line < y->at.line);
+}
+
+/* the table data of the test's own file f (check_file let it through) */
+static int collect_data(struct tc_config *c, const struct cfile *f, char *err, size_t errlen)
+{
+    const struct tt_doc *d = &f->doc;
+    char msg[200];
+
+    /* the tables [data."FILE"] */
+    for (size_t i = 0; i < d->ntables; i++) {
+        const struct tt_table *t = &d->tables[i];
+
+        if (strcmp(t->path[0], "data") || t->npath != 2)
+            continue;
+        if (!data_path_ok(t->path[1], msg, sizeof msg))
+            return tc_err(err, errlen, "%s:%u: data \"%s\": %s", d->file, t->line, t->path[1], msg);
+        if (add_data(c, t->path[1], -1, t->line))
+            return tc_err(err, errlen, "out of memory");
+    }
+    /* the short form and the keys of the tables */
+    for (size_t i = 0; i < d->n; i++) {
+        const struct tt_entry *e = &d->e[i];
+        struct tc_data *dt;
+        int k;
+
+        if (e->ntable == 0 || strcmp(e->table[0], "data"))
+            continue;
+        if (e->ntable == 1) {
+            int a;
+
+            if (!data_path_ok(e->key, msg, sizeof msg))
+                return tc_err(err, errlen, "%s:%u: data \"%s\": %s", d->file, e->line, e->key, msg);
+            if (e->value.type != TT_STRING)
+                return tc_err(err, errlen, "%s:%u: data \"%s\": the action must be a string, not a%s %s", d->file,
+                              e->line, e->key, e->value.type == TT_INTEGER ? "n" : "", tt_type_name(e->value.type));
+            if ((a = daction_of(e->value.str)) < 0)
+                return tc_err(err, errlen, "%s:%u: data \"%s\": unknown action \"%s\" (basic-compile, copy, "
+                              "mktestdata)", d->file, e->line, e->key, e->value.str);
+            if (add_data(c, e->key, a, e->line))
+                return tc_err(err, errlen, "out of memory");
+            continue;
+        }
+        dt = find_data(c, e->table[1]);
+        if (!dt)
+            continue;           /* not reached: every table was added */
+        if (e->value.type != TT_STRING)
+            return tc_err(err, errlen, "%s:%u: data \"%s\": %s must be a string, not a%s %s", d->file, e->line,
+                          dt->file, e->key, e->value.type == TT_INTEGER ? "n" : "", tt_type_name(e->value.type));
+        if (!strcmp(e->key, "action")) {
+            if ((dt->action = daction_of(e->value.str)) < 0)
+                return tc_err(err, errlen, "%s:%u: data \"%s\": unknown action \"%s\" (basic-compile, copy, "
+                              "mktestdata)", d->file, e->line, dt->file, e->value.str);
+            continue;
+        }
+        for (k = 0; k < TC_DO_N && strcmp(dopts[k], e->key); k++)
+            ;
+        if (k == TC_DO_N)
+            return tc_err(err, errlen, "%s:%u: data \"%s\": unknown option %s (action, compiler, libs, "
+                          "runtime-errors)", d->file, e->line, dt->file, e->key);
+        if (!in_values(dvalues[k], e->value.str))
+            return tc_err(err, errlen, "%s:%u: data \"%s\": %s must be one of %s, not \"%s\"", d->file, e->line,
+                          dt->file, e->key, dvalues[k], e->value.str);
+        free(dt->opt[k]);
+        if (!(dt->opt[k] = tc_strdup(e->value.str)))
+            return tc_err(err, errlen, "out of memory");
+        dt->optline[k] = e->line;
+    }
+    /* every table has its action, and only basic-compile takes options */
+    for (size_t i = 0; i < c->ndata; i++) {
+        struct tc_data *dt = &c->data[i];
+
+        if (dt->action < 0)
+            return tc_err(err, errlen, "%s:%u: the table [data.\"%s\"] has no action (basic-compile, copy, "
+                          "mktestdata)", d->file, dt->at.line, dt->file);
+        for (int k = 0; k < TC_DO_N; k++) {
+            if (dt->action != TC_DA_BASIC_COMPILE) {
+                if (dt->opt[k])
+                    return tc_err(err, errlen, "%s:%u: data \"%s\": the action %s takes no option %s", d->file,
+                                  dt->optline[k], dt->file, dactions[dt->action], dopts[k]);
+                continue;
+            }
+            if (!dt->opt[k] && !(dt->opt[k] = tc_strdup("same")))
+                return tc_err(err, errlen, "out of memory");
+        }
+    }
+    if (c->ndata)
+        qsort(c->data, c->ndata, sizeof *c->data, by_line);
     return 0;
 }
 
@@ -916,6 +1131,8 @@ int tc_resolve(const char *source, const struct tc_env *env, struct tc_config *c
         goto out;
     }
     if (merge(c, files, nfiles, env, err, errlen) || tc_matrix_merge(c, err, errlen))
+        goto out;
+    if (c->has_own && collect_data(c, &files[0], err, errlen))
         goto out;
     {
         /* at most one of the keys of the fixed issue */

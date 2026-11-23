@@ -66,6 +66,133 @@ static const char *need(const struct tc_env *env, const char *key, char *err, si
 
 /* ------------------------------------------------------- the pass of a cell */
 
+/* the compiler, deflibs and acidlibs of a build configuration (compiler,
+   libs) of a cell; rwe_dir: the variant's directory of the cell's RWE user
+   libraries (the C libraries of the cell), NULL none.  0, -1 (err) */
+static int build_files(const struct tc_env *env, const char *compiler, const char *libs, const char *rwe_dir,
+                       const char **blitz2, char **deflibs, char **acidlibs, char *err, size_t errlen)
+{
+    const char *d, *a;
+
+    *deflibs = *acidlibs = NULL;
+    if (!(*blitz2 = need(env, !strcmp(compiler, "port") ? "blitz2" : compiler, err, errlen)))
+        return -1;
+    if (!strcmp(libs, "cd")) {
+        if (!(d = need(env, "cd-deflibs", err, errlen)) || !(a = need(env, "cd-acidlibs", err, errlen)))
+            return -1;
+        *deflibs = strdup(d);
+        *acidlibs = strdup(a);
+    } else if (rwe_dir) {
+        *deflibs = str_printf("%s/deflibs", rwe_dir);
+        *acidlibs = str_printf("%s/acidlibs", rwe_dir);
+    } else {
+        if (!(d = need(env, "clib-deflibs", err, errlen)) || !(a = need(env, "clib-acidlibs", err, errlen)))
+            return -1;
+        *deflibs = strdup(d);
+        *acidlibs = strdup(a);
+    }
+    if (!*deflibs || !*acidlibs) {
+        free(*deflibs);
+        free(*acidlibs);
+        *deflibs = *acidlibs = NULL;
+        return fail(err, errlen, "out of memory");
+    }
+    return 0;
+}
+
+/* the variant directory of the cell's RWE user libraries, NULL none */
+static const char *rwe_dir_of(const struct tc_config *conf, const struct tc_env *env)
+{
+    const struct tt_value *l = list(conf, "rwe");
+    char key[200];
+    const char *info, *bar1, *bar2;
+
+    if (!l || !l->nlist)
+        return NULL;
+    snprintf(key, sizeof key, "rwe-%s", l->list[0]);
+    if (!(info = tc_env_runner(env, key)) || !(bar1 = strchr(info, '|')) || !(bar2 = strchr(bar1 + 1, '|')))
+        return NULL;            /* refused by cr_cell_pass */
+    return bar2 + 1;
+}
+
+int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
+                 const char *const *built, char **text, char *err, size_t errlen)
+{
+    char b1[24], b2[24], b3[24];
+    const char *ccomp = val(conf, m, cell, "compiler", b1), *clibs = val(conf, m, cell, "libs", b2);
+    const char *crunerr = val(conf, m, cell, "runtime-errors", b3);
+    const char *rwe = rwe_dir_of(conf, env);
+    /* the build configurations other than the cell's, in the order they come */
+    const char **pc = calloc(conf->ndata + 1, sizeof *pc), **pl = calloc(conf->ndata + 1, sizeof *pl);
+    const char **pr = calloc(conf->ndata + 1, sizeof *pr);
+    size_t np = 0;
+    struct text t = { 0 };
+    int r = -2;
+
+    *text = NULL;
+    if (!pc || !pl || !pr)
+        goto out;
+    for (size_t i = 0; i < conf->ndata; i++) {
+        const struct tc_data *d = &conf->data[i];
+        char *res = tc_data_result(d);
+
+        if (!res)
+            goto out;
+        if (d->action != TC_DA_BASIC_COMPILE) {
+            text_add(&t, "file=%s.test/%s|%s\n", conf->id, res, built[i]);
+            free(res);
+            continue;
+        }
+        {
+            const char *comp = strcmp(d->opt[TC_DO_COMPILER], "same") ? d->opt[TC_DO_COMPILER] : ccomp;
+            const char *libs = strcmp(d->opt[TC_DO_LIBS], "same") ? d->opt[TC_DO_LIBS] : clibs;
+            const char *runerr = strcmp(d->opt[TC_DO_RUNERR], "same") ? d->opt[TC_DO_RUNERR] : crunerr;
+            size_t k;
+
+            if (!strcmp(comp, ccomp) && !strcmp(libs, clibs) && !strcmp(runerr, crunerr)) {
+                text_add(&t, "build_job=-|%s|%s.test/%s\n", built[i], conf->id, res);
+                free(res);
+                continue;
+            }
+            for (k = 0; k < np && (strcmp(pc[k], comp) || strcmp(pl[k], libs) || strcmp(pr[k], runerr)); k++)
+                ;
+            if (k == np) {
+                const char *blitz2;
+                char *def, *acid;
+
+                if (build_files(env, comp, libs, strcmp(libs, "cd") ? rwe : NULL, &blitz2, &def, &acid, err,
+                                errlen)) {
+                    free(res);
+                    r = -1;
+                    goto out;
+                }
+                text_add(&t, "build=%s.test/.build-%zu|%s|%s|%s|%s\n", conf->id, np + 1, blitz2, def, acid, runerr);
+                free(def);
+                free(acid);
+                pc[np] = comp;
+                pl[np] = libs;
+                pr[np++] = runerr;
+            }
+            text_add(&t, "build_job=%s.test/.build-%zu|%s|%s.test/%s\n", conf->id, k + 1, built[i], conf->id, res);
+            free(res);
+        }
+    }
+    if (t.bad)
+        goto out;
+    *text = t.p ? t.p : strdup("");
+    t.p = NULL;
+    r = *text ? 0 : -2;
+out:
+    if (r == -2)
+        fail(err, errlen, "out of memory");
+    free(t.p);
+    free(pc);
+    free(pl);
+    free(pr);
+    return r;
+}
+
+
 int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
                  const char *tag, const char *work, const char *source, char **text, char *err, size_t errlen)
 {
@@ -261,7 +388,9 @@ int cr_prev_pass(const char *cell_pass, const char *test, const char *name, cons
     int configs = 0, mask = 0;
 
     *text = NULL;
-    text_add(&t, "test=%s\nwork=%s\nreport=%s.txt\nrun=off\nparallel=2\nsource=%s\n", test, work, work, source);
+    text_add(&t, "test=%s\nwork=%s\nreport=%s.txt\nrun=off\nparallel=2\n", test, work, work);
+    if (source)
+        text_add(&t, "source=%s\n", source);
     while (*l) {
         const char *e = strchr(l, '\n'), *eq = strchr(l, '=');
         size_t len = e ? (size_t)(e - l) : strlen(l), k;
@@ -309,6 +438,29 @@ int cr_prev_pass(const char *cell_pass, const char *test, const char *name, cons
     }
     *text = t.p;
     return 0;
+}
+
+int cr_prev_data(const char *test, const char *const *sources, const char *const *names, size_t n,
+                 const char *const *entries, size_t nentries, char **text)
+{
+    struct text t = { 0 };
+
+    *text = NULL;
+    for (size_t i = 0; i < n; i++) {
+        text_add(&t, "source=%s|%s\n", sources[i], names[i]);
+        for (size_t k = 0; k < nentries; k++) {
+            const char *e = entry_name(entries[k], test);
+
+            if (e && !strcmp(e, names[i]))
+                text_add(&t, "intended=%s\n", entries[k]);
+        }
+    }
+    if (t.bad) {
+        free(t.p);
+        return -2;
+    }
+    *text = t.p ? t.p : strdup("");
+    return *text ? 0 : -2;
 }
 
 const char *cr_prev_unknown(const char *test, const char *const *names, size_t nnames, const char *const *entries,
@@ -547,10 +699,18 @@ int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
 {
     static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
 
-    for (size_t i = 0; i < src->nchecks; i++)
-        if (src->checks[i].kind == TP_EXPECTERROR && src->checks[i].nskind == TP_NS_CASE
-            && !strcmp(src->checks[i].ns, case_name))
+    for (size_t i = 0; i < src->nchecks; i++) {
+        const struct tp_check *k = &src->checks[i];
+
+        if ((k->kind == TP_EXPECTERROR || k->kind == TP_RUNPROGRAM) && k->nskind == TP_NS_CASE
+            && !strcmp(k->ns, case_name))
             return 1;
+        /* a started program's observations are those of the case that
+           starts it: one in a procedure, the batch init or cleanup may be
+           any case's */
+        if (k->kind == TP_RUNPROGRAM && k->nskind != TP_NS_CASE)
+            return 1;
+    }
     for (size_t c = 0; c < ncells; c++)
         for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
             struct tc_assertions as;
@@ -844,6 +1004,22 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
         fprintf(out, "alternative ends:\n");
         print_tab(out, "ends", conf->ends, conf->nends);
     }
+    if (conf->ndata) {
+        fprintf(out, "data (%s.test/):\n", conf->id);
+        for (size_t i = 0; i < conf->ndata; i++) {
+            const struct tc_data *d = &conf->data[i];
+
+            fprintf(out, "  \"%s\": action = \"%s\"    # %s:%u\n", d->file, tc_daction_name(d->action), d->at.file,
+                    d->at.line);
+            for (int k = 0; k < TC_DO_N && d->action == TC_DA_BASIC_COMPILE; k++) {
+                if (d->optline[k])
+                    fprintf(out, "    %s = \"%s\"    # %s:%u\n", tc_dopt_name(k), d->opt[k], d->at.file,
+                            d->optline[k]);
+                else
+                    fprintf(out, "    %s = \"%s\"    # (default)\n", tc_dopt_name(k), d->opt[k]);
+            }
+        }
+    }
     {
         size_t nd;
         const struct tc_default *d = tc_defaults(&nd);
@@ -939,6 +1115,12 @@ struct obs {
     struct tj_requester *req;
     char *log, *b2, *result, *serial, *compile, *compile_log, *where, *inject;
     struct bugorig_obs bo;
+    struct tj_data *data;       /* the compiles of the data sources */
+    char **dres;
+    size_t ndata;
+    struct tj_runout *runs;     /* the output files of the started programs */
+    char **rtext;
+    size_t nruns;
 };
 
 static void obs_free(struct obs *ob)
@@ -954,6 +1136,14 @@ static void obs_free(struct obs *ob)
     free(ob->where);
     free(ob->inject);
     bugorig_free(&ob->bo);
+    for (size_t i = 0; i < ob->ndata; i++)
+        free(ob->dres[i]);
+    free(ob->dres);
+    free(ob->data);
+    for (size_t i = 0; i < ob->nruns; i++)
+        free(ob->rtext[i]);
+    free(ob->rtext);
+    free(ob->runs);
     memset(ob, 0, sizeof *ob);
 }
 
@@ -962,7 +1152,81 @@ static const char *status_name(enum amiga_emulation_status st)
     return st == AMIGA_EMULATION_DONE ? "done" : st == AMIGA_EMULATION_HALT ? "halt" : "timeout";
 }
 
-static int observe_cell(const struct cell *c, const struct tp_driver *d, const char *file, struct obs *ob)
+/* the compiles of the data sources of a cell (their jobs bNNN, in the order
+   of the data sources: cr_data_pass) */
+static int observe_data(const struct cell *c, const struct tc_config *conf, struct obs *ob)
+{
+    size_t n = 0;
+
+    for (size_t i = 0; i < conf->ndata; i++)
+        n += conf->data[i].action == TC_DA_BASIC_COMPILE;
+    if (!n)
+        return 0;
+    if (!(ob->data = calloc(n, sizeof *ob->data)) || !(ob->dres = calloc(n, sizeof *ob->dres)))
+        return -1;
+    for (size_t i = 0, j = 0; i < conf->ndata && j < c->p.nbjobs; i++) {
+        const struct corpus_build_job *b = &c->p.bjobs[j];
+        char job[32], *path, *log;
+        size_t len;
+
+        if (conf->data[i].action != TC_DA_BASIC_COMPILE)
+            continue;
+        snprintf(job, sizeof job, "b%03zu", j);
+        path = b->part ? str_printf("%s/%s/vol/%s/session.log", c->p.work, c->tag, b->part)
+                       : str_printf("%s/%s/vol/out/session.log", c->p.work, c->tag);
+        if (!path)
+            return -1;
+        log = (char *)read_file(path, &len);
+        free(path);
+        ob->dres[j] = bugorig_compile(log, job);
+        free(log);
+        if (!ob->dres[j])
+            return -1;
+        ob->data[j].file = conf->data[i].file;
+        ob->data[j].result = ob->dres[j];
+        ob->ndata = ++j;
+    }
+    ob->o.data = ob->data;
+    ob->o.ndata = ob->ndata;
+    return 0;
+}
+
+/* the output files of the started programs of a cell, CORPUS:out/run-K.out
+   (also of one that did not return) */
+static int observe_runs(const struct cell *c, const struct tp_source *src, struct obs *ob)
+{
+    size_t n = 0;
+
+    for (size_t i = 0; i < src->nchecks; i++)
+        n += src->checks[i].kind == TP_RUNPROGRAM;
+    if (!n)
+        return 0;
+    if (!(ob->runs = calloc(n, sizeof *ob->runs)) || !(ob->rtext = calloc(n, sizeof *ob->rtext)))
+        return -1;
+    for (size_t i = 0; i < src->nchecks; i++) {
+        const struct tp_check *k = &src->checks[i];
+        char *path;
+        size_t len;
+
+        if (k->kind != TP_RUNPROGRAM)
+            continue;
+        if (!(path = str_printf("%s/%s/vol/out/run-%u.out", c->p.work, c->tag, k->k)))
+            return -1;
+        ob->rtext[ob->nruns] = (char *)read_file(path, &len);
+        free(path);
+        if (!ob->rtext[ob->nruns])
+            continue;           /* not started */
+        ob->runs[ob->nruns].k = k->k;
+        ob->runs[ob->nruns].text = ob->rtext[ob->nruns];
+        ob->nruns++;
+    }
+    ob->o.runs = ob->runs;
+    ob->o.nruns = ob->nruns;
+    return 0;
+}
+
+static int observe_cell(const struct cell *c, const struct tc_config *conf, const struct tp_source *src,
+                        const struct tp_driver *d, const char *file, struct obs *ob)
 {
     char *dir = str_printf("%s/%s/vol/out", c->p.work, c->tag), *path;
     size_t len;
@@ -1036,6 +1300,8 @@ static int observe_cell(const struct cell *c, const struct tp_driver *d, const c
     ob->o.rc = ob->run.rc;
     ob->o.req = ob->req;
     ob->o.nreq = ob->run.nreq;
+    if (observe_data(c, conf, ob) || observe_runs(c, src, ob))
+        goto out;
     r = 0;
 out:
     free(run);
@@ -1178,6 +1444,15 @@ static int missing(const struct corpus_pass *p, FILE *log)
             fprintf(log, "corpusrun case: no %s - skipped\n", p->file_src[i]);
             return 1;
         }
+    for (size_t i = 0; i < p->nbuilds; i++) {
+        const char *bf[] = { p->builds[i].blitz2, p->builds[i].deflibs, p->builds[i].acidlibs };
+
+        for (size_t k = 0; k < 3; k++)
+            if (access(bf[k], R_OK)) {
+                fprintf(log, "corpusrun case: no %s - skipped\n", bf[k]);
+                return 1;
+            }
+    }
     for (size_t i = 0; i < p->nmounts; i++)
         if (access(p->mount_dir[i], R_OK | X_OK)) {
             fprintf(log, "corpusrun case: no %s for %s: - skipped\n", p->mount_dir[i], p->mount_name[i]);
@@ -1268,77 +1543,277 @@ static const char *base_name(const char *path)
     return s ? s + 1 : path;
 }
 
+/* the data of a test as an argument list of its own (prev_run has no ctx) */
+struct dctx {
+    const struct tc_config *conf;
+    const struct tc_env *env;
+    const char *testdir, *tokens;
+    FILE *log;
+    char **built;
+};
+
+/* the host files of the test-local data (built): a data source
+   preprocessed (its placeholders, no check) and tokenised with the cells'
+   token list, a .spec made by mktestdata, a copied file as it is; in
+   dir/data.  0, -1 (reported) */
+static int prepare_data(struct dctx *x, const char *dir)
+{
+    char err[800], *ddir = str_printf("%s/data", dir);
+    int r = -1;
+
+    if (!ddir || !(x->built = calloc(x->conf->ndata + 1, sizeof *x->built)) || mkdir_p(ddir)) {
+        fprintf(x->log, "corpusrun case: cannot prepare the data in %s\n", ddir ? ddir : dir);
+        goto out;
+    }
+    for (size_t i = 0; i < x->conf->ndata; i++) {
+        const struct tc_data *d = &x->conf->data[i];
+        char *src = str_printf("%s/%s.test/%s", x->conf->dir, x->conf->id, d->file);
+
+        if (!src)
+            goto oom;
+        if (d->action == TC_DA_COPY) {
+            x->built[i] = src;
+            continue;
+        }
+        if (d->action == TC_DA_MKTESTDATA) {
+            const char *mk = need(x->env, "mktestdata", err, sizeof err);
+            char *argv[4] = { (char *)mk, src, NULL, NULL };
+
+            if (!mk) {
+                fprintf(x->log, "corpusrun case: %s\n", err);
+                free(src);
+                goto out;
+            }
+            if (!(x->built[i] = argv[2] = str_printf("%s/d%03zu", ddir, i))) {
+                free(src);
+                goto oom;
+            }
+            if (spawn(argv, x->log)) {
+                fprintf(x->log, "corpusrun case: the data %s cannot be made\n", src);
+                free(src);
+                goto out;
+            }
+            free(src);
+            continue;
+        }
+        {
+            /* a data source */
+            struct tp_params par = { 0 };
+            struct tp_source ds = { 0 };
+            size_t len;
+            char *text = (char *)read_file(src, &len), *bas = str_printf("%s/b%03zu.bas", ddir, i);
+            char *rel = str_printf("%s.test/%s", x->conf->id, d->file);
+            const char *tedsrc = need(x->env, "tedsrc", err, sizeof err);
+            int n;
+
+            if (!text || !bas || !rel || !tedsrc) {
+                fprintf(x->log, "corpusrun case: %s\n", !text ? "cannot read a data source" : !tedsrc ? err
+                                                                                                       : "out of memory");
+                if (!text)
+                    fprintf(x->log, "corpusrun case: cannot read %s\n", src);
+                free(text);
+                free(bas);
+                free(rel);
+                free(src);
+                goto out;
+            }
+            par.file = rel;
+            par.test_id = x->conf->id;
+            par.testdata = CR_TESTDATA;
+            par.testdir = x->testdir;
+            par.data = 1;
+            n = tp_process(text, len, &par, &ds);
+            free(text);
+            for (size_t k = 0; n > 0 && k < ds.errors.n; k++)
+                fprintf(x->log, "%s\n", ds.errors.v[k]);
+            if (n == 0 && write_file(bas, ds.text, ds.len))
+                n = -1;
+            tp_free(&ds);
+            free(rel);
+            free(src);
+            if (n) {
+                fprintf(x->log, "corpusrun case: the data source %s.test/%s %s\n", x->conf->id, d->file,
+                        n < 0 ? "cannot be written" : "is refused");
+                free(bas);
+                goto out;
+            }
+            if (!(x->built[i] = str_printf("%s/b%03zu.bb2", ddir, i))) {
+                free(bas);
+                goto oom;
+            }
+            {
+                char *argv[] = { (char *)tedsrc, (char *)"tok", (char *)x->tokens, bas, x->built[i], NULL };
+
+                n = spawn(argv, x->log);
+            }
+            free(bas);
+            if (n) {
+                fprintf(x->log, "corpusrun case: the data source %s.test/%s cannot be tokenised\n", x->conf->id,
+                        d->file);
+                goto out;
+            }
+        }
+    }
+    r = 0;
+    goto out;
+oom:
+    fprintf(x->log, "corpusrun case: out of memory\n");
+out:
+    free(ddir);
+    return r;
+}
 /* the comparison with the prev build (caserun.h): a pass per value of
    runtime-errors of the side port */
 static int prev_run(const struct caserun_opts *o, const struct tc_env *env, const struct tc_config *conf,
                     const struct tc_matrix *m, FILE *log)
 {
     static const char *const values[] = { "off", "on" };
-    char err[800], *names[2] = { NULL, NULL }, *dir = NULL;
-    const char *ok_names[2];
+    char err[800], *dir = NULL, *testdir = NULL;
+    char **names = calloc(2 * conf->ndata + 3, sizeof *names);
     const char *work = need(env, "work", err, sizeof err);
     const struct tt_value *rwe = list(conf, "rwe");
+    struct dctx dx = { conf, env, NULL, NULL, log, NULL };
     size_t nnames = 0, cur = 0;
     const char *stale;
     int rc = 0, any = 0, skipped = 0;
 
+    if (!names) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        return 2;
+    }
     if (!o->driver || !o->test || !o->prev_blitz2 || !o->prev_libs) {
         fprintf(log, "corpusrun case: --prev needs --driver, --test, --prev-blitz2 and --prev-libs\n");
+        free(names);
         return 2;
     }
     if (rwe && rwe->nlist) {
         fprintf(log, "corpusrun case: %s: a test with RWE user libraries is not compared with the prev build\n",
                 conf->id);
+        free(names);
         return 2;
     }
     if (!work || !(dir = str_printf("%s/%s", work, o->test)) || mkdir_p(dir)) {
         fprintf(log, "corpusrun case: %s\n", work ? "cannot create the work directory" : err);
         free(dir);
+        free(names);
         return 2;
     }
+    /* the data sources, tokenised as for a run */
+    if (conf->ndata) {
+        if (!(testdir = str_printf(CR_TESTDIR, conf->id)) || !(dx.tokens = need(env, "tokens", err, sizeof err))) {
+            fprintf(log, "corpusrun case: %s\n", testdir ? err : "out of memory");
+            rc = 2;
+            goto done;
+        }
+        dx.testdir = testdir;
+        if (prepare_data(&dx, dir)) {
+            rc = 2;
+            goto done;
+        }
+    }
     for (size_t v = 0; v < 2; v++) {
-        char b[24], *src = NULL, *wdir = NULL, *cp = NULL, *pt = NULL;
-        size_t cell;
+        char b[24], *src = NULL, *wdir = NULL, *cp = NULL, *pt = NULL, *dt = NULL;
+        const char **dsrc = calloc(conf->ndata + 1, sizeof *dsrc), **dname = calloc(conf->ndata + 1, sizeof *dname);
+        size_t cell, nd = 0;
+        const char *drvname = NULL;
         struct corpus_pass p = { 0 };
-        int r;
+        int r = 0;
 
-        for (cell = 0; cell < m->ncells; cell++)
-            if (!m->cells[cell].originals && !strcmp(val(conf, m, cell, "runtime-errors", b), values[v]))
-                break;
-        if (cell == m->ncells)
-            continue;
-        if (!(names[nnames] = str_printf("%s%s", conf->id, v ? CR_PREV_RUNERRS : ""))
-            || !(src = str_printf("%s/%s.bb2", dir, names[nnames]))
-            || !(wdir = str_printf("%s/%s", dir, names[nnames]))) {
+        if (!dsrc || !dname) {
+            free(dsrc);
+            free(dname);
             fprintf(log, "corpusrun case: out of memory\n");
-            free(src);
             rc = 2;
             break;
         }
-        ok_names[nnames] = names[nnames];
-        nnames++;
-        if (copy_file(o->driver, src)) {
+        for (cell = 0; cell < m->ncells; cell++)
+            if (!m->cells[cell].originals && !strcmp(val(conf, m, cell, "runtime-errors", b), values[v]))
+                break;
+        /* the data sources compiled with this setting: the cell's, or a fixed one */
+        for (size_t i = 0; i < conf->ndata; i++) {
+            const struct tc_data *d = &conf->data[i];
+            const char *w = d->action != TC_DA_BASIC_COMPILE ? NULL
+                            : strcmp(d->opt[TC_DO_RUNERR], "same") ? d->opt[TC_DO_RUNERR]
+                            : cell < m->ncells ? values[v] : NULL;
+
+            if (!w || strcmp(w, values[v]))
+                continue;
+            if (!(names[nnames] = str_printf("%s/%s%s", conf->id, d->file, v ? CR_PREV_RUNERRS : ""))) {
+                r = -2;
+                break;
+            }
+            dsrc[nd] = dx.built[i];
+            dname[nd++] = names[nnames++];
+        }
+        if (r == 0 && cell == m->ncells) {
+            /* no cell with this setting: a pass of the data alone, with the
+               settings of the first cell of the side port */
+            if (!nd) {
+                free(dsrc);
+                free(dname);
+                continue;
+            }
+            for (cell = 0; cell < m->ncells && m->cells[cell].originals; cell++)
+                ;
+        } else if (r == 0) {
+            if (!(names[nnames] = str_printf("%s%s", conf->id, v ? CR_PREV_RUNERRS : "")))
+                r = -2;
+            else
+                drvname = names[nnames++];
+        }
+        if (r == 0 && cell < m->ncells
+            && (!(src = str_printf("%s/%s.bb2", dir, drvname ? drvname : conf->id))
+                || !(wdir = str_printf("%s/%s%s", dir, drvname ? drvname : conf->id, drvname ? "" : "-data"))))
+            r = -2;
+        if (r == -2) {
+            fprintf(log, "corpusrun case: out of memory\n");
+            r = 2;
+        } else if (cell == m->ncells) {
+            r = 0;
+        } else if (drvname && copy_file(o->driver, src)) {
             fprintf(log, "corpusrun case: cannot copy the driver %s\n", o->driver);
             r = 2;
         } else if ((r = cr_cell_pass(conf, m, cell, env, "clib", wdir, src, &cp, err, sizeof err))
-                   || (r = cr_prev_pass(cp, o->test, names[nnames - 1], wdir, src, o->prev_blitz2, o->prev_libs,
-                                        o->intended, o->nintended, &pt, err, sizeof err))) {
+                   || (r = cr_prev_pass(cp, o->test, drvname ? drvname : "", wdir, drvname ? src : NULL,
+                                        o->prev_blitz2, o->prev_libs, o->intended, o->nintended, &pt, err,
+                                        sizeof err))
+                   || (r = cr_prev_data(o->test, dsrc, dname, nd, o->intended, o->nintended, &dt))) {
             fprintf(log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
             r = 2;
-        } else if (corpus_parse(pt, &p, err, sizeof err)) {
-            fprintf(log, "corpusrun case: %s: %s\n", names[nnames - 1], err);
-            r = 2;
         } else {
-            corpus_select(&p);
-            corpus_skip_missing(&p, log);
-            r = corpus_run(&p, log);
-            any = 1;
+            char *all = str_printf("%s%s", pt, dt), *re;
+
+            /* a pass of the data alone takes this setting of runtime error checking */
+            if (all && !drvname && (re = strstr(all, "\nruntime_errors=")) && !strncmp(re + 16, values[!v],
+                                                                                      strlen(values[!v]))) {
+                char *fixed = str_printf("%.*s\nruntime_errors=%s%s", (int)(re - all), all, values[v],
+                                         re + 16 + strlen(values[!v]));
+
+                free(all);
+                all = fixed;
+            }
+            if (!all) {
+                fprintf(log, "corpusrun case: out of memory\n");
+                r = 2;
+            } else if (corpus_parse(all, &p, err, sizeof err)) {
+                fprintf(log, "corpusrun case: %s: %s\n", drvname ? drvname : conf->id, err);
+                r = 2;
+            } else {
+                corpus_select(&p);
+                corpus_skip_missing(&p, log);
+                r = corpus_run(&p, log);
+                any = 1;
+            }
+            free(all);
         }
         corpus_free(&p);
         free(src);
         free(wdir);
         free(cp);
         free(pt);
+        free(dt);
+        free(dsrc);
+        free(dname);
         if (r == 77)
             skipped = 1;
         else if (r > rc)
@@ -1349,10 +1824,11 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
         rc = 2;
     }
     /* an entry of the test that names no compile of it: stale, as one without a difference */
-    while ((stale = cr_prev_unknown(o->test, ok_names, nnames, o->intended, o->nintended, &cur)) != NULL) {
+    while ((stale = cr_prev_unknown(o->test, (const char *const *)names, nnames, o->intended, o->nintended, &cur))
+           != NULL) {
         fprintf(log, "STALE %s: intended, but the test has no such compile (its compiles:", stale);
         for (size_t i = 0; i < nnames; i++)
-            fprintf(log, " %s", ok_names[i]);
+            fprintf(log, " %s", names[i]);
         fprintf(log, ")\n");
         if (rc < 1)
             rc = 1;
@@ -1361,10 +1837,16 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
         rc = 77;
     if (rc == 0 && !any)
         rc = 2;
+done:
     fprintf(log, "%s: the comparison with the prev build: %s\n", conf->id,
             rc == 0 ? "the same" : rc == 1 ? "DIFFERS" : rc == 77 ? "skipped" : "ERROR");
-    free(names[0]);
-    free(names[1]);
+    for (size_t i = 0; i < nnames; i++)
+        free(names[i]);
+    free(names);
+    for (size_t i = 0; dx.built && i < conf->ndata; i++)
+        free(dx.built[i]);
+    free(dx.built);
+    free(testdir);
     free(dir);
     return rc;
 }
@@ -1435,6 +1917,8 @@ struct ctx {
     struct tc_matrix m;
     struct tp_source src;
     const char *file;           /* the source's name in the report */
+    char *testdir;              /* @TESTDIR@: CORPUS:ID.test */
+    char **built;               /* per entry of conf.data its host file (cr_data_pass) */
     char *mac;                  /* the macro text of the driver */
     size_t mlen;
     char *tokens;               /* the token list */
@@ -1541,6 +2025,23 @@ static int run_set(struct ctx *x, struct set *s)
             fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
             goto out;
         }
+        if (x->conf.ndata) {
+            char *dt, *all;
+
+            if ((r = cr_data_pass(&x->conf, &x->m, c->idx, &x->env, (const char *const *)x->built, &dt, err,
+                                  sizeof err))) {
+                fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
+                free(pt);
+                goto out;
+            }
+            all = str_printf("%s%s", pt, dt);
+            free(pt);
+            free(dt);
+            if (!(pt = all)) {
+                fprintf(x->log, "corpusrun case: out of memory\n");
+                goto out;
+            }
+        }
         r = corpus_parse(pt, &c->p, err, sizeof err);
         free(pt);
         if (r) {
@@ -1586,7 +2087,7 @@ static int run_set(struct ctx *x, struct set *s)
     }
     /* the observations */
     for (size_t k = 0; k < s->ncells; k++)
-        if (observe_cell(&s->c[k], &s->drv, x->file, &s->ob[k])) {
+        if (observe_cell(&s->c[k], &x->conf, &x->src, &s->drv, x->file, &s->ob[k])) {
             fprintf(x->log, "corpusrun case: out of memory\n");
             goto out;
         }
@@ -1854,6 +2355,7 @@ out:
     return rc;
 }
 
+
 int caserun(const struct caserun_opts *o, FILE *log)
 {
     struct ctx x;
@@ -1876,6 +2378,10 @@ int caserun(const struct caserun_opts *o, FILE *log)
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
+    if (!(x.testdir = str_printf(CR_TESTDIR, x.conf.id))) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        goto out;
+    }
     if (o->print_config) {
         rc = cr_print_config(log, &x.conf, &x.m) ? 2 : 0;
         goto out;
@@ -1895,6 +2401,7 @@ int caserun(const struct caserun_opts *o, FILE *log)
         par.file = x.file;
         par.test_id = x.conf.id;
         par.testdata = CR_TESTDATA;
+        par.testdir = x.testdir;
         if ((n = tp_process(text, len, &par, &x.src)) != 0) {
             for (size_t i = 0; i < x.src.errors.n; i++)
                 fprintf(log, "%s\n", x.src.errors.v[i]);
@@ -1982,6 +2489,16 @@ int caserun(const struct caserun_opts *o, FILE *log)
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
+    if (x.conf.ndata) {
+        struct dctx dx = { &x.conf, &x.env, x.testdir, x.tokens, log, NULL };
+        int r = prepare_data(&dx, rw.dir);
+
+        x.built = dx.built;
+        if (r) {
+            rc = 2;
+            goto out;
+        }
+    }
     if (!o->case_name) {
         rc = run_all(&x, rw.dir);
         goto out;
@@ -2026,6 +2543,10 @@ out:
     free(text);
     free(workbase);
     free(x.mac);
+    free(x.testdir);
+    for (size_t i = 0; x.built && i < x.conf.ndata; i++)
+        free(x.built[i]);
+    free(x.built);
     free(x.tokens);
     free(x.side);
     tp_free(&x.src);

@@ -155,6 +155,19 @@ size_t basictest_write(const struct basictest_entry *e, uint8_t *buf, size_t siz
         puts_(&o, "expect-error\t");
         putdecimal(&o, e->k);
         break;
+    case BASICTEST_RUN:
+        puts_(&o, "run\t");
+        putdecimal(&o, e->k);
+        break;
+    case BASICTEST_RUNEND:
+        puts_(&o, "runend\t");
+        putdecimal(&o, e->k);
+        tab(&o);
+        if (e->ok)
+            putlong(&o, e->actual);
+        else
+            put(&o, '-');
+        break;
     case BASICTEST_BLOCKEND:
         puts_(&o, "blockend");
         break;

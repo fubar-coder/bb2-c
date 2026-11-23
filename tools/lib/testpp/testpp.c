@@ -198,15 +198,15 @@ int tp_block_macro(const char *l, size_t s, size_t e, size_t len, const char **n
 /* ------------------------------------------------------------ the preprocessor */
 
 static const char *const kind_names[] = { "Check", "CheckEq", "CheckStrEq", "Require", "ExpectError",
-                                          "CheckQEq", "CheckFltNear" };
+                                          "CheckQEq", "CheckFltNear", "RunProgram" };
 
 const char *tp_kind_name(int kind)
 {
-    return kind >= 0 && kind <= TP_CHECKFLTNEAR ? kind_names[kind] : "?";
+    return kind >= 0 && kind <= TP_RUNPROGRAM ? kind_names[kind] : "?";
 }
 
 /* the number of arguments of a kind without the name */
-static const int nargs[] = { 1, 2, 2, 1, 1, 2, 3 };
+static const int nargs[] = { 1, 2, 2, 1, 1, 2, 3, 1 };
 
 struct buf {
     char *p;
@@ -268,7 +268,7 @@ static int err(struct ctx *c, const char *fmt, ...)
 /* the check kind of the name l[s..e), -1 none */
 static int check_kind(const char *l, size_t s, size_t e)
 {
-    for (int i = 0; i <= TP_CHECKFLTNEAR; i++)
+    for (int i = 0; i <= TP_RUNPROGRAM; i++)
         if (strlen(kind_names[i]) == e - s && !memcmp(l + s, kind_names[i], e - s))
             return i;
     return -1;
@@ -328,6 +328,14 @@ static int one_call(struct ctx *c, const char *l, size_t len, size_t bang, size_
     struct tp_check chk;
     char kbuf[16];
 
+    if (c->par->data) {
+        /* a data source (basic-test-local-data): its program writes no
+           result file */
+        *end = ne;
+        put(out, l + bang, ne - bang);
+        return err(c, "!%s in a data source: a program the test builds has no result file (its observations are "
+                   "its output, return code and requesters)", kind_names[kind]);
+    }
     while (open < len && l[open] == ' ')
         open++;
     if (open >= len || l[open] != '{') {
@@ -599,6 +607,8 @@ static void placeholders(struct ctx *c, const char *l, size_t len, struct buf *o
                     v = c->par->test_id ? c->par->test_id : "";
                 } else if (n == 8 && !memcmp(l + p + 1, "TESTDATA", 8) && c->par->testdata) {
                     v = c->par->testdata;
+                } else if (n == 7 && !memcmp(l + p + 1, "TESTDIR", 7) && c->par->testdir) {
+                    v = c->par->testdir;
                 } else {
                     err(c, "unknown placeholder %.*s", (int)(q - p + 1), l + p);
                     v = "";

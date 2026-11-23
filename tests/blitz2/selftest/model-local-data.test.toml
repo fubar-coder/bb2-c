@@ -1,0 +1,17 @@
+# model-local-data.test.bas: two cells of the side port (runtime error
+# checking off and on); the data of model-local-data.test/; the session's
+# time limit, which the prev compiler hangstub of
+# blitz2_selftest_model_local_data_differs_prev takes
+timeout = 30
+
+[matrix]
+runtime-errors = ["off", "on"]
+
+[data]
+"input.txt" = "copy"
+"bytes.spec" = "mktestdata"
+"child.bas" = "basic-compile"
+
+[data."errs.bas"]
+action = "basic-compile"
+runtime-errors = "on"

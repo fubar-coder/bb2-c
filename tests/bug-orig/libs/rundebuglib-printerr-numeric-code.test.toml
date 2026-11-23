@@ -3,6 +3,9 @@
 fixed-orig = 6
 runtime-errors = "on"
 
+[data]
+"noend.bas" = "basic-compile"
+
 [asserts]
 "check.used_object.not_stopped" = "== not-run"
 "check.offset_range.not_stopped" = "== not-run"
@@ -14,3 +17,12 @@ runtime-errors = "on"
 "check.end_of_program.message" = "== fail"
 requester = "count == 1"
 "end.case" = "not exists"
+
+# the child that runs off its end: the requester of its end is the case's;
+# the original's shows the empty text, and the case itself ends
+[asserts."case=end_of_program_run"]
+requester = "contains \"End of Program\""
+
+[deviations."libs=cd,case=end_of_program_run"]
+requester = "contains \"AutoRequest body \\\"\\\" pos\""
+"end.case" = "exists"

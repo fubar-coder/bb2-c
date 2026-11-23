@@ -86,6 +86,7 @@ inject = \"$<TARGET_FILE:inject>\"
 testlib = \"${TESTLIB_OBJ}\"
 macros = \"${TESTLIB_MACROS}\"
 tedsrc = \"${TEDSRC}\"
+mktestdata = \"${MKTESTDATA}\"
 bbsrc = \"${BBSRC}\"
 tokens = \"${BASIC_TEST_TOKENS}\"
 work = \"${BASIC_TEST_WORK}\"
@@ -129,6 +130,11 @@ function(basic_test_register prefix dir)
 		string(REGEX REPLACE "\\.test\\.bas$" ".test.toml" t "${g}")
 		get_filename_component(gd "${g}" DIRECTORY)
 		file(GLOB c CONFIGURE_DEPENDS ${dir}/${t} ${dir}/${gd}/tests.toml ${dir}/tests.toml)
+		list(APPEND confs ${c})
+		# and so is a file of a test's directory ID.test/ (its data, change
+		# basic-test-local-data)
+		string(REGEX REPLACE "\\.test\\.bas$" ".test" td "${g}")
+		file(GLOB_RECURSE c CONFIGURE_DEPENDS ${dir}/${td}/*)
 		list(APPEND confs ${c})
 	endforeach()
 	list(SORT srcs)

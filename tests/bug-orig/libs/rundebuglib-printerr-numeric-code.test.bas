@@ -6,7 +6,9 @@
 ; object test (RGB without a screen), code 2 the bounds check of an
 ; array field of a NewType (v\x[i]), code 3 the end of a program without
 ; End (blitz2's eopcode: MOVEQ #3,d0 : TRAP #0).  Each error ends the
-; program, so each is a case of its own.
+; program, so each is a case of its own.  The case end_of_program_run
+; starts a child that runs off its end (rundebuglib-printerr-numeric-code.test/
+; noend.bas): the requester of its end is the case's.
 ; Correct: the texts of debuglib ("No currently used object!", "Offset
 ; out of range", "End of Program").
 DEFTYPE .l
@@ -32,4 +34,9 @@ DEFTYPE .t v
   !ExpectError{"End of Program","message"}
   MOVEQ #3,d0 : TRAP #0
   !Check{0,"not_stopped"}
+!EndTestCase
+
+!TestCase{end_of_program_run}
+  *r.TLRun=!RunProgram{"@TESTDIR@/noend","noend"}
+  !CheckStrEq{*r\printed,"noend"+Chr$(10),"printed"}
 !EndTestCase

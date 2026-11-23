@@ -68,6 +68,43 @@ int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msgle
         q->ns[p - ns] = 0;
         return 0;
     }
+    if (!strncmp(text, "run.", 4)) {
+        const char *ns = text + 4, *p = ns;
+        size_t n;
+
+        while (ident_char((unsigned char)*p, p == ns))
+            p++;
+        if (p == ns || *p != '.' || !p[1])
+            return tc_err(msg, msglen,
+                          "the query \"%s\": run.NAMESPACE.NAME[.rc|.output] expected (NAMESPACE the case or "
+                          "procedure of the !RunProgram NAME)", text);
+        n = strlen(p + 1);
+        q->kind = TC_Q_RUN;
+        if (n > 3 && !strcmp(p + 1 + n - 3, ".rc")) {
+            q->kind = TC_Q_RUN_RC;
+            n -= 3;
+        } else if (n > 7 && !strcmp(p + 1 + n - 7, ".output")) {
+            q->kind = TC_Q_RUN_OUTPUT;
+            n -= 7;
+        }
+        if (!(q->ns = malloc((size_t)(p - ns) + 1)) || !(q->rest = malloc(n + 1))) {
+            tc_query_free(q);
+            return -2;
+        }
+        memcpy(q->ns, ns, (size_t)(p - ns));
+        q->ns[p - ns] = 0;
+        memcpy(q->rest, p + 1, n);
+        q->rest[n] = 0;
+        return 0;
+    }
+    if (!strncmp(text, "data.", 5)) {
+        if (!text[5])
+            return tc_err(msg, msglen, "the query \"%s\": data.FILE expected (FILE a data file of ID.test/)", text);
+        q->kind = TC_Q_DATA;
+        if (!(q->rest = tc_strdup(text + 5)))
+            return -2;
+        return 0;
+    }
     return tc_err(msg, msglen, "unknown query \"%s\"", text);
 }
 
@@ -99,7 +136,8 @@ static unsigned allowed_ops(int qkind)
     switch (qkind) {
     case TC_Q_RC: return CMP | EX;
     case TC_Q_REQUESTER: return B(TC_P_CONTAINS) | B(TC_P_NOT_CONTAINS) | B(TC_P_MATCHES) | EX | B(TC_P_COUNT);
-    case TC_Q_COMPILE: return TEXT;
+    case TC_Q_COMPILE:
+    case TC_Q_DATA: return TEXT;
     case TC_Q_COMPILE_LOG:
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
@@ -108,6 +146,9 @@ static unsigned allowed_ops(int qkind)
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: return EX;
     case TC_Q_CHECK: return CMP | B(TC_P_CONTAINS) | B(TC_P_NOT_CONTAINS) | B(TC_P_MATCHES);
+    case TC_Q_RUN: return B(TC_P_EQ) | B(TC_P_NE);
+    case TC_Q_RUN_RC: return CMP | EX;
+    case TC_Q_RUN_OUTPUT: return TEXT | EX;
     }
     return 0;
 }
@@ -116,9 +157,11 @@ static unsigned allowed_ops(int qkind)
 static const char *allowed_words(int qkind)
 {
     switch (qkind) {
-    case TC_Q_COMPILE: return "ok|none";
+    case TC_Q_COMPILE:
+    case TC_Q_DATA: return "ok|none";
     case TC_Q_SESSION: return "done|timeout|halt";
     case TC_Q_CHECK: return "ok|fail|not-run";
+    case TC_Q_RUN: return "done|open|not-run";
     }
     return NULL;
 }
@@ -279,8 +322,9 @@ int tc_pred_parse(const char *text, int qkind, struct tc_pred *pr, char *msg, si
         else if (op == TC_P_EXISTS || op == TC_P_NOT_EXISTS)
             ok = 1;
         else if (op == TC_P_EQ || op == TC_P_NE)
-            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK))
-                 || (pr->vtype == TC_PV_STR && qkind != TC_Q_RC && qkind != TC_Q_SESSION)
+            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK || qkind == TC_Q_RUN_RC))
+                 || (pr->vtype == TC_PV_STR && qkind != TC_Q_RC && qkind != TC_Q_SESSION && qkind != TC_Q_RUN
+                     && qkind != TC_Q_RUN_RC)
                  || (pr->vtype == TC_PV_WORD && word_in(allowed_words(qkind), pr->str));
         else
             ok = pr->vtype == TC_PV_INT;
@@ -299,7 +343,8 @@ int tc_pred_parse(const char *text, int qkind, struct tc_pred *pr, char *msg, si
 
 /* ------------------------------------------------------------ validation */
 
-static int check_entries(const struct tc_tabkey *v, size_t n, const char *table, char *err, size_t errlen)
+static int check_entries(const struct tc_config *c, const struct tc_tabkey *v, size_t n, const char *table,
+                         char *err, size_t errlen)
 {
     for (size_t i = 0; i < n; i++) {
         const struct tc_tabkey *t = &v[i];
@@ -322,6 +367,20 @@ static int check_entries(const struct tc_tabkey *v, size_t n, const char *table,
             return tc_err(err, errlen, "out of memory");
         if (r)
             return tc_err(err, errlen, "%s:%u: %s", t->at.file, t->at.line, msg);
+        if (q.kind == TC_Q_DATA) {
+            /* data.FILE names a data source of the test (basic-compile) */
+            size_t k;
+
+            for (k = 0; k < c->ndata; k++)
+                if (c->data[k].action == TC_DA_BASIC_COMPILE && !strcmp(c->data[k].file, q.rest))
+                    break;
+            if (k == c->ndata) {
+                tc_err(err, errlen, "%s:%u: %s: the test has no data source %s (the action basic-compile in its "
+                       "table data)", t->at.file, t->at.line, t->key, q.rest);
+                tc_query_free(&q);
+                return -1;
+            }
+        }
         r = tc_pred_parse(t->value.str, q.kind, &p, msg, sizeof msg);
         tc_query_free(&q);
         if (r == -2)
@@ -365,6 +424,9 @@ static int end_query(int kind)
     case TC_Q_END_RUN:
     case TC_Q_OUTPUT:
     case TC_Q_CHECK:
+    case TC_Q_RUN:
+    case TC_Q_RUN_RC:
+    case TC_Q_RUN_OUTPUT:
         return 1;
     }
     return 0;
@@ -402,7 +464,8 @@ static int check_ends(const struct tc_config *c, char *err, size_t errlen)
             if (r == 0 && !end_query(q.kind)) {
                 tc_query_free(&q);
                 tc_err(err, errlen, "%s:%u: the alternative end %s: the query %s does not vary with the end "
-                       "(an alternative names session, rc, requester, end.case, end.run, output or check.*)",
+                       "(an alternative names session, rc, requester, end.case, end.run, output, check.* or "
+                       "run.*)",
                        t->at.file, t->at.line, t->key, qt);
                 free(qt);
                 free(pt);
@@ -438,8 +501,8 @@ int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
     const struct tc_setting *fo = tc_get(c, "fixed-orig"), *fx = tc_get(c, "fixed");
     const struct tc_setting *ex = tc_get(c, "extension");
 
-    if (check_entries(c->asserts, c->nasserts, "asserts", err, errlen)
-        || check_entries(c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
+    if (check_entries(c, c->asserts, c->nasserts, "asserts", err, errlen)
+        || check_entries(c, c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
         return -1;
     /* the alternative ends are a declared deviation */
     if (fo && c->ndeviations == 0 && c->nends == 0)
@@ -667,7 +730,9 @@ int tc_query_same(const struct tc_query *a, const struct tc_query *b)
 {
     if (a->kind != b->kind)
         return 0;
-    if (a->kind != TC_Q_CHECK)
+    if (a->kind == TC_Q_DATA)
+        return a->rest && b->rest && !strcmp(a->rest, b->rest);
+    if (a->kind != TC_Q_CHECK && a->kind != TC_Q_RUN && a->kind != TC_Q_RUN_RC && a->kind != TC_Q_RUN_OUTPUT)
         return 1;
     return a->ns && b->ns && a->rest && b->rest && !strcmp(a->ns, b->ns) && !strcmp(a->rest, b->rest);
 }

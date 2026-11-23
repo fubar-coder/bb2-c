@@ -36,6 +36,15 @@
  * does not end normally, the first cell whose compile or run did not end
  * gets the session's end; the cells behind it run again in a new session.
  *
+ * The test-local data (ID.test/, the table data; change
+ * basic-test-local-data) are prepared once per run in its directory
+ * data/ (a data source preprocessed and tokenised, a .spec made by
+ * mktestdata, a copy as it is) and given to each cell by cr_data_pass: the
+ * files, the data sources of the cell's build configuration as jobs bNNN of
+ * its job list, every other build configuration as a compile part of its
+ * own (corpus.h build=, build_job=) before the cell's compile.  The results
+ * of the jobs are the query data.FILE of the judge.
+ *
  * The verdict (testjudge.h tj_verdict) is the exit status: 0 passed, 1
  * reproduced (an open bug shows as declared), 2 error (a configuration,
  * source or result that cannot be judged), 3 broken, 4 failed, 77 skipped
@@ -65,6 +74,9 @@ extern "C" {
 /** @brief What @TESTDATA@ stands for in a test source (the test data a
  *  configuration stages with files = ["data/NAME|@TESTDATA@/NAME"]). */
 #define CR_TESTDATA "CORPUS:data"
+/** @brief What @TESTDIR@ stands for (printf format, the test id): the
+ *  test's own data, the files of ID.test/ (change basic-test-local-data). */
+#define CR_TESTDIR "CORPUS:%s.test"
 
 /** @brief What to do. */
 struct caserun_opts {
@@ -112,7 +124,8 @@ struct caserun_opts {
  *        launcher, rcput, the hang check, serial, runwrap, runargs,
  *        launcherargs, the debugger module, the floppies), with run=off,
  *        test=TEST, the configuration prev|exe:TAG after the cell's, the
- *        source, the work directory and its report WORK.txt, mask_traps=on
+ *        source (NULL: none, a pass of data sources alone), the work
+ *        directory and its report WORK.txt, mask_traps=on
  *        for a job line run=, and the entries of TEST:NAME (or ON) as
  *        intended= lines.
  * @return 0 = ok, -1 = refused (err: a cell pass without a configuration),
@@ -121,6 +134,22 @@ struct caserun_opts {
 int cr_prev_pass(const char *cell_pass, const char *test, const char *name, const char *work, const char *source,
                  const char *prev_blitz2, const char *prev_libs, const char *const *entries, size_t nentries,
                  char **text, char *err, size_t errlen);
+
+/**
+ * @brief The data sources of a test in a pass of the comparison (change
+ *        basic-test-local-data): per source source=SOURCES[i]|NAMES[i] and
+ *        the entries TEST:NAMES[i] (not ON, which cr_prev_pass adds) as
+ *        intended= lines.  A data source (the action basic-compile) is
+ *        compiled where the driver is, in the pass of its setting of runtime
+ *        error checking (the cell's, or the one its option fixes; a pass of
+ *        its own with the settings of the first cell of the side port if no
+ *        cell has it), named ID/FILE, with runtime error checking
+ *        ID/FILE-runerrs.
+ * @param text  the lines (malloc'd)
+ * @return 0, -2 = out of memory
+ */
+int cr_prev_data(const char *test, const char *const *sources, const char *const *names, size_t n,
+                 const char *const *entries, size_t nentries, char **text);
 
 /**
  * @brief The next entry of test that names none of the compiles names[]
@@ -205,7 +234,9 @@ const char *cr_side_verdict_name(int v, int originals);
  *        assertion other than a default names an observation of the whole
  *        program (rc, requester, compile, compile.log, output, serial,
  *        inject, session, end.run), or the case's namespace holds an
- *        !ExpectError (the table of the preprocessor).  A conflict of
+ *        !ExpectError or a !RunProgram (the table of the preprocessor), or
+ *        a !RunProgram stands outside every case (a procedure, the batch
+ *        init or cleanup).  A conflict of
  *        assertions counts as such (the run of the case reports it).
  * @return 1 on its own, 0 shared, -1 out of memory
  */
@@ -329,6 +360,28 @@ int cr_plan_worst(const struct cr_plan *p);
 int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
                  const struct tc_env *env, const char *tag, const char *work, const char *source,
                  char **text, char *err, size_t errlen);
+
+/**
+ * @brief The pass lines of the test-local data of a cell (change
+ *        basic-test-local-data, D3): for a file of copy or mktestdata
+ *        file=ID.test/NAME|BUILT; for a data source (basic-compile) whose
+ *        build configuration (compiler, libraries, runtime error checking,
+ *        "same" the cell's value) is the cell's a job of the cell's job
+ *        list, build_job=-|BUILT|ID.test/NAME, and for every other build
+ *        configuration, in the order the data name them, a compile part
+ *        build=ID.test/.build-N|BLITZ2|DEFLIBS|ACIDLIBS|on|off (N from 1)
+ *        with the jobs build_job=ID.test/.build-N|BUILT|ID.test/NAME.
+ *        NAME is tc_data_result's; the build_job= lines come in the order
+ *        of the data sources, so job bNNN is the NNN-th data source.
+ * @param built  per entry of conf->data the host file: the tokenised source
+ *               of a data source, the file made by mktestdata, the file of
+ *               a copy
+ * @param text   the lines (malloc'd)
+ * @return 0 = ok, -1 = refused (err: a runner value the environment lacks),
+ *         -2 = out of memory
+ */
+int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
+                 const char *const *built, char **text, char *err, size_t errlen);
 
 /**
  * @brief The settings that decide the session of a cell, as one text: two

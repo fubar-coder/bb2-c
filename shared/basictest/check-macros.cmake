@@ -1,12 +1,14 @@
 # cmake -DBBSRC=... -DMACROS=macros.bas "-DSETS=SET^SET..." [-DOUT=FILE]
 #       [-DSKIP_MISSING=ON] -P check-macros.cmake
-# - is no macro of the macro text MACROS named like a token?  A macro named
-# like a token is a "Syntax Error" in the driver (spec testing/basic-
-# testlib, design D10).  Each SET is COMPILER[@LAST]|LIB|LIB...: the token
-# list bbsrc tokens makes of the compiler (of several lists in it the one
-# ending with $LAST) and the library files; a macro name equal to a token
-# name, compared without case, fails the check, naming macro, token and
-# compiler.  With OUT the text is copied there if it passes (the build
+# - is no macro of the macro text MACROS named like a token, and no NewType
+# of it or a field of one?  A macro named like a token is a "Syntax Error"
+# in the driver (spec testing/basic-testlib, design D10), and so is a field
+# (change basic-test-local-data, the NewType TLRun).  Each SET is
+# COMPILER[@LAST]|LIB|LIB...: the token list bbsrc tokens makes of the
+# compiler (of several lists in it the one ending with $LAST) and the
+# library files; a name equal to a token name, compared without case,
+# fails the check, naming the macro (the NewType, the field), the token
+# and the compiler.  With OUT the text is copied there if it passes (the build
 # step of the checked macro text, libs/userlibs/testlib/CMakeLists.txt).
 # SKIP_MISSING: exit 77 (skipped) if a file of a set is missing (the
 # AmiBlitz3 lists of the fetched originals).
@@ -28,6 +30,22 @@ foreach(l IN LISTS lines)
 		message(FATAL_ERROR "check-macros: ${MACROS}: \"${l}\" names no macro")
 	endif()
 	list(APPEND macros ${name})
+endforeach()
+# the NewTypes of the text: their names and the names of their fields
+# ("NEWTYPE .NAME", then "  FIELD.TYPE" lines up to "End NEWTYPE"), checked
+# like the macro names (a field named like a token does not compile)
+file(STRINGS ${MACROS} all)
+set(names)
+set(in_type "")
+foreach(l IN LISTS all)
+	if(l MATCHES "^NEWTYPE[ \t]+\\.([A-Za-z_][A-Za-z0-9_]*)")
+		set(in_type ${CMAKE_MATCH_1})
+		list(APPEND names "NEWTYPE .${in_type}|${in_type}")
+	elseif(in_type AND l MATCHES "^End[ \t]+NEWTYPE")
+		set(in_type "")
+	elseif(in_type AND l MATCHES "^[ \t]*([A-Za-z_][A-Za-z0-9_]*)[.]")
+		list(APPEND names "the field ${CMAKE_MATCH_1} of NEWTYPE .${in_type}|${CMAKE_MATCH_1}")
+	endif()
 endforeach()
 if(NOT macros)
 	message(FATAL_ERROR "check-macros: ${MACROS} defines no macro")
@@ -66,7 +84,14 @@ foreach(set IN LISTS sets)
 	# "XXXX name" per line; the names compared without case
 	set(out "\n${out}\n")
 	string(TOLOWER "${out}" lower)
+	set(checked)
 	foreach(m IN LISTS macros)
+		list(APPEND checked "macro ${m}|${m}")
+	endforeach()
+	list(APPEND checked ${names})
+	foreach(entry IN LISTS checked)
+		string(REGEX REPLACE "\\|[^|]*$" "" what "${entry}")
+		string(REGEX REPLACE "^.*\\|" "" m "${entry}")
 		string(TOLOWER "${m}" lm)
 		string(REGEX MATCH "\n[0-9a-f]+ ${lm}\n" hit "${lower}")
 		if(hit)
@@ -75,7 +100,7 @@ foreach(set IN LISTS sets)
 			string(LENGTH "${hit}" len)
 			math(EXPR len "${len} - 2")
 			string(SUBSTRING "${out}" ${at} ${len} token)
-			list(APPEND clashes "macro ${m} is the token ${token} of ${compiler}")
+			list(APPEND clashes "${what} is the token ${token} of ${compiler}")
 		endif()
 	endforeach()
 endforeach()
@@ -85,7 +110,9 @@ if(clashes)
 	message(FATAL_ERROR "check-macros: ${MACROS}: ${clashes}")
 endif()
 list(LENGTH macros nm)
-message(STATUS "check-macros: ${nm} macros of ${MACROS}, no token of ${nsets} token lists (${ntokens} tokens)")
+list(LENGTH names nn)
+message(STATUS "check-macros: ${nm} macros and ${nn} NewType names of ${MACROS}, no token of ${nsets} token lists "
+	"(${ntokens} tokens)")
 if(OUT)
 	file(COPY_FILE ${MACROS} ${OUT})
 endif()

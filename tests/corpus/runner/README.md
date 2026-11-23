@@ -265,6 +265,25 @@ gets a session of its own (`cr_session_key`). A cell whose program runs
 through inject (`pad`, or a `runwrap` of inject) has inject's report, the
 output's `inject:` lines, as its query `inject`.
 
+A test with data of its own (the directory `ID.test/`, its table `data`;
+change `basic-test-local-data`) has them prepared once in `data/` of the
+run directory: a data source (`basic-compile`) preprocessed (its
+placeholders, no check) and tokenised with the cells' token list, a
+`.spec` made by `mktestdata`, a copied file as it is. Each cell's pass
+gets them (`cr_data_pass`): a file as `file=ID.test/NAME|...`, a data
+source of the cell's own build configuration (compiler, libraries,
+runtime error checking) as a job of the cell's job list
+(`build_job=-|SRC|ID.test/NAME`), and every other build configuration as
+a compile part of its own (`build=ID.test/.build-N|BLITZ2|DEFLIBS|ACIDLIBS|on|off`:
+its compiler, `ted` and libraries in `CORPUS:ID.test/.build-N/blitz2/`,
+its job list and log there, compiled before the cell's compile in the
+cell's session) with its jobs (`build_job=ID.test/.build-N|SRC|ID.test/NAME`).
+The jobs are `bNNN`, in the order of the data sources; their results are
+the query `data.FILE` (`ok`, `error LINE MESSAGE` with the line of the
+data source, `none`), by default `== ok`: a result its assertion does not
+ask for makes the cases of the cell BROKEN, the report naming
+`ID.test/FILE:LINE` and the message.
+
 Without `--case` it runs every case of the source on the side (`caserun.h`,
 "The run of all cases"): the cases share a run of the driver of all of them
 and each is judged from its own block; a case that asserts an observation
@@ -293,8 +312,11 @@ whose driver cannot be written fails it), and the test `PREFIX_ID_prev`
 value of `runtime-errors` among the cells of the side port, a pass of
 `corpus.h` with `run=off`, `clib` and `prev|exe:clib` each (`cr_prev_pass`):
 the compiles `ID` and `ID-runerrs`, the PREV_INTENDED entries
-`PREFIX_ID_prev:ID` and `:ID-runerrs`. An entry of the test that names
-no compile of it is stale (`cr_prev_unknown`).
+`PREFIX_ID_prev:ID` and `:ID-runerrs`. The data sources of the test are
+compiled in the pass of their setting of runtime error checking
+(`cr_prev_data`, `source=PATH|NAME`): `ID/FILE` and `ID/FILE-runerrs`.
+An entry of the test that names no compile of it is stale
+(`cr_prev_unknown`).
 
 ## Inputs and outputs
 

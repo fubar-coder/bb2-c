@@ -87,6 +87,11 @@ void bugorig_free(struct bugorig_obs *o);
 /* the observation of one configuration; 0 = ok, -1 = out of memory */
 int bugorig_observe(const struct bugorig_outputs *out, struct bugorig_obs *o);
 
+/* the compile result of job in a tedstub log (NULL: none): "ok", "error
+   LINE MESSAGE", another RESULT ("failed REASON"), "none" without its
+   RESULT line; malloc'd, NULL = out of memory */
+char *bugorig_compile(const char *log, const char *job);
+
 /* the text of section NAME of o (NULL = not there) */
 const char *bugorig_get(const struct bugorig_obs *o, const char *name);
 

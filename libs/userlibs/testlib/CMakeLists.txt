@@ -24,8 +24,10 @@ target_include_directories(userlib-testlib PRIVATE ${PROJECT_SOURCE_DIR}/shared/
 # any library set of the build: blitz2 with the default acidlibs, deflibs
 # and userlibs (literallib, testlib), blitz2-ab3's AmiBlitz3 list, and
 # every variant (libs/variants, libs/tests/variants) with its acidlibs,
-# deflibs and the RWE userlibs built with its numbers.  ctest
+# deflibs and the RWE userlibs built with its numbers; and so are the
+# names of its NewTypes and their fields.  ctest
 # basictest_macros_tokens_broken: a macro named like a token;
+# basictest_macros_newtype_broken: a field named like a token;
 # basictest_macros_tokens_ab3 (label originals, skipped without the
 # fetched files): AmiBlitz3 v3.14.0's compiler and BigLibs.
 set(TESTLIB_MACROS ${BLITZ_VARIANTS_DIR}/${BLITZ_DEFAULT_VARIANT}/userlibs/testlib/macros.bas
@@ -72,6 +74,13 @@ add_test(NAME basictest_macros_tokens_broken COMMAND ${CMAKE_COMMAND} -DBBSRC=${
 	"-DSETS=${default_set}" -P ${macros_check})
 set_tests_properties(basictest_macros_tokens_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"macro[ \n]+NPrint[ \n]+is[ \n]+the[ \n]+token[ \n]+[0-9A-F]+[ \n]+NPrint[ \n]+of[^;]*;[ \n]+macro[ \n]+loadshape[ \n]+is[ \n]+the[ \n]+token[ \n]+[0-9A-F]+[ \n]+LoadShape")  # CMake wraps long messages
+# a field of a NewType of the text named like a token (Cls; change
+# basic-test-local-data, the NewType TLRun)
+add_test(NAME basictest_macros_newtype_broken COMMAND ${CMAKE_COMMAND} -DBBSRC=${BBSRC}
+	-DMACROS=${PROJECT_SOURCE_DIR}/shared/basictest/broken/macros-newtype-token.bas
+	"-DSETS=${default_set}" -P ${macros_check})
+set_tests_properties(basictest_macros_newtype_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"the[ \n]+field[ \n]+cls[ \n]+of[ \n]+NEWTYPE[ \n]+\\.TLRun[ \n]+is[ \n]+the[ \n]+token[ \n]+[0-9A-F]+[ \n]+Cls[ \n]+of")
 # AmiBlitz3's list (design D10: "only if there"): v3.14.0's compiler and
 # BigLibs, as the test ab3_tokens takes them
 set(ab3 ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-58a11658)

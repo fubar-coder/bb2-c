@@ -937,3 +937,143 @@ TEST_CASE("testjudge: an announcement judged like a check", "[testjudge]")
         CHECK(has(m, "this check has no values"));
     }
 }
+
+// the compile of a data source (change basic-test-local-data, D5): data.FILE,
+// by default == ok; an unexpected result makes the cell broken
+TEST_CASE("testjudge: the compile of a data source", "[testjudge]")
+{
+    const std::string own = "[data.\"child.bas\"]\naction = \"basic-compile\"\n[data]\n\"in.txt\" = \"copy\"\n";
+    std::string m;
+    tj_data ok[] = { { "child.bas", "ok" } };
+    tj_data bad[] = { { "child.bas", "error 3 Syntax Error" } };
+    tj_data none[] = { { "child.bas", "none" } };
+
+    {
+        fixture f("", own);
+        obs o(good);
+
+        o.o.data = ok;
+        o.o.ndata = 1;
+        CHECK(judge(f, o, m) == TJ_PASS);
+        CHECK(m == "");
+        // an error without an assertion: broken, naming the data file and its line
+        o.o.data = bad;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "the data source x.test/child.bas does not compile"));
+        CHECK(has(m, "x.test/child.bas:3: Syntax Error"));
+        o.o.data = none;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "its compile gave none, not ok"));
+        // not captured at all
+        o.o.data = nullptr;
+        o.o.ndata = 0;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "nothing (not captured)"));
+        // a failed check stays a failure besides
+        obs o2(head + "check|3|fail|$00000010|$00000000\n" + tail);
+        o2.o.data = ok;
+        o2.o.ndata = 1;
+        CHECK(judge(f, o2, m) == TJ_FAIL);
+    }
+    {
+        // a declared compile error of the original: the cells with it run
+        // without the file; the others still need ok
+        fixture f("", "fixed-orig = 7\n" + own + "[deviations.\"libs=cd\"]\n\"data.child.bas\" = \"contains \\\"Syntax Error\\\"\"\n"
+                  "[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+        obs o(good);
+
+        o.o.data = bad;
+        o.o.ndata = 1;
+        CHECK(judge(f, o, m, "cd", TC_DEVIATED) == TJ_PASS);
+        CHECK(judge(f, o, m, "clib", TC_DEVIATED) == TJ_BROKEN);
+        CHECK(m.find("assertion data.child.bas") == std::string::npos);
+        o.o.data = ok;
+        CHECK(judge(f, o, m, "cd", TC_DEVIATED) == TJ_BROKEN);
+        CHECK(has(m, "assertion data.child.bas contains \"Syntax Error\""));
+    }
+}
+
+// the queries of a started program (change basic-test-local-data):
+// run.NS.NAME, .rc, .output; the default: every program that ran returned
+TEST_CASE("testjudge: a started program", "[testjudge]")
+{
+    static const char runsrc[] = "!TestCase{ctrlc}\n"                                      // 1
+                                 "  *r.TLRun=!RunProgram{\"CORPUS:x.test/child\",\"edit\"}\n"   // 2  K0
+                                 "  !CheckEq{*r\\rc,20,\"rc\"}\n"                          // 3  K1
+                                 "  !RunProgram{\"Echo x\"}\n"                              // 4  K2
+                                 "!EndTestCase\n";
+    const std::string hd = "begin|1\nblock|case|ctrlc\n";
+    const std::string done = hd + "run|0\nrunend|0|$00000014\ncheck|1|ok|$00000014|$00000014\nrun|2\nrunend|2|$00000000\n"
+                             "blockend\nend\n";
+    std::string m;
+    tj_runout outs[] = { { 0, "***Break\n" }, { 2, "x\n" } };
+
+    {
+        fixture f("", "", "ctrlc", runsrc);
+        obs o(done);
+
+        o.o.runs = outs;
+        o.o.nruns = 2;
+        // returned: passes by the defaults, the return code has none
+        CHECK(judge(f, o, m) == TJ_PASS);
+        CHECK(m == "");
+        // open: the run without its runend, the session ended
+        obs open(hd + "run|0\n", -1);
+        open.o.has_rc = 0;
+        open.o.session = "timeout";
+        open.o.runs = outs;
+        open.o.nruns = 1;
+        CHECK(judge(f, open, m) == TJ_FAIL);
+        CHECK(has(m, "the program !RunProgram \"edit\" (x.test.bas:2) did not return (no runend 0)"));
+    }
+    {
+        // the queries: open with its output kept, declared
+        fixture f("", "[asserts]\n\"run.ctrlc.edit\" = \"== open\"\n\"run.ctrlc.edit.output\" = \"contains \\\"Break\\\"\"\n"
+                  "session = \"== timeout\"\n\"end.case\" = \"not exists\"\n\"end.run\" = \"not exists\"\n"
+                  "rc = \"not exists\"\n",
+                  "ctrlc", runsrc);
+        obs open(hd + "run|0\n");
+        open.o.has_rc = 0;
+        open.o.session = "timeout";
+        open.o.runs = outs;
+        open.o.nruns = 1;
+        CHECK(judge(f, open, m) == TJ_PASS);
+        CHECK(m == "");
+        // the same declared on a run that returned: fails, naming it
+        obs o(done);
+        o.o.runs = outs;
+        o.o.nruns = 2;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion run.ctrlc.edit == open"));
+        CHECK(has(m, "does not hold: done"));
+    }
+    {
+        // rc 20 asserted in the toml
+        fixture f("", "[asserts]\n\"run.ctrlc.edit.rc\" = \"== 20\"\n", "ctrlc", runsrc);
+        obs o(done);
+
+        CHECK(judge(f, o, m) == TJ_PASS);
+        obs o2(hd + "run|0\nrunend|0|$00000000\ncheck|1|ok|$00000014|$00000014\nblockend\nend\n");
+        CHECK(judge(f, o2, m) == TJ_FAIL);
+        CHECK(has(m, "assertion run.ctrlc.edit.rc == 20"));
+        // the system gave no return code: cannot be judged
+        obs o3(hd + "run|0\nrunend|0|-\ncheck|1|ok|$00000014|$00000014\nblockend\nend\n");
+        CHECK(judge(f, o3, m) == TJ_ERROR);
+        CHECK(has(m, "the system gave no return code (runend 0 -), it cannot be judged"));
+    }
+    {
+        // not-run: the case did not reach it
+        fixture f("", "[asserts]\n\"run.ctrlc.edit\" = \"== not-run\"\n", "ctrlc", runsrc);
+        obs o(hd + "blockend\nend\n");
+
+        CHECK(judge(f, o, m) == TJ_PASS);
+    }
+    {
+        // a run entry of a number that is no !RunProgram
+        fixture f("", "", "ctrlc", runsrc);
+        obs o(hd + "run|1\nblockend\nend\n");
+
+        CHECK(judge(f, o, m) == TJ_ERROR);
+        CHECK(has(m, "line 3 names the run 1, which is no !RunProgram of the source"));
+    }
+}

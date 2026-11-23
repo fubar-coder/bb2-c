@@ -404,6 +404,43 @@ TEST_CASE("require, expect-error, blockend, broken, incomplete, end", "[basictes
     }
 }
 
+// the entries of a started program (change basic-test-local-data): run K,
+// runend K with the return code or - where the system gives none
+TEST_CASE("run, runend", "[basictest]")
+{
+    auto e = entry(BASICTEST_RUN);
+    e.k = 4;
+    CHECK(write(e) == "run\t4\n");
+    auto r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.kind == BASICTEST_RUN);
+    CHECK(r.e.k == 4u);
+
+    e = entry(BASICTEST_RUNEND);
+    e.k = 4;
+    e.ok = 1;
+    e.actual = 20;
+    CHECK(write(e) == "runend\t4\t$00000014\n");
+    r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.kind == BASICTEST_RUNEND);
+    CHECK(r.e.k == 4u);
+    CHECK(r.e.ok == 1);
+    CHECK(r.e.actual == 20u);
+
+    e.ok = 0;
+    e.actual = 0;
+    CHECK(write(e) == "runend\t4\t-\n");
+    r = roundtrip(e);
+    REQUIRE(r.rc == BASICTEST_OK);
+    CHECK(r.e.ok == 0);
+    CHECK(r.e.actual == 0u);
+
+    e.ok = 1;
+    e.actual = 0xFFFFFFFFu;
+    CHECK(write(e) == "runend\t4\t$FFFFFFFF\n");
+}
+
 TEST_CASE("writer: a buffer too small, an unknown kind, a case without name", "[basictest]")
 {
     std::string exp = "x\ty", act = "\\";
@@ -423,7 +460,7 @@ TEST_CASE("writer: a buffer too small, an unknown kind, a case without name", "[
     }
 
     std::vector<uint8_t> buf(64);
-    e = entry(BASICTEST_CHECKFLT + 1);
+    e = entry(BASICTEST_RUNEND + 1);
     CHECK(basictest_write(&e, buf.data(), buf.size()) == 0u);
     e = entry(-1);
     CHECK(basictest_write(&e, buf.data(), buf.size()) == 0u);
@@ -468,6 +505,7 @@ TEST_CASE("reader: a wrong number of fields names the line", "[basictest]")
         "require\t1",  "require\t1\tbroken\tx",  "expect-error", "expect-error\t1\t2",
         "blockend\tx", "broken",       "broken\ta\tb", "incomplete\t", "end\t",
         "check\t1\tok\t$00000000\t$00000000\t\t\t\t",
+        "run", "run\t1\t2", "runend\t1", "runend\t1\t$00000000\t-",
     };
     for (const char *l : lines) {
         auto r = read(l, 99);
@@ -548,6 +586,15 @@ TEST_CASE("reader: a malformed value names the line and the field", "[basictest]
         { "begin\t", 2 },
         { "begin\t01", 2 },
         { "begin\tone", 2 },
+        // the spec's scenario: a runend with a malformed code
+        { "runend\t4\t20", 3 },
+        { "runend\t4\t$0000014", 3 },
+        { "runend\t4\t$0000001e", 3 },
+        { "runend\t4\t--", 3 },
+        { "runend\t4\t", 3 },
+        { "runend\t04\t$00000014", 2 },
+        { "run\tx", 2 },
+        { "run\t", 2 },
     };
     for (const auto &c : cases) {
         auto r = read(c.line, 21);

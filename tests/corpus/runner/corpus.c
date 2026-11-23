@@ -80,6 +80,19 @@ void corpus_free(struct corpus_pass *p)
     free(p->uae);
     for (i = 0; i < CORPUS_FLOPPIES; i++)
         free(p->floppy[i]);
+    for (i = 0; i < p->nbuilds; i++) {
+        free(p->builds[i].dir);
+        free(p->builds[i].blitz2);
+        free(p->builds[i].deflibs);
+        free(p->builds[i].acidlibs);
+    }
+    free(p->builds);
+    for (i = 0; i < p->nbjobs; i++) {
+        free(p->bjobs[i].part);
+        free(p->bjobs[i].src);
+        free(p->bjobs[i].dest);
+    }
+    free(p->bjobs);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].base);
@@ -88,9 +101,12 @@ void corpus_free(struct corpus_pass *p)
         free(p->configs[i].acidlibs);
     }
     free(p->configs);
-    for (i = 0; i < p->nsources; i++)
+    for (i = 0; i < p->nsources; i++) {
         free(p->sources[i]);
+        free(p->source_names ? p->source_names[i] : NULL);
+    }
     free(p->sources);
+    free(p->source_names);
     for (i = 0; i < p->nmounts; i++) {
         free(p->mount_name[i]);
         free(p->mount_dir[i]);
@@ -344,13 +360,24 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             continue;
         }
         if (!strcmp(key, "source")) {
-            char **v2 = realloc(p->sources, (p->nsources + 1) * sizeof *v2);
+            char **v2 = realloc(p->sources, (p->nsources + 1) * sizeof *v2), **n2;
+            char *bar = strchr(val, '|'), *name = NULL;
 
-            if (!v2) {
+            if (v2)
+                p->sources = v2;
+            if (!v2 || !(n2 = realloc(p->source_names, (p->nsources + 1) * sizeof *n2))) {
                 free(val);
                 return fail(p, err, errlen, "out of memory");
             }
-            p->sources = v2;
+            p->source_names = n2;
+            if (bar) {
+                *bar = 0;
+                if (!*val || !inside(bar + 1) || !(name = strdup(bar + 1))) {
+                    free(val);
+                    return fail(p, err, errlen, "line %u: source=PATH[|NAME] (NAME a path inside the volume)", no);
+                }
+            }
+            p->source_names[p->nsources] = name;
             p->sources[p->nsources++] = val;
             continue;
         }
@@ -439,6 +466,59 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 return fail(p, err, errlen, "line %u: out of memory", no);
             continue;
         }
+        if (!strcmp(key, "build")) {
+            const char *f = val;
+            char *dir = field(&f), *b2 = field(&f), *def = field(&f), *acid = field(&f), *re = field(&f);
+            struct corpus_build *nb = NULL;
+            int ok = dir && b2 && def && acid && re && inside(dir) && *b2 && *def && *acid && !*f
+                     && (!strcmp(re, "on") || !strcmp(re, "off"));
+
+            if (ok && (nb = realloc(p->builds, (p->nbuilds + 1) * sizeof *nb))) {
+                p->builds = nb;
+                nb[p->nbuilds].dir = dir;
+                nb[p->nbuilds].blitz2 = b2;
+                nb[p->nbuilds].deflibs = def;
+                nb[p->nbuilds].acidlibs = acid;
+                nb[p->nbuilds++].runtime_errors = !strcmp(re, "on");
+                free(re);
+                free(val);
+                continue;
+            }
+            free(dir);
+            free(b2);
+            free(def);
+            free(acid);
+            free(re);
+            free(val);
+            return fail(p, err, errlen, "line %u: build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off (DIR inside the volume)",
+                        no);
+        }
+        if (!strcmp(key, "build_job")) {
+            const char *f = val;
+            char *part = field(&f), *src = field(&f), *dest = field(&f);
+            struct corpus_build_job *nj = NULL;
+            int ok = part && src && dest && *part && *src && inside(dest) && !*f
+                     && (!strcmp(part, "-") || inside(part));
+
+            if (ok && (nj = realloc(p->bjobs, (p->nbjobs + 1) * sizeof *nj))) {
+                p->bjobs = nj;
+                if (!strcmp(part, "-")) {
+                    free(part);
+                    part = NULL;
+                }
+                nj[p->nbjobs].part = part;
+                nj[p->nbjobs].src = src;
+                nj[p->nbjobs++].dest = dest;
+                free(val);
+                continue;
+            }
+            free(part);
+            free(src);
+            free(dest);
+            free(val);
+            return fail(p, err, errlen, "line %u: build_job=PART|SRC|DEST (PART - or the DIR of a build=, DEST "
+                        "inside the volume)", no);
+        }
         if (!strcmp(key, "jobline")) {
             if (!*val || push(&p->joblines, &p->njoblines, val)) {
                 free(val);
@@ -498,6 +578,20 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                     "expect");
     /* a cell of the BASIC test model: one configuration and one source, no
        judging of the pass's own */
+    if ((p->nbuilds || p->nbjobs) && !p->cell)
+        return fail(p, err, errlen, "build= and build_job= need cell=on");
+    for (i = 0; i < p->nbuilds; i++)
+        for (k = 0; k < i; k++)
+            if (!strcasecmp(p->builds[i].dir, p->builds[k].dir))
+                return fail(p, err, errlen, "build=%s twice", p->builds[i].dir);
+    for (i = 0; i < p->nbjobs; i++) {
+        if (!p->bjobs[i].part)
+            continue;
+        for (k = 0; k < p->nbuilds && strcmp(p->bjobs[i].part, p->builds[k].dir); k++)
+            ;
+        if (k == p->nbuilds)
+            return fail(p, err, errlen, "build_job=%s|...: no build=%s", p->bjobs[i].part, p->bjobs[i].part);
+    }
     if (p->cell) {
         if (p->nconfigs != 1 || p->nsources != 1 || p->expect || p->expect_dir || p->orig || p->fixed
             || p->regression || p->record || p->gate || p->publish)
@@ -582,7 +676,7 @@ common:
     }
     for (i = 0; i < p->nsources; i++)
         for (k = 0; k < i; k++) {
-            char *a = corpus_name(p->sources[i]), *b = corpus_name(p->sources[k]);
+            char *a = corpus_source_name(p, i), *b = corpus_source_name(p, k);
             int same = a && b && !strcasecmp(a, b);
 
             free(a);
@@ -763,7 +857,7 @@ int corpus_only(struct corpus_pass *p, const char *const *names, size_t n, char 
         int found = 0;
 
         for (i = 0; i < p->nsources; i++) {
-            char *nm = corpus_name(p->sources[i]);
+            char *nm = corpus_source_name(p, i);
 
             if (nm && !strcmp(nm, names[k]))
                 keep[i] = found = 1;
@@ -782,7 +876,7 @@ int corpus_only(struct corpus_pass *p, const char *const *names, size_t n, char 
 
 char *corpus_expect_path(const struct corpus_pass *p, size_t i, const char *ext)
 {
-    char *n = corpus_name(p->sources[i]);
+    char *n = corpus_source_name(p, i);
     char *path = n ? str_printf("%s/%s%s", p->expect_dir, n, ext) : NULL;
 
     free(n);
@@ -800,7 +894,7 @@ int corpus_load_expect(struct corpus_pass *p, char *err, size_t errlen)
         return -1;
     for (i = 0; i < p->nsources; i++)
         for (k = 0; k < (p->serial ? 2u : 1u); k++) {
-            char *n = corpus_name(p->sources[i]);
+            char *n = corpus_source_name(p, i);
             int missing = !n || !cexp_has(cexp_find(&p->expected, n), k ? CEXP_SERIAL : CEXP_OUT);
 
             if (missing)
@@ -940,6 +1034,20 @@ char *corpus_name(const char *source)
     return strndup(b, n);
 }
 
+char *corpus_source_name(const struct corpus_pass *p, size_t i)
+{
+    if (p->source_names && p->source_names[i])
+        return strdup(p->source_names[i]);
+    return corpus_name(p->sources[i]);
+}
+
+char *corpus_source_file(const struct corpus_pass *p, size_t i)
+{
+    if (p->source_names && p->source_names[i])
+        return str_printf("n%03zu", i);
+    return corpus_name(p->sources[i]);
+}
+
 void corpus_mask_traps(uint8_t *data, size_t len)
 {
     prevcmp_mask_traps(data, len);
@@ -1032,6 +1140,94 @@ static int mkdir_sub(const struct corpus_pass *p, size_t c, const char *sub)
     return r;
 }
 
+/* copies from to vol/rel (its parent directories made); 0 = ok */
+static int copy_into(const char *from, const char *vol, const char *rel)
+{
+    char *to = str_printf("%s/%s", vol, rel), *slash;
+    int r = -1;
+
+    if (!to)
+        return -1;
+    if ((slash = strrchr(to, '/'))) {
+        *slash = 0;
+        r = mkdir_p(to);
+        *slash = '/';
+    }
+    if (!r)
+        r = copy_file(from, to);
+    free(to);
+    return r;
+}
+
+/* the data of a cell (build=, build_job=): the jobs of the cell's own list
+   to jobs, every part's compiler, sources and job list */
+static int stage_builds(const struct corpus_pass *p, const char *vol, struct text *jobs, FILE *log)
+{
+    for (size_t k = 0; k < p->nbuilds; k++) {
+        const struct corpus_build *b = &p->builds[k];
+        struct { const char *from, *to; } files[] = {
+            { b->blitz2, "blitz2/blitz2" }, { p->ted, "blitz2/ted" },
+            { b->deflibs, "blitz2/deflibs" }, { b->acidlibs, "blitz2/acidlibs" },
+        };
+        struct text pj = { 0 };
+        char *d, *to;
+        int bad;
+
+        for (size_t i = 0; i < sizeof files / sizeof files[0]; i++) {
+            char *rel = str_printf("%s/%s", b->dir, files[i].to);
+
+            bad = !rel || copy_into(files[i].from, vol, rel);
+            free(rel);
+            if (bad) {
+                fprintf(log, "corpus: cannot copy %s to %s\n", files[i].from, b->dir);
+                return -1;
+            }
+        }
+        if (!(d = str_printf("%s/%s/blitz2/userlibs", vol, b->dir)) || mkdir_p(d)) {
+            free(d);
+            fprintf(log, "corpus: cannot create %s\n", b->dir);
+            return -1;
+        }
+        free(d);
+        text_add(&pj, "log=" VOLUME ":%s/session.log\ndefaults=" VOLUME ":%s/defaults.xtra\n", b->dir, b->dir);
+        if (!b->runtime_errors)
+            text_add(&pj, "runerr=off\n");
+        for (size_t i = 0; i < p->nbjobs; i++)
+            if (p->bjobs[i].part && !strcmp(p->bjobs[i].part, b->dir))
+                text_add(&pj, "job=b%03zu|" VOLUME ":%s/src/b%03zu.bb2|" VOLUME ":%s\n", i, b->dir, i,
+                         p->bjobs[i].dest);
+        to = str_printf("%s/%s/jobs", vol, b->dir);
+        bad = pj.bad || !to || write_file(to, pj.p, pj.n);
+        free(to);
+        free(pj.p);
+        if (bad) {
+            fprintf(log, "corpus: cannot write the job list of %s\n", b->dir);
+            return -1;
+        }
+    }
+    for (size_t i = 0; i < p->nbjobs; i++) {
+        const struct corpus_build_job *j = &p->bjobs[i];
+        char *src = j->part ? str_printf("%s/src/b%03zu.bb2", j->part, i) : str_printf("src/b%03zu.bb2", i);
+        char *dest = str_printf("%s/%s", vol, j->dest), *slash = dest ? strrchr(dest, '/') : NULL;
+        int bad = !src || !dest || copy_into(j->src, vol, src);
+
+        if (!bad && slash) {
+            *slash = 0;
+            bad = mkdir_p(dest);
+        }
+        free(dest);
+        if (bad) {
+            fprintf(log, "corpus: cannot stage %s for %s\n", j->src, j->dest);
+            free(src);
+            return -1;
+        }
+        if (!j->part)
+            text_add(jobs, "job=b%03zu|" VOLUME ":%s|" VOLUME ":%s\n", i, src, j->dest);
+        free(src);
+    }
+    return 0;
+}
+
 int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
 {
     const struct corpus_config *cf = &p->configs[c];
@@ -1122,7 +1318,7 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
     if (!p->runtime_errors)
         text_add(&jobs, "runerr=off\n");
     for (i = 0; i < p->nsources; i++) {
-        char *name = corpus_name(p->sources[i]), *to = str_printf("%s/src/%s.bb2", vol, name);
+        char *name = corpus_source_file(p, i), *to = str_printf("%s/src/%s.bb2", vol, name);
 
         if (!name || !to || copy_file(p->sources[i], to)) {
             fprintf(log, "corpus: cannot copy %s\n", p->sources[i]);
@@ -1134,6 +1330,8 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
         free(name);
         free(to);
     }
+    if (stage_builds(p, vol, &jobs, log))
+        goto out;
     for (i = 0; i < p->njoblines; i++)
         text_add(&jobs, "%s\n", p->joblines[i]);
     {
@@ -1170,7 +1368,7 @@ static void run13(const struct corpus_pass *p, struct text *s)
     size_t i;
 
     for (i = 0; p->run && i < p->nsources; i++) {
-        char *n = corpus_name(p->sources[i]);
+        char *n = corpus_source_file(p, i);
 
         text_add(s, "If EXISTS " VOLUME ":out/%s\n"
                 "  " VOLUME ":run >" VOLUME ":out/%s.run %s%s%s%s%s" VOLUME ":out/%s%s%s\n"
@@ -1183,9 +1381,29 @@ static void run13(const struct corpus_pass *p, struct text *s)
     }
 }
 
+/* the compile parts of the data (build=), before the cell's compile:
+   blitz2: assigned to the part's compiler, its job list, rc=N behind its
+   output */
+static void build_parts(const struct corpus_pass *p, struct text *s)
+{
+    for (size_t k = 0; k < p->nbuilds; k++) {
+        const char *d = p->builds[k].dir;
+
+        text_add(s, "Assign blitz2: " VOLUME ":%s/blitz2\nStack %u\n", d, p->stack);
+        if (kick1x(p))
+            text_add(s, "blitz2:blitz2 >" VOLUME ":%s/blitz2.out " VOLUME ":%s/jobs\n"
+                    VOLUME ":rcput " VOLUME ":%s/blitz2.out\n", d, d, d);
+        else
+            text_add(s, "blitz2:blitz2 " VOLUME ":%s/jobs >" VOLUME ":%s/blitz2.out\n"
+                    "Echo \"rc=$RC\" >>" VOLUME ":%s/blitz2.out\n", d, d, d);
+        text_add(s, "Assign blitz2:\n");
+    }
+}
+
 /* the compile: the job list through blitz2 (and wrap=), rc=N behind its output */
 static void compile_part(const struct corpus_pass *p, struct text *s)
 {
+    build_parts(p, s);
     if (kick1x(p)) {
         compile13(p, s);
         return;
@@ -1215,7 +1433,7 @@ static void run_part(const struct corpus_pass *p, struct text *s)
                 "Echo \"rc=$gate\" >>" VOLUME ":out/gate.run\n"
                 "If VAL $gate EQ 0\n");
     for (i = 0; p->run && i < p->nsources; i++) {
-        char *n = corpus_name(p->sources[i]);
+        char *n = corpus_source_file(p, i);
 
         text_add(s, "If EXISTS " VOLUME ":out/%s\n"
                 "  " VOLUME ":run %s%s%s%s%s" VOLUME ":out/%s%s%s >" VOLUME ":out/%s.run\n"
@@ -1333,7 +1551,7 @@ struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t
         /* from the first program run: the file it creates first (the gate's, else
            the first program's), so that a compile silent for long does not count */
         if (p->hang_from_run) {
-            char *n = p->gate ? NULL : p->nsources ? corpus_name(p->sources[0]) : NULL;
+            char *n = p->gate ? NULL : p->nsources ? corpus_source_file(p, 0) : NULL;
 
             arm = p->gate ? str_printf("%s/out/gate.run", vol)
                   : n ? str_printf("%s/out/%s.run", vol, n) : NULL;
@@ -1393,7 +1611,7 @@ struct outcome {
 static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const char *log,
                          struct outcome *o)
 {
-    char *n = corpus_name(p->sources[i]);
+    char *n = corpus_source_file(p, i);
     char *exe = str_printf("%s/%s/vol/out/%s", p->work, p->configs[c].tag, n);
     char *run = str_printf("%s/%s/vol/out/%s.run", p->work, p->configs[c].tag, n);
     char *serial = str_printf("%s/%s/vol/out/%s.serial", p->work, p->configs[c].tag, n);
@@ -1467,7 +1685,7 @@ static const struct outcome *compared_with(const struct corpus_pass *p, size_t c
 static int observe(const struct corpus_pass *p, size_t c, enum amiga_emulation_status st,
                    const char *slog, struct bugorig_obs *o)
 {
-    char *n = corpus_name(p->sources[0]);
+    char *n = corpus_source_file(p, 0);
     char *run = n ? str_printf("%s/%s/vol/out/%s.run", p->work, p->configs[c].tag, n) : NULL;
     char *b2 = str_printf("%s/%s/vol/out/blitz2.out", p->work, p->configs[c].tag);
     size_t len;
@@ -1514,7 +1732,7 @@ static int check_orig(const struct corpus_pass *p, struct bugorig_obs *orig, FIL
     rc = -1;
     if (bugorig_matches(&e, orig)) {
         struct text rep = { 0 };
-        char *name = corpus_name(p->sources[0]);
+        char *name = corpus_source_name(p, 0);
 
         text_add(&rep, "== bug-orig %s: runtime error checking %s, expectation %s, original %s\n"
                  "BROKEN TEST: the original shows the expected (correct) behaviour - it does not "
@@ -1637,7 +1855,7 @@ static int judge(const struct corpus_pass *p, const struct bugorig_obs *orig,
 {
     struct bugorig_obs e, *o = calloc(p->nconfigs, sizeof *o);
     struct text rep = { 0 };
-    char err[300], *name = corpus_name(p->sources[0]);
+    char err[300], *name = corpus_source_name(p, 0);
     size_t len, c;
     char *etext = (char *)read_file(p->expect, &len);
     int rc = 2, worst = 0;
@@ -1779,7 +1997,7 @@ static int write_update(const struct corpus_pass *p, enum amiga_emulation_status
     }
     for (i = 0; i < p->nsources && !rc; i++) {
         struct outcome o;
-        char *name = corpus_name(p->sources[i]), fn[200];
+        char *name = corpus_source_name(p, i), fn[200];
 
         load_outcome(p, 0, i, slog, &o);
         if (!o.exe)
@@ -1870,7 +2088,7 @@ static int write_observed(const struct corpus_pass *p, enum amiga_emulation_stat
     }
     for (i = 0; !rc && i < p->nsources; i++) {
         struct outcome o;
-        char *name = corpus_name(p->sources[i]);
+        char *name = corpus_source_name(p, i);
         char *out = name ? str_printf("%s/%s.out", p->observe_to, name) : NULL;
         char *ser = name ? str_printf("%s/%s.serial", p->observe_to, name) : NULL;
 
@@ -2201,7 +2419,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
     for (i = 0; i < p->nsources; i++) {
         struct outcome ref, o;
         struct text detail = { 0 };     /* expect_dir=: where the outputs differ */
-        char *name = corpus_name(p->sources[i]);
+        char *name = corpus_source_name(p, i);
         int diff = 0;
 
         load_outcome(p, 0, i, slog[0], &ref);

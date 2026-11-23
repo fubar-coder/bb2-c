@@ -189,6 +189,22 @@ static void compile_of(const char *log, const char *job, struct text *t)
                  n > 1 ? (int)len[1] : 0, n > 1 ? f[1] : "");
 }
 
+char *bugorig_compile(const char *log, const char *job)
+{
+    struct text t = { 0 };
+
+    if (!log)
+        return strdup("none");
+    compile_of(log, job, &t);
+    if (t.bad) {
+        free(t.p);
+        return NULL;
+    }
+    if (t.n && t.p[t.n - 1] == '\n')
+        t.p[--t.n] = 0;
+    return t.p;
+}
+
 /* text as lines: \r removed, a last line without \n completed; lines
    that occur in except (may be NULL) left out */
 static void lines_of(const char *text, struct text *t, const char *except)

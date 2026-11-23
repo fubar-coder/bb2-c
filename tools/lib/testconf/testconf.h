@@ -141,6 +141,65 @@ struct tc_env {
 /** @brief The value of key in the table runner of env, or NULL. */
 const char *tc_env_runner(const struct tc_env *env, const char *key);
 
+/*
+ * The test-local data (change basic-test-local-data, D1): the files of the
+ * directory ID.test/ beside ID.test.bas, each declared in the table `data`
+ * of the test's own file (refused in a tests.toml) by its path relative to
+ * ID.test/ (no "..", no ":", no absolute path) with a build action:
+ *
+ *     [data]
+ *     "cmap.spec" = "mktestdata"      # the short form: the action
+ *     [data."child.bas"]              # a table per file: one option a line
+ *     action = "basic-compile"
+ *     compiler = "same"               # same | port | orig195 | orig210
+ *     libs = "same"                   # same | cd | clib
+ *     runtime-errors = "same"         # same | on | off
+ *
+ * basic-compile takes the three options (same: the cell's value), copy and
+ * mktestdata none.  A file named in both forms, an unknown action or
+ * option, an option the action does not take and a value that is none of
+ * the option's are errors naming file, line and key.  A fixed option that
+ * needs original material (a compiler other than port, libs = "cd") is
+ * refused in a test with a cell of the side port (tc_matrix_build).
+ */
+
+/** @brief The build actions of test-local data. */
+enum tc_daction {
+    TC_DA_BASIC_COMPILE,        /* NAME.bas compiled in the emulator: NAME */
+    TC_DA_COPY,                 /* the file as it is */
+    TC_DA_MKTESTDATA            /* NAME.spec made into NAME by tools/mktestdata */
+};
+
+/** @brief The options of basic-compile, in this order. */
+enum tc_dopt {
+    TC_DO_COMPILER,
+    TC_DO_LIBS,
+    TC_DO_RUNERR,
+    TC_DO_N
+};
+
+/** @brief A file of ID.test/. */
+struct tc_data {
+    char *file;                 /* the path relative to ID.test/ */
+    int action;                 /* enum tc_daction */
+    char *opt[TC_DO_N];         /* basic-compile's options ("same" if not
+                                   set), NULL for the other actions */
+    unsigned optline[TC_DO_N];  /* the line that sets an option, 0: the default */
+    struct tc_origin at;        /* the entry of the short form, or the
+                                   table header */
+};
+
+/** @brief The name of an action ("basic-compile"), of an option ("compiler"). */
+const char *tc_daction_name(int action);
+const char *tc_dopt_name(int opt);
+
+/**
+ * @brief The file name a data entry gives: basic-compile and mktestdata
+ *        without their suffix (.bas, .spec), copy the file as declared.
+ * @return malloc'd, NULL = out of memory
+ */
+char *tc_data_result(const struct tc_data *d);
+
 /** @brief The resolved configuration of one test. */
 struct tc_config {
     char *source;               /* the test source as given */
@@ -163,6 +222,9 @@ struct tc_config {
                                    reason (a string) and the alternatives
                                    (lists); the test's own file only */
     size_t nends;
+    struct tc_data *data;       /* the files of ID.test/, in file order; the
+                                   test's own file only */
+    size_t ndata;
 };
 
 /**
@@ -339,16 +401,23 @@ enum tc_qkind {
     TC_Q_SESSION,               /* session: done, timeout, halt */
     TC_Q_END_CASE,              /* end.case: the end entry of the case */
     TC_Q_END_RUN,               /* end.run: the end entry of the run */
-    TC_Q_CHECK                  /* check.NS.NAME[.expected|.actual] */
+    TC_Q_CHECK,                 /* check.NS.NAME[.expected|.actual] */
+    TC_Q_DATA,                  /* data.FILE: the compile of a data source of
+                                   ID.test/ (ok, error LINE MESSAGE, none) */
+    TC_Q_RUN,                   /* run.NS.NAME: the program !RunProgram NAME
+                                   started (done, open, not-run) */
+    TC_Q_RUN_RC,                /* run.NS.NAME.rc: its return code */
+    TC_Q_RUN_OUTPUT             /* run.NS.NAME.output: what it wrote */
 };
 
 /** @brief A parsed query. */
 struct tc_query {
     int kind;                   /* enum tc_qkind */
-    char *ns;                   /* TC_Q_CHECK: the namespace */
+    char *ns;                   /* TC_Q_CHECK, TC_Q_RUN*: the namespace */
     char *rest;                 /* TC_Q_CHECK: NAME, NAME.expected or
                                    NAME.actual (the judge splits it against
-                                   the names of the checks) */
+                                   the names of the checks); TC_Q_DATA: FILE;
+                                   TC_Q_RUN*: NAME */
 };
 
 /** @brief The operators of a predicate. */

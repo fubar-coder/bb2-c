@@ -16,7 +16,9 @@
  *                      corpus_cd_prev / corpus_cd_ab3_prev (NAME = the path of the
  *                      source on the CD), compiler_prev (the tests/blitz2 and
  *                      compiler bug-orig sources without special needs),
- *                      bug_orig_ID_prev, regression_ID_prev, blitz2_ID_prev,
+ *                      bug_orig_ID_prev, regression_ID_prev, blitz2_ID_prev
+ *                      (NAME = the compile; ID/FILE, a path, for a data
+ *                      source of the test's own data),
  *                      ab3_cli_prev (NAME = the case), and the site examples'
  *                      passes site_examples_* (NAME = the example), the
  *                      expression matrix's corpus passes corpus_exprmatrix_*

@@ -423,3 +423,162 @@ TEST_CASE("testconf: the environment file", "[testconf]")
     CHECK(strstr(err, "/nonexistent/env.toml: cannot read") != nullptr);
     tc_env_free(&e);
 }
+
+// the table data of a test's own file (change basic-test-local-data, D1, D4)
+TEST_CASE("testconf: test-local data", "[testconf]")
+{
+    tree t;
+    std::string own = t.path("x.test.toml");
+
+    t.write("x.test.bas", "");
+    t.write("tests.toml", "root = true\n");
+
+    // both forms, the defaults and the order of the file
+    tc_env e = env_of(t);
+    tc_config c;
+    t.write("x.test.toml", "[data]\n\"cmap.spec\" = \"mktestdata\"\n\"input.txt\" = \"copy\"\n"
+                           "[data.\"child.bas\"]\naction = \"basic-compile\"\ncompiler = \"port\"\n"
+                           "[data.\"sub/b.bas\"]\naction = \"basic-compile\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    REQUIRE(c.ndata == 4);
+    CHECK(!strcmp(c.data[0].file, "cmap.spec"));
+    CHECK(c.data[0].action == TC_DA_MKTESTDATA);
+    CHECK(c.data[0].opt[TC_DO_COMPILER] == nullptr);
+    CHECK(c.data[0].at.line == 2);
+    CHECK(!strcmp(c.data[1].file, "input.txt"));
+    CHECK(c.data[1].action == TC_DA_COPY);
+    CHECK(!strcmp(c.data[2].file, "child.bas"));
+    CHECK(c.data[2].action == TC_DA_BASIC_COMPILE);
+    CHECK(c.data[2].at.line == 4);
+    CHECK(!strcmp(c.data[2].opt[TC_DO_COMPILER], "port"));
+    CHECK(c.data[2].optline[TC_DO_COMPILER] == 6);
+    CHECK(!strcmp(c.data[2].opt[TC_DO_LIBS], "same"));
+    CHECK(c.data[2].optline[TC_DO_LIBS] == 0);
+    CHECK(!strcmp(c.data[2].opt[TC_DO_RUNERR], "same"));
+    CHECK(!strcmp(c.data[3].file, "sub/b.bas"));
+    {
+        char *r0 = tc_data_result(&c.data[0]), *r1 = tc_data_result(&c.data[1]), *r2 = tc_data_result(&c.data[2]);
+
+        CHECK(!strcmp(r0, "cmap"));
+        CHECK(!strcmp(r1, "input.txt"));
+        CHECK(!strcmp(r2, "child"));
+        free(r0);
+        free(r1);
+        free(r2);
+    }
+    tc_free(&c);
+
+    // the refusals, each naming file and line
+    t.write("x.test.toml", "[data]\n\"child.bas\" = \"assemble\"\n");
+    refused(t, "x.test.bas", { own + ":2: data \"child.bas\": unknown action \"assemble\"" });
+    t.write("x.test.toml", "[data.\"child.bas\"]\naction = \"assemble\"\n");
+    refused(t, "x.test.bas", { own + ":2: data \"child.bas\": unknown action \"assemble\"" });
+    t.write("x.test.toml", "[data.\"child.bas\"]\naction = \"basic-compile\"\noptimise = \"on\"\n");
+    refused(t, "x.test.bas", { own + ":3: data \"child.bas\": unknown option optimise" });
+    t.write("x.test.toml", "[data.\"child.bas\"]\naction = \"basic-compile\"\ncompiler = \"orig\"\n");
+    refused(t, "x.test.bas",
+            { own + ":3: data \"child.bas\": compiler must be one of same|port|orig195|orig210, not \"orig\"" });
+    t.write("x.test.toml", "[data.\"child.bas\"]\naction = \"basic-compile\"\nlibs = 1\n");
+    refused(t, "x.test.bas", { own + ":3: data \"child.bas\": libs must be a string, not an integer" });
+    t.write("x.test.toml", "[data.\"in.txt\"]\naction = \"copy\"\n\nruntime-errors = \"on\"\n");
+    refused(t, "x.test.bas", { own + ":4: data \"in.txt\": the action copy takes no option runtime-errors" });
+    t.write("x.test.toml", "[data.\"child.bas\"]\ncompiler = \"port\"\n");
+    refused(t, "x.test.bas", { own + ":1: the table [data.\"child.bas\"] has no action" });
+    t.write("x.test.toml", "[data]\n\"child.bas\" = \"copy\"\n[data.\"child.bas\"]\naction = \"copy\"\n");
+    // both forms for one file: TOML itself forbids it (testtoml)
+    refused(t, "x.test.bas", { own + ":3: child.bas is a key (line 2) and a table (line 3)" });
+    t.write("x.test.toml", "[data]\n\"child.bas\" = 3\n");
+    refused(t, "x.test.bas", { own + ":2: data \"child.bas\": the action must be a string, not an integer" });
+    t.write("x.test.toml", "[data]\n\"../child.bas\" = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":2: data \"../child.bas\": a part \"..\" of the path" });
+    t.write("x.test.toml", "[data]\n\"CORPUS:child.bas\" = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":2: data \"CORPUS:child.bas\": a \":\" in the path" });
+    t.write("x.test.toml", "[data]\n\"/tmp/child.bas\" = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":2: data \"/tmp/child.bas\": an absolute path" });
+    t.write("x.test.toml", "[data.\"a//b\"]\naction = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":1: data \"a//b\": an empty part of the path" });
+    t.write("x.test.toml", "[data.\"a\".b]\naction = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":1: the table [data] has no sub tables but one per file" });
+    t.write("x.test.toml", "");
+    t.write("tests.toml", "root = true\n[data]\n\"child.bas\" = \"copy\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: data is a table of a single test" });
+    t.write("tests.toml", "root = true\n");
+    // the query data.FILE names a data source of the test
+    t.write("x.test.toml", "[data]\n\"in.txt\" = \"copy\"\n[asserts]\n\"data.in.txt\" = \"== ok\"\n");
+    refused(t, "x.test.bas", { own + ":4: data.in.txt: the test has no data source in.txt" });
+    t.write("x.test.toml", "[data]\n\"c.bas\" = \"basic-compile\"\n[asserts]\n\"data.c.bas\" = \"> 3\"\n");
+    refused(t, "x.test.bas", { own + ":4: data.c.bas: " });
+    t.write("x.test.toml", "[data]\n\"c.bas\" = \"basic-compile\"\n[asserts]\n\"data.c.bas\" = \"contains \\\"Syntax\\\"\"\n");
+    {
+        tc_config cd;
+
+        REQUIRE(resolve(t, "x.test.bas", &cd, &e) == 0);
+        tc_free(&cd);
+    }
+
+    // the queries of a started program (run.NS.NAME, .rc, .output): their predicates
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== open\"\n\"run.a.b.rc\" = \"== 20\"\n"
+                           "\"run.a.b.output\" = \"contains \\\"x\\\"\"\n");
+    {
+        tc_config cr;
+
+        REQUIRE(resolve(t, "x.test.bas", &cr, &e) == 0);
+        tc_free(&cr);
+    }
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== 20\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== timeout\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a.b.rc\" = \"contains \\\"x\\\"\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b.rc: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a\" = \"== done\"\n");
+    refused(t, "x.test.bas", { own + ":2: the query \"run.a\": run.NAMESPACE.NAME[.rc|.output] expected" });
+    {
+        tc_query q;
+        char m[300];
+
+        REQUIRE(tc_query_parse("run.case_1.child.output", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN_OUTPUT);
+        CHECK(!strcmp(q.ns, "case_1"));
+        CHECK(!strcmp(q.rest, "child"));
+        tc_query_free(&q);
+        REQUIRE(tc_query_parse("run.a.x.y.rc", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN_RC);
+        CHECK(!strcmp(q.rest, "x.y"));
+        tc_query_free(&q);
+        REQUIRE(tc_query_parse("run.a.rc", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN);
+        CHECK(!strcmp(q.rest, "rc"));
+        tc_query_free(&q);
+    }
+
+    // D4: a fixed option that needs original material, in a test with a
+    // cell of the side port (the matrix of the test)
+    auto matrix = [&](const std::string &toml, int want, std::initializer_list<std::string> what) {
+        tc_config cc;
+        tc_matrix m = {};
+
+        t.write("x.test.toml", toml);
+        REQUIRE(resolve(t, "x.test.bas", &cc, &e) == 0);
+        err[0] = 0;
+        CHECK(tc_matrix_build(&cc, &m, err, sizeof err) == want);
+        for (const std::string &w : what) {
+            INFO(w);
+            INFO(err);
+            CHECK(strstr(err, w.c_str()) != nullptr);
+        }
+        tc_matrix_free(&m);
+        tc_free(&cc);
+    };
+    matrix("[matrix]\nlibs = [\"clib\", \"cd\"]\n[data.\"child.bas\"]\naction = \"basic-compile\"\n"
+           "compiler = \"orig195\"\n",
+           -1, { own + ":5: data \"child.bas\": compiler = \"orig195\" needs original material",
+                 "the cell clib of the side port" });
+    matrix("[data.\"child.bas\"]\naction = \"basic-compile\"\nlibs = \"cd\"\n", -1,
+           { own + ":3: data \"child.bas\": libs = \"cd\" needs original material", "the cell default" });
+    matrix("libs = \"cd\"\n[data.\"child.bas\"]\naction = \"basic-compile\"\ncompiler = \"orig210\"\n", 0, {});
+    matrix("[matrix]\nlibs = [\"clib\", \"cd\"]\n[data.\"child.bas\"]\naction = \"basic-compile\"\n"
+           "compiler = \"port\"\nlibs = \"clib\"\n",
+           0, {});
+    tc_env_free(&e);
+}

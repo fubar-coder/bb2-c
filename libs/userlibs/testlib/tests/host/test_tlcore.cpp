@@ -667,3 +667,115 @@ TEST_CASE("typed checks: no compare before the start, init failures repeated", "
                    "blockend\n"
                    "end\n");
 }
+
+// a started program (TLRunProgram, change basic-test-local-data D6): run K
+// before it starts, runend K with its return code or - after; the result
+// with the first 1024 bytes of its output; refused outside a block and in
+// Blitz mode; a second run overwrites the result
+namespace {
+
+// the run of a program that wrote out (its first 1024 bytes in the text)
+void ran(tl_state &st, uint32_t k, tl_run &r, tl_run_text &t, const std::string &out, int known, int32_t rc)
+{
+    size_t n = out.size() > TL_RUN_TEXT ? TL_RUN_TEXT : out.size();
+
+    std::memcpy(t.chars, out.data(), n);
+    tl_run_end(&st, k, &r, &t, known, rc, n, uint32_t(out.size()));
+}
+
+std::string printed(const tl_run &r, const tl_run_text &t)
+{
+    REQUIRE(r.printed == t.chars);
+    REQUIRE(t.chars[t.length] == 0);
+    return std::string(reinterpret_cast<const char *>(t.chars), t.length);
+}
+
+} // namespace
+
+TEST_CASE("tlcore: a started program", "[tlcore]")
+{
+    run x;
+    tl_run r{};
+    tl_run_text t{};
+
+    tl_begin(&x.st);
+    REQUIRE(block_case(x.st, "a") == 1);
+    writes.clear();
+    // an output of 0 bytes, the return code known
+    REQUIRE(tl_run_start(&x.st, 4, &r, &t) == 1);
+    CHECK(all() == "run\t4\n");
+    ran(x.st, 4, r, t, "", 1, 20);
+    CHECK(all() == "run\t4\nrunend\t4\t$00000014\n");
+    CHECK(r.rc == 20);
+    CHECK(r.rcknown == -1);
+    CHECK(r.cut == 0);
+    CHECK(r.size == 0u);
+    CHECK(printed(r, t) == "");
+    // 1024 bytes: all of it, not cut
+    writes.clear();
+    std::string k1(1024, 'x');
+    REQUIRE(tl_run_start(&x.st, 5, &r, &t) == 1);
+    ran(x.st, 5, r, t, k1, 1, 0);
+    CHECK(printed(r, t) == k1);
+    CHECK(r.cut == 0);
+    CHECK(r.size == 1024u);
+    CHECK(all() == "run\t5\nrunend\t5\t$00000000\n");
+    // 3000 bytes: the first 1024, cut, the size of the whole
+    std::string k3;
+    for (int i = 0; i < 3000; i++)
+        k3 += char('a' + i % 26);
+    REQUIRE(tl_run_start(&x.st, 6, &r, &t) == 1);
+    ran(x.st, 6, r, t, k3, 1, 0);
+    CHECK(printed(r, t) == k3.substr(0, 1024));
+    CHECK(r.cut == -1);
+    CHECK(r.size == 3000u);
+    // the return code unknown (Kickstart 1.x): rc 0, rcknown 0, runend K -
+    writes.clear();
+    REQUIRE(tl_run_start(&x.st, 7, &r, &t) == 1);
+    ran(x.st, 7, r, t, "exec 37\n", 0, 12345);
+    CHECK(all() == "run\t7\nrunend\t7\t-\n");
+    CHECK(r.rc == 0);
+    CHECK(r.rcknown == 0);
+    CHECK(printed(r, t) == "exec 37\n");
+    // a second run overwrites the one result: a copy of the first keeps it
+    std::string first = printed(r, t);
+    REQUIRE(tl_run_start(&x.st, 8, &r, &t) == 1);
+    ran(x.st, 8, r, t, "second\n", 1, 5);
+    CHECK(first == "exec 37\n");
+    CHECK(printed(r, t) == "second\n");
+    CHECK(r.rc == 5);
+    // every line reads back
+    for (const auto &w : writes) {
+        std::string l = w.substr(0, w.size() - 1);
+        basictest_entry e{};
+        CHECK(basictest_read(reinterpret_cast<uint8_t *>(l.data()), l.size(), 1, &e, nullptr) == BASICTEST_OK);
+    }
+}
+
+TEST_CASE("tlcore: a started program refused", "[tlcore]")
+{
+    run x;
+    tl_run r{};
+    tl_run_text t{};
+
+    // before tl_begin: nothing written, the result cleared
+    r.rc = 9;
+    CHECK(tl_run_start(&x.st, 1, &r, &t) == 0);
+    CHECK(all() == "");
+    CHECK(r.rc == 0);
+    CHECK(r.printed == t.chars);
+    tl_begin(&x.st);
+    writes.clear();
+    // outside a block
+    CHECK(tl_run_start(&x.st, 1, &r, &t) == 0);
+    CHECK(all() == "broken\trun outside a block\n");
+    // in Blitz mode: the broken entry is kept, no run
+    REQUIRE(block_case(x.st, "a") == 1);
+    writes.clear();
+    can_write = 0;
+    CHECK(tl_run_start(&x.st, 2, &r, &t) == 0);
+    CHECK(all() == "");
+    can_write = 1;
+    tl_blockend(&x.st);
+    CHECK(all() == "broken\trun in Blitz mode\nblockend\n");
+}
