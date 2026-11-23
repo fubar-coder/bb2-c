@@ -89,9 +89,8 @@ static int run(const std::string &prefix, const std::string &output, const std::
         if (tcosts_load(costfile.c_str(), &costs, err, sizeof err)) {
             fprintf(stderr, "testreg: %s\n", err);
             rc = 1;
-        } else if (treg_apply_costs(&r, prefix.c_str(), costfile.c_str(), &costs) < 0) {
-            fprintf(stderr, "testreg: out of memory\n");
-            rc = 1;
+        } else {
+            treg_apply_costs(&r, &costs);
         }
     }
     for (size_t i = 0; i < r.errors.n; i++)
@@ -210,8 +209,8 @@ int main(int argc, char **argv)
         ->type_name("FILE");
     app.add_option("--costs", costfile,
                    "the measured COST of the tests (tests/data/test-costs.txt): an entry replaces the sum of "
-                   "the cells' session limits, the configuration's cost wins over it; an entry of a test of the "
-                   "model of the prefix that is not registered is an error")
+                   "the cells' session limits, the configuration's cost wins over it; an entry that names no "
+                   "registered test is ignored")
         ->type_name("FILE");
     app.add_option("--test-env", testenv,
                    "a ctest script that defines basic_test_environment(NAME LABELS), the environment of a test "

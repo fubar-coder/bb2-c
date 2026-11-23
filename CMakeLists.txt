@@ -189,17 +189,18 @@ set_tests_properties(emulation_owner_broken PROPERTIES
 set_tests_properties(emulation_owner_model_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "m_plain__c[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
 # the measured COST of the tests (cmake/test-cost.cmake): applied, a measurement winning over
-# the list of the long tests; a file whose entry names no test stops the configuration, an entry
-# of a test only a prev build has only with a prev build (test-cost-test.cmake, its MODEs)
-foreach(mode ok ok_prev broken broken_prev stale_prev)
+# the list of the long tests; an entry that names no test (also a test only a prev build has, in a
+# build without one) is ignored, a malformed line stops the configuration (test-cost-test.cmake,
+# its MODEs)
+foreach(mode ok ok_prev stale stale_prev malformed)
 	set(t test_cost_${mode})
 	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DCOST=${PROJECT_SOURCE_DIR}/cmake/test-cost.cmake -DMODE=${mode}
 		-DWORK=${CMAKE_BINARY_DIR}/${t} -P ${PROJECT_SOURCE_DIR}/cmake/test-cost-test.cmake)
-	if(mode MATCHES "^ok")
-		set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "test-cost-test: the measured COST is applied")
-	else()
+	if(mode STREQUAL "malformed")
 		set_tests_properties(${t} PROPERTIES
-			PASS_REGULAR_EXPRESSION "test-cost-test: the stale entry stops the configuration")
+			PASS_REGULAR_EXPRESSION "test-cost-test: the malformed line stops the configuration")
+	else()
+		set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "test-cost-test: the measured COST is applied")
 	endif()
 endforeach()
 

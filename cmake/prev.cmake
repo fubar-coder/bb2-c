@@ -150,8 +150,7 @@ endif()
 #   without extras and without runtime error checking joins the pass compiler_prev (one
 #   session per configuration for all of them: prev_compile_plain_pass, called once at the
 #   end), the others get NAME_prev.
-# Without a prev build nothing is configured; the name of the test it would make is given to
-# test_cost_prev_only (cmake/test-cost.cmake), as in the other functions here.
+# Without a prev build nothing is configured, as in the other functions here.
 function(prev_compile_test name src)
 	cmake_parse_arguments(PARSE_ARGV 2 arg "" "RUNTIME_ERRORS;CLIB_DIR;TIMEOUT;EXTRA_VAR" "")
 	if(NOT arg_RUNTIME_ERRORS)
@@ -198,7 +197,6 @@ function(prev_compile_test name src)
 		return()
 	endif()
 	set(test ${name}_prev)
-	test_cost_prev_only(${test})
 	if(NOT PREV_REQUESTED)
 		return()
 	endif()
@@ -233,7 +231,6 @@ function(prev_compile_plain_pass)
 	if(NOT sources)
 		return()
 	endif()
-	test_cost_prev_only(compiler_prev)
 	if(NOT PREV_REQUESTED)
 		return()
 	endif()
@@ -283,7 +280,6 @@ function(prev_model_test_command var name src driver prev_blitz2 prev_libs)
 	set(${var} ${cmd} PARENT_SCOPE)
 endfunction()
 function(prev_compile_model_test name src driver)
-	test_cost_prev_only(${name})
 	if(NOT PREV_REQUESTED)
 		return()
 	endif()
