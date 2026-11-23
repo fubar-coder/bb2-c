@@ -1,0 +1,7 @@
+# rianimlib-delta-columns.test.bas: the original does not decode column 1
+fixed-orig = 507
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-delta-columns.anim"]
+
+[deviations."compiler=orig210"]
+"check.delta_columns.column_1" = "== fail"

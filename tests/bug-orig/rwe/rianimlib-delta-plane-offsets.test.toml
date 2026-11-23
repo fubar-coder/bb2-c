@@ -1,0 +1,15 @@
+# rianimlib-delta-plane-offsets.test.bas: the original plays frame 4's ops in
+# frames 2 and 3
+fixed-orig = 1120
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-delta-plane-offsets.anim"]
+
+[deviations."compiler=orig210"]
+"check.plane_offsets.frame_2_result" = "== fail"
+"check.plane_offsets.frame_2_result.actual" = "== -1"
+"check.plane_offsets.frame_2_row_3" = "== fail"
+"check.plane_offsets.frame_2_row_3.actual" = "== $AA"
+"check.plane_offsets.frame_3_result" = "== fail"
+"check.plane_offsets.frame_3_result.actual" = "== -1"
+"check.plane_offsets.frame_3_row_0" = "== fail"
+"check.plane_offsets.frame_3_row_0.actual" = "== $02030001"

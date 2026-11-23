@@ -1,0 +1,8 @@
+# rianimlib-delta-ops-past-chunk.test.bas (#1120, an open bug kept on
+# purpose): the library plays the op behind the DLTA and writes $AA to row 3
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-delta-ops-past-chunk.anim"]
+
+[deviations."compiler=orig210"]
+"check.ops_past_chunk.row_3" = "== fail"
+"check.ops_past_chunk.row_3.actual" = "== $AA"

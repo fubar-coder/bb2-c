@@ -1,0 +1,8 @@
+# rianimlib-init-unpack-refused.test.bas: the original reports success
+fixed-orig = 1106
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-init-unpack-refused.anim"]
+
+[deviations."compiler=orig210"]
+"check.init_unpack_refused.init" = "== fail"
+"check.init_unpack_refused.init.actual" = "== -1"
