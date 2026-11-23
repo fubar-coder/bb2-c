@@ -482,7 +482,9 @@ assertions, and for an original bug the declared deviations of the
 cells with the faulty part). This section is the guide for writing one;
 the contract is in [Blitz test sources and the result
 file](#blitz-test-sources-and-the-result-file), the keys in [The run
-configuration](#the-run-configuration).
+configuration](#the-run-configuration); how an old-form bug-orig test
+becomes one: [Moving a bug-orig test to the
+model](#moving-a-bug-orig-test-to-the-model).
 
 ### Files and names
 
@@ -2544,6 +2546,209 @@ the case `ID|extension||1 [fixed #NNN]`. At most one of `fixed-orig`,
 `libs/shapeslib-loadshape-anim-interleave.test.bas` (#1166, ANIM
 interleaves that the original refuses with "Illegal ANIM interleave
 value"). The old form has no marker for an extension.
+
+### Moving a bug-orig test to the model
+
+The instructions for the rounds that move the bug-orig tests whose
+program runs from the old form (`ID.bas`, `ID.expect`, `ID.orig`, the
+header `; @fixed #N`) to the BASIC test model (change
+`bug-orig-basic-tests`, design D2); written from the pilot round, which
+moved six `libs/shapeslib-*` tests (`anim-frames-maximum`,
+`loadshape-plane-step`, `-plane-64k`, `-depth-zero`, `-height-zero`,
+`-width-zero`; all six are fixed bugs) and the extension
+`shapeslib-loadshape-anim-interleave`. Not moved: the TED tests (`.drv`)
+and the tests whose correct result is a compile result only (`.expect`
+without `[run]`); they keep their form. Read [Tests that judge
+themselves](#tests-that-judge-themselves) first, and the moved tests as
+examples (`libs/shapeslib-*.test.bas` with their `.test.toml`).
+
+**What the old files become.** The test keeps its ID (the file names
+`ID.test.bas`, `ID.test.toml`; the ctest names change from `bug_orig_ID`
+and `bug_orig_record_ID` to `bug_orig_ID__CASE` and
+`bug_orig_ID__CASE_originals`). `ID.bas`, `ID.expect` and `ID.orig` are
+removed in the same commit that adds the new files, so that the test is
+never in both forms (the registration would take the old one).
+
+| In the old form | In the model |
+|---|---|
+| the header's "Here ... Correct ..." text | the header comment stays; "Here" becomes the setup of the case (data the program builds, `!Require` for what must hold before the act), "Correct" the checks |
+| the program's statements | batch init (data every case reads), one case per behaviour, procedures; the data file the program builds is written in the batch init or in the setup of the case |
+| `ID.expect`, `[run]` | every printed observation that the expectation judged becomes a check (`!CheckEq`, `!CheckStrEq` ...) with the value of the expectation, named; a line that only marks progress ("before", "after") is dropped, or kept as `!Check{0,"after"}` that the configuration expects to be `not-run` |
+| `ID.expect`, `rc=N`, `[session]`, `REQUESTER:` | the assertions `rc`, `session`, `requester` (defaults: `rc == 0`, no requester, the case and the run end); an expected runtime error is announced with `!ExpectError` |
+| `ID.orig`, the lines that differ from `ID.expect` | declared deviations in `[deviations."libs=cd"]` (a library bug) or `compiler=orig195` (a compiler bug), see below |
+| `; @fixed #N` | `fixed-orig = N` (another bug than an original one: `fixed = N`; an extension of the port: `extension = N`) in `ID.test.toml`; the checks and the deviations stay as they are |
+| `; @configs clib` | the `tests.toml` of the directory: `exclude = ["compiler=orig195,libs=clib"]` and `[matrix]` with `compiler = ["port", "orig195"]`, `libs = ["cd", "clib"]` (`libs/tests.toml`): the cells `port,cd`, `port,clib` and `orig195,cd` |
+| `; @pass runwrap=@INJECT@\|pad` | `pad = "on"` |
+| `; @pass runwrap=@INJECT@\|OPTIONS` | `runwrap = "@INJECT@\|OPTIONS"` |
+| `; @pass file=DEST\|SRC`, `dirs=`, `remove=`, `mount=`, `floppy=` | `files`, `dirs`, `remove`, `mount`, `floppy` (the same values, a list of strings) |
+| `; @pass timeout=N`, `hang_after=N`, `runtime_errors=on`, `serial=on`, `rtg=on`, `uae=`, `jobline=`, `runargs=`, `launcherargs=` | `timeout`, `hang-after`, `runtime-errors = "on"`, `serial`, `rtg`, `uae`, `jobline`, `runargs`, `launcherargs` |
+| `; @rwe NAME...` | `rwe = ["NAME", ...]` |
+
+**What the cells are.** The old test judged the port with the C libraries
+(`clib`: against the expectation) and, in the compare test, the original
+alone (the compiler 1.95 with the CD's libraries) against `ID.orig`. The
+model runs the same program in the cells of the matrix: `orig195,cd` is
+the recorded original, `port,clib` the port, and `port,cd` is new (the
+port's compiler with the original's libraries; it shows whether the bug is
+in the library, not the compiler). Everything the test has to say about
+the original is declared for the cells with the original's faulty part
+(`libs=cd`, they form the side `originals`, label `originals`); the other
+cells must pass without any deviation. The deviations replace the
+default assertion of their query in those cells; the further ones
+(`.actual`) validate the value of the failing check.
+
+**Which deviation a difference of the `.orig` becomes.** Compare the run
+section of `ID.orig` with that of `ID.expect` line by line; each
+difference is one declared deviation, and nothing else of the `.orig` is
+carried over (the session log of the batch run and the `[blitz2]`
+section describe the environment):
+
+| The `.orig` shows | The deviation |
+|---|---|
+| another value in a line a check judges | `"check.CASE.NAME" = "== fail"` and `"check.CASE.NAME.actual" = "== VALUE"` (the number the original printed; `$` for hex); a string: `== "TEXT"`; a value that varies: `matches "PATTERN"` (`*` any characters, `#` a number) |
+| a check passes in the original, though the program is wrong | no deviation of its own; the bug shows in another check or in `output` |
+| an `inject:` line (`guard`, `pad`: written behind an allocation) | `output = "contains \"written behind an allocation of 8 bytes\""` in the cells with the CD's libraries, `output = "not contains \"inject: guard\""` in `[asserts]` for all the others; the helper's lines are part of the program's output, the query `inject` is not filled for the runwrap helper |
+| a `REQUESTER:` line, a runtime error the correct run does not have | `requester` (`contains`, `matches`, `count`) |
+| the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures) |
+| a line only a `# varies:` wildcard matched | the pattern of the validator, or, if the line is not the tested behaviour, no assertion about it |
+
+**An open bug.** A test without `fixed-orig`/`fixed`/`extension` is an open
+bug: the cells without the original's faulty part (`port,clib`) are judged
+like the cells with it, they must show exactly the declared deviations
+(REPRODUCED, label `bug-orig`, so `ctest --preset bug-orig -R ID`), and
+a cell that passes all its checks fails the test ("passes without a fixed
+issue"). So an open bug's move is checked by running `ctest --preset
+bug-orig -R bug_orig_ID` and `ctest --preset originals -R
+bug_orig_ID`: both REPRODUCED (exit status 1 of `corpusrun case`),
+never BROKEN, and the deviations of `libs=cd` are the lines of the old
+`.orig`. The test has no `fixed-orig`; the fix commit adds that one key
+([Fixed tests](#fixed-tests)). A bug-orig test without any deviation is
+BROKEN. (The pilot moved fixed bugs only; the open-bug path is the
+runner's `testjudge` rule, host test `testjudge`, "an open original
+bug", and was not exercised by a moved test yet.)
+
+**What happens at the fix.** Nothing else of the test changes: the key
+`fixed-orig = N` is added, the case then carries the label `emulator`
+and runs in `all`; fix-scope reports exactly one case, `ID|fixed-orig||1
+[fixed #N]`. A moved test is already in that state when its bug is
+already fixed: set the key at once, as the pilot did, and run the three
+cells.
+
+**The pitfalls the pilot met.**
+
+* **Output-only observation.** The old tests print lines and the
+  expectation judges the text. Print nothing: read the value into a
+  variable and check it, with the name of the line ("behind", "shape_width").
+  The 64 bytes that the old test printed as a hex string are one
+  `!CheckStrEq` of the whole string (128 characters were not cut); the runs
+  of a guard area ("guard 000000AA x 40000") likewise one string built by
+  the program.
+* **An error that is the correct result.** The old test catches it with
+  `SetErr` and prints from the handler, then `End`. The pilot keeps that
+  form where the state after the error is the observation (the shape is
+  still empty): the handler holds the checks and `End`; the case never
+  reaches its end entry, so the file says `[asserts] "end.case" = "not
+  exists"`, and a check behind the faulty statement
+  (`!Check{0,"not_refused"}`, reached only if no error is raised) is
+  asserted `"== not-run"`. Where only the error matters use
+  `!ExpectError{"MESSAGE"}` and `runtime-errors = "on"`
+  (`tests/blitz2/array-index-div0`); the case ends in the requester, which
+  the runner matches. The original's different error (here "Can't Read
+  File" instead of "Illegal Shape Depth") shows in the failed check or in
+  the `requester` deviation.
+* **The cells of a side share one emulator session**, so `RAM:` and the
+  memory. A file the test writes goes to `CORPUS:` (each cell has its
+  own `CORPUS:`), not to `RAM:`: the CD's libraries leave the file behind
+  after their error, it stays in the shared `RAM:`, and the next cell cannot
+  write it (the first run of the pilot failed that way: the precondition
+  "file_written" was broken in `orig195,cd`; with `CORPUS:` it passed). An original that writes far behind a
+  block (`plane-64k`: 66560 bytes behind a block of 1032) wrecks the
+  memory of the session, and a second cell with the CD's libraries ends in a
+  Software Failure. The cell is left out with `exclude` and the reason is
+  written into the `.test.toml` (the recorded original had one cell too);
+  an option to run every cell in its own session is a request to the
+  runner, not a workaround in the test. Cells whose bug writes only a few
+  bytes (the three `-zero` tests) can stay together.
+* **Helpers and their output.** `runwrap = "@INJECT@|guard"` runs the
+  program through inject; its report lines (`inject: rc=0`, `inject: guard:
+  written behind ...`) are in the `output` of the run; the query `inject` of
+  the assertions is not filled (a declared assertion on it fails with "not
+  captured"). Assert on `output`. The old expectation's line `inject: rc=0`
+  is no check of the new test: `output` is asserted on the guard line only.
+* **Cases are subroutines.** `Dim` and top-level statements do not stand
+  outside the blocks: arrays and the setup go into the case (or the batch
+  init), helpers (`Statement`, `Function`) stay outside. Cases share the
+  globals; each sets up what it uses.
+* **A test whose bug does not show in a check.** `shapeslib-loadshape-width-zero`
+  prints the same shape width with the original; only inject's guard line
+  differs. It keeps the check (it is the observation the old test judged)
+  and declares the `output` deviation alone: a deviation is required, a
+  failing check is not.
+* **Lines that vary (`# varies:`).** A wildcard line of the `.orig` is a
+  value that depends on the memory layout (an address, the memory the bug
+  points into). In `anim-frames-maximum` the 128 hex digits of the memory
+  behind the shape table hold addresses from the 33rd digit on: the validator
+  `"check.anim_into_last_shape.behind.actual" = "matches
+  \"00100004000100020102000000000001*\""` takes the stable first part. A
+  `.orig` that is a crash, a stray return code or a different ending
+  depending on the layout (`blitzoslib-selectbox-range`, #82;
+  `rigtmenulib-createmenustrip-unchecked`, #689: "returns or hangs
+  depending on the memory behind the table") has no stable deviation
+  beyond what the program printed before: declare only that (the failing
+  check, or `end.case`/`session` if the end is the same in every layout),
+  and if even that is not stable, **report the test, do not weaken it**
+  (the old form had a wildcard line there; `matches` covers a value that
+  varies, not an end that varies). Not exercised by the pilot.
+* **Hang tests.** A program that hangs ends by the hang check
+  (`hang-after`, the runner's default 8 s; `timeout` the limit): the
+  deviation is `session = "== timeout"` and the missing end entry; the
+  checks behind it are not run. Set `hang-after`/`timeout` in the test's
+  configuration where the old one had `; @pass hang_after=`/`timeout=`.
+  Not exercised by the pilot.
+* **Prev comparison.** The `_prev` tests of the model (`PREFIX_ID_prev`)
+  exist for the tests of `tests/blitz2`, and in `tests/bug-orig` for
+  `compiler/` and `regression/compiler-*` only
+  ([The prev build](#the-prev-build)): a moved `libs/` test has none, as
+  the old one had none (the library files are compared byte by byte).
+  Nothing to do for a `libs/` move; a `compiler/` move gets the `_prev`
+  test from the registration and needs a `PREV_INTENDED` entry only if its
+  driver differs from prev's.
+* **fix-scope.** A move is no fix: `cmake --build --preset amiga --target
+  fix-scope` lists every case of the old test as removed and every check,
+  key and deviation of the new one as added (the pilot: 68 removed,
+  70 added, nothing changed in place) and fails without a `Fixes #N`
+  line; name the moved tests in the commit message instead. A case the
+  move changes in place (an old case with the same key whose value
+  differs) is the one to look at.
+
+**Checklist for a move.**
+
+1. Read the old test (`.bas` header, `.expect`, `.orig`) and the issue:
+   what is the bug, which side shows it, is it fixed (`; @fixed #N`)?
+2. Write `ID.test.bas`: header comment, procedures, batch init,
+   case(s); one named check per judged value, with the value of the
+   `.expect`; `!Require` for the setup; files to `CORPUS:`.
+3. Write `ID.test.toml`: `fixed-orig = N` (fixed) or nothing (open), the
+   run settings of the old header, the assertions the test needs, the
+   deviations of `libs=cd` / `compiler=orig195` from the difference of
+   `.orig` and `.expect`. Settings that every test of the directory has go
+   to its `tests.toml`.
+4. `git rm` the `.bas`, `.expect`, `.orig` of the test (and move
+   `NAME.spec` data files only if they were the test's: they stay where
+   they are, the key `files` names them as before).
+5. Build (the registration lists the new tests; `ctest -N -R ID`), run
+   `ctest --preset all -R ID` and `ctest --preset originals -R ID`: all
+   cells pass (a fixed test), or, for an open bug, `ctest --preset
+   bug-orig -R ID` shows REPRODUCED. Run them twice.
+6. The check on broken input: change an expected value and a validator
+   (a wrong value after `== `, a wrong text in `contains`) and see the
+   `all` cell, respectively the `originals` cell, fail naming the
+   assertion; restore.
+7. `cmake --build --preset amiga --target fix-scope`: only the old
+   cases removed and the new ones added; `ctest --preset host`; a build
+   without warnings.
+8. One commit per round topic: the new files and the removed ones
+   together; the message names the tests and any cell left out.
 
 ### A bug of an RWE userlib
 

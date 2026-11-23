@@ -1,0 +1,12 @@
+# shapeslib-loadshape-plane-step.test.bas: the original writes plane 1
+# before the data block, into the guard area of the case, and over the first
+# rows of plane 0
+fixed-orig = 263
+
+[deviations."libs=cd"]
+"check.plane_step_32k.plane_0" = "== fail"
+"check.plane_step_32k.plane_0.actual" = "== 0"
+"check.plane_step_32k.plane_1" = "== fail"
+"check.plane_step_32k.plane_1.actual" = "== $AA"
+"check.plane_step_32k.guard" = "== fail"
+"check.plane_step_32k.guard.actual" = "== \"000000AA x 8072;0000005A x 1;00000000 x 31927\""

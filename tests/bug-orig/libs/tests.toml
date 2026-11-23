@@ -1,0 +1,10 @@
+# tests.toml of tests/bug-orig/libs: the tests of the BASIC test model of the
+# library bug-orig tests run in three cells: the port with the CD's libraries
+# and with the C libraries, and the original compiler (1.95) with the CD's
+# libraries; the cells with the CD's libraries (the side originals) show the
+# original's bug, the declared deviations of a test (libs=cd)
+exclude = ["compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
