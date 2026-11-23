@@ -1,0 +1,6 @@
+# The sources of the self-test of the bundles (bundle-selftest.cmake; ctest
+# corpusrun_bundle): each with one case in one cell of the side port, the
+# defaults of the keys, so that each may be a member of a bundle
+# (tj_bundle_case).  The test copies them to its work directory, which has
+# no other tests.toml above it.
+root = true

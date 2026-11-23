@@ -501,7 +501,23 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log);
 struct corpus_volume {
     const char *volume;                 /* without colon */
     const char *host_dir;
+    const char *cell;                   /* the directory of the first cell's
+                                           run below host_dir (the volume
+                                           BUNDLE: of a bundle, its c0), NULL:
+                                           host_dir itself */
 };
+
+/* the file the hang check of hang_from=run arms on, below the directory
+   vol (the first volume of the session), in its directory cell if not NULL
+   (corpus_volume.cell): out/gate.run of the gate, else the first program's
+   output out/NAME.run (with editrun=on its console out/NAME.con); NULL:
+   none (no hang check) or out of memory */
+char *corpus_hang_arm(const struct corpus_pass *p, const char *vol, const char *cell);
+
+/* the emulator's inputs of a session of the pass (the machine, rtg=, uae=)
+   as amiga_emulation_inputs_key gives them: the ROM, the hardfiles,
+   Amiberry; 0 = none can be made */
+unsigned long long corpus_emulator_key(const struct corpus_pass *p);
 
 /* starts the emulator session of configuration c with the script text:
    the machine, the emulator changes (uae=, rtg=, floppy=, with port != 0
@@ -509,8 +525,8 @@ struct corpus_volume {
    limit and the hang check of the pass, the work directory WORK/TAG/emu.
    vols NULL: CORPUS: is WORK/TAG/vol; else the nvols volumes given are the
    writable ones (the hang check of hang_from=run arms on the first program's
-   output in the first of them, OUT/NAME.run).  NULL = not started (err;
-   amiga_emulation_no_slot() tells a missing slot) */
+   output in the first of them, OUT/NAME.run, or in its directory cell).
+   NULL = not started (err; amiga_emulation_no_slot() tells a missing slot) */
 struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t c, const char *text,
                                              unsigned port, const struct corpus_volume *vols,
                                              size_t nvols, char *err, size_t errlen);

@@ -1451,6 +1451,126 @@ static void test_named_jobs(void)
     unload(&t);
 }
 
+/* the bundles (caserun.h, "The bundles"): the chunks, the volume and the
+   script of a bundle's session, the hang check's file, the session budget,
+   a mount named BUNDLE (broken input: refused), the exit status */
+static void test_bundle(void)
+{
+    const char *keys[40];
+    size_t chunk[40], pend[40];
+
+    /* 1, 16, 17, 33 cells of one key: 1, 1, 2, 3 chunks of at most 16 */
+    for (size_t i = 0; i < 40; i++)
+        keys[i] = "k";
+    CHECK(cr_bundle_chunks(keys, 1, chunk) == 1 && chunk[0] == 0);
+    CHECK(cr_bundle_chunks(keys, 16, chunk) == 1 && chunk[15] == 0);
+    CHECK(cr_bundle_chunks(keys, 17, chunk) == 2 && chunk[15] == 0 && chunk[16] == 1);
+    CHECK(cr_bundle_chunks(keys, 33, chunk) == 3 && chunk[16] == 1 && chunk[31] == 1 && chunk[32] == 2);
+    CHECK(cr_bundle_chunks(keys, 0, chunk) == 0);
+    /* two keys mixed: grouped by key in the order of their first cell */
+    for (size_t i = 0; i < 20; i++)
+        keys[i] = i % 2 ? "b" : "a";
+    CHECK(cr_bundle_chunks(keys, 20, chunk) == 2);
+    for (size_t i = 0; i < 20; i++)
+        CHECK(chunk[i] == i % 2);
+    for (size_t i = 0; i < 20; i++)
+        keys[i] = i < 18 ? "a" : "b";
+    keys[1] = "b";
+    CHECK(cr_bundle_chunks(keys, 20, chunk) == 3);
+    CHECK(chunk[0] == 0 && chunk[17] == 1 && chunk[1] == 2 && chunk[18] == 2 && chunk[19] == 2);
+    CHECK(chunk[16] == 0 && chunk[2] == 0);
+
+    /* the volume: one BUNDLE: whatever the number of cells, its cell c0;
+       without a bundle a volume CELLk: per cell */
+    {
+        const char *dirs[3] = { "/w/a/c0/vol", "/w/b/c0/vol", "/w/c/c0/vol" };
+        struct corpus_volume v[3];
+        char names[3][32];
+
+        CHECK(cr_session_volumes("/w/run/bundle", dirs, 3, v, names) == 1);
+        CHECK(!strcmp(v[0].volume, "BUNDLE") && !strcmp(v[0].host_dir, "/w/run/bundle") && !strcmp(v[0].cell, "c0"));
+        CHECK(cr_session_volumes("/w/run/bundle", dirs, 1, v, names) == 1);
+        CHECK(cr_session_volumes(NULL, dirs, 3, v, names) == 3);
+        CHECK(!strcmp(v[2].volume, "CELL2") && !strcmp(v[2].host_dir, "/w/c/c0/vol") && !v[2].cell);
+    }
+    /* the script: the assigns of the cells' directories first, then the
+       parts as without a bundle */
+    {
+        const char *comp[2] = { "compile a\n", "compile b\n" }, *run[2] = { "run a\n", "run b\n" };
+        char *s = cr_session_script(comp, run, 2, 1), *t = cr_session_script(comp, run, 2, 0);
+
+        CHECK(s && !strcmp(s, "Assign CELL0: BUNDLE:c0\nAssign CELL1: BUNDLE:c1\n"
+                              "Assign CORPUS: CELL0:\ncompile a\nAssign CORPUS: CELL1:\ncompile b\n"
+                              "Assign CORPUS: CELL0:\nrun a\nAssign CORPUS: CELL1:\nrun b\nAssign CORPUS:\n"));
+        CHECK(t && !strcmp(t, "Assign CORPUS: CELL0:\ncompile a\nAssign CORPUS: CELL1:\ncompile b\n"
+                              "Assign CORPUS: CELL0:\nrun a\nAssign CORPUS: CELL1:\nrun b\nAssign CORPUS:\n"));
+        free(s);
+        free(t);
+    }
+    /* the hang check: the first cell's run in the bundle's volume */
+    {
+        struct corpus_pass p;
+        char perr[400], *a;
+
+        CHECK(corpus_parse("cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nhang_after=8\nhang_from=run\n"
+                           "config=c0|ref|/b|/d|/a\nsource=/w/test.bb2\n",
+                           &p, perr, sizeof perr) == 0);
+        a = corpus_hang_arm(&p, "/w/run/bundle", "c0");
+        CHECK(a && !strcmp(a, "/w/run/bundle/c0/out/test.run"));
+        free(a);
+        a = corpus_hang_arm(&p, "/w/run/c0/vol", NULL);
+        CHECK(a && !strcmp(a, "/w/run/c0/vol/out/test.run"));
+        free(a);
+        corpus_free(&p);
+    }
+    /* the budget: the cells not done, at most CR_BUNDLE_SESSIONS sessions */
+    {
+        int done[5] = { 1, 1, 0, 0, 0 };
+
+        CHECK(cr_bundle_pending(done, 5, 0, pend) == 3 && pend[0] == 2 && pend[2] == 4);
+        CHECK(cr_bundle_pending(done, 5, 2, pend) == 3);
+        CHECK(cr_bundle_pending(done, 5, CR_BUNDLE_SESSIONS, pend) == 0);
+        done[2] = done[3] = done[4] = 1;
+        CHECK(cr_bundle_pending(done, 5, 1, pend) == 0);
+    }
+    /* a mount named BUNDLE: refused, naming it (any case) */
+    {
+        struct t t;
+        char err[400], *text;
+        struct corpus_pass p;
+
+        put("bu/tests.toml", "root = true\n");
+        put("bu/m.test.bas", "!TestCase{c}\n!EndTestCase\n");
+        put("bu/m.test.toml", "mount = [\"Bundle|/data/x\"]\n");
+        load(&t, "bu/m.test.bas", ENV_RUNNER);
+        text = pass(&t, t.m.cells[0].name, err, sizeof err);
+        CHECK(text && corpus_parse(text, &p, err, sizeof err) == 0);
+        if (text) {
+            CHECK(cr_bundle_mount_ok(&p, err, sizeof err) == -1 && strstr(err, "the mount Bundle:"));
+            corpus_free(&p);
+        }
+        free(text);
+        unload(&t);
+        put("bu/m.test.toml", "mount = [\"DATA|/data/x\"]\n");
+        load(&t, "bu/m.test.bas", ENV_RUNNER);
+        text = pass(&t, t.m.cells[0].name, err, sizeof err);
+        CHECK(text && corpus_parse(text, &p, err, sizeof err) == 0);
+        if (text) {
+            CHECK(cr_bundle_mount_ok(&p, err, sizeof err) == 0);
+            corpus_free(&p);
+        }
+        free(text);
+        unload(&t);
+    }
+    /* the exit status: 0 when a session ran (whatever the members'
+       verdicts), 77 when none did, 2 for an error of its own */
+    CHECK(cr_bundle_status(0, 1) == 0);
+    CHECK(cr_bundle_status(0, 4) == 0);
+    CHECK(cr_bundle_status(0, 0) == 77);
+    CHECK(cr_bundle_status(1, 3) == 2);
+    CHECK(cr_bundle_status(1, 0) == 2);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1483,6 +1603,7 @@ int main(int argc, char **argv)
     test_editor_run_pass();
     test_observe();
     test_named_jobs();
+    test_bundle();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

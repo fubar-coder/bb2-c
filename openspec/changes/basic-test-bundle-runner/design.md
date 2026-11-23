@@ -117,3 +117,56 @@ wie empfohlen falls möglich (b)"), which the spike showed works: no padding.
 
 After `basic-test-bundle-key`; parallel with G and C. G's end-to-end task
 needs this one merged.
+
+## Findings of the implementation
+
+- **K3 (task 1.1).** `amiga_emulation` computes its snapshot key without a
+  session: `amiga_emulation_snapshot_config` and
+  `amiga_emulation_snapshot_key` are public and take any slot path (it is
+  normalised away). Only the emulation directory's default
+  (`AMIGA_EMULATION_DIR_DEFAULT`) is private to the library's compile, so
+  the library got `amiga_emulation_inputs_key(params)`: the two calls with
+  the directory as `amiga_emulation_start` finds it (a separate commit,
+  with its test in `test_amiga_emulation.cpp`). `corpus_emulator_key`
+  gives it the pass's machine, `rtg=` and `uae=`; the key's emulator text
+  is that value and the cell's session key.
+- **The key as built (I6).** NAME=LEN:VALUE lines as I6 says, but each
+  file as the sha256 of its bytes (`source:PATH=LEN:HEX`) instead of its
+  bytes inline, so a bundle reads and hashes a runner file once for all
+  members (`vstore_cache`); a directory (`ID.test/`, a staged directory) is
+  the digest of its sorted names and their digests, a missing file
+  "missing". The inputs: v=1, the test, the side, the case, the source,
+  the files of `tc_config.files` (nearest first, `tc_resolve`'s order),
+  `ID.test/`, the environment file, every regular file an absolute path of
+  a `[runner]` value names (each part of a value with `|`), the files the
+  cell's pass stages or runs (compiler and libraries, `ted`, `launcher`,
+  `gate`, `defaultdbug`, `wrap`, `runwrap`, `rcput`, `file=` sources,
+  `build=` compilers and libraries, mount directories, floppy images:
+  this covers the placeholders of the planning choice, e.g. `@TESTDATA@`
+  in a `files` entry), `/proc/self/exe`, the emulator text. The case test
+  builds the same pass with `cr_cell_pass` (its paths below a work
+  directory that is not made) and stages nothing.
+- **The self-test's place (task 2.4).** `tests/corpus/runner/CMakeLists.txt`
+  belongs to the host project (`host/CMakeLists.txt`), which has no
+  emulator environment (`BASIC_TEST_ENV`); the emulator self-test
+  `corpusrun_bundle` (`bundle-selftest.cmake`, sources in
+  `tests/corpus/runner/bundle-selftest/`) is registered in
+  `tests/corpus/CMakeLists.txt` beside the other runner checks of the m68k
+  build, with `corpusrun_bundle_no_amiberry` (77, nothing stored). The
+  command-line refusals (`corpusrun_bundle_refused_*`) are host tests in
+  `tests/corpus/runner/CMakeLists.txt`.
+- **Messages.** A stale entry is named too ("the verdict stored for TEST is
+  not of these inputs; the case runs alone"), not only a malformed one; a
+  missing entry prints nothing, so a case test without a stored verdict
+  prints what the run without `--from-bundle` prints.
+- **The spike's results, checked again** with this code: a sample of the
+  first set (the 27 cases without `--require-deviation`, 42 with it among
+  them the 7 REPRODUCED of the spike) in two bundles (8 sessions, 20.7 s
+  session time) against their 69 runs alone (91.2 s): 69 of 69 verdicts
+  equal, 67 stored, 2 PASSED not stored (their cells did not end cleanly:
+  `fontlib-messages-errarea`, `iffmakelib-openerr-errarea`).
+- **Measurement (task 4.2; load about 5 of 16 CPUs).** One bundle of 16
+  members (the first 16 cases without `--require-deviation`, one key): one
+  session of 4.3 s, wall 4.4 s, all 16 stored, the 16 served case tests
+  0.36 s together; the same 16 cases alone one after the other: 16
+  sessions of 17.2 s, wall 17.3 s.

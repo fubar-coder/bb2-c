@@ -14,7 +14,9 @@ tested by `test_corpus.c`, `test_bugorig.c`, `test_cdcache.c`,
 `test_runwork.c` and `test_rundir.c` here (ctest `corpus_runner`,
 `bugorig_verdict`, `cdrun_cache`, `runner_runwork`, `runner_rundir`);
 `case`, one case of a test of the BASIC test model, is `lib_caserun`
-(`caserun.h`, tested by `test_caserun.c`, ctest `corpusrun_caserun`).
+(`caserun.h`, tested by `test_caserun.c`, ctest `corpusrun_caserun`), its
+verdict store of the bundles `lib_verdicts` (`verdicts.h`, tested by
+`test_verdicts.c`, ctest `corpusrun_verdicts`).
 
 ## Usage
 
@@ -196,9 +198,10 @@ cases, in Amiberry: the cells of one side compiled, run and judged
 OPTIONS:
   -h,     --help              Print this help message and exit
           --env FILE REQUIRED the environment file of the build (tests/model-env.toml)
-          --source FILE REQUIRED
-                              the test source ID.test.bas
-          --case CASE         the case; without it every case of the source (not with
+          --source FILE Excludes: --bundle
+                              the test source ID.test.bas (not with --bundle)
+          --case CASE Excludes: --bundle
+                              the case; without it every case of the source (not with
                               --print-config, --write-driver, --prev)
           --side SIDE:{port,originals}
                               the cells without original material (port, the default) or with
@@ -217,11 +220,21 @@ OPTIONS:
                               runtime-errors of the side port (the compiles ID and ID-runerrs)
           --driver FILE       with --prev: the driver --write-driver wrote
           --test TEST         with --prev: the ctest name, the TEST of the PREV_INTENDED
-                              entries
+                              entries; with --from-bundle the case test's name
           --prev-blitz2 FILE  with --prev: the previous commit's compiler
           --prev-libs DIR     with --prev: the directory of its deflibs and acidlibs
           --intended ENTRY    with --prev: a PREV_INTENDED entry (TEST:NAME of any test, or ON;
                               any number)
+          --from-bundle NAME Needs: --case --test
+                              with --case and --test: the bundle that may have stored the
+                              case's verdict; a fresh one is printed and is the exit status,
+                              else the case runs alone
+          --bundle NAME Excludes: --case --source
+                              run the members (--member) in shared emulator sessions and store
+                              each clean PASSED or REPRODUCED for its case test
+          --member TEST SOURCE CASE Needs: --bundle
+                              with --bundle: a member, the case test's name, its source (an
+                              absolute path) and the case (any number)
 
 The cells of a side that share the session settings run in one emulator session.
 Without --case every case of the source runs: the cases share one run of the
@@ -235,7 +248,9 @@ side originals 0, the report saying "REPRODUCED (as declared, side originals)"),
 broken, 4 failed, 77 skipped (no emulator, or a file of the side is missing);
 without --case the worst verdict of the cases, in the order error, broken,
 failed, skipped, reproduced, passed. With --prev: 0 the same, 1 a difference
-that is not intended or a stale entry, 2 error, 77 skipped.
+that is not intended or a stale entry, 2 error, 77 skipped. With --bundle: 0 it
+ran through (whatever its members' verdicts), 77 no session started (no
+emulator, no member that can run), 2 an error of the bundle.
 ```
 
 Runs one case of a test of the BASIC test model (`ID.test.bas` and its
@@ -355,6 +370,54 @@ compiled in the pass of their setting of runtime error checking
 An entry of the test that names no compile of it is stale
 (`cr_prev_unknown`).
 
+A bundle (`--bundle NAME --member TEST SOURCE CASE ...`; `caserun.h`,
+"The bundles"; change `basic-test-bundle-runner`) runs the cases of
+several sources in shared emulator sessions, so that a case test is not
+slower than it would be alone. Each member is a case with one cell on the
+side port that `tj_bundle_case` (`tools/lib/testjudge`) admits; it is
+prepared as for its run alone, in the directory `ID__CASE` of the
+bundle's run directory below `WORK/NAME`. The cells are grouped by their
+session key in the members' order and cut into chunks of at most 16
+(`cr_bundle_chunks`). A chunk's session has one writable volume `BUNDLE:`
+(the directory `bundle` of the run directory), whatever its number of
+cells, so every session of a key has the same emulator configuration and
+snapshot: each cell's staged volume is renamed to `bundle/cK` before the
+session and back after it, the script starts with `Assign CELLk:
+BUNDLE:ck` for every cell (`cr_session_script`), and the hang check arms
+on the first cell's run (`bundle/c0/out/test.run`). A cell whose mount is
+named `BUNDLE` is refused (`cr_bundle_mount_ok`). After a session that
+ends before a cell completed, the cells behind it run again, at most 3
+sessions per chunk (`cr_bundle_pending`); the cells not reached then are
+left to their case tests. Each member is observed and judged as the run
+of its case alone; a PASSED or REPRODUCED from a cell that ended cleanly
+(`cr_cell_clean`) is stored for its case test, every other member is
+named with the reason (`TEST: VERDICT not stored (REASON)`). The report
+has each member's block with its verdict line marked ` (bundle NAME)`, a
+line `TEST: VERDICT stored`, and `NAME: N members, M stored`; the `@stat`
+lines carry `test=NAME` and `config=sN`, and before each session a line
+`bundle cell cK: TEST` names each cell.
+
+The verdict store (`verdicts.h`) is the directory `verdicts` of the run
+directory of the fixtures (`rundir.h`: `BB2C_TEST_RUN`, else the
+environment's `[runner] run-dir`), one file per stored case named by its
+case test, written as `TEST.new-PID` and renamed. An entry holds the key
+of the inputs it was judged from (`vstore_key`: a sha256 over the
+digests of the source, the configuration files `tc_resolve` read, the
+files below `ID.test/`, the environment file and every file a `[runner]`
+value names, the files the cell's pass stages or runs, the running
+`corpusrun`, and the emulator's inputs: the snapshot key of the session
+without a session, `amiga_emulation_inputs_key`, and the session key),
+the bundle, the case test's exit status and the report block. A case
+test with `--test TEST --from-bundle NAME` claims its entry before its
+run directory (renamed to `TEST.claim-PID`, read, removed): a fresh entry
+of that bundle is printed with `corpusrun case: verdict from the bundle
+NAME` and `@served v=1 test=TEST bundle=NAME` (no `@stat` line, no
+session) and its status is the exit status; without an entry, with one of
+other inputs or of another bundle, or a malformed one (named) the case
+runs alone as without `--from-bundle`. An entry is read once. A bundle
+removes its members' entries at its start, but not the files of a process
+that still lives.
+
 ## Inputs and outputs
 
 The pass files are written by CMake, lines `KEY=VALUE` and `#` comments;
@@ -383,7 +446,11 @@ line, message, size, masked SHA-256, xtra, note
   emulator, or a file of the side is missing); without `--case` the worst
   verdict of the cases (SKIPPED between failed and reproduced). With `--prev` 0 the same, 1 a difference
   that is not intended or a stale entry, 2 error, 77 skipped; with
-  `--write-driver` 0 written, 2 error.
+  `--write-driver` 0 written, 2 error. With `--from-bundle` and a fresh
+  entry the stored status. With `--bundle` 0 it ran through (whatever its
+  members' verdicts), 77 no session started (no emulator, no member that
+  can run), 2 an error of the bundle (the store cannot be written, a volume
+  that cannot be renamed back, a wrong command line, out of memory).
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that
   does not compile, 77 the emulator or a file is missing (skipped),
   2 error.
@@ -409,7 +476,10 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
   `PREFIX_ID__CASE_originals`; `cmake/basic-test-model.cmake`), their
   drivers for the comparison with the prev build (`basic_test_driver`)
   and the comparisons `PREFIX_ID_prev` (`cmake/prev.cmake`), the self
-  tests `blitz2_selftest_model_*` (`tests/blitz2/CMakeLists.txt`).
+  tests `blitz2_selftest_model_*` (`tests/blitz2/CMakeLists.txt`), the
+  self test of the bundles `corpusrun_bundle` (`bundle-selftest.cmake`,
+  `tests/corpus/CMakeLists.txt`) and the refused command lines
+  `corpusrun_bundle_refused_*`.
 * `drop`: the tests `corpus_cleanup`, `corpus_originals_cleanup`
   (fixture cleanups, `tests/corpus/CMakeLists.txt`).
 * Tests: `help_corpusrun`, `readme_corpusrun`.

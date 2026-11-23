@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -17,11 +19,13 @@
 #include "basictest.h"
 #include "bugorig.h"
 #include "corpus.h"
+#include "rundir.h"
 #include "runwork.h"
 #include "serial.h"
 #include "statline_emulation.h"
 #include "testpp.h"
 #include "util.h"
+#include "verdicts.h"
 
 extern char **environ;
 
@@ -1462,22 +1466,15 @@ out:
     return r;
 }
 
-/* the session of the cells cs[0..n): all compiles, then all runs */
-static char *session_script(struct cell **cs, size_t n)
+char *cr_session_script(const char *const *compile, const char *const *run, size_t n, int bundle)
 {
     struct text t = { 0 };
 
+    for (size_t i = 0; bundle && i < n; i++)
+        text_add(&t, "Assign CELL%zu: " CR_BUNDLE_VOLUME ":c%zu\n", i, i);
     for (int part = 0; part < 2; part++)
-        for (size_t i = 0; i < n; i++) {
-            char *s = part ? corpus_script_run(&cs[i]->p) : corpus_script_compile(&cs[i]->p);
-
-            if (!s) {
-                free(t.p);
-                return NULL;
-            }
-            text_add(&t, "Assign CORPUS: CELL%zu:\n%s", i, s);
-            free(s);
-        }
+        for (size_t i = 0; i < n; i++)
+            text_add(&t, "Assign CORPUS: CELL%zu:\n%s", i, part ? run[i] : compile[i]);
     text_add(&t, "Assign CORPUS:\n");
     if (t.bad) {
         free(t.p);
@@ -1486,18 +1483,63 @@ static char *session_script(struct cell **cs, size_t n)
     return t.p;
 }
 
+size_t cr_session_volumes(const char *bundle, const char *const *dirs, size_t n, struct corpus_volume *vols,
+                          char (*names)[32])
+{
+    if (bundle) {
+        vols[0].volume = CR_BUNDLE_VOLUME;
+        vols[0].host_dir = bundle;
+        vols[0].cell = "c0";
+        return 1;
+    }
+    for (size_t i = 0; i < n; i++) {
+        snprintf(names[i], sizeof names[i], "CELL%zu", i);
+        vols[i].volume = names[i];
+        vols[i].host_dir = dirs[i];
+        vols[i].cell = NULL;
+    }
+    return n;
+}
+
+/* the session of the cells cs[0..n): all compiles, then all runs (in a
+   bundle after the assigns of the cells' directories) */
+static char *session_script(struct cell **cs, size_t n, int bundle)
+{
+    char **comp = calloc(n + 1, sizeof *comp), **run = calloc(n + 1, sizeof *run), *s = NULL;
+    size_t i = 0;
+
+    if (comp && run)
+        for (; i < n; i++)
+            if (!(comp[i] = corpus_script_compile(&cs[i]->p)) || !(run[i] = corpus_script_run(&cs[i]->p)))
+                break;
+    if (comp && run && i == n)
+        s = cr_session_script((const char *const *)comp, (const char *const *)run, n, bundle);
+    for (size_t k = 0; comp && run && k < n; k++) {
+        free(comp[k]);
+        free(run[k]);
+    }
+    free(comp);
+    free(run);
+    return s;
+}
+
 /* runs the cells cs[0..n) in one session and marks those that ended; the
-   others stay for another session.  0 = ok, 77 = no emulator, 2 = error */
-static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, size_t *nsessions)
+   others stay for another session.  bundle: the directory of the volume
+   BUNDLE: (each cell's staged volume renamed to bundle/cK for the session
+   and back after it), NULL: a volume CELLk: per cell.  0 = ok, 77 = no
+   emulator, 2 = error */
+static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, size_t *nsessions,
+                       const char *bundle)
 {
     struct corpus_volume *vols = calloc(n, sizeof *vols);
-    char **names = calloc(n, sizeof *names), **dirs = calloc(n, sizeof *dirs);
-    char *script = session_script(cs, n), err[400];
+    char (*names)[32] = calloc(n, sizeof *names), **dirs = calloc(n, sizeof *dirs), **bdirs = NULL;
+    char *script = session_script(cs, n, bundle != NULL), err[400];
     struct amiga_emulation *e = NULL;
     struct responder *resp = NULL;
     unsigned port = 0;
     struct statline stl;
     enum amiga_emulation_status st;
+    size_t nvols, moved = 0;
     int r = 2;
 
     if (!vols || !names || !dirs || !script)
@@ -1505,10 +1547,24 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
     for (size_t i = 0; i < n; i++) {
         if (corpus_stage(&cs[i]->p, 0, log))
             goto out;
-        if (!(names[i] = str_printf("CELL%zu", i)) || !(dirs[i] = str_printf("%s/%s/vol", cs[i]->p.work, cs[i]->tag)))
+        if (!(dirs[i] = str_printf("%s/%s/vol", cs[i]->p.work, cs[i]->tag)))
             goto out;
-        vols[i].volume = names[i];
-        vols[i].host_dir = dirs[i];
+    }
+    nvols = cr_session_volumes(bundle, (const char *const *)dirs, n, vols, names);
+    if (bundle) {
+        if ((mkdir(bundle, 0700) && errno != EEXIST) || !(bdirs = calloc(n, sizeof *bdirs))) {
+            fprintf(log, "corpusrun case: cannot make %s\n", bundle);
+            goto out;
+        }
+        for (size_t i = 0; i < n; i++) {
+            if (!(bdirs[i] = str_printf("%s/c%zu", bundle, i)))
+                goto out;
+            if (rename(dirs[i], bdirs[i])) {
+                fprintf(log, "corpusrun case: cannot rename %s to %s: %s\n", dirs[i], bdirs[i], strerror(errno));
+                goto out;
+            }
+            moved = i + 1;
+        }
     }
     if (cs[0]->p.serial && (!(port = serial_free_port()) || !(resp = serial_start(port)))) {
         fprintf(log, "corpusrun case: no TCP port for the serial port\n");
@@ -1516,10 +1572,13 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
     }
     fprintf(log, "corpusrun case: emulator session %zu:", *nsessions);
     for (size_t i = 0; i < n; i++)
-        fprintf(log, " %s", cs[i]->tag);
+        if (bundle)
+            fprintf(log, " c%zu", i);
+        else
+            fprintf(log, " %s", cs[i]->tag);
     fprintf(log, "\n");
     fflush(log);
-    while (!(e = corpus_session_start(&cs[0]->p, 0, script, port, vols, n, err, sizeof err))) {
+    while (!(e = corpus_session_start(&cs[0]->p, 0, script, port, vols, nvols, err, sizeof err))) {
         if (!amiga_emulation_no_slot()) {
             fprintf(log, "corpusrun case: %s - skipped\n", err);
             r = 77;
@@ -1533,6 +1592,20 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
         }
     }
     st = amiga_emulation_join(e);
+    /* the cells' volumes back where their observations read them; one that
+       cannot go back is an error (the run's files keep it) */
+    {
+        int back = 1;
+
+        for (; moved > 0; moved--)
+            if (rename(bdirs[moved - 1], dirs[moved - 1])) {
+                fprintf(log, "corpusrun case: cannot rename %s back to %s: %s\n", bdirs[moved - 1],
+                        dirs[moved - 1], strerror(errno));
+                back = 0;
+            }
+        if (!back)
+            goto out;
+    }
     {
         char tag[40];
 
@@ -1556,7 +1629,10 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
         }
         cs[i]->done = 1;
         cs[i]->status = st == AMIGA_EMULATION_HALT ? st : AMIGA_EMULATION_TIMEOUT;
-        if (i + 1 < n)
+        if (i + 1 < n && bundle)
+            fprintf(log, "corpusrun case: session ended (%s) in c%zu; the cells behind it run again\n",
+                    amiga_emulation_status_name(st), i);
+        else if (i + 1 < n)
             fprintf(log, "corpusrun case: session ended (%s) in %s; the cells behind it run again\n",
                     amiga_emulation_status_name(st), cs[i]->tag);
         break;
@@ -1565,14 +1641,20 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
     statline_write(log, &stl);
     r = 0;
 out:
+    /* a session that did not start: the volumes go back */
+    for (; moved > 0; moved--)
+        rename(bdirs[moved - 1], dirs[moved - 1]);
+    if (bundle)
+        rmdir(bundle);
     if (resp)
         serial_stop(resp, ".");
     if (e)
         amiga_emulation_free(e);
-    for (size_t i = 0; names && i < n; i++)
-        free(names[i]);
     for (size_t i = 0; dirs && i < n; i++)
         free(dirs[i]);
+    for (size_t i = 0; bdirs && i < n; i++)
+        free(bdirs[i]);
+    free(bdirs);
     free(names);
     free(dirs);
     free(vols);
@@ -2132,11 +2214,12 @@ static int make_driver(struct ctx *x, const char *const *cases, size_t n, struct
     return 0;
 }
 
-/* runs s: its driver tokenised in s->dir, a pass per cell, the sessions (the
-   cells with the same key, in order; again for the cells a session did not
-   reach), the observations.  0 = observed, 2 = error, 77 = skipped (a file
-   of a cell is missing, no emulator) */
-static int run_set(struct ctx *x, struct set *s)
+/* the phases of a run of s (run_set, the bundle): set_prepare its driver
+   tokenised in s->dir, a pass and a session key per cell; set_sessions the
+   sessions (the cells with the same key, in order; again for the cells a
+   session did not reach); set_observe the observations.  Each: 0 = done, 2
+   = error, 77 = skipped (a file of a cell is missing, no emulator) */
+static int set_prepare(struct ctx *x, struct set *s)
 {
     char err[800], *drvpath = NULL, *bb2 = NULL;
     const char *tedsrc;
@@ -2211,6 +2294,15 @@ static int run_set(struct ctx *x, struct set *s)
             goto out;
         }
     }
+    rc = 0;
+out:
+    free(drvpath);
+    free(bb2);
+    return rc;
+}
+
+static int set_sessions(struct ctx *x, struct set *s)
+{
     /* the sessions: the cells with the same key, in order; again for the cells
        a session did not reach */
     for (;;) {
@@ -2220,7 +2312,7 @@ static int run_set(struct ctx *x, struct set *s)
 
         if (!group) {
             fprintf(x->log, "corpusrun case: out of memory\n");
-            goto out;
+            return 2;
         }
         for (first = 0; first < s->ncells && s->c[first].done; first++)
             ;
@@ -2232,14 +2324,16 @@ static int run_set(struct ctx *x, struct set *s)
             if (!s->c[i].done && !strcmp(s->c[i].key, s->c[first].key))
                 group[n++] = &s->c[i];
         x->ran = 1;
-        r = run_session(group, n, x->base, x->log, &x->nsessions);
+        r = run_session(group, n, x->base, x->log, &x->nsessions, NULL);
         free(group);
-        if (r) {
-            rc = r;
-            goto out;
-        }
+        if (r)
+            return r;
     }
-    /* the observations */
+    return 0;
+}
+
+static int set_observe(struct ctx *x, struct set *s)
+{
     for (size_t k = 0; k < s->ncells; k++) {
         const struct cell *c = &s->c[k];
         char *vol = str_printf("%s/%s/vol", c->p.work, c->tag);
@@ -2249,14 +2343,21 @@ static int run_set(struct ctx *x, struct set *s)
         free(vol);
         if (r) {
             fprintf(x->log, "corpusrun case: out of memory\n");
-            goto out;
+            return 2;
         }
     }
-    rc = 0;
-out:
-    free(drvpath);
-    free(bb2);
-    return rc;
+    return 0;
+}
+
+/* runs s: set_prepare, set_sessions, set_observe.  0 = observed, 2 = error,
+   77 = skipped (a file of a cell is missing, no emulator) */
+static int run_set(struct ctx *x, struct set *s)
+{
+    int rc;
+
+    if ((rc = set_prepare(x, s)) || (rc = set_sessions(x, s)))
+        return rc;
+    return set_observe(x, s);
 }
 
 /* judges the case name over n cells of the side, the i-th observed in from[i]
@@ -2516,6 +2617,100 @@ out:
     return rc;
 }
 
+/* ------------------------------------------------- the key of a stored verdict */
+
+/* the key of the inputs of the case of x in its cell with the pass p and
+   the session key skey (verdicts.h vstore_key): the files the pass stages
+   or runs, the emulator's inputs.  0, -1 = out of memory */
+static int case_key(const struct ctx *x, const struct corpus_pass *p, const char *skey, const char *test,
+                    struct vstore_cache *cache, char key[65])
+{
+    size_t max = 16 + p->nfiles + 3 * p->nbuilds + p->nmounts + CORPUS_FLOPPIES, n = 0;
+    const char **f = calloc(max, sizeof *f);
+    char *emu = str_printf("%016llx|%s", corpus_emulator_key(p), skey);
+    struct vstore_keyin in = { 0 };
+    int r = -1;
+
+    if (f && emu) {
+        const char *one[] = { p->configs ? p->configs[0].blitz2 : NULL, p->configs ? p->configs[0].deflibs : NULL,
+                              p->configs ? p->configs[0].acidlibs : NULL, p->ted, p->launcher, p->gate,
+                              p->defaultdbug, p->wrap, p->runwrap, p->rcput };
+
+        for (size_t i = 0; i < sizeof one / sizeof one[0]; i++)
+            f[n++] = one[i];
+        for (size_t i = 0; i < p->nfiles; i++)
+            f[n++] = p->file_src[i];
+        for (size_t i = 0; i < p->nbuilds; i++) {
+            f[n++] = p->builds[i].blitz2;
+            f[n++] = p->builds[i].deflibs;
+            f[n++] = p->builds[i].acidlibs;
+        }
+        for (size_t i = 0; i < p->nmounts; i++)
+            f[n++] = p->mount_dir[i];
+        for (size_t i = 0; i < CORPUS_FLOPPIES; i++)
+            f[n++] = p->floppy[i];
+        in.test = test;
+        in.side = x->o->originals ? "originals" : "port";
+        in.case_name = x->o->case_name;
+        in.conf = &x->conf;
+        in.env = &x->env;
+        in.staged = f;
+        in.nstaged = n;
+        in.emulator = emu;
+        r = vstore_key(cache, &in, key);
+    }
+    free(f);
+    free(emu);
+    return r;
+}
+
+/* the served case (caserun.h): the exit status of a fresh entry of the
+   bundle, -1 = none (the case runs alone) */
+static int served(struct ctx *x, FILE *log)
+{
+    const struct caserun_opts *o = x->o;
+    char *dir = vstore_dir(&x->env), err[800], key[65], *pt = NULL, *skey = NULL;
+    struct corpus_pass p;
+    struct vstore_verdict v;
+    size_t cell = 0, nside = 0;
+    int have = 0, r, rc = -1;
+
+    memset(&p, 0, sizeof p);
+    if (!dir)
+        return -1;
+    for (size_t i = 0; i < x->m.ncells; i++)
+        if (x->m.cells[i].originals == o->originals) {
+            cell = i;
+            nside++;
+        }
+    /* the key as the bundle makes it: the cell's pass (its paths below a
+       work directory that is not made), the session key */
+    if (nside == 1
+        && !cr_cell_pass(&x->conf, &x->m, cell, &x->env, "c0", "/-", "/-/" CR_PROGRAM ".bb2", &pt, err, sizeof err)
+        && !corpus_parse(pt, &p, err, sizeof err) && (skey = tc_session_key(&x->conf, &x->m, cell, &x->env))
+        && !case_key(x, &p, skey, o->test, NULL, key))
+        have = 1;
+    r = vstore_claim(dir, o->test, have ? key : NULL, o->from_bundle, &v, err, sizeof err);
+    if (r == VSTORE_SERVED) {
+        fputs(v.block, log);
+        fprintf(log, "corpusrun case: verdict from the bundle %s\n", o->from_bundle);
+        fprintf(log, "@served v=1 test=%s bundle=%s\n", o->test, o->from_bundle);
+        rc = v.status;
+        vstore_verdict_free(&v);
+    } else if (r == VSTORE_MALFORMED)
+        fprintf(log, "corpusrun case: the verdict stored for %s is malformed (%s); the case runs alone\n", o->test,
+                err);
+    else if (r == VSTORE_STALE)
+        fprintf(log, "corpusrun case: the verdict stored for %s is not of these inputs; the case runs alone\n",
+                o->test);
+    else if (r < 0)
+        fprintf(log, "corpusrun case: %s; the case runs alone\n", err);
+    corpus_free(&p);
+    free(pt);
+    free(skey);
+    free(dir);
+    return rc;
+}
 
 int caserun(const struct caserun_opts *o, FILE *log)
 {
@@ -2550,6 +2745,14 @@ int caserun(const struct caserun_opts *o, FILE *log)
     if (o->prev) {
         rc = prev_run(o, &x.env, &x.conf, &x.m, log);
         goto out;
+    }
+    if (o->from_bundle && o->case_name && o->test) {
+        int r = served(&x, log);
+
+        if (r >= 0) {
+            rc = r;
+            goto out;
+        }
     }
     if (!(text = (char *)read_file(o->source, &len))) {
         fprintf(log, "corpusrun case: cannot read %s\n", o->source);
@@ -2718,5 +2921,368 @@ out:
     tc_matrix_free(&x.m);
     tc_free(&x.conf);
     tc_env_free(&x.env);
+    return rc;
+}
+
+/* ------------------------------------------------------------ the bundles */
+
+size_t cr_bundle_chunks(const char *const *keys, size_t n, size_t *chunk)
+{
+    size_t nchunks = 0;
+
+    for (size_t i = 0; i < n; i++)
+        chunk[i] = (size_t)-1;
+    for (size_t i = 0; i < n; i++) {
+        size_t in = 0;
+
+        if (chunk[i] != (size_t)-1)
+            continue;
+        /* the group of the key of cell i, CR_BUNDLE_CELLS a chunk */
+        for (size_t k = i; k < n; k++)
+            if (chunk[k] == (size_t)-1 && !strcmp(keys[k], keys[i])) {
+                if (in == CR_BUNDLE_CELLS) {
+                    nchunks++;
+                    in = 0;
+                }
+                chunk[k] = nchunks;
+                in++;
+            }
+        nchunks++;
+    }
+    return nchunks;
+}
+
+size_t cr_bundle_pending(const int *done, size_t n, size_t nsessions, size_t *pending)
+{
+    size_t k = 0;
+
+    if (nsessions >= CR_BUNDLE_SESSIONS)
+        return 0;
+    for (size_t i = 0; i < n; i++)
+        if (!done[i])
+            pending[k++] = i;
+    return k;
+}
+
+int cr_bundle_status(int error, size_t nsessions)
+{
+    return error ? 2 : nsessions ? 0 : CR_SKIPPED;
+}
+
+int cr_bundle_mount_ok(const struct corpus_pass *p, char *err, size_t errlen)
+{
+    for (size_t i = 0; i < p->nmounts; i++)
+        if (!strcasecmp(p->mount_name[i], CR_BUNDLE_VOLUME)) {
+            snprintf(err, errlen, "the mount %s: has the name of the bundle's volume " CR_BUNDLE_VOLUME ":",
+                     p->mount_name[i]);
+            return -1;
+        }
+    return 0;
+}
+
+/* a member of a bundle: its case as a set of one in its one cell */
+struct member {
+    struct ctx x;
+    struct caserun_opts o;
+    struct set one;
+    char *text;                 /* the source */
+    char key[65];               /* the key of its inputs (vstore_key) */
+    int prepared;               /* its cell runs in the sessions */
+    char why[900];              /* not prepared: why */
+};
+
+static void member_free(struct member *mb)
+{
+    struct ctx *x = &mb->x;
+
+    set_free(&mb->one);
+    free(mb->text);
+    free(x->mac);
+    free(x->testdir);
+    free(x->tokens);
+    free(x->side);
+    tp_free(&x->src);
+    tc_matrix_free(&x->m);
+    tc_free(&x->conf);
+    tc_env_free(&x->env);
+    mb->text = NULL;
+    memset(x, 0, sizeof *x);
+}
+
+/* not prepared: the reason */
+#define NOT_PREPARED(mb, ...) do { snprintf((mb)->why, sizeof (mb)->why, __VA_ARGS__); return 0; } while (0)
+
+/* prepares member i of b (its set in rundir/ID__CASE): 0 (prepared, or
+   not with the reason in why), 2 = an error of the bundle (out of memory) */
+static int member_prepare(struct member *mb, const struct cr_bundle *b, size_t i, const char *rundir,
+                          const char *base, struct vstore_cache *cache, FILE *log)
+{
+    struct ctx *x = &mb->x;
+    char err[800];
+    const char *macros_path;
+    size_t len, cell;
+    int r;
+
+    mb->o.env = b->env;
+    mb->o.source = b->source[i];
+    mb->o.case_name = b->case_name[i];
+    mb->o.require_deviation = b->require_deviation;
+    mb->o.test = b->test[i];
+    x->o = &mb->o;
+    x->log = log;
+    x->file = base_name(b->source[i]);
+    x->base = base;
+    if (tc_env_load(b->env, &x->env, err, sizeof err) || tc_resolve(b->source[i], &x->env, &x->conf, err, sizeof err)
+        || tc_matrix_build(&x->conf, &x->m, err, sizeof err))
+        NOT_PREPARED(mb, "its configuration: %s", err);
+    if (!(x->testdir = str_printf(CR_TESTDIR, x->conf.id)))
+        return 2;
+    if (!(mb->text = (char *)read_file(b->source[i], &len)))
+        NOT_PREPARED(mb, "cannot read %s", b->source[i]);
+    {
+        struct tp_params par = { 0 };
+
+        par.file = x->file;
+        par.test_id = x->conf.id;
+        par.testdata = CR_TESTDATA;
+        par.testdir = x->testdir;
+        if ((r = tp_process(mb->text, len, &par, &x->src)) != 0) {
+            if (r < 0)
+                return 2;
+            for (size_t k = 0; k < x->src.errors.n; k++)
+                fprintf(log, "%s\n", x->src.errors.v[k]);
+            NOT_PREPARED(mb, "its source does not preprocess");
+        }
+        if (tj_editor_run_refused(x->file, &x->src, &x->conf, &x->m, err, sizeof err))
+            NOT_PREPARED(mb, "%s", err);
+    }
+    if ((r = tj_bundle_case(&x->conf, &x->m, &x->src, &x->env, b->case_name[i], &cell)) < 0)
+        return 2;
+    if (!r)
+        NOT_PREPARED(mb, "the case may not be bundled (tj_bundle_case)");
+    if (!(macros_path = need(&x->env, "macros", err, sizeof err)))
+        NOT_PREPARED(mb, "%s", err);
+    if (!(x->mac = (char *)read_file(macros_path, &x->mlen)))
+        NOT_PREPARED(mb, "cannot read %s", macros_path);
+    if (!(x->side = calloc(2, sizeof *x->side)) || !(mb->one.cases = calloc(2, sizeof *mb->one.cases))
+        || !(mb->one.idx = calloc(2, sizeof *mb->one.idx))
+        || !(mb->one.dir = str_printf("%s/%s__%s", rundir, x->conf.id, b->case_name[i])))
+        return 2;
+    x->side[0] = cell;
+    x->nside = 1;
+    mb->one.cases[0] = b->case_name[i];
+    mb->one.ncases = 1;
+    mb->one.idx[0] = cell;
+    mb->one.ncells = 1;
+    if (mkdir_p(mb->one.dir))
+        NOT_PREPARED(mb, "cannot make %s", mb->one.dir);
+    if (!(x->tokens = token_list(&x->conf, &x->env, mb->one.dir, log, err, sizeof err)))
+        NOT_PREPARED(mb, "%s", err);
+    if ((r = set_prepare(x, &mb->one)) == CR_SKIPPED)
+        NOT_PREPARED(mb, "skipped: a file of its cell is missing");
+    if (r)
+        NOT_PREPARED(mb, "its cell cannot be prepared");
+    if (cr_bundle_mount_ok(&mb->one.c[0].p, err, sizeof err)) {
+        fprintf(log, "corpusrun case: %s: %s\n", b->test[i], err);
+        NOT_PREPARED(mb, "refused: %s", err);
+    }
+    if (case_key(x, &mb->one.c[0].p, mb->one.c[0].key, b->test[i], cache, mb->key))
+        return 2;
+    mb->prepared = 1;
+    return 0;
+}
+
+/* observes and judges a member whose cell ran, stores a clean PASSED or
+   REPRODUCED: 0 (*stored), 2 = an error of the bundle */
+static int member_judge(struct member *mb, const char *name, const char *store, int *stored, FILE *log)
+{
+    struct ctx *x = &mb->x;
+    const struct set *from[1] = { &mb->one };
+    size_t at[1] = { 0 }, blen = 0;
+    char *block = NULL, err[800];
+    FILE *mem;
+    int v;
+
+    *stored = 0;
+    if (set_observe(x, &mb->one))
+        return 2;
+    if (!(mem = open_memstream(&block, &blen)))
+        return 2;
+    v = judge_case(x, mb->o.case_name, from, at, 1, "", mem);
+    if (fclose(mem) || v < 0 || !block) {
+        free(block);
+        return 2;
+    }
+    /* the block, its verdict line marked */
+    if (blen && block[blen - 1] == '\n')
+        fprintf(log, "%.*s (bundle %s)\n", (int)(blen - 1), block, name);
+    else
+        fprintf(log, "%s", block);
+    if (v != TJ_V_PASSED && v != TJ_V_REPRODUCED)
+        fprintf(log, "%s: %s not stored (its case test runs it alone)\n", mb->o.test, cr_verdict_name(v));
+    else if (!cr_cell_clean(&mb->one.ob[0].o))
+        fprintf(log, "%s: %s not stored (its cell did not end cleanly)\n", mb->o.test, cr_verdict_name(v));
+    else {
+        char *e = vstore_entry(mb->key, name, cr_side_status(v, 0), block);
+
+        if (!e || vstore_put(store, mb->o.test, e, err, sizeof err)) {
+            fprintf(log, "corpusrun case: %s\n", e ? err : "out of memory");
+            free(e);
+            free(block);
+            return 2;
+        }
+        free(e);
+        fprintf(log, "%s: %s stored\n", mb->o.test, cr_verdict_name(v));
+        *stored = 1;
+    }
+    free(block);
+    return 0;
+}
+
+int caserun_bundle(const struct cr_bundle *b, FILE *log)
+{
+    struct tc_env env = { 0 };
+    struct runwork rw = { NULL, NULL, -1 };
+    struct vstore_cache cache = { 0 };
+    struct member *mb = NULL;
+    char err[800], *base = NULL, *store = NULL, *bdir = NULL;
+    const char **keys = NULL;
+    size_t *chunk = NULL, *pick = NULL, nchunks = 0, nprep = 0, nsessions = 0, nstored = 0;
+    struct cell **cells = NULL;
+    int *done = NULL, error = 0, ran = 0, stop = 0, rc = 2;
+
+    if (!b->name || !*b->name || strchr(b->name, '/') || *b->name == '.') {
+        fprintf(log, "corpusrun case: \"%s\" is no name of a bundle\n", b->name ? b->name : "");
+        return 2;
+    }
+    for (size_t i = 0; i < b->n; i++)
+        for (size_t k = 0; k < i; k++)
+            if (!strcmp(b->test[i], b->test[k])) {
+                fprintf(log, "corpusrun case: the member %s is named twice\n", b->test[i]);
+                return 2;
+            }
+    if (tc_env_load(b->env, &env, err, sizeof err)) {
+        fprintf(log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    {
+        const char *work = need(&env, "work", err, sizeof err);
+
+        if (!work) {
+            fprintf(log, "corpusrun case: %s\n", err);
+            goto out;
+        }
+        if (!(base = str_printf("%s/%s", work, b->name))) {
+            fprintf(log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+    }
+    if (!(store = vstore_dir(&env))) {
+        fprintf(log, "corpusrun case: no run directory for the verdicts (" RUNDIR_ENV ", run-dir)\n");
+        goto out;
+    }
+    if (runwork_open(&rw, base, err, sizeof err) || runwork_space(base, RUNWORK_MIN_FREE_MIB, err, sizeof err)) {
+        fprintf(log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    for (size_t i = 0; i < b->n; i++)
+        if (vstore_clear(store, b->test[i])) {
+            fprintf(log, "corpusrun case: the verdicts of %s in %s cannot be removed\n", b->test[i], store);
+            goto out;
+        }
+    mb = calloc(b->n + 1, sizeof *mb);
+    keys = calloc(b->n + 1, sizeof *keys);
+    chunk = calloc(b->n + 1, sizeof *chunk);
+    pick = calloc(b->n + 1, sizeof *pick);
+    cells = calloc(CR_BUNDLE_CELLS, sizeof *cells);
+    done = calloc(CR_BUNDLE_CELLS, sizeof *done);
+    bdir = str_printf("%s/bundle", rw.dir);
+    if (!mb || !keys || !chunk || !pick || !cells || !done || !bdir) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        goto out;
+    }
+    /* the members' cells; pick[j] the member of the j-th prepared cell */
+    for (size_t i = 0; i < b->n; i++) {
+        if (member_prepare(&mb[i], b, i, rw.dir, base, &cache, log)) {
+            fprintf(log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+        if (!mb[i].prepared) {
+            fprintf(log, "%s: not stored (%s)\n", b->test[i], mb[i].why);
+            member_free(&mb[i]);
+            continue;
+        }
+        keys[nprep] = mb[i].one.c[0].key;
+        pick[nprep++] = i;
+    }
+    vstore_cache_free(&cache);
+    nchunks = cr_bundle_chunks(keys, nprep, chunk);
+    for (size_t ch = 0; ch < nchunks; ch++) {
+        size_t in[CR_BUNDLE_CELLS], nin = 0, pend[CR_BUNDLE_CELLS];
+
+        for (size_t j = 0; j < nprep; j++)
+            if (chunk[j] == ch)
+                in[nin++] = pick[j];
+        /* the sessions of the chunk: the first, again for the cells behind
+           an unclean end */
+        for (size_t s = 0; !stop && !error; s++) {
+            size_t np;
+            int r;
+
+            for (size_t k = 0; k < nin; k++)
+                done[k] = mb[in[k]].one.c[0].done;
+            if (!(np = cr_bundle_pending(done, nin, s, pend)))
+                break;
+            for (size_t k = 0; k < np; k++) {
+                cells[k] = &mb[in[pend[k]]].one.c[0];
+                fprintf(log, "corpusrun case: bundle cell c%zu: %s\n", k, b->test[in[pend[k]]]);
+            }
+            ran = 1;
+            if ((r = run_session(cells, np, base, log, &nsessions, bdir)) == CR_SKIPPED)
+                stop = 1;
+            else if (r)
+                error = 1;
+        }
+        /* judge what ran */
+        for (size_t k = 0; k < nin; k++) {
+            struct member *m = &mb[in[k]];
+            int st;
+
+            if (m->one.c[0].done) {
+                if (member_judge(m, b->name, store, &st, log)) {
+                    fprintf(log, "corpusrun case: %s cannot be judged or stored\n", b->test[in[k]]);
+                    error = 1;
+                } else
+                    nstored += (size_t)st;
+            } else if (stop)
+                fprintf(log, "%s: not stored (skipped: no emulator)\n", b->test[in[k]]);
+            else if (error)
+                fprintf(log, "%s: not stored (an error of the bundle)\n", b->test[in[k]]);
+            else
+                fprintf(log, "%s: not stored (not reached in %d sessions)\n", b->test[in[k]], CR_BUNDLE_SESSIONS);
+            member_free(m);
+        }
+    }
+    fprintf(log, "%s: %zu members, %zu stored\n", b->name, b->n, nstored);
+    rc = cr_bundle_status(error, nsessions);
+    /* skipped before any session: nothing to keep */
+    if (rc == CR_SKIPPED)
+        ran = 0;
+out:
+    if (rw.fd >= 0)
+        rc = runwork_finish(&rw, ran, rc, NULL, NULL, log, "corpusrun case");
+    for (size_t i = 0; mb && i < b->n; i++)
+        member_free(&mb[i]);
+    vstore_cache_free(&cache);
+    free(mb);
+    free(keys);
+    free(chunk);
+    free(pick);
+    free(cells);
+    free(done);
+    free(bdir);
+    free(store);
+    free(base);
+    tc_env_free(&env);
     return rc;
 }

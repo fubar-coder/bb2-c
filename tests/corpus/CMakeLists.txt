@@ -926,3 +926,26 @@ prev_entries_test(typo "compiler_prevv:a" "entry \"compiler_prevv:a\": no test \
 prev_entries_test(excluded "bug_orig_compiler_maxs_libjsr_prev:x"
 	"entry \"bug_orig_compiler_maxs_libjsr_prev:x\": no test")
 prev_entries_test(site "site_examples_rnu:x" "entry \"site_examples_rnu:x\": no test")
+
+# the bundles of corpusrun case (tests/corpus/runner/caserun.h, "The bundles";
+# bundle-selftest.cmake): a bundle of a passing, a hanging, a failing and a
+# passing case, ended by the hang check in the middle; a bundle of an open
+# bug's REPRODUCED; then the case tests: served for the clean ones, alone for
+# the failing, the hanging and a source changed after the bundle; the verdicts
+# equal those of the runs alone.  Eight sessions, one at a time.
+math(EXPR limit "8 * ${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME corpusrun_bundle COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=${CORPUSRUN} -DENV=${BASIC_TEST_ENV}
+	-DSRC=${PROJECT_SOURCE_DIR}/tests/corpus/runner/bundle-selftest
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/corpusrun_bundle
+	-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/bundle-selftest.cmake)
+set_tests_properties(corpusrun_bundle PROPERTIES LABELS emulator TIMEOUT ${limit}
+	PASS_REGULAR_EXPRESSION "bundle-selftest: as expected" SKIP_REGULAR_EXPRESSION "bundle-selftest: skipped")
+# a bundle without Amiberry (a PATH without it): skipped before any session
+# (exit status 77), nothing stored, no run directory left; no emulator needed
+add_test(NAME corpusrun_bundle_no_amiberry COMMAND ${CMAKE_COMMAND}
+	"-DCMD=${CORPUSRUN};case;--env;${BASIC_TEST_ENV};--bundle;selftest_bundle_no_amiberry;--member;t_passes;${PROJECT_SOURCE_DIR}/tests/corpus/runner/bundle-selftest/passes.test.bas;one"
+	-DWANT=77 "-DREGEX=amiberry not found in PATH - skipped\n.*t_passes: not stored \\(skipped: no emulator\\)\nselftest_bundle_no_amiberry: 1 members, 0 stored\n"
+	-DWORK=${BASIC_TEST_WORK}/selftest_bundle_no_amiberry -DPATH_DIR=${CMAKE_CURRENT_BINARY_DIR}/corpusrun_bundle_no_amiberry-path
+	-DRUN_ENV=${CMAKE_CURRENT_BINARY_DIR}/corpusrun_bundle_no_amiberry-run
+	-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
+set_tests_properties(corpusrun_bundle_no_amiberry PROPERTIES PASS_REGULAR_EXPRESSION "runner-exit: as expected")

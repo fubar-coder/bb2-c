@@ -16,11 +16,27 @@ target_link_libraries(lib_corpus PUBLIC lib_runner_util lib_amiga_emulation lib_
 target_compile_options(lib_corpus PRIVATE -Wall -Wextra)
 own_warnings(lib_corpus)
 set_target_properties(lib_corpus PROPERTIES C_STANDARD 23)
+# the verdict store of the bundles (verdicts.h): the entries, the key of a
+# stored verdict's inputs
+add_library(lib_verdicts STATIC verdicts.c)
+target_include_directories(lib_verdicts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lib_verdicts PUBLIC lib_runner_util lib_testconf lib_sha256)
+target_compile_options(lib_verdicts PRIVATE -Wall -Wextra)
+own_warnings(lib_verdicts)
+set_target_properties(lib_verdicts PROPERTIES C_STANDARD 23)
+# its logic without the emulator: put and claim, two claimants, a foreign and
+# a malformed entry (broken input), the cleanup, the key's inputs
+add_executable(test_verdicts test_verdicts.c)
+target_link_libraries(test_verdicts PRIVATE lib_verdicts)
+target_compile_options(test_verdicts PRIVATE -Wall -Wextra)
+own_warnings(test_verdicts)
+add_test(NAME corpusrun_verdicts COMMAND test_verdicts ${CMAKE_CURRENT_BINARY_DIR}/corpusrun_verdicts)
 # one case of a Blitz test of the BASIC test model (caserun.h): the cells of
-# a side in shared sessions, judged by lib/testjudge
+# a side in shared sessions, judged by lib/testjudge; the bundles of cases of
+# several sources and the served case (verdicts.h)
 add_library(lib_caserun STATIC caserun.c)
 target_include_directories(lib_caserun PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lib_caserun PUBLIC lib_corpus lib_testjudge)
+target_link_libraries(lib_caserun PUBLIC lib_corpus lib_testjudge lib_verdicts)
 target_compile_options(lib_caserun PRIVATE -Wall -Wextra)
 own_warnings(lib_caserun)
 set_target_properties(lib_caserun PROPERTIES C_STANDARD 23)
@@ -81,6 +97,24 @@ add_test(NAME cdrun_compare COMMAND test_cdcmp)
 add_test(NAME cdrun_source COMMAND ${CMAKE_COMMAND} -DCORPUSRUN=$<TARGET_FILE:corpusrun>
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/cdrun_source
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-cdrun-source.cmake)
+
+# the command lines of the bundles refused before any work (broken input,
+# exit status 2, no emulator needed): a member named twice, a bundle name
+# with "/", --member without --bundle, --from-bundle without --test
+set(bundle_bad_twice --bundle b --member t /s.test.bas c --member t /s.test.bas c
+	"the member t is named twice")
+set(bundle_bad_name --bundle a/b --member t /s.test.bas c "\"a/b\" is no name of a bundle")
+set(bundle_bad_member --member t /s.test.bas c "--member requires --bundle")
+set(bundle_bad_served --source /s.test.bas --case c --from-bundle b "--from-bundle requires --test")
+foreach(v twice name member served)
+	set(args ${bundle_bad_${v}})
+	list(POP_BACK args regex)
+	add_test(NAME corpusrun_bundle_refused_${v} COMMAND ${CMAKE_COMMAND}
+		"-DCMD=$<TARGET_FILE:corpusrun>;case;--env;/no/env.toml;${args}" -DWANT=2 "-DREGEX=${regex}"
+		-DWORK=${CMAKE_CURRENT_BINARY_DIR}/corpusrun_bundle_refused_${v}
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/runner-exit.cmake)
+	set_tests_properties(corpusrun_bundle_refused_${v} PROPERTIES PASS_REGULAR_EXPRESSION "runner-exit: as expected")
+endforeach()
 
 host_help_test(corpusrun ${CORPUSRUN_SUBCOMMANDS})
 host_readme_test(corpusrun README.md ${CORPUSRUN_SUBCOMMANDS})

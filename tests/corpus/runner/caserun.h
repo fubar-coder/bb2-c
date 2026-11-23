@@ -3,7 +3,9 @@
  * basic-test-runner; tests/README.md, "Tests that judge themselves"): the
  * cells of one side compiled and run in Amiberry, judged from the result
  * file of the test library and the other observations of the run
- * (corpusrun case, cmd_case.cpp).
+ * (corpusrun case, cmd_case.cpp).  The cases of several sources can also
+ * run together in shared sessions, a bundle that stores each clean verdict
+ * for the case's own test (below, "The bundles"; verdicts.h).
  *
  * The inputs:
  *   - the environment file of the build (testconf.h tc_env, written by
@@ -95,13 +97,17 @@ struct caserun_opts {
     int prev;                   /* the comparison with the prev build (below) */
     const char *driver;         /* with prev: the driver write_driver wrote */
     const char *test;           /* with prev: the ctest name, the TEST of the
-                                   PREV_INTENDED entries */
+                                   PREV_INTENDED entries; with from_bundle
+                                   the case test's name */
     const char *prev_blitz2;    /* with prev: the previous commit's compiler */
     const char *prev_libs;      /* with prev: the directory of its deflibs and
                                    acidlibs */
     const char *const *intended;    /* with prev: the PREV_INTENDED entries (TEST:NAME
                                        of any test, or ON) */
     size_t nintended;
+    const char *from_bundle;    /* with case_name and test: the bundle that
+                                   may have stored the case's verdict (the
+                                   served case, below) */
 };
 
 /*
@@ -491,6 +497,122 @@ char *cr_compile_mapped(const char *result, const struct tp_driver *d, const cha
  * @return 0, -1 = out of memory
  */
 int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_matrix *m);
+
+/*
+ * The bundles (change basic-test-bundle-runner; caserun_bundle): the cases
+ * of several sources, each a member with one cell (tj_bundle_case: one
+ * cell on the side port, a plain session key), run in shared emulator
+ * sessions.  Each member's source is prepared as for its run alone (its
+ * own configuration, driver of the one case, pass, in the directory
+ * ID__CASE of the bundle's run directory); the cells are grouped by
+ * session key in the members' order and cut into chunks of at most
+ * CR_BUNDLE_CELLS (cr_bundle_chunks).  A chunk's session has one writable
+ * volume BUNDLE: (the directory bundle of the run directory) whatever its
+ * number of cells: each cell's staged volume is renamed to bundle/cK
+ * before the session and back after it, the script starts with
+ * `Assign CELLk: BUNDLE:ck` for every cell (cr_session_script), and the
+ * hang check arms on the first cell's run (bundle/c0/out/...).  A session
+ * that ends before a cell completed is followed by one for the cells behind
+ * it, at most CR_BUNDLE_SESSIONS per chunk (cr_bundle_pending); the cells
+ * not reached then are left to their case tests.  Each member is observed
+ * and judged as the run of its case alone; a PASSED or REPRODUCED from a
+ * cell that ended cleanly (cr_cell_clean) is stored for its case test
+ * (verdicts.h), every other member is named with the reason and left to
+ * its case test.  The report: per member its block, the verdict line
+ * marked " (bundle NAME)", a line "TEST: VERDICT stored" or "TEST: VERDICT
+ * not stored (REASON)" ("TEST: not stored (REASON)" for a member not
+ * judged), at the end "NAME: N members, M stored".  The @stat lines carry
+ * test=NAME and config=sN (the bundle's session), and before each session
+ * a line "bundle cell cK: TEST" per cell.  The exit status
+ * (cr_bundle_status): 0 when it ran through, whatever its members'
+ * verdicts; 77 when no session started (no emulator, no member that can
+ * run); 2 on an error of its own (the store cannot be written, a volume
+ * that cannot be renamed back, out of memory).
+ *
+ * The served case (caserun with from_bundle and test): before its run
+ * directory, the case test computes the key of its inputs (verdicts.h
+ * vstore_key: the source, the configuration files, ID.test/, the
+ * environment and the files of [runner], the files its cell's pass stages,
+ * the runner, the emulator's inputs) and claims its entry.  A fresh entry
+ * of that bundle is printed (the block, "corpusrun case: verdict from the
+ * bundle NAME", "@served v=1 test=TEST bundle=NAME"; no @stat line) and its
+ * status is the exit status; without one, with a stale one (other inputs),
+ * or a malformed one (named) the case runs alone as without the bundle.
+ */
+
+/** @brief The cells of a bundle's session at most, and its sessions per chunk. */
+#define CR_BUNDLE_CELLS 16
+#define CR_BUNDLE_SESSIONS 3
+/** @brief The writable volume of a bundle's session. */
+#define CR_BUNDLE_VOLUME "BUNDLE"
+
+/** @brief A bundle: its name and its members (the case test, its source as
+ *         an absolute path, the case). */
+struct cr_bundle {
+    const char *env;
+    const char *name;
+    int require_deviation;
+    const char *const *test;
+    const char *const *source;
+    const char *const *case_name;
+    size_t n;
+};
+
+/**
+ * @brief Run a bundle (above).
+ * @return 0, 77, 2 (cr_bundle_status)
+ */
+int caserun_bundle(const struct cr_bundle *b, FILE *log);
+
+/**
+ * @brief The chunks of a bundle's cells: grouped by key (keys[i] of cell i)
+ *        in the order of their first cell, each group cut into chunks of
+ *        CR_BUNDLE_CELLS in the cells' order.
+ * @param chunk  per cell its chunk (0, 1, ...)
+ * @return the number of chunks
+ */
+size_t cr_bundle_chunks(const char *const *keys, size_t n, size_t *chunk);
+
+/**
+ * @brief The cells of a chunk's next session: those not done[] (in order),
+ *        none once nsessions (the chunk's sessions so far) is
+ *        CR_BUNDLE_SESSIONS.
+ * @param pending  room for n
+ * @return how many
+ */
+size_t cr_bundle_pending(const int *done, size_t n, size_t nsessions, size_t *pending);
+
+/**
+ * @brief A bundle's exit status: 2 with an error of its own, else 0 when a
+ *        session started (whatever the members' verdicts), 77 when none did.
+ */
+int cr_bundle_status(int error, size_t nsessions);
+
+/**
+ * @brief Whether a cell's pass may run in a bundle: refused (-1, err naming
+ *        the mount) if a mount is named BUNDLE (case ignored).
+ */
+int cr_bundle_mount_ok(const struct corpus_pass *p, char *err, size_t errlen);
+
+/**
+ * @brief The volumes of a session of n cells whose staged volumes are
+ *        dirs[i]: without bundle the volumes CELLi: (names[i]), with bundle
+ *        the one volume BUNDLE: of the directory bundle, its cell c0.
+ * @param vols   room for n
+ * @param names  room for n
+ * @return the number of volumes
+ */
+size_t cr_session_volumes(const char *bundle, const char *const *dirs, size_t n, struct corpus_volume *vols,
+                          char (*names)[32]);
+
+/**
+ * @brief The script of a session of n cells: in a bundle first
+ *        `Assign CELLi: BUNDLE:ci` for every cell; then the compile part of
+ *        each cell, then the run part of each, each after
+ *        `Assign CORPUS: CELLi:`; at the end `Assign CORPUS:`.
+ * @return malloc'd, NULL = out of memory
+ */
+char *cr_session_script(const char *const *compile, const char *const *run, size_t n, int bundle);
 
 #ifdef __cplusplus
 }

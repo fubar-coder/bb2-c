@@ -922,7 +922,10 @@ the rest, naming file and line):
 * **Preconditions of the program's environment**: the path of a cell's
   volume is `CELL0:` (`CORPUS:` is an assign to it), so a program that
   compares or prints a path sees `CELL0:...`, never `CORPUS:...`; a test
-  that needs the volume's name checks the part after the `:`. The original's
+  that needs the volume's name checks the part after the `:`. In a bundle
+  (cases of several sources in one session, `tests/corpus/runner/README.md`)
+  the cells share one volume `BUNDLE:`: a path in `CORPUS:` is
+  `BUNDLE:cN/...`, and a cell can see the other cells' directories. The original's
   `LoadTrackerModule` needs `a6` = `DOSBase` (#443): a test that is not
   about that sets it before the call (`ciatrklib-*`).
 * **Acts that depend on a register or the string buffer**: set it in the
@@ -1044,6 +1047,19 @@ on its own (its verdict there counts, and the report names it when the
 two differ). The report marks the cases judged on their own `(alone)`
 and ends with `ID.test.bas: N cases, side SIDE: VERDICT`; the exit status
 is the worst verdict. ctest still runs one case per test.
+
+A case test that names a bundle (`--test TEST --from-bundle NAME`; the
+bundles of `corpusrun case --bundle`, `tests/corpus/runner/README.md`)
+first looks for the verdict the bundle stored for it. A fresh one (judged
+from the same source, configuration, test data, environment, runner and
+emulator) is served: the test prints the case's report block as the run
+alone prints it, then `corpusrun case: verdict from the bundle NAME` and
+`@served v=1 test=TEST bundle=NAME`, starts no session (no `@stat` line)
+and exits with the stored status. A stored verdict is read once; without
+one (the bundle did not store it: the case did not pass or reproduce
+cleanly there, or `ctest -R` ran the case test alone), with one of other
+inputs, or a malformed one (named in the output) the case runs alone as
+above.
 
 ## Original material and presets
 

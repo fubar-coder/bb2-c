@@ -1500,6 +1500,65 @@ char *corpus_script_run(const struct corpus_pass *p)
 
 /* ------------------------------------------------------------ running */
 
+char *corpus_hang_arm(const struct corpus_pass *p, const char *vol, const char *cell)
+{
+    char *n, *arm;
+
+    if (!p->hang_from_run)
+        return NULL;
+    n = p->gate ? NULL : p->nsources ? corpus_source_file(p, 0) : NULL;
+    /* editrun=on: the console of the run from the editor, which tedstub
+       opens when the program starts */
+    arm = p->gate ? str_printf("%s%s%s/out/gate.run", vol, cell ? "/" : "", cell ? cell : "")
+          : n ? str_printf("%s%s%s/out/%s.%s", vol, cell ? "/" : "", cell ? cell : "", n, p->editrun ? "con" : "run")
+              : NULL;
+    free(n);
+    return arm;
+}
+
+/* the emulator changes of rtg= and uae= in ch (room for nrtg + nuae), their
+   keys in keys (the caller frees them); the number, (size_t)-1 = out of
+   memory */
+static size_t emulator_changes(const struct corpus_pass *p, struct amiga_emulation_option *ch, char **keys)
+{
+    size_t nrtg = p->rtg ? amiga_emulation_rtg_count : 0, i;
+
+    for (i = 0; i < nrtg; i++)
+        ch[i] = amiga_emulation_rtg[i];
+    for (i = 0; i < p->nuae; i++) {
+        char *eq;
+
+        if (!(keys[i] = strdup(p->uae[i])))
+            return (size_t)-1;
+        eq = strchr(keys[i], '=');
+        *eq = 0;
+        ch[nrtg + i].key = keys[i];
+        ch[nrtg + i].value = eq + 1;
+    }
+    return nrtg + i;
+}
+
+unsigned long long corpus_emulator_key(const struct corpus_pass *p)
+{
+    size_t nrtg = p->rtg ? amiga_emulation_rtg_count : 0, n;
+    struct amiga_emulation_option *ch = calloc(nrtg + p->nuae + 1, sizeof *ch);
+    char **keys = calloc(p->nuae + 1, sizeof *keys);
+    struct amiga_emulation_params ep = { 0 };
+    unsigned long long k = 0;
+
+    if (ch && keys && (n = emulator_changes(p, ch, keys)) != (size_t)-1) {
+        ep.machine = p->machine;
+        ep.changes = ch;
+        ep.nchanges = n;
+        k = amiga_emulation_inputs_key(&ep);
+    }
+    for (size_t i = 0; keys && i < p->nuae; i++)
+        free(keys[i]);
+    free(keys);
+    free(ch);
+    return k;
+}
+
 struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t c, const char *text,
                                              unsigned port, const struct corpus_volume *vols,
                                              size_t nvols, char *err, size_t errlen)
@@ -1571,13 +1630,8 @@ struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t
         /* from the first program run: the file it creates first (the gate's, else
            the first program's), so that a compile silent for long does not count */
         if (p->hang_from_run) {
-            char *n = p->gate ? NULL : p->nsources ? corpus_source_file(p, 0) : NULL;
-
-            /* editrun=on: the console of the run from the editor, which
-               tedstub opens when the program starts */
-            arm = p->gate ? str_printf("%s/out/gate.run", vol)
-                  : n ? str_printf("%s/out/%s.%s", vol, n, p->editrun ? "con" : "run") : NULL;
-            free(n);
+            /* a bundle: the first cell's directory in its volume */
+            arm = corpus_hang_arm(p, vol, vols ? vols[0].cell : NULL);
             ep.hang_arm = arm;
             /* nothing to arm by: no hang check */
             if (!arm)

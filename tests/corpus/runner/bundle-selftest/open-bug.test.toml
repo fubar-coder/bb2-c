@@ -1,0 +1,3 @@
+# open-bug.test.bas: the check's failure declared as the deviation
+[deviations."compiler=port"]
+"check.one.sum" = "== fail"
