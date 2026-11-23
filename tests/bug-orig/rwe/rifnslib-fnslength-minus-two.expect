@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-sum 30 FNSLength 30
-rc=0

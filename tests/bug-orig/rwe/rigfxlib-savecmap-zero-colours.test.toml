@@ -1,0 +1,8 @@
+# rigfxlib-savecmap-zero-colours.test.bas: the original writes 65536
+# colours over the marker
+fixed-orig = 688
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.zero_colours.marker_kept" = "== fail"
+"check.zero_colours.marker_kept.actual" = "== 0"

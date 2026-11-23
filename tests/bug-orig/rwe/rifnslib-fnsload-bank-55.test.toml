@@ -1,0 +1,11 @@
+# rifnslib-fnsload-bank-55.test.bas: the original takes bank 55 as an
+# address with the default bank limit
+fixed-orig = 984
+rwe = ["rifnslib", "riamosfunclib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.bank_55.default_result" = "== fail"
+"check.bank_55.default_result.actual" = "== -1"
+"check.bank_55.default_byte_55" = "== fail"
+"check.bank_55.default_byte_55.actual" = "== 70"

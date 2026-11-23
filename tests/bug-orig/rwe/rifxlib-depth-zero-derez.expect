@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-depth 1 done
-before
-REQUESTER: AutoRequest body "Illegal BitMap Depth" *
-rc=0

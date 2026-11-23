@@ -1,0 +1,10 @@
+# rigfxlib-savecmap-odd-pad.test.bas: the original writes no pad byte; the
+# file goes to CORPUS: (a cell of its own)
+fixed-orig = 687
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.odd_pad.file_length" = "== fail"
+"check.odd_pad.file_length.actual" = "== 63"
+"check.odd_pad.form_length" = "== fail"
+"check.odd_pad.form_length.actual" = "== 55"

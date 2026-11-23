@@ -1,0 +1,8 @@
+# rigtmenulib-freemenu-tst-long.test.bas: the original frees the whole item
+# A with its sub items
+fixed-orig = 691
+rwe = ["rigtmenulib"]
+
+[deviations."compiler=orig210"]
+"check.sub_item.lists" = "== fail"
+"check.sub_item.lists.actual" = "== \"Project:B();\""

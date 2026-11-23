@@ -1,0 +1,8 @@
+# rigtmenulib-title-strings-not-freed.test.bas: the original loses the
+# title strings
+fixed-orig = 695
+rwe = ["rigtmenulib"]
+
+[deviations."compiler=orig210"]
+"check.strings.lost" = "== fail"
+"check.strings.lost.actual" = "== -1"

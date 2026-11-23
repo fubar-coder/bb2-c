@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-long 1
-next 1
-rc=0

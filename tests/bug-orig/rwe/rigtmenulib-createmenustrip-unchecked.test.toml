@@ -1,0 +1,22 @@
+# rigtmenulib-createmenustrip-unchecked.test.bas: the original builds a
+# strip from address 0
+fixed-orig = 689
+rwe = ["rigtmenulib"]
+timeout = 30
+# the original hangs: a session of its own for its cell
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+"check.strip.no_title" = "== fail"
+"check.strip.no_title.actual" = "== -1"
+"check.strip.after_free" = "== fail"
+"check.strip.after_free.actual" = "== -1"
+"check.strip.no_strip" = "== fail"
+"check.strip.no_strip.actual" = "== -1"
+"check.strip.no_menu" = "== fail"
+"check.strip.no_menu.actual" = "== -1"
+
+[ends."compiler=orig210"]
+reason = "the original builds the strip from address 0 and walks what it finds there (#689); whether the program then ends or hangs depends on that memory and on what the strip's removal frees at the end, which differ between boots and snapshots"
+returns = ["session == done", "rc == 0"]
+hangs_after_run = ["session == timeout", "rc not exists"]

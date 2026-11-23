@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Delay must not be 0" *
-rc=0

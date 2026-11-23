@@ -1,0 +1,15 @@
+# rifnslib-negative-clip.test.bas: with runtime error checking for the
+# announced error; the original raises none and draws far below the text,
+# the case goes on
+fixed-orig = 664
+rwe = ["rifnslib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.negative_xmin.far_pixels" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.negative_xmin.refused" = "== fail"
+"check.negative_xmin.far_pixels" = "== fail"
+"check.negative_xmin.far_pixels.actual" = "== -1"
+requester = "count == 0"

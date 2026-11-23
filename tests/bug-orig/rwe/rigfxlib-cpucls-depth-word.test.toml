@@ -1,0 +1,15 @@
+# rigfxlib-cpucls-depth-word.test.bas: with runtime error checking for the
+# announced error; the original raises none and clears the buffer, the
+# case goes on
+fixed-orig = 679
+rwe = ["rigfxlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.depth_0.cleared_longs" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.depth_0.refused" = "== fail"
+"check.depth_0.cleared_longs" = "== fail"
+"check.depth_0.cleared_longs.actual" = "== 160"
+requester = "count == 0"
