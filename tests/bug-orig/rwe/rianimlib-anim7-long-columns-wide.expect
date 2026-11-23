@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-column 1023 decoded
-column 1024 not decoded
-rc=0

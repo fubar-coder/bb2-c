@@ -1,0 +1,11 @@
+# rianimlib-chunk-signed-compare.test.bas: the original's walk counts chunks
+# behind the end of the ANIM (what the emulator returns for the unmapped
+# addresses decides the count, so only the failure is declared); the walk is
+# silent for about 6 s alone and up to 10 s under load
+fixed-orig = 506
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+hang-after = 30
+files = ["anim|@TESTDATA@/rianimlib-chunk-signed-compare.anim"]
+
+[deviations."compiler=orig210"]
+"check.signed_compare.count" = "== fail"

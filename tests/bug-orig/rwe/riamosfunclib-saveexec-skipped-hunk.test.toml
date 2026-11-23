@@ -1,0 +1,7 @@
+# riamosfunclib-saveexec-skipped-hunk.test.bas: LoadSeg refuses the file of
+# the original
+fixed-orig = 502
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.saveexec_skipped_hunk.loaded" = "== fail"

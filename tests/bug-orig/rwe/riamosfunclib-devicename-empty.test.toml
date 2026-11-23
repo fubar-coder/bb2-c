@@ -1,0 +1,8 @@
+# riamosfunclib-devicename-empty.test.bas: the original clears the ":" in
+# front of the empty argument
+fixed-orig = 493
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.devicename_empty.colon" = "== fail"
+"check.devicename_empty.colon.actual" = "== 0"

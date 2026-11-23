@@ -1,0 +1,10 @@
+# riamosfunclib-bload-open-fails.test.bas: the original reserves both banks
+# with the new length before the open fails
+fixed-orig = 487
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.bload_open_fails.used_bank" = "== fail"
+"check.bload_open_fails.used_bank.actual" = "== 16"
+"check.bload_open_fails.free_bank" = "== fail"
+"check.bload_open_fails.free_bank.actual" = "== 16"

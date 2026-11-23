@@ -1,0 +1,16 @@
+# rianimlib-anim7-odd-data-offset-68000.test.bas: on the A600 (68000) the
+# original's odd reads are an address error; the session of its own ends in
+# the hang check
+fixed-orig = 1121
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+machine = "a600"
+timeout = 30
+files = ["anim|@TESTDATA@/rianimlib-anim7-odd-data-offset-68000.anim"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

@@ -1,0 +1,11 @@
+# riamosfunclib-changedir-finit-unlock.test.bas: inject reports the current
+# directory at the end of the program (the observation of the bug)
+fixed-orig = 491
+rwe = ["riamosfunclib"]
+runwrap = "@INJECT@|cd"
+
+[asserts]
+inject = "contains \"inject: current dir at end: start\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: current dir at end: other\""

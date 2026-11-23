@@ -1,0 +1,7 @@
+# rianimlib-delta-depth.test.bas: the original writes the 9th plane
+fixed-orig = 509
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-delta-depth.anim"]
+
+[deviations."compiler=orig210"]
+"check.delta_depth.ninth_plane" = "== fail"

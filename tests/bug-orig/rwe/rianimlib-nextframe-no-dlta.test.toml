@@ -1,0 +1,14 @@
+# rianimlib-nextframe-no-dlta.test.bas: the original returns to the saved d1
+# and crashes (a session of its own)
+fixed-orig = 515
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+timeout = 30
+files = ["anim|@TESTDATA@/rianimlib-nextframe-no-dlta.anim"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

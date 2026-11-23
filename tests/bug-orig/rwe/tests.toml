@@ -1,0 +1,11 @@
+# tests.toml of tests/bug-orig/rwe: the tests of the BASIC test model of the
+# RWE user library bug-orig tests run in three cells: the port with the C
+# build of the library (blitz2:userlibs/rwe/) and the CD's libraries or the
+# C libraries of the library's variant, and the CD's blitz2 2.10 with the CD's
+# libraries and the library's reference (the original, the side originals);
+# the original's bug is the declared deviations of a test (compiler=orig210)
+exclude = ["compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig210"]
+libs = ["cd", "clib"]
