@@ -1,0 +1,8 @@
+# riarexxlib-sendcommand-result2-rc.test.bas: the reference library reads a
+# result string from the error code
+fixed-orig = 545
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.failing_program.result_empty" = "== fail"
+"check.failing_program.result_empty.actual" = "== 0"

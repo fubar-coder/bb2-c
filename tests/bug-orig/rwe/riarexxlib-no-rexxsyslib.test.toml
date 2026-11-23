@@ -1,0 +1,19 @@
+# riarexxlib-no-rexxsyslib.test.bas: through inject the OpenLibrary of
+# rexxsyslib.library fails; the reference library jumps through a base of 0
+# (the session halts)
+fixed-orig = 1094
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|openlibfail=rexxsyslib.library"
+timeout = 30
+
+[asserts]
+inject = "contains \"inject: openlibfail: 1 opens failed\""
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.no_library.run" = "== not-run"
+"check.no_library.send" = "== not-run"
+inject = "not exists"

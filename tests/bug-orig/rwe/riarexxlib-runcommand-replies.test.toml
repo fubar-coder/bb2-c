@@ -1,0 +1,16 @@
+# riarexxlib-runcommand-replies.test.bas: through inject (track, guard) the
+# strings and messages left allocated show; the correct report is the track
+# line alone (no guard line: nothing written behind a block).  The result of
+# RXRunCommand is the d0 PutMsg leaves (#543): one of the 40 sends reads as
+# not sent
+fixed-orig = 531
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|track guard"
+
+[asserts]
+inject = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig210"]
+inject = "matches \"inject: track: # allocations left, # bytes\""
+"check.forty_commands.sent" = "== fail"
+"check.forty_commands.sent.actual" = "< 40"

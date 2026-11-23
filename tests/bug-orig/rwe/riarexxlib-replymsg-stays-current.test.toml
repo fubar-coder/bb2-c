@@ -1,0 +1,10 @@
+# riarexxlib-replymsg-stays-current.test.bas: the reference library still
+# reads the message that was replied
+fixed-orig = 541
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.after_reply.args_after" = "== fail"
+"check.after_reply.args_after.actual" = "== 1"
+"check.after_reply.arg_after" = "== fail"
+"check.after_reply.arg_after.actual" = "== \"hello\""

@@ -1,0 +1,12 @@
+# riarexxlib-createport-no-remport.test.bas: through inject the AllocVec of
+# 256 bytes fails; the reference library leaves the freed port listed
+fixed-orig = 528
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|allocfail=256-264/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.allocation_fails.listed" = "== fail"
+"check.allocation_fails.listed.actual" = "== -1"

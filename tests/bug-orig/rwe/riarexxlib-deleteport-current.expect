@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-current -1
-replied -1
-code 5
-rc=0

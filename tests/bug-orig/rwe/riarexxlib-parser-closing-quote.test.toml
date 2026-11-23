@@ -1,0 +1,11 @@
+# riarexxlib-parser-closing-quote.test.bas: the reference library skips the
+# character behind the closing quote: the rest of the earlier command
+# becomes arguments, the glued character is lost
+fixed-orig = 538
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.three_commands.say_hi" = "== fail"
+"check.three_commands.say_hi.actual" = "== \"6: <say> <hi> <hree> <four> <five> <six>\""
+"check.three_commands.g_h" = "== fail"
+"check.three_commands.g_h.actual" = "== \"1: <g>\""

@@ -1,0 +1,13 @@
+# riarexxlib-makemsg-allocvec-flags.test.bas: through inject the second
+# message's AllocVec fails; the reference library sends "one" again
+fixed-orig = 533
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|allocfail=132-132/1+1"
+hang-after = 20
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.second_alloc_fails.again" = "== fail"
+"check.second_alloc_fails.again.actual" = "== -1"

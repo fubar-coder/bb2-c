@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-rexx -1
-+++ Error 6 in line 1: Unterminated comment
-empty -1
-rc=0

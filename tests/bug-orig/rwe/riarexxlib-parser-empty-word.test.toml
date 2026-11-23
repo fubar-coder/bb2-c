@@ -1,0 +1,8 @@
+# riarexxlib-parser-empty-word.test.bas: the reference library ends the
+# arguments at the empty word
+fixed-orig = 536
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.empty_word.arguments" = "== fail"
+"check.empty_word.arguments.actual" = "== \"1: <a>\""

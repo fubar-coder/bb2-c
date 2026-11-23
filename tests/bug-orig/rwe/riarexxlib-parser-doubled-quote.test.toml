@@ -1,0 +1,8 @@
+# riarexxlib-parser-doubled-quote.test.bas: the reference library takes the
+# rest of the command into the word
+fixed-orig = 535
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.doubled_quote.arguments" = "== fail"
+"check.doubled_quote.arguments.actual" = "== \"1: <e\\\"f c d>\""

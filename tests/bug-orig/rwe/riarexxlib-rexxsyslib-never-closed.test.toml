@@ -1,0 +1,11 @@
+# riarexxlib-rexxsyslib-never-closed.test.bas: through inject the opens minus
+# the closes of rexxsyslib.library are counted
+fixed-orig = 1093
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|opencount=rexxsyslib.library"
+
+[asserts]
+inject = "contains \"inject: opencount: rexxsyslib.library +0\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: opencount: rexxsyslib.library +1\""
