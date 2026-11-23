@@ -213,7 +213,7 @@ whole strings.
 A call of a routine out of order SHALL write `broken` with its reason
 before the routine's own entry: `block inside a block`, `check outside a
 block`, `block end without a block`, `batch init after a block`, `case
-after the batch end`, `second batch end`, `begin inside the run`, `case
+after the batch cleanup`, `second batch cleanup`, `begin inside the run`, `case
 without a name`, `case name too long` (the case's `block` entry then names
 it `?`). A library whose state was overwritten SHALL write `broken` `state
 damaged` once and after it only `end`.

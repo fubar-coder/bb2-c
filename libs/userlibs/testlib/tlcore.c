@@ -185,9 +185,9 @@ int tl_block(struct tl_state *st, int block, const uint8_t *name, size_t length)
     if (open == TL_INIT && st->phase != TL_NONE)
         broken(st, "batch init after a block");
     else if (open == TL_CASE && st->phase == TL_FINAL)
-        broken(st, "case after the batch end");
+        broken(st, "case after the batch cleanup");
     else if (open == TL_FINAL && st->phase == TL_FINAL)
-        broken(st, "second batch end");
+        broken(st, "second batch cleanup");
     if (open > st->phase)
         st->phase = (uint8_t)open;
     st->open = TL_NONE;

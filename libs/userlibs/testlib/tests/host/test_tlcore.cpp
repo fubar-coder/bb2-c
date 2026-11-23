@@ -411,7 +411,7 @@ TEST_CASE("a failed precondition of the batch init breaks every case", "[tlcore]
     CHECK(tl_require(&r.st, 0, 0) == 1);
     CHECK(block_case(r.st, "a") == 0);              // does not run
     CHECK(block_case(r.st, "b") == 0);
-    CHECK(block(r.st, BASICTEST_BLOCK_FINAL) == 0); // nor the batch end
+    CHECK(block(r.st, BASICTEST_BLOCK_FINAL) == 0); // nor the batch cleanup
     tl_finit(&r.st);
     CHECK(all() == "begin\t1\n"
                    "block\tinit\n"
@@ -503,13 +503,13 @@ TEST_CASE("calls out of order are reported", "[tlcore]")
     tl_blockend(&r.st);
     block(r.st, BASICTEST_BLOCK_FINAL);
     tl_blockend(&r.st);
-    block_case(r.st, "c");                          // after the batch end
+    block_case(r.st, "c");                          // after the batch cleanup
     tl_blockend(&r.st);
     block(r.st, BASICTEST_BLOCK_FINAL);             // twice
     tl_blockend(&r.st);
     CHECK(tl_require(&r.st, 1, 0) == 0);            // outside a block: no return
     tl_begin(&r.st);                                // twice
-    block_case(r.st, "");                           // no name, after the batch end
+    block_case(r.st, "");                           // no name, after the batch cleanup
     tl_blockend(&r.st);
     tl_finit(&r.st);
     CHECK(all() == "begin\t1\n"
@@ -526,16 +526,16 @@ TEST_CASE("calls out of order are reported", "[tlcore]")
                    "blockend\n"
                    "block\tfinal\n"
                    "blockend\n"
-                   "broken\tcase after the batch end\n"
+                   "broken\tcase after the batch cleanup\n"
                    "block\tcase\tc\n"
                    "blockend\n"
-                   "broken\tsecond batch end\n"
+                   "broken\tsecond batch cleanup\n"
                    "block\tfinal\n"
                    "blockend\n"
                    "broken\tcheck outside a block\n"
                    "require\t1\tbroken\n"
                    "broken\tbegin inside the run\n"
-                   "broken\tcase after the batch end\n"
+                   "broken\tcase after the batch cleanup\n"
                    "block\tcase\t?\n"
                    "broken\tcase without a name\n"
                    "blockend\n"

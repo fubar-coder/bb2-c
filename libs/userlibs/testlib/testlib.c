@@ -5,7 +5,7 @@
  * macros of shared/basictest/macros.bas, which call them.
  *
  *   TLBegin path$              opens the result file, writes `begin`
- *   r=TLInit / r=TLFinal       opens the batch init / end: 1 if it runs
+ *   r=TLInit / r=TLFinal       opens the batch init / cleanup: 1 if it runs
  *   r=TLCase(name$)            opens a case: 1 if it runs
  *   TLBlockEnd                 closes the open block
  *   TLCheck K,expected,actual  a check of two longs
@@ -68,7 +68,7 @@ BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS0();
 BLITZ_LIBS0();
 BLITZ_SUBS(TLFinal, 0, 0);
-BLITZ_NAME("TLFinal", "run=TLFinal: open the batch end (0: does not run)");
+BLITZ_NAME("TLFinal", "run=TLFinal: open the batch cleanup (0: does not run)");
 
 BLITZ_AFUNCTION(BL_LONG);
 BLITZ_ARGS(BL_STRING);
