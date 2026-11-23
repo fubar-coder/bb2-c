@@ -1,0 +1,14 @@
+# rimapeditorlib-createmap-width-word.test.bas: with runtime error checking for
+# the announced error; the original raises none and creates a map of 14464
+# bytes of data for 40000 words
+fixed-orig = 1152
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.width_40000.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.width_40000.refused" = "== fail"
+"check.width_40000.not_refused" = "== fail"
+requester = "count == 0"

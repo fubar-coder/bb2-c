@@ -1,0 +1,8 @@
+# risnowlib-activate-before-dosnow.test.bas: the original writes the end mark
+# to address 0
+fixed-orig = 908
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.activate_before_dosnow.address_0" = "== fail"
+"check.activate_before_dosnow.address_0.actual" = "== 43981"

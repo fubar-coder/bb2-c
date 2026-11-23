@@ -1,0 +1,11 @@
+# rishapeslib-lecludgeshapes-chunk-lengths.test.bas: the original finds no
+# SDAT in either file
+fixed-orig = 811
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+files = ["a.le|@TESTDATA@/rishapeslib-lecludgeshapes-chunk-lengths-shhd.le", "b.le|@TESTDATA@/rishapeslib-lecludgeshapes-chunk-lengths-cmap.le"]
+
+[deviations."compiler=orig210"]
+"check.chunk_lengths.shhd_24" = "== fail"
+"check.chunk_lengths.shhd_24.actual" = "== 0"
+"check.chunk_lengths.cmap_3" = "== fail"
+"check.chunk_lengths.cmap_3.actual" = "== 0"

@@ -1,0 +1,7 @@
+# rilesdebuglib-processstring-trailing-percent.test.bas: the original reads
+# behind the end of the text
+fixed-orig = 720
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.percent_at_end.read_behind_end" = "== fail"

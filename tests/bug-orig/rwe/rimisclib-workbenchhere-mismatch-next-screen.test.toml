@@ -1,0 +1,13 @@
+# rimisclib-workbenchhere-mismatch-next-screen.test.bas: the reference library
+# does not return (the session runs into its timeout)
+fixed-orig = 760
+rwe = ["rimisclib"]
+timeout = 30
+# the hang ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

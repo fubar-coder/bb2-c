@@ -1,0 +1,21 @@
+# rimisclib-openfontprefs-alloc-unchecked.test.bas: through inject, which fails
+# the allocation of the buffer; the reference library reads to address 0 and
+# the CPU halts
+fixed-orig = 756
+rwe = ["rimisclib"]
+# the program is silent for about 11 s (more than the default hang-after)
+hang-after = 30
+timeout = 60
+runwrap = "@INJECT@|allocfail=16384-16384/1"
+# the halt ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+session = "== halt"
+inject = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

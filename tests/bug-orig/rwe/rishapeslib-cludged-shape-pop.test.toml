@@ -1,0 +1,20 @@
+# rishapeslib-cludged-shape-pop.test.bas: through inject the file the program
+# loads is checked for being closed afterwards; the original returns with the
+# stack one long short, which does not end the case (the hang check ends the
+# session of its own)
+fixed-orig = 807
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+files = ["s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le"]
+runwrap = "@INJECT@|inuse=CORPUS:s.le"
+timeout = 120
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"inject: not in use: CORPUS:s.le\""
+
+[deviations."compiler=orig210"]
+inject = "not contains \"inject: not in use\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

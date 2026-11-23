@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-before
-RAM DISK:pp/sub/rimisclib-v36-progpath
-RAM DISK:pp/sub
-rimisclib-v36-progpath
-after
-rc=0

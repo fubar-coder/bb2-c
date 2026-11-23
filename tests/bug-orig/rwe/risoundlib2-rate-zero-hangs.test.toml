@@ -1,0 +1,12 @@
+# risoundlib2-rate-zero-hangs.test.bas: the original's subtraction loop never
+# ends (the session of its own ends in the hang check)
+fixed-orig = 830
+rwe = ["risoundlib2"]
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

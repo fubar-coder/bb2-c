@@ -1,0 +1,14 @@
+# riseriallib-receiveblock-kept.test.bas: with the serial port of the
+# emulator; the original throws the bytes away and waits for more (the
+# session of its own ends in the time limit)
+fixed-orig = 798
+rwe = ["riseriallib"]
+serial = "on"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

@@ -1,0 +1,22 @@
+# ripacklib-chunk-search.test.bas: the reference library takes the "BODY" in
+# the ANNO text, finds no BODY without it and no CMAP
+fixed-orig = 766
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.anno_before_body.first_pixel_0" = "== fail"
+"check.anno_before_body.first_pixel_0.actual" = "== 0"
+"check.anno_before_body.first_pixel_10" = "== fail"
+"check.anno_before_body.first_pixel_10.actual" = "== 0"
+"check.anno_before_body.second_result" = "== fail"
+"check.anno_before_body.second_result.actual" = "== 0"
+"check.anno_before_body.second_pixel_0" = "== fail"
+"check.anno_before_body.second_pixel_0.actual" = "== 0"
+"check.anno_before_body.second_pixel_10" = "== fail"
+"check.anno_before_body.second_pixel_10.actual" = "== 0"
+"check.anno_before_body.palette_result" = "== fail"
+"check.anno_before_body.palette_result.actual" = "== 0"
+"check.anno_before_body.palette_colours" = "== fail"
+"check.anno_before_body.palette_colours.actual" = "== 0"
+"check.anno_before_body.palette_first_red" = "== fail"
+"check.anno_before_body.palette_first_red.actual" = "== -1"

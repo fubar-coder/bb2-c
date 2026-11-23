@@ -1,0 +1,8 @@
+# rimapshapeslib-mapshape-number-unchecked.test.bas: the reference library
+# clears the width word of map shape 0 at address 0
+fixed-orig = 906
+rwe = ["rimapshapeslib"]
+
+[deviations."compiler=orig210"]
+"check.address0_kept.marker" = "== fail"
+"check.address0_kept.marker.actual" = "== 22136"

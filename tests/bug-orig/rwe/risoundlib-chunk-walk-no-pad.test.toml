@@ -1,0 +1,10 @@
+# risoundlib-chunk-walk-no-pad.test.bas: the original misses BODY behind the
+# chunk of odd length
+fixed-orig = 828
+rwe = ["risoundlib"]
+
+[deviations."compiler=orig210"]
+"check.chunk_walk.cludged" = "== fail"
+"check.chunk_walk.cludged.actual" = "== 0"
+"check.chunk_walk.words" = "== fail"
+"check.chunk_walk.words.actual" = "== 0"

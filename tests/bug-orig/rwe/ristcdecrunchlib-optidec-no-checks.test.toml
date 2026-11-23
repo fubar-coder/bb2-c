@@ -1,0 +1,8 @@
+# ristcdecrunchlib-optidec-no-checks.test.bas: the original writes below the
+# destination
+fixed-orig = 833
+rwe = ["ristcdecrunchlib"]
+
+[deviations."compiler=orig210"]
+"check.no_checks.guard_kept" = "== fail"
+"check.no_checks.guard_kept.actual" = "== 0"

@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-file: 93 CMAP 9
-before
-shape: 16 8
-data: 2040 even 1
-palette: 3 FFFFFFFF
-rc=0

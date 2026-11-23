@@ -1,0 +1,14 @@
+# rishapeslib-read-palette-colour-count.test.bas: through inject the guard
+# pattern behind every allocation is checked; the original writes 768 KB
+# behind an allocation
+fixed-orig = 820
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+files = ["s.le|@TESTDATA@/rishapeslib-read-palette-colour-count.le"]
+runwrap = "@INJECT@|guard"
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: guard: written behind an allocation\""
+
+[asserts]
+inject = "not contains \"inject: guard\""

@@ -1,0 +1,9 @@
+# riseriallib-sendblock-zero.test.bas: with the serial port of the emulator;
+# the original sends a byte for the block of 0 bytes
+fixed-orig = 800
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.sendblock_zero.echo" = "== fail"
+"check.sendblock_zero.echo.actual" = "== \"QRS\""

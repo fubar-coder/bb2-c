@@ -1,0 +1,7 @@
+# rimapshapeslib-addgroupmember-before-resetgroup.test.bas: the reference
+# library writes the member and the end mark to addresses 0-11
+fixed-orig = 901
+rwe = ["rimapshapeslib"]
+
+[deviations."compiler=orig210"]
+"check.before_reset.addresses_kept" = "== fail"

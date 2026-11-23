@@ -1,0 +1,8 @@
+# risoundlib-vhdr-rate-offset.test.bas: the original takes the rate from the
+# word behind the VHDR fields
+fixed-orig = 832
+rwe = ["risoundlib"]
+
+[deviations."compiler=orig210"]
+"check.vhdr_rate_offset.period" = "== fail"
+"check.vhdr_rate_offset.period.actual" = "== 223"

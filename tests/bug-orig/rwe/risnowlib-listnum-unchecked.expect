@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Snow list number must be 0 to 3" *
-rc=0

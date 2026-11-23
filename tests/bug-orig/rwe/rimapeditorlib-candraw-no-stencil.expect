@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "MapCanDraw needs SetStencil" *
-rc=0

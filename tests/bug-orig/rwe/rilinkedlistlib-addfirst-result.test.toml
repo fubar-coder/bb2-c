@@ -1,0 +1,10 @@
+# rilinkedlistlib-addfirst-result.test.bas: the original returns the table
+# offset list# * 4
+fixed-orig = 725
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.results.list_0" = "== fail"
+"check.results.list_0.actual" = "== 0"
+"check.results.list_1" = "== fail"
+"check.results.list_1.actual" = "== 4"

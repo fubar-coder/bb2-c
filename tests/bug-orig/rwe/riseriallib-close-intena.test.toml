@@ -1,0 +1,7 @@
+# riseriallib-close-intena.test.bas: the original switches VERTB on again
+fixed-orig = 790
+rwe = ["riseriallib"]
+
+[deviations."compiler=orig210"]
+"check.close_intena.vertb_off" = "== fail"
+"check.close_intena.vertb_off.actual" = "== 32"

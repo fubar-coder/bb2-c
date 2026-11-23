@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Map shape not allocated by SetNumMapShapes" *
-inject: rc=0
-rc=0

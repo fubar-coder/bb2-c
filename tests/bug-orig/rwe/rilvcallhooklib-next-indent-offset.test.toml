@@ -1,0 +1,8 @@
+# rilvcallhooklib-next-indent-offset.test.bas: the original draws the last
+# tree line to the middle of the item only
+fixed-orig = 739
+rwe = ["rilvcallhooklib"]
+
+[deviations."compiler=orig210"]
+"check.last_tree_line.tree_pixels" = "== fail"
+"check.last_tree_line.tree_pixels.actual" = "== 12"

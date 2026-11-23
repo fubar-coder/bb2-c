@@ -1,0 +1,17 @@
+# rireqlib-colour-window.test.bas: the real req.library 2.8 staged in
+# CORPUS:libs, which inject's libs= puts into LIBS:; the reference library
+# opens no requester window (the value it returns depends on the address of
+# the window)
+fixed-orig = 1091
+rwe = ["rireqlib"]
+files = ["libs/req.library|@REQLIB@"]
+runwrap = "@INJECT@|libs=CORPUS:libs click=*/__Ok__"
+timeout = 60
+
+[asserts]
+inject = "contains \"inject: click */__Ok__: answered\ninject: click window: \\\" Palette \\\"\""
+
+[deviations."compiler=orig210"]
+"check.colour_2.colour" = "== fail"
+"check.colour_2.colour.actual" = "!= 2"
+inject = "contains \"inject: click */__Ok__: no window\""

@@ -1,0 +1,8 @@
+# risnowlib-activate-last-not-updated.test.bas: the original loses the first
+# flake
+fixed-orig = 909
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.activate_last.first_flake" = "== fail"
+"check.activate_last.first_flake.actual" = "== 0"

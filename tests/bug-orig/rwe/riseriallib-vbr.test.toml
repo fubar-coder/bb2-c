@@ -1,0 +1,9 @@
+# riseriallib-vbr.test.bas: on the a500 with a 68010; the original writes its
+# handlers into the table at 0
+fixed-orig = 804
+rwe = ["riseriallib"]
+machine = "a500-68010"
+
+[deviations."compiler=orig210"]
+"check.vbr.moved_table_handlers" = "== fail"
+"check.vbr.table_at_0_unchanged" = "== fail"

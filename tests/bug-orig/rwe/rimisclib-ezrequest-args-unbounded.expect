@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-REQUESTER: AutoRequest body "Too Many EZRequest Arguments" *
-rc=0

@@ -1,0 +1,11 @@
+# ripacklib-unpackiff-mask-rows.test.bas: the reference library decodes the
+# mask rows as lines: line 1 is the mask row of line 0, line 2 the plane row
+# of line 1
+fixed-orig = 1112
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.masked_lines.line_1_pixel_0" = "== fail"
+"check.masked_lines.line_1_pixel_0.actual" = "== 1"
+"check.masked_lines.line_2_pixel_0" = "== fail"
+"check.masked_lines.line_2_pixel_0.actual" = "== 0"

@@ -1,0 +1,9 @@
+# rilesdebuglib-lowmem-signed.test.bas: on the a500 (24 address lines): the
+# original takes the high addresses as low memory
+fixed-orig = 717
+rwe = ["rilesdebuglib"]
+machine = "a500"
+
+[deviations."compiler=orig210"]
+"check.high_addresses.long_read" = "== fail"
+"check.high_addresses.hex_digits" = "== fail"

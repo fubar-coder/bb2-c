@@ -1,0 +1,10 @@
+# ripacklib-loadiff-bank-51.test.bas: the reference library finds no bank 51
+fixed-orig = 770
+rwe = ["ripacklib", "riamosfunclib"]
+files = ["p.iff|@TESTDATA@/ripacklib-loadiff-bank-51.iff"]
+
+[deviations."compiler=orig210"]
+"check.default_banks.result" = "== fail"
+"check.default_banks.result.actual" = "== 0"
+"check.default_banks.pixel_0" = "== fail"
+"check.default_banks.pixel_0.actual" = "== 0"

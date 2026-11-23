@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
--1 -1
-nothing lost
-rc=0

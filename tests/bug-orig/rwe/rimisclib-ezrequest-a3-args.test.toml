@@ -1,0 +1,22 @@
+# rimisclib-ezrequest-a3-args.test.bas: six EasyRequest requesters; the
+# reference library leaves its argument array in a3: the expressions hold
+# the arguments instead of the result
+fixed-orig = 1027
+rwe = ["rimisclib"]
+
+[asserts]
+requester = "count == 6"
+
+[deviations."compiler=orig210"]
+"check.forms.title_body_gadget" = "== fail"
+"check.forms.title_body_gadget.actual" = "== \"abT.B\""
+"check.forms.body_gadget" = "== fail"
+"check.forms.body_gadget.actual" = "== \"abB.O\""
+"check.forms.body" = "== fail"
+"check.forms.body.actual" = "== \"abB.O\""
+"check.forms.with_argument" = "== fail"
+"check.forms.with_argument.actual" = "== \"abT.B\""
+"check.forms.args_long" = "== fail"
+"check.forms.args_long.actual" = "== \"ab..B\""
+"check.forms.args_strings" = "== fail"
+"check.forms.args_strings.actual" = "== \"abx.y\""

@@ -1,0 +1,15 @@
+# riseriallib-readstring-limit.test.bas: with the serial port of the emulator
+# and a string work area of 1000 bytes; the original writes over it without
+# end (the session of its own ends in the time limit)
+fixed-orig = 1161
+rwe = ["riseriallib"]
+serial = "on"
+timeout = 30
+jobline = ["strbuf=1000"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

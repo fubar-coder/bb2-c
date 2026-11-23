@@ -1,0 +1,12 @@
+# ripacklib-unpackiff-row-counter-byte.test.bas: the reference library
+# unpacks nothing
+fixed-orig = 774
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.wide_rows.row_0_pixel_0" = "== fail"
+"check.wide_rows.row_0_pixel_0.actual" = "== 0"
+"check.wide_rows.row_0_pixel_1039" = "== fail"
+"check.wide_rows.row_0_pixel_1039.actual" = "== 0"
+"check.wide_rows.row_1_pixel_1039" = "== fail"
+"check.wide_rows.row_1_pixel_1039.actual" = "== 0"

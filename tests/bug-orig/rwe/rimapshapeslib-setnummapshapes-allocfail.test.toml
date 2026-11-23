@@ -1,0 +1,15 @@
+# rimapshapeslib-setnummapshapes-allocfail.test.bas: through inject, which
+# fails the allocation of the 100 map shapes; the reference library uses
+# address 0 as the block
+fixed-orig = 906
+rwe = ["rimapshapeslib"]
+runwrap = "@INJECT@|allocfail=6400-6416/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.allocation_failed.address" = "== fail"
+"check.allocation_failed.address.actual" = "== 320"
+"check.allocation_failed.marker" = "== fail"
+"check.allocation_failed.marker.actual" = "== 22136"

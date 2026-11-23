@@ -1,0 +1,8 @@
+# rimapeditorlib-mapdatagrab-byte-carry.test.bas: the original carries the
+# upper byte of the first value into the second
+fixed-orig = 898
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.bytes.second_value" = "== fail"
+"check.bytes.second_value.actual" = "== 271"

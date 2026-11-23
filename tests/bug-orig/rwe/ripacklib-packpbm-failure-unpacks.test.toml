@@ -1,0 +1,8 @@
+# ripacklib-packpbm-failure-unpacks.test.bas: the reference library unpacks
+# from address -1 into dest, the first byte becomes 0
+fixed-orig = 772
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.packing_fails.dest" = "== fail"
+"check.packing_fails.dest.actual" = "== \"00 01 AA AA AA AA AA AA\""

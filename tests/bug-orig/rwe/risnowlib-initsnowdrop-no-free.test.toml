@@ -1,0 +1,6 @@
+# risnowlib-initsnowdrop-no-free.test.bas: the original loses the old blocks
+fixed-orig = 911
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.no_free.old_blocks_freed" = "== fail"

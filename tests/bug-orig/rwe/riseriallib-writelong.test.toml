@@ -1,0 +1,9 @@
+# riseriallib-writelong.test.bas: with the serial port of the emulator; the
+# original sends other bytes: no echo
+fixed-orig = 805
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.writelong.echo" = "== fail"
+"check.writelong.echo.actual" = "== \"\""

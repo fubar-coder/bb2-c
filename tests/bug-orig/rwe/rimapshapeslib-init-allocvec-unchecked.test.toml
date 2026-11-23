@@ -1,0 +1,12 @@
+# rimapshapeslib-init-allocvec-unchecked.test.bas: through inject, which fails
+# the allocation of the group block; the reference library clears address 0
+fixed-orig = 905
+rwe = ["rimapshapeslib"]
+runwrap = "@INJECT@|allocfail=512-528/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.address0_kept.marker" = "== fail"
+"check.address0_kept.marker.actual" = "== 0"

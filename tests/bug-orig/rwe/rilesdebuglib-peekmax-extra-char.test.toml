@@ -1,0 +1,10 @@
+# rilesdebuglib-peekmax-extra-char.test.bas: the original copies one
+# character too many
+fixed-orig = 718
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.max_4.max_4" = "== fail"
+"check.max_4.max_4.actual" = "== \"abcde\""
+"check.max_4.max_0" = "== fail"
+"check.max_4.max_0.actual" = "== \"a\""

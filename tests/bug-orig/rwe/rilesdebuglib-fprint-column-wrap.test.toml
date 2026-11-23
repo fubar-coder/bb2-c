@@ -1,0 +1,7 @@
+# rilesdebuglib-fprint-column-wrap.test.bas: the original prints into the
+# rows below
+fixed-orig = 707
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.column_210.plane_empty" = "== fail"

@@ -1,0 +1,8 @@
+# ripacklib-unpackiff-row-width.test.bas: the reference library decodes one
+# byte per row: row 1 is the pad byte of row 0
+fixed-orig = 775
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.word_aligned_rows.row_1_pixel_4" = "== fail"
+"check.word_aligned_rows.row_1_pixel_4.actual" = "== 0"

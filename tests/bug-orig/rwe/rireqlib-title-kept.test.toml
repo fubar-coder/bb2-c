@@ -1,0 +1,21 @@
+# rireqlib-title-kept.test.bas: the real req.library 2.8 staged in
+# CORPUS:libs, which inject's libs= puts into LIBS:; both requesters are
+# ended by a click on their cancel gadget; the reference library stops the
+# CPU at the second call (the session ends in a timeout)
+fixed-orig = 789
+rwe = ["rireqlib"]
+files = ["libs/req.library|@REQLIB@"]
+runwrap = "@INJECT@|libs=CORPUS:libs click=*/Forget_it click=*/Forget_it"
+timeout = 60
+# the hang ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"inject: click */Forget_it: answered\ninject: click window: \\\"First title\\\"\ninject: click */Forget_it: answered\ninject: click window: \\\"\\\"\""
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+inject = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

@@ -1,0 +1,10 @@
+# rilesdebuglib-searchmem-across-end.test.bas: the original finds a value
+# that goes on behind the end address
+fixed-orig = 722
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.across_end.word" = "== fail"
+"check.across_end.word.actual" = "== -1"
+"check.across_end.long" = "== fail"
+"check.across_end.long.actual" = "== -1"

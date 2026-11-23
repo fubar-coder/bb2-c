@@ -1,0 +1,41 @@
+; rimisclib-progpath-empty-dir (#758) - ProgPath$ copies the program's
+; directory name and decides with CMPI.b #":",-1(a3) whether to append
+; "/"; with an empty name (NameFromLock fails, e.g. for a path longer
+; than its buffer of 255 bytes) it looks at the byte before the result.
+; The program makes a directory of a path of 279 characters in RAM: its
+; program directory (SetProgramDir) for the call; the result follows
+; "x" in the expression, so the byte before it is "x".  The directories
+; are deleted again (before the call too, for a session that shares RAM:
+; with the cells before).
+; Correct: an empty directory gives the program name alone ("x" + name).
+DEFTYPE .l
+Statement cleandirs{}
+  For j.l=9 To 1 Step -1
+    e$="RAM:"
+    For i.l=1 To j
+      e$=e$+String$(Chr$(96+i),30)+"/"
+    Next
+    e$=Left$(e$,Len(e$)-1)
+    r.l=DeleteFile_(e$)
+  Next
+End Statement
+
+!TestCase{long_path}
+  cleandirs{}
+  d$="RAM:"
+  k=0
+  For i=1 To 9
+    d$=d$+String$(Chr$(96+i),30)
+    If k Then UnLock_ k
+    k=CreateDir_(d$)
+    d$=d$+"/"
+  Next
+  !Require{k<>0,"directory"}
+  o=SetProgramDir_(k)
+  p$="x"+ProgPath$
+  k=SetProgramDir_(o)
+  UnLock_ k
+  cleandirs{}
+  !CheckStrEq{Left$(p$,1),"x","prefix"}
+  !Check{Mid$(p$,2,1)<>"/" AND Len(p$)>1,"name_alone"}
+!EndTestCase

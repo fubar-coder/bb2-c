@@ -1,0 +1,9 @@
+# riseriallib-stop-flag.test.bas: with the serial port of the emulator; the
+# original sends one byte
+fixed-orig = 1162
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.stop_flag.echo" = "== fail"
+"check.stop_flag.echo.actual" = "== \"A\""

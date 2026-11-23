@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-echo: ABCD
-rc=0

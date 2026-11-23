@@ -1,0 +1,10 @@
+# rilvcallhooklib-right-bitmap.test.bas: the original draws the BitMap behind
+# the item
+fixed-orig = 740
+rwe = ["rilvcallhooklib"]
+
+[deviations."compiler=orig210"]
+"check.right_aligned.in_the_item" = "== fail"
+"check.right_aligned.in_the_item.actual" = "== 0"
+"check.right_aligned.behind_the_item" = "== fail"
+"check.right_aligned.behind_the_item.actual" = "== 64"

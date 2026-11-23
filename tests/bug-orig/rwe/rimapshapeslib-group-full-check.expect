@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Group holds at most 63 members" *
-inject: rc=0
-rc=0

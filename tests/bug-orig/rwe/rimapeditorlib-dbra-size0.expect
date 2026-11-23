@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-width 16 done
-REQUESTER: AutoRequest body "FillBitplane width must be at least 16" *
-rc=0

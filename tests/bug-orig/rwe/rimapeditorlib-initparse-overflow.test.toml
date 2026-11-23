@@ -1,0 +1,8 @@
+# rimapeditorlib-initparse-overflow.test.bas: the original's parser pointer is
+# overwritten by the string
+fixed-orig = 897
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.string_259.first_argument" = "== fail"
+"check.string_259.first_argument.actual" = "== \"hello\""

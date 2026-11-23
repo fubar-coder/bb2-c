@@ -1,0 +1,15 @@
+# rimisclib-rawkey-table-range.test.bas: the reference library reads bytes
+# behind the table
+fixed-orig = 744
+rwe = ["rimisclib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.table_range.ascraw_160" = "== fail"
+"check.table_range.ascraw_160.actual" = "== 177"
+"check.table_range.ascraw_200" = "== fail"
+"check.table_range.ascraw_200.actual" = "== 32"
+"check.table_range.rawasc_upper_a" = "== fail"
+"check.table_range.rawasc_upper_a.actual" = "== 426"
+"check.table_range.rawasc_empty" = "== fail"
+"check.table_range.rawasc_empty.actual" = "== 14"

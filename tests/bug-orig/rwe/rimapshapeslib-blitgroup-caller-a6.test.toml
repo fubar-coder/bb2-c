@@ -1,0 +1,8 @@
+# rimapshapeslib-blitgroup-caller-a6.test.bas: the reference library calls
+# the jump table the program left in a6: the pixel stays 0
+fixed-orig = 902
+rwe = ["rimapshapeslib"]
+
+[deviations."compiler=orig210"]
+"check.pixel_blitted.pixel_after" = "== fail"
+"check.pixel_blitted.pixel_after.actual" = "== 0"

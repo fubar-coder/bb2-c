@@ -1,0 +1,19 @@
+# rireqlib-no-base-check.test.bas: through inject, which fails the open of
+# req.library; the reference library calls through the base 0 and the CPU
+# halts
+fixed-orig = 788
+rwe = ["rireqlib"]
+runwrap = "@INJECT@|openlibfail=req.library"
+timeout = 30
+# the halt ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"inject: openlibfail:\""
+
+[deviations."compiler=orig210"]
+session = "== halt"
+inject = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

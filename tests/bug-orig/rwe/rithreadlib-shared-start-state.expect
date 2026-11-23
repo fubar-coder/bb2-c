@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-a 1
-b 1
-rc=0

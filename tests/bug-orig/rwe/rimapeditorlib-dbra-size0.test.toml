@@ -1,0 +1,15 @@
+# rimapeditorlib-dbra-size0.test.bas: with runtime error checking for the
+# announced error; the original raises none and overwrites the marker
+fixed-orig = 895
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.fill_width_8.not_refused" = "== not-run"
+"check.fill_width_8.marker_kept" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.fill_width_8.refused" = "== fail"
+"check.fill_width_8.not_refused" = "== fail"
+"check.fill_width_8.marker_kept" = "== fail"
+requester = "count == 0"

@@ -1,0 +1,10 @@
+# rilesdebuglib-copins-odd-digits.test.bas: the original loses bit 0 of an
+# odd high digit
+fixed-orig = 711
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.digits.wait" = "== fail"
+"check.digits.wait.actual" = "== \"WAIT (20,2C) MASK (EE,FF) [BFD]\""
+"check.digits.skip" = "== fail"
+"check.digits.skip.actual" = "== \"SKIP (C0,5B) MASK (EE,7F)\""

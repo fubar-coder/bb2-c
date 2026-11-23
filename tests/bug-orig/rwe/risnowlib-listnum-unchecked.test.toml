@@ -1,0 +1,10 @@
+# risnowlib-listnum-unchecked.test.bas: with runtime error checking; the
+# original has no error check and writes behind the table
+fixed-orig = 913
+rwe = ["risnowlib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.listnum_unchecked.refused" = "== fail"
+requester = "count == 0"
+"check.listnum_unchecked.behind_table_kept" = "== fail"
