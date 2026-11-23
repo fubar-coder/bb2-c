@@ -1,8 +1,8 @@
 /*
  * test_amiga_emulation - configuration and script of amiga_emulation
  * (no emulator), the slots that limit the runs, the snapshot mode's
- * configuration, key, pruning, the marks of failed restores and the
- * purge of one owner's snapshots.
+ * configuration, key, pruning, the marks of failed restores and of the
+ * configurations used, and the purge of one owner's snapshots.
  */
 #include <cerrno>
 #include <csignal>
@@ -525,10 +525,14 @@ static int rm_entry(const char *path, const struct stat *st, int flag, struct FT
 
 /* a kept snapshot whose restore gets no start: kept with a mark the first
    time, removed with the mark the second; a start in between removes the
-   mark. */
+   mark.  A configuration is shared if a session of it started within the
+   window: the first use is not, the second is, one after the window is
+   not; the mark is per owner and id. */
 static void snapshot_marks(void)
 {
-    char dir[] = "/tmp/amiga-emulation-marks-XXXXXX", snap[128], mark[160];
+    char dir[] = "/tmp/amiga-emulation-marks-XXXXXX", snap[128], mark[160], use[160];
+    struct timespec old[2] = { { 0, UTIME_NOW }, { 0, UTIME_NOW } };
+    struct timespec t;
 
     CHECK(mkdtemp(dir) != nullptr);
     snprintf(snap, sizeof snap, "%s/snap-1-2-3.uss", dir);
@@ -547,6 +551,24 @@ static void snapshot_marks(void)
     /* broken: the mark cannot be made (no directory) */
     snprintf(mark, sizeof mark, "%s/none/snap-1-2-3.uss", dir);
     CHECK(amiga_emulation_snapshot_no_start(mark, 0) == -1);
+
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/one", 5, 600) == 0);
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/one", 5, 600) == 1);
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/one", 6, 600) == 0);
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/two", 5, 600) == 0);
+    CHECK(amiga_emulation_snapshot_shared(dir, nullptr, 5, 600) == 0);
+    /* the last use 601 s ago: outside the window; the call touches it */
+    snprintf(use, sizeof use, "%s/use-%016llx-%016llx", dir, amiga_emulation_snapshot_owner("/build/one"),
+             5ULL);
+    clock_gettime(CLOCK_REALTIME, &t);
+    old[0].tv_sec = old[1].tv_sec = t.tv_sec - 601;
+    old[0].tv_nsec = old[1].tv_nsec = 0;
+    CHECK(utimensat(AT_FDCWD, use, old, 0) == 0);
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/one", 5, 600) == 0);
+    CHECK(amiga_emulation_snapshot_shared(dir, "/build/one", 5, 600) == 1);
+    /* broken: no directory */
+    snprintf(mark, sizeof mark, "%s/none", dir);
+    CHECK(amiga_emulation_snapshot_shared(mark, "/build/one", 5, 600) == -1);
     nftw(dir, rm_entry, 8, FTW_DEPTH | FTW_PHYS);
 }
 
@@ -655,8 +677,11 @@ static void snapshot_purge(void)
     /* the other owner's: 2 per slot */
     CHECK(amiga_emulation_snapshot_purge(other) == 4);
     CHECK(amiga_emulation_snapshot_purge(nullptr) == 2);
-    /* the owner's mark .nostart in a slot goes; it is not counted */
+    /* the marks: the owner's .nostart in a slot and use- in the slot
+       directory go, the other owner's stay; they are not counted */
     snprintf(path, sizeof path, "%s/amiga-emulation-slots", rt);
+    CHECK(amiga_emulation_snapshot_shared(path, own, 7, 600) == 0);
+    CHECK(amiga_emulation_snapshot_shared(path, other, 7, 600) == 0);
     n = amiga_emulation_snapshot_name(own, 7, 0x10);
     a = n ? str_cat3(path, "/slot-1/", n) : nullptr;
     b = a ? str_cat3(a, ".nostart", "") : nullptr;
@@ -666,6 +691,19 @@ static void snapshot_purge(void)
     CHECK(b && access(b, F_OK) && errno == ENOENT);
     free(a);
     free(b);
+    a = str_cat3(path, "/use-", "");
+    {
+        char mine[300], theirs[300];
+
+        snprintf(mine, sizeof mine, "%s%016llx-%016llx", a, amiga_emulation_snapshot_owner(own), 7ULL);
+        snprintf(theirs, sizeof theirs, "%s%016llx-%016llx", a, amiga_emulation_snapshot_owner(other),
+                 7ULL);
+        CHECK(access(mine, F_OK) && errno == ENOENT);
+        CHECK(!access(theirs, F_OK));
+        CHECK(amiga_emulation_snapshot_purge(other) == 0);
+        CHECK(access(theirs, F_OK) && errno == ENOENT);
+    }
+    free(a);
     for (i = 0; i < ng; i++)
         free(gone[i]);
     for (i = 0; i < nk; i++) {
@@ -1241,5 +1279,6 @@ TEST_CASE("amiga_emulation: configuration, script, slots and snapshot helpers", 
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_FIRST_SAVE),
                   "first-save"));
     CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_FALLBACK), "fallback"));
+    CHECK(!strcmp(amiga_emulation_snapshot_use_name(AMIGA_EMULATION_SNAP_SINGLE), "single"));
 
 }

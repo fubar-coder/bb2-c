@@ -1,8 +1,10 @@
 /*
  * test_amiga_emulation_snapshot - the snapshot mode with the emulator
  * (A1200), in a slot directory of its own while it holds one of the
- * shared slots: the first session boots cold and saves the state, the
- * second, in a new process, restores it (TEST:, a writable and a
+ * shared slots: the first session of the configuration saves nothing (no
+ * other session has used it lately: it runs its job in the booted
+ * machine), the second boots cold and saves the state, the
+ * third, in a new process, restores it (TEST:, a writable and a
  * read-only mount through the slot's links); a copy of the hardfile, then
  * the same copy with another modification time, each boot and save anew
  * and remove the stale snapshot; a state whose restore gets no start is
@@ -10,7 +12,7 @@
  * file that is no savestate is removed and the session saves anew, `cold`
  * boots without snapshot.  After every session
  * the slot has no links or SNAP: left.  Exit 77 (skipped) without
- * Amiberry or the data.  The second session runs this program again with
+ * Amiberry or the data.  The restored session runs this program again with
  * the hidden test case "restored session" (the directory in
  * $AMIGA_EMULATION_SNAPTEST_BASE).
  */
@@ -206,9 +208,9 @@ static void only_snapshot(char *name, size_t len)
         snprintf(name, len, "%s", "");
 }
 
-/* the second session, restored: run in a new process (this program again
-   with the hidden test case, BASE in the environment), as the first session
-   of a later ctest run */
+/* the session that restores the snapshot: run in a new process (this
+   program again with the hidden test case, BASE in the environment), as
+   the first session of a later ctest run */
 TEST_CASE(RESTORED_CASE, "[.restored_child]")
 {
     const char *dir = getenv(BASE_ENV);
@@ -307,10 +309,20 @@ TEST_CASE("amiga_emulation_snapshot: save, restore, stale and broken states", "[
     setenv("AMIGA_EMULATION_MAX", "1", 1);
     unsetenv("AMIGA_EMULATION_SNAPSHOT");
 
-    /* the first session: boots cold, saves, restores */
-    r = session("first", NULL, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
+    /* the first session of the configuration: no snapshot, the job in the booted machine */
+    r = session("single", NULL, 0, AMIGA_EMULATION_SNAP_SINGLE, &log, &secs);
     if (r < 0)
         std::exit(77);          // skipped (the exit status of ctest SKIP_RETURN_CODE)
+    CHECK(r == 1);
+    CHECK(log && strstr(log, "no snapshot") && strstr(log, "job started") && !strstr(log, "saved")
+          && !strstr(log, "failed"));
+    CHECK(snapshots(path, sizeof path) == 0);
+    CHECK(slot_clean());
+    free(log);
+    fprintf(stderr, "test_amiga_emulation_snapshot: single session %.1f s\n", secs);
+
+    /* the second: boots cold, saves, restores */
+    r = session("first", NULL, 0, AMIGA_EMULATION_SNAP_FIRST_SAVE, &log, &secs);
     CHECK(r == 1);
     CHECK(log && strstr(log, "boot cold, save") && strstr(log, " saved ")
           && strstr(log, "job started") && !strstr(log, "failed") && !strstr(log, "stale"));

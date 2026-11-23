@@ -179,7 +179,10 @@ struct amiga_emulation {
     double next_cpu_poll;
     enum amiga_emulation_status status;
     /* snapshot mode (amiga_emulation.h) */
-    enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_RUNNING } snap;
+    /* SNAP_STARTING: a session without a snapshot of a configuration used
+       once (amiga_emulation.h): booted with the prologue, the job is
+       there, waits for SNAP:started */
+    enum { SNAP_OFF, SNAP_CREATING, SNAP_RESTORING, SNAP_STARTING, SNAP_RUNNING } snap;
     unsigned saves;             /* states this session has saved (a restore of
                                    one that gets no start saves again) */
     char *slot_dir;             /* slot-K */
@@ -1642,23 +1645,57 @@ int amiga_emulation_snapshot_no_start(const char *snap_path, int started)
     return r;
 }
 
+/* the path of the mark of owner and configuration id in the slot directory */
+static char *use_mark(const char *slots_dir, unsigned long long owner, unsigned long long id)
+{
+    return str_printf("%s/use-%016llx-%016llx", slots_dir, owner, id);
+}
+
+int amiga_emulation_snapshot_shared(const char *slots_dir, const char *owner,
+                                    unsigned long long id, unsigned window)
+{
+    char *mark = use_mark(slots_dir, amiga_emulation_snapshot_owner(owner), id);
+    struct stat st;
+    struct timespec t;
+    int shared = 0, r;
+
+    if (!mark)
+        return -1;
+    clock_gettime(CLOCK_REALTIME, &t);
+    if (!stat(mark, &st) && S_ISREG(st.st_mode))
+        shared = st.st_mtim.tv_sec <= t.tv_sec && t.tv_sec - st.st_mtim.tv_sec <= (time_t)window;
+    r = access(mark, F_OK) ? write_file(mark, "") : utimensat(AT_FDCWD, mark, NULL, 0);
+    free(mark);
+    return r ? -1 : shared;
+}
+
 int amiga_emulation_snapshot_purge(const char *owner)
 {
     unsigned long long o = amiga_emulation_snapshot_owner(owner);
     char *dir = slots_dir();
     DIR *d = dir ? opendir(dir) : NULL;
     struct dirent *de;
+    char use[32];
     int removed = 0;
 
     if (!d) {
         free(dir);
         return -1;
     }
+    snprintf(use, sizeof use, "use-%016llx-", o);
     while ((de = readdir(d)) != NULL) {
         const char *k = de->d_name + 5;
         char *slot;
         struct stat st;
 
+        /* the owner's marks of the configurations used (amiga_emulation_snapshot_shared) */
+        if (!strncmp(de->d_name, use, strlen(use))) {
+            if ((slot = str_printf("%s/%s", dir, de->d_name)) && !lstat(slot, &st)
+                && S_ISREG(st.st_mode))
+                unlink(slot);
+            free(slot);
+            continue;
+        }
         /* slot-K, K a number (not slot-K.lock) */
         if (strncmp(de->d_name, "slot-", 5) || !*k || strspn(k, "0123456789") != strlen(k))
             continue;
@@ -1889,6 +1926,7 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
 {
     char *dir = slots_dir(), *name, err[256];
     size_t i;
+    int shared;
 
     *cfg = NULL;
     e->slot_dir = dir ? str_printf("%s/slot-%d", dir, index) : NULL;
@@ -1929,8 +1967,16 @@ static int snap_setup(struct amiga_emulation *e, const struct amiga_emulation_pa
         snap_log(e, "not a savestate, removed: %s", e->snap_path);
         unlink(e->snap_path);
     }
-    e->snap = file_exists(e->snap_path) ? SNAP_RESTORING : SNAP_CREATING;
-    if (snap_dirs(e, e->snap == SNAP_RESTORING) || snap_prepare(e)) {
+    /* a slot without the snapshot saves one only for a configuration that
+       another session has used lately (amiga_emulation.h); the mark is
+       this session's use either way */
+    dir = slots_dir();
+    shared = dir ? amiga_emulation_snapshot_shared(dir, getenv("AMIGA_EMULATION_OWNER"), e->snap_id,
+                                                   AMIGA_EMULATION_SNAP_SHARED_WINDOW)
+                 : -1;
+    free(dir);
+    e->snap = file_exists(e->snap_path) ? SNAP_RESTORING : shared ? SNAP_CREATING : SNAP_STARTING;
+    if (snap_dirs(e, e->snap != SNAP_CREATING) || snap_prepare(e)) {
         snap_log(e, "cold: cannot prepare the slot directory %s", e->slot_dir);
         snap_finish(e);
         free(*cfg);
@@ -2064,7 +2110,7 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
             free(cp);
             free(rp);
             free(scfg);
-            if (bad || (e->snap == SNAP_RESTORING && snap_write_job(e))) {
+            if (bad || (e->snap != SNAP_CREATING && snap_write_job(e))) {
                 set_err(err, errlen, "cannot write the files of the snapshot mode");
                 goto fail;
             }
@@ -2075,6 +2121,10 @@ struct amiga_emulation *amiga_emulation_start(const struct amiga_emulation_param
                 utimensat(AT_FDCWD, e->snap_path, NULL, 0);
                 e->restore_until = now() + restore_grace();
                 snap_log(e, "restore %s", e->snap_path);
+            } else if (e->snap == SNAP_STARTING) {
+                /* the job is there before the boot: the waiter runs it at once */
+                snap_log(e, "boot, no snapshot (first use of the configuration lately)");
+                set_use(e, AMIGA_EMULATION_SNAP_SINGLE);
             } else {
                 snap_log(e, "boot cold, save %s", e->snap_path);
                 set_use(e, AMIGA_EMULATION_SNAP_FIRST_SAVE);
@@ -2528,6 +2578,17 @@ static void supervise(struct amiga_emulation *e)
             }
             free(started);
         }
+        if (e->snap == SNAP_STARTING) {
+            /* no snapshot: the booted machine runs the job (the time limit
+               ends a boot that never gets there) */
+            char *started = str_printf("%s/" SNAP_STARTED, e->ctl_dir);
+
+            if (started && file_exists(started)) {
+                e->snap = SNAP_RUNNING;
+                snap_log(e, "job started");
+            }
+            free(started);
+        }
         if (e->snap == SNAP_CREATING) {
             char *ready = str_printf("%s/" SNAP_READY, e->ctl_dir);
 
@@ -2856,6 +2917,7 @@ const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use 
     case AMIGA_EMULATION_SNAP_RESTORED: return "restored";
     case AMIGA_EMULATION_SNAP_FIRST_SAVE: return "first-save";
     case AMIGA_EMULATION_SNAP_FALLBACK: return "fallback";
+    case AMIGA_EMULATION_SNAP_SINGLE: return "single";
     default: return "cold";
     }
 }

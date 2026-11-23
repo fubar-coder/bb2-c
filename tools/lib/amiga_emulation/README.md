@@ -127,8 +127,11 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   and the job. At the end of the session the links and `SNAP:` are
   removed; only the snapshots `slot-K/snap-OWNER-ID-KEY.uss` stay (about
   0.6 MB on the A1200, 80 KB on the A500), the 24 most recently used per
-  slot over all owners (the tests use about a dozen configurations; 5
-  slots × 24 × 0.6 MB is at most about 70 MB). The pruning also removes
+  slot over all owners (`AMIGA_EMULATION_SNAP_KEEP`; e.g. 12 slots × 24 ×
+  0.6 MB is at most about 170 MB). The tests of one build directory ask
+  for about a hundred configurations (2026-11-23: 104 ids), most of them
+  used by one test only; those get no snapshot (below), so the shared
+  ones are not pushed out. The pruning also removes
   the snapshots of build directories that are gone or no longer tested.
 * **The first session** of a configuration in a slot boots cold, with
   real empty directories at those paths (Amiberry resolves a link when it
@@ -138,9 +141,24 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   dos.library V0, polls `SNAP:job.script` every 40 ms). The session's
   supervisor saves the state then, ends that Amiberry and restores the
   new state like every later session. So the first session per slot and
-  configuration takes a cold boot plus about 2 s; with 5 slots up to 5
+  configuration takes a cold boot plus about 2 s; with N slots up to N
   sessions per configuration boot – once per build directory, not per
   ctest run (the life cycle below).
+* **A configuration used once** gets no snapshot: a session whose slot
+  has none saves one only if another session of the same owner and
+  configuration id started within the last 10 minutes
+  (`AMIGA_EMULATION_SNAP_SHARED_WINDOW`) in any slot. The library keeps
+  the time of the last start per owner and id as the modification time
+  of an empty file `use-OWNERHASH-ID` in the slot directory
+  (`amiga_emulation_snapshot_shared`). Without such a start the session
+  boots with the prologue and the job already in `SNAP:`, saves nothing
+  and runs the job in the booted machine (`snapshot=single` in the
+  statistics; the halt and hang checks work as after a restore). The
+  sessions of a shared configuration follow each other closely in a ctest
+  run, the configuration of a single test is used once per run: it boots
+  every time (a cold boot costs 0.5 to 3 s more than a restore) and never
+  pushes the snapshots of the shared ones out of the slots. A test run
+  again within 10 minutes counts as shared and gets its snapshot.
 * **The job** (`SNAP:job.script`) writes a file to `TEST:` and deletes
   it again, then (only if that worked) writes `SNAP:started`, sets the clock
   (`SetClock LOAD`; on the A500 machines a `DATE` line with the host's
@@ -206,8 +224,8 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   * the slot's pruning drops it, the 24 most recently used per slot
     staying;
   * by hand: `amiga_run --purge-snapshots [BUILDDIR]` removes the
-    `snap-*`/`save-*` files (with the marks `.nostart`) of one owner in
-    all slots and nothing else
+    `snap-*`/`save-*` files and the marks (`.nostart`, `use-`) of one owner
+    in all slots and nothing else
     (`amiga_emulation_snapshot_purge`; without `BUILDDIR`
     `$AMIGA_EMULATION_OWNER`, unset the snapshots without owner; no slot
     directory yet is not an error), e.g. after a change of this code that

@@ -3672,7 +3672,7 @@ session to their output, after their report:
 
 test (the pass), config (corpus: clib/prev, in the originals runs ref/port; TED: R5/C5/... in the
 bug-orig mode, else the session sNNN; corpusrun cd: the worker), machine, what
-the snapshot mode did (cold, restored, first-save, fallback), the session
+the snapshot mode did (cold, restored, first-save, fallback, single), the session
 time without the wait for an emulator slot, the wait, the part counted
 against the time limit, the limit, the end (done, timeout, halt,
 exited, failed) and the verdict of the config (bug-orig FIXED/REPRODUCED/DIFFERS/

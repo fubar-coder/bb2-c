@@ -306,23 +306,33 @@ static char self[4096];
 static char base[] = "/tmp/amiga-emulation-suptest-XXXXXX";
 static char slots[256];
 
-static struct amiga_emulation *start(const char *script, unsigned timeout)
+/* a session; other 1: another configuration (one change more), hang_after
+   the hang check's seconds */
+static struct amiga_emulation *start_with(const char *script, unsigned timeout, int other,
+                                          unsigned hang_after)
 {
     static const struct amiga_emulation_option changes[] = { { "kickstart_rom_file", nullptr },
-                                                             { "hardfile2", nullptr } };
+                                                             { "hardfile2", nullptr },
+                                                             { "cpu_speed", "max" } };
     struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     char err[512];
 
     p.changes = changes;
-    p.nchanges = 2;
+    p.nchanges = other ? 3 : 2;
     p.amiberry = self;
     p.script = script;
     p.timeout = timeout;
+    p.hang_after = hang_after;
     e = amiga_emulation_start(&p, err, sizeof err);
     if (!e)
         fprintf(stderr, "test_amiga_emulation_supervisor: start: %s\n", err);
     return e;
+}
+
+static struct amiga_emulation *start(const char *script, unsigned timeout)
+{
+    return start_with(script, timeout, 0, 0);
 }
 
 static char *snap_log(struct amiga_emulation *e)
@@ -435,6 +445,34 @@ static void one_session(const char *name, enum amiga_emulation_snapshot_use use,
     free(log);
     amiga_emulation_free(e);
     CHECK(slot_clean(0));
+}
+
+/* the first session of a configuration that no session has used lately:
+   no snapshot, the job runs in the booted machine (use single), the hang
+   check works there; the next session of it saves one */
+static void single_use(void)
+{
+    static const char *const single[] = { "no snapshot", "job started", "done", nullptr };
+    static const char *const saved[] = { "boot cold, save", " saved ", "job started", nullptr };
+    struct amiga_emulation *e;
+    struct amiga_emulation_stats st;
+
+    one_session("single", AMIGA_EMULATION_SNAP_SINGLE, single);
+    CHECK(slot_files(0, "") == 0);
+    one_session("second", AMIGA_EMULATION_SNAP_FIRST_SAVE, saved);
+    CHECK(slot_files(0, ".uss") == 1);
+    /* another configuration, used once, whose job hangs: the hang check ends it */
+    e = start_with("HANG", 30, 1, 2);
+    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_TIMEOUT);
+    if (e) {
+        amiga_emulation_get_stats(e, &st);
+        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_SINGLE && st.hung && st.timed < 10);
+        if (snitch::impl::get_current_test().failures)
+            show("single hang", e);
+    }
+    amiga_emulation_free(e);
+    CHECK(slot_files(0, ".uss") == 1 && slot_clean(0));
+    drop_snapshots();
 }
 
 /* states that load but never start their job (no SNAP:started): one this
@@ -960,6 +998,7 @@ TEST_CASE("amiga_emulation_supervisor: sessions without the caller (fake Amiberr
        (set by the emulator test presets) */
     unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
 
+    single_use();
     join_order();
     restore_and_fallback();
     restore_repair();

@@ -129,7 +129,7 @@ void cmd_costs(CLI::App &app, int &status)
     sub->add_option("JUNIT.xml", o->files, "ctest's JUnit files, one per run")->required();
     sub->footer("The COST of a test is the median over the runs of the sum of its emulator sessions' times "
                 "without the slot wait, a session that did not start from a snapshot (cold, first-save, "
-                "fallback) counted as the median of the test's sessions that did; a test without such a "
+                "fallback, single) counted as the median of the test's sessions that did; a test without such a "
                 "session gets no entry. Exit status 0, 1 problems in a JUnit file (reported on stderr), 2 "
                 "usage error, a file that cannot be read or written, a malformed FILE.");
     sub->callback([sub, o, &status] {

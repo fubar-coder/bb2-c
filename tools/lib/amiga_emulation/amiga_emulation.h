@@ -228,7 +228,18 @@ struct amiga_emulation_params {
  * (amiga_emulation_snapshot_no_start); a restore that starts removes the
  * mark.  So no slot keeps a state that always falls back.  A file that
  * does not begin as a savestate ("ASF ") is removed before the restore,
- * the session saves anew.  A slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
+ * the session saves anew.
+ *
+ * A configuration only one session uses gets no snapshot: a session whose
+ * slot has none saves one only if another session of the same owner and
+ * configuration id started within AMIGA_EMULATION_SNAP_SHARED_WINDOW
+ * seconds (in any slot; the mark use-OWNER-ID in the slot directory,
+ * amiga_emulation_snapshot_shared).  Otherwise it boots with the prologue,
+ * saves nothing and runs its job at SNAP:ready in the same machine (use
+ * "single"; the hang check works as after a restore).  The uses of one
+ * ctest run are close together, a configuration of a single test is used
+ * once per run, so it never evicts the snapshots of the shared ones.  A
+ * slot keeps its AMIGA_EMULATION_SNAP_KEEP most recently
  * used snapshots.  Sessions end with SIGTERM right after run.done (SIGKILL only after 10 s); at the
  * end TEST:run.script is the test's script again and the links are
  * removed.  The work directory's snapshot.log tells what the session did.
@@ -236,6 +247,7 @@ struct amiga_emulation_params {
  */
 #define AMIGA_EMULATION_SNAP_KEEP 24u
 #define AMIGA_EMULATION_SNAP_SAVES 2u               /* saves per session (above) */
+#define AMIGA_EMULATION_SNAP_SHARED_WINDOW 600u     /* seconds (above) */
 
 /* the RTG variant: Workbench on uaegfx (the other hardfile) */
 extern const struct amiga_emulation_option amiga_emulation_rtg[];
@@ -299,8 +311,10 @@ enum amiga_emulation_snapshot_use {
                                            directory) */
     AMIGA_EMULATION_SNAP_RESTORED,      /* started from the slot's snapshot */
     AMIGA_EMULATION_SNAP_FIRST_SAVE,    /* booted, saved the snapshot, restored it */
-    AMIGA_EMULATION_SNAP_FALLBACK       /* the snapshot did not work (restore or
+    AMIGA_EMULATION_SNAP_FALLBACK,      /* the snapshot did not work (restore or
                                            save failed): booted cold after all */
+    AMIGA_EMULATION_SNAP_SINGLE         /* booted, no snapshot saved: the first use
+                                           of its configuration (above) */
 };
 
 /* the times of a session, for test statistics (the runners' @stat lines,
@@ -324,7 +338,7 @@ struct amiga_emulation_stats {
     int hung;                   /* the hang check (params.hang_after) ended it */
 };
 void amiga_emulation_get_stats(const struct amiga_emulation *e, struct amiga_emulation_stats *s);
-/* "cold", "restored", "first-save", "fallback" */
+/* "cold", "restored", "first-save", "fallback", "single" */
 const char *amiga_emulation_snapshot_use_name(enum amiga_emulation_snapshot_use u);
 
 /* frees the handle; removes the work directory if the library made it */
@@ -447,14 +461,21 @@ int amiga_emulation_snapshot_drop_stale(const char *slot_dir, const char *owner,
    -1 if the mark cannot be made.  started 1: the restore started, the
    mark is removed (0). */
 int amiga_emulation_snapshot_no_start(const char *snap_path, int started);
+/* whether the configuration id of owner is shared: 1 if a session of it
+   started within window seconds (the modification time of the mark
+   slots_dir/use-OWNERHASH-ID), else 0; the mark is made or touched either
+   way (this session's start); -1 if it cannot be. */
+int amiga_emulation_snapshot_shared(const char *slots_dir, const char *owner,
+                                    unsigned long long id, unsigned window);
 /* removes the snapshots of owner (snap-OWNERHASH-*.uss, their marks
-   .nostart and left-over save-OWNERHASH-*.uss) from every slot-K of the
-   slot directory ($XDG_RUNTIME_DIR/amiga-emulation-slots, see above) and
-   touches nothing else: the number of snapshots removed, -1 without the
-   slot directory.  For manual use (amiga_run --purge-snapshots); the
-   tests do not need it.  It takes no slot locks: a session of another
-   owner never uses these files; a session of the same owner that runs
-   meanwhile and whose snapshot goes away falls back to a cold boot. */
+   .nostart and left-over save-OWNERHASH-*.uss) from every slot-K and the
+   owner's marks use-OWNERHASH-* of the slot directory
+   ($XDG_RUNTIME_DIR/amiga-emulation-slots, see above) and touches nothing
+   else: the number of snapshots removed, -1 without the slot directory.
+   For manual use (amiga_run --purge-snapshots); the tests do not need
+   it.  It takes no slot locks: a session of another owner never uses
+   these files; a session of the same owner that runs meanwhile and whose
+   snapshot goes away falls back to a cold boot. */
 int amiga_emulation_snapshot_purge(const char *owner);
 
 /* checks the Kickstart ROM file before a run: it exists, and an encrypted
