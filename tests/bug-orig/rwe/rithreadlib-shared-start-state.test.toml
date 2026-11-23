@@ -1,0 +1,10 @@
+# rithreadlib-shared-start-state.test.bas: the original starts both threads
+# with the second one's code
+fixed-orig = 838
+rwe = ["rithreadlib"]
+
+[deviations."compiler=orig210"]
+"check.start_state.code_a_runs" = "== fail"
+"check.start_state.code_a_runs.actual" = "== 0"
+"check.start_state.code_b_runs" = "== fail"
+"check.start_state.code_b_runs.actual" = "== 2"
