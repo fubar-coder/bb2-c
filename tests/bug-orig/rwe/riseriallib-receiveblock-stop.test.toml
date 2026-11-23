@@ -1,0 +1,12 @@
+# riseriallib-receiveblock-stop.test.bas: with the serial port of the
+# emulator; the original returns to the long above its return address
+fixed-orig = 803
+rwe = ["riseriallib"]
+serial = "on"
+timeout = 30
+# what the original does behind the wrong return can end the session
+isolate = ["compiler=orig210"]
+
+[ends."compiler=orig210"]
+reason = "SerialReceiveBlock returns to the long above its return address (#803); what the program does from there depends on what it finds, and so on the layout of the test program including testlib and the driver: observed is a normal end of the program without the end of the case"
+wrong_return = ["session == done", "rc == 0", "end.case not exists", "end.run exists"]

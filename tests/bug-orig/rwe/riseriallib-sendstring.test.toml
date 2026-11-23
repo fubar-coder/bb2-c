@@ -1,0 +1,9 @@
+# riseriallib-sendstring.test.bas: with the serial port of the emulator; the
+# original sends other bytes: no reply
+fixed-orig = 801
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.sendstring.reply" = "== fail"
+"check.sendstring.reply.actual" = "== \"\""

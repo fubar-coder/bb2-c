@@ -1,0 +1,9 @@
+# riseriallib-serialread-upper-word.test.bas: with the serial port of the
+# emulator; the original keeps the upper word of d0 ($12340000 + 90)
+fixed-orig = 797
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.serialread_upper_word.byte" = "== fail"
+"check.serialread_upper_word.byte.actual" = "== 305397850"

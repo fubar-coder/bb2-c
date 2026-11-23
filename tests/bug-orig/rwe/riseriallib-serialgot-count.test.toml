@@ -1,0 +1,9 @@
+# riseriallib-serialgot-count.test.bas: with the serial port of the emulator;
+# the original returns -1
+fixed-orig = 802
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.serialgot_count.got" = "== fail"
+"check.serialgot_count.got.actual" = "== -1"

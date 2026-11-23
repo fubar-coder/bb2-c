@@ -1,0 +1,9 @@
+# riseriallib-sendblock-opens.test.bas: with the serial port of the emulator;
+# the original never opens the port: no reply
+fixed-orig = 792
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.sendblock_opens.reply" = "== fail"
+"check.sendblock_opens.reply.actual" = "== \"\""
