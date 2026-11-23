@@ -30,7 +30,7 @@
 ## 5. Documentation and integration
 
 - [x] 5.1 `tests/README.md` and `docs/testing.md`: the model, the files, the configuration keys, the assertions, the diagnostics; verify: the examples of the text are tests of the build
-- [ ] 5.2 Move the `tests/blitz2/*-runerrs.bas` twins and their partners (eight pairs) into one `ID.test.bas` each with runtime error checking as an axis, as the first real use, and `array-index-div0-runerrs` (no twin) to one with runtime error checking on; their prev comparison is that of section 7 (after 7.4); verify: each keeps its verdict, the old pairs are gone, `ctest --preset all` passes (the coordinator's run)
+- [x] 5.2 Move the `tests/blitz2/*-runerrs.bas` twins and their partners (eight pairs) into one `ID.test.bas` each with runtime error checking as an axis, as the first real use, and `array-index-div0-runerrs` (no twin) to one with runtime error checking on; their prev comparison is that of section 7 (after 7.4); verify: each keeps its verdict, the old pairs are gone, `ctest --preset all` passes (the coordinator's run) (done 2026-11-23; verified by the coordinator's acceptance run)
 
 ## 6. String values by length and CRC32 (decided 2026-11-21, ~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md "String values: length and CRC32")
 
