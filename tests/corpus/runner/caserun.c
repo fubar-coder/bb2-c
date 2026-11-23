@@ -339,6 +339,9 @@ char *cr_session_key(const struct tc_config *conf, const struct tc_matrix *m, si
     /* the remote end of the serial port belongs to one program */
     if (!strcmp(val(conf, m, cell, "serial", buf), "on"))
         text_add(&t, "serial=%zu\n", cell);
+    /* a cell isolate names: its memory and RAM: are its own */
+    if (tc_cell_isolated(conf, m, cell))
+        text_add(&t, "isolate=%zu\n", cell);
     /* the lists are the same in every cell (no list is an axis) */
     if (t.bad) {
         free(t.p);
@@ -592,10 +595,11 @@ void cr_plan_free(struct cr_plan *p)
     memset(p, 0, sizeof *p);
 }
 
-int cr_plan_init(struct cr_plan *p, size_t n, const int *alone)
+int cr_plan_init(struct cr_plan *p, size_t n, const int *alone, int isolated)
 {
     memset(p, 0, sizeof *p);
     p->n = n;
+    p->isolated = isolated;
     if (!(p->state = calloc(n + 1, sizeof *p->state)) || !(p->verdict = calloc(n + 1, sizeof *p->verdict))
         || !(p->alone = calloc(n + 1, sizeof *p->alone)) || !(p->shared = calloc(n + 1, sizeof *p->shared))) {
         cr_plan_free(p);
@@ -623,6 +627,13 @@ int cr_plan_next(struct cr_plan *p, size_t *set, size_t *nset, int *kind)
         *kind = CR_RUN_SHARED;
         return 1;
     }
+    for (size_t i = 0; i < p->n; i++)
+        if (p->state[i] == CR_C_ISOLATED) {
+            set[0] = i;
+            *nset = 1;
+            *kind = CR_RUN_ISOLATED;
+            return 1;
+        }
     for (size_t i = 0; i < p->n; i++)
         if (p->state[i] == CR_C_ALONE || p->state[i] == CR_C_CONFIRM) {
             set[0] = i;
@@ -653,6 +664,15 @@ void cr_plan_unclean(struct cr_plan *p, const size_t *set, size_t nset, const lo
     if (all || !any)
         for (size_t j = 0; j < nset; j++)
             p->state[set[j]] = CR_C_ALONE;
+}
+
+int cr_plan_clean(struct cr_plan *p, const size_t *set, size_t nset)
+{
+    if (!p->isolated)
+        return 1;
+    for (size_t j = 0; j < nset; j++)
+        p->state[set[j]] = CR_C_ISOLATED;
+    return 0;
 }
 
 void cr_plan_judged(struct cr_plan *p, size_t c, int v, int alone)
@@ -1543,35 +1563,54 @@ out:
 
 /* ------------------------------------------------------- the run of all cases */
 
+/* the position of matrix cell idx in s, or s->ncells */
+static size_t cell_in(const struct set *s, size_t idx)
+{
+    size_t k;
+
+    for (k = 0; k < s->ncells && s->idx[k] != idx; k++)
+        ;
+    return k;
+}
+
 /* the run of all cases of the source in rundir (caserun.h); the exit status */
 static int run_all(struct ctx *x, const char *rundir)
 {
-    size_t n = x->src.ncases, nsets = 0, nshared = 0, nset;
+    size_t n = x->src.ncases, nsets = 0, nshared = 0, nset, niso = 0, nsh = 0;
     int *alone = calloc(n + 1, sizeof *alone);
     size_t *set = calloc(n + 1, sizeof *set);
-    long *judged_in = calloc(n + 1, sizeof *judged_in);
+    long *shared_in = calloc(n + 1, sizeof *shared_in);
     char **block = calloc(n + 1, sizeof *block);
     const struct set **from = calloc(x->nside + 1, sizeof *from);
     size_t *at = calloc(x->nside + 1, sizeof *at);
     long *open = calloc(x->nside + 1, sizeof *open);
+    size_t *iso = calloc(x->nside + 1, sizeof *iso), *sh = calloc(x->nside + 1, sizeof *sh);
     struct set **sets = NULL;
     struct cr_plan p = { 0 };
     int kind, rc = 2;
 
-    if (!alone || !set || !judged_in || !block || !from || !at || !open)
+    if (!alone || !set || !shared_in || !block || !from || !at || !open || !iso || !sh)
         goto oom;
+    /* the cells with a session of their own, and the others */
+    for (size_t i = 0; i < x->nside; i++)
+        if (tc_cell_isolated(&x->conf, &x->m, x->side[i]))
+            iso[niso++] = x->side[i];
+        else
+            sh[nsh++] = x->side[i];
     for (size_t i = 0; i < n; i++) {
-        int a = cr_case_alone(&x->conf, &x->m, x->side, x->nside, &x->src, x->src.cases[i].name);
+        int a = nsh ? cr_case_alone(&x->conf, &x->m, x->side, x->nside, &x->src, x->src.cases[i].name) : 1;
 
         if (a < 0)
             goto oom;
         alone[i] = a;
-        judged_in[i] = -1;
+        shared_in[i] = -1;
     }
-    if (cr_plan_init(&p, n, alone))
+    if (cr_plan_init(&p, n, alone, niso && nsh))
         goto oom;
     while (cr_plan_next(&p, set, &nset, &kind)) {
         struct set *s, **v = realloc(sets, (nsets + 1) * sizeof *v);
+        const size_t *cells = kind == CR_RUN_SHARED ? sh : kind == CR_RUN_ISOLATED ? iso : x->side;
+        size_t ncells = kind == CR_RUN_SHARED ? nsh : kind == CR_RUN_ISOLATED ? niso : x->nside;
         int r;
 
         if (!v)
@@ -1580,17 +1619,17 @@ static int run_all(struct ctx *x, const char *rundir)
         if (!(s = calloc(1, sizeof *s)))
             goto oom;
         sets[nsets++] = s;
-        if (!(s->cases = calloc(nset + 1, sizeof *s->cases)) || !(s->idx = calloc(x->nside + 1, sizeof *s->idx)))
+        if (!(s->cases = calloc(nset + 1, sizeof *s->cases)) || !(s->idx = calloc(ncells + 1, sizeof *s->idx)))
             goto oom;
         for (size_t k = 0; k < nset; k++)
             s->cases[k] = x->src.cases[set[k]].name;
         s->ncases = nset;
-        memcpy(s->idx, x->side, x->nside * sizeof *s->idx);
-        s->ncells = x->nside;
+        memcpy(s->idx, cells, ncells * sizeof *s->idx);
+        s->ncells = ncells;
         if (kind == CR_RUN_SHARED)
             s->dir = str_printf("%s/shared-%zu", rundir, nshared++);
         else
-            s->dir = str_printf("%s/alone-%s", rundir, s->cases[0]);
+            s->dir = str_printf("%s/%s-%s", rundir, kind == CR_RUN_ISOLATED ? "isolated" : "alone", s->cases[0]);
         if (!s->dir)
             goto oom;
         s->label = base_name(s->dir);
@@ -1599,7 +1638,10 @@ static int run_all(struct ctx *x, const char *rundir)
             for (size_t k = 0; k < nset; k++)
                 fprintf(x->log, " %s", s->cases[k]);
             fprintf(x->log, "\n");
-        } else
+        } else if (kind == CR_RUN_ISOLATED)
+            fprintf(x->log, "corpusrun case: %s: the case %s in the cells of a session of their own\n", s->label,
+                    s->cases[0]);
+        else
             fprintf(x->log, "corpusrun case: %s: the case %s on its own\n", s->label, s->cases[0]);
         r = run_set(x, s);
         if (r == 77 && !x->ran) {
@@ -1642,29 +1684,46 @@ static int run_all(struct ctx *x, const char *rundir)
                 cr_plan_unclean(&p, set, nset, open, nopen);
                 continue;
             }
+            for (size_t k = 0; k < nset; k++)
+                shared_in[set[k]] = (long)(nsets - 1);
+            if (!cr_plan_clean(&p, set, nset))
+                continue;       /* the isolated cells come first */
         }
         for (size_t k = 0; k < nset; k++) {
-            size_t c = set[k], blen = 0;
+            size_t c = set[k], blen = 0, nj = s->ncells;
             char *buf = NULL;
             FILE *mf = open_memstream(&buf, &blen);
             int vd;
 
             if (!mf)
                 goto oom;
-            for (size_t i = 0; i < s->ncells; i++) {
-                from[i] = s;
-                at[i] = i;
-            }
-            vd = judge_case(x, s->cases[k], from, at, s->ncells, kind == CR_RUN_ALONE ? " (alone)" : "", mf);
-            if (vd >= 0 && kind == CR_RUN_ALONE && p.shared[c] >= 0 && p.shared[c] != vd && judged_in[c] >= 0) {
-                const struct set *sh = sets[judged_in[c]];
+            if (kind == CR_RUN_ISOLATED) {
+                /* every cell of the side: the isolated ones from this run, the
+                   others from the shared run that judged the case clean */
+                const struct set *shs = sets[shared_in[c]];
+
+                for (size_t i = 0; i < x->nside; i++) {
+                    size_t k2 = cell_in(s, x->side[i]);
+
+                    from[i] = k2 < s->ncells ? s : shs;
+                    at[i] = k2 < s->ncells ? k2 : cell_in(shs, x->side[i]);
+                }
+                nj = x->nside;
+            } else
+                for (size_t i = 0; i < s->ncells; i++) {
+                    from[i] = s;
+                    at[i] = i;
+                }
+            vd = judge_case(x, s->cases[k], from, at, nj, kind == CR_RUN_ALONE ? " (alone)" : "", mf);
+            if (vd >= 0 && kind == CR_RUN_ALONE && p.shared[c] >= 0 && p.shared[c] != vd && shared_in[c] >= 0) {
+                const struct set *shs = sets[shared_in[c]];
                 int first = 1;
 
                 fprintf(mf, "case %s: %s alone (%s in the run shared with", s->cases[k], cr_verdict_name(vd),
                         cr_verdict_name(p.shared[c]));
-                for (size_t j = 0; j < sh->ncases; j++)
-                    if (strcmp(sh->cases[j], s->cases[k])) {
-                        fprintf(mf, "%s%s", first ? " " : ", ", sh->cases[j]);
+                for (size_t j = 0; j < shs->ncases; j++)
+                    if (strcmp(shs->cases[j], s->cases[k])) {
+                        fprintf(mf, "%s%s", first ? " " : ", ", shs->cases[j]);
                         first = 0;
                     }
                 fprintf(mf, ")\n");
@@ -1675,9 +1734,7 @@ static int run_all(struct ctx *x, const char *rundir)
             }
             cr_plan_judged(&p, c, vd, kind == CR_RUN_ALONE);
             if (p.state[c] == CR_C_CONFIRM) {
-                /* its verdict comes from its run on its own */
-                judged_in[c] = (long)(nsets - 1);
-                free(buf);
+                free(buf);      /* its verdict comes from its run on its own */
                 continue;
             }
             free(block[c]);
@@ -1705,10 +1762,12 @@ out:
     free(block);
     free(alone);
     free(set);
-    free(judged_in);
+    free(shared_in);
     free(from);
     free(at);
     free(open);
+    free(iso);
+    free(sh);
     cr_plan_free(&p);
     return rc;
 }

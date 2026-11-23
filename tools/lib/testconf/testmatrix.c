@@ -46,6 +46,10 @@ static const struct tc_keydef *run_key(const char *key, char *msg, size_t msglen
         tc_err(msg, msglen, "%s is a list setting", key);
         return NULL;
     }
+    if (def->vkind == TC_V_ONOFF_OR_SELECTORS) {
+        tc_err(msg, msglen, "%s gives cells an emulator session of their own", key);
+        return NULL;
+    }
     return def;
 }
 
@@ -281,6 +285,29 @@ int tc_selector_matches(const struct tc_selector *sel, const struct tc_config *c
                         const struct tc_matrix *m, size_t cell, const char *case_name)
 {
     return matches_vals(sel, conf, m, m->cells[cell].values, case_name);
+}
+
+int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+{
+    const struct tc_setting *s = tc_get(conf, "isolate");
+
+    if (!s)
+        return 0;
+    if (s->value.type == TT_STRING)
+        return !strcmp(s->value.str, "on");
+    for (size_t i = 0; s->value.type == TT_LIST && i < s->value.nlist; i++) {
+        struct tc_selector sel;
+        char msg[300];
+        int r;
+
+        if (tc_selector_parse(s->value.list[i], 0, &sel, msg, sizeof msg))
+            continue;           /* checked when the file was read */
+        r = tc_selector_matches(&sel, conf, m, cell, NULL);
+        tc_selector_free(&sel);
+        if (r)
+            return 1;
+    }
+    return 0;
 }
 
 int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err, size_t errlen)

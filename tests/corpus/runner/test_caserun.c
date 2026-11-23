@@ -415,6 +415,7 @@ static void test_print_config(void)
                       "  serial = \"off\"    # (default)\n"
                       "  rtg = \"off\"    # (default)\n"
                       "  pad = \"off\"    # (default)\n"
+                      "  isolate = \"off\"    # (default)\n"
                       "  labels = [\"libs\"]    # %s/h/sub/tests.toml:1\n"
                       "  root = true    # %s/h/tests.toml:1\n"
                       "  fixed-orig = 12    # %s/h/sub/deep/p.test.toml:1\n"
@@ -736,7 +737,7 @@ static const char *next(struct cr_plan *p, char *out, size_t size)
         snprintf(out, size, "none");
         return out;
     }
-    snprintf(out, size, "%s ", kind == CR_RUN_SHARED ? "shared" : "alone");
+    snprintf(out, size, "%s ", kind == CR_RUN_SHARED ? "shared" : kind == CR_RUN_ISOLATED ? "isolated" : "alone");
     for (size_t i = 0; i < n; i++)
         snprintf(out + strlen(out), size - strlen(out), "%s%zu", i ? "," : "", set[i]);
     return out;
@@ -752,8 +753,12 @@ static void test_plan(void)
     {
         const int alone[] = { 0, 0, 0, 1 };
 
-        CHECK(cr_plan_init(&p, 4, alone) == 0);
+        const size_t set[] = { 0, 1, 2 };
+
+        CHECK(cr_plan_init(&p, 4, alone, 0) == 0);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
+        /* without isolated cells the shared run judges its cases at once */
+        CHECK(cr_plan_clean(&p, set, 3) == 1);
         cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
         cr_plan_judged(&p, 1, TJ_V_FAILED, 0);
         cr_plan_judged(&p, 2, TJ_V_REPRODUCED, 0);
@@ -774,7 +779,7 @@ static void test_plan(void)
         const size_t all[] = { 0, 1, 2, 3 }, rest[] = { 0, 2, 3 };
         const long open_b[] = { 1 }, none[] = { -1 };
 
-        CHECK(cr_plan_init(&p, 4, NULL) == 0);
+        CHECK(cr_plan_init(&p, 4, NULL, 0) == 0);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2,3"));
         cr_plan_unclean(&p, all, 4, open_b, 1);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,2,3"));
@@ -790,14 +795,14 @@ static void test_plan(void)
         const size_t all[] = { 0, 1, 2, 3 }, rest[] = { 1, 3 };
         const long two[] = { 0, 2 }, other[] = { 0 };
 
-        CHECK(cr_plan_init(&p, 4, NULL) == 0);
+        CHECK(cr_plan_init(&p, 4, NULL, 0) == 0);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2,3"));
         cr_plan_unclean(&p, all, 4, two, 2);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 1,3"));
         cr_plan_unclean(&p, rest, 2, other, 1);
         CHECK(p.state[1] == CR_C_ALONE && p.state[3] == CR_C_ALONE);
         cr_plan_free(&p);
-        CHECK(cr_plan_init(&p, 3, NULL) == 0);
+        CHECK(cr_plan_init(&p, 3, NULL, 0) == 0);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
         cr_plan_unclean(&p, all, 3, (const long[]){ 0 }, 1);
         CHECK(!strcmp(next(&p, s, sizeof s), "shared 1,2"));
@@ -813,7 +818,7 @@ static void test_plan(void)
         size_t set[16], n, runs = 0;
         int kind;
 
-        CHECK(cr_plan_init(&p, 8, NULL) == 0);
+        CHECK(cr_plan_init(&p, 8, NULL, 0) == 0);
         while (cr_plan_next(&p, set, &n, &kind) && runs < 100) {
             runs++;
             if (kind == CR_RUN_SHARED) {
@@ -830,12 +835,140 @@ static void test_plan(void)
         cr_plan_free(&p);
     }
     /* a verdict on its own never waits again */
-    CHECK(cr_plan_init(&p, 1, (const int[]){ 1 }) == 0);
+    CHECK(cr_plan_init(&p, 1, (const int[]){ 1 }, 0) == 0);
     CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
     cr_plan_judged(&p, 0, TJ_V_ERROR, 1);
     CHECK(!strcmp(next(&p, s, sizeof s), "none"));
     CHECK(cr_plan_worst(&p) == TJ_V_ERROR);
     cr_plan_free(&p);
+}
+
+/* the plan with isolated cells (D5): which case runs where */
+static void test_plan_isolated(void)
+{
+    struct cr_plan p;
+    char s[64];
+    const size_t all[] = { 0, 1, 2 }, rest[] = { 0, 2 };
+    const long open_b[] = { 1 };
+
+    /* case 2 runs on its own from the start; the shared run of 0 and 1 ends
+       cleanly: each then runs in the isolated cells, and is judged over all
+       cells; a failure is confirmed on its own in every cell */
+    CHECK(cr_plan_init(&p, 3, (const int[]){ 0, 0, 1 }, 1) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1"));
+    CHECK(cr_plan_clean(&p, all, 2) == 0);
+    CHECK(p.state[0] == CR_C_ISOLATED && p.state[1] == CR_C_ISOLATED);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 1"));
+    cr_plan_judged(&p, 1, TJ_V_BROKEN, 0);
+    CHECK(p.state[1] == CR_C_CONFIRM);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_BROKEN, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 2"));
+    cr_plan_judged(&p, 2, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    CHECK(cr_plan_worst(&p) == TJ_V_BROKEN && !p.alone[0] && p.alone[1]);
+    cr_plan_free(&p);
+    /* an unclean shared run: the open case on its own in every cell (no run
+       in the isolated cells), the others again in the shared cells */
+    CHECK(cr_plan_init(&p, 3, NULL, 1) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
+    cr_plan_unclean(&p, all, 3, open_b, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,2"));
+    CHECK(cr_plan_clean(&p, rest, 2) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 2"));
+    cr_plan_judged(&p, 2, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    cr_plan_free(&p);
+    /* every cell isolated: the caller sets every case apart, no shared run */
+    CHECK(cr_plan_init(&p, 2, (const int[]){ 1, 1 }, 0) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    cr_plan_free(&p);
+}
+
+/* the session keys of the cells with isolate */
+static void test_isolate_keys(void)
+{
+    struct t t;
+    char *k[3];
+
+    put("iso/tests.toml", "root = true\nexclude = [\"compiler=orig195,libs=clib\"]\n"
+                          "[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n");
+    put("iso/s.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    /* without isolate the three cells share one session */
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    CHECK(t.m.ncells == 3);
+    for (size_t i = 0; i < 3; i++)
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+    CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* "on": three keys for three cells */
+    put("iso/s.test.toml", "isolate = \"on\"\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    for (size_t i = 0; i < 3; i++) {
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+        CHECK(tc_cell_isolated(&t.conf, &t.m, i));
+    }
+    CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* "off" as if the key were absent */
+    put("iso/s.test.toml", "isolate = \"off\"\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    for (size_t i = 0; i < 3; i++)
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+    CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* ["libs=cd"]: a key each for port,cd and orig195,cd, port,clib with
+       the key of the cells without isolate */
+    put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    {
+        size_t pcd = cell(&t, "port,cd"), pclib = cell(&t, "port,clib"), ocd = cell(&t, "orig195,cd");
+        char *plain;
+
+        k[0] = cr_session_key(&t.conf, &t.m, pcd);
+        k[1] = cr_session_key(&t.conf, &t.m, ocd);
+        k[2] = cr_session_key(&t.conf, &t.m, pclib);
+        CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
+        CHECK(tc_cell_isolated(&t.conf, &t.m, pcd) && tc_cell_isolated(&t.conf, &t.m, ocd)
+              && !tc_cell_isolated(&t.conf, &t.m, pclib));
+        for (size_t i = 0; i < 3; i++)
+            free(k[i]);
+        unload(&t);
+        put("iso/s.test.toml", "");
+        load(&t, "iso/s.test.bas", ENV_RUNNER);
+        plain = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        unload(&t);
+        put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
+        load(&t, "iso/s.test.bas", ENV_RUNNER);
+        k[2] = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        CHECK(plain && k[2] && !strcmp(plain, k[2]));
+        free(plain);
+        free(k[2]);
+    }
+    unload(&t);
+    /* two selectors: the union */
+    put("iso/s.test.toml", "isolate = [\"compiler=orig195\", \"libs=clib\"]\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    CHECK(!tc_cell_isolated(&t.conf, &t.m, cell(&t, "port,cd")));
+    CHECK(tc_cell_isolated(&t.conf, &t.m, cell(&t, "port,clib")));
+    CHECK(tc_cell_isolated(&t.conf, &t.m, cell(&t, "orig195,cd")));
+    unload(&t);
 }
 
 static void test_verdict_order(void)
@@ -857,7 +990,7 @@ static void test_verdict_order(void)
         static const int worst[] = { TJ_V_FAILED, TJ_V_ERROR, CR_SKIPPED, TJ_V_FAILED, TJ_V_REPRODUCED };
 
         for (size_t k = 0; k < sizeof sets / sizeof sets[0]; k++) {
-            CHECK(cr_plan_init(&p, 2, (const int[]){ 1, 1 }) == 0);
+            CHECK(cr_plan_init(&p, 2, (const int[]){ 1, 1 }, 0) == 0);
             cr_plan_judged(&p, 0, sets[k][0], 1);
             cr_plan_judged(&p, 1, sets[k][1], 1);
             CHECK(cr_plan_worst(&p) == worst[k]);
@@ -890,6 +1023,8 @@ int main(int argc, char **argv)
     test_clean();
     test_open_case();
     test_plan();
+    test_plan_isolated();
+    test_isolate_keys();
     test_verdict_order();
     if (!failures)
         rm_tree(work);

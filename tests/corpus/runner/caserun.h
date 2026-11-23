@@ -211,47 +211,62 @@ int cr_cell_clean(const struct tj_obs *o);
  */
 int cr_open_case(const char *result, size_t len, char *name, size_t namelen);
 
+/*
+ * The cells of the side that isolate names (tc_cell_isolated; D5) run every
+ * case on its own; the other cells run the shared runs.  A case that a
+ * shared run judged clean then runs on its own in the isolated cells, and is
+ * judged over all cells of the side: the shared cells from that shared run,
+ * the isolated ones from its own run there.  A run on its own (from the
+ * start, after an unclean end, the confirmation) runs in every cell of the
+ * side, as the case's ctest test does.  Without shared cells (isolate =
+ * "on", or every cell named) every case runs on its own.
+ */
+
 /** @brief The runs of the plan. */
 enum cr_runkind {
     CR_RUN_SHARED,              /* a set of cases in the shared cells */
+    CR_RUN_ISOLATED,            /* one case in the isolated cells */
     CR_RUN_ALONE                /* one case on its own in every cell */
 };
 
 /** @brief The state of a case in the plan. */
 enum cr_cstate {
     CR_C_SHARED,                /* waits for a shared run */
+    CR_C_ISOLATED,              /* a shared run ended cleanly: waits for its
+                                   run in the isolated cells */
     CR_C_ALONE,                 /* waits for its run on its own */
-    CR_C_CONFIRM,               /* judged not passing in a shared run: waits
+    CR_C_CONFIRM,               /* judged not passing with a shared run: waits
                                    for its run on its own */
     CR_C_DONE                   /* its verdict counts */
 };
 
 /**
  * @brief The plan of the run of all cases: which run comes next, from the
- *        results of the runs before (D3).
+ *        results of the runs before (D3, D5).
  */
 struct cr_plan {
     size_t n;                   /* the cases, in the order of the source */
+    int isolated;               /* the side has isolated and shared cells */
     int *state;                 /* enum cr_cstate */
     int *verdict;               /* the verdict that counts, -1 none yet */
     int *alone;                 /* the verdict comes from its run on its own */
-    int *shared;                /* the verdict of the shared run its run on
-                                   its own replaced, -1 none */
+    int *shared;                /* the verdict with a shared run that its run
+                                   on its own replaced, -1 none */
 };
 
 /**
  * @brief Start a plan: the cases alone[i] != 0 run on their own, the others
- *        share.
+ *        share; isolated: the side has isolated cells besides shared ones.
  * @return 0, -1 = out of memory
  */
-int cr_plan_init(struct cr_plan *p, size_t n, const int *alone);
+int cr_plan_init(struct cr_plan *p, size_t n, const int *alone, int isolated);
 void cr_plan_free(struct cr_plan *p);
 
 /**
  * @brief The next run: its kind and its cases set[0..*nset) (set has room
  *        for every case).  The shared cases come first (a single one becomes
- *        a run on its own), then the runs on their own in the order of the
- *        source.
+ *        a run on its own), then the runs in the isolated cells, then the
+ *        runs on their own, each in the order of the source.
  * @return 1 = a run, 0 = every case has its verdict
  */
 int cr_plan_next(struct cr_plan *p, size_t *set, size_t *nset, int *kind);
@@ -266,8 +281,15 @@ int cr_plan_next(struct cr_plan *p, size_t *set, size_t *nset, int *kind);
 void cr_plan_unclean(struct cr_plan *p, const size_t *set, size_t nset, const long *open, size_t nopen);
 
 /**
+ * @brief A shared run of set[0..nset) that ended cleanly in every cell.
+ * @return 1 = judge its cases now; 0 = they wait for their runs in the
+ *         isolated cells (CR_C_ISOLATED)
+ */
+int cr_plan_clean(struct cr_plan *p, const size_t *set, size_t nset);
+
+/**
  * @brief A case judged: v the verdict, alone whether from its run on its
- *        own.  A case judged failed, broken or error in a shared run waits
+ *        own.  A case judged failed, broken or error with a shared run waits
  *        for its run on its own (CR_C_CONFIRM); any other verdict counts.
  */
 void cr_plan_judged(struct cr_plan *p, size_t c, int v, int alone);
@@ -293,7 +315,8 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
 /**
  * @brief The settings that decide the session of a cell, as one text: two
  *        cells share a session if their keys are the same.  A cell with
- *        serial=on gets a key of its own (the cell's number in it).
+ *        serial=on, and a cell the setting isolate names (tc_cell_isolated),
+ *        gets a key of its own (the cell's number in it).
  * @return the key (malloc'd), NULL = out of memory
  */
 char *cr_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);

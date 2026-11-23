@@ -151,13 +151,30 @@ set(model_all_cases ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source
 add_test(NAME blitz2_selftest_model_all_cases COMMAND ${model_all_cases})
 set_tests_properties(blitz2_selftest_model_all_cases PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
-	"shared-0: cell default did not end cleanly, the case ends open\n.*model-all-cases\\.test\\.bas: case pass1: PASSED\n.*model-all-cases\\.test\\.bas: case fails: FAILED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case ends: PASSED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case behind: PASSED\n.*model-all-cases\\.test\\.bas: case victim: PASSED \\(alone\\)\ncase victim: PASSED alone \\(FAILED in the run shared with pass1, fails, behind\\)\n.*model-all-cases\\.test\\.bas: case prints: PASSED \\(alone\\)\nmodel-all-cases\\.test\\.bas: 6 cases, side port: FAILED\n")
+	"shared-0: cell port,clib did not end cleanly, the case ends open\n.*model-all-cases\\.test\\.bas: case pass1: PASSED\n.*model-all-cases\\.test\\.bas: case fails: FAILED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case ends: PASSED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case behind: PASSED\n.*model-all-cases\\.test\\.bas: case victim: PASSED \\(alone\\)\ncase victim: PASSED alone \\(FAILED in the run shared with pass1, fails, behind\\)\n.*model-all-cases\\.test\\.bas: case prints: PASSED \\(alone\\)\nmodel-all-cases\\.test\\.bas: 6 cases, side port: FAILED\n")
 add_test(NAME blitz2_selftest_model_all_cases_exit COMMAND ${CMAKE_COMMAND} "-DCMD=${model_all_cases}" -DWANT=4
 	"-DREGEX=model-all-cases\\.test\\.bas: 6 cases, side port: FAILED\n"
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/model-all-cases-exit
 	-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
 set_tests_properties(blitz2_selftest_model_all_cases_exit PROPERTIES LABELS emulator TIMEOUT ${limit}
 	PASS_REGULAR_EXPRESSION "runner-exit: as expected" SKIP_REGULAR_EXPRESSION "exit status 77, expected")
+# the same on the side originals, where isolate = ["libs=cd"] gives port,cd and orig195,cd a
+# session of their own: the cases share the runs in orig195,clib, each runs on its own in the
+# isolated cells and is judged over all three, and a run on its own covers every cell
+math(EXPR limit "24 * ${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME blitz2_selftest_model_all_cases_originals COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-all-cases.test.bas --side originals)
+set_tests_properties(blitz2_selftest_model_all_cases_originals PROPERTIES LABELS originals SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} FIXTURES_REQUIRED originals_refbuild PASS_REGULAR_EXPRESSION
+	"shared-0: cell orig195,clib did not end cleanly, the case ends open\n.*isolated-pass1: the case pass1 in the cells of a session of their own\ncorpusrun case: emulator session [0-9]+: c0\n@stat [^\n]*\ncorpusrun case: emulator session [0-9]+: c1\n.*model-all-cases\\.test\\.bas, case pass1, side originals: port,cd \\(isolated-pass1/c0\\) orig195,cd \\(isolated-pass1/c1\\) orig195,clib \\(shared-1/c0\\)\nmodel-all-cases\\.test\\.bas: case pass1: PASSED\n.*model-all-cases\\.test\\.bas: case fails: FAILED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case ends: PASSED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case behind: PASSED\n.*side originals: port,cd \\(alone-victim/c0\\) orig195,cd \\(alone-victim/c1\\) orig195,clib \\(alone-victim/c2\\)\nmodel-all-cases\\.test\\.bas: case victim: PASSED \\(alone\\)\ncase victim: PASSED alone \\(FAILED in the run shared with pass1, fails, behind\\)\n.*model-all-cases\\.test\\.bas: case prints: PASSED \\(alone\\)\nmodel-all-cases\\.test\\.bas: 6 cases, side originals: FAILED\n")
+# isolate = "on" (selftest/model-isolate.test.bas): the two cells of the side port, which share
+# the session settings, run in two sessions, one per cell
+math(EXPR limit "2 * ${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME blitz2_selftest_model_isolate COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-isolate.test.bas --case own)
+set_tests_properties(blitz2_selftest_model_isolate PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"emulator session 0: c0\n@stat [^\n]* config=s0 [^\n]*\ncorpusrun case: emulator session 1: c1\n@stat [^\n]* config=s1 [^\n]*\n== model-isolate\\.test\\.bas, case own, side port: off \\(c0\\) on \\(c1\\)\nmodel-isolate\\.test\\.bas: case own: PASSED\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md

@@ -259,3 +259,23 @@ here.
   case names the run each cell was judged from (`port,cd (shared-0/c0)`,
   `(alone-NAME/c0)`), the directory below the run's work directory that
   holds that cell's `CORPUS:`; the run of one case keeps `port,cd (c0)`.
+- **The time limit with isolated cells (task 2.2).** Measured on this
+  machine (2026-11-23, the build's snapshots present): a session of
+  `selftest/model-isolate.test.bas` (compile and run of one small case)
+  takes 0.9-1.0 s from a restored snapshot and 3.1 s for the first one
+  that saves it (`@stat session=`); the two isolated sessions of its ctest
+  test took 1.9-2.0 s of wall time in all, so the runner adds about 0.05 s
+  besides the sessions. The registered test's limit is the sum of the
+  cells' time limits (`timeout`, default 90 s) plus the margin
+  `--timeout-extra` (60 s plus `EMULATION_QUEUE_WAIT`): an isolated cell
+  has its own session, but its time limit is already one term of the sum,
+  and a session start of 1-3 s per isolated cell stays far below the 60 s
+  of the margin (twenty cells would use it up at the cold start). `testreg`
+  is not changed.
+- **The run of all cases with isolated cells (task 2.3).** On the side
+  `originals` of `selftest/model-all-cases.test.bas` with
+  `isolate = ["libs=cd"]` (cells `port,cd`, `orig195,cd` isolated,
+  `orig195,clib` shared) the run of the six cases took 22 sessions: two
+  shared runs in `orig195,clib`, a run of each of the four cases the second
+  one judged clean in the two isolated cells (8), and four runs on their
+  own in the three cells (12).

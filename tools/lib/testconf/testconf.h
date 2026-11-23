@@ -12,7 +12,8 @@
  * testtoml.h.
  *
  * The keys (tc_keys()): the run settings (compiler, libraries, machine,
- * runtime error checking, time limits, files, wrappers of the run, ...),
+ * runtime error checking, time limits, files, wrappers of the run, the
+ * cells with an emulator session of their own, ...),
  * the keys of the registration (labels, cost, fixtures), `root` (only in
  * a `tests.toml`), the keys of a single test (`fixed`, `fixed-orig`,
  * `extension` - at most one of the three -, the table `deviations`; only
@@ -40,7 +41,9 @@ enum tc_vkind {
     TC_V_ENUM,                  /* a string, one of tc_keydef.values */
     TC_V_INT,                   /* an integer >= tc_keydef.min */
     TC_V_BOOL,                  /* true or false */
-    TC_V_LIST                   /* a list of strings */
+    TC_V_LIST,                  /* a list of strings */
+    TC_V_ONOFF_OR_SELECTORS     /* a string, one of tc_keydef.values, or a
+                                   non-empty list of cell selectors (isolate) */
 };
 
 /** @brief Where a key is valid. */
@@ -214,8 +217,9 @@ int tc_placeholders(const struct tc_env *env, const char *text, char **out,
  * the CD's.
  *
  * A cell selector is TERM[,TERM...] without blanks, a TERM KEY=VALUE: KEY
- * a run setting that is no list setting, VALUE one of its values; in an
- * assertion's selector also case=NAME.  A cell matches a selector if its
+ * a run setting that is no list setting (nor isolate), VALUE one of its
+ * values; in an assertion's selector also case=NAME.  A cell matches a
+ * selector if its
  * value of every KEY (its axis value, else the effective setting, else the
  * key's default) is VALUE; case=NAME matches the case NAME only.  The more
  * terms, the more specific.
@@ -291,6 +295,14 @@ const char *tc_cell_value(const struct tc_config *conf, const struct tc_matrix *
  */
 int tc_selector_matches(const struct tc_selector *sel, const struct tc_config *conf,
                         const struct tc_matrix *m, size_t cell, const char *case_name);
+
+/**
+ * @brief Whether cell has an emulator session of its own: the run setting
+ *        `isolate` is "on", or one of its cell selectors matches the cell
+ *        (a string "on"/"off" or a non-empty list of selectors in the
+ *        grammar of `exclude`; no axis, and no term of a selector).
+ */
+int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
 
 /* ------------------------------------------------------------ assertions
  *
