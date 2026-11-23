@@ -56,6 +56,7 @@ struct treg_test {
     struct treg_strs labels;
     long long timeout;
     int has_cost;
+    int cost_configured;        /* the cost is the configuration's `cost` */
     long long cost;
     struct treg_strs fixtures;
     struct treg_strs cells;     /* the names of the side's cells */
@@ -131,9 +132,9 @@ struct tcosts;
 
 /**
  * @brief The measured COST (testcosts.h, tests/data/test-costs.txt): a test
- *        with an entry gets its COST, which wins over the configuration's
- *        `cost` and the sum of the cells' session limits (a measurement
- *        replaces the estimates); an entry of a test of the model of this
+ *        with an entry and without the configuration's `cost` gets its COST,
+ *        which replaces the estimate (the sum of the cells' session limits);
+ *        the configuration's `cost` wins over the entry.  An entry of a test of the model of this
  *        prefix (PREFIX...__CASE) that names no registered test is an error
  *        (file:line), the entries of other tests are left to their checks
  *        (cmake/test-cost.cmake).
@@ -150,11 +151,16 @@ int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file
  *        cost, else the sum of its cells' session limits) together with the
  *        entries of order (NULL: none), the largest COST first, equal ones
  *        by name: the order the tests of the label bug-orig must be
- *        declared in (cmake/bug-orig-order.cmake).
+ *        declared in (cmake/bug-orig-order.cmake).  testenv (NULL: none):
+ *        a ctest script that defines basic_test_environment(NAME LABELS),
+ *        which gives a test its ENVIRONMENT (cmake/basic-test-model.cmake:
+ *        the rules of cmake/emulation-queue.cmake); the file includes it
+ *        first and calls it after the properties of each registered test
+ *        (an entry of order carries its own environment).
  * @return 0, -1 = a value that cannot be quoted or a write error
  */
 int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand,
-                       const struct treg_entries *order);
+                       const struct treg_entries *order, const char *testenv);
 
 /** @brief Write a depfile "TARGET: DEP..." (Makefile syntax, as ninja reads it). */
 int treg_write_depfile(FILE *f, const char *target, const struct treg_result *r);

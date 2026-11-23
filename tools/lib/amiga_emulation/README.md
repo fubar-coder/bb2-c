@@ -184,7 +184,8 @@ the machine as fast as it can. `AMIGA_EMULATION_SNAPSHOT=0` in the environment
   it: `AMIGA_EMULATION_OWNER` in the environment, which CMake sets for
   every test that runs the emulator (labels `emulator`, `originals`,
   `oracle`; the top-level build directory, also for the host
-  side's emulator tests; `cmake/emulation-queue.cmake`). The file name
+  side's emulator tests and the tests of the BASIC test model;
+  `cmake/emulation-queue.cmake`). The file name
   has a hash of it, the id and the key, `snap-OWNERHASH-ID-KEY.uss` (16
   hex digits each); a session restores only snapshots of its own owner.
   Without the variable (e.g. `amiga_run` by hand) the owner is "none"

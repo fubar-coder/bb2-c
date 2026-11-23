@@ -293,6 +293,7 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
                 goto oom;
     if ((s = tc_get(conf, "cost"))) {
         t.has_cost = 1;
+        t.cost_configured = 1;
         t.cost = s->value.integer;
     } else if (has(&t.labels, "bug-orig")) {
         /* an open bug fails on purpose, so ctest never learns its cost: the
@@ -492,8 +493,8 @@ static int bracket_list(FILE *f, const struct treg_strs *l)
     return fputs("]==]", f) < 0 ? -1 : 0;
 }
 
-/* one registered test */
-static int write_test(FILE *f, const struct treg_test *t, const char *const *command, size_t ncommand)
+/* one registered test; testenv: the call of the test's environment */
+static int write_test(FILE *f, const struct treg_test *t, const char *const *command, size_t ncommand, int testenv)
 {
     if (fputs("add_test(", f) < 0 || bracket(f, t->name))
         return -1;
@@ -510,7 +511,12 @@ static int write_test(FILE *f, const struct treg_test *t, const char *const *com
         return -1;
     if (t->fixtures.n && (fputs(" FIXTURES_REQUIRED", f) < 0 || bracket_list(f, &t->fixtures)))
         return -1;
-    return fputs(")\n", f) < 0 ? -1 : 0;
+    if (fputs(")\n", f) < 0)
+        return -1;
+    if (testenv && (fputs("basic_test_environment(", f) < 0 || bracket(f, t->name) || bracket_list(f, &t->labels)
+                    || fputs(")\n", f) < 0))
+        return -1;
+    return 0;
 }
 
 /* a test of the order: a registered one or an entry */
@@ -531,7 +537,7 @@ static int by_cost(const void *a, const void *b)
 }
 
 int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand,
-                       const struct treg_entries *order)
+                       const struct treg_entries *order, const char *testenv)
 {
     size_t ne = order ? order->n : 0, n = 0;
     struct ordered *v = calloc(r->n + ne + 1, sizeof *v);
@@ -541,6 +547,9 @@ int treg_write_include(FILE *f, const struct treg_result *r, const char *const *
         return -1;
     if (fprintf(f, "# the Blitz tests of the model (ID.test.bas), written by testreg: do not edit\n") < 0)
         goto out;
+    /* the environment of the tests (cmake/basic-test-model.cmake) */
+    if (testenv && (fputs("include(", f) < 0 || bracket(f, testenv) || fputs(")\n", f) < 0))
+        goto out;
     for (size_t i = 0; i < r->n; i++) {
         const struct treg_test *t = &r->t[i];
 
@@ -548,7 +557,7 @@ int treg_write_include(FILE *f, const struct treg_result *r, const char *const *
             v[n].name = t->name;
             v[n].cost = t->has_cost ? t->cost : 0;
             v[n++].t = t;
-        } else if (write_test(f, t, command, ncommand))
+        } else if (write_test(f, t, command, ncommand, testenv != NULL))
             goto out;
     }
     for (size_t i = 0; i < ne; i++) {
@@ -561,7 +570,7 @@ int treg_write_include(FILE *f, const struct treg_result *r, const char *const *
     if (n && fprintf(f, "# the tests of the label bug-orig, the largest COST first\n") < 0)
         goto out;
     for (size_t i = 0; i < n; i++)
-        if (v[i].t ? write_test(f, v[i].t, command, ncommand) : fputs(v[i].e->text, f) < 0)
+        if (v[i].t ? write_test(f, v[i].t, command, ncommand, testenv != NULL) : fputs(v[i].e->text, f) < 0)
             goto out;
     rc = 0;
 out:
@@ -697,7 +706,8 @@ int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file
     for (size_t i = 0; i < r->n; i++) {
         const struct tcost *e = tcosts_find(c, r->t[i].name);
 
-        if (e) {
+        /* the configuration's cost wins; a measurement replaces the estimate */
+        if (e && !r->t[i].cost_configured) {
             r->t[i].has_cost = 1;
             r->t[i].cost = e->cost;
         }

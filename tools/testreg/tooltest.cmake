@@ -142,11 +142,12 @@ string(FIND "${dep}" "${WORK}/order.cmake" at)
 if(at LESS 0)
 	message(FATAL_ERROR "--order: the depfile lacks the order file:\n${dep}")
 endif()
-# --costs: a measured COST wins over the sum of the cells' session limits
-# and over the configuration's cost (shape-frames: cost = 3 in libs/); an
-# entry of another prefix or without "__" is not testreg's to check
+# --costs: a measured COST replaces the sum of the cells' session limits
+# (order-open: 60 -> 7); the configuration's cost wins over a measurement
+# (shape-frames: cost = 3 in libs/, both sides measured); an entry of
+# another prefix or without "__" is not testreg's to check
 file(WRITE ${WORK}/costs.txt "# measured\nbug_orig_old 5\nbug_orig_order_open__c 7\n"
-	"bug_orig_shape_frames__behind 44\nregression_x__c 3\n")
+	"bug_orig_shape_frames__behind 44\nbug_orig_shape_frames__behind_originals 50\nregression_x__c 3\n")
 run(0 --prefix bug_orig_ --output ${WORK}/cost-tests.cmake ${env} --command run --order ${WORK}/order.cmake
 	--costs ${WORK}/costs.txt --depfile ${WORK}/cost-tests.d ${s}/order/order-open.test.bas
 	${s}/libs/shape-frames.test.bas)
@@ -154,10 +155,11 @@ file(READ ${WORK}/cost-tests.cmake inc)
 string(REPLACE "]==]" "" inc "${inc}")
 string(REPLACE "[==[" "" inc "${inc}")
 set(last -1)
-foreach(want "add_test(bug_orig_a_mid run mid)\n"
-		"set_tests_properties( bug_orig_shape_frames__behind PROPERTIES LABELS bug-orig;emulator;libs TIMEOUT 60 SKIP_RETURN_CODE 77 COST 44"
+foreach(want "set_tests_properties( bug_orig_shape_frames__behind_originals PROPERTIES LABELS originals;libs TIMEOUT 120 SKIP_RETURN_CODE 77 COST 3 "
+		"add_test(bug_orig_a_mid run mid)\n"
 		"add_test(bug_orig_small run small)\n"
-		"set_tests_properties( bug_orig_order_open__c PROPERTIES LABELS bug-orig;emulator TIMEOUT 60 SKIP_RETURN_CODE 77 COST 7)")
+		"set_tests_properties( bug_orig_order_open__c PROPERTIES LABELS bug-orig;emulator TIMEOUT 60 SKIP_RETURN_CODE 77 COST 7)"
+		"set_tests_properties( bug_orig_shape_frames__behind PROPERTIES LABELS bug-orig;emulator;libs TIMEOUT 60 SKIP_RETURN_CODE 77 COST 3 ")
 	string(FIND "${inc}" "${want}" at)
 	if(at LESS 0 OR NOT at GREATER last)
 		message(FATAL_ERROR "--costs: the include file lacks, or has out of order,\n  ${want}\nin\n${inc}")
@@ -168,6 +170,34 @@ file(READ ${WORK}/cost-tests.d dep)
 string(FIND "${dep}" "${WORK}/costs.txt" at)
 if(at LESS 0)
 	message(FATAL_ERROR "--costs: the depfile lacks the file:\n${dep}")
+endif()
+# --test-env: the script is included first and called after the properties
+# of each registered test (also of the label bug-orig), not for an entry of
+# --order (it carries its own environment); without it, no call
+if(inc MATCHES "basic_test_environment")
+	message(FATAL_ERROR "without --test-env: a call of basic_test_environment in\n${inc}")
+endif()
+run(0 --prefix bug_orig_ --output ${WORK}/env-tests.cmake ${env} --command run --order ${WORK}/order.cmake
+	--test-env /x/test-env.cmake ${s}/order/order-open.test.bas)
+file(READ ${WORK}/env-tests.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+set(last -1)
+foreach(want "include( /x/test-env.cmake)\n"
+		"SKIP_RETURN_CODE 77)\nbasic_test_environment( bug_orig_order_open__c_originals originals)\n"
+		"add_test(bug_orig_big run big)\nset_tests_properties(bug_orig_big PROPERTIES COST 240)\nadd_test("
+		"SKIP_RETURN_CODE 77 COST 60)\nbasic_test_environment( bug_orig_order_open__c bug-orig;emulator)\n"
+		"add_test(bug_orig_small run small)\n")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0 OR NOT at GREATER last)
+		message(FATAL_ERROR "--test-env: the include file lacks, or has out of order,\n  ${want}\nin\n${inc}")
+	endif()
+	set(last ${at})
+endforeach()
+string(REGEX MATCHALL "basic_test_environment\\(" calls "${inc}")
+list(LENGTH calls ncalls)
+if(NOT ncalls EQUAL 2)
+	message(FATAL_ERROR "--test-env: ${ncalls} calls, not 2 (one per registered test):\n${inc}")
 endif()
 # broken input: an entry of a test of the model of the prefix that is not
 # registered, a malformed file

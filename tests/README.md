@@ -337,7 +337,7 @@ escapes) is refused with file and line.
 | `mount`, `floppy` | list of `NAME\|DIR`, `N\|SRC` | read-only volumes, disk images |
 | `uae`, `jobline` | list | changes of the emulator configuration, lines of tedstub's job list |
 | `labels`, `fixtures` | list | further ctest labels, the ctest fixtures required |
-| `cost` | integer | the ctest `COST` |
+| `cost` | integer | the ctest `COST`; wins over a [measured COST](#the-measured-cost) |
 | `exclude` | list of selectors | the combinations of axis values that are no cell |
 | `root` | boolean | only in a `tests.toml`: the search stops here |
 | `fixed-orig`, `fixed`, `extension` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug, of an extension of the port ([Fixed tests](#fixed-tests)); at most one |
@@ -3301,9 +3301,10 @@ build reads it: `cmake/test-cost.cmake` (every CMake test with an entry,
 the list of the long tests for those without), `cmake/bug-orig-order.cmake`
 (the old-form bug-orig tests) and `tools/testreg --costs` (the tests of
 the model, also in the [order of the bug-orig tests](#order-of-the-bug-orig-tests));
-a measurement wins over a `cost` key and the estimates (a test without
-an entry keeps its `cost`, the sum of its cells' session limits, or its
-session limit times sessions). An entry whose test no longer exists
+a measurement replaces the estimates (the sum of a model test's cells'
+session limits, an old-form bug-orig test's session limit times sessions,
+the list of the long tests), which stay for a test without an entry; a
+`cost` key of a test of the model wins over its entry. An entry whose test no longer exists
 fails the build (the configuration, or the registration step of the
 tests of the model), naming its line. After an acceptance run, refresh
 the file from its JUnit file(s) and commit it with the run's other

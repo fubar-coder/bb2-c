@@ -92,8 +92,13 @@ endfunction()
 # The environment the two functions above give a test named NAME with the
 # labels LABELS of the binary directory BIN, for a test declared after they
 # ran: the bug-orig tests of the old form, which the registration of the
-# tests of the model declares (cmake/bug-orig-order.cmake).  The same rule
-# functions as theirs, after each of them ran.
+# tests of the model declares (cmake/bug-orig-order.cmake), and the tests of
+# the model themselves, whose labels only the build step knows: ctest reads
+# this file and calls the function for each of them when it reads their
+# include file (cmake/basic-test-model.cmake, the script of the tests'
+# environment), so the file must stay usable by ctest (only commands of
+# the script mode at the top).  The same rule functions as theirs, after
+# each of them ran.
 function(emulation_test_environment var name labels bin)
 	set(env "")
 	get_property(owner GLOBAL PROPERTY EMULATION_SNAPSHOT_OWNER)
