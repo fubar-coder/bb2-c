@@ -11,29 +11,29 @@
 ; original has no error check area.  Here with runtime error checking.
 ; Correct: the FadeInBitmap of depth 8 works; the error check refuses the
 ; depth of 9: "Illegal BitMap Depth", nothing is copied.
-; @fixed #674
-; @rwe rifxlib
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,16,8,8
-BitMap 1,16,8,8
-FadeInBitmap 0,1,1
-NPrint "depth 8 done"
-m=AllocMem_(512,$10002)
-If m=0 Then NPrint "no memory" : End
-a=Addr BitMap(0) : b=Addr BitMap(1)
-p=Peek.l(a+8)
-For i=0 To 14 Step 2 : Poke.w p+i,-1 : Next
-Poke.b a+5,9 : Poke.l a+40,m
-Poke.b b+5,9 : Poke.l b+40,m+256
-FadeInBitmap 0,1,1
-Poke.b a+5,8 : Poke.l a+40,0
-Poke.b b+5,8 : Poke.l b+40,0
-q=Peek.l(b+8)
-s=0
-For i=0 To 14 Step 2
-  If Peek.w(q+i)<>-1 Then s+1
-Next
-If s Then NPrint "plane 0: ",s," rows incomplete" Else NPrint "plane 0 complete"
-FreeMem_ m,512
-End
+
+!TestCase{nine_planes}
+  BitMap 0,16,8,8
+  BitMap 1,16,8,8
+  FadeInBitmap 0,1,1
+  !Check{1=1,"depth_8"}
+  m=AllocMem_(512,$10002)
+  !Require{m<>0,"memory"}
+  a=Addr BitMap(0) : b=Addr BitMap(1)
+  p=Peek.l(a+8)
+  For i=0 To 14 Step 2 : Poke.w p+i,-1 : Next
+  Poke.b a+5,9 : Poke.l a+40,m
+  Poke.b b+5,9 : Poke.l b+40,m+256
+  !ExpectError{"Illegal BitMap Depth","refused"}
+  FadeInBitmap 0,1,1
+  Poke.b a+5,8 : Poke.l a+40,0
+  Poke.b b+5,8 : Poke.l b+40,0
+  q=Peek.l(b+8)
+  s=0
+  For i=0 To 14 Step 2
+    If Peek.w(q+i)<>-1 Then s+1
+  Next
+  FreeMem_ m,512
+  !CheckEq{s,0,"incomplete_rows"}
+!EndTestCase

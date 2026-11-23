@@ -1,0 +1,18 @@
+# rifxlib-depth-zero-derez.test.bas: with runtime error checking for the
+# announced error; the original crashes in the plane loops
+fixed-orig = 947
+rwe = ["rifxlib"]
+runtime-errors = "on"
+timeout = 30
+# the original crashes: a session of its own for its cell
+isolate = ["compiler=orig210"]
+
+[asserts]
+"check.depth_zero.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.depth_zero.refused" = "== fail"
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

@@ -9,17 +9,15 @@
 ; checking.
 ; Correct: the Derez of depth 1 works; the error check refuses the
 ; source of depth 0: "Illegal BitMap Depth", nothing is written.
-; @fixed #947
-; @rwe rifxlib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,16,1
-BitMap 1,320,16,1
-Derez 0,1,0,0,1,8
-NPrint "depth 1 done"
-Poke.b Addr BitMap(0)+5,0
-NPrint "before"
-Derez 0,1,0,0,1,8
-NPrint "after"
-End
+
+!TestCase{depth_zero}
+  BitMap 0,320,16,1
+  BitMap 1,320,16,1
+  Derez 0,1,0,0,1,8
+  !Check{1=1,"depth_1"}
+  Poke.b Addr BitMap(0)+5,0
+  !ExpectError{"Illegal BitMap Depth","refused"}
+  Derez 0,1,0,0,1,8
+  !Check{0,"not_refused"}
+!EndTestCase

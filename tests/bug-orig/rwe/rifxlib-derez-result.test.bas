@@ -6,13 +6,17 @@
 ; plane, cleared).
 ; Correct: Derez returns 0 when it does nothing (derez value 0) and -1
 ; when it worked (W6 decision Q3).
-; @fixed #672
-; @rwe rifxlib
 DEFTYPE .l
-BitMap 1,320,16,1
-BitMap 2,320,16,1
-r=Derez(1,2,0,0,0,8) : NPrint "0: ",r
-r=Derez(1,2,0,0,1,8) : NPrint "1: ",r
-r=Derez(1,2,0,0,2,8) : NPrint "2: ",r
-r=Derez(1,2,0,0,3,8) : NPrint "3: ",r
-End
+
+!TestCase{derez_value}
+  BitMap 1,320,16,1
+  BitMap 2,320,16,1
+  r0=Derez(1,2,0,0,0,8)
+  r1=Derez(1,2,0,0,1,8)
+  r2=Derez(1,2,0,0,2,8)
+  r3=Derez(1,2,0,0,3,8)
+  !CheckEq{r0,0,"value_0"}
+  !CheckEq{r1,-1,"value_1"}
+  !CheckEq{r2,-1,"value_2"}
+  !CheckEq{r3,-1,"value_3"}
+!EndTestCase

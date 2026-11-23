@@ -7,12 +7,16 @@
 ; and 2 (height 2, offset 1), so the word in front of it is the last word
 ; of row 0.
 ; Correct: rows 1 and 2 are cleared, rows 0 and 3 stay.
-; @fixed #668
-; @rwe rifxlib
 DEFTYPE .l
-BitMap 0,32,4,1
-p=Peek.l(Addr BitMap(0)+8)
-For i=0 To 3 : Poke.l p+i*4,-1 : Next
-ClearBitmap 0,1,2,1
-For i=0 To 3 : NPrint "row ",i,": ",Hex$(Peek.l(p+i*4)) : Next
-End
+
+!TestCase{last_word}
+  BitMap 0,32,4,1
+  p=Peek.l(Addr BitMap(0)+8)
+  For i=0 To 3 : Poke.l p+i*4,-1 : Next
+  ClearBitmap 0,1,2,1
+  r0=Peek.l(p) : r1=Peek.l(p+4) : r2=Peek.l(p+8) : r3=Peek.l(p+12)
+  !CheckEq{r0,$FFFFFFFF,"row_0"}
+  !CheckEq{r1,0,"row_1"}
+  !CheckEq{r2,0,"row_2"}
+  !CheckEq{r3,$FFFFFFFF,"row_3"}
+!EndTestCase

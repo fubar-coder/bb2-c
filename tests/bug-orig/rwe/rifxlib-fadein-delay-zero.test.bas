@@ -5,14 +5,14 @@
 ; error check area.  Here with runtime error checking.
 ; Correct: a FadeInBitmap with a delay of 1 works; the error check
 ; refuses the delay of 0: "Delay must not be 0".
-; @fixed #669
-; @rwe rifxlib
-; @pass timeout=30
-; @pass runtime_errors=on
-BitMap 0,320,16,1
-BitMap 1,320,16,1
-FadeInBitmap 0,1,1,1,0,0
-NPrint "before"
-FadeInBitmap 0,1,0,1,0,0
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{fadein_delay_zero}
+  BitMap 0,320,16,1
+  BitMap 1,320,16,1
+  FadeInBitmap 0,1,1,1,0,0
+  !Check{1=1,"delay_1"}
+  !ExpectError{"Delay must not be 0","refused"}
+  FadeInBitmap 0,1,0,1,0,0
+  !Check{0,"not_refused"}
+!EndTestCase

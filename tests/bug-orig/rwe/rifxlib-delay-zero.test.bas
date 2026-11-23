@@ -5,13 +5,13 @@
 ; original has no error check area.  Here with runtime error checking.
 ; Correct: a ClearBitmap with a delay of 1 works; the error check refuses
 ; the delay of 0: "Delay must not be 0".
-; @fixed #669
-; @rwe rifxlib
-; @pass timeout=30
-; @pass runtime_errors=on
-BitMap 0,320,16,1
-ClearBitmap 0,1,1,0
-NPrint "before"
-ClearBitmap 0,0,1,0
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{delay_zero}
+  BitMap 0,320,16,1
+  ClearBitmap 0,1,1,0
+  !Check{1=1,"delay_1"}
+  !ExpectError{"Delay must not be 0","refused"}
+  ClearBitmap 0,0,1,0
+  !Check{0,"not_refused"}
+!EndTestCase

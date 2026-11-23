@@ -10,23 +10,21 @@
 ; bitmap 1 before and after a Derez ...,5,...; the bytes of bitmap 1
 ; after each are summed (bitmap 1 cleared before each).
 ; Correct: ZoomXY gives the same picture after the Derez as before it.
-; @fixed #671
-; @rwe rifxlib
-; @pass timeout=30
 DEFTYPE .l
-BitMap 0,320,16,1
-BitMap 1,320,32,1
-p=Peek.l(Addr BitMap(0)+8)
-q=Peek.l(Addr BitMap(1)+8)
-For i=0 To 639 : Poke.b p+i,i*7 : Next
-InitZoomXY 0,1,0,0
-For i=0 To 1279 : Poke.b q+i,0 : Next
-ZoomXY 2,2,8
-s=0 : For i=0 To 1279 : s=s+Peek.b(q+i) : Next
-NPrint "before Derez: ",s
-Derez 0,1,0,0,5,8
-For i=0 To 1279 : Poke.b q+i,0 : Next
-ZoomXY 2,2,8
-t=0 : For i=0 To 1279 : t=t+Peek.b(q+i) : Next
-If t=s Then NPrint "after Derez: the same" Else NPrint "after Derez: ",t
-End
+
+!TestCase{zoomxy_after_derez}
+  BitMap 0,320,16,1
+  BitMap 1,320,32,1
+  p=Peek.l(Addr BitMap(0)+8)
+  q=Peek.l(Addr BitMap(1)+8)
+  For i=0 To 639 : Poke.b p+i,i*7 : Next
+  InitZoomXY 0,1,0,0
+  For i=0 To 1279 : Poke.b q+i,0 : Next
+  ZoomXY 2,2,8
+  s=0 : For i=0 To 1279 : s=s+Peek.b(q+i) : Next
+  Derez 0,1,0,0,5,8
+  For i=0 To 1279 : Poke.b q+i,0 : Next
+  ZoomXY 2,2,8
+  t=0 : For i=0 To 1279 : t=t+Peek.b(q+i) : Next
+  !CheckEq{t,s,"same_picture"}
+!EndTestCase

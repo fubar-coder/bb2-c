@@ -7,12 +7,11 @@
 ; area.  Here with runtime error checking.
 ; Correct: the error check refuses ZoomXY without an InitZoomXY: "ZoomXY
 ; needs InitZoomXY", nothing is written.
-; @fixed #1131
-; @rwe rifxlib
-; @pass timeout=30
-; @pass runtime_errors=on
-BitMap 0,320,16,1
-NPrint "before"
-ZoomXY 2,2,8
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{no_init}
+  BitMap 0,320,16,1
+  !ExpectError{"ZoomXY needs InitZoomXY","refused"}
+  ZoomXY 2,2,8
+  !Check{0,"not_refused"}
+!EndTestCase
