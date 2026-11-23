@@ -7,16 +7,15 @@
 ; Correct: a shape without data is not copied; the program goes on.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
-; @fixed #808
-; @rwe rishapeslib ripacklib riamosfunclib
-; @pass timeout=30
 DEFTYPE .l
-b=AllocMem_(70000,$10001)
-If b=0 Then NPrint "no memory" : End
-Poke.w b,16 : Poke.w b+2,8 : Poke.w b+4,0
-Poke.w b+6,2 : Poke.w b+8,8*64+1
-Poke.w b+22,2 : Poke.w b+24,18 : Poke.w b+26,0 : Poke.w b+28,0
-r=CludgeShapes(0,1,b)
-NPrint "after"
-FreeMem_ b,70000
-End
+
+!TestCase{size0}
+  b=AllocMem_(70000,$10001)
+  !Require{b<>0,"memory"}
+  Poke.w b,16 : Poke.w b+2,8 : Poke.w b+4,0
+  Poke.w b+6,2 : Poke.w b+8,8*64+1
+  Poke.w b+22,2 : Poke.w b+24,18 : Poke.w b+26,0 : Poke.w b+28,0
+  r=CludgeShapes(0,1,b)
+  !Check{1,"after"}
+  FreeMem_ b,70000
+!EndTestCase

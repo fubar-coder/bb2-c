@@ -1,0 +1,8 @@
+# rishapeslib-cookie-not-freed.test.bas: the original loses the cookies (chip
+# memory)
+fixed-orig = 810
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.cookie_not_freed.leinitshape_kept" = "== fail"
+"check.cookie_not_freed.leloadshapes_kept" = "== fail"

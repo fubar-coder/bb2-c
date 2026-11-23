@@ -1,0 +1,8 @@
+# rishapeslib-lesaveshapes-count-upper-word.test.bas: the original writes the
+# count with the upper word of d1
+fixed-orig = 815
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.count_upper_word.count" = "== fail"
+"check.count_upper_word.count.actual" = "== 327689"

@@ -9,20 +9,23 @@
 ; 16 bytes too far on, from its zero data: an empty shape.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
-; @fixed #809
-; @rwe rishapeslib ripacklib riamosfunclib
 DEFTYPE .l
-b=AllocMem_(1024,$10001)
-If b=0 Then NPrint "no memory" : End
-Poke.w b,16 : Poke.w b+2,8 : Poke.w b+4,1
-Poke.w b+6,2 : Poke.w b+8,8*64+1
-Poke.w b+22,16 : Poke.w b+24,32 : Poke.w b+26,16 : Poke.w b+28,32
-For i=0 To 15 : Poke.b b+32+i,$ff : Next
-c=b+80
-Poke.w c,24 : Poke.w c+2,4 : Poke.w c+4,1
-Poke.w c+6,4 : Poke.w c+8,4*64+2
-Poke.w c+22,16 : Poke.w c+24,24 : Poke.w c+26,16 : Poke.w c+28,24
-r=CludgeShapes(0,3,b)
-NPrint ShapeWidth(0)," ",ShapeWidth(1)," ",ShapeWidth(2)
-FreeMem_ b,1024
-End
+
+!TestCase{empty_stale_size}
+  b=AllocMem_(1024,$10001)
+  !Require{b<>0,"memory"}
+  Poke.w b,16 : Poke.w b+2,8 : Poke.w b+4,1
+  Poke.w b+6,2 : Poke.w b+8,8*64+1
+  Poke.w b+22,16 : Poke.w b+24,32 : Poke.w b+26,16 : Poke.w b+28,32
+  For i=0 To 15 : Poke.b b+32+i,$ff : Next
+  c=b+80
+  Poke.w c,24 : Poke.w c+2,4 : Poke.w c+4,1
+  Poke.w c+6,4 : Poke.w c+8,4*64+2
+  Poke.w c+22,16 : Poke.w c+24,24 : Poke.w c+26,16 : Poke.w c+28,24
+  r=CludgeShapes(0,3,b)
+  w0=ShapeWidth(0) : w1=ShapeWidth(1) : w2=ShapeWidth(2)
+  FreeMem_ b,1024
+  !CheckEq{w0,16,"width_0"}
+  !CheckEq{w1,0,"width_1"}
+  !CheckEq{w2,24,"width_2"}
+!EndTestCase

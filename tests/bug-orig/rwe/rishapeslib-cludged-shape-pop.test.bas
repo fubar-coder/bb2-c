@@ -10,20 +10,19 @@
 ; Correct: LELoadShapes closes the file.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
-; @fixed #807
-; @rwe rishapeslib ripacklib riamosfunclib
-; @pass file=s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le
-; @pass runwrap=@INJECT@|inuse=CORPUS:s.le
-; @pass timeout=120
 DEFTYPE .l
-n$="CORPUS:s.le"
-f=Open_(&n$,1005)
-If f=0 Then NPrint "no file" : End
-m=AllocMem_(1024,$10002)
-r=Read_(f,m,1024)
-Close_ f
-LECludgeShapes 0,0,m,0
-NPrint "linked ",ShapeWidth(0)
-LELoadShapes 0,0,"CORPUS:s.le"
-NPrint "loaded"
-End
+
+!TestCase{cludged_shape_pop}
+  n$="CORPUS:s.le"
+  f=Open_(&n$,1005)
+  !Require{f<>0,"file"}
+  m=AllocMem_(1024,$10002)
+  !Require{m<>0,"memory"}
+  r=Read_(f,m,1024)
+  Close_ f
+  LECludgeShapes 0,0,m,0
+  w=ShapeWidth(0)
+  LELoadShapes 0,0,"CORPUS:s.le"
+  !CheckEq{w,16,"linked"}
+  !Check{1,"loaded"}
+!EndTestCase

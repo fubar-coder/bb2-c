@@ -1,0 +1,11 @@
+# rishapeslib-cludgeshapes-size0.test.bas: the original copies 65536 bytes
+# into a block without user bytes and crashes
+fixed-orig = 808
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[ends."compiler=orig210"]
+reason = "the original copies 65536 bytes behind a block (#808); the crash shows the Software Failure requester or none at all, depending on the memory layout"
+crash_requester = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "requester contains \"Software Failure\""]
+crash_silent = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "requester count == 0"]

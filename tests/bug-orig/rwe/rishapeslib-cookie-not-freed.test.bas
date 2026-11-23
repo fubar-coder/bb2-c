@@ -9,18 +9,20 @@
 ; Correct: no chip memory lost; the original loses 50 cookies each.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
-; @fixed #810
-; @rwe rishapeslib ripacklib riamosfunclib
 DEFTYPE .l
-LEInitShape 0,64,64,1
-a=AvailMem_(2)
-For i=1 To 50 : LEInitShape 0,64,64,1 : Next
-b=AvailMem_(2)
-If a-b>10000 Then NPrint "LEInitShape: chip memory lost" Else NPrint "LEInitShape: kept"
-LESaveShapes 0,0,"RAM:c.le"
-LELoadShapes 0,0,"RAM:c.le"
-a=AvailMem_(2)
-For i=1 To 50 : LELoadShapes 0,0,"RAM:c.le" : Next
-b=AvailMem_(2)
-If a-b>10000 Then NPrint "LELoadShapes: chip memory lost" Else NPrint "LELoadShapes: kept"
-End
+
+!TestCase{cookie_not_freed}
+  LEInitShape 0,64,64,1
+  a=AvailMem_(2)
+  For i=1 To 50 : LEInitShape 0,64,64,1 : Next
+  b=AvailMem_(2)
+  lost1=a-b
+  LESaveShapes 0,0,"CORPUS:c.le"
+  LELoadShapes 0,0,"CORPUS:c.le"
+  a=AvailMem_(2)
+  For i=1 To 50 : LELoadShapes 0,0,"CORPUS:c.le" : Next
+  b=AvailMem_(2)
+  lost2=a-b
+  !Check{lost1<=10000,"leinitshape_kept"}
+  !Check{lost2<=10000,"leloadshapes_kept"}
+!EndTestCase

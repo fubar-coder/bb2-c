@@ -1,0 +1,10 @@
+# rishapeslib-lesaveshapes-form-length.test.bas: the original writes a FORM
+# length 8 too large (and the palette's CMAP size again without a palette)
+fixed-orig = 816
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.form_length.palette_form_length" = "== fail"
+"check.form_length.palette_form_length.actual" = "== 96"
+"check.form_length.plain_form_length" = "== fail"
+"check.form_length.plain_form_length.actual" = "== 96"

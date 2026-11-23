@@ -4,26 +4,30 @@
 ; the length is 8 too large.  The CMAP size is kept from the last save
 ; with a palette, so a save without one adds it again.  Shape 0 is saved
 ; with a palette of 4 colours, then without; the length of each file
-; (Read) and its FORM length (offset 4) are printed as file size - 8 and
+; (Read) and its FORM length (offset 4) are compared as file size - 8 and
 ; FORM length.
 ; Correct: both equal (the file size - 8); the original writes 8 more,
 ; and 8 + 20 more without the palette.
 ; rishapeslib needs RIPackLib (PackPBM, UnPackPBM), which needs
 ; RIAmosFuncLib (banks).
-; @fixed #816
-; @rwe rishapeslib ripacklib riamosfunclib
 DEFTYPE .l
-InitPalette 0,4
-LEInitShape 0,16,8,1
-m=AllocMem_(1024,$10001)
-If m=0 Then NPrint "no memory" : End
-LESaveShapes 0,0,"RAM:p.le",0
-n$="RAM:p.le"
-f=Open_(&n$,1005) : r=Read_(f,m,1024) : Close_ f
-NPrint "with palette: ",r-8," ",Peek.l(m+4)
-LESaveShapes 0,0,"RAM:q.le"
-n$="RAM:q.le"
-f=Open_(&n$,1005) : r=Read_(f,m,1024) : Close_ f
-NPrint "without: ",r-8," ",Peek.l(m+4)
-FreeMem_ m,1024
-End
+
+!TestCase{form_length}
+  InitPalette 0,4
+  LEInitShape 0,16,8,1
+  m=AllocMem_(1024,$10001)
+  !Require{m<>0,"memory"}
+  LESaveShapes 0,0,"CORPUS:p.le",0
+  n$="CORPUS:p.le"
+  f=Open_(&n$,1005) : r=Read_(f,m,1024) : Close_ f
+  s1=r-8 : l1=Peek.l(m+4)
+  LESaveShapes 0,0,"CORPUS:q.le"
+  n$="CORPUS:q.le"
+  f=Open_(&n$,1005) : r=Read_(f,m,1024) : Close_ f
+  s2=r-8 : l2=Peek.l(m+4)
+  FreeMem_ m,1024
+  !CheckEq{s1,88,"palette_file_size"}
+  !CheckEq{l1,88,"palette_form_length"}
+  !CheckEq{s2,68,"plain_file_size"}
+  !CheckEq{l2,68,"plain_form_length"}
+!EndTestCase
