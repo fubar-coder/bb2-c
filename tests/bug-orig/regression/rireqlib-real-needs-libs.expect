@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-closed
-<>
-colour 65535
-inject: rc=0
-inject: opencount: req.library +0
-rc=0

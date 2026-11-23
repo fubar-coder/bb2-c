@@ -5,22 +5,31 @@
 ; program runs through inject (track: what the process leaves
 ; allocated): a recursion to depth 40 and back, three times, 2000 calls at
 ; one depth, then End at depth 10.
-; Correct: nothing is left allocated.
-; @pass runwrap=@INJECT@|track
+; Correct: nothing is left allocated (inject's report, asserted on
+; `inject`).  The program ends inside the procedure: the case has no end
+; entry.
+
 DEFTYPE .l
+
 Statement rec{n,s$}
   u$=s$
   If n>0 Then rec{n-1,u$}
 End Statement
+
 Statement deep{n,s$}
   u$=s$
-  If n=0 Then NPrint "end at depth 10" : End
+  If n=0
+    !Check{-1,"depth_10"}
+    End
+  EndIf
   deep{n-1,u$}
 End Statement
-a$="Hello"
-For i=1 To 3 : rec{40,a$} : Next
-For i=1 To 2000 : rec{0,a$} : Next
-NPrint "calls done"
-deep{10,a$}
-NPrint "not here"
-End
+
+!TestCase{end_inside_procedure}
+  a$="Hello"
+  For i=1 To 3 : rec{40,a$} : Next
+  For i=1 To 2000 : rec{0,a$} : Next
+  !Check{-1,"calls_done"}
+  deep{10,a$}
+  !Check{0,"after_end"}
+!EndTestCase

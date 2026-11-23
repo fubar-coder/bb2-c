@@ -4,12 +4,10 @@
 ; (ReqFileLoc 0) and the requesters return at once: "" and 65535, as
 ; on cancel (#788).  Shows that rireqlib-real-cancel gets the
 ; library through libs=.
-; @configs clib
-; @rwe rireqlib
-; @pass file=libs/req.library|@REQLIB@
-; @pass runwrap=@INJECT@|opencount=req.library
-; @pass timeout=60
-If ReqFileLoc<>0 Then NPrint "open" Else NPrint "closed"
-NPrint "<"+ReqFileRequest("RQ")+">"
-NPrint "colour ",ReqColour(5)
-End
+
+!TestCase{library_not_found}
+  !CheckEq{ReqFileLoc,0,"library_closed"}
+  a$="<"+ReqFileRequest("RQ")+">"
+  !CheckStrEq{a$,"<>","requester_returns_empty"}
+  !CheckEq{ReqColour(5),65535,"colour_returns_ffff"}
+!EndTestCase

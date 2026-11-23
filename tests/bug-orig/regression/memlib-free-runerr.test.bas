@@ -7,40 +7,48 @@
 ; of the program, which ends it; any other exception goes on to the old
 ; handler.  The program runs through inject (track: what the process
 ; leaves allocated).
-; Correct: nothing is left allocated.
-; @pass runwrap=@INJECT@|track
+; Correct: nothing is left allocated (inject's report, asserted on
+; `inject`).  The trap handler ends the program: the case has no end
+; entry.
+
 DEFTYPE .l
+
 Statement deep{n,s$}
   u$=s$
   If n=0
-    NPrint "error at depth 10"
+    !Check{-1,"depth_10"}
     MOVE.l #0,d0 : TRAP #0
   EndIf
   deep{n-1,u$}
 End Statement
-t=Peek.l(Peek.l(4)+276)
-o=Peek.l(t+50)
-Poke.l ?ar+4,o
-Poke.l t+50,?th
-a$="Hello"
-deep{10,a$}
-Poke.l t+50,o
-NPrint "not here"
-End
 
-caught:
+!TestCase{runtime_error_in_recursion}
+  t=Peek.l(Peek.l(4)+276)
+  o=Peek.l(t+50)
+  Poke.l ?ar+4,o
+  Poke.l t+50,?th
+  a$="Hello"
+  deep{10,a$}
   Poke.l t+50,o
-  NPrint "runtime error"
+  !Check{0,"after_deep"}
+  Goto skip
+
+  caught:
+  Poke.l t+50,o
+  !Check{-1,"runtime_error_caught"}
   End
 
-th:
+  th:
   CMP.l #32,(a7) : BNE thold
   ADDQ.l #4,a7
   LEA caught(pc),a0 : MOVE.l a0,2(a7)
   RTE
-thold:
+  thold:
   MOVE.l ar+4(pc),-(a7)
   RTS
 
-ar:
+  ar:
   Dc.l 0,0
+
+  skip:
+!EndTestCase

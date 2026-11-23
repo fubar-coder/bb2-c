@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-file done
-read: into the file
-consumed 4096
-end
-rc=0

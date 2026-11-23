@@ -1,0 +1,8 @@
+# through inject with track: what the process leaves allocated; the program
+# ends inside a procedure, so the case has no end entry (the run has)
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"inject: track: 0 allocations left, 0 bytes\""
+"end.case" = "not exists"
+"check.end_inside_procedure.after_end" = "== not-run"

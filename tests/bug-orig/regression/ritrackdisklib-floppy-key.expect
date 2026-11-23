@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-DF0 29
-DF1 sector 0: 0 SECTOR 0000
-DF1 sector 11: 0 SECTOR 0011
-DF1 sector 1759: 0 SECTOR 1759
-DF1 sector 1760: 252
-rc=0

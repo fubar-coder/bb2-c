@@ -1,0 +1,6 @@
+# the a500 (68000) and the a1200 (68020)
+rwe = ["ciatrklib"]
+timeout = 30
+
+[matrix]
+machine = ["a500", "a1200"]

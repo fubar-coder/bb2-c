@@ -9,19 +9,17 @@
 ;  - a cancelled ReqFileRequest returns "" (also in a string expression);
 ;  - a title is for that call only (#789): the window of the next call
 ;    without one has the title of the empty title buffer, "", not "RQ"
-;    (the title the call before had);
+;    (the title the call before had), asserted on inject's report;
 ;  - ReqColour on cancel returns what ColorRequester returns, the word
 ;    $FFFF (also what #788 returns without the library);
-;  - the library is closed again (opencount +0).
-; @configs clib
-; @rwe rireqlib
-; @pass file=libs/req.library|@REQLIB@
-; @pass runwrap=@INJECT@|libs=CORPUS:libs opencount=req.library click=*/Forget_it click=*/Forget_it click=*/Cancel
-; @pass timeout=60
-If ReqFileLoc<>0 Then NPrint "open" Else NPrint "closed"
-a$=ReqFileRequest("RQ")
-NPrint "first <",a$,">"
-b$="<"+ReqFileRequest+">"
-NPrint "second ",b$
-NPrint "colour ",ReqColour(5)
-End
+;  - the library is closed again (opencount +0), asserted on inject's
+;    report.
+
+!TestCase{cancel_requesters}
+  !Check{ReqFileLoc<>0,"library_open"}
+  a$=ReqFileRequest("RQ")
+  !CheckStrEq{a$,"","first_cancelled"}
+  b$="<"+ReqFileRequest+">"
+  !CheckStrEq{b$,"<>","second_cancelled"}
+  !CheckEq{ReqColour(5),65535,"colour_cancelled"}
+!EndTestCase
