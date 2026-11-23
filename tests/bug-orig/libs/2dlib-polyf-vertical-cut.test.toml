@@ -1,0 +1,11 @@
+# 2dlib-polyf-vertical-cut.test.bas: the original stops with a division
+# by zero (a "Software Failure" requester, the session ends in a timeout)
+fixed-orig = 1033
+
+[deviations."libs=cd"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"check.vertical_cut.after" = "== not-run"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

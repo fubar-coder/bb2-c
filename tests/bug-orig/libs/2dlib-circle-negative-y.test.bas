@@ -17,34 +17,39 @@
 ; buffer (behind it lies the header of the free memory).
 ; Correct: points above the top edge are clipped, nothing is written
 ; behind the bitmap or the rows of the fill buffer.
-; @fixed #392
-; @configs clib
 DEFTYPE .l
-BitMap 0,16,100,1
-o=Addr BitMap(0)
-p0=Peek.l(o+8)
-m=AllocMem(140000,$10000)
-Poke.l o+8,m
-Circle 8,1,3,1
-Poke.l o+8,p0
-n0=0 : n1=0
-For i=0 To 199
-  If Peek.b(m+i)<>0 Then n0=n0+1
-Next
-For i=200 To 139999
-  If Peek.b(m+i)<>0 Then n1=n1+1
-Next
-NPrint "inside ",n0>0
-NPrint "behind ",n1
-FreeMem m,140000
-f=AllocMem(204808,$10002)
-FreeMem f,204808
-Poke.w o+56,16384
-Circlef 8,1,3,1
-Poke.w o+56,16
-n2=0
-For i=1000 To 204799
-  If Peek.b(f+i)<>0 Then n2=n2+1
-Next
-NPrint "fill behind ",n2
-End
+
+!TestCase{circle_above_top}
+  BitMap 0,16,100,1
+  o=Addr BitMap(0)
+  p0=Peek.l(o+8)
+  m=AllocMem(140000,$10000)
+  Poke.l o+8,m
+  Circle 8,1,3,1
+  Poke.l o+8,p0
+  n0=0 : n1=0
+  For i=0 To 199
+    If Peek.b(m+i)<>0 Then n0=n0+1
+  Next
+  For i=200 To 139999
+    If Peek.b(m+i)<>0 Then n1=n1+1
+  Next
+  FreeMem m,140000
+  !Check{n0>0,"inside"}
+  !CheckEq{n1,0,"behind"}
+!EndTestCase
+
+!TestCase{circlef_above_top}
+  BitMap 0,16,100,1
+  o=Addr BitMap(0)
+  f=AllocMem(204808,$10002)
+  FreeMem f,204808
+  Poke.w o+56,16384
+  Circlef 8,1,3,1
+  Poke.w o+56,16
+  n2=0
+  For i=1000 To 204799
+    If Peek.b(f+i)<>0 Then n2=n2+1
+  Next
+  !CheckEq{n2,0,"fill_behind"}
+!EndTestCase

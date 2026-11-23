@@ -1,0 +1,10 @@
+# 2dlib-polyf-word-range.test.bas: a case per polygon
+fixed-orig = 1000
+
+[deviations."libs=cd"]
+"check.triangle_wild.plane_0" = "== fail"
+"check.triangle_wild.plane_0.actual" = "== 0"
+"check.triangle_wild_anticlockwise.plane_1" = "== fail"
+"check.triangle_wild_anticlockwise.plane_1.actual" = "== 0"
+"check.half_triangle.differ" = "== fail"
+"check.half_triangle.differ.actual" = "== 4200"

@@ -7,13 +7,13 @@
 ; 100,100 (twice).
 ; Correct: the corner is at 50,50, as Line and Boxf put it; nothing at
 ; 100,100.
-; @fixed #391
-; @configs clib
 DEFTYPE .l
-BitMap 0,320,200,1
-BitMapOrigin 0,50,50
-Box 0,0,10,10,1
-p=Peek.l(Addr BitMap(0)+8)
-NPrint "corner 50,50 ",(Peek.b(p+50*40+6) AND $20)<>0
-NPrint "corner 100,100 ",(Peek.b(p+100*40+12) AND $8)<>0
-End
+
+!TestCase{box_origin}
+  BitMap 0,320,200,1
+  BitMapOrigin 0,50,50
+  Box 0,0,10,10,1
+  p=Peek.l(Addr BitMap(0)+8)
+  !Check{(Peek.b(p+50*40+6) AND $20)<>0,"corner_50_50"}
+  !Check{(Peek.b(p+100*40+12) AND $8)=0,"nothing_at_100_100"}
+!EndTestCase

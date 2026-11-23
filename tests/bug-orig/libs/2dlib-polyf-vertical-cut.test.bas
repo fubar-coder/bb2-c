@@ -10,15 +10,14 @@
 ; x = -1, whose first edge is the vertical edge x = -1.  The original stops
 ; with "GURU! - Division by Zero".
 ; Correct: Polyf returns ("before", "after").
-; @fixed #1033
 DEFTYPE .l
-BitMap 0,320,200,3
-Dim p.w(16)
-Restore pts
-For i=0 To 9 : Read v : p(i)=v : Next
-NPrint "before"
-Polyf 5,&p(0),1,2
-NPrint "after"
-End
-pts:
-Data.l 320,200,320,135,-1,151,-1,-1,320,-1
+
+!TestCase{vertical_cut}
+  BitMap 0,320,200,3
+  Dim p.w(16)
+  p(0)=320 : p(1)=200 : p(2)=320 : p(3)=135 : p(4)=-1 : p(5)=151
+  p(6)=-1 : p(7)=-1 : p(8)=320 : p(9)=-1
+  !Check{1,"before"}
+  Polyf 5,&p(0),1,2
+  !Check{1,"after"}
+!EndTestCase

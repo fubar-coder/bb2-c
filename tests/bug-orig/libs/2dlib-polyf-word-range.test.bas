@@ -13,7 +13,6 @@
 ; line): printed is the number of bytes of plane 0 that differ.
 ; Correct: the triangles cover the bitmap (8000 bytes of the colour's
 ; plane, 0 of the other), and the two half triangles are drawn alike.
-; @fixed #1000
 DEFTYPE .l
 Statement setp{m.l,a$}
   While a$<>""
@@ -30,12 +29,11 @@ Function.l full{pl.l}
   Next
   Function Return n
 End Function
-Statement tri{t$,a$}
+Statement tri{a$}
   SHARED m
   setp{m,a$}
   Use BitMap 0 : Cls
   Polyf 3,m,1,2
-  NPrint t$," ",full{0}," ",full{1}
 End Statement
 Function.l diff{}
   a.l=Peek.l(Addr BitMap(0)+8) : b.l=Peek.l(Addr BitMap(1)+8) : n.l=0
@@ -44,16 +42,42 @@ Function.l diff{}
   Next
   Function Return n
 End Function
-BitMap 0,320,200,2
-BitMap 1,320,200,2
-Dim p.w(20)
-m=&p(0)
-tri{"small","-1000,-1000,1000,-1000,0,1000"}
-tri{"wild","-20000,-20000,20000,-20000,0,20000"}
-tri{"wild anti","-20000,-20000,0,20000,20000,-20000"}
-setp{m,"-1000,-1000,160,-1000,160,1000"}
-Use BitMap 1 : Cls : Polyf 3,m,1
-setp{m,"-20000,-20000,160,-20000,160,20000"}
-Use BitMap 0 : Cls : Polyf 3,m,1
-NPrint "half differ ",diff{}
-End
+
+!TestCase{triangle_small}
+  BitMap 0,320,200,2
+  Dim p.w(20)
+  m=&p(0)
+  tri{"-1000,-1000,1000,-1000,0,1000"}
+  !CheckEq{full{0},8000,"plane_0"}
+  !CheckEq{full{1},0,"plane_1"}
+!EndTestCase
+
+!TestCase{triangle_wild}
+  BitMap 0,320,200,2
+  Dim p.w(20)
+  m=&p(0)
+  tri{"-20000,-20000,20000,-20000,0,20000"}
+  !CheckEq{full{0},8000,"plane_0"}
+  !CheckEq{full{1},0,"plane_1"}
+!EndTestCase
+
+!TestCase{triangle_wild_anticlockwise}
+  BitMap 0,320,200,2
+  Dim p.w(20)
+  m=&p(0)
+  tri{"-20000,-20000,0,20000,20000,-20000"}
+  !CheckEq{full{0},0,"plane_0"}
+  !CheckEq{full{1},8000,"plane_1"}
+!EndTestCase
+
+!TestCase{half_triangle}
+  BitMap 0,320,200,2
+  BitMap 1,320,200,2
+  Dim p.w(20)
+  m=&p(0)
+  setp{m,"-1000,-1000,160,-1000,160,1000"}
+  Use BitMap 1 : Cls : Polyf 3,m,1
+  setp{m,"-20000,-20000,160,-20000,160,20000"}
+  Use BitMap 0 : Cls : Polyf 3,m,1
+  !CheckEq{diff{},0,"differ"}
+!EndTestCase
