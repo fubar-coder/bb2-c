@@ -8,7 +8,4 @@ isolate = ["compiler=orig210"]
 
 [ends."compiler=orig210"]
 reason = "the original swaps 65536 byte pairs around the string and reverses the program's memory (#751); whether the Software Failure requester shows and whether the session then hangs or halts the CPU depends on the memory layout"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]

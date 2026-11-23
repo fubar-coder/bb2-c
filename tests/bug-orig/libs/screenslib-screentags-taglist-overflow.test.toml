@@ -18,7 +18,4 @@ isolate = ["libs=cd"]
 
 [ends."libs=cd"]
 reason = "the original's faulty part corrupts memory (#249): its end is not defined, it may crash, hang or halt"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.taglist_overflow.screen_x != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.taglist_overflow.screen_x != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.taglist_overflow.screen_x != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.taglist_overflow.screen_x != ok"]
+abnormal = ["any", "check.taglist_overflow.screen_x != ok"]

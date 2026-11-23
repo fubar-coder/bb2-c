@@ -13,7 +13,4 @@ isolate = ["libs=cd"]
 [ends."libs=cd"]
 reason = "the original copies the 17 points behind a buffer of 16 and overwrites the code of the library (#395); what the overwritten code does depends on the code layout of the program: the port's compiler runs into an illegal instruction (the requester is answered and the case ends), the original's hangs (the session runs into its timeout)"
 guru_requester = ["requester contains \"GURU! - ILLEGAL Instruction\"", "end.case not exists", "check.points_17.refused == fail"]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.points_17.refused != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.points_17.refused != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.points_17.refused != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.points_17.refused != ok"]
+abnormal = ["any", "check.points_17.refused != ok"]

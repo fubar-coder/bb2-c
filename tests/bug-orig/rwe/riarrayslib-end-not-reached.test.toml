@@ -8,7 +8,4 @@ timeout = 30
 
 [ends."compiler=orig210"]
 reason = "the original's faulty part corrupts memory (#882): its end is not defined, it may crash, hang or halt"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.empty_array.fill_returned != ok", "check.empty_array.first_element != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.empty_array.fill_returned != ok", "check.empty_array.first_element != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.empty_array.fill_returned != ok", "check.empty_array.first_element != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.empty_array.fill_returned != ok", "check.empty_array.first_element != ok"]
+abnormal = ["any", "check.empty_array.fill_returned != ok", "check.empty_array.first_element != ok"]

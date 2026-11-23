@@ -14,7 +14,4 @@ rwe = ["riapplib"]
 
 [ends."compiler=orig210"]
 reason = "the original's faulty part corrupts memory (#516): its end is not defined, it may crash, hang or halt"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.icon_registers.statement_returned != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.icon_registers.statement_returned != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.icon_registers.statement_returned != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.icon_registers.statement_returned != ok"]
+abnormal = ["any", "check.icon_registers.statement_returned != ok"]

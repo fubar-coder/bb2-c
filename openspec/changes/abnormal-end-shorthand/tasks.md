@@ -7,7 +7,7 @@
 
 ## 2. Tests
 
-- [ ] 2.1 The 58 tests with the four alternatives rewritten to `abnormal = ["any", EXTRA...]`. Verify: the touched tests give the same verdicts before and after on both sides (originals that flake compared by verdict over repeated runs); `ctest --preset host`.
+- [x] 2.1 The 58 tests with the four alternatives rewritten to `abnormal = ["any", EXTRA...]`. Verify: the touched tests give the same verdicts before and after on both sides (originals that flake compared by verdict over repeated runs); `ctest --preset host`.
 
 ## 3. Documents
 

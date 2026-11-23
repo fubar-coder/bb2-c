@@ -7,7 +7,4 @@ isolate = ["compiler=orig210"]
 
 [ends."compiler=orig210"]
 reason = "the original pops the caller's return address into a4-a6 and returns into the next long (#680); whether the crash shows the Software Failure requester depends on the memory layout"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]

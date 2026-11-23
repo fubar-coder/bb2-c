@@ -19,7 +19,4 @@ inject = "not contains \"inject: guard\""
 [ends."libs=cd"]
 reason = "the writes behind the blocks corrupt the memory the exit uses: the program returns (port,cd) or hangs at its exit (orig195,cd)"
 returns = ["session == done", "rc == 0", "output contains \"written behind an allocation of 365 bytes\""]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]

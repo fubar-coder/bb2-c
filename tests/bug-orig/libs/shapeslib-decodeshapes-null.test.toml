@@ -16,8 +16,5 @@ isolate = ["libs=cd"]
 
 [ends."libs=cd"]
 reason = "the original's error branch lands behind the library (#270): a jump into other code, so the end is not defined; what runs there depends on the code layout of the test program: it can crash, hang or return without the error, so that the checks behind the faulty statements run and fail"
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]
 returns = ["session == done", "rc == 0", "end.case exists", "check.null_address.no_error_1 == fail", "check.null_address.no_error_2 == fail"]

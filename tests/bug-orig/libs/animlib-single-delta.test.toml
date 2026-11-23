@@ -15,7 +15,4 @@ files = ["onedelta.anim|@TESTDATA@/animlib-single-delta.anim"]
 reason = "the original's second NextFrame writes through address 0 (the exception vectors); whether the session then still reports the program's exit code depends on what the write hit: with the port's compiler it does, with the original's the session ends without it"
 returns = ["rc == 0"]
 no_exit_code = ["rc not exists"]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.single_delta.current_1 != ok", "check.single_delta.row_2 != ok", "check.single_delta.current_2 != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.single_delta.current_1 != ok", "check.single_delta.row_2 != ok", "check.single_delta.current_2 != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.single_delta.current_1 != ok", "check.single_delta.row_2 != ok", "check.single_delta.current_2 != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.single_delta.current_1 != ok", "check.single_delta.row_2 != ok", "check.single_delta.current_2 != ok"]
+abnormal = ["any", "check.single_delta.current_1 != ok", "check.single_delta.row_2 != ok", "check.single_delta.current_2 != ok"]

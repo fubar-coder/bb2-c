@@ -10,7 +10,4 @@ timeout = 30
 [ends."libs=cd"]
 reason = "the original draws a box from the memory behind the table of 2 boxes (#82); whether it then returns or hangs depends on that memory, which differs between emulator snapshots"
 returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "requester count == 0", "check.box_range.refused == fail", "check.box_range.not_refused == fail"]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]
+abnormal = ["any", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]

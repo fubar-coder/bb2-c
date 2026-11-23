@@ -10,10 +10,7 @@ isolate = ["compiler=orig210"]
 [ends."compiler=orig210"]
 reason = "the 768 KB wild write lands in memory whose use differs with the layout (#820): memory corruption, so the end is not defined; the program usually survives it and inject reports the pattern behind the allocation, but the session can also hang, crash or halt"
 returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "output contains \"inject: guard: written behind an allocation\""]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]
 
 [asserts]
 output = "not contains \"inject: guard\""

@@ -14,7 +14,4 @@ timeout = 300
 [ends."libs=cd"]
 reason = "the original makes a shape with wrong word sizes (#1047): memory corruption, so the end is not defined; usually it returns and the check behind the call fails"
 returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "requester count == 0", "check.scale_plane_64k.refused == fail", "check.scale_plane_64k.after == fail"]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
+abnormal = ["any", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]

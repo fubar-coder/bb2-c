@@ -19,7 +19,4 @@ isolate = ["compiler=orig210"]
 [ends."compiler=orig210"]
 reason = "the original builds the strip from address 0 and walks what it finds there (#689); whether the program then ends or hangs depends on that memory and on what the strip's removal frees at the end, which differ between boots and snapshots"
 returns = ["session == done", "rc == 0"]
-abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
-abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
-abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
-abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+abnormal = ["any"]
