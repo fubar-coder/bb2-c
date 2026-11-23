@@ -7,15 +7,15 @@
 ; AllocBitMap itself does not return for depth 0; the original has no
 ; error check area.  Here with runtime error checking.
 ; Correct: the error check refuses the shape before AllocBitMap: "Illegal
-; Shape Height" after "before".
-; @fixed #917
-; @rwe riwbspritelib
-; @pass runtime_errors=on
-BitMap 0,320,64,2
-Boxf 0,0,15,15,3
-GetaShape 0,0,0,16,16
-Poke.w Addr Shape(0)+2,0
-NPrint "before"
-s.l=GetWBSprite(10,20,0,2)
-NPrint s
-End
+; Shape Height".
+DEFTYPE .l
+
+!TestCase{height_zero}
+  BitMap 0,320,64,2
+  Boxf 0,0,15,15,3
+  GetaShape 0,0,0,16,16
+  Poke.w Addr Shape(0)+2,0
+  !ExpectError{"Illegal Shape Height","refused"}
+  s=GetWBSprite(10,20,0,2)
+  !CheckEq{s,-1,"no_sprite"}
+!EndTestCase

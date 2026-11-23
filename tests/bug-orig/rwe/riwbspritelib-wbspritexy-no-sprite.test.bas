@@ -6,11 +6,11 @@
 ; programming error; the original has no error check area.  Here with
 ; runtime error checking.
 ; Correct: the error check refuses WBSpriteX(5) without a sprite on
-; channel 5: "No sprite on this channel" after "before".
-; @fixed #922
-; @rwe riwbspritelib
-; @pass runtime_errors=on
-NPrint "before"
-x.w=WBSpriteX(5)
-NPrint x
-End
+; channel 5: "No sprite on this channel".
+DEFTYPE .l
+
+!TestCase{no_sprite}
+  !ExpectError{"No sprite on this channel","refused"}
+  x.w=WBSpriteX(5)
+  !CheckEq{x,0,"no_value"}
+!EndTestCase

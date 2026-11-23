@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Sprite channel must be -1 to 7" *
-rc=0

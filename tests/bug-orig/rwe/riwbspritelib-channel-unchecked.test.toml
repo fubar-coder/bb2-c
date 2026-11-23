@@ -1,0 +1,14 @@
+# riwbspritelib-channel-unchecked.test.bas: with runtime error checking for the
+# announced error; the original raises none and returns the channel 8
+fixed-orig = 916
+rwe = ["riwbspritelib"]
+runtime-errors = "on"
+
+[asserts]
+"check.channel_8.no_sprite" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.channel_8.refused" = "== fail"
+"check.channel_8.no_sprite" = "== fail"
+"check.channel_8.no_sprite.actual" = "== 8"
+requester = "count == 0"

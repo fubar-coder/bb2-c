@@ -1,0 +1,10 @@
+# riwbspritelib-getwbsprite-fail-returns-channel.test.bas: the original returns
+# the channel of a sprite it already holds and 0 for the narrow shape
+fixed-orig = 920
+rwe = ["riwbspritelib"]
+
+[deviations."compiler=orig210"]
+"check.failed_calls.second_call" = "== fail"
+"check.failed_calls.second_call.actual" = "== 2"
+"check.failed_calls.narrow_shape" = "== fail"
+"check.failed_calls.narrow_shape.actual" = "== 0"

@@ -1,0 +1,14 @@
+# riwbspritelib-copy-dbra-zero.test.bas: with runtime error checking for the
+# announced error; the original raises none and GetWBSprite fails at
+# AllocBitMap
+fixed-orig = 917
+rwe = ["riwbspritelib"]
+runtime-errors = "on"
+
+[asserts]
+"check.height_zero.no_sprite" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.height_zero.refused" = "== fail"
+"check.height_zero.no_sprite" = "== ok"
+requester = "count == 0"

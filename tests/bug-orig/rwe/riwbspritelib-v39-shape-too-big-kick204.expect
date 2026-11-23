@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Shape too big for a sprite below Kickstart 3.0" *
-rc=0

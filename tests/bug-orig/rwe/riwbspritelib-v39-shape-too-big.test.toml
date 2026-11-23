@@ -1,0 +1,23 @@
+# riwbspritelib-v39-shape-too-big.test.bas: with runtime error checking for the
+# announced error, on Kickstart 1.3 and 2.04; the original's V39 call at the
+# first GetWBSprite ends in an exception of Blitz's debugger
+fixed-orig = 1151
+rwe = ["riwbspritelib"]
+runtime-errors = "on"
+timeout = 30
+
+[matrix]
+machine = ["a500", "a500-204"]
+
+[asserts]
+"check.wide_shape.no_sprite" = "== not-run"
+
+[deviations."compiler=orig210,machine=a500"]
+"check.wide_shape.refused" = "== fail"
+requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"
+
+[deviations."compiler=orig210,machine=a500-204"]
+"check.wide_shape.refused" = "== fail"
+requester = "contains \"GURU! - Line 1111 Emulator\""
+"end.case" = "not exists"
