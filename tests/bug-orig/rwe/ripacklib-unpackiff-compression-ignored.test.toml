@@ -1,0 +1,10 @@
+# ripacklib-unpackiff-compression-ignored.test.bas: the reference library
+# decodes the row as ByteRun1: pixel 0 has colour 1, pixel 8 colour 0
+fixed-orig = 773
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.uncompressed_row.pixel_0" = "== fail"
+"check.uncompressed_row.pixel_0.actual" = "== 1"
+"check.uncompressed_row.pixel_8" = "== fail"
+"check.uncompressed_row.pixel_8.actual" = "== 0"

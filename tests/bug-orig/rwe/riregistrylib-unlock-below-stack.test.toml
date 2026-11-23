@@ -1,0 +1,14 @@
+# riregistrylib-unlock-below-stack.test.bas: the reference library pops below
+# its structure stack and calls registry.library through a base of 0: the CPU
+# halts
+fixed-orig = 781
+rwe = ["riregistrylib"]
+timeout = 30
+# the halt ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

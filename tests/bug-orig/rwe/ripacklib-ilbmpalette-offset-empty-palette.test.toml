@@ -1,0 +1,11 @@
+# ripacklib-ilbmpalette-offset-empty-palette.test.bas: through inject (guard);
+# the reference library writes 36 bytes behind the colour block
+fixed-orig = 991
+rwe = ["ripacklib", "riamosfunclib"]
+runwrap = "@INJECT@|guard"
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: guard: written behind an allocation of 72 bytes\""

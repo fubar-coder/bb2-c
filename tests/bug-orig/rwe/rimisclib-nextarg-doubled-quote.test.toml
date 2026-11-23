@@ -1,0 +1,13 @@
+# rimisclib-nextarg-doubled-quote.test.bas: the reference library returns
+# the word "a""b" c as one word and the terminating 0 with x"y
+fixed-orig = 755
+rwe = ["rimisclib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.doubled_quote.word_1" = "== fail"
+"check.doubled_quote.word_1.actual" = "== \"a\\\"b c\""
+"check.doubled_quote.word_2" = "== fail"
+"check.doubled_quote.word_2.actual" = "== \"\""
+"check.doubled_quote.end_length_1" = "== fail"
+"check.doubled_quote.end_length_1.actual" = "== 4"

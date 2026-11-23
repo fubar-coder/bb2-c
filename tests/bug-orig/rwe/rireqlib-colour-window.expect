@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-colour 2
-inject: rc=0
-inject: click */__Ok__: answered
-inject: click window: " Palette "
-rc=0

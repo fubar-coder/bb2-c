@@ -1,0 +1,12 @@
+# ripacklib-unpackiff-run-past-row.test.bas: the reference library writes the
+# run into rows 2, 3 and 5 too
+fixed-orig = 776
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.run_of_11.row_2" = "== fail"
+"check.run_of_11.row_2.actual" = "== 1"
+"check.run_of_11.row_3" = "== fail"
+"check.run_of_11.row_3.actual" = "== 1"
+"check.run_of_11.row_5" = "== fail"
+"check.run_of_11.row_5.actual" = "== 1"

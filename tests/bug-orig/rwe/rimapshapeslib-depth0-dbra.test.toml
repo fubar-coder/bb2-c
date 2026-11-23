@@ -1,0 +1,10 @@
+# rimapshapeslib-depth0-dbra.test.bas: with runtime error checking; the
+# reference library raises no error and overwrites map shape 4000
+fixed-orig = 903
+rwe = ["rimapshapeslib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.depth_zero.refused" = "== fail"
+"check.depth_zero.map_shape_clear" = "== fail"
+requester = "count == 0"

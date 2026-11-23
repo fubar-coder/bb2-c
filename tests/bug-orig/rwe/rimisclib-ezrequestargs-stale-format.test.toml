@@ -1,0 +1,12 @@
+# rimisclib-ezrequestargs-stale-format.test.bas: the requesters are the
+# observation (the second one's text is "%ld" alone); the reference library
+# shows the stale text of the first call again
+fixed-orig = 747
+rwe = ["rimisclib"]
+timeout = 30
+
+[asserts]
+requester = "contains \"text \\\"%ld\\\" gadgets \\\"Ok\\\"\""
+
+[deviations."compiler=orig210"]
+requester = "count == 2"

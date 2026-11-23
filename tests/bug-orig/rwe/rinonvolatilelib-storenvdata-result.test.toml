@@ -1,0 +1,9 @@
+# rinonvolatilelib-storenvdata-result.test.bas: the reference library returns
+# the error code of StoreNV, and its failed save shows two requesters
+fixed-orig = 1085
+rwe = ["rinonvolatilelib"]
+
+[deviations."compiler=orig210"]
+"check.nothing_stored.result" = "== fail"
+"check.nothing_stored.result.actual" = "== 3"
+requester = "count == 2"
