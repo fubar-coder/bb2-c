@@ -8,14 +8,13 @@
 ; error check area; here with runtime error checking.
 ; Correct: the error check refuses the number: "Hotkey number must be 0
 ; to 15".
-; @fixed #564
-; @rwe ricommoditieslib
-; @pass runtime_errors=on
-If MakeCommodity("BugOrigRange","BugOrig","range")
-  NPrint "before"
-  NPrint SetHotKey(-1,"lalt f1")
-  NPrint MakeCommodity("BugOrigRange","BugOrig","range")
-Else
-  NPrint "no commodity"
-EndIf
-End
+DEFTYPE .l
+
+!TestCase{number_minus1}
+  made=MakeCommodity("BugOrigRange","BugOrig","range")
+  !Require{made<>0,"commodity"}
+  !ExpectError{"Hotkey number must be 0 to 15","refused"}
+  r=SetHotKey(-1,"lalt f1")
+  second=MakeCommodity("BugOrigRange","BugOrig","range")
+  !CheckEq{second,0,"second_refused"}
+!EndTestCase

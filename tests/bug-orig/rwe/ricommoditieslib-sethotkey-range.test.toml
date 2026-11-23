@@ -1,0 +1,11 @@
+# ricommoditieslib-sethotkey-range.test.bas: with runtime error checking for
+# the announced error; the original raises none, removes its own broker and
+# makes a second one with the same name
+fixed-orig = 564
+rwe = ["ricommoditieslib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.number_minus1.refused" = "== fail"
+"check.number_minus1.second_refused" = "== fail"
+"check.number_minus1.second_refused.actual" = "== -1"

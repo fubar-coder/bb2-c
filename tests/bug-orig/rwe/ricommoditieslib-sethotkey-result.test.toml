@@ -1,0 +1,8 @@
+# ricommoditieslib-sethotkey-result.test.bas: the original reports the invalid
+# description as success
+fixed-orig = 565
+rwe = ["ricommoditieslib"]
+
+[deviations."compiler=orig210"]
+"check.descriptions.invalid" = "== fail"
+"check.descriptions.invalid.actual" = "== -1"

@@ -6,10 +6,11 @@
 ; replacement before the first measurement).
 ; Correct: the memory comes back - less than 20000 bytes missing (the
 ; leak is more than 100 bytes per call).
-; @fixed #563
-; @rwe ricommoditieslib
 DEFTYPE .l
-If MakeCommodity("BugOrigLeak","BugOrig","replace")
+
+!TestCase{replace}
+  made=MakeCommodity("BugOrigLeak","BugOrig","replace")
+  !Require{made<>0,"commodity"}
   r=SetHotKey(0,"lalt f1")
   r=SetHotKey(0,"lalt f1")
   m0=AvailMem_(0)
@@ -17,9 +18,7 @@ If MakeCommodity("BugOrigLeak","BugOrig","replace")
     r=SetHotKey(0,"lalt f1")
   Next
   m1=AvailMem_(0)
-  NPrint r
-  NPrint "leaked ",m0-m1>20000
-Else
-  NPrint "no commodity"
-EndIf
-End
+  !CheckEq{r,-1,"result"}
+  leaked=(m0-m1>20000)
+  !CheckEq{leaked,0,"leaked"}
+!EndTestCase

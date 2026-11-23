@@ -8,29 +8,23 @@
 ; the first measurement).
 ; Correct: the memory comes back - less than 5000 bytes missing (the
 ; leak is about 100 bytes per message).
-; @fixed #561
-; @rwe ricommoditieslib
-; The program is silent for about 16 s (more than BUG_ORIG_RUN_HANG_AFTER):
-; @pass hang_after=40
-; @pass timeout=90
 DEFTYPE .l
-If MakeCommodity("BugOrigReply","BugOrig","no ReplyMsg")
-  If SetHotKey(1,"timer")
-    n=0
-    While n<10
-      If CommodityEvent Then n+1 Else VWait
-    Wend
-    m0=AvailMem_(0)
-    n=0
-    While n<150
-      If CommodityEvent Then n+1 Else VWait
-    Wend
-    m1=AvailMem_(0)
-    NPrint "leaked ",m0-m1>5000
-  Else
-    NPrint "no hotkey"
-  EndIf
-Else
-  NPrint "no commodity"
-EndIf
-End
+
+!TestCase{leak}
+  made=MakeCommodity("BugOrigReply","BugOrig","no ReplyMsg")
+  !Require{made<>0,"commodity"}
+  hk=SetHotKey(1,"timer")
+  !Require{hk<>0,"hotkey"}
+  n=0
+  While n<10
+    If CommodityEvent Then n+1 Else VWait
+  Wend
+  m0=AvailMem_(0)
+  n=0
+  While n<150
+    If CommodityEvent Then n+1 Else VWait
+  Wend
+  m1=AvailMem_(0)
+  leaked=(m0-m1>5000)
+  !CheckEq{leaked,0,"leaked"}
+!EndTestCase

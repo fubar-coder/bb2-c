@@ -5,10 +5,9 @@
 ; openlibfail=commodities.library): the base is 0, CxBroker jumps to
 ; address -36 and the system crashes (the session ends in a timeout).
 ; Correct: MakeCommodity fails (0), the program goes on.
-; @fixed #559
-; @rwe ricommoditieslib
-; @pass runwrap=@INJECT@|openlibfail=commodities.library
-; @pass timeout=30
-NPrint "before"
-If MakeCommodity("BugOrig","BugOrig","no library") Then NPrint "ok" Else NPrint "failed"
-End
+DEFTYPE .l
+
+!TestCase{no_library}
+  made=MakeCommodity("BugOrig","BugOrig","no library")
+  !CheckEq{made,0,"failed"}
+!EndTestCase

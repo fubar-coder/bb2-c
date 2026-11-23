@@ -5,11 +5,11 @@
 ; is left registered with commodities and a deleted port.
 ; Correct: a second MakeCommodity returns 0 while the library has a
 ; broker; the first one stays in use (user decision W4 Q4).
-; @fixed #560
-; @rwe ricommoditieslib
-If MakeCommodity("BugOrigTwiceA","BugOrig","first")
-  NPrint MakeCommodity("BugOrigTwiceB","BugOrig","second")
-Else
-  NPrint "no commodity"
-EndIf
-End
+DEFTYPE .l
+
+!TestCase{second_call}
+  first=MakeCommodity("BugOrigTwiceA","BugOrig","first")
+  !Require{first<>0,"first_commodity"}
+  second=MakeCommodity("BugOrigTwiceB","BugOrig","second")
+  !CheckEq{second,0,"second_refused"}
+!EndTestCase

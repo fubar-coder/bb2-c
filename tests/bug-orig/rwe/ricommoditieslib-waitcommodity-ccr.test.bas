@@ -9,18 +9,20 @@
 ; before SetHotKey 2), then after VWait 10 several pairs are queued.
 ; Correct: WaitCommodity returns the first message (1), CommodityEvent
 ; the next one (2).
-; @fixed #566
-; @rwe ricommoditieslib
-If MakeCommodity("BugOrigWait","BugOrig","WaitCommodity")
-  If SetHotKey(1,"timer") AND SetHotKey(2,"timer")
-    While CommodityEvent : Wend
-    VWait 10
-    If WaitCommodity Then NPrint HotKeyHit
-    If CommodityEvent Then NPrint HotKeyHit
-  Else
-    NPrint "no hotkey"
-  EndIf
-Else
-  NPrint "no commodity"
-EndIf
-End
+DEFTYPE .l
+
+!TestCase{queued}
+  made=MakeCommodity("BugOrigWait","BugOrig","WaitCommodity")
+  !Require{made<>0,"commodity"}
+  hk1=SetHotKey(1,"timer")
+  !Require{hk1<>0,"hotkey1"}
+  hk2=SetHotKey(2,"timer")
+  !Require{hk2<>0,"hotkey2"}
+  While CommodityEvent : Wend
+  VWait 10
+  first=0 : nxt=0
+  If WaitCommodity Then first=HotKeyHit
+  If CommodityEvent Then nxt=HotKeyHit
+  !CheckEq{first,1,"wait_id"}
+  !CheckEq{nxt,2,"event_id"}
+!EndTestCase
