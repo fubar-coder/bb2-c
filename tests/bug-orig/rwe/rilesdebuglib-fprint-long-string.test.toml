@@ -1,0 +1,8 @@
+# rilesdebuglib-fprint-long-string.test.bas: the string buffer is raised for
+# the string of 40000 characters; the original prints nothing
+fixed-orig = 710
+rwe = ["rilesdebuglib"]
+jobline = ["strbuf=150000"]
+
+[deviations."compiler=orig210"]
+"check.string_40000.printed" = "== fail"

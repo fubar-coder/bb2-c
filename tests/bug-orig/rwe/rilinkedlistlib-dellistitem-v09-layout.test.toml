@@ -1,0 +1,9 @@
+# rilinkedlistlib-dellistitem-v09-layout.test.bas: with runtime error checking
+# (the original's error check of memlib: "Unable to Free Memory")
+fixed-orig = 729
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+requester = "contains \"Unable to Free Memory\""
+"end.case" = "not exists"

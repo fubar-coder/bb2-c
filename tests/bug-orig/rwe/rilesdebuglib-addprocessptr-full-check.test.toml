@@ -1,0 +1,16 @@
+# rilesdebuglib-addprocessptr-full-check.test.bas: with runtime error checking
+# for the announced error; the original raises none, the 21st entry overwrites
+# the code of D_InitParse, which then runs into an illegal instruction
+fixed-orig = 700
+rwe = ["rilesdebuglib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.twenty_first.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.twenty_first.refused" = "== fail"
+"check.twenty_first.not_refused" = "== fail"
+requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"

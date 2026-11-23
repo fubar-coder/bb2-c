@@ -1,0 +1,9 @@
+# rilesdebuglib-customreg-noop.test.bas: the original ends its range at $1FC
+fixed-orig = 702
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.noop.name" = "== fail"
+"check.noop.name.actual" = "== \"\""
+"check.noop.address" = "== fail"
+"check.noop.address.actual" = "== -1"

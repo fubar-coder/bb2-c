@@ -1,0 +1,13 @@
+# rimapeditorlib-candraw-no-stencil.test.bas: with runtime error checking for
+# the announced error; the original raises none and reads low memory
+fixed-orig = 893
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.no_setstencil.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.no_setstencil.refused" = "== fail"
+"check.no_setstencil.not_refused" = "== fail"
+requester = "count == 0"

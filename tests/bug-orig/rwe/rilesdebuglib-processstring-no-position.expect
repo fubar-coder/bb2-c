@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before D_InitParse: <>
-after the last argument: <>
-rc=0

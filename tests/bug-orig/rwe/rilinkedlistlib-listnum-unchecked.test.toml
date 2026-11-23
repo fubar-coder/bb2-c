@@ -1,0 +1,16 @@
+# rilinkedlistlib-listnum-unchecked.test.bas: with runtime error checking for
+# the announced error; the original raises none, list 5 overwrites list 0's
+# last node
+fixed-orig = 732
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.list_5.not_refused" = "== not-run"
+"check.list_5.list_0_kept" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.list_5.refused" = "== fail"
+"check.list_5.not_refused" = "== fail"
+"check.list_5.list_0_kept" = "== fail"
+requester = "count == 0"

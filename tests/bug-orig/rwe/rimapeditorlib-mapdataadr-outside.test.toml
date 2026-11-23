@@ -1,0 +1,14 @@
+# rimapeditorlib-mapdataadr-outside.test.bas: with runtime error checking for
+# the announced error; the original raises none and gives the address of the
+# next row
+fixed-orig = 892
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.x_8.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.x_8.refused" = "== fail"
+"check.x_8.not_refused" = "== fail"
+requester = "count == 0"

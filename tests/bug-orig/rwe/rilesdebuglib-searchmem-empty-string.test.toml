@@ -1,0 +1,8 @@
+# rilesdebuglib-searchmem-empty-string.test.bas: the original finds the empty
+# string
+fixed-orig = 721
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.empty.found" = "== fail"
+"check.empty.found.actual" = "== -1"

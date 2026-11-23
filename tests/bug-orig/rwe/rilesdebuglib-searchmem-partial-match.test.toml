@@ -1,0 +1,10 @@
+# rilesdebuglib-searchmem-partial-match.test.bas: the original does not find
+# "ab" in "aab"
+fixed-orig = 723
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.aab.found" = "== fail"
+"check.aab.found.actual" = "== 0"
+"check.aab.offset" = "== fail"
+"check.aab.offset.actual" = "== 0"

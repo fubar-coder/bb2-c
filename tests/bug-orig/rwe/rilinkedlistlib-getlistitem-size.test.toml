@@ -1,0 +1,8 @@
+# rilinkedlistlib-getlistitem-size.test.bas: the original copies more than the
+# copy holds
+fixed-orig = 730
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.larger_variable.rest_kept" = "== fail"
+"check.larger_variable.rest_kept.actual" = "== 0"

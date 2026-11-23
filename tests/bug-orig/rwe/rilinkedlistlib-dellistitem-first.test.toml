@@ -1,0 +1,6 @@
+# rilinkedlistlib-dellistitem-first.test.bas: the original cuts the list
+fixed-orig = 728
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.delete_first.c_reached" = "== fail"

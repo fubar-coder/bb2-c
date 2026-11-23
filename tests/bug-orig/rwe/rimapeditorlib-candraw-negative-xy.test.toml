@@ -1,0 +1,8 @@
+# rimapeditorlib-candraw-negative-xy.test.bas: the original keeps the address
+# 131070 bytes behind the map data
+fixed-orig = 892
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.x_minus_1.kept_address" = "== fail"
+"check.x_minus_1.not_behind_the_map" = "== fail"
