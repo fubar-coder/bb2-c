@@ -283,18 +283,21 @@ section 2.
   The model form is one case per source with one named `!Check` per cell
   (e.g. `!CheckEq{rl,-3,"dl_pow_q_b"}`): one ctest test per source and
   side, as now, each cell reported by its own check, and the original's
-  per-cell values as deviations (`check.CASE.CELL.actual == …`). The cost
-  that remains is the session: the old form's pass runs all generated
-  tests of a configuration in one emulator session, the model runs one
-  session per source and side (`tests/README.md`, "ctest still runs one
-  case per test"), and every driver carries testlib. Not measured; the
-  tool is `testinfo costs` (`tools/testinfo/cmd_costs.cpp`) on both forms.
+  per-cell values as deviations (`check.CASE.CELL.actual == …`). Both forms
+  run each generated source in a session of its own today (one ctest test
+  per source); the measured cost of a model session is at most 0.2 s more
+  per test (session median 1.61 s against 1.41 s in the acceptance run of
+  2026-11-23, from the `@stat` lines of `junit-all.xml`).
+  Bundling several sources in one session would be a gain over both: 38
+  generated sources in one session took 3.7 s against about 1.0 s each
+  alone.
 
 **Missing to move.**
-- For the 46 with a run: several sources in one emulator session and a
-  bundled start of their ctest tests, so that the model form is not
-  slower (the user's condition: "Sofern die Tests ohne
-  Performance-Nachteile in das neue Format übertragen werden können");
+- For the 46 with a run: a measurement that a model test is not slower
+  than its old form (the user's condition: "Sofern die Tests ohne
+  Performance-Nachteile in das neue Format übertragen werden können"),
+  or bundled runs that make up for it (a run of several sources one after
+  another in one session, a mode of `corpusrun`, side port first);
   then the generator writes `ID.test.bas` and `ID.test.toml` (one case,
   a check per cell, the original's values as deviations) instead of
   `ID.bas`, `ID.expect` and `ID.orig`, with its host tests
