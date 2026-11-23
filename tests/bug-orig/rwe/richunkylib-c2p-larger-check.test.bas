@@ -8,21 +8,20 @@
 ; runtime error checking.
 ; Correct: the 320 x 200 one is converted, the error check refuses the
 ; 320 x 256 one: "Chunky bitmap larger than the bitmap", the marker stays.
-; @fixed #884
-; @rwe richunkylib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-m=AllocMem_(90000,$10002)
-If m=0 Then NPrint "no memory" : End
-CludgeBitMap 1,320,200,8,m
-ChunkyBitmap 0,320,200
-Poke.b ChunkyData(0),$FF
-ChunkyToPlanar 0,1
-NPrint "320x200: plane 0 ",Peek.b(m)&255
-ChunkyBitmap 0,320,256
-Poke.l m+80000,$12345678
-ChunkyToPlanar 0,1
-If Peek.l(m+80000)=$12345678 Then NPrint "marker kept" Else NPrint "marker overwritten"
-FreeMem_ m,90000
-End
+
+!TestCase{larger}
+  m=AllocMem_(90000,$10002)
+  !Require{m<>0,"memory"}
+  CludgeBitMap 1,320,200,8,m
+  ChunkyBitmap 0,320,200
+  Poke.b ChunkyData(0),$FF
+  ChunkyToPlanar 0,1
+  !CheckEq{Peek.b(m)&255,128,"plane0"}
+  ChunkyBitmap 0,320,256
+  Poke.l m+80000,$12345678
+  !ExpectError{"Chunky bitmap larger than the bitmap","refused"}
+  ChunkyToPlanar 0,1
+  !CheckEq{Peek.l(m+80000),$12345678,"marker_kept"}
+  FreeMem_ m,90000
+!EndTestCase

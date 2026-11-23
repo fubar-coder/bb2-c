@@ -1,0 +1,11 @@
+# richunkylib-c2p-larger-check.test.bas: with runtime error checking for the
+# announced error; the original raises none and overwrites the marker
+fixed-orig = 884
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.larger.refused" = "== fail"
+"check.larger.marker_kept" = "== fail"
+"check.larger.marker_kept.actual" = "== 0"

@@ -1,0 +1,11 @@
+# richunkylib-raycastsky-past-bottom.test.bas: with runtime error checking for
+# the announced error; the original raises none and writes row 100
+fixed-orig = 887
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.past_bottom.refused" = "== fail"
+"check.past_bottom.row100" = "== fail"
+"check.past_bottom.row100.actual" = "== 170"

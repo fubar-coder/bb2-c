@@ -1,0 +1,8 @@
+# richunkylib-c2p-no-size-check.test.bas: the original converts 8 planes of
+# 10240 bytes into a smaller bitmap and overwrites the marker behind it
+fixed-orig = 884
+rwe = ["richunkylib"]
+
+[deviations."compiler=orig210"]
+"check.marker.marker_kept" = "== fail"
+"check.marker.marker_kept.actual" = "== 0"

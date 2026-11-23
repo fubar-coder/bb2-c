@@ -7,15 +7,15 @@
 ; chunky bitmap has the size the command expects (320 x 256).
 ; Correct: the conversion stays inside the bitmap (or is refused), the
 ; marker stays.
-; @fixed #884
-; @rwe richunkylib
 DEFTYPE .l
-m=AllocMem_(90000,$10002)
-If m=0 Then NPrint "no memory" : End
-CludgeBitMap 1,320,200,8,m
-ChunkyBitmap 0,320,256
-Poke.l m+80000,$12345678
-ChunkyToPlanar 0,1
-If Peek.l(m+80000)=$12345678 Then NPrint "marker kept" Else NPrint "marker overwritten"
-FreeMem_ m,90000
-End
+
+!TestCase{marker}
+  m=AllocMem_(90000,$10002)
+  !Require{m<>0,"memory"}
+  CludgeBitMap 1,320,200,8,m
+  ChunkyBitmap 0,320,256
+  Poke.l m+80000,$12345678
+  ChunkyToPlanar 0,1
+  !CheckEq{Peek.l(m+80000),$12345678,"marker_kept"}
+  FreeMem_ m,90000
+!EndTestCase

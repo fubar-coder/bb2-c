@@ -10,20 +10,18 @@
 ; Correct: 48 x 10 is converted (row 1 of the chunky data in row 1 of
 ; the bitmap), the error check refuses 40 x 10: "Chunky bitmap width not
 ; a multiple of 16".
-; @fixed #884
-; @rwe richunkylib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-m=AllocMem_(81920,$10002)
-If m=0 Then NPrint "no memory" : End
-CludgeBitMap 1,320,256,8,m
-ChunkyBitmap 0,48,10
-Poke.b ChunkyData(0)+48,$FF
-ChunkyToPlanar 0,1
-NPrint "48x10: row 1 of plane 0 ",Peek.b(m+40)&255
-ChunkyBitmap 0,40,10
-ChunkyToPlanar 0,1
-NPrint "40x10: converted"
-FreeMem_ m,81920
-End
+
+!TestCase{widths}
+  m=AllocMem_(81920,$10002)
+  !Require{m<>0,"memory"}
+  CludgeBitMap 1,320,256,8,m
+  ChunkyBitmap 0,48,10
+  Poke.b ChunkyData(0)+48,$FF
+  ChunkyToPlanar 0,1
+  !CheckEq{Peek.b(m+40)&255,128,"row1_plane0"}
+  ChunkyBitmap 0,40,10
+  !ExpectError{"Chunky bitmap width not a multiple of 16","refused"}
+  ChunkyToPlanar 0,1
+  FreeMem_ m,81920
+!EndTestCase

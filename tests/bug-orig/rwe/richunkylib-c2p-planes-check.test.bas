@@ -8,25 +8,24 @@
 ; area.  Here with runtime error checking.
 ; Correct: the first conversion is done, the error check refuses the
 ; second: "Bitmap planes not equally spaced", the buffer stays as it is.
-; @fixed #884
-; @rwe richunkylib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-m=AllocMem_(81920,$10002)
-b=AllocMem_(10240,$10001)
-If m=0 OR b=0 Then NPrint "no memory" : End
-CludgeBitMap 1,320,256,8,m
-ChunkyBitmap 0,320,256
-Poke.b ChunkyData(0),$FF
-ChunkyToPlanar 0,1
-NPrint "contiguous: plane 7 ",Peek.b(m+7*10240)&255
-bm=Addr BitMap(1)
-op=Peek.l(bm+8+28)
-Poke.l bm+8+28,b
-ChunkyToPlanar 0,1
-Poke.l bm+8+28,op
-NPrint "plane 7 elsewhere: buffer ",Peek.b(b)&255
-FreeMem_ b,10240
-FreeMem_ m,81920
-End
+
+!TestCase{spacing}
+  m=AllocMem_(81920,$10002)
+  b=AllocMem_(10240,$10001)
+  !Require{m<>0 AND b<>0,"memory"}
+  CludgeBitMap 1,320,256,8,m
+  ChunkyBitmap 0,320,256
+  Poke.b ChunkyData(0),$FF
+  ChunkyToPlanar 0,1
+  !CheckEq{Peek.b(m+7*10240)&255,128,"contiguous"}
+  bm=Addr BitMap(1)
+  op=Peek.l(bm+8+28)
+  Poke.l bm+8+28,b
+  !ExpectError{"Bitmap planes not equally spaced","refused"}
+  ChunkyToPlanar 0,1
+  Poke.l bm+8+28,op
+  !CheckEq{Peek.b(b)&255,0,"buffer_kept"}
+  FreeMem_ b,10240
+  FreeMem_ m,81920
+!EndTestCase

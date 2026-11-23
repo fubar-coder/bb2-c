@@ -7,22 +7,21 @@
 ; area.  Here with runtime error checking.
 ; Correct: the error check refuses x -1: "RaycastSky outside the chunky
 ; bitmap", the byte before the data is not written.
-; @fixed #887
-; @rwe richunkylib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-ChunkyBitmap 0,320,256
-c=ChunkyData(0)
-t=AllocMem_(320*20,$10001)
-If c=0 OR t=0 Then NPrint "no memory" : End
-For i=0 To 19 : Poke.b t+i*320+5,$AA : Next
-RaycastSky 0,0,10,5,t
-NPrint "x 0: ",Peek.b(c)&255
-b=Peek.b(c-1)
-RaycastSky 0,-1,1,5,t
-w=Peek.b(c-1)
-Poke.b c-1,b
-If w=b Then NPrint "x -1: the byte before the data kept" Else NPrint "x -1: the byte before the data written"
-FreeMem_ t,320*20
-End
+
+!TestCase{x_minus1}
+  ChunkyBitmap 0,320,256
+  c=ChunkyData(0)
+  t=AllocMem_(320*20,$10001)
+  !Require{c<>0 AND t<>0,"memory"}
+  For i=0 To 19 : Poke.b t+i*320+5,$AA : Next
+  RaycastSky 0,0,10,5,t
+  !CheckEq{Peek.b(c)&255,170,"x0"}
+  b=Peek.b(c-1)
+  !ExpectError{"RaycastSky outside the chunky bitmap","refused"}
+  RaycastSky 0,-1,1,5,t
+  w=Peek.b(c-1)
+  Poke.b c-1,b
+  !CheckEq{w,b,"byte_before_kept"}
+  FreeMem_ t,320*20
+!EndTestCase

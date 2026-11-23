@@ -6,16 +6,16 @@
 ; the 65536 rows stay inside both; the texture has a marker byte in row
 ; 1000, the program prints whether it arrived in the chunky data.
 ; Correct: a height of 0 copies nothing.
-; @fixed #887
-; @rwe richunkylib
 DEFTYPE .l
-s=32000*656
-ChunkyBitmap 0,32000,656
-c=ChunkyData(0)
-t=AllocMem_(s,$10000)
-If c=0 OR t=0 Then NPrint "no memory" : End
-Poke.b t+320*1000,$AA
-RaycastSky 0,0,0,0,t
-If Peek.b(c+320*1000)=0 Then NPrint "row 1000 kept" Else NPrint "row 1000 written"
-FreeMem_ t,s
-End
+
+!TestCase{height_zero}
+  s=32000*656
+  ChunkyBitmap 0,32000,656
+  c=ChunkyData(0)
+  t=AllocMem_(s,$10000)
+  !Require{c<>0 AND t<>0,"memory"}
+  Poke.b t+320*1000,$AA
+  RaycastSky 0,0,0,0,t
+  !CheckEq{Peek.b(c+320*1000)&255,0,"row1000_kept"}
+  FreeMem_ t,s
+!EndTestCase

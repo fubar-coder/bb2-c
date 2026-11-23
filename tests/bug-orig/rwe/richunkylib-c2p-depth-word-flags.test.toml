@@ -1,0 +1,15 @@
+# richunkylib-c2p-depth-word-flags.test.bas: the original converts the depth-5
+# bitmap and refuses the depth-8 one with Flags bit 7 set
+fixed-orig = 883
+rwe = ["richunkylib"]
+timeout = 60
+
+[deviations."compiler=orig210"]
+"check.flags1_depth5.planes_0_4" = "== fail"
+"check.flags1_depth5.planes_0_4.actual" = "== 12800"
+"check.flags1_depth5.planes_5_7" = "== fail"
+"check.flags1_depth5.planes_5_7.actual" = "== 7680"
+"check.flags80_depth8.planes_0_4" = "== fail"
+"check.flags80_depth8.planes_0_4.actual" = "== 0"
+"check.flags80_depth8.planes_5_7" = "== fail"
+"check.flags80_depth8.planes_5_7.actual" = "== 0"

@@ -1,0 +1,8 @@
+# richunkylib-raycastsky-height0.test.bas: the original copies 65536 rows, so
+# the marker of row 1000 arrives in the chunky data
+fixed-orig = 887
+rwe = ["richunkylib"]
+
+[deviations."compiler=orig210"]
+"check.height_zero.row1000_kept" = "== fail"
+"check.height_zero.row1000_kept.actual" = "== 170"
