@@ -23,10 +23,79 @@ in the commit before the merge.
 - **WHEN** a branch with `Fixes #N` sets `extension = N` in one test's configuration and changes nothing else of the tests
 - **THEN** the check passes
 
+### Requirement: The website items of a fix
+A fix SHALL also come with: the label `fixed-in-port` on the issue; an entry on the website page of fixed original bugs; and one row for the issue in the data file of the overview page (`site/data/`, with severity, one of the five levels 1-5 of `site/fix-overview`, topic, library or command, sentence, anchor and issue). The website entry and the row are the coordinator's step; the agent proposes severity and topic in its report.
+
+#### Scenario: The agent's report
+- **WHEN** an agent delivers a fix
+- **THEN** its report proposes severity and topic, and the label, the website entry and the row are left to the coordinator
+
+#### Scenario: The row's fields
+- **WHEN** the coordinator adds the row of an issue
+- **THEN** the row holds severity (one of the levels 1-5), topic, library or command, sentence, anchor and issue
+
+### Requirement: The closing line of a fix commit
+The fix commit SHALL contain a line `Fixes #NNN`, so that the issue is closed by the push.
+
+#### Scenario: The closing line
+- **WHEN** a fix commit is pushed
+- **THEN** its line `Fixes #NNN` closes the issue
+
+### Requirement: The case of the original in the library expected data
+An `[orig #N]` case of one of the issues a fix names SHALL, in the library expected data, be a case of the original that the port no longer reaches because of the fix of issue N, so that no `[fixed #N]` counterpart is possible; an `[orig]` case that becomes `[orig #N]` with its value SHALL count as unchanged.
+
+#### Scenario: An unchanged value
+- **WHEN** a branch with `Fixes #N` turns `KEY [orig]` into `KEY [orig #N]` with the same value
+- **THEN** the check counts the case as unchanged
+
+#### Scenario: A changed value
+- **WHEN** the branch also changes the value while turning the case into `KEY [orig #N]`
+- **THEN** the check reports the key
+
+### Requirement: Review of a case outside the fixed issue
+A case reported by the check as any other added, changed or removed case means that the fix also affects other behaviour; it SHALL be reviewed, and the fix commit SHALL name it with the reason (for example a further issue it fixes, with its own `Fixes #M` and `[fixed #M]` case), before the merge.
+
+#### Scenario: A reviewed case
+- **WHEN** a case is reported and the fix commit names it with a further issue `Fixes #M` and its `[fixed #M]` case
+- **THEN** the merge may go ahead
+
+#### Scenario: An unnamed case
+- **WHEN** a case is reported and the commit does not name it
+- **THEN** the merge waits
+
+### Requirement: The expected data the check covers
+Expected data SHALL be the library expected data (`libs/tests/expected`), the bug-orig tests and the corpus expected data (`tests/corpus/expect`).
+
+#### Scenario: The three kinds
+- **WHEN** a branch changes a file under `libs/tests/expected`, a bug-orig test or a file under `tests/corpus/expect`
+- **THEN** the check covers the change
+
+### Requirement: Projection of bug-orig tests onto cases
+A bug-orig test SHALL be projected onto cases (one per section of `ID.expect` and `ID.orig`; with `; @fixed-orig #N` the pair `[orig]` / `[fixed #N]`, without it the open test's cases; the marker's old name `; @fixed #N`, in a base tree that still has it, SHALL give the same cases), and an added `; @fixed-orig #N` header or a changed `ID.expect` or `ID.orig` SHALL count as cases of issue N.
+
+#### Scenario: The projection of a fixed test
+- **WHEN** a bug-orig test has `; @fixed-orig #N`
+- **THEN** its sections project onto the pair `[orig]` / `[fixed #N]`
+
+#### Scenario: The projection of an open test
+- **WHEN** a bug-orig test has no marker
+- **THEN** its sections project onto the open test's cases
+
+### Requirement: Projection of corpus files onto cases
+Every file of the corpus directory SHALL be projected onto the case `PASS|NAME|OBS|1` (qualifier from its name), a changed or added unqualified file being reported, and the turning of an unqualified file into `NAME.orig.EXT` and `NAME.fixed-N.EXT` of a named issue SHALL pass.
+
+#### Scenario: A qualified pair
+- **WHEN** a branch with `Fixes #N` turns an unqualified file into `NAME.orig.EXT` and `NAME.fixed-N.EXT`
+- **THEN** the check passes
+
+#### Scenario: An added unqualified file
+- **WHEN** a branch adds an unqualified file to the corpus directory
+- **THEN** the check reports it
+
 ## MODIFIED Requirements
 
 ### Requirement: What a fix delivers
-A fix of an original bug SHALL come with: one issue per bug; a test of the expected behaviour (`; @fixed-orig #NNN` or the equivalent in the suite of its area); a changed `BUG(orig)` comment ("Fixed (#N)"); an entry in `docs/*/deviations.md` as an intended deviation of kind F; the label `fixed-in-port` on the issue; an entry on the website page of fixed original bugs; and one row for the issue in the data file of the overview page (`site/data/`, with severity, one of the five levels 1-5 of `site/fix-overview`, topic, library or command, sentence, anchor and issue). The fix commit SHALL contain a line `Fixes #NNN`, so that the issue is closed by the push. The website entry and the row are the coordinator's step; the agent proposes severity and topic in its report.
+A fix of an original bug SHALL come with: one issue per bug; a test of the expected behaviour (`; @fixed-orig #NNN` or the equivalent in the suite of its area); a changed `BUG(orig)` comment ("Fixed (#N)"); an entry in `docs/*/deviations.md` as an intended deviation of kind F; and the website items of the requirement "The website items of a fix". The fix commit SHALL carry the closing line of the requirement "The closing line of a fix commit".
 
 #### Scenario: A complete fix commit
 - **WHEN** a fix is committed
@@ -41,7 +110,7 @@ A fix of an original bug SHALL come with: one issue per bug; a test of the expec
 - **THEN** the site build fails (`site/fix-overview`, consistency check)
 
 ### Requirement: A fix changes only the expectations of its issue
-Before a fix is merged into `main`, the changed expected data SHALL be checked against the issues the fix names (`Fixes #N` lines of its commits): every added or changed case SHALL be a `[fixed #N]` case of one of these issues, the `[orig]` case paired with it, or an `[orig #N]` case of one of these issues (in the library expected data: a case of the original that the port no longer reaches because of the fix of issue N, so that no `[fixed #N]` counterpart is possible); an `[orig]` case that becomes `[orig #N]` with its value SHALL count as unchanged. Any other added, changed or removed case SHALL be reported with its key. Such a case means that the fix also affects other behaviour; it SHALL be reviewed, and the fix commit SHALL name it with the reason (for example a further issue it fixes, with its own `Fixes #M` and `[fixed #M]` case), before the merge. Expected data are the library expected data (`libs/tests/expected`), the bug-orig tests and the corpus expected data (`tests/corpus/expect`): a bug-orig test SHALL be projected onto cases (one per section of `ID.expect` and `ID.orig`; with `; @fixed-orig #N` the pair `[orig]` / `[fixed #N]`, without it the open test's cases; the marker's old name `; @fixed #N`, in a base tree that still has it, SHALL give the same cases), and an added `; @fixed-orig #N` header or a changed `ID.expect` or `ID.orig` SHALL count as cases of issue N; every file of the corpus directory SHALL be projected onto the case `PASS|NAME|OBS|1` (qualifier from its name), a changed or added unqualified file being reported, and the turning of an unqualified file into `NAME.orig.EXT` and `NAME.fixed-N.EXT` of a named issue SHALL pass. The check is a C tool (`tools/results fix-scope`) run on the branch against `main`; the agent of a fix runs it and names its result in the report, the coordinator runs it again before the merge.
+Before a fix is merged into `main`, the changed expected data SHALL be checked against the issues the fix names (`Fixes #N` lines of its commits): every added or changed case SHALL be a `[fixed #N]` case of one of these issues, the `[orig]` case paired with it, or an `[orig #N]` case of one of these issues. Any other added, changed or removed case SHALL be reported with its key. The check is a C tool (`tools/results fix-scope`) run on the branch against `main`; the agent of a fix runs it and names its result in the report, the coordinator runs it again before the merge. Further requirements say what an `[orig #N]` case is, what review a reported case needs, which expected data the check covers and how bug-orig tests and corpus files are projected onto cases.
 
 #### Scenario: Only the fixed issue's cases
 - **WHEN** a branch with `Fixes #N` changes only `KEY [orig]` / `KEY [fixed #N]` cases
