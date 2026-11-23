@@ -3200,10 +3200,12 @@ cells.
   buffered; after a crash a check that ran can show as `not-run`. A check
   that a crash can hide is asserted `!= ok` instead of a fixed verdict
   (`palettelib-stopcycle-cycon`, check `second_cycle`).
-* **`macrobuf` other than 8192.** The original compiler hangs at its
-  exit with any other size (#336), so the originals side of such a test
+* **`macrobuf` larger than 8192.** The original compiler hangs at its
+  exit with a larger size: it frees its macro buffer with that size and
+  corrupts exec's free list (#336), so the originals side of such a test
   shows `session == timeout` (with `isolate` and a `timeout` of its own);
-  the port is fixed. The old observation "Macro too Big" is not
+  a smaller size only leaks the rest of the buffer and ends normally. The
+  port is fixed. The old observation "Macro too Big" is not
   reproducible in the model: that message and the compile hang (alert
   8100 0005) are one memory-dependent original bug (#965), at the default
   size too, so a deviation on the compile result (`compile == none`) is
