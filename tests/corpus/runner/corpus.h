@@ -236,6 +236,22 @@
  *                     corpusrun case, never run by corpus_run, which judges
  *                     nothing of it.  Not with expect=, expect_dir=, orig=,
  *                     fixed=, regression=on, record=, gate=, publish=
+ *   build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off
+ *                     with cell=on: a compile part of the cell's own (the
+ *                     data of a test that another build configuration
+ *                     compiles, change basic-test-local-data): BLITZ2, the
+ *                     ted= stub and the libraries staged in CORPUS:DIR/blitz2/
+ *                     (DIR inside the volume, e.g. ID.test/.build-1), its job
+ *                     list CORPUS:DIR/jobs (log CORPUS:DIR/session.log,
+ *                     runtime error checking on or off), compiled before the
+ *                     cell's compile with blitz2: assigned to it, the output
+ *                     CORPUS:DIR/blitz2.out with rc=N behind it; any number
+ *   build_job=PART|SRC|DEST
+ *                     with cell=on: the tokenised source SRC staged and
+ *                     compiled to CORPUS:DEST (parent directories made), as
+ *                     job bNNN (NNN its number among these lines, from 000)
+ *                     of the cell's job list (PART -) or of the part PART
+ *                     (the DIR of a build= line); any number
  * With runtime error checking the 8 byte parameter blocks behind trap #1
  * and trap #4 are zeroed before comparing (the memory address of the
  * editor's line item, depends on the memory layout).
@@ -308,6 +324,26 @@ struct corpus_pass {
     char **uae;                         /* KEY=VALUE */
     size_t nuae;
     char *floppy[CORPUS_FLOPPIES];      /* floppy=N|SRC: the image of drive DFN, NULL = none */
+    struct corpus_build *builds;        /* build=: the compile parts of a cell */
+    size_t nbuilds;
+    struct corpus_build_job *bjobs;     /* build_job=: the data sources of a cell */
+    size_t nbjobs;
+};
+
+/* build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off (cell=on): a compile part of its
+   own before the cell's compile, its compiler in CORPUS:DIR/blitz2/ */
+struct corpus_build {
+    char *dir, *blitz2, *deflibs, *acidlibs;
+    int runtime_errors;
+};
+
+/* build_job=PART|SRC|DEST (cell=on): the tokenised source SRC compiled to
+   CORPUS:DEST, in the cell's job list (PART "-") or in the part PART (the
+   DIR of a build= line); its job is bNNN, NNN its number among the
+   build_job= lines */
+struct corpus_build_job {
+    char *part;                         /* NULL: the cell's job list */
+    char *src, *dest;
 };
 
 

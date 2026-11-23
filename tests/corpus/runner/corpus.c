@@ -80,6 +80,19 @@ void corpus_free(struct corpus_pass *p)
     free(p->uae);
     for (i = 0; i < CORPUS_FLOPPIES; i++)
         free(p->floppy[i]);
+    for (i = 0; i < p->nbuilds; i++) {
+        free(p->builds[i].dir);
+        free(p->builds[i].blitz2);
+        free(p->builds[i].deflibs);
+        free(p->builds[i].acidlibs);
+    }
+    free(p->builds);
+    for (i = 0; i < p->nbjobs; i++) {
+        free(p->bjobs[i].part);
+        free(p->bjobs[i].src);
+        free(p->bjobs[i].dest);
+    }
+    free(p->bjobs);
     for (i = 0; i < p->nconfigs; i++) {
         free(p->configs[i].tag);
         free(p->configs[i].base);
@@ -439,6 +452,59 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                 return fail(p, err, errlen, "line %u: out of memory", no);
             continue;
         }
+        if (!strcmp(key, "build")) {
+            const char *f = val;
+            char *dir = field(&f), *b2 = field(&f), *def = field(&f), *acid = field(&f), *re = field(&f);
+            struct corpus_build *nb = NULL;
+            int ok = dir && b2 && def && acid && re && inside(dir) && *b2 && *def && *acid && !*f
+                     && (!strcmp(re, "on") || !strcmp(re, "off"));
+
+            if (ok && (nb = realloc(p->builds, (p->nbuilds + 1) * sizeof *nb))) {
+                p->builds = nb;
+                nb[p->nbuilds].dir = dir;
+                nb[p->nbuilds].blitz2 = b2;
+                nb[p->nbuilds].deflibs = def;
+                nb[p->nbuilds].acidlibs = acid;
+                nb[p->nbuilds++].runtime_errors = !strcmp(re, "on");
+                free(re);
+                free(val);
+                continue;
+            }
+            free(dir);
+            free(b2);
+            free(def);
+            free(acid);
+            free(re);
+            free(val);
+            return fail(p, err, errlen, "line %u: build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off (DIR inside the volume)",
+                        no);
+        }
+        if (!strcmp(key, "build_job")) {
+            const char *f = val;
+            char *part = field(&f), *src = field(&f), *dest = field(&f);
+            struct corpus_build_job *nj = NULL;
+            int ok = part && src && dest && *part && *src && inside(dest) && !*f
+                     && (!strcmp(part, "-") || inside(part));
+
+            if (ok && (nj = realloc(p->bjobs, (p->nbjobs + 1) * sizeof *nj))) {
+                p->bjobs = nj;
+                if (!strcmp(part, "-")) {
+                    free(part);
+                    part = NULL;
+                }
+                nj[p->nbjobs].part = part;
+                nj[p->nbjobs].src = src;
+                nj[p->nbjobs++].dest = dest;
+                free(val);
+                continue;
+            }
+            free(part);
+            free(src);
+            free(dest);
+            free(val);
+            return fail(p, err, errlen, "line %u: build_job=PART|SRC|DEST (PART - or the DIR of a build=, DEST "
+                        "inside the volume)", no);
+        }
         if (!strcmp(key, "jobline")) {
             if (!*val || push(&p->joblines, &p->njoblines, val)) {
                 free(val);
@@ -498,6 +564,20 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                     "expect");
     /* a cell of the BASIC test model: one configuration and one source, no
        judging of the pass's own */
+    if ((p->nbuilds || p->nbjobs) && !p->cell)
+        return fail(p, err, errlen, "build= and build_job= need cell=on");
+    for (i = 0; i < p->nbuilds; i++)
+        for (k = 0; k < i; k++)
+            if (!strcasecmp(p->builds[i].dir, p->builds[k].dir))
+                return fail(p, err, errlen, "build=%s twice", p->builds[i].dir);
+    for (i = 0; i < p->nbjobs; i++) {
+        if (!p->bjobs[i].part)
+            continue;
+        for (k = 0; k < p->nbuilds && strcmp(p->bjobs[i].part, p->builds[k].dir); k++)
+            ;
+        if (k == p->nbuilds)
+            return fail(p, err, errlen, "build_job=%s|...: no build=%s", p->bjobs[i].part, p->bjobs[i].part);
+    }
     if (p->cell) {
         if (p->nconfigs != 1 || p->nsources != 1 || p->expect || p->expect_dir || p->orig || p->fixed
             || p->regression || p->record || p->gate || p->publish)
@@ -1032,6 +1112,94 @@ static int mkdir_sub(const struct corpus_pass *p, size_t c, const char *sub)
     return r;
 }
 
+/* copies from to vol/rel (its parent directories made); 0 = ok */
+static int copy_into(const char *from, const char *vol, const char *rel)
+{
+    char *to = str_printf("%s/%s", vol, rel), *slash;
+    int r = -1;
+
+    if (!to)
+        return -1;
+    if ((slash = strrchr(to, '/'))) {
+        *slash = 0;
+        r = mkdir_p(to);
+        *slash = '/';
+    }
+    if (!r)
+        r = copy_file(from, to);
+    free(to);
+    return r;
+}
+
+/* the data of a cell (build=, build_job=): the jobs of the cell's own list
+   to jobs, every part's compiler, sources and job list */
+static int stage_builds(const struct corpus_pass *p, const char *vol, struct text *jobs, FILE *log)
+{
+    for (size_t k = 0; k < p->nbuilds; k++) {
+        const struct corpus_build *b = &p->builds[k];
+        struct { const char *from, *to; } files[] = {
+            { b->blitz2, "blitz2/blitz2" }, { p->ted, "blitz2/ted" },
+            { b->deflibs, "blitz2/deflibs" }, { b->acidlibs, "blitz2/acidlibs" },
+        };
+        struct text pj = { 0 };
+        char *d, *to;
+        int bad;
+
+        for (size_t i = 0; i < sizeof files / sizeof files[0]; i++) {
+            char *rel = str_printf("%s/%s", b->dir, files[i].to);
+
+            bad = !rel || copy_into(files[i].from, vol, rel);
+            free(rel);
+            if (bad) {
+                fprintf(log, "corpus: cannot copy %s to %s\n", files[i].from, b->dir);
+                return -1;
+            }
+        }
+        if (!(d = str_printf("%s/%s/blitz2/userlibs", vol, b->dir)) || mkdir_p(d)) {
+            free(d);
+            fprintf(log, "corpus: cannot create %s\n", b->dir);
+            return -1;
+        }
+        free(d);
+        text_add(&pj, "log=" VOLUME ":%s/session.log\ndefaults=" VOLUME ":%s/defaults.xtra\n", b->dir, b->dir);
+        if (!b->runtime_errors)
+            text_add(&pj, "runerr=off\n");
+        for (size_t i = 0; i < p->nbjobs; i++)
+            if (p->bjobs[i].part && !strcmp(p->bjobs[i].part, b->dir))
+                text_add(&pj, "job=b%03zu|" VOLUME ":%s/src/b%03zu.bb2|" VOLUME ":%s\n", i, b->dir, i,
+                         p->bjobs[i].dest);
+        to = str_printf("%s/%s/jobs", vol, b->dir);
+        bad = pj.bad || !to || write_file(to, pj.p, pj.n);
+        free(to);
+        free(pj.p);
+        if (bad) {
+            fprintf(log, "corpus: cannot write the job list of %s\n", b->dir);
+            return -1;
+        }
+    }
+    for (size_t i = 0; i < p->nbjobs; i++) {
+        const struct corpus_build_job *j = &p->bjobs[i];
+        char *src = j->part ? str_printf("%s/src/b%03zu.bb2", j->part, i) : str_printf("src/b%03zu.bb2", i);
+        char *dest = str_printf("%s/%s", vol, j->dest), *slash = dest ? strrchr(dest, '/') : NULL;
+        int bad = !src || !dest || copy_into(j->src, vol, src);
+
+        if (!bad && slash) {
+            *slash = 0;
+            bad = mkdir_p(dest);
+        }
+        free(dest);
+        if (bad) {
+            fprintf(log, "corpus: cannot stage %s for %s\n", j->src, j->dest);
+            free(src);
+            return -1;
+        }
+        if (!j->part)
+            text_add(jobs, "job=b%03zu|" VOLUME ":%s|" VOLUME ":%s\n", i, src, j->dest);
+        free(src);
+    }
+    return 0;
+}
+
 int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
 {
     const struct corpus_config *cf = &p->configs[c];
@@ -1134,6 +1302,8 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
         free(name);
         free(to);
     }
+    if (stage_builds(p, vol, &jobs, log))
+        goto out;
     for (i = 0; i < p->njoblines; i++)
         text_add(&jobs, "%s\n", p->joblines[i]);
     {
@@ -1183,9 +1353,29 @@ static void run13(const struct corpus_pass *p, struct text *s)
     }
 }
 
+/* the compile parts of the data (build=), before the cell's compile:
+   blitz2: assigned to the part's compiler, its job list, rc=N behind its
+   output */
+static void build_parts(const struct corpus_pass *p, struct text *s)
+{
+    for (size_t k = 0; k < p->nbuilds; k++) {
+        const char *d = p->builds[k].dir;
+
+        text_add(s, "Assign blitz2: " VOLUME ":%s/blitz2\nStack %u\n", d, p->stack);
+        if (kick1x(p))
+            text_add(s, "blitz2:blitz2 >" VOLUME ":%s/blitz2.out " VOLUME ":%s/jobs\n"
+                    VOLUME ":rcput " VOLUME ":%s/blitz2.out\n", d, d, d);
+        else
+            text_add(s, "blitz2:blitz2 " VOLUME ":%s/jobs >" VOLUME ":%s/blitz2.out\n"
+                    "Echo \"rc=$RC\" >>" VOLUME ":%s/blitz2.out\n", d, d, d);
+        text_add(s, "Assign blitz2:\n");
+    }
+}
+
 /* the compile: the job list through blitz2 (and wrap=), rc=N behind its output */
 static void compile_part(const struct corpus_pass *p, struct text *s)
 {
+    build_parts(p, s);
     if (kick1x(p)) {
         compile13(p, s);
         return;

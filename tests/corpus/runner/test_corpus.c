@@ -510,6 +510,153 @@ int main(void)
         CHECK(parse("cell=maybe\n", err, sizeof err) == -1 && strstr(err, "cell=on or cell=off"));
     }
 
+    /* build=, build_job= (cell=on; change basic-test-local-data): the parts
+       before the cell's compile, the jobs in the job lists, broken lines */
+    {
+#define CELL "cell=on\nwork=/w\nreport=/r\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\nsource=/s/test.bb2\n"
+        static const char one[] =
+            "Assign blitz2: CORPUS:x.test/.build-1/blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 CORPUS:x.test/.build-1/jobs >CORPUS:x.test/.build-1/blitz2.out\n"
+            "Echo \"rc=$RC\" >>CORPUS:x.test/.build-1/blitz2.out\n"
+            "Assign blitz2:\n"
+            "Assign blitz2: CORPUS:blitz2\n";
+        static const char two13[] =
+            "Assign blitz2: CORPUS:x.test/.build-1/blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 >CORPUS:x.test/.build-1/blitz2.out CORPUS:x.test/.build-1/jobs\n"
+            "CORPUS:rcput CORPUS:x.test/.build-1/blitz2.out\n"
+            "Assign blitz2:\n"
+            "Assign blitz2: CORPUS:x.test/.build-2/blitz2\n"
+            "Stack 40000\n"
+            "blitz2:blitz2 >CORPUS:x.test/.build-2/blitz2.out CORPUS:x.test/.build-2/jobs\n"
+            "CORPUS:rcput CORPUS:x.test/.build-2/blitz2.out\n"
+            "Assign blitz2:\n"
+            "Assign blitz2: CORPUS:blitz2\n";
+        char *t, *r;
+
+        /* none: the script halves as before */
+        CHECK(corpus_parse(CELL, &p, err, sizeof err) == 0 && !p.nbuilds && !p.nbjobs);
+        t = corpus_script_compile(&p);
+        CHECK(t && !strncmp(t, "Assign blitz2: CORPUS:blitz2\n", 29));
+        free(t);
+        corpus_free(&p);
+        /* one part and a job of the cell's list */
+        CHECK(corpus_parse(CELL "build=x.test/.build-1|/o/blitz2|/o/def|/o/acid|off\n"
+                           "build_job=x.test/.build-1|/t/b0.bb2|x.test/child\nbuild_job=-|/t/b1.bb2|x.test/sub/own\n",
+                           &p, err, sizeof err) == 0);
+        CHECK(p.nbuilds == 1 && !strcmp(p.builds[0].dir, "x.test/.build-1") && !p.builds[0].runtime_errors
+              && !strcmp(p.builds[0].blitz2, "/o/blitz2") && !strcmp(p.builds[0].acidlibs, "/o/acid"));
+        CHECK(p.nbjobs == 2 && !strcmp(p.bjobs[0].part, "x.test/.build-1") && !p.bjobs[1].part
+              && !strcmp(p.bjobs[1].dest, "x.test/sub/own"));
+        t = corpus_script_compile(&p);
+        r = corpus_script_run(&p);
+        CHECK(t && !strncmp(t, one, sizeof one - 1));
+        CHECK(r && !strstr(r, "build"));
+        free(t);
+        free(r);
+        corpus_free(&p);
+        /* two parts on Kickstart 1.3, runtime error checking on */
+        CHECK(corpus_parse(CELL "machine=a500\nrcput=/rc\nbuild=x.test/.build-1|/o/b|/o/d|/o/a|on\n"
+                           "build=x.test/.build-2|/o/b|/o/d|/o/a|off\n", &p, err, sizeof err) == 0);
+        CHECK(p.nbuilds == 2 && p.builds[0].runtime_errors && !p.builds[1].runtime_errors);
+        t = corpus_script_compile(&p);
+        CHECK(t && !strncmp(t, two13, sizeof two13 - 1));
+        free(t);
+        corpus_free(&p);
+        /* broken lines */
+        CHECK(parse(CELL "build=x.test/.b|/o/b|/o/d|/o/a\n", err, sizeof err) == -1
+              && strstr(err, "build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off"));
+        CHECK(parse(CELL "build=x.test/.b|/o/b|/o/d|/o/a|maybe\n", err, sizeof err) == -1
+              && strstr(err, "build=DIR"));
+        CHECK(parse(CELL "build=../b|/o/b|/o/d|/o/a|on\n", err, sizeof err) == -1 && strstr(err, "inside the volume"));
+        CHECK(parse(CELL "build=x.test/.b||/o/d|/o/a|on\n", err, sizeof err) == -1);
+        CHECK(parse(CELL "build=x.test/.b|/o/b|/o/d|/o/a|on|x\n", err, sizeof err) == -1);
+        CHECK(parse(CELL "build=x.test/.b|/o/b|/o/d|/o/a|on\nbuild=X.test/.b|/o/b|/o/d|/o/a|on\n", err,
+                    sizeof err) == -1 && strstr(err, "twice"));
+        CHECK(parse(CELL "build_job=-|/t/b.bb2\n", err, sizeof err) == -1 && strstr(err, "build_job=PART|SRC|DEST"));
+        CHECK(parse(CELL "build_job=-|/t/b.bb2|CORPUS:x\n", err, sizeof err) == -1);
+        CHECK(parse(CELL "build_job=-||x.test/c\n", err, sizeof err) == -1);
+        CHECK(parse(CELL "build_job=x.test/.b|/t/b.bb2|x.test/c\n", err, sizeof err) == -1
+              && strstr(err, "no build=x.test/.b"));
+        CHECK(parse(BASE CONFIGS "source=/s\nbuild_job=-|/t/b.bb2|x.test/c\n", err, sizeof err) == -1
+              && strstr(err, "need cell=on"));
+        CHECK(parse(BASE CONFIGS "source=/s\nbuild=x.test/.b|/o/b|/o/d|/o/a|on\n", err, sizeof err) == -1
+              && strstr(err, "need cell=on"));
+    }
+
+    /* the staging of build= and build_job=: the part's compiler, its job
+       list, the sources, the jobs of the cell's list */
+    {
+        char dir[] = "/tmp/test-corpus-build-XXXXXX";
+        char *pt = NULL, *f;
+        size_t len;
+
+        CHECK(mkdtemp(dir) != NULL);
+        f = str_printf("%s/in", dir);
+        CHECK(f && mkdir_p(f) == 0);
+        free(f);
+        {
+            const char *names[] = { "blitz2", "def", "acid", "ted", "drv.bb2", "b0.bb2", "b1.bb2", "ob2", "run", "rc" };
+
+            for (size_t i = 0; i < sizeof names / sizeof names[0]; i++) {
+                f = str_printf("%s/in/%s", dir, names[i]);
+                CHECK(f && write_file(f, names[i], strlen(names[i])) == 0);
+                free(f);
+            }
+        }
+        pt = str_printf("cell=on\nwork=%s/w\nreport=%s/w/r.txt\nted=%s/in/ted\nlauncher=%s/in/run\n"
+                        "config=c0|ref|%s/in/blitz2|%s/in/def|%s/in/acid\nsource=%s/in/drv.bb2\n"
+                        "build=x.test/.build-1|%s/in/ob2|%s/in/def|%s/in/acid|on\n"
+                        "build_job=x.test/.build-1|%s/in/b0.bb2|x.test/child\nbuild_job=-|%s/in/b1.bb2|x.test/sub/own\n",
+                        dir, dir, dir, dir, dir, dir, dir, dir, dir, dir, dir, dir, dir);
+        CHECK(pt && corpus_parse(pt, &p, err, sizeof err) == 0);
+        free(pt);
+        CHECK(corpus_stage(&p, 0, stderr) == 0);
+        {
+            static const struct { const char *path, *text; } want[] = {
+                { "x.test/.build-1/blitz2/blitz2", "ob2" }, { "x.test/.build-1/blitz2/ted", "ted" },
+                { "x.test/.build-1/blitz2/deflibs", "def" }, { "x.test/.build-1/blitz2/acidlibs", "acid" },
+                { "x.test/.build-1/src/b000.bb2", "b0.bb2" }, { "src/b001.bb2", "b1.bb2" },
+                { "x.test/.build-1/jobs",
+                  "log=CORPUS:x.test/.build-1/session.log\ndefaults=CORPUS:x.test/.build-1/defaults.xtra\n"
+                  "job=b000|CORPUS:x.test/.build-1/src/b000.bb2|CORPUS:x.test/child\n" },
+                { "jobs",
+                  "log=CORPUS:out/session.log\ndefaults=CORPUS:out/defaults.xtra\nrunerr=off\n"
+                  "job=j000|CORPUS:src/drv.bb2|CORPUS:out/drv\n"
+                  "job=b001|CORPUS:src/b001.bb2|CORPUS:x.test/sub/own\n" },
+            };
+
+            for (size_t i = 0; i < sizeof want / sizeof want[0]; i++) {
+                char *got;
+
+                f = str_printf("%s/w/c0/vol/%s", dir, want[i].path);
+                got = f ? (char *)read_file(f, &len) : NULL;
+                if (!got || strcmp(got, want[i].text))
+                    fprintf(stderr, "%s: %s\n", want[i].path, got ? got : "(none)");
+                CHECK(got && !strcmp(got, want[i].text));
+                free(got);
+                free(f);
+            }
+            f = str_printf("%s/w/c0/vol/x.test/sub", dir);
+            {
+                struct stat st;
+
+                CHECK(f && stat(f, &st) == 0 && S_ISDIR(st.st_mode));
+            }
+            free(f);
+            f = str_printf("%s/w/c0/vol/x.test/.build-1/blitz2/userlibs", dir);
+            {
+                struct stat st;
+
+                CHECK(f && stat(f, &st) == 0 && S_ISDIR(st.st_mode));
+            }
+            free(f);
+        }
+        corpus_free(&p);
+        rm_tree(dir);
+    }
+
     /* compile only (run=off): no launcher, nothing of the runs, the script
        only compiles */
     {
