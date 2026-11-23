@@ -1,0 +1,8 @@
+# bb-blitlib-btblockimage-word-offset.test.bas: the original draws the zeros
+# in front of the image table
+fixed-orig = 427
+rwe = ["bb_blitlib"]
+
+[deviations."compiler=orig210"]
+"check.image_150.pixel" = "== fail"
+"check.image_150.pixel.actual" = "== 0"

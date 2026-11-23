@@ -1,4 +1,4 @@
-; bb_blitlib-depth0-dbra (#429) - the blit routines count the planes with
+; bb-blitlib-depth0-dbra (#429) - the blit routines count the planes with
 ; SUBQ.w #1 / DBRA on the shape's (or bitmap's) depth without a check: a
 ; shape of depth 0 makes TBlock blit 65536 planes through the "plane
 ; pointers" behind the bitmap object.  A shape that was never defined
@@ -14,9 +14,6 @@
 ; Here with runtime error checking.
 ; Correct: the error check refuses the shape of depth 0: "Uninitialized
 ; Shape", nothing is blitted.
-; @fixed #429
-; @rwe bb_blitlib
-; @pass runtime_errors=on
 DEFTYPE .l
 Function tod{}
   h=Peek.b($BFEA01)&255
@@ -24,20 +21,21 @@ Function tod{}
   l=Peek.b($BFE801)&255
   Function Return h*65536+m*256+l
 End Function
-BitMap 0,320,64,1
-z=AllocMem_(64,$10002)
-If z=0 Then NPrint "no memory" : End
-s=Addr Shape(5)
-Poke.l s+14,z
-Poke.l s+18,z
-NPrint "before"
-t=tod{}
-OwnBlitter_
-TBlock 5,160,32
-WaitBlit_
-DisownBlitter_
-t=tod{}-t
-If t<10 Then NPrint "no blits" Else NPrint "65536 blits"
-FreeMem_ z,64
-NPrint "after"
-End
+
+!TestCase{depth_zero}
+  BitMap 0,320,64,1
+  z=AllocMem_(64,$10002)
+  !Require{z<>0,"memory"}
+  s=Addr Shape(5)
+  Poke.l s+14,z
+  Poke.l s+18,z
+  t=tod{}
+  OwnBlitter_
+  !ExpectError{"Uninitialized Shape","refused"}
+  TBlock 5,160,32
+  WaitBlit_
+  DisownBlitter_
+  t=tod{}-t
+  !Check{t<10,"no_blits"}
+  FreeMem_ z,64
+!EndTestCase

@@ -1,0 +1,20 @@
+# bb-blitlib-createshape-count0.test.bas: with runtime error checking for the
+# announced error; the original raises none and overwrites 2 MB
+fixed-orig = 428
+rwe = ["bb_blitlib"]
+runtime-errors = "on"
+# the original overwrites 2 MB of memory and cannot end safely
+isolate = ["compiler=orig210"]
+timeout = 30
+
+[asserts]
+"check.count_zero.shape2_width" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.count_zero.refused" = "== fail"
+"check.count_zero.shape2_width" = "== fail"
+"check.count_zero.shape2_width.actual" = "== 16"
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

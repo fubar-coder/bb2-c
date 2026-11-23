@@ -1,0 +1,17 @@
+# bb-blitlib-blocktoshape-too-large.test.bas: with runtime error checking
+# for the announced error; the original raises none, the copy is silently
+# incomplete and the case goes on
+fixed-orig = 425
+rwe = ["bb_blitlib"]
+runtime-errors = "on"
+# the port's case ends in the error with the blitter still owned: the next
+# program of the session waits for it for ever; the original has its own session
+isolate = ["compiler=orig210"]
+
+[asserts]
+"check.too_large.copied" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.too_large.refused" = "== fail"
+"check.too_large.copied" = "== fail"
+requester = "count == 0"

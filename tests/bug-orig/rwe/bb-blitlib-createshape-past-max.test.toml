@@ -1,0 +1,16 @@
+# bb-blitlib-createshape-past-max.test.bas: with runtime error checking for
+# the announced error; the original raises none and writes the word behind
+# the shape table, the case goes on
+fixed-orig = 1077
+rwe = ["bb_blitlib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.past_max.behind_table" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.past_max.refused" = "== fail"
+"check.past_max.behind_table" = "== fail"
+"check.past_max.behind_table.actual" = "== $634C"
+requester = "count == 0"

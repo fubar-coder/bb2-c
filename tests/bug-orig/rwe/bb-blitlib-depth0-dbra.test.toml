@@ -1,0 +1,17 @@
+# bb-blitlib-depth0-dbra.test.bas: with runtime error checking for the
+# announced error; the original raises none, blits 65536 planes (more than
+# 10 frames) and the case goes on
+fixed-orig = 429
+rwe = ["bb_blitlib"]
+runtime-errors = "on"
+# the port's case ends in the error with the blitter still owned: the next
+# program of the session waits for it for ever; the original has its own session
+isolate = ["compiler=orig210"]
+
+[asserts]
+"check.depth_zero.no_blits" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.depth_zero.refused" = "== fail"
+"check.depth_zero.no_blits" = "== fail"
+requester = "count == 0"

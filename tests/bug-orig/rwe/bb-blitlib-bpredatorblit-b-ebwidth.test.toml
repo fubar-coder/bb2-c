@@ -1,0 +1,8 @@
+# bb-blitlib-bpredatorblit-b-ebwidth.test.bas: the original's B channel reads
+# the line 320 pixels to the right
+fixed-orig = 426
+rwe = ["bb_blitlib"]
+
+[deviations."compiler=orig210"]
+"check.b_channel.pixel" = "== fail"
+"check.b_channel.pixel.actual" = "== 0"

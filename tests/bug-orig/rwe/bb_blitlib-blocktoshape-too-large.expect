@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "Shape too large for BlockToShape!" *
-rc=0

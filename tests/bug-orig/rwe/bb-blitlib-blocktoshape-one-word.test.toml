@@ -1,0 +1,10 @@
+# bb-blitlib-blocktoshape-one-word.test.bas: the original copies two planes
+# of four
+fixed-orig = 425
+rwe = ["bb_blitlib"]
+
+[deviations."compiler=orig210"]
+"check.copy.pixel_8" = "== fail"
+"check.copy.pixel_8.actual" = "== 3"
+"check.copy.pixel_24" = "== fail"
+"check.copy.pixel_24.actual" = "== 3"

@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "CreateShape count must be at least 1!" *
-rc=0
