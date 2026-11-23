@@ -418,13 +418,14 @@ escapes) is refused with file and line.
 | `exclude` | list of selectors | the combinations of axis values that are no cell |
 | `root` | boolean | only in a `tests.toml`: the search stops here |
 | `fixed-orig`, `fixed`, `extension` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug, of an extension of the port ([Fixed tests](#fixed-tests)); at most one |
+| `flaky` | non-empty string | only in an `ID.test.toml`: what is known of a test that fails in full runs but passes alone; its ctest tests (both sides) get the label `flaky`, the verdict stays as it is ([Writing a test source](#writing-a-test-source)) |
 
 The keys from `compiler` to `jobline` are the **run settings**; `labels`,
-`cost` and `fixtures` describe the registered ctest test, which is one per
+`cost`, `fixtures` and `flaky` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, `extension`, the tables `deviations`, `ends` and `data`) in a `tests.toml` or `root` in an
-`ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
+`fixed`, `extension`, `flaky`, the tables `deviations`, `ends` and `data`) in a `tests.toml` or `root` in an
+`ID.test.toml`. An empty `flaky` is an error naming file and line. `fixed-orig` and `extension` need a declared deviation,
 `fixed` must have none.
 
 **A run from the editor.** With `editor-run = "on"` the driver is
@@ -558,6 +559,14 @@ name (a check that a configuration names must have one).
 `contains` holds if the text (a requester, for `requester`) holds the
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`
 any characters, `#` a decimal number, `\c` the character `c`).
+
+**What `requester` sees** (a limit, see `TODO.md`): reqtrap
+(`tests/corpus/amiga/reqtrap.c`) writes each requester as a line
+`REQUESTER: ...` of the program's output, and the query takes only that
+line. A requester text with a line break (an EasyRequest whose text has
+several lines) ends there for the query: its further lines, the gadgets (`gadgets "..."`) and the answer
+are not in `requester` but in `output`. Write a `contains` or `matches`
+on the first line of the text, or use `count`.
 
 **Writing a predicate in TOML.** The predicate is a TOML string, so its
 own quotes are `\"`: `inject = "contains \"written behind\""`; a quote
@@ -808,6 +817,15 @@ the rest, naming file and line):
   `@TESTDIR@` (`CORPUS:ID.test`, the test's own data) are replaced in code
   and strings, not in comments; any other `@NAME@` is refused. A data
   source of `ID.test/` gets the same placeholders.
+* **A test that fails in full runs but passes alone**: once seen, mark
+  it with `flaky = "DESCRIPTION"` in its `ID.test.toml`, the description
+  saying what is known: the cell, the run in which it failed and how
+  (the session, `rc`, a missing result file), the workaround the test
+  uses, whether the cause was analysed. The key finds such tests
+  (`ctest -L flaky`, `grep -rn '^flaky' tests`) and changes nothing of the
+  verdict: a workaround (`isolate`, another order) is set by its own key.
+  The key belongs to one test (the description is that test's) and is
+  refused in a `tests.toml`.
 
 Known limits of the compiler that a test meets (open issues):
 

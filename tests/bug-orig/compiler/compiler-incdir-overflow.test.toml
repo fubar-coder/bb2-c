@@ -1,0 +1,17 @@
+# compiler-incdir-overflow.test.bas: the correct result is a failed compile
+# (Path too Long at the IncDir line) and nothing runs; the original copies the
+# path past its buffer, compiles, and the program it writes crashes when it
+# runs (a Software Failure requester, the session ends at its limit)
+fixed-orig = 16
+timeout = 30
+
+[asserts]
+compile = "== \"error 8 Path too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+session = "== timeout"
+requester = "contains \"Software Failure\""

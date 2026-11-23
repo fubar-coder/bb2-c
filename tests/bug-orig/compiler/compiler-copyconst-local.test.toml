@@ -1,0 +1,13 @@
+# compiler-copyconst-local.test.bas: the correct result is a failed compile
+# (Operand too Long at the move) and nothing runs; the original lets the
+# source expression run into the destination's text: Syntax Error
+fixed-orig = 997
+
+[asserts]
+compile = "== \"error 15 Operand too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""

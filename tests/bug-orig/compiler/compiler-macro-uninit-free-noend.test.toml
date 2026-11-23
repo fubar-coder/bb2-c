@@ -1,0 +1,19 @@
+# compiler-macro-uninit-free-noend.test.bas: the compiler runs through inject
+# with fill=a5, alertlog and track; the source ends before End Macro (the
+# macro stands at the end of the file, behind the case: the driver's own code
+# follows it, so the error is reported at the last line of the source). The
+# correct result is "Macro without End Macro" and no alert; the original frees
+# the garbage text pointer: the same error with the alert 0100000f in inject's
+# report
+fixed-orig = 965
+wrap = "@INJECT@|fill=a5 alertlog track"
+
+[asserts]
+compile = "== \"error 15 Macro without End Macro\""
+"compile.inject" = "== \"inject: alertlog: 0 alerts\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: alertlog: 1 alerts\ninject: alert 0100000f\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""

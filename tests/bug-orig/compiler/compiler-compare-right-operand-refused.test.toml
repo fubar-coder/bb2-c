@@ -1,0 +1,16 @@
+# compiler-compare-right-operand-refused.test.bas: the correct result is a
+# failed compile (Illegal Operator for Type at the AND) and nothing runs;
+# the original compiles, the Float is converted down and the case runs
+fixed-orig = 1182
+
+[asserts]
+compile = "== \"error 12 Illegal Operator for Type\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

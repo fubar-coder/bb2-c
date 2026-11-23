@@ -1,0 +1,13 @@
+# compiler-newtype-forward-undefined.test.bas: the correct result is a failed
+# compile (Type Not Found at the line of the by-value field x.fwd) and nothing
+# runs; the original refuses too, at another line
+fixed-orig = 974
+
+[asserts]
+compile = "== \"error 9 Type Not Found\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 6 Type Not Found\""

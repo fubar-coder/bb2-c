@@ -1,0 +1,24 @@
+# compiler-macro-textlen-word.test.bas: the compiler runs through inject with
+# track, the Macro Buffer 100000 bytes; the correct result is "Macro too Big"
+# in the macro's 863rd line (a macro text is at most 65535 bytes) and the
+# compiler frees what it allocated. The original keeps its Macro Buffer of 8192
+# bytes; any other macrobuf hangs it (#336, as compiler-macro-textlen-max), so
+# its cell declares the hang: no compile result, the session ends at its limit.
+# A session of its own for the original compiler
+fixed-orig = 964
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=100000"]
+isolate = ["compiler=orig195"]
+timeout = 30
+
+[asserts]
+compile = "== \"error 881 Macro too Big\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"compile.inject" = "not exists"

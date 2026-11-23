@@ -39,6 +39,18 @@ and presets".
 * Emulator only via `tools/lib/amiga_emulation` or `amiga_run`; the
   hardfiles are read-only, tests write only to `TEST:` or `RAM:` (a write
   to `SYS:` hangs the run).
+* Long outputs stay out of the context: run builds and `ctest` with
+  their output in a log in the scratchpad (`… > LOG 2>&1`) and read only
+  the summary, the warnings and the failures (`grep -E 'warning:|Failed|
+  tests passed' LOG`); read more of the log only for a failure. Read the
+  sources in `archive/` (blitz2.s, ted.s) by grep and line ranges, never
+  whole.
+* Agents: one agent per self-contained task, not per step; a lookup or
+  a check of a few tool calls the coordinator does itself. A brief names
+  the files and sections to read, not whole documents.
+* The implementer runs on its default model (opus); a brief whose work
+  is mechanical (a rename, a rework after a finished pattern, a small fix
+  whose cause and change the analysis already names) gets `model: sonnet`.
 
 ## Rules, in order of weight
 

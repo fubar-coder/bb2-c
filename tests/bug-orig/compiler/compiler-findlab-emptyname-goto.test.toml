@@ -1,0 +1,14 @@
+# compiler-findlab-emptyname-goto.test.bas: the correct result is a failed
+# compile (Syntax Error at the first Goto without a label name) and
+# nothing runs; the original creates an empty label and refuses with Label
+# not Found
+fixed-orig = 30
+
+[asserts]
+compile = "== \"error 7 Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "contains \"Label not Found\""
