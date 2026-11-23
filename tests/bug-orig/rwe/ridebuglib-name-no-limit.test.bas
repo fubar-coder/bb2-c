@@ -9,15 +9,13 @@
 ; (the session ends in a timeout).
 ; Correct: the name is cut to the block, AddVarTrace works, the program
 ; goes on.
-; @fixed #613
-; @rwe ridebuglib
-; @pass runtime_errors=on
 DEFTYPE .l
-a=1
-n$=""
-For i=1 To 150 : n$=n$+Chr$($4A)+Chr$($FC) : Next
-NPrint "before"
-DelVarTrace n$
-AddVarTrace a,"a",1
-NPrint "after"
-End
+
+!TestCase{long_name}
+  a=1
+  n$=""
+  For i=1 To 150 : n$=n$+Chr$($4A)+Chr$($FC) : Next
+  DelVarTrace n$
+  AddVarTrace a,"a",1
+  !Check{-1,"survived"}
+!EndTestCase
