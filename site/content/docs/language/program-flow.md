@@ -177,7 +177,8 @@ the output before the program ends.
 `VWait` waits for the next vertical blank, the moment between two frames
 of the display; `VWait n` waits for n of them. It is used to change the
 display in step with the picture, for smooth animation. `VWait 0` is not
-a short wait: it waits for 65536 frames, more than 20 minutes.
+a short wait: it waits for 65536 frames, more than 20 minutes; with
+runtime error checking it is the error "Can't VWait 0 Frames!".
 
 ## Interrupts: SetInt
 

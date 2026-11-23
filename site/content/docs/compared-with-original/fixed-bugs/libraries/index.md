@@ -4439,6 +4439,9 @@ One more fix of this area changes what an existing program does:
   is not called again. A program that waits, for example in `Wait_`,
   reports it when it goes on. The original hung the machine
   ([#1073](https://github.com/fubar-coder/bb2-c/issues/1073)).
+* `VWait 0` waited for 65536 frames, more than 20 minutes; with runtime
+  error checking it is the error "Can't VWait 0 Frames!"
+  ([#1201](https://github.com/fubar-coder/bb2-c/issues/1201)).
 
 ## Runtime errors in executables {#runtime-error-texts}
 

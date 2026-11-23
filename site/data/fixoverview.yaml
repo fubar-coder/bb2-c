@@ -8118,3 +8118,11 @@ rows:
     text: "`PutReg` into a local variable of a procedure stores the register into the local; the original left the local unchanged and overwrote 1 to 4 bytes next to the global variables. A program that reads the local afterwards takes another way, for example GMODPLAY on the CD reports a failed module init, which the original always reported as success."
     page: compiler
     anchor: inline-assembler
+  - issue: 1201
+    severity: 3
+    topic: "System"
+    library: "intlib"
+    command: "VWait"
+    text: "`VWait 0` (also a variable count of 0) is \"Can't VWait 0 Frames!\" with checking; the original waited 65536 frames (about 22 minutes)."
+    page: libraries
+    anchor: debugger-fixes
