@@ -283,23 +283,27 @@ section 2.
 - The 46 with a run are expressible in the model, but the generator
   (`tools/lib/exprmatrix`) writes `ID.bas`, `ID.expect` and `ID.orig`.
   A test is one source of about 28 lines with about 8 cells
-  (`compiler-expr-1178-1189-dl-B-01`: 28 lines, 8 cells, one `[run]`). As model tests, the cells of a source would
-  be cases, and the model registers one ctest test per case and side with
-  an emulator session each (`tests/README.md`, "ctest still runs one case
-  per test"; the run of all cases shares one run of the driver only
-  inside one invocation), so 8 cells would be 8 ctest tests instead of one,
-  and every driver carries testlib. The cost is not measured here; the
-  tool for it is `testinfo costs` (`tools/testinfo/cmd_costs.cpp`) on both
-  forms.
+  (`compiler-expr-1178-1189-dl-B-01`: 28 lines, 8 cells, one `[run]`).
+  The model form is one case per source with one named `!Check` per cell
+  (e.g. `!CheckEq{rl,-3,"dl_pow_q_b"}`): one ctest test per source and
+  side, as now, each cell reported by its own check, and the original's
+  per-cell values as deviations (`check.CASE.CELL.actual == …`). The cost
+  that remains is the session: the old form's pass runs all generated
+  tests of a configuration in one emulator session, the model runs one
+  session per source and side (`tests/README.md`, "ctest still runs one
+  case per test"), and every driver carries testlib. Not measured; the
+  tool is `testinfo costs` (`tools/testinfo/cmd_costs.cpp`) on both forms.
 
 **Missing to move.**
-- For the 46 with a run: a decision on the form (one case per cell, or one
-  case per source with a `!Check` per cell, which keeps one ctest test per
-  source), a measurement that the model form is not slower, then the
-  generator writes `ID.test.bas` and `ID.test.toml` (the original's
-  per-cell values as deviations) instead of `ID.bas`, `ID.expect` and
-  `ID.orig` (a `.orig` is recorded by `bug-orig-record` today), with its
-  host tests `test_exprmatrix*.cpp`. Medium (estimate).
+- For the 46 with a run: several sources in one emulator session and a
+  bundled start of their ctest tests, so that the model form is not
+  slower (the user's condition: "Sofern die Tests ohne
+  Performance-Nachteile in das neue Format übertragen werden können");
+  then the generator writes `ID.test.bas` and `ID.test.toml` (one case,
+  a check per cell, the original's values as deviations) instead of
+  `ID.bas`, `ID.expect` and `ID.orig`, with its host tests
+  `test_exprmatrix*.cpp`. Medium for the generator (estimate); the
+  bundling of sessions is a runner feature of its own (large, estimate).
 - For the 159 compile-only: the moves of section 2.
 
 EOF
