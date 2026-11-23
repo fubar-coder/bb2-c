@@ -62,8 +62,10 @@ static size_t trimmed(const char *p, size_t *full)
 /* the issue of the line "; @fixed #N" of source: N, 0 = none, -2 = broken.
    A TED script may name the pair Cc behind it: "; @fixed #N Cc" (fixed
    in the port's pair only, tests/README.md); a Blitz source "/port" right
-   behind the number: "; @fixed #N/port" (an extension, not an original
-   bug; the same as "; @fixed #N" for now, tests/README.md) */
+   behind the number: "; @fixed #N/port" (the old form's marker of an
+   extension, the same as "; @fixed #N").  No test of the tree has it any
+   more (an extension's test is a test of the model, extension = N), but
+   the base of fix-scope may be a tree before that move */
 static long fixed_issue(const char *source, int ted, const char *path, char *err,
                         size_t errlen)
 {

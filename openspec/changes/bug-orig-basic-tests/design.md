@@ -96,6 +96,22 @@ compile-only tests) get `; @fixed-orig #N` (user: "Ja, zum Abschluss"),
 and the texts above lose the old-form clause accordingly; that wording is
 shown to the user again before it is written.
 
+**D5a The test of an extension** (user, 2026-11-23: "Schlüssel
+`extension = N` (Recommended)", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"Test rework step 1: prev comparison of model tests; extension key"). An
+extension of the port is neither an original bug nor another bug: the
+original refuses or does something else (`shapeslib-loadshape-anim-interleave`,
+#1166: "Illegal ANIM interleave value"), the port adds behaviour. Its test
+sets `extension = N`: the deviations are required and declare what the
+original does instead, for the cells with the original's part (`libs=cd`
+for a library); the test is judged and labelled like one with
+`fixed-orig` (the cells with that part pass with the deviations, the
+others without; `emulator`), and fix-scope's case of the key is
+`ID|extension||1 [fixed #N]`. At most one of `fixed-orig`, `fixed` and
+`extension`. It replaces the marker `; @fixed #N/port` of the old form.
+The wording for CLAUDE.md rule 4 and the agent files is shown to the user
+before it is written (CLAUDE.md rule 1).
+
 **D6 A pilot round**: the five tests of round R12's I4 (`shapeslib-*`),
 whose form is already setup / act / verify; spike 2 moved two of them.
 
@@ -152,3 +168,23 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   BASIC test model: nothing to record" (`bug_orig_record_target`: one test
   of each form; the model test's runs are not started, its `ID.orig` not
   written).
+- **Tasks 1.5 and 1.6, the key `extension`** (D5a): `tools/lib/testconf`
+  (the key, at most one of the three, `extension` without a deviation
+  refused), `testjudge` (judged as with `fixed-orig`), `testreg` (no
+  label `bug-orig`), `bugorigcmp` (the case `ID|extension||1 [fixed #N]`);
+  host tests with broken input in `testconf`, `testassert`, `testjudge`,
+  `testreg_tool`, `bugorigcmp`. The first user is
+  `libs/shapeslib-loadshape-anim-interleave.test.bas` (#1166): the cells
+  port and 1.95 with the CD's libraries (the side originals) and the port
+  with the C libraries; the original's error "Illegal ANIM interleave
+  value" is caught by `SetErr`, whose check `no_error` fails and whose
+  `End` leaves the case without its end entry (the declared deviations of
+  `libs=cd`); each frame is one entry of the check `frame` ("frame N
+  WIDTH HEIGHT BYTES", the lines of the old `.expect`). Both sides pass.
+  fix-scope with `--fixes 1166` against the tree before the move counts
+  the key as a case of #1166 and reports the new test's checks and keys
+  (9 cases: the move, not a fix). The CMake header parser of the old form
+  no longer takes `/port`; `bugorigcmp` still reads it, since the base of
+  fix-scope may be a tree before the move. A label named like a token
+  (`.frames`) fails the compile; the form check names case names that are
+  tokens, not labels.

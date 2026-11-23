@@ -134,6 +134,42 @@ cells with the original's faulty part (user: "**optionaler** nachfolgender
 Validator ... Test-ID und Check-ID"); the declaration itself is the basic
 validation.
 
+**D10 The prev comparison of the tests of the model** (user, 2026-11-23:
+"Wenn wir den prev-Vergleich brauchen, dann Option 1 \"Erst prev-Vergleich
+bauen\"", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"Test rework step 1: prev comparison of model tests; extension key";
+CLAUDE.md rule 3). A test of the old form in `tests/blitz2`, and a bug-orig
+test whose subject is the compiler, has its source compiled by the previous
+commit's compiler too (`compiler_prev`, `blitz2_ID_prev`,
+`bug_orig_ID_prev`), so that a change of the executable with the same
+output is seen; a test of the model keeps that:
+
+- The build step of a directory writes the driver of all cases of each
+  source (every case selected; the preprocessing, driver and tokenising
+  of a run: `corpusrun case --write-driver`) into the build directory, so
+  a source whose driver cannot be written fails the build.
+- `cmake/prev.cmake` registers, with a prev build, one test
+  `PREFIX_ID_prev` per source (`-` of the id as `_`, the prefix of its
+  tests; `prev_register`, so `prev_check_entries` knows the name at
+  configure time): the sources of `tests/blitz2` and the bug-orig sources
+  of the area `compiler/` and the regression sources `compiler-*`, as in
+  the old form. It runs `corpusrun case --prev`.
+- That resolves the configuration and compiles the driver once per value
+  of `runtime-errors` among the cells without original material (blitz2-c
+  with the C libraries), with the other compile settings of the first such
+  cell: a pass of `corpus.h` with `run=off`, the configuration `clib` (the
+  cell's compiler and libraries) and `prev|exe:clib` (the prev build's
+  blitz2 and libraries), the test library of this build staged for both,
+  as `prev_compile_test` does for the old form. Only `runtime-errors`
+  makes another compile: the other run settings (machine, time limit,
+  files) do not change the executable.
+- The name of a compile is `ID` without runtime error checking and
+  `ID-runerrs` with it (the source names of the old twins), so an entry of
+  PREV_INTENDED is `PREFIX_ID_prev:ID` or `PREFIX_ID_prev:ID-runerrs`. An
+  entry of the test that names no compile of it fails as stale, as an
+  entry that names a compile without a difference does.
+- A test with RWE user libraries is refused (the old form compared none).
+
 ## Interface
 
 The contract with the test library is the spec
@@ -367,3 +403,76 @@ the driver `tools/lib/testpp/testdriver.h`; the build step
   gives the expected entries with 1.95, 2.10 with an RWE user library (its
   reference), the port with the CD's libraries and the port with the RWE
   variant's C libraries.
+
+## Findings of the prev comparison
+
+Tasks 7.2-7.5 (`corpusrun case --write-driver` and `--prev`,
+`cmake/prev.cmake` `prev_compile_model_test`, `basic_test_register(...
+PREV REGEX [PREV_EXCLUDE ID...])`).
+
+- **The driver** is written by every build, not only with a prev build
+  (`model-drivers/ID.bb2` and `ID.bas` in the directory's build
+  directory): a source whose driver cannot be written fails the build
+  (`blitz2_selftest_model_driver_broken` runs the command of the step on
+  such a source), and the self tests run without a prev build. The token
+  list with RWE user libraries goes to a directory of its own beside the
+  driver (`ID.bb2.d`), since the drivers of a directory are written at
+  the same time.
+- **What a compile takes from its cell**: the pass of the first cell of
+  the side port with the value of `runtime-errors` (`cr_cell_pass`), less
+  what belongs to a run (launcher, rcput, the hang check, serial, runwrap,
+  runargs, launcherargs, the debugger module, the floppies), with
+  `mask_traps=on` for a job line `run=` (as `prev_compile_test`).
+- **The bug-orig sources** compared are those of the old form: the area
+  `compiler/` and `regression/compiler-*`, without the four ids of
+  `prev_not_compared` (`PREV_EXCLUDE`); the tests with RWE user libraries
+  are refused by the runner (the old form left them out).
+- **Broken input** (without a prev build, `selftest/model-prev.test.bas`):
+  the same compiler passes; `hangstub` as the prev compiler (a result
+  that differs: none) fails naming the compile, and passes when it is
+  named; an entry without a difference and an entry for a compile the
+  test does not have fail as STALE. With `-DBLITZ2_PREV`
+  `blitz2_model_numbering_prev` passes (two sessions, 4 s).
+- **Cost**: two sessions per compile (about 2 s each, both at once), so a
+  test with both values of `runtime-errors` takes four; the old form's
+  plain sources shared the two sessions of `compiler_prev`. For round U4
+  (about 100 compiler tests) that is about 200 more sessions with a prev
+  build; batching the drivers of a directory into one pass is possible
+  later (one pass per value of `runtime-errors`, the names stay).
+- **Time limit**: the ctest time limit assumes the default session limit
+  (`BASIC_TEST_TIMEOUT`); a test with a larger `timeout` of its own is
+  not known when CMake configures.
+
+## Findings of the move of the runerrs twins
+
+Task 5.2: the eight pairs (`array-index-code`, `intrinsic-asc`, `-frac`,
+`-frac-lib`, `-int`, `-int-lib`, `-len`, `-len-lib`) and
+`array-index-div0-runerrs` are `ID.test.bas` with `[matrix]
+runtime-errors = ["off", "on"]` (`array-index-div0.test.bas`:
+`runtime-errors = "on"`, no matrix).
+
+- **The twins were not the same program**: only `intrinsic-frac` and
+  `intrinsic-int` had the same `.expect`. The others differ in JSR counts
+  and code sizes (the checks of runtime error checking: `NPrint Asc(a$)`
+  1 or 2 calls, `a(iw,jw)` 44 or 116 bytes), `array-index-code-runerrs`
+  left out the two folded constants, and `intrinsic-int-lib-runerrs` has
+  a string argument more (the runtime error "Illegal Type"). The context
+  of this design ("the same code and `.expect`") was wrong for them.
+- **How a source tells the cells apart**: the program cannot be told the
+  cell, so it finds out: `runerrs{?a,?b}` looks for the debugger's
+  `trap #1` (`$4E41`, `debugstuff` puts it in front of every statement
+  with runtime error checking) between two labels around a plain
+  statement in the batch init, and `rv{OFF,ON}` gives the expected value
+  of the cell. A wrong probe would make every count that differs fail
+  (checked: with the two values swapped both cells fail). The checks the
+  old `-runerrs` program did not have (the size of the folded constants)
+  stand in `If re=0`, the string argument of `Int` in `If re`, so each
+  cell checks what its old program checked (the offsets of the folded
+  constants are checked in both).
+- **What the old tests printed** besides the values (the line of
+  `NPrint Asc(a$)`, `NPrint Int(q)`, `NPrint Frac(q1)`, the subject of the
+  count) is the assertion `output` of the case in `ID.test.toml`.
+- **The prev comparison** of the twins is now `blitz2_ID_prev` with the
+  compiles `ID` and `ID-runerrs` (before: `compiler_prev:ID` and
+  `blitz2_ID_runerrs_prev:ID-runerrs`); `array-index-div0` has only
+  `array-index-div0-runerrs`, the name it had.

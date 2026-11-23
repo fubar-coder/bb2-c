@@ -470,16 +470,39 @@ port:
   behaves as declared.
 
 **`fixed = N`** is for a bug that is not in the original, a bug of the
-port. A test with `fixed` declares no deviation; `fixed` and
-`fixed-orig` exclude each other.
+port. A test with `fixed` declares no deviation.
+
+**`extension = N`** is for an extension of the port: behaviour the port
+adds where the original refuses or does something else, `N` the number
+of the extension's issue. Its deviations declare what the original does
+instead, in the cells with the original's part. The test is judged like
+one with `fixed-orig`: the cells with that part must show the deviation,
+all others must pass the checks, and it runs in `all`. An example is
+`tests/bug-orig/libs/shapeslib-loadshape-anim-interleave.test.toml`:
+
+```toml
+extension = 1166
+exclude = ["compiler=orig195,libs=clib"]
+files = ["anim.iff|@TESTDATA@/shapeslib-loadshape-anim-interleave.anim"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[deviations."libs=cd"]
+"check.interleave.no_error" = "== fail"   # the original stops with an error
+"end.case" = "not exists"                 # ... and ends the program there
+```
+
+A test has at most one of `fixed-orig`, `fixed` and `extension`.
 
 A test in `tests/bug-orig/` (outside `regression/`) must declare at
 least one deviation. Without one it is reported *broken*, because it
-would not show its bug. `fixed-orig` without a deviation is refused,
-and so is `fixed` with one.
+would not show its bug. `fixed-orig` or `extension` without a deviation
+is refused, and so is `fixed` with one.
 
-`fixed-orig`, `fixed` and the deviations belong to a single test: they
-may stand only in its `ID.test.toml`. `root` may stand only in a
+`fixed-orig`, `fixed`, `extension` and the deviations belong to a single
+test: they may stand only in its `ID.test.toml`. `root` may stand only in a
 `tests.toml`.
 
 ## A complete example
@@ -794,7 +817,7 @@ found.
 Put the settings all its tests share into `tests.toml`: a matrix, an
 `exclude`, a time limit, labels, common assertions. Do not set
 `root = true` there: the search must go on to `tests/tests.toml`, and
-`fixed-orig`, `fixed` and deviations are not allowed in a directory
+`fixed-orig`, `fixed`, `extension` and deviations are not allowed in a directory
 file.
 
 #### Check a test of it
@@ -884,6 +907,7 @@ are described in the repository's
 | `root` | `true`, `false` | `false` | the search for files stops here; only in a `tests.toml` |
 | `fixed-orig` | issue number | none | the original bug is fixed by this issue; only in an `ID.test.toml` |
 | `fixed` | issue number | none | a bug of the port is fixed by this issue; only in an `ID.test.toml` |
+| `extension` | issue number | none | the test shows this extension of the port; only in an `ID.test.toml` |
 | `[matrix]` | `KEY = ["VALUE", ...]` | none | the axes |
 | `[asserts]`, `[asserts."SELECTOR"]` | `QUERY = "PREDICATE"` | the defaults above | assertions |
 | `[deviations."SELECTOR"]` | `QUERY = "PREDICATE"` | none | how the original's faulty part deviates; only in an `ID.test.toml` |

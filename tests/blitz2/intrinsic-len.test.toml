@@ -1,0 +1,7 @@
+# intrinsic-len.test.bas: without and with runtime error checking; the
+# value NPrint Len(a$) prints
+[matrix]
+runtime-errors = ["off", "on"]
+
+[asserts."case=calls"]
+output = "matches \"5\""

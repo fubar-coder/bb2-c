@@ -1,0 +1,14 @@
+# shapeslib-loadshape-anim-interleave.test.bas: the test of an extension
+# of the port (#1166); the CD's libraries stop the load with "Illegal ANIM
+# interleave value" instead (with 1.95 and with blitz2-c)
+extension = 1166
+exclude = ["compiler=orig195,libs=clib"]
+files = ["anim.iff|@TESTDATA@/shapeslib-loadshape-anim-interleave.anim"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[deviations."libs=cd"]
+"check.interleave.no_error" = "== fail"
+"end.case" = "not exists"

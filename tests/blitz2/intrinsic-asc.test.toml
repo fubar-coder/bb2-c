@@ -1,0 +1,7 @@
+# intrinsic-asc.test.bas: without and with runtime error checking; the
+# value NPrint Asc(a$) prints
+[matrix]
+runtime-errors = ["off", "on"]
+
+[asserts."case=calls"]
+output = "matches \"104\""

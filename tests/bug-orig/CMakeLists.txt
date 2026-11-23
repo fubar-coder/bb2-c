@@ -60,9 +60,6 @@
 #                      ; @fixed #NNN        the bug is fixed in the port
 #                                           (issue NNN): a fixed test,
 #                                           see below
-#                      ; @fixed #NNN/port   the same for an extension of the
-#                                           port (issue NNN), not an original
-#                                           bug (tests/README.md)
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
 #   AREA/ID.orig     the recorded observation of the original (every test
 #                    of a bug of the original, open or fixed; not for a
@@ -204,7 +201,7 @@ function(bug_orig_test bas name)
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
 	foreach(h IN LISTS header)
 		string(STRIP "${h}" h)
-		if(h MATCHES "^<semicolon> @fixed #([1-9][0-9]*)(/port)?$")
+		if(h MATCHES "^<semicolon> @fixed #([1-9][0-9]*)$")
 			if(fixed)
 				message(FATAL_ERROR "bug-orig: ${bas}: @fixed twice")
 			endif()
@@ -589,9 +586,12 @@ endforeach()
 # registered by the build: ctest bug_orig_ID__CASE (and _originals for the cells with
 # original material); a test without a declared deviation of the original is broken.
 # Those of regression/ are port regression tests: regression_ID__CASE
+# With a prev build those whose subject is the compiler (compiler/, regression/compiler-*) are
+# compared with it as in the old form (bug_orig_ID_prev, regression_ID_prev; cmake/prev.cmake)
 basic_test_register(bug_orig_ ${CMAKE_CURRENT_SOURCE_DIR} "*/*.test.bas" EXCLUDE "^(regression|selftest)/"
-	REQUIRE_DEVIATION)
-basic_test_register(regression_ ${CMAKE_CURRENT_SOURCE_DIR} "regression/*.test.bas")
+	REQUIRE_DEVIATION PREV "^compiler/" PREV_EXCLUDE ${prev_not_compared})
+basic_test_register(regression_ ${CMAKE_CURRENT_SOURCE_DIR} "regression/*.test.bas"
+	PREV "^regression/compiler-" PREV_EXCLUDE ${prev_not_compared})
 
 # the self test: an expectation equal to what the original does must be
 # reported as broken (exit status 3), not as a reproduced bug

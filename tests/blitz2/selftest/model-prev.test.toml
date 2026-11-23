@@ -1,0 +1,3 @@
+# model-prev.test.bas: the session's time limit, which the prev compiler
+# hangstub of blitz2_selftest_model_differs_prev and _intended_prev takes
+timeout = 30

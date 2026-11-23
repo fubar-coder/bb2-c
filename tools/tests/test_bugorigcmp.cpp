@@ -197,8 +197,10 @@ TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
     CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
     free(project("x", "; @fixed #7 Cc\n", 0, expect_txt, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
-    /* an extension ("; @fixed #N/port"): as "; @fixed #N"; only "/port",
-       only right behind the number, only in a Blitz source */
+    /* the marker of an extension of the old form ("; @fixed #N/port", a tree
+       before the move of its only test to the model, extension = N): as
+       "; @fixed #N"; only "/port", only right behind the number, only in a
+       Blitz source */
     t = project("x", "; a test\n; @fixed #7/port\nPrint 1\n", 0, expect_txt, orig_txt, &r);
     CHECK(r == 0);
     CHECK(t && strstr(t, "x|run||1 [fixed #7]\t") && strstr(t, "x|run|orig|1 [orig]\t"));
@@ -411,6 +413,14 @@ TEST_CASE("bugorigcmp: scope of tests of the BASIC test model", "[bugorigcmp]")
     free(rep);
     /* fixed = N for a bug that is not in the original: the same */
     CHECK(scope_model(model_src, NULL, model_src, "fixed = 9\n", model_src, 9, &rep) == 0);
+    free(rep);
+    /* extension = N, the test of an extension of the port: the same */
+    std::string ext = std::string("extension = 1166\n") + model_toml;
+    CHECK(scope_model(model_src, model_toml, model_src, ext.c_str(), model_src, 1166, &rep) == 0);
+    free(rep);
+    /* ... without the issue named it is reported */
+    CHECK(scope_model(model_src, model_toml, model_src, ext.c_str(), model_src, 0, &rep) == 1);
+    CHECK(strstr(rep, "x|extension||1 [fixed #1166]: added") != NULL);
     free(rep);
 }
 

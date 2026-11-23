@@ -72,7 +72,61 @@ struct caserun_opts {
     int require_deviation;      /* a bug-orig test */
     int print_config;           /* print the effective configuration, run nothing */
     int print_driver;           /* print the driver of the case, run nothing */
+    const char *write_driver;   /* write the driver of all cases, tokenised, to
+                                   this file (NAME.bb2; its text beside it as
+                                   NAME.bas) and run nothing: the build step */
+    int prev;                   /* the comparison with the prev build (below) */
+    const char *driver;         /* with prev: the driver write_driver wrote */
+    const char *test;           /* with prev: the ctest name, the TEST of the
+                                   PREV_INTENDED entries */
+    const char *prev_blitz2;    /* with prev: the previous commit's compiler */
+    const char *prev_libs;      /* with prev: the directory of its deflibs and
+                                   acidlibs */
+    const char *const *intended;    /* with prev: the PREV_INTENDED entries (TEST:NAME
+                                       of any test, or ON) */
+    size_t nintended;
 };
+
+/*
+ * The comparison with the prev build (prev, CLAUDE.md rule 3; change
+ * basic-test-runner D10): the driver of all cases is compiled by this
+ * build's compiler and by the previous commit's, once per value of
+ * runtime-errors among the cells without original material (the side
+ * port), with the other settings of the first such cell: a pass of corpus.h
+ * with run=off, the configuration clib (the cell's) and prev|exe:clib.  The
+ * compile without runtime error checking is named ID, the one with it
+ * ID-runerrs (CR_PREV_RUNERRS); a PREV_INTENDED entry TEST:NAME names one,
+ * and an entry of TEST that names no compile of the test is stale.  The
+ * exit status: 0 the same, 1 a difference that is not intended or a stale
+ * entry, 2 error (also a test with RWE user libraries: not compared), 77
+ * skipped.
+ */
+#define CR_PREV_RUNERRS "-runerrs"
+
+/**
+ * @brief The pass file text of one compile of the comparison: the cell's
+ *        pass (cr_cell_pass, tag clib) without what belongs to a run (the
+ *        launcher, rcput, the hang check, serial, runwrap, runargs,
+ *        launcherargs, the debugger module, the floppies), with run=off,
+ *        test=TEST, the configuration prev|exe:TAG after the cell's, the
+ *        source, the work directory and its report WORK.txt, mask_traps=on
+ *        for a job line run=, and the entries of TEST:NAME (or ON) as
+ *        intended= lines.
+ * @return 0 = ok, -1 = refused (err: a cell pass without a configuration),
+ *         -2 = out of memory
+ */
+int cr_prev_pass(const char *cell_pass, const char *test, const char *name, const char *work, const char *source,
+                 const char *prev_blitz2, const char *prev_libs, const char *const *entries, size_t nentries,
+                 char **text, char *err, size_t errlen);
+
+/**
+ * @brief The next entry of test that names none of the compiles names[]
+ *        (stale: the test has no such compile).
+ * @param cursor  0 at the start
+ * @return the entry, NULL = no more
+ */
+const char *cr_prev_unknown(const char *test, const char *const *names, size_t nnames, const char *const *entries,
+                            size_t nentries, size_t *cursor);
 
 /**
  * @brief Run (or show) one case of a test.

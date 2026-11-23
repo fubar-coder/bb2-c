@@ -31,8 +31,10 @@
  *
  * The verdict of a case over the cells of a side (tj_verdict):
  *   - no deviation declared for the case: every cell must pass (PASSED);
- *   - deviations and fixed-orig: the cells with the faulty part must pass
- *     with their deviations, the others without (PASSED, "fixed");
+ *   - deviations and fixed-orig (or extension, the test of an extension of
+ *     the port: its deviations are what the original does instead): the
+ *     cells with the faulty part must pass with their deviations, the
+ *     others without (PASSED, "fixed");
  *   - deviations without a fixed issue (an open bug): every cell must pass
  *     with the deviations, the cells without the faulty part as if their
  *     selector matched (REPRODUCED); such a cell that passes without the

@@ -409,7 +409,7 @@ the four give the same results, except for `Dim a(65535)` with checking
   index stops in the CPU's division trap without the checking (as the
   original's Word division there), where a Long division gives the
   largest number (`ldivlib`, #200); with the checking it stops with
-  "Division by Zero" in both (`tests/blitz2/array-index-div0-runerrs`).
+  "Division by Zero" in both (`tests/blitz2/array-index-div0`).
 * **Constants with a fraction under a Byte** were original bug #1188,
   fixed in the port (above, "A constant with a fraction under a Byte type
   so far"): in the original `rb.b=(1.5*vb)` computes `1*vb`, so a Byte

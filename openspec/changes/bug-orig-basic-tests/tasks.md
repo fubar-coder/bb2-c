@@ -6,6 +6,8 @@
 - [x] 1.2 Judging of declared deviations for the cells with the faulty part, the open-bug rule for the other cells, labels per case, the errors of `fixed-orig`/`fixed`, a test without a declared deviation as BROKEN; verify: host tests of each rule with broken input
 - [x] 1.3 fix-scope for tests of the model (`tools/results fix-scope`): setting `fixed-orig = N` / `fixed = N` passes for issue N, other changes of checks, assertions or declarations are reported; verify: the scenarios of `testing/bug-fix-workflow` as host tests
 - [x] 1.4 `bug-orig-record` skips tests of the model; verify: a test of the target with one test of each form
+- [x] 1.5 The key `extension = N` for the test of an extension of the port (decided 2026-11-23, ~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md "Test rework step 1: prev comparison of model tests; extension key"): the requirement "The fixed issue is one key of three kinds" of the delta of `testing/bug-orig` and fix-scope's in `testing/bug-fix-workflow`; deviations required, judged and labelled like a fixed test, fix-scope's case `ID|extension||1 [fixed #N]`; verify: `openspec validate bug-orig-basic-tests --strict`, host tests of each rule with broken input (`extension` without a deviation, with `fixed-orig` or `fixed`, in a `tests.toml`)
+- [x] 1.6 Move `tests/bug-orig/libs/shapeslib-loadshape-anim-interleave` (#1166, `; @fixed #1166/port`) to the model with `extension = 1166`, and drop the marker `/port` if no other test uses it; the wording of CLAUDE.md rule 4, `docs/development.md` and the agent files drafted for the user (CLAUDE.md rule 1), `tests/README.md` and `docs/` written; verify: the test passes on both sides, fix-scope counts its key as `[fixed #1166]`
 
 ## 2. Pilot round
 

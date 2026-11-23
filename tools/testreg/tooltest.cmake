@@ -25,6 +25,10 @@ file(WRITE ${s}/libs/sub/fixed-one.test.bas "!TestCase{a}\n!EndTestCase\n")
 file(WRITE ${s}/libs/sub/fixed-one.test.toml
 	"fixed-orig = 12\ncompiler = \"port\"\nlibs = \"clib\"\ntimeout = 20\n"
 	"[deviations.\"libs=cd\"]\n\"end.case\" = \"not exists\"\n")
+# the test of an extension of the port: labelled like a fixed one (no bug-orig)
+file(WRITE ${s}/libs/sub/ext-one.test.bas "!TestCase{a}\n  !CheckEq{1,1,\"loaded\"}\n!EndTestCase\n")
+file(WRITE ${s}/libs/sub/ext-one.test.toml
+	"extension = 13\n[deviations.\"libs=cd\"]\n\"check.a.loaded\" = \"== fail\"\n")
 
 set(env --env ${WORK}/env.toml --tokens ${WORK}/tokens.txt)
 function(run expect_rc)
@@ -49,7 +53,7 @@ endfunction()
 # the include file and the depfile
 run(0 --prefix bug_orig_ --output ${WORK}/tests.cmake --depfile ${WORK}/tests.d ${env}
 	--timeout-extra 30 --command /x/corpusrun --command case
-	${s}/libs/shape-frames.test.bas ${s}/libs/sub/fixed-one.test.bas)
+	${s}/libs/shape-frames.test.bas ${s}/libs/sub/fixed-one.test.bas ${s}/libs/sub/ext-one.test.bas)
 file(READ ${WORK}/tests.cmake inc)
 string(REPLACE "]==]" "" inc "${inc}")
 string(REPLACE "[==[" "" inc "${inc}")
@@ -59,7 +63,9 @@ foreach(want
 		"set_tests_properties( bug_orig_shape_frames__behind_originals PROPERTIES LABELS originals;libs TIMEOUT 150 SKIP_RETURN_CODE 77 COST 3 FIXTURES_REQUIRED testdata)"
 		"set_tests_properties( bug_orig_shape_frames__plain PROPERTIES LABELS emulator;libs TIMEOUT 90"
 		"--case plain --side originals)"
-		"set_tests_properties( bug_orig_fixed_one__a PROPERTIES LABELS emulator;libs TIMEOUT 50 SKIP_RETURN_CODE 77 COST 3")
+		"set_tests_properties( bug_orig_fixed_one__a PROPERTIES LABELS emulator;libs TIMEOUT 50 SKIP_RETURN_CODE 77 COST 3"
+		"set_tests_properties( bug_orig_ext_one__a PROPERTIES LABELS emulator;libs TIMEOUT 90"
+		"set_tests_properties( bug_orig_ext_one__a_originals PROPERTIES LABELS originals;libs")
 	string(FIND "${inc}" "${want}" at)
 	if(at LESS 0)
 		message(FATAL_ERROR "the include file lacks\n  ${want}\nin\n${inc}")
@@ -179,15 +185,16 @@ function(build_and_list want_count)
 	endif()
 	set(list "${list}" PARENT_SCOPE)
 endfunction()
-build_and_list(5)
+build_and_list(7)
 foreach(name regression_shape_frames__behind regression_shape_frames__behind_originals
-		regression_shape_frames__plain regression_shape_frames__plain_originals regression_fixed_one__a)
+		regression_shape_frames__plain regression_shape_frames__plain_originals regression_fixed_one__a
+		regression_ext_one__a regression_ext_one__a_originals)
 	if(NOT list MATCHES "Test +#[0-9]+: ${name}\n")
 		message(FATAL_ERROR "ctest -N lacks ${name}:\n${list}")
 	endif()
 endforeach()
 build_and_list(0 -L sample)
 file(WRITE ${s}/libs/tests.toml "labels = [\"libs\", \"sample\"]\ncost = 3\n")
-build_and_list(5 -L sample)
+build_and_list(7 -L sample)
 file(REMOVE_RECURSE ${WORK})
 message("testreg_tool: all cases as expected")

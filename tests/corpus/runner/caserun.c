@@ -235,6 +235,97 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
     return 0;
 }
 
+/* --------------------------------------------- the comparison with prev */
+
+/* entry TEST:NAME of test: NAME, else NULL */
+static const char *entry_name(const char *entry, const char *test)
+{
+    size_t n = strlen(test);
+
+    return !strncmp(entry, test, n) && entry[n] == ':' ? entry + n + 1 : NULL;
+}
+
+int cr_prev_pass(const char *cell_pass, const char *test, const char *name, const char *work, const char *source,
+                 const char *prev_blitz2, const char *prev_libs, const char *const *entries, size_t nentries,
+                 char **text, char *err, size_t errlen)
+{
+    /* the keys of a run, not of a compile (as prev_compile_test drops them), and
+       the ones this pass sets itself */
+    static const char *const drop[] = { "cell", "launcher", "rcput", "hang_after", "hang_from", "serial",
+                                        "runwrap", "runargs", "launcherargs", "defaultdbug", "floppy",
+                                        "parallel", "report", "work", "source", "run", "test", "intended" };
+    struct text t = { 0 };
+    const char *l = cell_pass;
+    int configs = 0, mask = 0;
+
+    *text = NULL;
+    text_add(&t, "test=%s\nwork=%s\nreport=%s.txt\nrun=off\nparallel=2\nsource=%s\n", test, work, work, source);
+    while (*l) {
+        const char *e = strchr(l, '\n'), *eq = strchr(l, '=');
+        size_t len = e ? (size_t)(e - l) : strlen(l), k;
+        int skip = 0;
+
+        if (eq && eq < l + len) {
+            size_t klen = (size_t)(eq - l);
+
+            for (k = 0; k < sizeof drop / sizeof drop[0]; k++)
+                if (strlen(drop[k]) == klen && !memcmp(l, drop[k], klen))
+                    skip = 1;
+            if (klen == 7 && !memcmp(l, "jobline", 7) && len > 12 && !memcmp(eq + 1, "run=", 4))
+                mask = 1;
+        }
+        if (!skip && len)
+            text_add(&t, "%.*s\n", (int)len, l);
+        if (!skip && len > 7 && !memcmp(l, "config=", 7)) {
+            const char *bar = memchr(l + 7, '|', len - 7);
+
+            if (!bar || configs++) {
+                free(t.p);
+                return fail(err, errlen, "the pass of the cell has %s", bar ? "two configurations"
+                                                                            : "a malformed configuration");
+            }
+            text_add(&t, "config=prev|exe:%.*s|%s|%s/deflibs|%s/acidlibs\n", (int)(bar - l - 7), l + 7,
+                     prev_blitz2, prev_libs, prev_libs);
+        }
+        l += len + (e != NULL);
+    }
+    if (!configs) {
+        free(t.p);
+        return fail(err, errlen, "the pass of the cell has no configuration");
+    }
+    if (mask)
+        text_add(&t, "mask_traps=on\n");
+    for (size_t i = 0; i < nentries; i++) {
+        const char *n = entry_name(entries[i], test);
+
+        if (!strcmp(entries[i], "ON") || (n && !strcmp(n, name)))
+            text_add(&t, "intended=%s\n", entries[i]);
+    }
+    if (t.bad) {
+        free(t.p);
+        return -2;
+    }
+    *text = t.p;
+    return 0;
+}
+
+const char *cr_prev_unknown(const char *test, const char *const *names, size_t nnames, const char *const *entries,
+                            size_t nentries, size_t *cursor)
+{
+    for (; *cursor < nentries; (*cursor)++) {
+        const char *n = entry_name(entries[*cursor], test);
+        size_t k;
+
+        if (!n)
+            continue;
+        for (k = 0; k < nnames && strcmp(n, names[k]); k++)
+            ;
+        if (k == nnames)
+            return entries[(*cursor)++];
+    }
+    return NULL;
+}
+
 char *cr_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
 {
     static const char *const keys[] = { "machine", "rtg", "timeout", "hang-after" };
@@ -843,6 +934,162 @@ static const char *base_name(const char *path)
     return s ? s + 1 : path;
 }
 
+/* the comparison with the prev build (caserun.h): a pass per value of
+   runtime-errors of the side port */
+static int prev_run(const struct caserun_opts *o, const struct tc_env *env, const struct tc_config *conf,
+                    const struct tc_matrix *m, FILE *log)
+{
+    static const char *const values[] = { "off", "on" };
+    char err[800], *names[2] = { NULL, NULL }, *dir = NULL;
+    const char *ok_names[2];
+    const char *work = need(env, "work", err, sizeof err);
+    const struct tt_value *rwe = list(conf, "rwe");
+    size_t nnames = 0, cur = 0;
+    const char *stale;
+    int rc = 0, any = 0, skipped = 0;
+
+    if (!o->driver || !o->test || !o->prev_blitz2 || !o->prev_libs) {
+        fprintf(log, "corpusrun case: --prev needs --driver, --test, --prev-blitz2 and --prev-libs\n");
+        return 2;
+    }
+    if (rwe && rwe->nlist) {
+        fprintf(log, "corpusrun case: %s: a test with RWE user libraries is not compared with the prev build\n",
+                conf->id);
+        return 2;
+    }
+    if (!work || !(dir = str_printf("%s/%s", work, o->test)) || mkdir_p(dir)) {
+        fprintf(log, "corpusrun case: %s\n", work ? "cannot create the work directory" : err);
+        free(dir);
+        return 2;
+    }
+    for (size_t v = 0; v < 2; v++) {
+        char b[24], *src = NULL, *wdir = NULL, *cp = NULL, *pt = NULL;
+        size_t cell;
+        struct corpus_pass p = { 0 };
+        int r;
+
+        for (cell = 0; cell < m->ncells; cell++)
+            if (!m->cells[cell].originals && !strcmp(val(conf, m, cell, "runtime-errors", b), values[v]))
+                break;
+        if (cell == m->ncells)
+            continue;
+        if (!(names[nnames] = str_printf("%s%s", conf->id, v ? CR_PREV_RUNERRS : ""))
+            || !(src = str_printf("%s/%s.bb2", dir, names[nnames]))
+            || !(wdir = str_printf("%s/%s", dir, names[nnames]))) {
+            fprintf(log, "corpusrun case: out of memory\n");
+            free(src);
+            rc = 2;
+            break;
+        }
+        ok_names[nnames] = names[nnames];
+        nnames++;
+        if (copy_file(o->driver, src)) {
+            fprintf(log, "corpusrun case: cannot copy the driver %s\n", o->driver);
+            r = 2;
+        } else if ((r = cr_cell_pass(conf, m, cell, env, "clib", wdir, src, &cp, err, sizeof err))
+                   || (r = cr_prev_pass(cp, o->test, names[nnames - 1], wdir, src, o->prev_blitz2, o->prev_libs,
+                                        o->intended, o->nintended, &pt, err, sizeof err))) {
+            fprintf(log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
+            r = 2;
+        } else if (corpus_parse(pt, &p, err, sizeof err)) {
+            fprintf(log, "corpusrun case: %s: %s\n", names[nnames - 1], err);
+            r = 2;
+        } else {
+            corpus_select(&p);
+            corpus_skip_missing(&p, log);
+            r = corpus_run(&p, log);
+            any = 1;
+        }
+        corpus_free(&p);
+        free(src);
+        free(wdir);
+        free(cp);
+        free(pt);
+        if (r == 77)
+            skipped = 1;
+        else if (r > rc)
+            rc = r;
+    }
+    if (!nnames && rc == 0) {
+        fprintf(log, "corpusrun case: %s has no cell of the side port\n", conf->id);
+        rc = 2;
+    }
+    /* an entry of the test that names no compile of it: stale, as one without a difference */
+    while ((stale = cr_prev_unknown(o->test, ok_names, nnames, o->intended, o->nintended, &cur)) != NULL) {
+        fprintf(log, "STALE %s: intended, but the test has no such compile (its compiles:", stale);
+        for (size_t i = 0; i < nnames; i++)
+            fprintf(log, " %s", ok_names[i]);
+        fprintf(log, ")\n");
+        if (rc < 1)
+            rc = 1;
+    }
+    if (rc == 0 && skipped)
+        rc = 77;
+    if (rc == 0 && !any)
+        rc = 2;
+    fprintf(log, "%s: the comparison with the prev build: %s\n", conf->id,
+            rc == 0 ? "the same" : rc == 1 ? "DIFFERS" : rc == 77 ? "skipped" : "ERROR");
+    free(names[0]);
+    free(names[1]);
+    free(dir);
+    return rc;
+}
+
+/* the driver of all cases, tokenised, to o->write_driver (its text beside it) */
+static int write_driver(const struct caserun_opts *o, const struct tc_env *env, const struct tc_config *conf,
+                        const struct tp_driver *drv, FILE *log)
+{
+    const char *out = o->write_driver, *slash = strrchr(out, '/');
+    size_t n = strlen(out);
+    char err[800], *bas, *dir, *tokens = NULL;
+    const char *tedsrc = need(env, "tedsrc", err, sizeof err);
+    int rc = 2;
+
+    if (n > 4 && !strcmp(out + n - 4, ".bb2"))
+        bas = str_printf("%.*s.bas", (int)(n - 4), out);
+    else
+        bas = str_printf("%s.bas", out);
+    dir = slash ? strndup(out, (size_t)(slash - out)) : strdup(".");
+    if (!bas || !dir) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        goto out;
+    }
+    if (!tedsrc) {
+        fprintf(log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    if (mkdir_p(dir) || write_file(bas, drv->text, drv->len)) {
+        fprintf(log, "corpusrun case: cannot write %s\n", bas);
+        goto out;
+    }
+    /* the token list with the RWE user libraries goes beside the driver,
+       in a directory of its own (the drivers of a directory are written at
+       the same time) */
+    free(dir);
+    if (!(dir = str_printf("%s.d", out)) || (list(conf, "rwe") && mkdir_p(dir))) {
+        fprintf(log, "corpusrun case: cannot create %s\n", dir ? dir : "a directory");
+        goto out;
+    }
+    if (!(tokens = token_list(conf, env, dir, log, err, sizeof err))) {
+        fprintf(log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    {
+        char *argv[] = { (char *)tedsrc, (char *)"tok", tokens, bas, (char *)out, NULL };
+
+        if (spawn(argv, log)) {
+            fprintf(log, "corpusrun case: the driver %s cannot be tokenised\n", bas);
+            goto out;
+        }
+    }
+    rc = 0;
+out:
+    free(bas);
+    free(dir);
+    free(tokens);
+    return rc;
+}
+
 int caserun(const struct caserun_opts *o, FILE *log)
 {
     struct tc_env env = { 0 };
@@ -871,6 +1118,10 @@ int caserun(const struct caserun_opts *o, FILE *log)
         rc = cr_print_config(log, &conf, &m) ? 2 : 0;
         goto out;
     }
+    if (o->prev) {
+        rc = prev_run(o, &env, &conf, &m, log);
+        goto out;
+    }
     if (!(text = (char *)read_file(o->source, &len))) {
         fprintf(log, "corpusrun case: cannot read %s\n", o->source);
         goto out;
@@ -894,31 +1145,54 @@ int caserun(const struct caserun_opts *o, FILE *log)
         struct tp_driver_params dp = { 0 };
         size_t mlen;
         char *mac;
-        const char *cases[1] = { o->case_name };
+        int n;
+        const char *one[1] = { o->case_name };
+        const char **cases = one;
+        size_t ncases = 1;
+
+        /* the driver of the build step: every case */
+        if (!o->case_name) {
+            if (!(cases = calloc(src.ncases + 1, sizeof *cases))) {
+                fprintf(log, "corpusrun case: out of memory\n");
+                goto out;
+            }
+            for (ncases = 0; ncases < src.ncases; ncases++)
+                cases[ncases] = src.cases[ncases].name;
+        }
 
         if (!(macros_path = need(&env, "macros", err, sizeof err))) {
             fprintf(log, "corpusrun case: %s\n", err);
+            if (cases != one)
+                free(cases);
             goto out;
         }
         if (!(mac = (char *)read_file(macros_path, &mlen))) {
             fprintf(log, "corpusrun case: cannot read %s\n", macros_path);
+            if (cases != one)
+                free(cases);
             goto out;
         }
         dp.macros = mac;
         dp.macros_len = mlen;
         dp.result = CR_RESULT;
         dp.cases = cases;
-        dp.ncases = 1;
-        if (tp_driver_write(&src, &dp, &drv, err, sizeof err)) {
-            fprintf(log, "corpusrun case: %s\n", err);
-            free(mac);
+        dp.ncases = ncases;
+        n = tp_driver_write(&src, &dp, &drv, err, sizeof err);
+        free(mac);
+        if (cases != one)
+            free(cases);
+        if (n) {
+            fprintf(log, "corpusrun case: %s\n", n == -2 ? "out of memory" : err);
             goto out;
         }
-        free(mac);
     }
     if (o->print_driver) {
         fwrite(drv.text, 1, drv.len, log);
         rc = ferror(log) ? 2 : 0;
+        goto out;
+    }
+    if (o->write_driver) {
+        rc = write_driver(o, &env, &conf, &drv, log);
         goto out;
     }
 

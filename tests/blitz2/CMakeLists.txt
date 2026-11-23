@@ -128,8 +128,9 @@ foreach(bas IN LISTS selftests)
 endforeach()
 add_custom_target(blitz2_test_sources ALL DEPENDS ${blitz2_test_sources})
 # the tests of the BASIC test model (ID.test.bas, cmake/basic-test-model.cmake): ctest
-# blitz2_ID__CASE (and _originals for the cells with original material), registered by the build
-basic_test_register(blitz2_ ${CMAKE_CURRENT_SOURCE_DIR} "*.test.bas")
+# blitz2_ID__CASE (and _originals for the cells with original material), registered by the build;
+# with a prev build each is compared with it (blitz2_ID_prev, cmake/prev.cmake)
+basic_test_register(blitz2_ ${CMAKE_CURRENT_SOURCE_DIR} "*.test.bas" PREV ".")
 # the self test of the model: a text that does not compile on purpose is reported at its
 # line of the test source (selftest/model-compile-error.test.bas, line 7), not at the line
 # of the driver
@@ -147,6 +148,55 @@ add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PR
 math(EXPR limit "2 * (${BASIC_TEST_TIMEOUT} + 60) + ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(blitz2_model_readme_example PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "readme-model-example: every case passed")
+# The comparison of a test of the model with the prev build (prev_compile_model_test, corpusrun
+# case --prev) with broken input, in a build without a prev build: the driver of
+# selftest/model-prev.test.bas (one compile, model-prev, without runtime error checking) compiled
+# by this build's compiler as "prev", or by hangstub (tests/corpus/amiga/hangstub.c, never ends: a
+# prev compiler whose result differs; the session's time limit is the test's, 30 s):
+#   blitz2_selftest_model_same_prev      the same compiler: passes
+#   blitz2_selftest_model_differs_prev   hangstub: fails, naming the compile
+#   blitz2_selftest_model_intended_prev  hangstub, the compile named: passes, "(intended)"
+#   blitz2_selftest_model_stale_prev     the same compiler, the compile named: fails, STALE
+#   blitz2_selftest_model_unknown_prev   the same compiler, model-prev-runerrs named (the test
+#                                        has no cell with runtime error checking): fails, STALE
+set(model_prev_src ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-prev.test.bas)
+set(model_prev_drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-prev.bb2)
+basic_test_driver(${model_prev_src} ${model_prev_drv} ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-prev.test.toml)
+add_custom_target(blitz2_selftest_model_prev_driver ALL DEPENDS ${model_prev_drv})
+function(model_prev_selftest kind compiler intended regex)
+	set(name blitz2_selftest_model_${kind}_prev)
+	set(cmd ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source ${model_prev_src} --prev
+		--driver ${model_prev_drv} --test ${name} --prev-blitz2 ${compiler} --prev-libs ${BLITZ2_DIR})
+	if(intended)
+		list(APPEND cmd --intended ${name}:${intended})
+	endif()
+	add_test(NAME ${name} COMMAND ${cmd})
+	math(EXPR limit "30 * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+	set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+		PASS_REGULAR_EXPRESSION "${regex}")
+endfunction()
+model_prev_selftest(same $<TARGET_FILE:blitz2> ""
+	"model-prev[^\n]*prev: result same, exe identical\n.*model-prev: the comparison with the prev build: the same\n")
+model_prev_selftest(differs $<TARGET_FILE:hangstub> ""
+	"model-prev[^\n]*no RESULT[^\n]*\nprev differs in: PREV_INTENDED=\"blitz2_selftest_model_differs_prev:model-prev\"\n.*model-prev: the comparison with the prev build: DIFFERS\n")
+model_prev_selftest(intended $<TARGET_FILE:hangstub> model-prev
+	"model-prev[^\n]*no RESULT[^\n]*\\(intended\\)\n.*model-prev: the comparison with the prev build: the same\n")
+model_prev_selftest(stale $<TARGET_FILE:blitz2> model-prev
+	"STALE blitz2_selftest_model_stale_prev:model-prev: intended, but prev does not differ.*model-prev: the comparison with the prev build: DIFFERS\n")
+model_prev_selftest(unknown $<TARGET_FILE:blitz2> model-prev-runerrs
+	"STALE blitz2_selftest_model_unknown_prev:model-prev-runerrs: intended, but the test has no such compile \\(its compiles: model-prev\\)\nmodel-prev: the comparison with the prev build: DIFFERS\n")
+# the driver the build writes for the comparison calls every case (model-numbering: first and
+# second, between the batch init and end), and the command of that build step fails on a
+# source whose driver cannot be written (selftest/model-driver-broken.test.bas)
+add_test(NAME blitz2_model_driver_all_cases COMMAND ${CMAKE_COMMAND}
+	-DDRIVER=${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-numbering.bas
+	"-DWANT=\n\\.tc__skip\nGosub tc__init\nGosub tc_first\nGosub tc_second\nGosub tc__final\nEnd\n$"
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/model-driver-check.cmake)
+add_test(NAME blitz2_selftest_model_driver_broken COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-driver-broken.test.bas
+	--write-driver ${CMAKE_CURRENT_BINARY_DIR}/model-drivers-broken/model-driver-broken.bb2)
+set_tests_properties(blitz2_selftest_model_driver_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"model-driver-broken\\.test\\.bas:5: [^\n]*@NOSUCH@")
 # the sources of the compiler that need nothing special, compiled by the prev build (the
 # compiler's bug-orig tests, tests/bug-orig, were added before)
 prev_compile_plain_pass()

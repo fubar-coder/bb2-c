@@ -608,6 +608,24 @@ TEST_CASE("testjudge: a fixed original bug", "[testjudge]")
     CHECK(!tj_case_has_deviation(&o.t));
 }
 
+TEST_CASE("testjudge: the test of an extension", "[testjudge]")
+{
+    // judged like a fixed original bug: the deviations are what the original does instead
+    fixture f(matrix, "extension = 1166\n" + declared);
+    std::string m;
+
+    CHECK(verdict(f, obs(width_fails), obs(good), m) == TJ_V_PASSED);
+    // the port loses the extension: a cell without the original's part fails
+    CHECK(verdict(f, obs(width_fails), obs(width_fails), m) == TJ_V_FAILED);
+    CHECK(has(m, "case frames_maximum, cell clib:\n  check frames_maximum width (x.test.bas:9) failed"));
+    // the original's cell no longer shows what it does instead
+    CHECK(verdict(f, obs(good), obs(good), m) == TJ_V_FAILED);
+    CHECK(has(m, "cell cd (the original's faulty part, its declared deviations):"));
+    // a bug-orig test with an extension declares its deviation: not broken
+    f.t.require_deviation = 1;
+    CHECK(verdict(f, obs(width_fails), obs(good), m) == TJ_V_PASSED);
+}
+
 TEST_CASE("testjudge: an open original bug", "[testjudge]")
 {
     fixture f(matrix, declared);
@@ -619,7 +637,7 @@ TEST_CASE("testjudge: an open original bug", "[testjudge]")
     // the C libraries pass: the bug is gone without a fixed issue
     CHECK(verdict(f, obs(width_fails), obs(good), m) == TJ_V_FAILED);
     CHECK(has(m, "cell clib (an open bug: its declared deviations):\n  the case passes without the declared "
-                 "deviations, but the test has no fixed issue (fixed-orig)"));
+                 "deviations, but the test has no fixed issue (fixed-orig, or extension)"));
     // the port fails differently: neither the bug nor the fix
     CHECK(verdict(f, obs(width_fails), obs(width_wrong), m) == TJ_V_FAILED);
     CHECK(has(m, "check.frames_maximum.width.actual == 0"));

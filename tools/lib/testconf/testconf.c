@@ -75,6 +75,8 @@ static const struct tc_keydef keys[] = {
       "the issue that fixed the original bug the test shows", NULL },
     { "fixed", TC_V_INT, TC_IN_TEST, 0, NULL, 1, -1,
       "the issue that fixed a bug that is not in the original", NULL },
+    { "extension", TC_V_INT, TC_IN_TEST, 0, NULL, 1, -1,
+      "the issue of the extension of the port the test shows (the original does something else)", NULL },
 };
 
 const struct tc_keydef *tc_keys(size_t *n)
@@ -839,12 +841,26 @@ int tc_resolve(const char *source, const struct tc_env *env, struct tc_config *c
     }
     if (merge(c, files, nfiles, env, err, errlen) || tc_matrix_merge(c, err, errlen))
         goto out;
-    if (tc_get(c, "fixed") && tc_get(c, "fixed-orig")) {
-        const struct tc_setting *s = tc_get(c, "fixed");
+    {
+        /* at most one of the keys of the fixed issue */
+        static const char *const fixkeys[] = { "fixed-orig", "fixed", "extension" };
+        const struct tc_setting *first = NULL, *s;
+        const char *fk = NULL;
+        int both = 0;
 
-        tc_err(err, errlen, "%s:%u: test %s: fixed-orig and fixed exclude each other", s->at.file,
-               s->at.line, c->id);
-        goto out;
+        for (size_t k = 0; k < sizeof fixkeys / sizeof fixkeys[0] && !both; k++) {
+            if (!(s = tc_get(c, fixkeys[k])))
+                continue;
+            if (first) {
+                tc_err(err, errlen, "%s:%u: test %s: %s and %s exclude each other", s->at.file, s->at.line,
+                       c->id, fk, fixkeys[k]);
+                both = 1;
+            }
+            first = s;
+            fk = fixkeys[k];
+        }
+        if (both)
+            goto out;
     }
     if (tc_assert_validate(c, err, errlen))
         goto out;

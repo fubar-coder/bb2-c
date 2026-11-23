@@ -14,12 +14,20 @@
 #   directory) and the token list BASIC_TEST_TOKENS (blitz2 with the default
 #   library sets, the test library and the bug-orig user library); once, by
 #   the top CMakeLists.txt after the directories that define the programs
-# basic_test_register(PREFIX DIR GLOB... [EXCLUDE REGEX] [REQUIRE_DEVIATION])
+# basic_test_register(PREFIX DIR GLOB... [EXCLUDE REGEX] [REQUIRE_DEVIATION]
+#                     [PREV REGEX [PREV_EXCLUDE ID...]])
 #   the tests of the sources DIR/GLOB (e.g. "*/*.test.bas"; those whose path
 #   below DIR matches REGEX left out): ctest
 #   PREFIX + ID + "__" + CASE (and "_originals" for the side with original
 #   material); REQUIRE_DEVIATION: bug-orig tests (a test without a declared
-#   deviation is broken)
+#   deviation is broken).  PREV: the sources whose path below DIR matches
+#   REGEX (but the ids PREV_EXCLUDE) are compared with the prev build
+#   (basic_test_driver, cmake/prev.cmake prev_compile_model_test): ctest
+#   PREFIX + ID + "_prev"
+# basic_test_driver(SOURCE OUT [CONFS...])
+#   the build writes the driver of all cases of SOURCE, tokenised, to OUT
+#   (NAME.bb2; corpusrun case --write-driver), a step of the target that
+#   adds OUT to its DEPENDS; CONFS: the configuration files it may read
 
 set(BASIC_TEST_ENV ${CMAKE_BINARY_DIR}/tests/model-env.toml)
 set(BASIC_TEST_TOKENS ${CMAKE_BINARY_DIR}/tests/model-tokens.txt)
@@ -89,8 +97,17 @@ ${rwe}")
 	add_custom_target(basic_test_tokens ALL DEPENDS ${BASIC_TEST_TOKENS})
 endfunction()
 
+function(basic_test_driver src out)
+	add_custom_command(OUTPUT ${out}
+		COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source ${src} --write-driver ${out}
+		DEPENDS ${src} ${ARGN} ${PROJECT_SOURCE_DIR}/tests/tests.toml ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS}
+			basic_test_tokens ${TESTLIB_MACROS} ${CORPUSRUN} ${TEDSRC} host_tools
+		COMMENT "The driver of all cases of ${src}"
+		VERBATIM)
+endfunction()
+
 function(basic_test_register prefix dir)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE" "")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV" "PREV_EXCLUDE")
 	set(srcs "")
 	set(confs "")
 	foreach(g IN LISTS arg_UNPARSED_ARGUMENTS)
@@ -127,6 +144,24 @@ function(basic_test_register prefix dir)
 		DEPFILE ${inc}.d
 		COMMENT "Registering the tests of the BASIC test model in ${dir} (${prefix}*)"
 		VERBATIM)
-	add_custom_target(${stem}_model_tests ALL DEPENDS ${inc})
+	# the comparison with the prev build: the driver of all cases of each source
+	# (written by every build, so a source whose driver cannot be written fails it)
+	set(drivers "")
+	if(DEFINED arg_PREV)
+		foreach(s IN LISTS srcs)
+			file(RELATIVE_PATH rel ${dir} ${s})
+			get_filename_component(id ${s} NAME)
+			string(REGEX REPLACE "\\.test\\.bas$" "" id "${id}")
+			if(NOT rel MATCHES "${arg_PREV}" OR id IN_LIST arg_PREV_EXCLUDE)
+				continue()
+			endif()
+			set(drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/${id}.bb2)
+			basic_test_driver(${s} ${drv} ${confs})
+			list(APPEND drivers ${drv})
+			string(REPLACE "-" "_" name "${prefix}${id}_prev")
+			prev_compile_model_test(${name} ${s} ${drv})
+		endforeach()
+	endif()
+	add_custom_target(${stem}_model_tests ALL DEPENDS ${inc} ${drivers})
 	set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES ${inc})
 endfunction()

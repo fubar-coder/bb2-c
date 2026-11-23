@@ -255,7 +255,8 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         if (push(&t.labels, "originals"))
             goto oom;
     } else {
-        if (deviation && !tc_get(conf, "fixed-orig") && push(&t.labels, "bug-orig"))
+        if (deviation && !tc_get(conf, "fixed-orig") && !tc_get(conf, "extension")
+            && push(&t.labels, "bug-orig"))
             goto oom;
         if (push(&t.labels, "emulator"))
             goto oom;

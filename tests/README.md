@@ -331,7 +331,7 @@ escapes) is refused with file and line.
 | `serial`, `rtg`, `pad` | `off`, `on` | the serial peer, the RTG emulator, inject's `pad` (default `off`) |
 | `wrap`, `runwrap` | `PATH[\|ARGS]` | the compiler, the program started through PATH |
 | `runargs`, `launcherargs` | string | arguments of the program, options of the launcher |
-| `files` | list of `DEST\|SRC[\|TAG]` | files staged as `CORPUS:DEST` |
+| `files` | list of `DEST\|SRC[\|SELECTOR]` | files staged as `CORPUS:DEST`; with a cell selector as the third field only in the cells it matches |
 | `dirs`, `remove` | list | empty directories, files removed after staging |
 | `mount`, `floppy` | list of `NAME\|DIR`, `N\|SRC` | read-only volumes, disk images |
 | `uae`, `jobline` | list | changes of the emulator configuration, lines of tedstub's job list |
@@ -339,15 +339,15 @@ escapes) is refused with file and line.
 | `cost` | integer | the ctest `COST` |
 | `exclude` | list of selectors | the combinations of axis values that are no cell |
 | `root` | boolean | only in a `tests.toml`: the search stops here |
-| `fixed-orig`, `fixed` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug; not both |
+| `fixed-orig`, `fixed`, `extension` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug, of an extension of the port ([Fixed tests](#fixed-tests)); at most one |
 
 The keys from `compiler` to `jobline` are the **run settings**; `labels`,
 `cost` and `fixtures` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, the tables `deviations`) in a `tests.toml` or `root` in an
-`ID.test.toml`. `fixed-orig` needs a declared deviation, `fixed` must have
-none.
+`fixed`, `extension`, the tables `deviations`) in a `tests.toml` or `root` in an
+`ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
+`fixed` must have none.
 
 **The matrix.** The table `matrix` names the axes: each key a run
 setting that is no list, each value a non-empty list of its values as
@@ -362,7 +362,7 @@ original material if its compiler is not `port` or its libraries are the
 CD's; such cells are the side `originals` of a case.
 
 ```toml
-# tests/bug-orig/libs/tests.toml
+# an example of a directory's tests.toml (not a file of the tree)
 root = true
 timeout = 90
 exclude = ["compiler=orig195,libs=clib"]
@@ -444,7 +444,8 @@ further deviations of the same table (the actual value of the failing
 check) are its validators.
 
 ```toml
-# tests/bug-orig/libs/shapeslib-frames-maximum.test.toml
+# an example, not a file of the tree: libs/shapeslib-frames-maximum.test.toml
+# (a real one with deviations: libs/shapeslib-loadshape-anim-interleave.test.toml)
 fixed-orig = 265
 
 [deviations."libs=cd"]
@@ -1252,13 +1253,19 @@ changes its `ID.expect` in the same commit and names the issue
 (`#N` in the commit message), like a [fixed test](#fixed-tests); the
 program is not edited to avoid the difference.
 
-The tests of the intrinsics (`intrinsic-*.bas`, the library functions
-blitz2 compiles inline, `openspec/specs/compiler/intrinsics`) check the
-compiled code as well as the value: the program counts the JSR
-instructions (`$4EB9`, the form of every library call) between two labels
-around the statement (`jsrs{?a,?b}`, the routine in each test) and prints
-the count, so its expectation says which cases call the library and
-which do not. The self test `blitz2_selftest_intrinsic_selftest_wrong`
+The tests of the intrinsics (`intrinsic-*.test.bas`, the library
+functions blitz2 compiles inline, `openspec/specs/compiler/intrinsics`;
+tests of the BASIC test model, [Tests that judge
+themselves](#tests-that-judge-themselves)) check the compiled code as well
+as the value: the program counts the JSR instructions (`$4EB9`, the form
+of every library call) between two labels around the statement
+(`jsrs{?a,?b}`, the routine in each test) and checks the count, so the
+source says which cases call the library and which do not. Each runs
+without and with runtime error checking (the axis `runtime-errors`); a
+count that differs between the two is `rv{OFF,ON}`, and the program tells
+the cells apart by the debugger's `trap #1` (`$4E41`) in front of a
+statement (`runerrs{?a,?b}` in the batch init). So does
+`array-index-code.test.bas`. The self test `blitz2_selftest_intrinsic_selftest_wrong`
 (`tests/blitz2/selftest/`, an expectation of no call for `Int` of a
 Float) must come out REGRESSED with the case in the report (its line
 `; @want REGEX`, the ctest `PASS_REGULAR_EXPRESSION`: the observed
@@ -2032,6 +2039,28 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     the pass, and every configuration keeps its own session, so a crash hangs
     nothing else. Tests with broken input: `compiler_selftest_lost_intended_prev`
     and `_unnamed_prev` (prev's compiler is `hangstub`, a program that never ends).
+  * `PREFIX_ID_prev` of a test of the BASIC test model (`ID.test.bas` in
+    `tests/blitz2`, and in `tests/bug-orig` those of `compiler/` and
+    `regression/compiler-*` but the four above; `cmake/prev.cmake`,
+    `prev_compile_model_test`; change `basic-test-runner` D10): the build
+    writes the driver of all cases of the source (`corpusrun case
+    --write-driver`, in `model-drivers/` of the directory's build
+    directory), and the test (`corpusrun case --prev`) compiles it once
+    per value of `runtime-errors` among the cells without original
+    material, with `clib` (the cell's compiler and libraries) and `prev`
+    (`exe:clib`), the test library of this build staged for both: the
+    compile `ID` without runtime error checking, `ID-runerrs` with it.
+    An entry of the test that names no compile of it is stale. A test with
+    RWE user libraries is not compared (refused). Tests with broken input,
+    without a prev build (`selftest/model-prev.test.bas`, one compile):
+    `blitz2_selftest_model_same_prev` (the same compiler: passes),
+    `_differs_prev` (prev's compiler `hangstub`: fails naming the
+    compile), `_intended_prev` (the same, named: passes), `_stale_prev`
+    and `_unknown_prev` (an entry without a difference, one for
+    `model-prev-runerrs`: fail, STALE); `blitz2_model_driver_all_cases`
+    (the driver calls every case) and `blitz2_selftest_model_driver_broken`
+    (the command of the build step fails on a source whose driver cannot
+    be written).
   * `ab3_cli_prev_N`: the cases of the block `ab3_cli_N` compiled by the
     previous commit's `blitz2-ab3` (`tests/ab3/cli-prev.cmake`, `cli.cmake`
     with `COMPILE_ONLY`; two emulator sessions at the same time): the
@@ -2058,6 +2087,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `ted_ab:CASE:C5-P5`, `ted_ab:CASE:Cc-Pc` | only that pair |
 | `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
 | `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
+| `blitz2_ID_prev:ID`, `blitz2_ID_prev:ID-runerrs` (and `bug_orig_`, `regression_`) for a test of the BASIC test model | its driver of all cases compiled without, with runtime error checking: the executable or the compile result of `prev` may differ from `clib`'s |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
 | `corpus_exprmatrix_NAME:SOURCE`, `corpus_exprmatrix_runerr_NAME:SOURCE` | the source of a corpus pass of the expression matrix (one pass per source, e.g. `corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01`): its `prev` configuration may differ from `clib` |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
@@ -2499,16 +2529,21 @@ and `all`, not in `bug-orig`, and it is declared directly, not in the
 order of the bug-orig tests (it passes, ctest learns its cost).
 `ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not.
 
-**An extension of the port** (`; @fixed #NNN/port` in the header of
-`ID.bas`, NNN the issue of the extension; user decision 2026-11-22):
-a test of behaviour the port adds where the original refuses or
-differs, not of an original bug (the first: #1166, ANIM interleaves
-that the original refuses). For
-now it is the same as `; @fixed #NNN` (pass key `fixed=NNN`, `ID.orig`
-recorded, FIXED, the `[fixed #NNN]` case of fix-scope); `/port` only
-marks it, right behind the number (`bugorigcmp` refuses anything else
-there, `test_bugorigcmp`). The rework of the tests gives extensions a
-form of their own and replaces the marker.
+**An extension of the port**: a test of behaviour the port adds where
+the original refuses or does something else, not of an original bug, is
+a test of the BASIC test model with the key `extension = NNN` in its
+`ID.test.toml` (NNN the issue of the extension; user decision
+2026-11-23, change `bug-orig-basic-tests` D5a): its declared deviations
+are what the original does instead, for the cells with the original's
+part (`libs=cd` for a library), and are required (`extension` without
+one is an error naming the test); it is judged and labelled like a test
+with `fixed-orig` (the cells with that part pass with the deviations,
+the others without; label `emulator`), and fix-scope counts the key as
+the case `ID|extension||1 [fixed #NNN]`. At most one of `fixed-orig`,
+`fixed` and `extension`. The first:
+`libs/shapeslib-loadshape-anim-interleave.test.bas` (#1166, ANIM
+interleaves that the original refuses with "Illegal ANIM interleave
+value"). The old form has no marker for an extension.
 
 ### A bug of an RWE userlib
 
