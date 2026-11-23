@@ -3,11 +3,13 @@
 ; End Function or Function Return pushes: the exit pops the return
 ; address as the length.
 ; Correct: a compile error (Statement Return inside a Function).
-; @fixed-orig #940
 Function$ f{}
   NPrint "in f"
   Statement Return
   Function Return "x"
 End Function
-NPrint f{}
-End
+
+!TestCase{stateret_in_function}
+  a$=f{}
+  !CheckEq{1,1,"after_f"}
+!EndTestCase

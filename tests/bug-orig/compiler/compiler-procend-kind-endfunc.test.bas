@@ -2,9 +2,11 @@
 ; without a compile error (doend does not check the kind of the open
 ; procedure; it only adds a moveq #0,d0).
 ; Correct: a compile error (End Function inside a Statement).
-; @fixed-orig #940
 Statement s{}
   NPrint "in s"
 End Function
-s{}
-End
+
+!TestCase{endfunc_in_statement}
+  s{}
+  !CheckEq{1,1,"after_s"}
+!EndTestCase

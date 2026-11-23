@@ -2,10 +2,12 @@
 ; Statement evaluates its expression with the type byte of the Statement
 ; ($FF) and compiles.
 ; Correct: a compile error (Function Return inside a Statement).
-; @fixed-orig #940
 Statement s{}
   NPrint "in s"
   Function Return 5
 End Statement
-s{}
-End
+
+!TestCase{funcret_in_statement}
+  s{}
+  !CheckEq{1,1,"after_s"}
+!EndTestCase

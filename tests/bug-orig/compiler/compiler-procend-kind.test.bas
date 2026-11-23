@@ -5,10 +5,11 @@
 ; string length End Function would have pushed: it pops its return address
 ; as the length and returns to a wrong address.
 ; Correct: a compile error (End Statement inside a Function).
-; @fixed-orig #940
-; @pass timeout=30
 Function$ f{}
   NPrint "in f"
 End Statement
-NPrint f{}
-End
+
+!TestCase{endstatement_in_function}
+  a$=f{}
+  !CheckEq{1,1,"after_f"}
+!EndTestCase
