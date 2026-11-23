@@ -1,0 +1,19 @@
+# ritooltypeslib-tooltype-array-unbounded.test.bas: through inject (track:
+# what is left at the end; the port's program environment is 34 allocations
+# of 45012 bytes, the CD's compiler's has none); the original's 100th entry
+# is lost
+fixed-orig = 855
+rwe = ["ritooltypeslib"]
+timeout = 30
+runwrap = "@INJECT@|track"
+files = ["many.info|@TESTDATA@/ritooltypeslib-tooltypes-101.info"]
+
+[asserts."compiler=port"]
+inject = "contains \"inject: rc=0\ninject: track: 34 allocations left, 45012 bytes\n\""
+
+[asserts."compiler=orig210"]
+inject = "contains \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig210"]
+"check.no_limit.entry_99" = "== fail"
+"check.no_limit.entry_99.actual" = "== \"\""

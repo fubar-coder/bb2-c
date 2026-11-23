@@ -1,0 +1,7 @@
+# ritooltypeslib-empty-name-copies-on.test.bas: the original's entry is empty
+fixed-orig = 841
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.empty_name.entry" = "== fail"
+"check.empty_name.entry.actual" = "== \"\""

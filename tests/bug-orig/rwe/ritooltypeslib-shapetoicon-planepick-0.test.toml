@@ -1,0 +1,8 @@
+# ritooltypeslib-shapetoicon-planepick-0.test.bas: the original's selected
+# image picks no plane
+fixed-orig = 854
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.selected_image.pick" = "== fail"
+"check.selected_image.pick.actual" = "== 0"

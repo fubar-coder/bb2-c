@@ -1,0 +1,8 @@
+# ritooltypeslib-findtoolvalue-stops-at-paren.test.bas: the original's value
+# ends at the ")" inside it
+fixed-orig = 844
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.paren_value.paren_value" = "== fail"
+"check.paren_value.paren_value.actual" = "== \"a\""
