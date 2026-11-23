@@ -310,6 +310,115 @@ int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, si
     return 0;
 }
 
+/* ------------------------------------------------------------ a run from the editor */
+
+/* where a key of a cell is set: its axis, else its setting, else NULL */
+static const struct tc_origin *key_at(const struct tc_config *conf, const struct tc_matrix *m, const char *key)
+{
+    const struct tc_keydef *def = tc_key(key);
+    const struct tc_setting *s;
+
+    for (size_t a = 0; a < m->naxes; a++)
+        if (m->axes[a].def == def)
+            return &m->axes[a].at;
+    s = tc_get(conf, key);
+    return s ? &s->at : NULL;
+}
+
+/* whether the axis terms of selector text (NULL: all cells) match cell, for
+   some case; -1 a malformed selector (checked when the file was read), -2
+   out of memory */
+static int sel_cell(const char *text, const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+{
+    struct tc_selector sel;
+    char msg[300];
+    size_t j = 0;
+    int r;
+
+    if (!text)
+        return 1;
+    if ((r = tc_selector_parse(text, 1, &sel, msg, sizeof msg)))
+        return r;
+    /* the case terms left out */
+    for (size_t i = 0; i < sel.n; i++)
+        if (sel.t[i].def)
+            sel.t[j++] = sel.t[i];
+        else
+            free(sel.t[i].value);
+    sel.n = j;
+    r = matches_vals(&sel, conf, m, m->cells[cell].values, NULL);
+    tc_selector_free(&sel);
+    return r;
+}
+
+/* the query text names the exit code or the requesters */
+static int shell_query(const char *text)
+{
+    return !strcmp(text, "rc") || !strcmp(text, "requester");
+}
+
+/* the cells with editor-run = "on": no settings of the shell start, no
+   assertion on what only a shell run captures; defaultdbug only there */
+static int check_editor_run(const struct tc_config *conf, const struct tc_matrix *m, char *err, size_t errlen)
+{
+    static const char *const shell[] = { "runwrap", "runargs", "launcherargs", "pad" };
+
+    for (size_t c = 0; c < m->ncells; c++) {
+        char buf[24];
+        int on = !strcmp(tc_cell_value(conf, m, c, tc_key("editor-run"), buf), "on");
+        const struct tc_origin *er = key_at(conf, m, "editor-run");
+
+        if (!on) {
+            const struct tc_origin *at = key_at(conf, m, "defaultdbug");
+
+            if (*tc_cell_value(conf, m, c, tc_key("defaultdbug"), buf))
+                return tc_err(err, errlen, "%s:%u: defaultdbug without editor-run = \"on\" (cell %s): the debugger "
+                              "module is used only by a run from the editor", at->file, at->line, m->cells[c].name);
+            continue;
+        }
+        for (size_t k = 0; k < sizeof shell / sizeof shell[0]; k++) {
+            const char *v = tc_cell_value(conf, m, c, tc_key(shell[k]), buf);
+            const struct tc_origin *at = key_at(conf, m, shell[k]);
+
+            if (*v && (k < 3 || !strcmp(v, "on")))
+                return tc_err(err, errlen, "%s:%u: %s%s with editor-run = \"on\" (%s:%u, cell %s): the program "
+                              "runs from the editor, not from the shell", at->file, at->line, shell[k],
+                              k < 3 ? "" : " = \"on\"", er->file, er->line, m->cells[c].name);
+        }
+        /* the assertions, the deviations and the alternative ends on rc and
+           requester whose selector matches the cell */
+        for (size_t t = 0; t < 3; t++) {
+            const struct tc_tabkey *v = t == 0 ? conf->asserts : t == 1 ? conf->deviations : conf->ends;
+            size_t n = t == 0 ? conf->nasserts : t == 1 ? conf->ndeviations : conf->nends;
+
+            for (size_t i = 0; i < n; i++) {
+                const char *q = NULL;
+                int r;
+
+                if (t < 2 && shell_query(v[i].key))
+                    q = v[i].key;
+                for (size_t k = 0; t == 2 && !q && v[i].value.type == TT_LIST && k < v[i].value.nlist; k++) {
+                    const char *a = v[i].value.list[k], *b = strchr(a, ' ');
+
+                    if (b && ((b - a == 2 && !memcmp(a, "rc", 2)) || (b - a == 9 && !memcmp(a, "requester", 9))))
+                        q = b - a == 2 ? "rc" : "requester";
+                }
+                if (!q)
+                    continue;
+                if ((r = sel_cell(v[i].sel, conf, m, c)) == -2)
+                    return tc_err(err, errlen, "out of memory");
+                if (r == 1)
+                    return tc_err(err, errlen, "%s:%u: %s: %s on %s in the cell %s with editor-run = \"on\" (%s:%u): "
+                                  "a run from the editor gives no exit code and no requesters", v[i].at.file,
+                                  v[i].at.line, t == 2 ? v[i].key : q,
+                                  t == 0 ? "an assertion" : t == 1 ? "a deviation" : "an alternative end", q,
+                                  m->cells[c].name, er->file, er->line);
+            }
+        }
+    }
+    return 0;
+}
+
 int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err, size_t errlen)
 {
     size_t nkeys, total = 1;
@@ -424,6 +533,8 @@ int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err
                 goto out;
             }
     }
+    if (check_editor_run(conf, m, err, errlen))
+        goto out;
     r = 0;
     goto out;
 oom:

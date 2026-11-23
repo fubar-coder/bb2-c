@@ -1,0 +1,8 @@
+# rilesdebuglib-extractlabel-space.test.bas: a space does not end the label
+# of the original
+fixed-orig = 704
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.space.label" = "== fail"
+"check.space.label.actual" = "== \"a b\""

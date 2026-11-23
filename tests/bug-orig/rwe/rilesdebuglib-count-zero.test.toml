@@ -1,0 +1,15 @@
+# rilesdebuglib-count-zero.test.bas: the original writes 65536 times for a
+# count of 0 and reads size 0 and -1 as nothing
+fixed-orig = 701
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.zero_count.hexword" = "== fail"
+"check.zero_count.checknmove" = "== fail"
+"check.zero_count.checknmovea" = "== fail"
+"check.zero_count.checknmoveword" = "== fail"
+"check.zero_count.checknmoveword_8001" = "== fail"
+"check.zero_count.size_0" = "== fail"
+"check.zero_count.size_0.actual" = "== 0"
+"check.zero_count.size_minus_1" = "== fail"
+"check.zero_count.size_minus_1.actual" = "== 0"

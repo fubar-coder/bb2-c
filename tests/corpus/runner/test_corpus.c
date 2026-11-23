@@ -657,6 +657,70 @@ int main(void)
         rm_tree(dir);
     }
 
+    /* editrun=on (cell=on; change basic-test-editor-run): the run= line
+       behind the job list, no run of the program in the second half, the
+       refusals */
+    {
+        char dir[] = "/tmp/test-corpus-editrun-XXXXXX";
+        char *pt = NULL, *f, *t, *r, *got;
+        size_t len;
+
+        CHECK(corpus_parse(CELL "editrun=on\nhang_after=8\nhang_from=run\n", &p, err, sizeof err) == 0);
+        CHECK(p.editrun && p.cell);
+        t = corpus_script_compile(&p);
+        r = corpus_script_run(&p);
+        CHECK(t && strstr(t, "blitz2:blitz2 CORPUS:jobs >CORPUS:out/blitz2.out"));
+        CHECK(r && !strstr(r, "CORPUS:run") && !strstr(r, "test.run"));
+        free(t);
+        free(r);
+        corpus_free(&p);
+        /* the same pass without it runs the program from the shell */
+        CHECK(corpus_parse(CELL, &p, err, sizeof err) == 0 && !p.editrun);
+        r = corpus_script_run(&p);
+        CHECK(r && strstr(r, "CORPUS:run CORPUS:out/test >CORPUS:out/test.run"));
+        free(r);
+        corpus_free(&p);
+        CHECK(parse(CELL "editrun=on\nrunwrap=/r|guard\n", err, sizeof err) == -1
+              && strstr(err, "editrun=on: the program runs from the editor; no runwrap="));
+        CHECK(parse(CELL "editrun=on\nrunargs=a\n", err, sizeof err) == -1 && strstr(err, "no runargs="));
+        CHECK(parse(CELL "editrun=on\nlauncherargs=-harden\n", err, sizeof err) == -1
+              && strstr(err, "no launcherargs="));
+        CHECK(parse(BASE CONFIGS "source=/s\neditrun=on\n", err, sizeof err) == -1
+              && strstr(err, "editrun=on needs cell=on"));
+        CHECK(parse(CELL "editrun=yes\n", err, sizeof err) == -1 && strstr(err, "editrun=on or editrun=off"));
+        /* the job list: the jobs, the job lines, then the run */
+        CHECK(mkdtemp(dir) != NULL);
+        f = str_printf("%s/in", dir);
+        CHECK(f && mkdir_p(f) == 0);
+        free(f);
+        {
+            const char *names[] = { "blitz2", "def", "acid", "ted", "drv.bb2", "run" };
+
+            for (size_t i = 0; i < sizeof names / sizeof names[0]; i++) {
+                f = str_printf("%s/in/%s", dir, names[i]);
+                CHECK(f && write_file(f, names[i], strlen(names[i])) == 0);
+                free(f);
+            }
+        }
+        pt = str_printf("cell=on\neditrun=on\nruntime_errors=on\nwork=%s/w\nreport=%s/w/r.txt\nted=%s/in/ted\n"
+                        "launcher=%s/in/run\nconfig=c0|ref|%s/in/blitz2|%s/in/def|%s/in/acid\nsource=%s/in/drv.bb2\n"
+                        "jobline=progress=on\n", dir, dir, dir, dir, dir, dir, dir, dir);
+        CHECK(pt && corpus_parse(pt, &p, err, sizeof err) == 0);
+        free(pt);
+        CHECK(corpus_stage(&p, 0, stderr) == 0);
+        f = str_printf("%s/w/c0/vol/jobs", dir);
+        got = f ? (char *)read_file(f, &len) : NULL;
+        CHECK(got && !strcmp(got, "log=CORPUS:out/session.log\ndefaults=CORPUS:out/defaults.xtra\n"
+                                  "job=j000|CORPUS:src/drv.bb2|CORPUS:out/drv\nprogress=on\n"
+                                  "run=r001|CORPUS:src/drv.bb2|CORPUS:out/drv.con\n"));
+        if (got && !strstr(got, "run=r001"))
+            fprintf(stderr, "jobs: %s\n", got);
+        free(got);
+        free(f);
+        corpus_free(&p);
+        rm_tree(dir);
+    }
+
     /* compile only (run=off): no launcher, nothing of the runs, the script
        only compiles */
     {

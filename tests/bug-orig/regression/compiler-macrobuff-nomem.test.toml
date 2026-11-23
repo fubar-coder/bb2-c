@@ -1,0 +1,10 @@
+# compiler-macrobuff-nomem.test.bas: the compiler runs through inject, whose
+# allocfail makes the one allocation of the new Macro Buffer (20000 bytes,
+# tedstub's macrobuf=) fail; the notice is blitz2's error outside the
+# compile in the log, and the compile goes on with the old buffer
+wrap = "@INJECT@|allocfail=20000-20000/f=1/1"
+jobline = ["macrobuf=20000"]
+
+[asserts]
+"compile.inject" = "contains \"inject: allocfail: 1 allocations failed\n\""
+"compile.log" = "contains \"XTRA\tj000\tdefaults\nXTRAERR\tj000\tOut of Memory\n\""

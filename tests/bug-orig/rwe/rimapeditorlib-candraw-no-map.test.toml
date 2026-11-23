@@ -1,0 +1,13 @@
+# rimapeditorlib-candraw-no-map.test.bas: with runtime error checking for the
+# announced error; the original raises none and answers
+fixed-orig = 893
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.freed_map.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.freed_map.refused" = "== fail"
+"check.freed_map.not_refused" = "== fail"
+requester = "count == 0"

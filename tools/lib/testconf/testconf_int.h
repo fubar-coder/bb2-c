@@ -18,9 +18,10 @@ char *tc_path_join(const char *dir, const char *rel);
 /* the TOML type and the value of a key against its definition */
 int tc_check_type(const char *file, unsigned line, const struct tc_keydef *def,
                   const struct tt_value *v, char *err, size_t errlen);
-/* placeholders and the path field of a string or of every list element */
+/* placeholders and the path field of a string or of every list element;
+   keep (NULL: none) a placeholder left as it is (TC_DRIVER in jobline) */
 int tc_resolve_value(const struct tc_env *env, const char *file, unsigned line, int pathfield,
-                     const char *dir, struct tt_value *v, char *err, size_t errlen);
+                     const char *dir, const char *keep, struct tt_value *v, char *err, size_t errlen);
 void tc_tabkey_free(struct tc_tabkey *t);
 /* testmatrix.c: a key of the table matrix and its values */
 int tc_axis_check(const char *file, unsigned line, const char *key, const struct tt_value *v,

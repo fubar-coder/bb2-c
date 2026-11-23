@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-indent 8: pattern $0000F0F0
-indent 32: pattern $0000F0F0
-rc=0

@@ -1,0 +1,8 @@
+# rilesdebuglib-detoke-plane1-glyph.test.bas: the original draws the glyph
+# of another character into plane 1
+fixed-orig = 709
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.plane1.plane1_same" = "== fail"
+"check.plane1.plane1_same.actual" = "== 1"

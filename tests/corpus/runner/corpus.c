@@ -228,14 +228,15 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         }
         if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial") || !strcmp(key, "regression")
             || !strcmp(key, "run") || !strcmp(key, "rtg") || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps")
-            || !strcmp(key, "cell") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
+            || !strcmp(key, "cell") || !strcmp(key, "editrun") || !strcmp(key, "timeout") || !strcmp(key, "parallel")
             || !strcmp(key, "stack") || !strcmp(key, "fixed") || !strcmp(key, "hang_after")) {
             char *e;
             unsigned long u = strtoul(val, &e, 10);
 
             if (!strcmp(key, "runtime_errors") || !strcmp(key, "serial")
                 || !strcmp(key, "regression") || !strcmp(key, "run") || !strcmp(key, "rtg")
-                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps") || !strcmp(key, "cell")) {
+                || !strcmp(key, "must_compile") || !strcmp(key, "mask_traps") || !strcmp(key, "cell")
+                || !strcmp(key, "editrun")) {
                 if (strcmp(val, "on") && strcmp(val, "off")) {
                     free(val);
                     return fail(p, err, errlen, "line %u: %s=on or %s=off", no, key, key);
@@ -246,6 +247,7 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
                   : !strcmp(key, "rtg") ? &p->rtg
                   : !strcmp(key, "must_compile") ? &p->must_compile
                   : !strcmp(key, "cell") ? &p->cell
+                  : !strcmp(key, "editrun") ? &p->editrun
                   : !strcmp(key, "mask_traps") ? &p->mask_traps : &p->regression)
                     = !strcmp(val, "on");
             } else if (!*val || *e || !u) {
@@ -580,6 +582,12 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
        judging of the pass's own */
     if ((p->nbuilds || p->nbjobs) && !p->cell)
         return fail(p, err, errlen, "build= and build_job= need cell=on");
+    /* a run from the editor: a cell's, without the settings of the shell start */
+    if (p->editrun && !p->cell)
+        return fail(p, err, errlen, "editrun=on needs cell=on");
+    if (p->editrun && (p->runwrap || p->runargs || p->launcherargs))
+        return fail(p, err, errlen, "editrun=on: the program runs from the editor; no %s",
+                    p->runwrap ? "runwrap=" : p->runargs ? "runargs=" : "launcherargs=");
     for (i = 0; i < p->nbuilds; i++)
         for (k = 0; k < i; k++)
             if (!strcasecmp(p->builds[i].dir, p->builds[k].dir))
@@ -1334,6 +1342,17 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
         goto out;
     for (i = 0; i < p->njoblines; i++)
         text_add(&jobs, "%s\n", p->joblines[i]);
+    /* editrun=on: the program runs from the editor, its console a file */
+    if (p->editrun) {
+        char *name = corpus_source_file(p, 0);
+
+        if (!name) {
+            fprintf(log, "corpus: out of memory\n");
+            goto out;
+        }
+        text_add(&jobs, "run=r001|" VOLUME ":src/%s.bb2|" VOLUME ":out/%s.con\n", name, name);
+        free(name);
+    }
     {
         char *to = str_printf("%s/jobs", vol);
 
@@ -1367,7 +1386,7 @@ static void run13(const struct corpus_pass *p, struct text *s)
 {
     size_t i;
 
-    for (i = 0; p->run && i < p->nsources; i++) {
+    for (i = 0; p->run && !p->editrun && i < p->nsources; i++) {
         char *n = corpus_source_file(p, i);
 
         text_add(s, "If EXISTS " VOLUME ":out/%s\n"
@@ -1417,7 +1436,8 @@ static void compile_part(const struct corpus_pass *p, struct text *s)
 }
 
 /* the runs: every program through the launcher (behind the gate), rc=N behind
-   its output */
+   its output; none with editrun=on (the program ran from the editor in the
+   compile) */
 static void run_part(const struct corpus_pass *p, struct text *s)
 {
     size_t i;
@@ -1432,7 +1452,7 @@ static void run_part(const struct corpus_pass *p, struct text *s)
                 "Set gate $RC\n"
                 "Echo \"rc=$gate\" >>" VOLUME ":out/gate.run\n"
                 "If VAL $gate EQ 0\n");
-    for (i = 0; p->run && i < p->nsources; i++) {
+    for (i = 0; p->run && !p->editrun && i < p->nsources; i++) {
         char *n = corpus_source_file(p, i);
 
         text_add(s, "If EXISTS " VOLUME ":out/%s\n"
@@ -1553,8 +1573,10 @@ struct amiga_emulation *corpus_session_start(const struct corpus_pass *p, size_t
         if (p->hang_from_run) {
             char *n = p->gate ? NULL : p->nsources ? corpus_source_file(p, 0) : NULL;
 
+            /* editrun=on: the console of the run from the editor, which
+               tedstub opens when the program starts */
             arm = p->gate ? str_printf("%s/out/gate.run", vol)
-                  : n ? str_printf("%s/out/%s.run", vol, n) : NULL;
+                  : n ? str_printf("%s/out/%s.%s", vol, n, p->editrun ? "con" : "run") : NULL;
             free(n);
             ep.hang_arm = arm;
             /* nothing to arm by: no hang check */

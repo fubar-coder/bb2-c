@@ -49,6 +49,10 @@ static const struct tc_keydef keys[] = {
       "the arguments of the program", NULL },
     { "launcherargs", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
       "the options of the launcher", NULL },
+    { "editor-run", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
+      "on: the program runs from the editor (COMPILE/RUN) instead of from the shell", "off" },
+    { "defaultdbug", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, 0,
+      "PATH: blitz2:defaultdbug, the debugger module of a run from the editor", NULL },
     { "files", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, 1,
       "DEST|SRC[|TAG]: files staged as CORPUS:DEST", NULL },
     { "dirs", TC_V_LIST, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
@@ -293,7 +297,9 @@ int tc_env_load(const char *file, struct tc_env *env, char *err, size_t errlen)
     return r;
 }
 
-int tc_placeholders(const struct tc_env *env, const char *text, char **out, char *err, size_t errlen)
+/* tc_placeholders; keep (NULL: none) a placeholder left as it is */
+static int placeholders(const struct tc_env *env, const char *text, const char *keep, char **out, char *err,
+                        size_t errlen)
 {
     size_t cap = strlen(text) + 1, n = 0;
     char *buf = malloc(cap);
@@ -308,7 +314,9 @@ int tc_placeholders(const struct tc_env *env, const char *text, char **out, char
             const char *v = NULL;
             size_t vl;
 
-            for (size_t i = 0; env && i < env->nph; i++)
+            if (keep && strlen(keep) == (size_t)(q - p + 1) && !memcmp(keep, p, (size_t)(q - p + 1)))
+                v = keep;
+            for (size_t i = 0; env && !v && i < env->nph; i++)
                 if (strlen(env->ph[i].name) == (size_t)(q - p - 1)
                     && !memcmp(env->ph[i].name, p + 1, (size_t)(q - p - 1)))
                     v = env->ph[i].value;
@@ -346,6 +354,11 @@ int tc_placeholders(const struct tc_env *env, const char *text, char **out, char
     buf[n] = 0;
     *out = buf;
     return 0;
+}
+
+int tc_placeholders(const struct tc_env *env, const char *text, char **out, char *err, size_t errlen)
+{
+    return placeholders(env, text, NULL, out, err, errlen);
 }
 
 /* ------------------------------------------------------------ paths */
@@ -670,14 +683,18 @@ const struct tc_setting *tc_get(const struct tc_config *conf, const char *key)
     return NULL;
 }
 
-/* a string of a setting or an axis: placeholders, then the path field */
+/* a string of a setting or an axis: placeholders (keep, NULL: none, left
+   as it is), then the path field */
 static int resolve_string(const struct tc_env *env, const char *file, unsigned line, int pathfield,
-                          const char *dir, char **s, char *err, size_t errlen)
+                          const char *dir, const char *keep, char **s, char *err, size_t errlen)
 {
     char *out, *abs;
     char ph[128];
-    int r = tc_placeholders(env, *s, &out, ph, sizeof ph);
+    int r = placeholders(env, *s, keep, &out, ph, sizeof ph);
 
+    if (r == -1 && !strcmp(ph, TC_DRIVER))
+        return tc_err(err, errlen, "%s:%u: the placeholder %s stands only in jobline (the driver's source)", file,
+                      line, ph);
     if (r == -1)
         return tc_err(err, errlen, "%s:%u: unknown placeholder %s", file, line, ph);
     if (r)
@@ -694,13 +711,13 @@ static int resolve_string(const struct tc_env *env, const char *file, unsigned l
 }
 
 int tc_resolve_value(const struct tc_env *env, const char *file, unsigned line, int pathfield,
-                     const char *dir, struct tt_value *v, char *err, size_t errlen)
+                     const char *dir, const char *keep, struct tt_value *v, char *err, size_t errlen)
 {
     if (v->type == TT_STRING)
-        return resolve_string(env, file, line, pathfield, dir, &v->str, err, errlen);
+        return resolve_string(env, file, line, pathfield, dir, keep, &v->str, err, errlen);
     if (v->type == TT_LIST)
         for (size_t i = 0; i < v->nlist; i++)
-            if (resolve_string(env, file, line, pathfield, dir, &v->list[i], err, errlen))
+            if (resolve_string(env, file, line, pathfield, dir, keep, &v->list[i], err, errlen))
                 return -1;
     return 0;
 }
@@ -758,8 +775,8 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
                     return tc_err(err, errlen, "out of memory");
                 c->nset++;
                 if (def->vkind == TC_V_STRING || def->vkind == TC_V_LIST)
-                    if (tc_resolve_value(env, at.file, e->line, def->pathfield, f->dir, &s->value, err,
-                                         errlen))
+                    if (tc_resolve_value(env, at.file, e->line, def->pathfield, f->dir,
+                                         !strcmp(def->name, "jobline") ? TC_DRIVER : NULL, &s->value, err, errlen))
                         return -1;
                 continue;
             }
@@ -794,7 +811,7 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
                 if (v == &c->matrix && e->value.type == TT_LIST) {
                     const struct tc_keydef *def = tc_key(e->key);
 
-                    if (tc_resolve_value(env, at.file, e->line, def ? def->pathfield : -1, f->dir,
+                    if (tc_resolve_value(env, at.file, e->line, def ? def->pathfield : -1, f->dir, NULL,
                                          &(*v)[*n - 1].value, err, errlen))
                         return -1;
                 }

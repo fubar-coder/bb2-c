@@ -1,0 +1,8 @@
+# rilesdebuglib-extractlabel-dot-unbounded.test.bas: the original goes on
+# behind the string and finds the dot there
+fixed-orig = 703
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.no_dot.label" = "== fail"
+"check.no_dot.label.actual" = "== \"LEAK\""

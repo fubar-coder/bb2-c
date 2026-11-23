@@ -1,0 +1,13 @@
+# compiler-libsnode-name.test.bas: the compiler runs through inject with pad
+# (the query compile.inject), and blitz2:userlibs has a directory of a name
+# of 64 characters
+fixed-orig = 28
+timeout = 45
+wrap = "@INJECT@|pad"
+dirs = ["blitz2/userlibs/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"]
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "contains \"inject: pad: written behind an allocation of 38 bytes\n\""

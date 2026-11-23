@@ -370,12 +370,17 @@ and including the first one with `root = true`; without such a file the
 test is refused. The nearest file wins per key, the tables (`matrix`,
 `asserts`, `asserts."SELECTOR"`) merge per key, and a list value
 replaces, never extends. A relative path in a path setting (`files`,
-`mount`, `floppy`: the field after the first `|`; `wrap`, `runwrap`: the
-field before it) is relative to the directory of the file that sets it;
-an absolute path or one with a `:` (an Amiga path) stays as it is. A
-placeholder `@NAME@` (`NAME` is `[A-Z][A-Z0-9_]*`) in a string or list
-element of a setting or an axis is replaced from the build's environment
-file; an unknown one is an error naming file, line and placeholder.
+`mount`, `floppy`: the field after the first `|`; `wrap`, `runwrap`,
+`defaultdbug`: the field before it) is relative to the directory of the
+file that sets it; an absolute path or one with a `:` (an Amiga path)
+stays as it is. A placeholder `@NAME@` (`NAME` is `[A-Z][A-Z0-9_]*`) in a
+string or list element of a setting or an axis is replaced from the
+build's environment file; an unknown one is an error naming file, line
+and placeholder. `@DRIVER@` is the runner's: in an element of `jobline` it
+stands for the driver's tokenised source on the cell's volume (a job that
+compiles the test's own source again:
+`jobline = ["job=j001|@DRIVER@|CORPUS:out/again"]`), elsewhere it is an
+error naming file, line and placeholder.
 
 The files are a strict subset of TOML (valid TOML, line by line): one
 `KEY = VALUE` per line (a bare key `[A-Za-z0-9_-]+` or a quoted one, no
@@ -399,6 +404,8 @@ escapes) is refused with file and line.
 | `isolate` | `off`, `on` or a list of selectors | `on`: every cell an emulator session of its own; a list of cell selectors (the grammar of `exclude`): the cells they match (default `off`); no axis |
 | `wrap`, `runwrap` | `PATH[\|ARGS]` | the compiler, the program started through PATH |
 | `runargs`, `launcherargs` | string | arguments of the program, options of the launcher |
+| `editor-run` | `off`, `on` | `on`: the program runs from the editor (COMPILE/RUN) instead of from the shell (default `off`; below) |
+| `defaultdbug` | `PATH` | `blitz2:defaultdbug`, the debugger module of a run from the editor (`@CD_BLITZ2@/DEFAULTDBUG`: the CD's); only with `editor-run = "on"` |
 | `files` | list of `DEST\|SRC[\|SELECTOR]` | files staged as `CORPUS:DEST`; with a cell selector as the third field only in the cells it matches |
 | `dirs`, `remove` | list | empty directories, files removed after staging |
 | `mount`, `floppy` | list of `NAME\|DIR`, `N\|SRC` | read-only volumes, disk images |
@@ -416,6 +423,27 @@ naming file, line and key, and so is a key of a single test (`fixed-orig`,
 `fixed`, `extension`, the tables `deviations`, `ends` and `data`) in a `tests.toml` or `root` in an
 `ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
 `fixed` must have none.
+
+**A run from the editor.** With `editor-run = "on"` the driver is
+compiled as in any cell (job `j000`, the query `compile`) and then run
+once with the editor's COMPILE/RUN (tedstub's `run=`: the program in
+blitz2's own process, with runtime error checking also with the debugger
+and dhandlerlib) instead of from the shell; its result file is judged as
+that of a shell run. The printed output (`output`) is what the program
+wrote to the editor's console; the exit code and the requesters are not
+captured, so the defaults `rc == 0` and `requester count == 0` do not
+apply in such a cell. Refused, naming file, line and the keys: an
+assertion, deviation or alternative end on `rc` or `requester` whose
+selector matches such a cell, `runwrap`, `runargs`, `launcherargs` or
+`pad = "on"` (the shell start) in it, an `!ExpectError` in a test with
+such a cell (judged by its requester; the line of the announcement), and
+`defaultdbug` without `editor-run = "on"` (the module is used only by a
+run from the editor, never part of an executable). Without `defaultdbug`
+the cells with original material get the CD's module and the others none;
+a module that is missing (no CD) skips the side (exit status 77). A cell
+with the C libraries and the CD's module stays on the side port. The
+comparison with the prev build compiles the driver as that of any other
+test and runs nothing.
 
 **Test-local data.** A test may bring its own files: the directory
 `ID.test/` beside `ID.test.bas` (change `basic-test-local-data`). Its
@@ -491,8 +519,8 @@ An assertion judges what the program cannot state itself: a key `QUERY =
 (the cells the selector matches). The grammar:
 
 ```
-query      = "rc" | "requester" | "compile" | "compile.log" | "output"
-           | "serial" | "inject" | "session" | "end.case" | "end.run"
+query      = "rc" | "requester" | "compile" | "compile.log" | "compile.inject"
+           | "output" | "serial" | "inject" | "session" | "end.case" | "end.run"
            | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
            | "data." FILE | "run." NAMESPACE "." NAME [ ".rc" | ".output" ]
 predicate  = CMP value | ["not "] "contains" string | "matches" string
@@ -510,10 +538,11 @@ name (a check that a configuration names must have one).
 
 | Query | What | Predicates |
 |---|---|---|
-| `rc` | the exit code of the program | `CMP integer`, `exists` |
-| `requester` | the requesters shown, but the runtime errors the case announced | `contains`, `matches`, `exists`, `count` |
+| `rc` | the exit code of the program (not of a run from the editor: refused there) | `CMP integer`, `exists` |
+| `requester` | the requesters shown, but the runtime errors the case announced (not of a run from the editor: refused there) | `contains`, `matches`, `exists`, `count` |
 | `compile` | `ok`, `error LINE MESSAGE` or `none` | `==`/`!=` with `ok`, `none` or a string, `contains`, `matches` |
-| `compile.log`, `output`, `serial`, `inject` | the compiler's log, the printed output, the serial data, inject's report (the output's lines that start with `inject:`, of a cell whose program runs through inject: `pad`, or a `runwrap` of `@INJECT@`; of any other cell not captured) | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
+| `compile.log`, `output`, `serial`, `inject` | the compiler's log (its output, then tedstub's log), the printed output (of a run from the editor: its console), the serial data, inject's report (the output's lines that start with `inject:`, of a cell whose program runs through inject: `pad`, or a `runwrap` of `@INJECT@`; of any other cell not captured) | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
+| `compile.inject` | inject's report of the compiler: the lines of the compiler's output that start with `inject:`, of a cell whose compiler runs through inject (a `wrap` of `@INJECT@`); of any other cell not captured (`compile.log` keeps the lines) | as `inject` |
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
@@ -556,7 +585,8 @@ requester = "count == 0"
 ```
 
 and every check with entries must have passed, unless an assertion names
-it. A test that expects another exit code sets `rc = "== 20"` in its own
+it; in a cell that runs from the editor `rc` and `requester` have no
+default. A test that expects another exit code sets `rc = "== 20"` in its own
 file and keeps the other defaults.
 
 **Deviations of the original.** A test of an original bug declares in its
@@ -2816,6 +2846,11 @@ never in both forms (the registration would take the old one).
 | `; @pass file=DEST\|SRC`, `dirs=`, `remove=`, `mount=`, `floppy=` | `files`, `dirs`, `remove`, `mount`, `floppy` (the same values, a list of strings) |
 | `; @pass timeout=N`, `hang_after=N`, `runtime_errors=on`, `serial=on`, `rtg=on`, `uae=`, `jobline=`, `runargs=`, `launcherargs=` | `timeout`, `hang-after`, `runtime-errors = "on"`, `serial`, `rtg`, `uae`, `jobline`, `runargs`, `launcherargs` |
 | `; @rwe NAME...` | `rwe = ["NAME", ...]` |
+| `; @pass jobline=run=r001\|CORPUS:src/ID.bb2\|RAM:con` (the program run from the editor) | `editor-run = "on"`: the driver runs from the editor instead of from the shell; the old shell run (`runargs` and a `NumPars` branch that only printed a line) goes; `[log]`'s `OUTPUT r001 ...` lines become `output`, the console of the run |
+| `; @pass defaultdbug=PATH` | `defaultdbug = "PATH"` (with `editor-run = "on"`) |
+| `; @pass jobline=job=j001\|CORPUS:src/ID.bb2\|...` (the test's own source again) | `jobline = ["job=j001\|@DRIVER@\|..."]` |
+| `[blitz2]`, the `inject:` lines of a compiler run through inject (`wrap=@INJECT@\|...`) | `"compile.inject" = "== \"inject: rc=0\ninject: ...\n\""` (or `contains`); the deviation the `.orig`'s lines |
+| `[log]`, lines of tedstub's log | `"compile.log" = "contains \"LINE\nLINE\n\""`: one `contains` over the consecutive lines (TOML `\n` and `\t`); lines that hold a size or an address (`RESULT ID ok SIZE`) cannot be inside it |
 
 **What the cells are.** The old test judged the port with the C libraries
 (`clib`: against the expectation) and, in the compare test, the original

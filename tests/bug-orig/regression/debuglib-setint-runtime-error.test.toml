@@ -1,0 +1,13 @@
+# debuglib-setint-runtime-error.test.bas: the driver runs from the editor
+# with runtime error checking (the debugger of the run, no debugger module);
+# the runtime error in the interrupt routine ends the program in the case,
+# which never gets behind its wait; no requester of the run is left open
+editor-run = "on"
+runtime-errors = "on"
+
+[asserts]
+output = "== \"start\n\""
+session = "== done"
+"check.setint_error.behind_wait" = "== not-run"
+"end.case" = "not exists"
+"compile.log" = "contains \"OPENIO\tr001\nCLOSEIO\tr001\nOUTPUT\tr001\tstart\nREQUESTERS\tr001\t0\n\""

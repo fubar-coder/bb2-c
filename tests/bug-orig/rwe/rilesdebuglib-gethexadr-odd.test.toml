@@ -1,0 +1,15 @@
+# rilesdebuglib-gethexadr-odd.test.bas: on the a500 (68000): the original's
+# word read at an odd address is an address error
+fixed-orig = 1168
+rwe = ["rilesdebuglib"]
+machine = "a500"
+timeout = 30
+# the crash ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software error - task held\""
+"end.case" = "not exists"
+"end.run" = "not exists"

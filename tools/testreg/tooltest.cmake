@@ -3,8 +3,10 @@
 # every check with broken input: a source of the wrong form, a case name
 # that is a token, a bad configuration, a query of a check the source does
 # not have, a case selector of a case it does not have, a test id that is
-# not kebab-case, a name registered twice; then a sample CMake project
-# whose ctest -N lists the registered tests after the build, and again
+# not kebab-case, a name registered twice, a run from the editor with an
+# assertion on the exit code or an announced runtime error; then a sample
+# CMake project whose ctest -N lists the registered tests after the build,
+# and again
 # after a tests.toml changed (the step depends on the files it read).
 #   cmake -DTESTREG=... -DCMAKE_GENERATOR=... -DCTEST=... -DWORK=DIR -P tooltest.cmake
 file(REMOVE_RECURSE ${WORK})
@@ -258,6 +260,15 @@ file(WRITE ${s}/other/conf.test.toml "[asserts.\"case=zz\"]\nrc = \"== 1\"\n")
 refused("the cell selector \"case=zz\" names the case zz, which the source does not have" ${s}/other/conf.test.bas)
 file(WRITE ${s}/other/conf.test.toml "[matrix]\nasserts = [\"x\"]\n")
 refused("other/conf.test.toml:2: asserts is no run setting and cannot be an axis" ${s}/other/conf.test.bas)
+# a run from the editor: an assertion on the exit code, an announced runtime error
+file(WRITE ${s}/other/conf.test.toml "editor-run = \"on\"\n[asserts]\nrc = \"== 0\"\n")
+refused("other/conf.test.toml:3: rc: an assertion on rc in the cell port,cd with editor-run = \"on\""
+	${s}/other/conf.test.bas)
+file(WRITE ${s}/other/editor.test.bas "!TestCase{a}\n  !ExpectError{\"Shape too Big\"}\n!EndTestCase\n")
+file(WRITE ${s}/other/editor.test.toml "runtime-errors = \"on\"\n[matrix]\neditor-run = [\"off\", \"on\"]\n")
+refused("other/editor.test.bas:2: !ExpectError in a test whose cell [a-z0-9,]+ runs from the editor"
+	${s}/other/editor.test.bas)
+file(REMOVE ${s}/other/editor.test.bas ${s}/other/editor.test.toml)
 file(REMOVE ${s}/other/conf.test.toml)
 file(WRITE ${s}/other/Bad_Name.test.bas "!TestCase{a}\n!EndTestCase\n")
 refused("the test id Bad_Name is not lower-case kebab-case" ${s}/other/Bad_Name.test.bas)

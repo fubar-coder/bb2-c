@@ -1,0 +1,7 @@
+# rimapeditorlib-createmap-tst-offset12.test.bas: the original does not free
+# the old map
+fixed-orig = 894
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.data_at_xxxx0000.old_map_freed" = "== fail"

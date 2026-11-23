@@ -379,6 +379,66 @@ TEST_CASE("testconf: placeholders", "[testconf]")
     tc_env_free(&e);
 }
 
+TEST_CASE("testconf: the driver's source in a job line", "[testconf]")
+{
+    tree t;
+    tc_env e = env_of(t, "TESTDATA = \"/td\"\n");
+    tc_config c;
+
+    t.write("x.test.bas", "");
+    // in jobline @DRIVER@ stays for the runner, the other placeholders are replaced
+    t.write("tests.toml", "root = true\njobline = [\"job=j001|@DRIVER@|CORPUS:out/again\", \"x=@TESTDATA@\"]\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(!strcmp(tc_get(&c, "jobline")->value.list[0], "job=j001|" TC_DRIVER "|CORPUS:out/again"));
+    CHECK(!strcmp(tc_get(&c, "jobline")->value.list[1], "x=/td"));
+    tc_free(&c);
+    // elsewhere it is an error naming file, line and placeholder
+    t.write("tests.toml", "root = true\n\nfiles = [\"src/a.bb2|@DRIVER@\"]\n");
+    CHECK(resolve(t, "x.test.bas", &c, &e) == -1);
+    CHECK(std::string(err) == t.path("tests.toml") + ":3: the placeholder @DRIVER@ stands only in jobline (the "
+                                                     "driver's source)");
+    tc_free(&c);
+    t.write("tests.toml", "root = true\nrunargs = \"@DRIVER@\"\n");
+    CHECK(resolve(t, "x.test.bas", &c, &e) == -1);
+    CHECK(strstr(err, ":2: the placeholder @DRIVER@ stands only in jobline") != nullptr);
+    tc_free(&c);
+    tc_env_free(&e);
+}
+
+TEST_CASE("testconf: the settings of a run from the editor", "[testconf]")
+{
+    tree t;
+    tc_env e = env_of(t, "CD_BLITZ2 = \"/cd/BLITZ2\"\n");
+    tc_config c;
+
+    CHECK(tc_key("editor-run")->vkind == TC_V_ENUM);
+    CHECK(!strcmp(tc_key("editor-run")->defval, "off"));
+    CHECK(tc_key("editor-run")->flags & TC_RUN);
+    CHECK(tc_key("defaultdbug")->vkind == TC_V_STRING);
+    CHECK(tc_key("defaultdbug")->pathfield == 0);
+    t.write("x.test.bas", "");
+    // defaultdbug is a path setting: relative to its file, placeholders replaced
+    t.write("sub/tests.toml", "editor-run = \"on\"\ndefaultdbug = \"dbg/mod\"\n");
+    t.write("sub/y.test.bas", "");
+    t.write("tests.toml", "root = true\n");
+    REQUIRE(resolve(t, "sub/y.test.bas", &c, &e) == 0);
+    CHECK(tc_get(&c, "defaultdbug")->value.str == t.path("sub/dbg/mod"));
+    tc_free(&c);
+    t.write("sub/tests.toml", "editor-run = \"on\"\ndefaultdbug = \"@CD_BLITZ2@/DEFAULTDBUG\"\n");
+    REQUIRE(resolve(t, "sub/y.test.bas", &c, &e) == 0);
+    CHECK(!strcmp(tc_get(&c, "defaultdbug")->value.str, "/cd/BLITZ2/DEFAULTDBUG"));
+    tc_free(&c);
+    // an axis like any value of one; a wrong value names file and line
+    t.write("tests.toml", "root = true\n[matrix]\neditor-run = [\"off\", \"on\"]\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    tc_free(&c);
+    t.write("tests.toml", "root = true\neditor-run = \"yes\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: editor-run must be one of off|on, not \"yes\"" });
+    t.write("tests.toml", "root = true\ndefaultdbug = 1\n");
+    refused(t, "x.test.bas", { ":2: defaultdbug must be a string, not an integer" });
+    tc_env_free(&e);
+}
+
 TEST_CASE("testconf: the environment file", "[testconf]")
 {
     tc_env e = {};

@@ -22,6 +22,7 @@ static const struct {
     { "requester", TC_Q_REQUESTER },
     { "compile", TC_Q_COMPILE },
     { "compile.log", TC_Q_COMPILE_LOG },
+    { "compile.inject", TC_Q_COMPILE_INJECT },
     { "output", TC_Q_OUTPUT },
     { "serial", TC_Q_SERIAL },
     { "inject", TC_Q_INJECT },
@@ -141,7 +142,8 @@ static unsigned allowed_ops(int qkind)
     case TC_Q_COMPILE_LOG:
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
-    case TC_Q_INJECT: return TEXT | EX;
+    case TC_Q_INJECT:
+    case TC_Q_COMPILE_INJECT: return TEXT | EX;
     case TC_Q_SESSION: return B(TC_P_EQ) | B(TC_P_NE);
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: return EX;
@@ -523,10 +525,10 @@ int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
 /* ------------------------------------------------------------ replacement per query */
 
 static const struct tc_default defaults[] = {
-    { "rc", "== 0" },
-    { "requester", "count == 0" },
-    { "end.case", "exists" },
-    { "end.run", "exists" },
+    { "rc", "== 0", 1 },
+    { "requester", "count == 0", 1 },
+    { "end.case", "exists", 0 },
+    { "end.run", "exists", 0 },
 };
 
 const struct tc_default *tc_defaults(size_t *n)
@@ -663,6 +665,9 @@ int tc_assertions_for(const struct tc_config *conf, const struct tc_matrix *m, s
     size_t nq = 0;
     int r = 0;
     static const struct tc_origin def_at = { "(default)", 0, UINT_MAX };
+    char buf[24];
+    /* a run from the editor: no exit code, no requesters, no defaults of them */
+    int editor_run = !strcmp(tc_cell_value(conf, m, cell, tc_key("editor-run"), buf), "on");
 
     memset(out, 0, sizeof *out);
     err[0] = 0;
@@ -711,7 +716,7 @@ int tc_assertions_for(const struct tc_config *conf, const struct tc_matrix *m, s
             break;
         }
         for (size_t d = 0; d < sizeof defaults / sizeof defaults[0]; d++)
-            if (!strcmp(defaults[d].query, queries[j]))
+            if (!strcmp(defaults[d].query, queries[j]) && !(editor_run && defaults[d].shell))
                 r = push(out, defaults[d].query, defaults[d].pred, NULL, &def_at, 0);
     }
     free(queries);

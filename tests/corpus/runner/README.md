@@ -263,7 +263,26 @@ cases, the text `--write-driver` writes); neither starts a session. A cell
 that the run setting `isolate` names (`"on"`, or a list of cell selectors)
 gets a session of its own (`cr_session_key`). A cell whose program runs
 through inject (`pad`, or a `runwrap` of inject) has inject's report, the
-output's `inject:` lines, as its query `inject`.
+output's `inject:` lines, as its query `inject`; a cell whose compiler
+runs through inject (a `wrap` of inject) has the `inject:` lines of the
+compiler's output `blitz2.out` as its query `compile.inject`.
+
+A cell with `editor-run = "on"` (change `basic-test-editor-run`) runs the
+driver from the editor instead of from the shell: its pass has
+`editrun=on`, and `corpus.c` appends to its job list, behind the jobs and
+the `jobline=` lines, `run=r001|CORPUS:src/test.bb2|CORPUS:out/test.con`
+(tedstub's COMPILE/RUN, the editor's console the file `test.con`) and
+writes no shell run for it. The output of such a cell is `test.con`; its
+exit code and requesters are not captured (the defaults of `rc` and
+`requester` do not apply). The cell has ended when `blitz2.out` ends with
+`rc=`, and the hang check of `hang_from=run` arms on `test.con`, which
+tedstub opens when the program starts. The run setting `defaultdbug` is
+the cell's `blitz2:defaultdbug` (it replaces the runner's `cd-defaultdbug`
+of a cell with original material); a missing module skips the side (77).
+In a `jobline` element `@DRIVER@` stands for the driver's source on the
+cell's volume (`CORPUS:src/test.bb2`; in the comparison with the prev
+build the driver of that pass). The observation of a cell from the files
+of its volume is `cr_observe`.
 
 A test with data of its own (the directory `ID.test/`, its table `data`;
 change `basic-test-local-data`) has them prepared once in `data/` of the
@@ -310,7 +329,9 @@ whose driver cannot be written fails it), and the test `PREFIX_ID_prev`
 (`--prev --driver NAME.bb2 --test PREFIX_ID_prev --prev-blitz2 FILE
 --prev-libs DIR [--intended ENTRY]...`) compiles that driver once per
 value of `runtime-errors` among the cells of the side port, a pass of
-`corpus.h` with `run=off`, `clib` and `prev|exe:clib` each (`cr_prev_pass`):
+`corpus.h` with `run=off`, `clib` and `prev|exe:clib` each (`cr_prev_pass`;
+without the keys of a run, also without `editrun` and `defaultdbug`: a
+test that runs from the editor is compiled as any other):
 the compiles `ID` and `ID-runerrs`, the PREV_INTENDED entries
 `PREFIX_ID_prev:ID` and `:ID-runerrs`. The data sources of the test are
 compiled in the pass of their setting of runtime error checking

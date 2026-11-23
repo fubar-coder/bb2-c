@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "AddProcessPtr table holds at most 20 entries" *
-rc=0

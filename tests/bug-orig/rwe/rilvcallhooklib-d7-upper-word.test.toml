@@ -1,0 +1,7 @@
+# rilvcallhooklib-d7-upper-word.test.bas: the original draws no tree lines
+fixed-orig = 737
+rwe = ["rilvcallhooklib"]
+
+[deviations."compiler=orig210"]
+"check.tree_lines.tree_pixels" = "== fail"
+"check.tree_lines.tree_pixels.actual" = "== 0"
