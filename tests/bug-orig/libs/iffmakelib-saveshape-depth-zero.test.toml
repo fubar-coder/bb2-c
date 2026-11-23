@@ -3,6 +3,8 @@
 # The original overwrites its own code: a crash ("Software Failure", the
 # session runs into its timeout; each cell with the CD's libraries has its
 # own session).
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 326
 isolate = ["libs=cd"]
 
@@ -10,9 +12,9 @@ isolate = ["libs=cd"]
 "end.case" = "not exists"
 "check.depth_zero.not_refused" = "== not-run"
 
-[deviations."libs=cd"]
-session = "== timeout"
-requester = "contains \"Software Failure\""
-rc = "not exists"
-"end.run" = "not exists"
-"check.depth_zero.refused" = "== not-run"
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#326): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.depth_zero.refused != ok"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.depth_zero.refused != ok"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.depth_zero.refused != ok"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.depth_zero.refused != ok"]

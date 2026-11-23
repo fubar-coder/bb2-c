@@ -2,6 +2,8 @@
 # the first allocation of 48 bytes and tracks the rest; the original builds
 # the request at address 0 and the CPU halts (every cell has a session of
 # its own)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 619
 rwe = ["ridoslib"]
 runwrap = "@INJECT@|allocfail=48-48/1 track"
@@ -12,8 +14,11 @@ isolate = ["compiler=orig210"]
 inject = "contains \"allocfail: 1 allocations failed\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\""
 
 [deviations."compiler=orig210"]
-session = "== halt"
-rc = "not exists"
 inject = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#619): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

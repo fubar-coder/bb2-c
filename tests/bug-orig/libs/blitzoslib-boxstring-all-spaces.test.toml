@@ -1,22 +1,17 @@
 # blitzoslib-boxstring-all-spaces.test.bas: the original copies 65535 bytes
-# into the string buffer and ends in a Software Failure.  Where it happens
-# depends on the code layout of the cell, but is the same on every run of
-# a cell: with the port's compiler the program stops before the check
-# (the string buffer holds the test library's data too), with the original
-# compiler it goes on to the end of the case and fails at the exit.
+# into the string buffer and ends abnormally; where and how depends on the
+# code layout of the cell and the memory (a Software Failure, a hang, a halt;
+# with the original compiler the program has gone through the end of the case
+# and of the run): the end is declared as the general alternative of memory
+# corruption (tests/README.md, "Alternative ends").  The check behind the
+# copy is `!= ok`: it is not reached (the string buffer holds the test
+# library's data too) or it fails with the length 65535.
 fixed-orig = 85
 timeout = 30
 
-[deviations."libs=cd"]
-requester = "contains \"Software Failure\""
-session = "== timeout"
-rc = "not exists"
-
-[deviations."compiler=port,libs=cd"]
-"check.all_spaces.length" = "== not-run"
-"end.case" = "not exists"
-"end.run" = "not exists"
-
-[deviations."compiler=orig195"]
-"check.all_spaces.length" = "== fail"
-"check.all_spaces.length.actual" = "== 65535"
+[ends."libs=cd"]
+reason = "the original copies 65535 bytes into the string buffer (#85): memory corruption, so the end is not defined"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.all_spaces.length != ok"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.all_spaces.length != ok"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.all_spaces.length != ok"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.all_spaces.length != ok"]

@@ -1,6 +1,9 @@
-# shapetrixlib-scale-plane-64k.test.bas: with runtime error checking for
-# the announced error; the original raises none, so the announcement fails
-# there and the case runs on to its check
+# shapetrixlib-scale-plane-64k.test.bas: with runtime error checking for the
+# announced error; the original raises none, so the announcement fails
+# there and the case runs on to its check.  The original gives the new shape
+# wrong word sizes (#1047): it normally returns and the check behind the
+# call fails, but a corrupted shape can also end it abnormally
+# (tests/README.md, "Alternative ends").
 fixed-orig = 1047
 runtime-errors = "on"
 timeout = 300
@@ -8,8 +11,10 @@ timeout = 300
 [asserts]
 "check.scale_plane_64k.after" = "== not-run"
 
-[deviations."libs=cd"]
-"check.scale_plane_64k.refused" = "== fail"
-requester = "count == 0"
-"end.case" = "exists"
-"check.scale_plane_64k.after" = "== fail"
+[ends."libs=cd"]
+reason = "the original makes a shape with wrong word sizes (#1047): memory corruption, so the end is not defined; usually it returns and the check behind the call fails"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "requester count == 0", "check.scale_plane_64k.refused == fail", "check.scale_plane_64k.after == fail"]
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.scale_plane_64k.refused != ok", "check.scale_plane_64k.after != ok"]

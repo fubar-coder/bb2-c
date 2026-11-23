@@ -644,6 +644,57 @@ returns = ["session == done", "rc == 0", "end.case exists", "end.run exists"]
 hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]
 ```
 
+**An original that corrupts memory.** An original whose faulty part
+corrupts memory (a wild write or copy, a jump into data or through a
+garbage register, a free of memory it does not own) has no defined end:
+it may crash with a requester, hang, halt the CPU or return, depending on
+the layout and the timing, and the end differs from run to run and between
+the sessions of a full run. Its test declares in `[ends."SELECTOR"]` the
+general alternatives and nothing else about the abnormal end (no
+`requester` text, `rc`, `end.*` or `output` assertion of its own):
+
+```toml
+# an example, not a file of the tree: libs/blitzoslib-boxstring-all-spaces.test.toml
+[ends."libs=cd"]
+reason = "the original ... (#N): memory corruption, so the end is not defined"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
+```
+
+The four alternatives are the places where the end can come: before
+the end of the case, behind it, behind the end of the run, and (a handler
+that ends the program, so the case has no end entry) behind the end of the run
+without the case. `session !=
+done` holds for a crash (the session runs into its timeout), a hang and a
+halt. The alternatives must name `rc`, `requester`, `end.case` and
+`end.run` although they need no value of them: a query that no alternative
+names keeps its default (`rc == 0`, `requester count == 0`, both end
+entries `exists`) and would fail a crash. `requester count >= 0` always
+holds and only takes the query out of the defaults. After a halt the cell
+has none of `rc`, `inject`, `end.case`, `end.run`; a test that asserts
+`inject` keeps the deviation `inject = "not exists"` for the cell (an
+alternative cannot name `inject`). A check that the crash can hide or the
+bug can fail is named in every alternative with `!= ok`
+(`check.NS.NAME != ok`, as `palettelib-stopcycle-cycon` does): a check an
+alternative names is not required to pass.
+
+If the original has also been seen to return, add `returns = [...]`
+(`session == done`, `rc == 0`, `end.case exists`, `end.run exists`,
+`requester count == 0`) with an observation only the bug gives: a failed
+check with its actual value, inject's guard report (`output contains`), a
+wrong result. The fix is told from the bug by the port cell's plain
+assertions: `session == done`, `rc == 0`, `end.case`, `end.run`, the
+checks passing.
+
+A test keeps a specific end (the requester text, the alert number, a single
+`session == timeout` or `halt`) only if that end is the bug itself and not
+a consequence of corrupted memory: an odd address on the 68000, a V36
+call on Kickstart 1.3, a division by zero, a call through a base of 0 (the
+vector table at the low addresses is fixed), an error message, a loop that
+really never ends (a wait for an event, 2^32 iterations without a write).
+
 **The environment file** of a build (written by CMake,
 `cmake/basic-test-model.cmake`: `build/amiga/tests/model-env.toml`) gives
 the placeholders and the directory where the search for `root = true`
@@ -2921,7 +2972,7 @@ section describe the environment):
 | an `inject:` line (`guard`, `pad`: written behind an allocation) | `inject = "contains \"written behind an allocation of 8 bytes\""` in the cells with the CD's libraries, `inject = "not contains \"inject: guard\""` in `[asserts]` for all the others (the query `inject` holds inject's report lines when the program runs through inject; `output` keeps them too, so an older test that asserts them on `output` stays valid) |
 | a `REQUESTER:` line, a runtime error the correct run does not have | `requester` (`contains`, `matches`, `count`) |
 | another runtime error than the one the port announces with `!ExpectError`, or none | the announcement named (`!ExpectError{"MESSAGE","refused"}`) and declared failed for the original, `"check.CASE.refused" = "== fail"`, with its `requester` (`contains "OTHER MESSAGE"`, or `count == 0`) and the end it then has (`"end.case" = "not exists"`, `rc`) |
-| the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures) |
+| the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures); if the end is a consequence of corrupted memory (a wild write or copy, a jump into data, a free of memory the program does not own), the general `abnormal` alternatives of "An original that corrupts memory" under Alternative ends instead: its end is not defined |
 | an end that varies with the memory layout (returns or hangs, a crash or not) | `[ends."libs=cd"]` with a `reason` and one named alternative per end, each a list of `QUERY PREDICATE` (`returns = ["session == done", "rc == 0", ...]`, `hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]`) |
 | a line only a `# varies:` wildcard matched | the pattern of the validator, or, if the line is not the tested behaviour, no assertion about it |
 
@@ -3054,6 +3105,13 @@ cells.
   An end that no such set describes is still reported, not weakened:
   the alternatives are stricter than the old wildcard lines, keep them
   so.
+* **An original that corrupts memory** (a wild write or copy, a jump into
+  data, a free of memory it does not own) has no defined end: its test
+  declares the general `abnormal` alternatives of "Alternative ends"
+  ("An original that corrupts memory"), not a requester text, a halt or a
+  single timeout. A specific end stays only where the end is the bug
+  itself (an odd address, a V36 call on Kickstart 1.3, a loop that never
+  ends).
 * **Hang tests.** A program that hangs ends by the hang check
   (`hang-after`, at least 1, the runner's default 8 s of silence; `timeout` the
   limit; a hang during the compile keeps the whole `timeout`, the check

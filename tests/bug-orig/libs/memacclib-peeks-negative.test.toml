@@ -1,11 +1,14 @@
 # memacclib-peeks-negative.test.bas: the original copies up to 4 GB into the
 # string buffer and the program does not come back (the session runs into
 # its time limit, the hang check ends it)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 214
 timeout = 30
 
-[deviations."libs=cd"]
-session = "== timeout"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#214): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

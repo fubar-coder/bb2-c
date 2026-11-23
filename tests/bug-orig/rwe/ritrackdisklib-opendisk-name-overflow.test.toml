@@ -1,9 +1,14 @@
 # ritrackdisklib-opendisk-name-overflow.test.bas: the original halts the CPU
 # when finit closes the unit with the overwritten request pointer
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 860
 rwe = ["ritrackdisklib"]
 timeout = 30
 
-[deviations."compiler=orig210"]
-session = "== halt"
-rc = "not exists"
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#860): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

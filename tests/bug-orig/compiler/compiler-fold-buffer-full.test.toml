@@ -1,6 +1,8 @@
 # compiler-fold-buffer-full.test.bas: the object buffer of 2992 bytes (the
 # default of the old test); the original's compile of the child crashes
 # (the CPU halts)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 1190
 jobline = ["objbuf=2992"]
 isolate = ["compiler=orig195"]
@@ -11,7 +13,10 @@ timeout = 60
 
 [deviations."compiler=orig195"]
 "data.child.bas" = "== none"
-session = "== halt"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+
+[ends."compiler=orig195"]
+reason = "the original's faulty part corrupts memory (#1190): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

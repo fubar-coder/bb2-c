@@ -1,6 +1,8 @@
 # riseriallib-readstring-limit.test.bas: with the serial port of the emulator
 # and a string work area of 1000 bytes; the original writes over it without
 # end (the session of its own ends in the time limit)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 1161
 rwe = ["riseriallib"]
 serial = "on"
@@ -8,8 +10,9 @@ timeout = 30
 jobline = ["strbuf=1000"]
 isolate = ["compiler=orig210"]
 
-[deviations."compiler=orig210"]
-session = "== timeout"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#1161): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

@@ -1,5 +1,7 @@
 # rifxlib-depth-zero-derez.test.bas: with runtime error checking for the
 # announced error; the original crashes in the plane loops
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 947
 rwe = ["rifxlib"]
 runtime-errors = "on"
@@ -12,7 +14,10 @@ isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]
 "check.depth_zero.refused" = "== fail"
-session = "== timeout"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#947): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

@@ -4,6 +4,8 @@
 # driver fails at !big; the original also hangs at its exit (the buffer is
 # freed with the option's size), which ends the session at its limit: a
 # session of its own for the original compiler
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 995
 files = ["r.bb2|@TESTDATA@/compiler-resmacs-textlen-sign.res"]
 jobline = ["macrobuf=100000", "resident=r|CORPUS:r.bb2|CORPUS:out/r.res|defaults"]
@@ -12,7 +14,10 @@ isolate = ["compiler=orig195"]
 
 [deviations."compiler=orig195"]
 compile = "contains \"Macro not Found\""
-session = "== timeout"
-"end.case" = "not exists"
-"end.run" = "not exists"
-rc = "not exists"
+
+[ends."compiler=orig195"]
+reason = "the original's faulty part corrupts memory (#995): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

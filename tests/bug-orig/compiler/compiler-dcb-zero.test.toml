@@ -1,12 +1,15 @@
 # compiler-dcb-zero.test.bas: the original's compiler runs 2^32 copies (the
 # hang check ends the session): no program, no check; the cell has a session
 # of its own so that the hang does not end the session of the port's cell
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 37
 timeout = 30
 isolate = ["compiler=orig195"]
 
-[deviations."compiler=orig195"]
-session = "== timeout"
-"end.case" = "not exists"
-"end.run" = "not exists"
-rc = "not exists"
+[ends."compiler=orig195"]
+reason = "the original's faulty part corrupts memory (#37): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

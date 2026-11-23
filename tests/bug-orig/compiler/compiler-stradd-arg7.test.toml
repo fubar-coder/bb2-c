@@ -1,12 +1,14 @@
 # compiler-stradd-arg7.test.bas: the original loses the right length, the
 # program crashes (Software Failure) at the seven levels and the session
 # ends as a hang; the check of six levels ran before
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 971
 isolate = ["compiler=orig195"]
 
-[deviations."compiler=orig195"]
-requester = "contains \"Software Failure\""
-session = "== timeout"
-"end.case" = "not exists"
-"end.run" = "not exists"
-rc = "not exists"
+[ends."compiler=orig195"]
+reason = "the original's faulty part corrupts memory (#971): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

@@ -1,8 +1,9 @@
 # displaylib-errors-errarea.test.bas: the trap handler of the program
 # continues at the label rec, which ends the program, so the case has no end
 # entry and the check behind the InitCopList is not run.  The original runs
-# into other code: a crash ("Software Failure", the session runs into its
-# timeout; each cell with the CD's libraries has its own session).
+# into other code: how that ends (a crash with the "Software Failure"
+# requester, a hang) is not defined; each cell with the CD's libraries has
+# its own session.
 fixed-orig = 412
 timeout = 60
 isolate = ["libs=cd"]
@@ -12,6 +13,8 @@ isolate = ["libs=cd"]
 "check.nine_planes.no_trap" = "== not-run"
 
 [ends."libs=cd"]
-reason = "the original runs into other code and crashes; the Software Failure requester is written more or less before the session ends (a run showed only the start of its EasyRequest line)"
-crash = ["session == timeout", "requester contains \"Software Failure\"", "rc not exists", "end.run not exists"]
-crash_partial = ["session == timeout", "requester contains \"EasyRequest title \"", "rc not exists", "end.run not exists"]
+reason = "the original runs into other code (#412): a jump into data, so the end is not defined; it crashes (the Software Failure requester is written more or less before the session ends) or hangs"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

@@ -2,6 +2,8 @@
 # fails once; inject clicks CANCEL when the list has been read.  The original
 # writes over the ExecBase pointer at 4: the CPU halts (the cells with the CD's
 # libraries each have a session of their own)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 159
 dirs = ["fq159a"]
 runwrap = "@INJECT@|allocfail=40-40/f=1 click=FQ/CANCEL"
@@ -11,8 +13,11 @@ isolate = ["libs=cd"]
 inject = "contains \"allocfail: 1 allocations failed\""
 
 [deviations."libs=cd"]
-session = "== halt"
-rc = "not exists"
 inject = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#159): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
