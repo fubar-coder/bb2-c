@@ -1,0 +1,18 @@
+# speaklib-finit-without-init.test.bas: the init of speaklib fails (inject
+# makes the OpenDevice of narrator.device fail) and ends the program with its
+# runtime error before the driver starts: no case, no end entry; inject's
+# report is the observation
+fixed-orig = 278
+runwrap = "@INJECT@|opendevfail=narrator.device closedevice freesignal opencount=translator.library"
+runtime-errors = "on"
+timeout = 60
+
+[asserts]
+requester = "contains \"Failed To Open Speech Library\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.init_failed.not_reached" = "== not-run"
+inject = "== \"inject: opendevfail: 1 opens failed\ninject: rc=0\ninject: opencount: translator.library +0\ninject: freesignal: 0 calls on a signal not allocated\ninject: closedevice: 0 calls on a request without a device\n\""
+
+[deviations."libs=cd"]
+inject = "== \"inject: opendevfail: 1 opens failed\ninject: rc=0\ninject: opencount: translator.library +0\ninject: freesignal: 1 calls on a signal not allocated\ninject: freesignal 0\ninject: closedevice: 1 calls on a request without a device\n\""

@@ -12,13 +12,13 @@
 ; of a signal not allocated are counted and not done (closedevice,
 ; freesignal), and the opens of translator.library are counted against
 ; its closes (opencount=).
+; Here: the program uses VoiceLoc, so its init of speaklib runs and fails; the case behind it is never run,
+; the observation is inject's report (see the configuration).
 ; Correct: the finit closes only what the init opened: the library (+0),
 ; no CloseDevice, no FreeSignal.
-; @fixed #278
-; @configs clib
-; @pass runwrap=@INJECT@|opendevfail=narrator.device closedevice freesignal opencount=translator.library
-; @pass runtime_errors=on
-; @pass timeout=60
-NPrint "start"
-NPrint "voiceloc odd ",VoiceLoc AND 1
-End
+DEFTYPE .l
+
+!TestCase{init_failed}
+  v.l=VoiceLoc
+  !Check{0,"not_reached"}
+!EndTestCase
