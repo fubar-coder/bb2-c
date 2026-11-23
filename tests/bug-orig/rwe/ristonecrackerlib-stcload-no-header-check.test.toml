@@ -1,0 +1,10 @@
+# ristonecrackerlib-stcload-no-header-check.test.bas: the original unpacks
+# files that are no valid S404 file
+fixed-orig = 836
+rwe = ["ristonecrackerlib"]
+
+[deviations."compiler=orig210"]
+"check.no_header_check.s403_refused" = "== fail"
+"check.no_header_check.s403_refused.actual" = "== -1"
+"check.no_header_check.short_refused" = "== fail"
+"check.no_header_check.short_refused.actual" = "== -1"
