@@ -1,0 +1,11 @@
+# popupwinlib-result-lost.test.bas: the original does not compile the function
+# form of PopUpWindow (nothing runs, no check, no end entry)
+fixed-orig = 471
+rwe = ["popupwinlib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
