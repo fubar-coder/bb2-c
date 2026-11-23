@@ -111,9 +111,10 @@ struct bugorig_step {
    line; lines before the first ID line of a session to its first step, the
    lines behind its last ID line to that step; BATCH lines and the lines
    outside a session (the version requester's before BATCH start) to none.
-   The lines of the step in log order (also of a later session), each as
-   in [log] (the size of RESULT ID ok removed, the version as N.NN), its ID
-   field written as s->name and s->path as s->ph if they are given.
+   The block: the lines of the step in log order (also of a later session)
+   up to its last line that carries its ID, each as in [log] (the size of
+   RESULT ID ok removed, the version as N.NN), its ID field written as
+   s->name and s->path as s->ph if they are given.
    malloc'd ("" no line), NULL = out of memory */
 char *bugorig_block(const char *log, const struct bugorig_step *s);
 

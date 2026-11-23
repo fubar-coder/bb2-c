@@ -157,11 +157,11 @@ int main(void)
         blk = bugorig_block(log, &s);
         CHECK(blk && !strcmp(blk, "ezfreq \"Load Debug Module\" -> blitz2:dbgmod\nMENU\tm1\t9\t0\nPOINTER\tm1\tnormal\n"));
         free(blk);
-        /* a resident: one block; the line behind the session's last ID line is its */
+        /* a resident: one block; it ends with its last ID line (not the
+           requester line behind it) */
         s.job = "r";
         blk = bugorig_block(log, &s);
-        CHECK(blk && !strcmp(blk, "JOB\tr\tCORPUS:r.bb2\nRESULT\tr\tok\nMENU\tr\tresident\t0\nPOINTER\tr\tnormal\n"
-                              "ABORT: the last words\n"));
+        CHECK(blk && !strcmp(blk, "JOB\tr\tCORPUS:r.bb2\nRESULT\tr\tok\nMENU\tr\tresident\t0\nPOINTER\tr\tnormal\n"));
         free(blk);
         /* a job that did not run, a prefix of an ID */
         s.job = "j002";
@@ -177,7 +177,8 @@ int main(void)
         free(blk);
     }
     {
-        /* two sessions: the second run of the ID appended; the lines before
+        /* two sessions: the second run of the ID appended (with the line
+           behind its last ID line of the first session); the lines before
            BATCH start belong to no step, the first lines of a session to its
            first step */
         static const char log[] =
@@ -185,6 +186,7 @@ int main(void)
             "openreq \"***** COMPILING *****\"\n"
             "JOB\tj001\tCORPUS:a.bb2\n"
             "RESULT\tj001\tfailed\tabort: the compiler waits\n"
+            "ABORT: waits\n"
             "BATCH\tend\n"
             "openreq \"Blitz Basic 2 Version 1.95\"\n"
             "BATCH\tstart\n"
@@ -196,12 +198,13 @@ int main(void)
         char *blk = bugorig_block(log, &s);
 
         CHECK(blk && !strcmp(blk, "openreq \"***** COMPILING *****\"\nJOB\tj001\tCORPUS:a.bb2\n"
-                              "RESULT\tj001\tfailed\tabort: the compiler waits\nJOB\tj001\tCORPUS:a.bb2\n"
+                              "RESULT\tj001\tfailed\tabort: the compiler waits\nABORT: waits\n"
+                              "JOB\tj001\tCORPUS:a.bb2\n"
                               "RESULT\tj001\tok\n"));
         free(blk);
         s.job = "j002";
         blk = bugorig_block(log, &s);
-        CHECK(blk && !strcmp(blk, "JOB\tj002\tCORPUS:b.bb2\nopenreq \"x\"\n"));
+        CHECK(blk && !strcmp(blk, "JOB\tj002\tCORPUS:b.bb2\n"));     /* the crash's line cut */
         free(blk);
     }
     {

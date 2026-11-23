@@ -344,7 +344,7 @@ char *bugorig_block(const char *log, const struct bugorig_step *s)
     /* the step of the last ID line of the session: it is the job's (1) or
        another's (0), -1: none yet (outside a session or before its first) */
     int prev = -1, session = 0;
-    size_t jl = strlen(s->job);
+    size_t jl = strlen(s->job), keep = 0;
 
     while (p && *p) {
         const char *eol = strchr(p, '\n');
@@ -385,15 +385,18 @@ char *bugorig_block(const char *log, const struct bugorig_step *s)
                 }
                 pend = NULL;
             }
-            if (mine)
+            if (mine) {
                 block_line(&t, p, m, s);
+                keep = t.n;
+            }
             prev = mine;
         } else if (session && !pend)
             pend = p;
         p = eol ? eol + 1 : NULL;
     }
     /* a log that ends inside a session (a crash): the lines behind the last
-       ID line are its step's */
+       ID line are its step's (and cut below, as those behind the last ID
+       line of a session, unless the ID comes again in a later session) */
     for (const char *x = pend; x && prev == 1 && *x;) {
         const char *e = strchr(x, '\n');
         size_t n = e ? (size_t)(e - x) : strlen(x);
@@ -405,6 +408,9 @@ char *bugorig_block(const char *log, const struct bugorig_step *s)
         free(t.p);
         return NULL;
     }
+    /* the block ends with the last line that carries the ID */
+    if (t.p)
+        t.p[t.n = keep] = 0;
     return t.p ? t.p : strdup("");
 }
 
