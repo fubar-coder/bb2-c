@@ -1,0 +1,11 @@
+# audiolib-diskplay-buffer-leak.test.bas: the handler of the expected error
+# holds the check and ends the program, so the case has no end entry
+fixed-orig = 950
+
+[asserts]
+"end.case" = "not exists"
+"check.missing_file.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.missing_file.chip_buffer_kept" = "== fail"
+"check.missing_file.chip_buffer_kept.actual" = "== 1"

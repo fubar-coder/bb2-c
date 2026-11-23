@@ -1,6 +1,0 @@
-[run]
-before
-SetPeriod: runtime error Uninitialized Sound
-LoadSound: runtime error Illegal Sound file
-after
-rc=0

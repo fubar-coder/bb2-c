@@ -1,0 +1,9 @@
+# medlib-getmedvolume-a3.test.bas: the original builds the string behind a
+# NUL (the text is "V" and a 0 byte, length 2), also in the second and the
+# third case
+fixed-orig = 1061
+
+[deviations."libs=cd"]
+"check.get_volume.text" = "== fail"
+"check.get_note.text" = "== fail"
+"check.get_instr.text" = "== fail"

@@ -1,0 +1,12 @@
+# speaklib-translate-length.test.bas
+fixed-orig = 277
+
+[deviations."libs=cd"]
+"check.alone.length" = "== fail"
+"check.alone.length.actual" = "== 10"
+"check.alone.last" = "== fail"
+"check.alone.last.actual" = "== 0"
+"check.in_expression.length" = "== fail"
+"check.in_expression.length.actual" = "== 11"
+"check.in_expression.tenth" = "== fail"
+"check.in_expression.tenth.actual" = "== 0"

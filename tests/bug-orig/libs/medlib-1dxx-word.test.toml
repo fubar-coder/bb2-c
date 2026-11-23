@@ -1,0 +1,7 @@
+# medlib-1dxx-word.test.bas
+fixed-orig = 1066
+files = ["1dxx.med|@TESTDATA@/medlib-1dxx-word.med"]
+
+[deviations."libs=cd"]
+"check.break_line.line" = "== fail"
+"check.break_line.line.actual" = "== $801"

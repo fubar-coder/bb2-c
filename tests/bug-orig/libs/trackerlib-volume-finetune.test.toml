@@ -1,0 +1,7 @@
+# trackerlib-volume-finetune.test.bas
+fixed-orig = 290
+files = ["vol.mod|@TESTDATA@/trackerlib-volume-finetune.mod"]
+
+[deviations."libs=cd"]
+"check.voice_volume.voice0_volume" = "== fail"
+"check.voice_volume.voice0_volume.actual" = "== $530"

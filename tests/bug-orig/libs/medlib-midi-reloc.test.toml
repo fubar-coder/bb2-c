@@ -1,0 +1,7 @@
+# medlib-midi-reloc.test.bas
+fixed-orig = 207
+files = ["midi.med|@TESTDATA@/medlib-midi-reloc.med"]
+
+[deviations."libs=cd"]
+"check.next_module.boundary_relocated" = "== fail"
+"check.next_module.boundary_relocated.actual" = "== 1"

@@ -1,0 +1,7 @@
+# trackerlib-err1-errarea.test.bas: the original passes a pointer behind the
+# library as the message
+fixed-orig = 957
+
+[deviations."libs=cd"]
+"check.message.message" = "== fail"
+"check.message.message.actual" = "== \"\""
