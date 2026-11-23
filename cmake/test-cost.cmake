@@ -24,8 +24,16 @@
 #   CMake tests with an entry get its COST, the long tests of the list below
 #   without one its value; then the check of the file: an entry whose test
 #   does not exist (no CMake test, no recorded bug-orig test, no test of the
-#   model of a registered prefix: PREFIX...__CASE, which testreg checks)
-#   stops the configuration, naming the file's line
+#   model of a registered prefix: PREFIX...__CASE, which testreg checks, no
+#   test of the prev build named by test_cost_prev_only without one) stops
+#   the configuration, naming the file's line
+# test_cost_prev_only(NAME)
+#   NAME is a test that only a prev build has (cmake/prev.cmake: the
+#   comparisons NAME_prev and compiler_prev, the model tests' PREFIX_ID_prev;
+#   corpus_cd_prev, corpus_cd_ab3_prev, ab3_cli_prev_N), called where it is
+#   made, before the test of PREV_REQUESTED: without a prev build its entry
+#   is not stale (a file refreshed from a run with the prev build names it);
+#   with one it does nothing, the test exists or its entry is stale
 
 function(test_costs_load file)
 	set_property(DIRECTORY ${CMAKE_SOURCE_DIR} APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${file})
@@ -56,6 +64,12 @@ function(test_cost var name default)
 		set(c ${default})
 	endif()
 	set(${var} ${c} PARENT_SCOPE)
+endfunction()
+
+function(test_cost_prev_only name)
+	if(NOT PREV_REQUESTED)
+		set_property(GLOBAL APPEND PROPERTY TEST_COSTS_PREV_ONLY ${name})
+	endif()
 endfunction()
 
 function(long_test_costs)
@@ -99,7 +113,8 @@ function(long_test_costs)
 	get_property(names GLOBAL PROPERTY TEST_COSTS_NAMES)
 	get_property(recorded GLOBAL PROPERTY BUG_ORIG_TESTS)
 	get_property(prefixes GLOBAL PROPERTY BASIC_TEST_PREFIXES)
-	list(APPEND known ${recorded})
+	get_property(prev_only GLOBAL PROPERTY TEST_COSTS_PREV_ONLY)
+	list(APPEND known ${recorded} ${prev_only})
 	set(stale "")
 	foreach(name IN LISTS names)
 		if(name IN_LIST known)

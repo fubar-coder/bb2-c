@@ -75,11 +75,7 @@ declared deviations SHALL fail it.
 A fix of an original bug SHALL set `fixed-orig = N` in the test's own
 configuration; a fix of another bug that a test of this model shows SHALL
 set `fixed = N`; the test of an extension of the port SHALL set
-`extension = N`. A test SHALL have at most one of the three. `fixed-orig`
-or `extension` without a declared deviation, and `fixed` with one, SHALL
-be errors naming the test. The checks and the declared deviations SHALL
-stay unchanged by the fix; the test's cases SHALL then carry the label
-`emulator`.
+`extension = N`. A test SHALL have at most one of the three.
 
 #### Scenario: The fix commit
 - **WHEN** the original bug of a moved test is fixed
@@ -89,9 +85,25 @@ stay unchanged by the fix; the test's cases SHALL then carry the label
 - **WHEN** a test's configuration sets two of `fixed-orig`, `fixed` and `extension`
 - **THEN** the runner fails naming the test
 
+### Requirement: A fixed issue key needs matching deviations
+`fixed-orig` or `extension` without a declared deviation, and `fixed` with
+one, SHALL be errors naming the test.
+
 #### Scenario: An extension without a deviation
 - **WHEN** a test sets `extension = N` and declares no deviation
 - **THEN** the runner fails naming the test
+
+#### Scenario: A fixed issue with a deviation
+- **WHEN** a test sets `fixed = N` and declares a deviation
+- **THEN** the runner fails naming the test
+
+### Requirement: A fix leaves the checks and deviations unchanged
+The checks and the declared deviations SHALL stay unchanged by the fix;
+the test's cases SHALL then carry the label `emulator`.
+
+#### Scenario: Cases after the fix
+- **WHEN** a test's configuration gains `fixed-orig = N`
+- **THEN** its checks and declared deviations are as before and its cases carry the label `emulator`
 
 ### Requirement: The test of an extension
 The test of an extension of the port (issue N: behaviour the original does
@@ -104,11 +116,32 @@ with the original's part, and SHALL be judged like a test with
 - **WHEN** a test sets `extension = N` and declares for the cells with the CD's libraries the failing checks of the original
 - **THEN** those cells pass with the declared deviations, the cells with the C libraries pass without them, and its cases carry the label `emulator`
 
+### Requirement: The recorded files are cases of one test
+`ID.orig` SHALL be the `[orig]` case of the shared test model (`testing/test-model`) and `ID.expect` the expected case (the `[fixed #N]` case once the bug is fixed) of the same test.
+
+#### Scenario: The files of a fixed test
+- **WHEN** a recorded test's bug is fixed
+- **THEN** `ID.expect` is its `[fixed #N]` case and `ID.orig` stays its `[orig]` case
+
+### Requirement: The normal run judges against the recorded files
+The normal run SHALL judge `port` and `clib` against `ID.expect` (FIXED) and, for an open bug, `ID.orig` (REPRODUCED, else DIFFERS) and SHALL NOT start a `ref` session.
+
+#### Scenario: No reference session
+- **WHEN** a bug-orig test with an `ID.orig` runs in the normal run
+- **THEN** no `ref` session is started
+
+### Requirement: A fixed test keeps its recorded original
+A fixed test (`; @fixed #N`) SHALL keep its `ID.orig`.
+
+#### Scenario: The original of a fixed test
+- **WHEN** a test has `; @fixed #N`
+- **THEN** its `ID.orig` is still committed next to it
+
 ## MODIFIED Requirements
 
 ### Requirement: Recorded observation of the original
 For every bug-orig test outside the model of `testing/basic-test-runner`
-(the TED bug-orig tests, the tests whose correct result is a compile result only, and the tests not moved yet), open or fixed, the original's observation SHALL be committed as `ID.orig` (the sections of the `ref` configuration, raw), written by the recording target `bug-orig-record`, which needs the reference. `ID.orig` is the `[orig]` case of the shared test model (`testing/test-model`) and `ID.expect` the expected case (the `[fixed #N]` case once the bug is fixed) of the same test. The normal run SHALL judge `port` and `clib` against `ID.expect` (FIXED) and, for an open bug, `ID.orig` (REPRODUCED, else DIFFERS) and SHALL NOT start a `ref` session. A fixed test (`; @fixed #N`) SHALL keep its `ID.orig`.
+(the TED bug-orig tests, the tests whose correct result is a compile result only, and the tests not moved yet), open or fixed, the original's observation SHALL be committed as `ID.orig` (the sections of the `ref` configuration, raw), written by the recording target `bug-orig-record`, which needs the reference.
 
 #### Scenario: Open bug still reproduced
 - **WHEN** a bug-orig test with an `ID.orig` runs and the port shows what `ID.orig` holds

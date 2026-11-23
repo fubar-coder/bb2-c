@@ -189,18 +189,19 @@ set_tests_properties(emulation_owner_broken PROPERTIES
 set_tests_properties(emulation_owner_model_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "m_plain__c[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
 # the measured COST of the tests (cmake/test-cost.cmake): applied, a measurement winning over
-# the list of the long tests; a file whose entry names no test stops the configuration
-foreach(t test_cost test_cost_broken)
-	set(broken)
-	if(t MATCHES "_broken$")
-		set(broken -DBROKEN=ON)
-	endif()
-	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DCOST=${PROJECT_SOURCE_DIR}/cmake/test-cost.cmake ${broken}
+# the list of the long tests; a file whose entry names no test stops the configuration, an entry
+# of a test only a prev build has only with a prev build (test-cost-test.cmake, its MODEs)
+foreach(mode ok ok_prev broken broken_prev stale_prev)
+	set(t test_cost_${mode})
+	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DCOST=${PROJECT_SOURCE_DIR}/cmake/test-cost.cmake -DMODE=${mode}
 		-DWORK=${CMAKE_BINARY_DIR}/${t} -P ${PROJECT_SOURCE_DIR}/cmake/test-cost-test.cmake)
+	if(mode MATCHES "^ok")
+		set_tests_properties(${t} PROPERTIES PASS_REGULAR_EXPRESSION "test-cost-test: the measured COST is applied")
+	else()
+		set_tests_properties(${t} PROPERTIES
+			PASS_REGULAR_EXPRESSION "test-cost-test: the stale entry stops the configuration")
+	endif()
 endforeach()
-set_tests_properties(test_cost PROPERTIES PASS_REGULAR_EXPRESSION "test-cost-test: the measured COST is applied")
-set_tests_properties(test_cost_broken PROPERTIES
-	PASS_REGULAR_EXPRESSION "test-cost-test: the stale entry stops the configuration")
 
 # the libraries' shadow headers of the NDK (cmake/ndk-calls.cmake): a
 # source with one varargs form gets only that wrapper, with the NDK's code
