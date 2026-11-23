@@ -3,7 +3,6 @@
 # crashes at D_FindVolume
 fixed-orig = 1148
 rwe = ["rilesdebuglib"]
-timeout = 30
 # the crash ends the session: the original's cells have one of their own
 isolate = ["compiler=orig210"]
 

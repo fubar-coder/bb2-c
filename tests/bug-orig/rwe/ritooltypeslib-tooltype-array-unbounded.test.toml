@@ -4,7 +4,6 @@
 # is lost
 fixed-orig = 855
 rwe = ["ritooltypeslib"]
-timeout = 30
 runwrap = "@INJECT@|track"
 files = ["many.info|@TESTDATA@/ritooltypeslib-tooltypes-101.info"]
 

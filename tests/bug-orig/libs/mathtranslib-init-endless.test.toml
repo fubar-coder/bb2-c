@@ -3,7 +3,6 @@
 # first statement (the session ends by the hang check)
 fixed-orig = 202
 runwrap = "@INJECT@|openlibfail=mathtrans.library"
-timeout = 30
 
 [asserts]
 inject = "contains \"openlibfail: 1 opens failed\""

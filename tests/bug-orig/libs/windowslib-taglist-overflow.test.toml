@@ -3,7 +3,6 @@
 # instruction and ends the program, so the case has no end entry and the
 # check behind WindowFont does not run
 fixed-orig = 317
-timeout = 60
 
 [asserts]
 "check.tag_list_21_pairs.no_illegal_instruction" = "== not-run"

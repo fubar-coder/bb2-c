@@ -4,7 +4,6 @@
 fixed-orig = 552
 rwe = ["ribbmaplib"]
 machine = "a600"
-timeout = 30
 
 [deviations."compiler=orig210"]
 session = "== timeout"

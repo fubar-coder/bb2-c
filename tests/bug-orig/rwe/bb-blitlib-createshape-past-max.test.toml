@@ -4,7 +4,6 @@
 fixed-orig = 1077
 rwe = ["bb_blitlib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.past_max.behind_table" = "== not-run"

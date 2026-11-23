@@ -2,7 +2,6 @@
 # 68020 and with the two Kickstart versions
 rwe = ["ritrackdisklib"]
 floppy = ["1|@TESTDATA@/ritrackdisklib-blank.adf"]
-timeout = 120
 
 [matrix]
 machine = ["a500", "a500-204", "a1200"]

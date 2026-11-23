@@ -2,7 +2,6 @@
 # entry
 fixed-orig = 700
 rwe = ["rilesdebuglib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.table_full.result" = "== fail"

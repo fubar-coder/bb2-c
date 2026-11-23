@@ -3,7 +3,6 @@
 # instruction that makes the message arrive without arguments
 fixed-orig = 537
 rwe = ["riarexxlib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.long_command.args" = "== fail"

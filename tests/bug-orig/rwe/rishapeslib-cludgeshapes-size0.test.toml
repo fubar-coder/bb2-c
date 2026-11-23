@@ -2,7 +2,6 @@
 # into a block without user bytes and crashes
 fixed-orig = 808
 rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [ends."compiler=orig210"]

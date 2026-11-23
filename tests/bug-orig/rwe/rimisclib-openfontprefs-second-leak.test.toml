@@ -2,7 +2,6 @@
 # the first buffer
 fixed-orig = 757
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.second_open.nothing_lost" = "== fail"

@@ -3,7 +3,6 @@
 # shows the stale text of the first call again
 fixed-orig = 747
 rwe = ["rimisclib"]
-timeout = 30
 
 [asserts]
 requester = "contains \"text \\\"%ld\\\" gadgets \\\"Ok\\\"\""

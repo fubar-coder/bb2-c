@@ -3,7 +3,6 @@
 fixed-orig = 803
 rwe = ["riseriallib"]
 serial = "on"
-timeout = 30
 # what the original does behind the wrong return can end the session
 isolate = ["compiler=orig210"]
 

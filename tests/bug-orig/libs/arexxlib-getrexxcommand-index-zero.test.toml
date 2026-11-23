@@ -2,7 +2,6 @@
 # the port refuses n = 0, the CD's libraries return the result string
 fixed-orig = 51
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.index_zero.not_refused" = "== not-run"

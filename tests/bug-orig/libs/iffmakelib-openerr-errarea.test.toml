@@ -4,7 +4,6 @@
 # pointer behind the library (a garbage text, so the deviation only says it
 # is not the message)
 fixed-orig = 185
-timeout = 60
 
 [asserts]
 "end.case" = "not exists"

@@ -2,7 +2,6 @@
 # form of PopUpWindow (nothing runs, no check, no end entry)
 fixed-orig = 471
 rwe = ["popupwinlib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 compile = "contains \"Syntax Error\""

@@ -4,7 +4,6 @@
 fixed-orig = 617
 rwe = ["ridisasmlib"]
 machine = "a500"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

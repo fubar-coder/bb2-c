@@ -2,7 +2,6 @@
 # $BFE001 (b0 is the bit before; the cell shows its value, 0 or 2)
 fixed-orig = 886
 rwe = ["richunkylib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.filter_bit.bit_kept" = "== fail"

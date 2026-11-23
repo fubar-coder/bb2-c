@@ -3,7 +3,6 @@
 rwe = ["rireqlib"]
 files = ["libs/req.library|@REQLIB@"]
 runwrap = "@INJECT@|opencount=req.library"
-timeout = 60
 
 [asserts]
 inject = "contains \"inject: opencount: req.library +0\""

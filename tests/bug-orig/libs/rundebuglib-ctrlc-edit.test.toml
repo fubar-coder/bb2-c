@@ -2,7 +2,6 @@
 # original's child is not stopped
 fixed-orig = 43
 runtime-errors = "on"
-timeout = 60
 
 [data]
 "child-s.bas" = "basic-compile"

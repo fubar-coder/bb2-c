@@ -1,7 +1,6 @@
 # polylib-word-range.test.bas: an open bug (#1019, won't fix): the cells
 # without the original's part show it too, so they must show exactly the
 # declared deviations
-timeout = 120
 
 [deviations."libs=cd"]
 "check.bitmap_slope.differ_4096" = "== fail"

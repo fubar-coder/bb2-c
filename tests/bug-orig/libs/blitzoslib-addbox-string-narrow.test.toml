@@ -6,7 +6,6 @@
 # between runs of the cell)
 fixed-orig = 84
 runwrap = "@INJECT@|guard"
-timeout = 30
 
 [asserts]
 inject = "not contains \"inject: guard\""

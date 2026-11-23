@@ -4,7 +4,6 @@
 fixed-orig = 1081
 rwe = ["ridoslib"]
 runwrap = "@INJECT@|doslist"
-timeout = 60
 
 [asserts]
 inject = "contains \"doslist: free\""

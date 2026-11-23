@@ -2,7 +2,6 @@
 # address error halts the CPU
 fixed-orig = 453
 rwe = ["ciatrklib"]
-timeout = 30
 files = ["w.mod|@TESTDATA@/ciatrklib-waitevent-no-libs.mod"]
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]

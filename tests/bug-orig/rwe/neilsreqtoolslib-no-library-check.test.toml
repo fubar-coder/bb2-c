@@ -3,7 +3,6 @@
 # base 0 and the CPU halts
 fixed-orig = 463
 rwe = ["neilsreqtoolslib"]
-timeout = 30
 runwrap = "@INJECT@|openlibfail=reqtools.library"
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]

@@ -4,7 +4,6 @@
 fixed-orig = 583
 rwe = ["ricompactdisclib"]
 runtime-errors = "on"
-timeout = 60
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 
 [deviations."compiler=orig210"]

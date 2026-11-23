@@ -9,7 +9,6 @@ rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
 files = ["s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le"]
 wrap = "@INJECT@|inuse=CORPUS:s.le"
 jobline = ["run=r001|@DATA:victim.bas@|RAM:con"]
-timeout = 120
 
 [data]
 "victim.bas" = "basic-compile"

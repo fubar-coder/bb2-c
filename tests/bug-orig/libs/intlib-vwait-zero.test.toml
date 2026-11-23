@@ -3,7 +3,6 @@
 # three zero cases end by the time limit, each in a session of its own
 fixed-orig = 1201
 runtime-errors = "on"
-timeout = 30
 isolate = ["libs=cd"]
 
 [asserts]

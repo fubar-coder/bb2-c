@@ -2,7 +2,6 @@
 # two strings per call (the free memory drops by about 400000 bytes)
 fixed-orig = 546
 rwe = ["riarexxlib"]
-timeout = 60
 
 [deviations."compiler=orig210"]
 "check.fifty_calls.leaked" = "== fail"

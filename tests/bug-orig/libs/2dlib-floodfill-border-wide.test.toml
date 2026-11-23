@@ -1,7 +1,6 @@
 # 2dlib-floodfill-border-wide.test.bas: three cases, the 320 pixel box is
 # the control
 fixed-orig = 986
-timeout = 60
 
 [deviations."libs=cd"]
 "check.wide_1280.x_100" = "== fail"

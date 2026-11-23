@@ -7,7 +7,6 @@
 fixed-orig = 492
 rwe = ["riamosfunclib"]
 uae = ["cpu_speed=real", "cachesize=0"]
-timeout = 120
 isolate = ["compiler=orig210"]
 
 [ends."compiler=orig210"]

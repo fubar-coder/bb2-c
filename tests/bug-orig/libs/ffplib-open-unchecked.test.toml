@@ -3,7 +3,6 @@
 # base 0: the CPU halts, in the original and in the port (every cell has a
 # session of its own)
 runwrap = "@INJECT@|openlibfail=mathffp.library"
-timeout = 30
 isolate = "on"
 
 [deviations."libs=cd"]

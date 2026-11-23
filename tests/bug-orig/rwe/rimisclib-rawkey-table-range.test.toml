@@ -2,7 +2,6 @@
 # behind the table
 fixed-orig = 744
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.table_range.ascraw_160" = "== fail"

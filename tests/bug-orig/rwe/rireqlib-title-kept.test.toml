@@ -8,7 +8,6 @@ fixed-orig = 789
 rwe = ["rireqlib"]
 files = ["libs/req.library|@REQLIB@"]
 runwrap = "@INJECT@|libs=CORPUS:libs click=*/Forget_it click=*/Forget_it"
-timeout = 60
 # the hang ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

@@ -2,7 +2,6 @@
 # four bytes as code and returns 42 characters
 fixed-orig = 752
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.string_256.length" = "== fail"

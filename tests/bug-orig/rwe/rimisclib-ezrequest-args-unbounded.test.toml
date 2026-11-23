@@ -4,7 +4,6 @@
 fixed-orig = 748
 rwe = ["rimisclib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.eighteen_arguments.workbench_here" = "== not-run"

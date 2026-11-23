@@ -2,7 +2,6 @@
 # writes to address 48
 fixed-orig = 927
 rwe = ["risoundlib2"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.openahi_after_closeahi.address_48_kept" = "== fail"

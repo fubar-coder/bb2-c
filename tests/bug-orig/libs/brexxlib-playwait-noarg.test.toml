@@ -2,7 +2,6 @@
 # PlayWait without an argument (nothing runs, no check, no end entry)
 fixed-orig = 99
 files = ["tape|@TESTDATA@/brexxlib-playwait-noarg.tape"]
-timeout = 60
 
 [deviations."libs=cd"]
 compile = "contains \"Syntax Error\""

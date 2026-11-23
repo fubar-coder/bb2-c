@@ -5,7 +5,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 781
 rwe = ["riregistrylib"]
-timeout = 30
 # the halt ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

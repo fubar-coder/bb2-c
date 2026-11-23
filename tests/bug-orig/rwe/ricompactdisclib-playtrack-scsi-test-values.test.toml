@@ -3,7 +3,6 @@
 # 14000 to 15000 behind the image and returns 0 for the tracks 1 and 2
 fixed-orig = 580
 rwe = ["ricompactdisclib"]
-timeout = 60
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 
 [deviations."compiler=orig210"]

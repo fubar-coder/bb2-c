@@ -3,7 +3,6 @@
 # Amiberry itself could die); each cell with the CD's libraries has its own
 # session, since the original's end is a hang
 fixed-orig = 406
-timeout = 30
 jobline = ["max=144|0"]
 uae = ["cachesize=0"]
 isolate = ["libs=cd"]

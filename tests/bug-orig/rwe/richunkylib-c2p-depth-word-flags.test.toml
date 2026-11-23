@@ -2,7 +2,6 @@
 # bitmap and refuses the depth-8 one with Flags bit 7 set
 fixed-orig = 883
 rwe = ["richunkylib"]
-timeout = 60
 
 [deviations."compiler=orig210"]
 "check.flags1_depth5.planes_0_4" = "== fail"

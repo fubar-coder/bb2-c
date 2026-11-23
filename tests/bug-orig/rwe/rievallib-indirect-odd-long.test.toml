@@ -5,7 +5,6 @@
 fixed-orig = 636
 rwe = ["rievallib"]
 machine = "a600"
-timeout = 30
 files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
 isolate = ["compiler=orig210"]
 

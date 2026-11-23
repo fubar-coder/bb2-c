@@ -3,7 +3,6 @@
 # statement
 fixed-orig = 44
 machine = "a500"
-timeout = 30
 
 [deviations."libs=cd"]
 session = "== timeout"

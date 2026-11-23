@@ -2,7 +2,6 @@
 # of the DosList entry for a volume that is present
 fixed-orig = 1082
 rwe = ["riamosfunclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.findvolume_result.present" = "== fail"

@@ -6,7 +6,6 @@
 fixed-orig = 1161
 rwe = ["riseriallib"]
 serial = "on"
-timeout = 30
 jobline = ["strbuf=1000"]
 isolate = ["compiler=orig210"]
 

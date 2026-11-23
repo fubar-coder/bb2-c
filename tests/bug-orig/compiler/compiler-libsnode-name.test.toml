@@ -2,7 +2,6 @@
 # (the query compile.inject), and blitz2:userlibs has a directory of a name
 # of 64 characters
 fixed-orig = 28
-timeout = 45
 wrap = "@INJECT@|pad"
 dirs = ["blitz2/userlibs/dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"]
 

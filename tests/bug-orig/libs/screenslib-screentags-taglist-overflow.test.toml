@@ -10,7 +10,6 @@
 # The end is not defined (memory corruption): the general alternatives of
 # tests/README.md, "Alternative ends".
 fixed-orig = 249
-timeout = 60
 isolate = ["libs=cd"]
 
 [deviations."libs=cd"]

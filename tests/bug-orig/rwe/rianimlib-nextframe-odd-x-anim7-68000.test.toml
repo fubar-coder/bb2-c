@@ -6,7 +6,6 @@ fixed-orig = 1122
 rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
 machine = "a600"
 runtime-errors = "on"
-timeout = 30
 files = ["anim|@TESTDATA@/rianimlib-nextframe-odd-x-anim7-68000.anim"]
 isolate = ["compiler=orig210"]
 

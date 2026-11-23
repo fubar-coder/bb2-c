@@ -2,7 +2,6 @@
 # the first character
 fixed-orig = 624
 rwe = ["ridoslib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.first_character.colon_first" = "== fail"

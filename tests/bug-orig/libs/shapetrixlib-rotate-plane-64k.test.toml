@@ -3,7 +3,6 @@
 # there and the case runs on to its check
 fixed-orig = 1047
 runtime-errors = "on"
-timeout = 300
 
 [asserts]
 "check.rotate_plane_64k.after" = "== not-run"

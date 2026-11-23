@@ -2,7 +2,6 @@
 # ends (the session of its own ends in the hang check)
 fixed-orig = 830
 rwe = ["risoundlib"]
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

@@ -4,7 +4,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 515
 rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
-timeout = 30
 files = ["anim|@TESTDATA@/rianimlib-nextframe-no-dlta.anim"]
 isolate = ["compiler=orig210"]
 

@@ -3,7 +3,6 @@
 # program on the a500
 fixed-orig = 1140
 rwe = ["popupwinlib"]
-timeout = 30
 # the crash ends the session: the original's cells have one of their own
 isolate = ["compiler=orig210"]
 

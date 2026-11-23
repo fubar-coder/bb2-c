@@ -1,7 +1,6 @@
 # audiolib-diskplay-endless.test.bas: the original hangs in DiskPlay; the
 # hang check ends the session, the check behind DiskPlay is not run
 fixed-orig = 69
-timeout = 30
 files = ["t.8svx|@TESTDATA@/audiolib-diskplay-endless.8svx"]
 
 [deviations."libs=cd"]

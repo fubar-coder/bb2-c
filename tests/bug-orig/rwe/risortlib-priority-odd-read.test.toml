@@ -3,7 +3,6 @@
 fixed-orig = 825
 rwe = ["risortlib"]
 machine = "a600"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

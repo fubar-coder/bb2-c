@@ -2,7 +2,6 @@
 # original has no check and draws a box from the memory behind the table
 fixed-orig = 82
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.box_range.not_refused" = "== not-run"

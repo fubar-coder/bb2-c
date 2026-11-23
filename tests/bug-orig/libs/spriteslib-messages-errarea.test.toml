@@ -5,7 +5,6 @@
 # text that depends on the memory layout), so the deviation says that it is
 # not the message.
 fixed-orig = 954
-timeout = 60
 
 [asserts]
 "check.messages.no_error_1" = "== not-run"

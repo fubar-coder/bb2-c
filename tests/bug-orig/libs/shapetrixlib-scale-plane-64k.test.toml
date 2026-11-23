@@ -6,7 +6,6 @@
 # (tests/README.md, "Alternative ends").
 fixed-orig = 1047
 runtime-errors = "on"
-timeout = 300
 
 [asserts]
 "check.scale_plane_64k.after" = "== not-run"

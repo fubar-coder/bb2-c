@@ -2,7 +2,6 @@
 # case's own trap handler takes the message; the original's d0 points behind
 # the library (a garbage text)
 fixed-orig = 956
-timeout = 60
 
 [asserts]
 "check.trap_message.trapped" = "== not-run"

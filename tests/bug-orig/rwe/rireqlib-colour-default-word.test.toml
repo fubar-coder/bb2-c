@@ -5,7 +5,6 @@ fixed-orig = 1091
 rwe = ["rireqlib"]
 files = ["libs/req.library|@REQLIB@"]
 runwrap = "@INJECT@|libs=CORPUS:libs click=*/__Ok__"
-timeout = 60
 
 [asserts]
 inject = "contains \"inject: click */__Ok__: answered\ninject: click window: \\\" Palette \\\"\""

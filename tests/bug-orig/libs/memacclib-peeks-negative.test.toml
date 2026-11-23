@@ -4,7 +4,6 @@
 # The end is not defined (memory corruption): the general alternatives of
 # tests/README.md, "Alternative ends".
 fixed-orig = 214
-timeout = 30
 
 [ends."libs=cd"]
 reason = "the original's faulty part corrupts memory (#214): its end is not defined, it may crash, hang or halt"

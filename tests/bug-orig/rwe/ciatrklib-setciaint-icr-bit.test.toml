@@ -2,7 +2,6 @@
 # mode (the event stays 0)
 fixed-orig = 450
 rwe = ["ciatrklib"]
-timeout = 30
 files = ["c.mod|@TESTDATA@/ciatrklib-waitevent-no-libs.mod"]
 
 [deviations."compiler=orig210"]

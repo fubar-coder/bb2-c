@@ -1,7 +1,6 @@
 # rigfxlib-cpucls-no-plane-crash.test.bas: the original crashes
 fixed-orig = 680
 rwe = ["rigfxlib", "riamosfunclib"]
-timeout = 30
 # the original hangs: a session of its own for its cell
 isolate = ["compiler=orig210"]
 

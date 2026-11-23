@@ -4,7 +4,6 @@
 fixed-orig = 589
 rwe = ["ricopperfxlib"]
 runtime-errors = "on"
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.numlines.refused_minus1" = "== fail"

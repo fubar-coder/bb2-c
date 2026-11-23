@@ -6,7 +6,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 214
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.negative_length.after" = "== not-run"

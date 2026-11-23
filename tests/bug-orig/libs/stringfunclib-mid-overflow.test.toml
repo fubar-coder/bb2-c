@@ -1,7 +1,5 @@
 # stringfunclib-mid-overflow.test.bas: the original takes the whole length
 fixed-orig = 286
-# the original copies 2 GB (about 17 s of silence per cell, two cells share a session)
-timeout = 90
 hang-after = 60
 
 [deviations."libs=cd"]

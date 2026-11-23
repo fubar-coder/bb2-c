@@ -4,7 +4,6 @@
 fixed-orig = 1151
 rwe = ["riwbspritelib"]
 runtime-errors = "on"
-timeout = 30
 
 [matrix]
 machine = ["a500", "a500-204"]

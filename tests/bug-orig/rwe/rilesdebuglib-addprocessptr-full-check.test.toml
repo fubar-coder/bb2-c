@@ -4,7 +4,6 @@
 fixed-orig = 700
 rwe = ["rilesdebuglib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.twenty_first.not_refused" = "== not-run"

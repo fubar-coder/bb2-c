@@ -2,7 +2,6 @@
 # address: the child prints "before", then the Software Failure requester
 # (address error) and the session ends as a hang
 fixed-orig = 979
-timeout = 30
 
 [data]
 "odd.bin.spec" = "mktestdata"

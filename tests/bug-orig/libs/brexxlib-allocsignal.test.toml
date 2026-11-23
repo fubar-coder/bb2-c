@@ -2,7 +2,6 @@
 # CD's libraries wait in PlayWait forever (the run is ended as a hang)
 fixed-orig = 104
 runwrap = "@INJECT@|signals"
-timeout = 30
 
 [deviations."libs=cd"]
 session = "== timeout"

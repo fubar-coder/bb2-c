@@ -4,7 +4,6 @@
 fixed-orig = 1089
 rwe = ["rigtmenulib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.negative_item.not_refused" = "== not-run"

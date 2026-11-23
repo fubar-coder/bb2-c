@@ -4,7 +4,6 @@
 fixed-orig = 100
 files = ["tape|@TESTDATA@/brexxlib-playback-time.tape"]
 runwrap = "@INJECT@|keys=BREXX/20@1,A0@1,33@3,B3@3"
-timeout = 60
 
 [asserts]
 inject = "contains \"keys: sent\""

@@ -9,7 +9,6 @@
 # The end is not defined (memory corruption): the general alternatives of
 # tests/README.md, "Alternative ends".
 fixed-orig = 398
-timeout = 60
 files = ["op3.anim|@TESTDATA@/animlib-errors-check-area.anim"]
 isolate = ["libs=cd"]
 

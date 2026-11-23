@@ -7,7 +7,6 @@
 # Every cell with the CD's libraries runs in its own session (a crash ends
 # the session).
 fixed-orig = 270
-timeout = 60
 isolate = ["libs=cd"]
 
 [asserts]

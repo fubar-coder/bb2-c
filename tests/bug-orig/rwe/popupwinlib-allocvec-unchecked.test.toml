@@ -3,7 +3,6 @@
 # garbage and waits for a mouse button
 fixed-orig = 467
 rwe = ["popupwinlib"]
-timeout = 30
 runwrap = "@INJECT@|allocfail=68-68/f=10001/1+2"
 # the hang ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]

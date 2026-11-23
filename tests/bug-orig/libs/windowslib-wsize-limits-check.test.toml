@@ -3,7 +3,6 @@
 # in WSize (the run is ended as a hang)
 fixed-orig = 320
 runtime-errors = "on"
-timeout = 60
 
 [asserts]
 "check.size_beyond_limits.not_refused" = "== not-run"

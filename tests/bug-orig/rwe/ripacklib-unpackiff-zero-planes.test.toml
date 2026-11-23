@@ -4,7 +4,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 777
 rwe = ["ripacklib", "riamosfunclib"]
-timeout = 30
 # the hang ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

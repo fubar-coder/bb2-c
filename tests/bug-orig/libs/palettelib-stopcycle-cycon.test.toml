@@ -3,7 +3,6 @@
 # trouble (see the ends); each cell with the CD's libraries has its own
 # session, since both ends are a hang or a halt
 fixed-orig = 228
-timeout = 120
 isolate = ["libs=cd"]
 
 [ends."libs=cd"]

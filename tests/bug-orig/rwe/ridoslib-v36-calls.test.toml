@@ -3,7 +3,6 @@
 fixed-orig = 1142
 rwe = ["ridoslib"]
 machine = "a500"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

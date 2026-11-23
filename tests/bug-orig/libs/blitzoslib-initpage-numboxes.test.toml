@@ -3,7 +3,6 @@
 # case ends in that requester
 fixed-orig = 1043
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.numboxes.not_refused" = "== not-run"

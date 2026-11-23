@@ -4,7 +4,6 @@
 fixed-orig = 1094
 rwe = ["riarexxlib"]
 runwrap = "@INJECT@|openlibfail=rexxsyslib.library"
-timeout = 30
 
 [asserts]
 inject = "contains \"inject: openlibfail: 1 opens failed\""

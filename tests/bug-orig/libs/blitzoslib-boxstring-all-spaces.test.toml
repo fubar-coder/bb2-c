@@ -7,7 +7,6 @@
 # copy is `!= ok`: it is not reached (the string buffer holds the test
 # library's data too) or it fails with the length 65535.
 fixed-orig = 85
-timeout = 30
 
 [ends."libs=cd"]
 reason = "the original copies 65535 bytes into the string buffer (#85): memory corruption, so the end is not defined"

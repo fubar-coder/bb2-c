@@ -3,7 +3,6 @@
 # that globalloc did not clear (the values are what the memory held)
 fixed-orig = 581
 rwe = ["ricompactdisclib"]
-timeout = 60
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 
 [deviations."compiler=orig210"]

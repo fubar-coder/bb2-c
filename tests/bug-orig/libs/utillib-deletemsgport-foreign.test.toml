@@ -3,7 +3,6 @@
 # after the damage and the case ends in that requester
 fixed-orig = 1041
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.foreign_port.not_refused" = "== not-run"

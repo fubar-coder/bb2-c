@@ -1,7 +1,6 @@
 # ciatrklib-resetciaint-filter.test.bas: the original toggles the filter bit
 fixed-orig = 449
 rwe = ["ciatrklib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.filter_bit.filter_bit_kept" = "== fail"

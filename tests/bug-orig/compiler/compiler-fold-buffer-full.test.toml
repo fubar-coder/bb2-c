@@ -6,7 +6,6 @@
 fixed-orig = 1190
 jobline = ["objbuf=2992"]
 isolate = ["compiler=orig195"]
-timeout = 60
 
 [data]
 "child.bas" = "basic-compile"

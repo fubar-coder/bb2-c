@@ -2,7 +2,6 @@
 # the word "a""b" c as one word and the terminating 0 with x"y
 fixed-orig = 755
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.doubled_quote.word_1" = "== fail"

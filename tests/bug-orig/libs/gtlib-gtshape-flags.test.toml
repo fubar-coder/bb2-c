@@ -1,7 +1,6 @@
 # gtlib-gtshape-flags.test.bas: the CD's libraries overwrite the flags of
 # the shape gadgets; the GTButton control is right
 fixed-orig = 990
-timeout = 60
 
 [deviations."libs=cd"]
 "check.shape_flags.flags_64_disabled" = "== fail"

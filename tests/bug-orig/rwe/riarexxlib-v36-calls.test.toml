@@ -4,7 +4,6 @@
 # The A1200 runs it.
 fixed-orig = 1144
 rwe = ["riarexxlib"]
-timeout = 30
 
 [matrix]
 machine = ["a500", "a500-204", "a1200"]

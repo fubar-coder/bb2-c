@@ -2,7 +2,6 @@
 # type 3 in the old memory behind the file
 fixed-orig = 745
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.type_3.height" = "== fail"

@@ -5,7 +5,6 @@ fixed-orig = 1150
 rwe = ["rimisclib"]
 machine = "a500"
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.three_gadgets.after" = "== not-run"

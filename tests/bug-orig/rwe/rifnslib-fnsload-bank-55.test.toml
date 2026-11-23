@@ -2,7 +2,6 @@
 # address with the default bank limit
 fixed-orig = 984
 rwe = ["rifnslib", "riamosfunclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.bank_55.default_result" = "== fail"

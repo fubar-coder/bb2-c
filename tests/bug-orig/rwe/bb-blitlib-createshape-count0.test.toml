@@ -7,7 +7,6 @@ rwe = ["bb_blitlib"]
 runtime-errors = "on"
 # the original overwrites 2 MB of memory and cannot end safely
 isolate = ["compiler=orig210"]
-timeout = 30
 
 [asserts]
 "check.count_zero.shape2_width" = "== not-run"

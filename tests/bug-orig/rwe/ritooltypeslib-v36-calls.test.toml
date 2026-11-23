@@ -3,7 +3,6 @@
 # a500), the other two machines run it
 fixed-orig = 1149
 rwe = ["ritooltypeslib"]
-timeout = 30
 files = ["one.info|@TESTDATA@/ritooltypeslib-tooltypes-9.info", "none.info|@TESTDATA@/ritooltypeslib-v36-calls-none.info"]
 
 [matrix]

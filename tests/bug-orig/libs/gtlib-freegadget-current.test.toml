@@ -1,7 +1,6 @@
 # gtlib-freegadget-current.test.bas: the CD's libraries link the new gadget
 # behind the freed one: it is not in the chain and not the last gadget
 fixed-orig = 962
-timeout = 60
 
 [deviations."libs=cd"]
 "check.free_last_gadget.in_chain" = "== fail"

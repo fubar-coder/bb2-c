@@ -2,7 +2,6 @@
 # past the last screen and does not return (the session runs into its timeout)
 fixed-orig = 761
 rwe = ["rimisclib"]
-timeout = 30
 # the hang ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

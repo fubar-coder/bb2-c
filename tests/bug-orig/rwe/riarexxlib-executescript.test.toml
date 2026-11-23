@@ -3,7 +3,6 @@
 # waits nor returns -1; nothing arrives
 fixed-orig = 544
 rwe = ["riarexxlib"]
-timeout = 60
 
 [deviations."compiler=orig210"]
 "check.scripts.ok_result" = "== fail"

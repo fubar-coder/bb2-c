@@ -5,7 +5,6 @@
 fixed-orig = 947
 rwe = ["rifxlib"]
 runtime-errors = "on"
-timeout = 30
 # the original crashes: a session of its own for its cell
 isolate = ["compiler=orig210"]
 

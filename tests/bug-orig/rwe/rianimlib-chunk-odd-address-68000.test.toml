@@ -4,7 +4,6 @@
 fixed-orig = 1119
 rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
 machine = "a600"
-timeout = 30
 files = ["anim|@TESTDATA@/rianimlib-chunk-odd-address-68000.anim"]
 isolate = ["compiler=orig210"]
 

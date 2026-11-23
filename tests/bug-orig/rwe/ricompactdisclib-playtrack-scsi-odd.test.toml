@@ -4,7 +4,6 @@
 fixed-orig = 579
 rwe = ["ricompactdisclib"]
 machine = "a600"
-timeout = 60
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 isolate = ["compiler=orig210"]
 

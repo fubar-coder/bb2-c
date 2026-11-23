@@ -4,7 +4,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 439
 rwe = ["ciatrklib"]
-timeout = 30
 files = ["k.mod|@TESTDATA@/ciatrklib-karplus-loop0.mod"]
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]

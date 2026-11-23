@@ -1,7 +1,6 @@
 # blitzkeyslib-off-handler.test.bas: the original loops for ever in Edit$,
 # the session times out and the check does not run
 fixed-orig = 408
-timeout = 30
 
 [deviations."libs=cd"]
 session = "== timeout"

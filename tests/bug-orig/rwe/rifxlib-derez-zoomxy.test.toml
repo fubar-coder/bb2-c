@@ -2,7 +2,6 @@
 # the Derez
 fixed-orig = 671
 rwe = ["rifxlib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.zoomxy_after_derez.same_picture" = "== fail"

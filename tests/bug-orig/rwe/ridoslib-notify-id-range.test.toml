@@ -3,7 +3,6 @@
 fixed-orig = 626
 rwe = ["ridoslib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.id_minus_1.not_refused" = "== not-run"

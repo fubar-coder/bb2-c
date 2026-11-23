@@ -2,7 +2,6 @@
 # character the font has no glyph for as something else than a space
 fixed-orig = 657
 rwe = ["rifnslib", "riamosfunclib"]
-timeout = 60
 
 [deviations."compiler=orig210"]
 "check.codes_160.print" = "== fail"

@@ -3,7 +3,6 @@
 fixed-orig = 666
 rwe = ["rifnslib", "riamosfunclib"]
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.tab_zero.not_refused" = "== not-run"

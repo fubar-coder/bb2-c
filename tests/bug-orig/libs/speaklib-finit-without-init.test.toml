@@ -5,7 +5,6 @@
 fixed-orig = 278
 runwrap = "@INJECT@|opendevfail=narrator.device closedevice freesignal opencount=translator.library"
 runtime-errors = "on"
-timeout = 60
 
 [asserts]
 requester = "contains \"Failed To Open Speech Library\""

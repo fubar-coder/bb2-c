@@ -4,7 +4,6 @@
 fixed-orig = 788
 rwe = ["rireqlib"]
 runwrap = "@INJECT@|openlibfail=req.library"
-timeout = 30
 # the halt ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

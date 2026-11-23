@@ -4,7 +4,6 @@
 fixed-orig = 1164
 rwe = ["rifastseriallib"]
 serial = "on"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

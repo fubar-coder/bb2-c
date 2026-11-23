@@ -3,7 +3,6 @@
 # the device of the OpenCD before for OpenCD without arguments
 fixed-orig = 577
 rwe = ["ricompactdisclib"]
-timeout = 60
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 
 [deviations."compiler=orig210"]

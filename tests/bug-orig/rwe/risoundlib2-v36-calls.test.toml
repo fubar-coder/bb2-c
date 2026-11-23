@@ -4,7 +4,6 @@
 fixed-orig = 1139
 rwe = ["risoundlib2"]
 machine = "a500"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [deviations."compiler=orig210"]

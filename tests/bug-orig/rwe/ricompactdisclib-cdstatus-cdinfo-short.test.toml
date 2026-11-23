@@ -6,7 +6,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 948
 rwe = ["ricompactdisclib"]
-timeout = 30
 uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]

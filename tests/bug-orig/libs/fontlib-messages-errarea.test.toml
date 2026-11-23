@@ -5,7 +5,6 @@
 # library, the texts are garbage that varies (the checks fail, no value
 # is declared)
 fixed-orig = 955
-timeout = 60
 
 [asserts]
 "end.case" = "not exists"

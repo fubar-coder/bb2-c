@@ -2,7 +2,6 @@
 # original has no check and scans the memory behind the page
 fixed-orig = 83
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.no_page.not_refused" = "== not-run"

@@ -1,6 +1,5 @@
 # polylib-chunkyvlin-clip-x.test.bas
 fixed-orig = 987
-timeout = 60
 
 [deviations."libs=cd"]
 "check.clip_x.x_100_clipped" = "== fail"

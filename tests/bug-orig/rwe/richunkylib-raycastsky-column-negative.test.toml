@@ -4,7 +4,6 @@
 fixed-orig = 887
 rwe = ["richunkylib"]
 runtime-errors = "on"
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.column.refused" = "== fail"

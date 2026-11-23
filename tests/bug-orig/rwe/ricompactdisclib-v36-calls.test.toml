@@ -3,7 +3,6 @@
 fixed-orig = 1138
 rwe = ["ricompactdisclib"]
 machine = "a500"
-timeout = 30
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 

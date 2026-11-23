@@ -7,7 +7,6 @@
 fixed-orig = 160
 rtg = "on"
 runwrap = "@INJECT@|guardseg click=FQ/CANCEL"
-timeout = 120
 isolate = ["libs=cd"]
 
 [asserts]

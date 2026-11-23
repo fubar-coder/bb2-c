@@ -2,7 +2,6 @@
 # the fake screen list in d0
 fixed-orig = 759
 rwe = ["rimisclib"]
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.fake_base.result" = "== fail"

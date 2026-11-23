@@ -3,7 +3,6 @@
 fixed-orig = 884
 rwe = ["richunkylib"]
 runtime-errors = "on"
-timeout = 30
 
 [deviations."compiler=orig210"]
 "check.widths.refused" = "== fail"

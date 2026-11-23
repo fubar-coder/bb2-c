@@ -1,7 +1,6 @@
 # editlib-edit-eof.test.bas: the original's Edit$ gives the length -1 at the
 # end of the input
 fixed-orig = 132
-timeout = 60
 
 [data]
 "child.bas" = "basic-compile"

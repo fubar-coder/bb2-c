@@ -3,7 +3,6 @@
 # on the a500
 fixed-orig = 1147
 rwe = ["ristonecrackerlib"]
-timeout = 30
 # the crash ends the session: the original's cells have one of their own
 isolate = ["compiler=orig210"]
 

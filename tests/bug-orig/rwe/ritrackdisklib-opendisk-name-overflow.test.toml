@@ -4,7 +4,6 @@
 # tests/README.md, "Alternative ends".
 fixed-orig = 860
 rwe = ["ritrackdisklib"]
-timeout = 30
 
 [ends."compiler=orig210"]
 reason = "the original's faulty part corrupts memory (#860): its end is not defined, it may crash, hang or halt"

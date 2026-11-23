@@ -3,7 +3,6 @@
 # The end is not defined (memory corruption): the general alternatives of
 # tests/README.md, "Alternative ends".
 fixed-orig = 335
-timeout = 30
 hang-after = 10
 
 [ends."compiler=orig195"]

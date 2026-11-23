@@ -2,7 +2,6 @@
 # bytes for the long arguments; the original takes the length as a word
 fixed-orig = 628
 rwe = ["ridoslib"]
-timeout = 60
 jobline = ["strbuf=300000"]
 
 [deviations."compiler=orig210"]

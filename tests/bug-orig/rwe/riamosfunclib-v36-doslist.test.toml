@@ -2,7 +2,6 @@
 # the original crashes at the first FindVolume
 fixed-orig = 1145
 rwe = ["riamosfunclib"]
-timeout = 30
 
 [matrix]
 machine = ["a500", "a500-204", "a1200"]

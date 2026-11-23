@@ -7,7 +7,6 @@
 fixed-orig = 619
 rwe = ["ridoslib"]
 runwrap = "@INJECT@|allocfail=48-48/1 track"
-timeout = 30
 isolate = ["compiler=orig210"]
 
 [asserts]

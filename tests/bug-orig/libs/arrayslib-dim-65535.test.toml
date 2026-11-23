@@ -3,7 +3,6 @@
 # requester, the case goes on
 fixed-orig = 1037
 runtime-errors = "on"
-timeout = 30
 
 [asserts]
 "check.highest_index.dimmed" = "== not-run"

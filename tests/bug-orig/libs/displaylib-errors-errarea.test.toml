@@ -5,7 +5,6 @@
 # requester, a hang) is not defined; each cell with the CD's libraries has
 # its own session.
 fixed-orig = 412
-timeout = 60
 isolate = ["libs=cd"]
 
 [asserts]

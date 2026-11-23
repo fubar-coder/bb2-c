@@ -2,7 +2,6 @@
 # crashes at CachesOn; on the a500-204 (exec V37) it works
 fixed-orig = 1145
 rwe = ["riamosfunclib"]
-timeout = 30
 
 [matrix]
 machine = ["a500", "a500-204"]

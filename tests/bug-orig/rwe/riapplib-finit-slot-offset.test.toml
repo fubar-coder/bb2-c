@@ -4,7 +4,6 @@
 fixed-orig = 524
 rwe = ["riapplib"]
 machine = "a600"
-timeout = 30
 
 [deviations."compiler=orig210"]
 session = "== timeout"

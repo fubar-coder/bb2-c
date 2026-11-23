@@ -3,7 +3,6 @@
 fixed-orig = 1150
 rwe = ["rimisclib"]
 machine = "a500"
-timeout = 30
 
 [asserts]
 requester = "count == 5"

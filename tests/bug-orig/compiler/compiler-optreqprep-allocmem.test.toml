@@ -3,7 +3,6 @@
 # ends; the original writes to address 0 and the session ends as a halt
 fixed-orig = 8
 wrap = "@INJECT@|allocfail=64-64/chip/1"
-timeout = 30
 
 [asserts]
 compile = "== none"
