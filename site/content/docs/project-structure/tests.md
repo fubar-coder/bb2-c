@@ -37,6 +37,11 @@ ctest --preset host
 ctest --preset all
 ```
 
+To run only some tests, add `-R` with a regular expression for their
+names, for example `ctest --preset all -R 'blitz2_intrinsic_asc__'`;
+[Running a single test]({{< relref "running-tests#running-tests-with-ctest" >}})
+explains the names, labels and other options.
+
 A test that cannot run, because the emulator or the original material is
 missing, is reported as skipped, not as failed. So `ctest --preset host`
 right after the first build is a quick check that everything was built
@@ -83,7 +88,10 @@ correctly.
   the program, and a configuration file says with which compilers and
   libraries it runs. How to write one and every setting of its
   configuration:
-  [Tests that judge themselves]({{< relref "self-judging-tests" >}}).
+  [Tests that judge themselves]({{< relref "self-judging-tests" >}});
+  how to run one of them, or a single case, directly or with CTest:
+  [Running a single test]({{< relref "running-tests" >}}); the macros
+  they check with: [The test library]({{< relref "test-library" >}}).
 
 ## The expected data of the library tests
 

@@ -7,6 +7,13 @@ description: How to write a Blitz Basic test that checks its own result, and eve
 Before this page you should know how the tests are run and what the
 presets are ([Tests]({{< relref "tests" >}})).
 
+{{< callout type="info" >}}
+To run one test or one of its cases, directly or with CTest, see
+[Running a single test]({{< relref "running-tests" >}}). Every macro a
+test source can use is described in
+[The test library]({{< relref "test-library" >}}).
+{{< /callout >}}
+
 Most emulator tests compare what a program prints with a file of
 expected output. A *test that judges itself* works the other way round:
 the Blitz Basic program checks its results with a small test library,
@@ -640,22 +647,12 @@ declarations are allowed: constants, `Macro`, `Statement` and
 `CNIF` ... `CEND`, labels and data statements. A helper is a procedure,
 or a subroutine inside a case.
 
-Inside a block the checks are:
-
-| Macro | Checks |
-|---|---|
-| `!Check{COND,"name"}` | that a long condition is true |
-| `!CheckEq{ACTUAL,EXPECTED,"name"}` | two long values |
-| `!CheckQEq{ACTUAL,EXPECTED,"name"}` | two quick values, exactly |
-| `!CheckFltNear{ACTUAL,EXPECTED,DELTA,"name"}` | two float values, within DELTA |
-| `!CheckStrEq{ACTUAL,EXPECTED,"name"}` | two strings |
-| `!Require{COND,"name"}` | a precondition: if it fails, the block ends and the case is *broken*, because the tested behaviour was not reached |
-| `!ExpectError{"MESSAGE"}` | announces that the next statement raises a runtime error whose requester holds MESSAGE; needs `runtime-errors = "on"` |
-
-The name is optional, but a check that a configuration names needs one,
-and a name is unique in its case or procedure. A case name is lower
-case, letters, digits and `_`, without `__`, and must not be the name of
-a Blitz Basic command or function (`count` or `add` are not allowed).
+Inside a block, the checks of the test library compare long, quick,
+float and string values, `!Require` checks a precondition and
+`!ExpectError` announces a runtime error. A check may have a name, its
+last argument; a check that a configuration names needs one. Every
+macro, with its arguments, what it records and the rules for case names,
+is described in [The test library]({{< relref "test-library" >}}).
 
 This example runs in the repository as a test of its own. It has a
 batch init, two cases and a procedure with a check:
@@ -696,10 +693,8 @@ runtime-errors = "on"
 libs = ["cd", "clib"]
 ```
 
-The repository's
-[description of the tests](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md#tests-that-judge-themselves)
-has the full rules for sources, including the limits of the compiler a
-test can meet.
+[The test library]({{< relref "test-library" >}}) has the full rules
+for sources, including the limits of the compiler a test can meet.
 
 ## Extending the tests
 
@@ -729,10 +724,11 @@ term in the selector if they would otherwise apply to it.
 
 #### Build and run it
 
-Build; the changed source is registered again, and the case gets its
-CTest tests. Run them by name, for example
+While you write the case, run it directly with the test runner; no build
+step is needed for that. Then build: the changed source is registered
+again, and the case gets its CTest tests. Run them by name, for example
 `ctest --preset all -R 'ID__NAME$'` with `-` of the test's name written
-as `_`.
+as `_` ([Running a single test]({{< relref "running-tests" >}})).
 
 {{% /steps %}}
 
@@ -789,17 +785,10 @@ run (the compiled program, the compiler's log, the result file) stay in
 
 {{% /steps %}}
 
-The test runner can also run one case directly, with the same report:
-
-```
-build/amiga/host/corpus-runner/corpusrun case --env build/amiga/tests/model-env.toml \
-    --source tests/blitz2/ID.test.bas --case NAME --side port
-```
-
-Its exit status is the verdict: 0 passed, 1 reproduced (an open bug
-shows as declared), 2 error (a configuration, source or result that
-cannot be judged), 3 broken, 4 failed, 77 skipped (no emulator, or a
-file of the side is missing).
+The test runner can also run one case directly, with the same report,
+before the test is registered at all; how, and what its exit status
+means, is on the page
+[Running a single test]({{< relref "running-tests#running-a-single-test-directly" >}}).
 
 ### Adding a directory with its own settings
 
