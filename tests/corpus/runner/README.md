@@ -197,7 +197,7 @@ OPTIONS:
           --env FILE REQUIRED the environment file of the build (tests/model-env.toml)
           --source FILE REQUIRED 
                               the test source ID.test.bas
-          --case CASE         the case (not with --print-config)
+          --case CASE         the case (not with --print-config, --write-driver, --prev)
           --side SIDE:{port,originals} 
                               the cells without original material (port, the default) or with
                               it (originals: the original compilers, the CD's libraries)
@@ -206,11 +206,26 @@ OPTIONS:
           --print-config      print the effective configuration (every key with its value and
                               origin, the axes, the cells) and run nothing
           --print-driver      print the driver of the case and run nothing
+          --write-driver FILE write the driver of all cases, tokenised, to FILE (its text
+                              beside it as .bas) and run nothing: the build step of the
+                              comparison with the prev build
+          --prev              compare with the prev build: the driver of --driver compiled by
+                              this build's compiler and by --prev-blitz2, once per value of
+                              runtime-errors of the side port (the compiles ID and ID-runerrs)
+          --driver FILE       with --prev: the driver --write-driver wrote
+          --test TEST         with --prev: the ctest name, the TEST of the PREV_INTENDED
+                              entries
+          --prev-blitz2 FILE  with --prev: the previous commit's compiler
+          --prev-libs DIR     with --prev: the directory of its deflibs and acidlibs
+          --intended ENTRY    with --prev: a PREV_INTENDED entry (TEST:NAME of any test, or ON;
+                              any number)
 
 The cells of a side that share the session settings run in one emulator session.
 Exit status: 0 passed, 1 reproduced (an open bug shows as declared), 2 error (a
 configuration, source or result that cannot be judged; usage), 3 broken, 4
-failed, 77 skipped (no emulator, or a file of the side is missing).
+failed, 77 skipped (no emulator, or a file of the side is missing). With --prev:
+0 the same, 1 a difference that is not intended or a stale entry, 2 error, 77
+skipped.
 ```
 
 Runs one case of a test of the BASIC test model (`ID.test.bas` and its
@@ -234,6 +249,19 @@ the environment's `work` stays when the case did not pass.
 `--print-config` prints the effective configuration (every key with its
 value and the file and line it comes from, the axes, the cells and their
 side), `--print-driver` the driver; neither starts a session.
+
+The comparison with the prev build of a test of the model (`tests/README.md`,
+"The prev build"; `cmake/prev.cmake`, `prev_compile_model_test`) has two
+steps: the build step writes the driver of all cases, tokenised
+(`--write-driver NAME.bb2`, its text beside it as `NAME.bas`; a source
+whose driver cannot be written fails it), and the test `PREFIX_ID_prev`
+(`--prev --driver NAME.bb2 --test PREFIX_ID_prev --prev-blitz2 FILE
+--prev-libs DIR [--intended ENTRY]...`) compiles that driver once per
+value of `runtime-errors` among the cells of the side port, a pass of
+`corpus.h` with `run=off`, `clib` and `prev|exe:clib` each (`cr_prev_pass`):
+the compiles `ID` and `ID-runerrs`, the PREV_INTENDED entries
+`PREFIX_ID_prev:ID` and `:ID-runerrs`. An entry of the test that names
+no compile of it is stale (`cr_prev_unknown`).
 
 ## Inputs and outputs
 
@@ -259,7 +287,9 @@ line, message, size, masked SHA-256, xtra, note
 * `drop`: 0 removed or kept or nothing to remove, 1 a fixture could not be removed.
 * `case`: the verdict of the case: 0 passed, 1 reproduced (an open bug
   shows as declared), 2 error, 3 broken, 4 failed, 77 skipped (no
-  emulator, or a file of the side is missing).
+  emulator, or a file of the side is missing). With `--prev` 0 the same, 1 a difference
+  that is not intended or a stale entry, 2 error, 77 skipped; with
+  `--write-driver` 0 written, 2 error.
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that
   does not compile, 77 the emulator or a file is missing (skipped),
   2 error.
@@ -282,7 +312,10 @@ of `cd` (sessions, skipped runs) go to stdout with the same prefix.
   the test `rwe_refbuild` (`libs/userlibs/rwe/refbuild.cmake`); the test
   `cdrun_source` (`check-cdrun-source.cmake` here, without emulator).
 * `case`: the tests of the BASIC test model (`PREFIX_ID__CASE`,
-  `PREFIX_ID__CASE_originals`; `cmake/basic-test-model.cmake`).
+  `PREFIX_ID__CASE_originals`; `cmake/basic-test-model.cmake`), their
+  drivers for the comparison with the prev build (`basic_test_driver`)
+  and the comparisons `PREFIX_ID_prev` (`cmake/prev.cmake`), the self
+  tests `blitz2_selftest_model_*` (`tests/blitz2/CMakeLists.txt`).
 * `drop`: the tests `corpus_cleanup`, `corpus_originals_cleanup`
   (fixture cleanups, `tests/corpus/CMakeLists.txt`).
 * Tests: `help_corpusrun`, `readme_corpusrun`.

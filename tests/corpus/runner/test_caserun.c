@@ -8,7 +8,12 @@
  * and the printed configuration of a three-level hierarchy with the origin
  * of every key - and the refusals (deliberately broken input: a runner
  * value the environment lacks, pad with a runwrap, an RWE library the
- * environment does not know, a malformed files entry and selector).
+ * environment does not know, a malformed files entry and selector) - and
+ * the passes of the comparison with the prev build (cr_prev_pass: a
+ * compile without the settings of a run, with the configuration prev and
+ * the entries of its name; cr_prev_unknown: an entry naming no compile of
+ * the test) with broken input (a cell pass without a configuration, with
+ * two, an entry of another test, of another name, ON).
  *   test_caserun WORKDIR
  */
 #define _XOPEN_SOURCE 700
@@ -439,6 +444,98 @@ static void test_print_config(void)
     unload(&t);
 }
 
+/* the comparison with prev: a cell's pass becomes a compile with clib and prev */
+static void test_prev_pass(void)
+{
+    struct t t;
+    char err[600], *cp = NULL, *p = NULL;
+    const char *entries[] = { "blitz2_x_prev:x-runerrs", "blitz2_x_prev:x", "blitz2_y_prev:x", "corpus:x",
+                              "blitz2_x_prev:nosuch", "blitz2_x_prev:x-runerrsx" };
+    const size_t nentries = sizeof entries / sizeof entries[0];
+    const char *names[] = { "x", "x-runerrs" };
+    const char *stale;
+    size_t cur = 0;
+
+    put("p/tests.toml", "root = true\n[matrix]\nruntime-errors = [\"off\", \"on\"]\n");
+    put("p/x.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    put("p/x.test.toml", "stack = 20000\nmachine = \"a600\"\nfiles = [\"data/f|/abs/f\"]\nserial = \"on\"\n"
+        "runargs = \"a b\"\nlauncherargs = \"-harden\"\nfloppy = [\"1|/abs/d.adf\"]\n"
+        "jobline = [\"run=r002|CORPUS:src/x.bb2|RAM:con\"]\n");
+    load(&t, "p/x.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "on"), &t.env, "clib", "/w/x", "/w/x.bb2", &cp, err,
+                       sizeof err) == 0);
+    CHECK(cp && cr_prev_pass(cp, "blitz2_x_prev", "x-runerrs", "/w/p/x-runerrs", "/w/p/x-runerrs.bb2",
+                             "/prev/blitz2", "/prev", entries, nentries, &p, err, sizeof err) == 0);
+    if (p) {
+        struct corpus_pass cpp;
+        char perr[400];
+
+        if (corpus_parse(p, &cpp, perr, sizeof perr)) {
+            fprintf(stderr, "the prev pass does not parse: %s\n%s", perr, p);
+            failures++;
+        } else {
+            CHECK(cpp.nconfigs == 2 && !cpp.run && cpp.runtime_errors && cpp.mask_traps);
+            corpus_free(&cpp);
+        }
+    }
+    CHECK(p && has(p, "config=clib|ref|/b/blitz2|/b/deflibs|/b/acidlibs"));
+    CHECK(p && has(p, "config=prev|exe:clib|/prev/blitz2|/prev/deflibs|/prev/acidlibs"));
+    CHECK(p && has(p, "test=blitz2_x_prev"));
+    CHECK(p && has(p, "run=off"));
+    CHECK(p && has(p, "work=/w/p/x-runerrs"));
+    CHECK(p && has(p, "report=/w/p/x-runerrs.txt"));
+    CHECK(p && has(p, "source=/w/p/x-runerrs.bb2"));
+    CHECK(p && has(p, "runtime_errors=on"));
+    CHECK(p && has(p, "file=blitz2/userlibs/testlib/testlib.obj|/b/testlib.obj"));
+    CHECK(p && has(p, "file=data/f|/abs/f"));
+    CHECK(p && has(p, "stack=20000"));
+    CHECK(p && has(p, "machine=a600"));
+    CHECK(p && has(p, "jobline=run=r002|CORPUS:src/x.bb2|RAM:con"));
+    CHECK(p && has(p, "mask_traps=on"));
+    /* only the entry of this test and name */
+    CHECK(p && has(p, "intended=blitz2_x_prev:x-runerrs"));
+    CHECK(p && !strstr(p, "intended=blitz2_x_prev:x\n"));
+    CHECK(p && !strstr(p, "intended=blitz2_y_prev"));
+    CHECK(p && !strstr(p, "intended=corpus"));
+    CHECK(p && !strstr(p, "intended=blitz2_x_prev:x-runerrsx"));
+    /* what belongs to a run is gone */
+    CHECK(p && !strstr(p, "cell=") && !strstr(p, "launcher=") && !strstr(p, "rcput=") && !strstr(p, "hang_")
+          && !strstr(p, "serial=") && !strstr(p, "runargs=") && !strstr(p, "launcherargs=")
+          && !strstr(p, "floppy=") && !strstr(p, "/w/x"));
+    free(p);
+    p = NULL;
+    /* ON: every compile may differ */
+    {
+        const char *on[] = { "ON" };
+
+        CHECK(cr_prev_pass(cp, "blitz2_x_prev", "x", "/w/p/x", "/w/p/x.bb2", "/prev/blitz2", "/prev", on, 1, &p,
+                           err, sizeof err) == 0);
+        CHECK(p && has(p, "intended=ON"));
+        free(p);
+        p = NULL;
+    }
+    free(cp);
+    unload(&t);
+    /* broken: no configuration, two, a malformed one */
+    CHECK(cr_prev_pass("work=/w\nsource=/s.bb2\n", "t_prev", "x", "/w", "/s.bb2", "/p/b", "/p", NULL, 0, &p, err,
+                       sizeof err) == -1 && !p && strstr(err, "no configuration"));
+    CHECK(cr_prev_pass("config=a|ref|/b|/d|/a\nconfig=b|ref|/b|/d|/a\n", "t_prev", "x", "/w", "/s.bb2", "/p/b",
+                       "/p", NULL, 0, &p, err, sizeof err) == -1 && !p && strstr(err, "two configurations"));
+    CHECK(cr_prev_pass("config=abc\n", "t_prev", "x", "/w", "/s.bb2", "/p/b", "/p", NULL, 0, &p, err,
+                       sizeof err) == -1 && !p && strstr(err, "malformed"));
+    /* the entries of the test that name no compile of it, in order; other tests' are not its */
+    stale = cr_prev_unknown("blitz2_x_prev", names, 2, entries, nentries, &cur);
+    CHECK(stale && !strcmp(stale, "blitz2_x_prev:nosuch"));
+    stale = cr_prev_unknown("blitz2_x_prev", names, 2, entries, nentries, &cur);
+    CHECK(stale && !strcmp(stale, "blitz2_x_prev:x-runerrsx"));
+    CHECK(!cr_prev_unknown("blitz2_x_prev", names, 2, entries, nentries, &cur));
+    /* a test without runtime error checking: its entry x-runerrs is unknown */
+    cur = 0;
+    stale = cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur);
+    CHECK(stale && !strcmp(stale, "blitz2_x_prev:x-runerrs"));
+    CHECK(!cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur));
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -458,6 +555,7 @@ int main(int argc, char **argv)
     test_parse_run();
     test_compile_mapped();
     test_print_config();
+    test_prev_pass();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);
