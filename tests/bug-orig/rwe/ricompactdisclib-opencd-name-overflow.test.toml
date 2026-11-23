@@ -1,0 +1,8 @@
+# ricompactdisclib-opencd-name-overflow.test.bas: the original's long name
+# fills the Q-code data with "x" (120)
+fixed-orig = 576
+rwe = ["ricompactdisclib"]
+
+[deviations."compiler=orig210"]
+"check.long_name.after" = "== fail"
+"check.long_name.after.actual" = "== 120"

@@ -1,0 +1,11 @@
+# ricompactdisclib-opencd-while-open-leak.test.bas: with runtime error checking
+# for the announced error; the original raises none and opens the device a
+# second time
+fixed-orig = 578
+rwe = ["ricompactdisclib"]
+runtime-errors = "on"
+timeout = 60
+uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
+
+[deviations."compiler=orig210"]
+"check.second_open.refused" = "== fail"

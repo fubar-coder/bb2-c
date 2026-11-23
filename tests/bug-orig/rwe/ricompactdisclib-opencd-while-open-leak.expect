@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-open -1
-second
-REQUESTER: AutoRequest body "CD device already open: CloseCD first" *
-rc=0

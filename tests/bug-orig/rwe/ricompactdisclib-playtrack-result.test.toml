@@ -1,0 +1,10 @@
+# ricompactdisclib-playtrack-result.test.bas: the A1200 with uaescsi.device and
+# the library's CD image; the original returns what SendIO left in d0
+fixed-orig = 1157
+rwe = ["ricompactdisclib"]
+timeout = 60
+uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
+
+[deviations."compiler=orig210"]
+"check.play.play" = "== fail"
+"check.play.play.actual" = "== 0"

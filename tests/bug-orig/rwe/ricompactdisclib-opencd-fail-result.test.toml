@@ -1,0 +1,8 @@
+# ricompactdisclib-opencd-fail-result.test.bas: the original returns what
+# DeleteIORequest left in d0
+fixed-orig = 575
+rwe = ["ricompactdisclib"]
+
+[deviations."compiler=orig210"]
+"check.no_device.result" = "== fail"
+"check.no_device.result.actual" = "== 200"

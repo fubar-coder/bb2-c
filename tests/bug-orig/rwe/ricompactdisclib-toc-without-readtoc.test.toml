@@ -1,0 +1,21 @@
+# ricompactdisclib-toc-without-readtoc.test.bas: the A1200 with uaescsi.device
+# and the library's CD image; the original reads the bytes at address 0 and
+# the exception vectors of this Kickstart
+fixed-orig = 582
+rwe = ["ricompactdisclib"]
+timeout = 60
+uae = ["scsi=true", "cdimage0=@TESTDATA@/ricompactdisclib.cue,image"]
+
+[deviations."compiler=orig210"]
+"check.no_toc.num_tracks" = "== fail"
+"check.no_toc.num_tracks.actual" = "== 1"
+"check.no_toc.length1" = "== fail"
+"check.no_toc.length1.actual" = "== 840"
+"check.scsi_toc.first_track" = "== fail"
+"check.scsi_toc.first_track.actual" = "== 0"
+"check.scsi_toc.last_track" = "== fail"
+"check.scsi_toc.last_track.actual" = "== 0"
+"check.scsi_toc.length1" = "== fail"
+"check.scsi_toc.length1.actual" = "== 840"
+"check.scsi_toc.length2" = "== fail"
+"check.scsi_toc.length2.actual" = "== 14050"
