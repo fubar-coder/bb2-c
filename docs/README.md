@@ -14,6 +14,7 @@ For working with the repository:
 |---|---|
 | [development.md](development.md) | IDE profiles (CLion and others), `.clangd`, the checks the build runs on its results |
 | [testing.md](testing.md) | how the tests work, for people: the model, the suites, walkthroughs, glossary |
+| [testing-old-form.md](testing-old-form.md) | the bug-orig tests that are not yet BASIC-model tests (`.expect`/`.orig`, `.drv`), by category, with what would let them move |
 | [structure.md](structure.md) | the directory structure of the repository in full |
 | [blitz2/extensions.md](blitz2/extensions.md) | what `blitz2` accepts beyond Blitz Basic 2 |
 | [blitz2/expression-types.md](blitz2/expression-types.md) | the type of an expression in `blitz2`: the type so far, promotion, the cut of a Quick to Long |
