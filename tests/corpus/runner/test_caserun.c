@@ -340,6 +340,61 @@ static void test_parse_run(void)
     cr_run_free(&r);
 }
 
+/* inject's report: its lines of the output, and which cells run through inject */
+static void test_inject(void)
+{
+    struct cr_run r;
+    char *l;
+    struct t t;
+
+    CHECK(cr_parse_run("hello\ninject: guard: written behind an allocation of 8 bytes\nworld\r\n"
+                       "inject: rc=0\nrc=0\n", &r) == 0);
+    l = cr_inject_lines(r.output);
+    CHECK(l && !strcmp(l, "inject: guard: written behind an allocation of 8 bytes\ninject: rc=0\n"));
+    free(l);
+    /* the output keeps the lines */
+    CHECK(strstr(r.output, "inject: guard: written behind") && strstr(r.output, "hello\n"));
+    cr_run_free(&r);
+    /* none, no line end at the end, a line that only contains it */
+    l = cr_inject_lines("hello\n");
+    CHECK(l && !strcmp(l, ""));
+    free(l);
+    l = cr_inject_lines("x inject: no\ninject: last");
+    CHECK(l && !strcmp(l, "inject: last\n"));
+    free(l);
+    l = cr_inject_lines("");
+    CHECK(l && !strcmp(l, ""));
+    free(l);
+    /* the cells: pad, a runwrap through the runner's inject, another runwrap,
+       none */
+    put("inj/tests.toml", "root = true\n");
+    put("inj/s.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    put("inj/s.test.toml", "pad = \"on\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/inject|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/inject\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/injector|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/x/w|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+    put("inj/s.test.toml", "");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+}
+
 static void test_compile_mapped(void)
 {
     struct tp_source src = { 0 };
@@ -1029,6 +1084,7 @@ int main(int argc, char **argv)
     test_cell_refused();
     test_sessions();
     test_parse_run();
+    test_inject();
     test_compile_mapped();
     test_print_config();
     test_prev_pass();

@@ -296,3 +296,14 @@ here.
   alternatives and the case comes out REPRODUCED, the ctest test checks
   the report; `model-varying-end-one` (the same source, only `returns`)
   is its check with broken input and fails in the cell that hangs.
+- **The query `inject` (task 4.1).** A cell runs through inject when
+  `pad = "on"` or the path field of its `runwrap` is the placeholder
+  `INJECT` of the environment file (or the runner's value `inject`, the
+  same program); `cr_cell_inject` decides it from the configuration, not
+  from the text `@INJECT@`, which the placeholder resolution has replaced.
+  Checked on the pilot `shapeslib-loadshape-width-zero` with
+  `inject = "contains \"inject: rc=0\""` in `[asserts]` and the guard line
+  as an `inject` deviation of `libs=cd` added for the run (not committed):
+  both sides PASSED; without the `runwrap` the port cell FAILED with
+  `assertion inject contains "inject: rc=0" (...) does not hold: not
+  captured` (log `~/.local/share/bb2-c-work/accept-runner-ext/s4-inject.log`).

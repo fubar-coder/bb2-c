@@ -26,7 +26,7 @@
 
 ## 4. The query `inject`
 
-- [ ] 4.1 `observe_cell` fills `inject` with the `inject:` lines of the output when the cell ran through inject (`pad = "on"`, `runwrap` with `@INJECT@`), else not captured; the output unchanged; verify: host test of the extraction in `test_caserun.c`, and an emulator run of a pilot test with `runwrap = "@INJECT@|guard"` (after the pilot's merge, e.g. `shapeslib-loadshape-width-zero`) with an added assertion on `inject`, passing; without inject the assertion fails as "not captured"
+- [x] 4.1 `observe_cell` fills `inject` with the `inject:` lines of the output when the cell ran through inject (`pad = "on"`, `runwrap` with `@INJECT@`), else not captured; the output unchanged; verify: host test of the extraction in `test_caserun.c`, and an emulator run of a pilot test with `runwrap = "@INJECT@|guard"` (after the pilot's merge, e.g. `shapeslib-loadshape-width-zero`) with an added assertion on `inject`, passing; without inject the assertion fails as "not captured"
 
 ## 5. Documentation and acceptance
 

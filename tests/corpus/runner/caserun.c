@@ -398,6 +398,50 @@ oom:
     return -1;
 }
 
+char *cr_inject_lines(const char *output)
+{
+    struct text t = { 0 };
+    const char *p = output;
+
+    while (p && *p) {
+        const char *e = strchr(p, '\n');
+        size_t n = e ? (size_t)(e - p) : strlen(p);
+
+        if (n >= 7 && !memcmp(p, "inject:", 7))
+            text_add(&t, "%.*s\n", (int)n, p);
+        p = e ? e + 1 : p + n;
+    }
+    if (t.bad) {
+        free(t.p);
+        return NULL;
+    }
+    return t.p ? t.p : strdup("");
+}
+
+/* whether the path field of a runwrap value (before its "|") is path */
+static int runwrap_is(const char *runwrap, const char *path)
+{
+    size_t n = path ? strlen(path) : 0;
+
+    return n && !strncmp(runwrap, path, n) && (runwrap[n] == '|' || !runwrap[n]);
+}
+
+int cr_cell_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env)
+{
+    char b[24];
+    const char *runwrap = val(conf, m, cell, "runwrap", b);
+
+    if (!strcmp(val(conf, m, cell, "pad", b), "on"))
+        return 1;
+    if (!*runwrap)
+        return 0;
+    /* @INJECT@ of the configuration, or the runner's inject */
+    for (size_t i = 0; env && i < env->nph; i++)
+        if (!strcmp(env->ph[i].name, "INJECT") && runwrap_is(runwrap, env->ph[i].value))
+            return 1;
+    return runwrap_is(runwrap, tc_env_runner(env, "inject"));
+}
+
 void cr_run_free(struct cr_run *r)
 {
     for (size_t i = 0; i < r->nreq; i++)
@@ -843,6 +887,7 @@ struct cell {
     char *key;                  /* cr_session_key */
     int done;                   /* observed */
     enum amiga_emulation_status status;
+    int inject;                 /* the program runs through inject (cr_cell_inject) */
 };
 
 /* the last line of a file holds rc= */
@@ -882,7 +927,7 @@ struct obs {
     struct tj_obs o;
     struct cr_run run;
     struct tj_requester *req;
-    char *log, *b2, *result, *serial, *compile, *compile_log, *where;
+    char *log, *b2, *result, *serial, *compile, *compile_log, *where, *inject;
     struct bugorig_obs bo;
 };
 
@@ -897,6 +942,7 @@ static void obs_free(struct obs *ob)
     free(ob->compile);
     free(ob->compile_log);
     free(ob->where);
+    free(ob->inject);
     bugorig_free(&ob->bo);
     memset(ob, 0, sizeof *ob);
 }
@@ -973,7 +1019,9 @@ static int observe_cell(const struct cell *c, const struct tp_driver *d, const c
     ob->o.compile_log = ob->compile_log;
     ob->o.output = run ? ob->run.output : NULL;
     ob->o.serial = ob->serial;
-    ob->o.inject = NULL;
+    /* inject's report: its lines of the output, which keeps them */
+    if (c->inject && run && !(ob->o.inject = ob->inject = cr_inject_lines(ob->run.output)))
+        goto out;
     ob->o.has_rc = ob->run.has_rc;
     ob->o.rc = ob->run.rc;
     ob->o.req = ob->req;
@@ -1477,6 +1525,7 @@ static int run_set(struct ctx *x, struct set *s)
         int r;
 
         c->idx = s->idx[k];
+        c->inject = cr_cell_inject(&x->conf, &x->m, c->idx, &x->env);
         snprintf(c->tag, sizeof c->tag, "c%zu", k);
         if ((r = cr_cell_pass(&x->conf, &x->m, c->idx, &x->env, c->tag, s->dir, bb2, &pt, err, sizeof err))) {
             fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);

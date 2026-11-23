@@ -335,6 +335,22 @@ int cr_parse_run(const char *run, struct cr_run *r);
 void cr_run_free(struct cr_run *r);
 
 /**
+ * @brief Inject's report in a program's output: its lines that start with
+ *        "inject:", each with its LF ("" if none); the output keeps them.
+ * @return the lines (malloc'd), NULL = out of memory
+ */
+char *cr_inject_lines(const char *output);
+
+/**
+ * @brief Whether the program of a cell runs through inject: pad = "on", or
+ *        a runwrap whose path is inject (the placeholder INJECT of env, or
+ *        its runner value inject).  The query inject of such a cell holds
+ *        inject's report (cr_inject_lines), of any other cell it is not
+ *        captured.
+ */
+int cr_cell_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env);
+
+/**
  * @brief The compile result of the driver in the terms of the source:
  *        "error LINE MESSAGE" with LINE the driver's line becomes "error
  *        SLINE MESSAGE" for a line of the source (where, if not NULL, gets
