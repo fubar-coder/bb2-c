@@ -1,0 +1,13 @@
+# compiler-const0-label.test.bas: the correct result is a failed compile
+# (Label has been used as a Constant at the Goto) and nothing runs; the
+# original ends the compile with a Label reference out of context
+fixed-orig = 977
+
+[asserts]
+compile = "== \"error 14 Label has been used as a Constant\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "contains \"Label reference out of context\""
