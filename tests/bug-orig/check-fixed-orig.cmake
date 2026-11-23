@@ -1,6 +1,6 @@
 # check-fixed-orig.cmake - a fixed bug-orig test keeps its recorded
-# original.  A test is fixed by the header line "; @fixed #N" (ID.bas) or
-# the directive "; @fixed #N" (ID.drv of the TED tests); its observation
+# original.  A test is fixed by the header line "; @fixed-orig #N" (ID.bas) or
+# the directive "; @fixed-orig #N" (ID.drv of the TED tests); its observation
 # of the original, ID.orig (tests/README.md, "Recorded originals"), is the
 # [orig] side of the pair of the shared test model and stays with the fix
 # (the target bug-orig-record writes it).

@@ -6,7 +6,7 @@
 ; Correct: the alert "Not enough memory for operation!", TED ends with
 ; return code -1 and blitz2 ends normally; the original goes on without
 ; a screen.
-; @fixed #1007
+; @fixed-orig #1007
 ; @file bo.bas ".a\n"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject alerts allocfail=20000-45000/chip+1 blitz2:blitz2 @FILE@

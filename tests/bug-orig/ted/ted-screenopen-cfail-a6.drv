@@ -7,7 +7,7 @@
 ; code of a failed start, -1 (#357); the original calls into exec with
 ; a0 = the screen and crashes (the session hangs).  (teddrive does not
 ; log this screen: it never gets its window.)
-; @fixed #382
+; @fixed-orig #382
 ; @source none
 ; @command TEDAB:tools/inject allocfail=3584-3584/chip/1 blitz2:ted
 ; @expect stdout "inject: allocfail: 1 allocations failed"

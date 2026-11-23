@@ -7,7 +7,7 @@
 ; into namebuff2 and reports "Can't open Include" (no such file).
 ; Correct: a name that does not fit into namebuff is refused, with "Path
 ; too Long" at the Include line.
-; @fixed #325
+; @fixed-orig #325
 IncDir "CORPUS:pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/"
 Include "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.bb2"
 NPrint 1

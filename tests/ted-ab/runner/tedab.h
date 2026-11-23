@@ -48,17 +48,17 @@
  *   ; @known REASON      a known failure (REASON e.g. "KNOWN-BOTH ..."): not
  *                        run, listed in the report as KNOWN with REASON;
  *                        run all the same when the filter names it exactly
- *   ; @fixed #NNN          (only in tests/bug-orig/ted, no pair) TED bug NNN is
+ *   ; @fixed-orig #NNN   (only in tests/bug-orig/ted, no pair) TED bug NNN is
  *                        fixed: the script is judged by its expectations
  *                        alone (FIXED, or REGRESSED), no recorded original
- *   ; @fixed #NNN Cc       (only in tests/bug-orig/ted) the same, fixed in the
+ *   ; @fixed-orig #NNN Cc  (only in tests/bug-orig/ted) the same, fixed in the
  *                        port's combination only: the fix is in blitz2-c, TED-C
  *                        under the original compiler (C5) keeps the bug.  Cc
  *                        is judged by the expectations (FIXED, REGRESSED), C5
  *                        like an open bug against the recorded original
- *   ; @fixed #NNN PAIR...  TED bug NNN (the issue) is fixed: the named pairs
- *                        (R5-C5, Rc-Cc, R5-Rc, C5-Cc, C5-P5, Cc-Pc; both combinations in
- *                        @combos) must differ, FIXED; a named pair that is
+ *   ; @fixed-orig #NNN PAIR...  TED bug NNN (the issue) is fixed: the named
+ *                        pairs (R5-C5, Rc-Cc, R5-Rc, C5-Cc, C5-P5, Cc-Pc; both combinations
+ *                        in @combos) must differ, FIXED; a named pair that is
  *                        the same is BROKEN (the fix does not show, the
  *                        directive is stale).  The other pairs are compared
  *                        as before; one line per issue, a pair once
@@ -145,10 +145,10 @@ struct tedab_test {
     int norunerr, roundtrip, nofiles, font, est;
     char *opts;                 /* @opts spec, NULL = none */
     char *known;                /* @known REASON, NULL = none */
-    unsigned fixed[TEDAB_NPAIRS]; /* @fixed: the issue per tedab_pairs index, 0 =
+    unsigned fixed[TEDAB_NPAIRS]; /* @fixed-orig: the issue per tedab_pairs index, 0 =
                                    the pair must be the same */
-    unsigned fixed_bug;         /* bug-orig: @fixed #NNN without a pair, 0 = an open bug */
-    int fixed_port;             /* bug-orig: @fixed #NNN Cc, fixed in the port's combination
+    unsigned fixed_bug;         /* bug-orig: @fixed-orig #NNN without a pair, 0 = an open bug */
+    int fixed_port;             /* bug-orig: @fixed-orig #NNN Cc, fixed in the port's combination
                                    only (C5 keeps the bug) */
     char *command;              /* @command, NULL = blitz2:blitz2 [FILE] */
     struct tedab_file *files;   /* @file */
@@ -160,7 +160,7 @@ struct tedab_test {
 /* the directives of a script; 0 = ok, -1 = error (message in err) */
 int tedab_test_parse(const char *name, const char *text, struct tedab_test *t, char *err,
                      size_t errlen);
-/* the same for a script of tests/bug-orig/ted (bugorig 1): @fixed #NNN has no
+/* the same for a script of tests/bug-orig/ted (bugorig 1): @fixed-orig #NNN has no
    pair there (t->fixed_bug = NNN, a fixed test) and a pair is refused */
 int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test *t, char *err,
                           size_t errlen, int bugorig);
@@ -270,7 +270,7 @@ int tedab_pair_mixed(int k);
 
 /* the verdict of pair k (tedab_pairs index) of test t from compare (the
    result of tedab_compare_runs): SAME or DIFF, FAIL (a result not OK); for a
-   pair of @fixed FIXED (it differs) or BROKEN (it is the same: stale) */
+   pair of @fixed-orig FIXED (it differs) or BROKEN (it is the same: stale) */
 enum { TEDAB_PAIR_SAME, TEDAB_PAIR_DIFF, TEDAB_PAIR_FAIL, TEDAB_PAIR_FIXED, TEDAB_PAIR_BROKEN,
        TEDAB_PAIR_INTENDED };
 int tedab_pair_verdict(const struct tedab_test *t, int k, int compare);

@@ -6,7 +6,7 @@
 ; its node pointing to the freed line.  In the decoded dump the label
 ; column follows the cells of the prop gadget ("··", unknown cells):
 ; "·loop" is the label column, not the text of line 1.
-; @fixed #365
+; @fixed-orig #365
 ; @file bo.bas "a=1\n.loop:b=2\nc=3\n"
 ; @source F bo.bas
 ; @expect screen before "loop"

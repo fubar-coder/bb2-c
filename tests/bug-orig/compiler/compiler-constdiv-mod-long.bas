@@ -8,7 +8,7 @@
 ; prints 7.
 ; Correct: the compile error "Division by Zero" at the line, for every
 ; type.
-; @fixed #1044
+; @fixed-orig #1044
 NPrint "before"
 d.l=7 Mod 0
 NPrint d

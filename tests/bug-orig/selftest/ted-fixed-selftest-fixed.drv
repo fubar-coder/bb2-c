@@ -1,9 +1,9 @@
 ; Self test of the fixed form of the TED bug-orig tests
-; (tests/bug-orig/CMakeLists.txt): "; @fixed #N" without a pair, judged by
+; (tests/bug-orig/CMakeLists.txt): "; @fixed-orig #N" without a pair, judged by
 ; the script's expectation alone.  The expectation holds of TED-C (blitz2
 ; without a file, QUIT, the command's output ends with rc=0), so tedab must
 ; report FIXED (exit status 0).  99999 is no issue.
-; @fixed #99999
+; @fixed-orig #99999
 ; @source none
 ; @expect stdout "rc=0"
 timeout 10

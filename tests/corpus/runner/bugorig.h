@@ -41,7 +41,7 @@
  *   DIFFERS     neither: the port does not reproduce the original
  * A test is valid if the reference does not match the expectation; it
  * passes when every configuration is FIXED.
- * A fixed test (corpus.h fixed=NNN, the header `; @fixed #NNN`: the bug is
+ * A fixed test (corpus.h fixed=NNN, the header `; @fixed-orig #NNN`: the bug is
  * fixed in the port, issue NNN) has no reference: a configuration is
  * FIXED (it matches the expectation) or
  *   REGRESSED   it does not: the fix is undone (REPRODUCED, DIFFERS and

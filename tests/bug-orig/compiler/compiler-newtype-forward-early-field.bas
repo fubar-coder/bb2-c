@@ -3,7 +3,7 @@
 ; NEWTYPE .fwd gives the size.  The offset of x itself is known.
 ; Correct: "Type not yet defined" at v\y=1 (SizeOf .dd\x before it is 0
 ; and compiles).
-; @fixed #974
+; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE

@@ -3,7 +3,7 @@
 ; (the output of the command ends with rc=0, not rc=7), as if the fixed bug
 ; came back, so tedab must report REGRESSED (exit status 1) and name the
 ; bug.  99999 is no issue.
-; @fixed #99999
+; @fixed-orig #99999
 ; @source none
 ; @expect stdout "rc=7"
 timeout 10

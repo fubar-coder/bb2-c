@@ -7,7 +7,7 @@
 ; PRINT into the file TEDRUN:work/prt.txt, QUIT.  Correct: the umlauts as
 ; the Latin-1 ä ö ü Ä Ö Ü, as a text save writes them; the original
 ; prints the bytes 26-31.  Fixed in TED-C: Print maps 26-31 back.
-; @fixed #1017
+; @fixed-orig #1017
 ; @file bo.bb2 "a$=\"K\x1bln\"\x00; \x1a\x1b\x1c\x1d\x1e\x1f\x00"
 ; @source F bo.bb2
 ; @expect data prt.txt "a$=\"K\xf6ln\"\n; \xe4\xf6\xfc\xc4\xd6\xdc\n"

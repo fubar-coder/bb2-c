@@ -9,7 +9,7 @@
 ; bit 7 cleared by the tokeniser - where the original took it and the
 ; byte behind it as a token pair (#374; R5-C5 and Rc-Cc are named for #376
 ; already).
-; @fixed #376 R5-C5 Rc-Cc
+; @fixed-orig #376 R5-C5 Rc-Cc
 ; @source E long_umlaut
 ; @expect bak long_umlaut.bb2.bak
 ; @expect exists long_umlaut.bb2

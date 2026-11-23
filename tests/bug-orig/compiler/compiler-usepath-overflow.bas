@@ -8,7 +8,7 @@
 ; parameter of 65 characters: 130.
 ; Correct: a path that does not fit is refused, with "Path too Long" at
 ; the first UsePath.
-; @fixed #31
+; @fixed-orig #31
 Macro p
 `1`1
 End Macro

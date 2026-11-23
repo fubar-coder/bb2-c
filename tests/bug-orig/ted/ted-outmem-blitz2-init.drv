@@ -7,7 +7,7 @@
 ; memory for operation!", the start goes on (version requester), the
 ; compile allocates the buffers and creates the executable, blitz2 ends
 ; normally; the original continues with a7 = 0 and crashes.
-; @fixed #1008
+; @fixed-orig #1008
 ; @file bo.bas "NPrint \"hello\"\n"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject alerts allocfail=57344-57344/f=10001/1 blitz2:blitz2 @FILE@

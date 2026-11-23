@@ -121,7 +121,7 @@ TEST_CASE("the tests that read the CD", "[test]")
     CHECK(tedab_needs_cd(&n.t) == 0);
 }
 
-TEST_CASE("@fixed: the directive", "[fixed]")
+TEST_CASE("@fixed-orig: the directive", "[fixed]")
 {
     CHECK(tedab_pair("R5-C5") == 0);
     CHECK(tedab_pair("Rc-Cc") == 1);
@@ -137,7 +137,7 @@ TEST_CASE("@fixed: the directive", "[fixed]")
     CHECK(tedab_pair("R5-Cc") == -1);       // not compared
     CHECK(tedab_pair("R5") == -1);
 
-    Test a("; @source none\n; @nofiles\n; @fixed #123 R5-C5 Rc-Cc\n; @fixed #7 R5-Rc\n");
+    Test a("; @source none\n; @nofiles\n; @fixed-orig #123 R5-C5 Rc-Cc\n; @fixed-orig #7 R5-Rc\n");
     REQUIRE(a.rc == 0);
     CHECK(a.t.fixed[0] == 123u);
     CHECK(a.t.fixed[1] == 123u);
@@ -150,16 +150,16 @@ TEST_CASE("@fixed: the directive", "[fixed]")
         CHECK(none.t.fixed[k] == 0u);
 
     // a fix of TED shows in the comparison with the previous commit
-    Test p("; @source none\n; @nofiles\n; @fixed #5 Cc-Pc C5-P5\n");
+    Test p("; @source none\n; @nofiles\n; @fixed-orig #5 Cc-Pc C5-P5\n");
     REQUIRE(p.rc == 0);
     CHECK(p.t.fixed[4] == 5u);
     CHECK(p.t.fixed[5] == 5u);
 
     // the named pair's combinations must run
-    CHECK(Test("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed #1 R5-C5\n").rc == 0);
+    CHECK(Test("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed-orig #1 R5-C5\n").rc == 0);
 }
 
-TEST_CASE("@fixed: refused", "[fixed]")
+TEST_CASE("@fixed-orig: refused", "[fixed]")
 {
     auto refused = [](const char *directive, const char *msg) {
         std::string s = std::string("; @source none\n; @nofiles\n") + directive + "\n";
@@ -169,27 +169,27 @@ TEST_CASE("@fixed: refused", "[fixed]")
         CHECK(std::string(t.err).find(msg) != std::string::npos);
     };
 
-    refused("; @fixed", "@fixed #NNN PAIR");
-    refused("; @fixed #123", "@fixed #NNN PAIR");             // no pair
-    refused("; @fixed 123 R5-C5", "@fixed #NNN PAIR");        // no #
-    refused("; @fixed #0 R5-C5", "@fixed #NNN PAIR");
-    refused("; @fixed #012 R5-C5", "@fixed #NNN PAIR");       // leading zero
-    refused("; @fixed #12a R5-C5", "@fixed #NNN PAIR");
-    refused("; @fixed #R5-C5", "@fixed #NNN PAIR");
-    refused("; @fixed #12 R5C5", "R5C5 is no compared pair");
-    refused("; @fixed #12 C5-R5", "C5-R5 is no compared pair");
-    refused("; @fixed #12 R5-Cc", "R5-Cc is no compared pair");
-    refused("; @fixed #12 Cc-P5", "Cc-P5 is no compared pair");
-    refused("; @combos Cc C5\n; @fixed #12 Cc-Pc", "the pair is never compared");
-    refused("; @fixed #12 R5-C5 R5-C5", "pair R5-C5 named twice");
-    refused("; @fixed #12 R5-C5\n; @fixed #13 R5-C5", "pair R5-C5 named twice");
-    refused("; @combos R5 C5\n; @fixed #12 Rc-Cc", "the pair is never compared");
-    refused("; @combos C5 Cc\n; @fixed #12 R5-C5", "the pair is never compared");
+    refused("; @fixed-orig", "@fixed-orig #NNN PAIR");
+    refused("; @fixed-orig #123", "@fixed-orig #NNN PAIR");             // no pair
+    refused("; @fixed-orig 123 R5-C5", "@fixed-orig #NNN PAIR");        // no #
+    refused("; @fixed-orig #0 R5-C5", "@fixed-orig #NNN PAIR");
+    refused("; @fixed-orig #012 R5-C5", "@fixed-orig #NNN PAIR");       // leading zero
+    refused("; @fixed-orig #12a R5-C5", "@fixed-orig #NNN PAIR");
+    refused("; @fixed-orig #R5-C5", "@fixed-orig #NNN PAIR");
+    refused("; @fixed-orig #12 R5C5", "R5C5 is no compared pair");
+    refused("; @fixed-orig #12 C5-R5", "C5-R5 is no compared pair");
+    refused("; @fixed-orig #12 R5-Cc", "R5-Cc is no compared pair");
+    refused("; @fixed-orig #12 Cc-P5", "Cc-P5 is no compared pair");
+    refused("; @combos Cc C5\n; @fixed-orig #12 Cc-Pc", "the pair is never compared");
+    refused("; @fixed-orig #12 R5-C5 R5-C5", "pair R5-C5 named twice");
+    refused("; @fixed-orig #12 R5-C5\n; @fixed-orig #13 R5-C5", "pair R5-C5 named twice");
+    refused("; @combos R5 C5\n; @fixed-orig #12 Rc-Cc", "the pair is never compared");
+    refused("; @combos C5 Cc\n; @fixed-orig #12 R5-C5", "the pair is never compared");
 }
 
-TEST_CASE("@fixed: verdict of a pair", "[fixed]")
+TEST_CASE("@fixed-orig: verdict of a pair", "[fixed]")
 {
-    Test t("; @source none\n; @nofiles\n; @fixed #123 R5-C5\n");
+    Test t("; @source none\n; @nofiles\n; @fixed-orig #123 R5-C5\n");
     REQUIRE(t.rc == 0);
 
     // the named pair: it must differ; the same is BROKEN (stale)
@@ -272,7 +272,7 @@ TEST_CASE("PREV_INTENDED: verdict of a pair with the prev build", "[prev]")
 
 // two run directories compared as the runner does: a script whose named pair
 // does not differ comes out BROKEN, one that differs FIXED
-TEST_CASE("@fixed: stale pair of two runs", "[fixed]")
+TEST_CASE("@fixed-orig: stale pair of two runs", "[fixed]")
 {
     char dir[] = "/tmp/test_tedab_XXXXXX";
     REQUIRE(mkdtemp(dir) != nullptr);
@@ -291,7 +291,7 @@ TEST_CASE("@fixed: stale pair of two runs", "[fixed]")
         put(std::string(c) + "/out/log", "step 1\n");
         put(std::string(c) + "/work/a.bb2", "same\n");
     }
-    Test t("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed #123 R5-C5\n");
+    Test t("; @source none\n; @nofiles\n; @combos R5 C5\n; @fixed-orig #123 R5-C5\n");
     REQUIRE(t.rc == 0);
     auto verdict = [&] {
         text out = {};
@@ -977,7 +977,7 @@ TEST_CASE("bug-orig verdict", "[bugorig]")
     CHECK(std::string(tedab_verdict_name(TEDAB_BROKEN)) == "BROKEN");
 }
 
-TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
+TEST_CASE("fixed bug-orig test: @fixed-orig #N without a pair", "[bugorig][fixed]")
 {
     // tests/bug-orig/ted: the mode flag of tedab_test_parse_mode (bugorig 1)
     const char *head = "; @source none\n; @nofiles\n";
@@ -996,31 +996,31 @@ TEST_CASE("fixed bug-orig test: @fixed #N without a pair", "[bugorig][fixed]")
     };
     unsigned bug = 0;
 
-    CHECK(parse("; @fixed #123", 1, &bug).empty());
+    CHECK(parse("; @fixed-orig #123", 1, &bug).empty());
     CHECK(bug == 123u);
-    CHECK(parse("; @other", 1, &bug).empty());      // an open bug: no @fixed
+    CHECK(parse("; @other", 1, &bug).empty());      // an open bug: no @fixed-orig
     CHECK(bug == 0u);
     // the mode 0 form is the one of the A/B scripts: a pair is needed
-    CHECK(parse("; @fixed #123", 0).find("@fixed #NNN PAIR") != std::string::npos);
-    CHECK(parse("; @fixed #123 R5-C5", 0).empty());
+    CHECK(parse("; @fixed-orig #123", 0).find("@fixed-orig #NNN PAIR") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 R5-C5", 0).empty());
     // broken on purpose: a pair, twice, no #, no issue, leading zero
-    CHECK(parse("; @fixed #123 R5-C5", 1).find("no pair") != std::string::npos);
-    CHECK(parse("; @fixed #1\n; @fixed #2", 1).find("@fixed twice") != std::string::npos);
-    CHECK(parse("; @fixed 123", 1).find("@fixed #NNN (no pair") != std::string::npos);
-    CHECK(parse("; @fixed", 1).find("@fixed #NNN (no pair") != std::string::npos);
-    CHECK(parse("; @fixed #012", 1).find("@fixed #NNN (no pair") != std::string::npos);
-    CHECK(parse("; @fixed #0", 1).find("@fixed #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 R5-C5", 1).find("no pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig #1\n; @fixed-orig #2", 1).find("@fixed-orig twice") != std::string::npos);
+    CHECK(parse("; @fixed-orig 123", 1).find("@fixed-orig #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig", 1).find("@fixed-orig #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig #012", 1).find("@fixed-orig #NNN (no pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig #0", 1).find("@fixed-orig #NNN (no pair") != std::string::npos);
     // the port-only form: Cc after the number (the fix is in blitz2-c)
-    CHECK(parse("; @fixed #123", 1, &bug).empty());
+    CHECK(parse("; @fixed-orig #123", 1, &bug).empty());
     CHECK(port == 0);
-    CHECK(parse("; @fixed #123 Cc", 1, &bug).empty());
+    CHECK(parse("; @fixed-orig #123 Cc", 1, &bug).empty());
     CHECK(bug == 123u);
     CHECK(port == 1);
-    CHECK(parse("; @fixed #123 C5", 1).find("only the word Cc may follow") != std::string::npos);
-    CHECK(parse("; @fixed #123 Cc Cc", 1).find("only the word Cc may follow") != std::string::npos);
-    CHECK(parse("; @fixed #123 cc", 1).find("only the word Cc may follow") != std::string::npos);
-    CHECK(parse("; @fixed #123 Cc-Pc", 1).find("only the word Cc may follow") != std::string::npos);
-    CHECK(parse("; @fixed #123 Cc", 0).find("Cc is no compared pair") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 C5", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 Cc Cc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 cc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 Cc-Pc", 1).find("only the word Cc may follow") != std::string::npos);
+    CHECK(parse("; @fixed-orig #123 Cc", 0).find("Cc is no compared pair") != std::string::npos);
 
     // the verdict from the expectations alone: no recorded original
     const char *bad = "  - expect: blk.txt differs from the expected contents (data)\n";

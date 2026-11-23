@@ -8,7 +8,7 @@
 ; the original keeps 7 (recorded before the fix).  (What the swaps
 ; damage shows only in pixels or, for values >= 16, in data laid out
 ; differently in the port: not checked here, review only.)
-; @fixed #384
+; @fixed-orig #384
 ; @source none
 ; @opts normcol=7
 ; @expect opts blitzeditor.opts normcol=3

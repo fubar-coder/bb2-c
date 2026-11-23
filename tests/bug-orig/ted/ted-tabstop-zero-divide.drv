@@ -7,7 +7,7 @@
 ; tab size from the file is clamped to 1, the 100 keeps it, the Tab is
 ; typed (the text is saved), the saved options have tab size 1; the
 ; original traps on the Tab (recorded before the fix: TIMEOUT).
-; @fixed #385
+; @fixed-orig #385
 ; @file bo.bas "x\n"
 ; @source F bo.bas
 ; @opts tabstop=0

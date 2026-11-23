@@ -1,7 +1,7 @@
 # The orchestration of the target fix-scope (cmake/fix-scope.cmake) on a
 # throwaway git repository made in WORK: main holds expected data and two
 # open bug-orig tests, the branch fix changes the data and fixes one test
-# (its header "; @fixed #7", its ID.expect) and turns a corpus program's
+# (its header "; @fixed-orig #7", its ID.expect) and turns a corpus program's
 # expected output into its pair, in a commit with "Fixes #7".
 # Only the fix's own cases: passes; an unqualified case changed too (in the
 # working tree): fails naming the case; the other bug-orig test's
@@ -67,7 +67,7 @@ git(add .)
 git(commit -q -m base)
 git(checkout -q -b fix)
 expected("r|c||1 [orig]\t$0\nr|c||1 [fixed #7]\t$5\nr|d||1\t$1\n")
-bug_orig(t1 "; @fixed #7\n" "[run]\n41\nrc=*\n")
+bug_orig(t1 "; @fixed-orig #7\n" "[run]\n41\nrc=*\n")
 file(RENAME ${ce}/t02_float.out ${ce}/t02_float.orig.out)
 file(WRITE ${ce}/t02_float.fixed-7.out "2.5\nrc=0\n")
 machine(m2 nprog "r|n||1 [fixed #7]\t$3\n")

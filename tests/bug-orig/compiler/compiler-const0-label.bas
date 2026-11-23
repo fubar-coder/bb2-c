@@ -8,7 +8,7 @@
 ; been defined by the program.
 ; Correct: the name clash is refused at the Goto (line 13) with the error
 ; for a name used as a constant.
-; @fixed #977
+; @fixed-orig #977
 #foo=0
 Goto foo
 foo:

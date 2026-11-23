@@ -2,7 +2,7 @@
 ; variable of a type with a by-value field of the forward type .fwd ends
 ; before NEWTYPE .fwd: its memory is laid out at the end of the procedure.
 ; Correct: "Type not yet defined" at End Statement.
-; @fixed #974
+; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE

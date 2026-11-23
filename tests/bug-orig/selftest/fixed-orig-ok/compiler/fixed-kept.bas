@@ -1,3 +1,3 @@
 ; broken on purpose: a fixed test that keeps its recorded original
-; @fixed #123
+; @fixed-orig #123
 End

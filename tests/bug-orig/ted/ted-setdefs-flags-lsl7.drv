@@ -4,7 +4,7 @@
 ; Icons gadget (id 9) $0100 = GFLG_DISABLED.  OPTIONS, teddrive logs the
 ; gadgets of the requester with their flags, CANCEL.  Correct: the gadget
 ; has the flags of makeicons 0 (2 masked to bit 0).
-; @fixed #383
+; @fixed-orig #383
 ; @source none
 ; @opts makeicons=2
 ; @expect log "gadget id 9 type $00000001 flags $00000000"

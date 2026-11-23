@@ -8,7 +8,7 @@
 ; nothing is written behind the block; the original writes the printer
 ; line behind it (inject: "written behind").  Fixed in TED-C: the printer
 ; line stops silently in front of the token that would not fit.
-; @fixed #372
+; @fixed-orig #372
 ; @file bo.bb2 "x\x00\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
 ; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:"
 ; @file bo.bb2 "\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\xdd\x82:\x00y\x00"

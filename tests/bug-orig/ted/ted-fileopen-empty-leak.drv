@@ -3,7 +3,7 @@
 ; track (the allocations left when TED ends), a text of two lines (line
 ; items of 46 and 48 bytes), Open of an empty file, QUIT.  Correct: no
 ; line item is left; the original leaves both.
-; @fixed #358
+; @fixed-orig #358
 ; @file bo.bas "abcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ab\n"
 ; @file empty.bas ""
 ; @source F bo.bas

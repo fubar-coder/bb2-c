@@ -14,7 +14,7 @@
 ; bar (73 for the 640 pixel window) and one cell per include line (11, 7
 ; and 4 lines). The stub logs the calls per cell and the fullest picture
 ; of its bitmap (the second pass toggles the cells back).
-; @fixed #980
+; @fixed-orig #980
 ; @pass file=src/inc1.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc1
 ; @pass file=src/inc2.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc2
 ; @pass file=src/inc3.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc3

@@ -14,7 +14,7 @@
 ; the requester again (the sizes are those before), blitz2 ends
 ; normally.  The original jumps out of the compile through TED's
 ; extalloc (#369) and its second compile does not come back.
-; @fixed #32 Cc
+; @fixed-orig #32 Cc
 ; @file bo.bas "Macro a\na=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1:a=a+1\nEnd Macro\n"
 ; @file bo.bas "Macro b\n!a:!a:!a:!a:!a:!a:!a:!a:!a:!a\nEnd Macro\n"
 ; @file bo.bas "!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n!b:!b:!b:!b:!b\n"

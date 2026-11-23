@@ -57,7 +57,7 @@
 #                                           tests/README.md "Recorded originals"): a
 #                                           test that is silent for longer sets it, 0 for
 #                                           none (a hang that keeps writing)
-#                      ; @fixed #NNN        the bug is fixed in the port
+#                      ; @fixed-orig #NNN   the bug is fixed in the port
 #                                           (issue NNN): a fixed test,
 #                                           see below
 #   AREA/ID.expect   the correct behaviour (sections, bugorig.h)
@@ -77,7 +77,7 @@
 # programs are executables, which never contain the module);
 # the volume BB2: is mounted (the CD) only for a test whose source names it
 # or whose layout needs it (@pass mount=BB2|@CD@), skipped without the CD.
-# A fixed test (; @fixed #NNN, added by the commit that fixes the bug;
+# A fixed test (; @fixed-orig #NNN, added by the commit that fixes the bug;
 # corpus.h fixed=) has no reference session and uses nothing of the CD
 # (no BB2: volume, no blitz2:defaultdbug, unless its @pass lines name them,
 # e.g. mount=BB2|@CD@): only clib is judged and must be FIXED (its ID.orig
@@ -203,7 +203,7 @@ function(bug_orig_test bas name)
 		string(STRIP "${h}" h)
 		if(h MATCHES "^<semicolon> @fixed(-orig)? #([1-9][0-9]*)$")
 			if(fixed)
-				message(FATAL_ERROR "bug-orig: ${bas}: @fixed twice")
+				message(FATAL_ERROR "bug-orig: ${bas}: @fixed-orig twice")
 			endif()
 			set(fixed ${CMAKE_MATCH_2})
 		elseif(h MATCHES "^<semicolon> @configs (.+)$")
@@ -241,7 +241,7 @@ function(bug_orig_test bas name)
 	# libraries, as the port ships; port needs the CD's libraries)
 	if(fixed)
 		if(arg_REGRESSION OR DEFINED arg_WANT)
-			message(FATAL_ERROR "bug-orig: ${bas}: @fixed in a port regression or self test")
+			message(FATAL_ERROR "bug-orig: ${bas}: @fixed-orig in a port regression or self test")
 		endif()
 		set(configs clib)
 	endif()
@@ -833,14 +833,14 @@ endif()
 # ID/report.txt, the runs of a test that fails in ID/run-XXXXXX/sNNN/vol/runs/ID/XX
 # (the runner prints the directory; tests/corpus/runner/runwork.h).  ctest bug_orig_ID,
 # labels bug-orig and emulator, skipped (77) without Amiberry or the CD.
-# A fixed test has the header "; @fixed #N" (no pair; the bug is fixed in
+# A fixed test has the header "; @fixed-orig #N" (no pair; the bug is fixed in
 # TED-C): it keeps its ID.orig (checked before any session, BROKEN), no
 # session of the original, judged by the script's expectations alone (pass key fixed=1: FIXED, or REGRESSED naming the
 # bug).  It is two tests: bug_orig_ID (label emulator, so the presets
 # emulator and all) runs Cc, TED-C under blitz2-c with the libraries of the
 # build (libs=), and needs no CD; bug_orig_ID_originals (label originals)
 # runs C5, TED-C under the CD's blitz2 2.10 with the CD's libraries.
-# A fixed test "@fixed #N Cc" is fixed in the port's pair only (the fix is in
+# A fixed test "@fixed-orig #N Cc" is fixed in the port's pair only (the fix is in
 # blitz2-c): bug_orig_ID as above, bug_orig_ID_originals runs C5 like an
 # open test against ID.orig and wants REPRODUCED.
 # The scripts without the emulator: ctest bug_orig_ted_lint (host).
@@ -876,13 +876,13 @@ endfunction()
 function(bug_orig_ted_test scripts id name)
 	cmake_parse_arguments(PARSE_ARGV 3 arg "" "WANT;WANT_ORIGINALS" "")
 	set(work ${CMAKE_CURRENT_BINARY_DIR}/${id})
-	# a fixed test: the directive "@fixed #N" alone (the runner refuses a pair)
+	# a fixed test: the directive "@fixed-orig #N" alone (the runner refuses a pair)
 	file(READ ${scripts}/${id}.drv drv_text)
 	string(REPLACE ";" "<semicolon>" drv_text "${drv_text}")
 	set(orig_keys "orig=${scripts}/${id}.orig\norig_by=TED 1.1 (the original, ted.s) under the CD's blitz2 2.10 (R5)\n")
 	# the gates were checked once for the whole ctest run (the fixture ted_gates)
 	set(gates_key "gates_from=ted_gates\n")
-	# "@fixed #N Cc": fixed in the port's combination only (the fix is in
+	# "@fixed-orig #N Cc": fixed in the port's combination only (the fix is in
 	# blitz2-c; C5 keeps the bug, it is run like an open test)
 	set(port_only FALSE)
 	if(drv_text MATCHES "(^|\n)<semicolon> @fixed(-orig)? #[1-9][0-9]*[ \t]+Cc[ \t\r]*(\n|$)")
@@ -1057,14 +1057,14 @@ set_tests_properties(bug_orig_ted_record_changed PROPERTIES LABELS originals SKI
 	TIMEOUT ${rec_limit} FIXTURES_REQUIRED originals_refbuild PASS_REGULAR_EXPRESSION
 	"DIFFERS: \\[state\\] line 1: recorded \"FAIL step 9\", observed \"OK\"")
 
-# the fixed form (@fixed #N, pass key fixed=1): a script whose expectations
+# the fixed form (@fixed-orig #N, pass key fixed=1): a script whose expectations
 # hold of TED-C is FIXED (exit status 0); the same with an expectation that
 # does not hold is REGRESSED (1, the report names the bug)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-selftest-fixed
 	bug_orig_ted_fixed_selftest_fixed WANT 0)
 bug_orig_ted_test(${CMAKE_CURRENT_SOURCE_DIR}/selftest ted-fixed-selftest-regressed
 	bug_orig_ted_fixed_selftest_regressed WANT 1)
-# the port-only form (@fixed #N Cc, the fix is in blitz2-c): Cc is judged by
+# the port-only form (@fixed-orig #N Cc, the fix is in blitz2-c): Cc is judged by
 # the expectations as above; C5 like an open test against the recorded
 # original: the same observation is REPRODUCED (1, what a real test wants:
 # the bug the original compiler keeps), one that shows the expected
@@ -1137,10 +1137,10 @@ function(bug_orig_ted_pass_test name filter keys regex)
 	set_tests_properties(${name} PROPERTIES PASS_REGULAR_EXPRESSION "${regex}")
 endfunction()
 bug_orig_ted_pass_test(bug_orig_ted_fixed_open_script ted-bug-orig-selftest-broken
-	"bugorig=1\nfixed=1\n" "fixed=1, but the script has no @fixed #NNN")
+	"bugorig=1\nfixed=1\n" "fixed=1, but the script has no @fixed-orig #NNN")
 bug_orig_ted_pass_test(bug_orig_ted_open_fixed_script ted-fixed-selftest-fixed
 	"combos=R5,C5\nbugorig=1\norig=${CMAKE_CURRENT_SOURCE_DIR}/selftest/garbage.orig\n"
-	"@fixed #99999: a fixed test is run with fixed=1")
+	"@fixed-orig #99999: a fixed test is run with fixed=1")
 bug_orig_ted_pass_test(bug_orig_ted_fixed_with_record ted-fixed-selftest-fixed
 	"bugorig=1\nfixed=1\norig=${CMAKE_CURRENT_SOURCE_DIR}/selftest/garbage.orig\nrecord=check\n"
 	"fixed=1 belongs to bugorig=1 and not to record=")
@@ -1161,11 +1161,11 @@ file(WRITE ${pass} "${text}")
 add_test(NAME bug_orig_ted_fixed_equal_broken COMMAND ${CMAKE_COMMAND} -DRUNNER=${TEDAB} -DSUB=run
 	-DPASS=${pass} -DWANT=3 -P ${CMAKE_CURRENT_SOURCE_DIR}/want.cmake)
 set_tests_properties(bug_orig_ted_fixed_equal_broken PROPERTIES PASS_REGULAR_EXPRESSION "BROKEN TEST")
-# the port-only form (@fixed #N Cc) with a fixed=1 pass that names C5: the
+# the port-only form (@fixed-orig #N Cc) with a fixed=1 pass that names C5: the
 # fixed pass judges Cc alone
 bug_orig_ted_pass_test(bug_orig_ted_fixed_port_c5 ted-fixed-port-selftest-fixed
 	"bugorig=1\nfixed=1\n"
-	"@fixed #99999 Cc: fixed in the port's combination Cc only; a fixed=1 pass judges only Cc")
+	"@fixed-orig #99999 Cc: fixed in the port's combination Cc only; a fixed=1 pass judges only Cc")
 bug_orig_ted_pass_test(bug_orig_ted_fixed_no_bugorig ted-fixed-selftest-fixed
 	"fixed=1\n" "fixed=1 belongs to bugorig=1")
 bug_orig_ted_pass_test(bug_orig_ted_no_orig_no_fixed ted-fixed-selftest-fixed
@@ -1187,7 +1187,7 @@ string(CONCAT text
 file(WRITE ${lint} "${text}")
 add_test(NAME bug_orig_ted_fixed_wrong_lint COMMAND ${TEDAB} lint ${lint})
 set_tests_properties(bug_orig_ted_fixed_wrong_lint PROPERTIES PASS_REGULAR_EXPRESSION
-	"^a-pair line 4: @fixed #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed twice\nc-noissue line 4: @fixed #NNN \\(no pair[^\n]*\ne-port-twice line 4: @fixed #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nf-port-c5 line 4: @fixed #NNN \\(no pair[^\n]*Cc may follow[^\n]*\ntedab lint: 2 tests, 5 problems\n$")
+	"^a-pair line 4: @fixed-orig #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed-orig twice\nc-noissue line 4: @fixed-orig #NNN \\(no pair[^\n]*\ne-port-twice line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nf-port-c5 line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\ntedab lint: 2 tests, 5 problems\n$")
 
 # The recorded originals (ID.orig) written by the target bug-orig-record
 # (record.cmake; not ALL, not a test, reviewed with git diff tests/bug-orig):

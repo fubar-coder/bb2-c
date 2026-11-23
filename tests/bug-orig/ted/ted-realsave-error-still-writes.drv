@@ -3,7 +3,7 @@
 ; blitz2 under inject, the second Write on bo.bas fails; SAVE, TED's error
 ; requester (OKAY).  Correct: neither bo.bas.xtra nor bo.bas.info is
 ; written; the original writes both.
-; @fixed #380
+; @fixed-orig #380
 ; @file bo.bas "a=1\nb=2\nc=3\n"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject writefail=bo.bas/2 blitz2:blitz2 @FILE@

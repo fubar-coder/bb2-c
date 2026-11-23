@@ -7,7 +7,7 @@
 ; at the end the start lock is TED's current directory again and was not
 ; unlocked; the original ends in the new lock and has unlocked the start
 ; lock.
-; @fixed #157
+; @fixed-orig #157
 ; @file bo.bas "a=1\n"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject cd blitz2:ted @FILE@

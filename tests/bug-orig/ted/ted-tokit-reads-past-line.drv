@@ -5,7 +5,7 @@
 ; tokenises it from the character map; SAVE.  Correct: "Pri" stays text;
 ; the original reads "nt" of the next row and saves the token Print.
 ; Fixed in TED-C: the name comparison stops at the end of the line.
-; @fixed #386
+; @fixed-orig #386
 ; @file bo.bas "ab                                                                                                                          Pri\nnt\n"
 ; @source F bo.bas
 ; @expect data bo.bas "a b                                                                                                                          Pri\x00nt\x00"

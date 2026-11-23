@@ -6,7 +6,7 @@
 ; Correct (the fix): two lines, the umlaut stored as typing stores it (26,
 ; the germs table); the original saves one line, "; " and the bytes $E4
 ; $0A with bit 7 cleared by the tokeniser, then "; b".
-; @fixed #374
+; @fixed-orig #374
 ; @file bo.bas "; \xe4\n; b\n"
 ; @source F bo.bas
 ; @expect data bo.bas "; \x1a\x00; b\x00"

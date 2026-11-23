@@ -108,7 +108,7 @@
  *                      exit status 0 = all FIXED, 1 = REPRODUCED, 3 =
  *                      BROKEN, 4 = DIFFERS (the worst of them: 3 before 4
  *                      before 1), 2 = error
- *   fixed=1            with bugorig=1: the scripts are fixed tests (; @fixed
+ *   fixed=1            with bugorig=1: the scripts are fixed tests (; @fixed-orig
  *                      #NNN, no pair; with "Cc" after the number only the
  *                      combination Cc may be named: the other combinations
  *                      are run without fixed=1, as open bugs); every
@@ -158,11 +158,11 @@
  * Tests with @known are not run (unless the filter names them exactly); the
  * report lists them as KNOWN with their reason, they do not fail the run.
  *
- * A pair a script names in @fixed #NNN must differ (FIXED); the same is
+ * A pair a script names in @fixed-orig #NNN must differ (FIXED); the same is
  * BROKEN, a failure (the fix does not show: a stale directive).
  *
  * Exit status 0 = all gates and runs OK and every comparison the same (a
- * pair of @fixed: different), 1 = not, 77 = the emulator or a file is
+ * pair of @fixed-orig: different), 1 = not, 77 = the emulator or a file is
  * missing (skipped), 2 = error.
  */
 #define _XOPEN_SOURCE 700       /* strdup, strndup */
@@ -959,7 +959,7 @@ static void observe(const struct tedab_test *t, const struct run *r, char *state
 /* bug-orig: the recorded original (orig=, loaded by load_orig) */
 static char *orig_state, *orig_problems;
 
-/* a fixed bug-orig test (fixed=1, @fixed #N): the verdict of every
+/* a fixed bug-orig test (fixed=1, @fixed-orig #N): the verdict of every
    combination from its expectations alone; REGRESSED names the bug;
    *worst = the worst exit status (REGRESSED counts as 1) */
 static void fixed_verdicts(const struct tedab_test *t, struct run **tr, struct text *rep,
@@ -1736,7 +1736,7 @@ static int run(FILE *log)
                 if (v == TEDAB_PAIR_FIXED)
                     text_add(&rep, " #%u (differs)", tests[i].fixed[k]);
                 else if (v == TEDAB_PAIR_BROKEN)
-                    text_add(&rep, " (@fixed #%u: the pair does not differ, stale)",
+                    text_add(&rep, " (@fixed-orig #%u: the pair does not differ, stale)",
                              tests[i].fixed[k]);
                 text_add(&rep, "\n%s", d.p ? d.p : "");
                 free(d.p);
@@ -1850,17 +1850,17 @@ int tedab_start(const char *prog, const char *passfile, int lint)
        recorded original (record=check) take both */
     for (size_t i = 0; P.bugorig && !lint && !record && i < ntests; i++) {
         if (P.fixed && !tests[i].fixed_bug) {
-            printf("%s: fixed=1, but the script has no @fixed #NNN\n", tests[i].name);
+            printf("%s: fixed=1, but the script has no @fixed-orig #NNN\n", tests[i].name);
             bad++;
         } else if (P.fixed && tests[i].fixed_port && (ncombo_order != 1
                                                        || combo_order[0] != TEDAB_CC)) {
-            printf("%s: @fixed #%u Cc: fixed in the port's combination Cc only; a fixed=1 pass "
-                   "judges only Cc (C5 keeps the bug: it is run like an open test, against "
-                   "orig=)\n", tests[i].name, tests[i].fixed_bug);
+            printf("%s: @fixed-orig #%u Cc: fixed in the port's combination Cc only; a fixed=1 "
+                   "pass judges only Cc (C5 keeps the bug: it is run like an open test, "
+                   "against orig=)\n", tests[i].name, tests[i].fixed_bug);
             bad++;
         } else if (!P.fixed && tests[i].fixed_bug && !tests[i].fixed_port) {
-            printf("%s: @fixed #%u: a fixed test is run with fixed=1 (an open bug has no "
-                   "@fixed)\n", tests[i].name, tests[i].fixed_bug);
+            printf("%s: @fixed-orig #%u: a fixed test is run with fixed=1 (an open bug has no "
+                   "@fixed-orig)\n", tests[i].name, tests[i].fixed_bug);
             bad++;
         }
     }

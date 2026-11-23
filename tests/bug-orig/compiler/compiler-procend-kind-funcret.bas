@@ -2,7 +2,7 @@
 ; Statement evaluates its expression with the type byte of the Statement
 ; ($FF) and compiles.
 ; Correct: a compile error (Function Return inside a Statement).
-; @fixed #940
+; @fixed-orig #940
 Statement s{}
   NPrint "in s"
   Function Return 5

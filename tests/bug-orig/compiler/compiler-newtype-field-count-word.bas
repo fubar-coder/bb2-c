@@ -5,7 +5,7 @@
 ; and the NewType passes the check "Type too Big" (32768 bytes or more)
 ; that a.b[40000] fails.  The program prints the NewType's size.
 ; Correct: the compile error "Type too Big" at the field's line.
-; @fixed #1084
+; @fixed-orig #1084
 NEWTYPE .t
   a.b[65540]
 End NEWTYPE

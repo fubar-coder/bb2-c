@@ -6,7 +6,7 @@
 ; it is freed), tab size 300, a text file "a<TAB>b"; QUIT (TED frees its
 ; buffer block).  Correct: nothing is written behind the block; the
 ; original writes blanks behind it (inject: "written behind").
-; @fixed #378
+; @fixed-orig #378
 ; @file bo.bas "a\tb\n"
 ; @source F bo.bas
 ; @opts tabstop=300

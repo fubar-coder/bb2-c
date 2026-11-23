@@ -15,7 +15,7 @@
 ; text and the ':' of a line end that End Macro removes), and the compiler
 ; frees what it allocated (inject track). A text of exactly 65535 bytes:
 ; compiler-macro-textlen-max.
-; @fixed #964
+; @fixed-orig #964
 ; @pass wrap=@INJECT@|track
 ; @pass jobline=macrobuf=100000
 ; @pass timeout=30

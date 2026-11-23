@@ -7,7 +7,7 @@
 ; compiler (exec's alert "Software Failure", 8000 0005), no result.
 ; Correct: the compile error "Division by Zero" at the line, for every
 ; type.
-; @fixed #1044
+; @fixed-orig #1044
 NPrint "before"
 b.b=5/0
 NPrint b
