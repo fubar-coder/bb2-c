@@ -683,6 +683,9 @@ it applies where the deviations apply, counts for `fixed-orig` and
 queries the alternatives name leave the other assertions and the
 defaults, the cell passes that point if one alternative holds wholly, and
 the report names the one that held, or each with its failed assertion.
+One alternative is built in: `abnormal = ["any", ...]`, the general
+abnormal end of an original that corrupts memory (below); a list without
+the word `any` is an ordinary alternative, also under the key `abnormal`.
 
 ```toml
 # an example, not a file of the tree: libs/blitzoslib-selectbox-range.test.toml
@@ -698,11 +701,24 @@ garbage register, a free of memory it does not own) has no defined end:
 it may crash with a requester, hang, halt the CPU or return, depending on
 the layout and the timing, and the end differs from run to run and between
 the sessions of a full run. Its test declares in `[ends."SELECTOR"]` the
-general alternatives and nothing else about the abnormal end (no
-`requester` text, `rc`, `end.*` or `output` assertion of its own):
+general abnormal end, the built-in alternative `abnormal = ["any"]`, and
+nothing else about the abnormal end (no `requester` text, `rc`, `end.*` or
+`output` assertion of its own):
 
 ```toml
 # an example, not a file of the tree: libs/blitzoslib-boxstring-all-spaces.test.toml
+[ends."libs=cd"]
+reason = "the original ... (#N): memory corruption, so the end is not defined"
+abnormal = ["any"]
+```
+
+The runner expands it to four alternatives, the places where the end can
+come: before the end of the case, behind it, behind the end of the run,
+and (a handler that ends the program, so the case has no end entry)
+behind the end of the run without the case. Written out, the table is
+
+```toml
+# the same, written out; an example, not a file of the tree: libs/blitzoslib-boxstring-all-spaces.test.toml
 [ends."libs=cd"]
 reason = "the original ... (#N): memory corruption, so the end is not defined"
 abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
@@ -711,22 +727,24 @@ abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0"
 abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
 ```
 
-The four alternatives are the places where the end can come: before
-the end of the case, behind it, behind the end of the run, and (a handler
-that ends the program, so the case has no end entry) behind the end of the run
-without the case. `session !=
-done` holds for a crash (the session runs into its timeout), a hang and a
-halt. The alternatives must name `rc`, `requester`, `end.case` and
-`end.run` although they need no value of them: a query that no alternative
-names keeps its default (`rc == 0`, `requester count == 0`, both end
-entries `exists`) and would fail a crash. `requester count >= 0` always
-holds and only takes the query out of the defaults. After a halt the cell
-has none of `rc`, `inject`, `end.case`, `end.run`; a test that asserts
-`inject` keeps the deviation `inject = "not exists"` for the cell (an
-alternative cannot name `inject`). A check that the crash can hide or the
-bug can fail is named in every alternative with `!= ok`
-(`check.NS.NAME != ok`, as `palettelib-stopcycle-cycon` does): a check an
-alternative names is not required to pass.
+and the report names them so. `session != done` holds for a crash (the
+session runs into its timeout), a hang and a halt. The alternatives name
+`rc`, `requester`, `end.case` and `end.run` although they need no value of
+them: a query that no alternative names keeps its default (`rc == 0`,
+`requester count == 0`, both end entries `exists`) and would fail a
+crash. `requester count >= 0` always holds and only takes the query out of
+the defaults. After a halt the cell has none of `rc`, `inject`,
+`end.case`, `end.run`; a test that asserts `inject` keeps the deviation
+`inject = "not exists"` for the cell (an alternative cannot name
+`inject`). A check that the crash can hide or the bug can fail is named
+with `!= ok` behind `any` and so goes into each of the four (`abnormal =
+["any", "check.NS.NAME != ok"]`, as `palettelib-stopcycle-cycon` does): a
+check an alternative names is not required to pass. Further elements may
+name `output`, `check.*` and `run.*`, not the queries the built-in sets;
+the word `any` elsewhere (another key, another place in the list), another
+bare word in its place, `abnormal = "any"` and the keys
+`abnormal_after_case`, `abnormal_after_run`, `abnormal_run_only` next to
+it are refused.
 
 If the original has also been seen to return, add `returns = [...]`
 (`session == done`, `rc == 0`, `end.case exists`, `end.run exists`,
@@ -3021,7 +3039,7 @@ section describe the environment):
 | an `inject:` line (`guard`, `pad`: written behind an allocation) | `inject = "contains \"written behind an allocation of 8 bytes\""` in the cells with the CD's libraries, `inject = "not contains \"inject: guard\""` in `[asserts]` for all the others (the query `inject` holds inject's report lines when the program runs through inject; `output` keeps them too, so an older test that asserts them on `output` stays valid) |
 | a `REQUESTER:` line, a runtime error the correct run does not have | `requester` (`contains`, `matches`, `count`) |
 | another runtime error than the one the port announces with `!ExpectError`, or none | the announcement named (`!ExpectError{"MESSAGE","refused"}`) and declared failed for the original, `"check.CASE.refused" = "== fail"`, with its `requester` (`contains "OTHER MESSAGE"`, or `count == 0`) and the end it then has (`"end.case" = "not exists"`, `rc`) |
-| the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures); if the end is a consequence of corrupted memory (a wild write or copy, a jump into data, a free of memory the program does not own), the general `abnormal` alternatives of "An original that corrupts memory" under Alternative ends instead: its end is not defined |
+| the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures); if the end is a consequence of corrupted memory (a wild write or copy, a jump into data, a free of memory the program does not own), the general abnormal end `abnormal = ["any"]` of "An original that corrupts memory" under Alternative ends instead: its end is not defined |
 | an end that varies with the memory layout (returns or hangs, a crash or not) | `[ends."libs=cd"]` with a `reason` and one named alternative per end, each a list of `QUERY PREDICATE` (`returns = ["session == done", "rc == 0", ...]`, `hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]`) |
 | a line only a `# varies:` wildcard matched | the pattern of the validator, or, if the line is not the tested behaviour, no assertion about it |
 
@@ -3156,7 +3174,7 @@ cells.
   so.
 * **An original that corrupts memory** (a wild write or copy, a jump into
   data, a free of memory it does not own) has no defined end: its test
-  declares the general `abnormal` alternatives of "Alternative ends"
+  declares the general abnormal end `abnormal = ["any"]` of "Alternative ends"
   ("An original that corrupts memory"), not a requester text, a halt or a
   single timeout. A specific end stays only where the end is the bug
   itself (an odd address, a V36 call on Kickstart 1.3, a loop that never

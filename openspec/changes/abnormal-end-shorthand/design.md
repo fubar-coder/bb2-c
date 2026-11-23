@@ -59,4 +59,14 @@ assertions is now the one line of `abnormal`.
 
 ## Findings
 
-(recorded during the work)
+- All 58 tests wrote the four alternatives contiguously in the order
+  abnormal, abnormal_after_case, abnormal_after_run, abnormal_run_only,
+  with identical extra elements in all four (15 tests, one to three
+  `check.NS.NAME != ok`); the expansion keeps that order, so the
+  alternatives are judged and reported in the same order.
+- Before and after the rewrite, the 116 tests of the 58 files (port and
+  originals side, one run each, 4 sessions at a time) gave the same ctest
+  result, case verdict and alternative that held; no flake showed.
+- The examples of tests/README.md, "The run configuration", are resolved
+  by `testconf_readme`; the written-out form in "An original that
+  corrupts memory" is therefore a whole table with its header and reason.

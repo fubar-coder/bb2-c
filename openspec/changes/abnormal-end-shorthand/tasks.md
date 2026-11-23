@@ -11,4 +11,4 @@
 
 ## 3. Documents
 
-- [ ] 3.1 tests/README.md, "Alternative ends" and "An original that corrupts memory", and the guide wherever the four-alternative block is shown. Verify: no four-alternative block left in the docs (`grep -rn abnormal_after_case`).
+- [x] 3.1 tests/README.md, "Alternative ends" and "An original that corrupts memory", and the guide wherever the four-alternative block is shown. Verify: no four-alternative block left in the docs but the one that shows the expansion (`grep -rn abnormal_after_case`); `testconf_readme` passes.
