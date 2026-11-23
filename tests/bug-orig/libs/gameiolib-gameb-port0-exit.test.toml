@@ -1,0 +1,7 @@
+# gameiolib-gameb-port0-exit.test.bas: the original leaves pin 5 of port 0
+# low
+fixed-orig = 415
+
+[deviations."libs=cd"]
+"check.port_0_exit.port_0_pin_5" = "== fail"
+"check.port_0_exit.port_0_pin_5.actual" = "== 0"
