@@ -509,6 +509,66 @@ TEST_CASE("testjudge: inject's report of the compiler", "[testjudge]")
     CHECK(judge(f, o, m) == TJ_FAIL);
 }
 
+// the named compile jobs (change named-compile-jobs): compile.log.NAME, the
+// block of a job; compile.NAME, the result of a jobline job=; no default
+TEST_CASE("testjudge: the named compile jobs", "[testjudge]")
+{
+    std::string m;
+    tj_job jobs[] = { { "j000", "JOB\tj000\tCORPUS:src/x.bb2\nGUARD\tj000\tok\n", nullptr },
+                      { "j001", "JOB\tj001\tCORPUS:src/x.bb2\nGUARD\tj001\tbefore 95 after 0\n", "ok" },
+                      { "j002", "", "none" },
+                      { "victim.bas", "RESULT\tvictim.bas\tok\n", nullptr } };
+    {
+        fixture f("", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\", \"job=j002|@DRIVER@|CORPUS:out/b\"]\n"
+                      "[data]\n\"victim.bas\" = \"basic-compile\"\n"
+                      "[asserts]\n\"compile.log.j000\" = \"contains \\\"GUARD\\tj000\\tok\\n\\\"\"\n"
+                      "\"compile.log.j001\" = \"not contains \\\"GUARD\\tj000\\\"\"\n\"compile.j001\" = \"== ok\"\n"
+                      "\"compile.log.victim.bas\" = \"contains \\\"RESULT\\tvictim.bas\\tok\\\"\"\n");
+        obs o(good);
+        tj_data ok[] = { { "victim.bas", "ok" } };
+
+        o.o.data = ok;
+        o.o.ndata = 1;
+        o.o.jobs = jobs;
+        o.o.njobs = 4;
+        CHECK(judge(f, o, m) == TJ_PASS);
+        CHECK(m == "");
+        // a block that does not hold names its query
+        jobs[1].block = "JOB\tj001\tCORPUS:src/x.bb2\nGUARD\tj000\tok\n";
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.log.j001 not contains \"GUARD\tj000\"") && has(m, "does not hold"));
+        jobs[1].block = "JOB\tj001\tCORPUS:src/x.bb2\nGUARD\tj001\tbefore 95 after 0\n";
+        jobs[1].result = "error 3 Syntax Error";
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.j001 == ok") && has(m, "\"error 3 Syntax Error\""));
+        jobs[1].result = "ok";
+        // no jobs captured: not captured
+        o.o.jobs = nullptr;
+        o.o.njobs = 0;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.log.j000 contains") && has(m, "does not hold: not captured"));
+    }
+    {
+        // a job that did not run: its block not captured; not exists holds
+        fixture f("", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\", \"job=j002|@DRIVER@|CORPUS:out/b\"]\n"
+                      "[asserts]\n\"compile.log.j002\" = \"contains \\\"GUARD\\\"\"\n");
+        obs o(good);
+
+        o.o.jobs = jobs;
+        o.o.njobs = 3;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.log.j002 contains \"GUARD\"") && has(m, "does not hold: not captured"));
+        fixture g("", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\", \"job=j002|@DRIVER@|CORPUS:out/b\"]\n"
+                      "[asserts]\n\"compile.log.j002\" = \"not exists\"\n\"compile.j002\" = \"== none\"\n");
+        CHECK(judge(g, o, m) == TJ_PASS);
+        // no default for a jobline job: a failed compile of j001 alone passes
+        fixture h("", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n");
+        jobs[1].result = "error 3 Syntax Error";
+        CHECK(judge(h, o, m) == TJ_PASS);
+        jobs[1].result = "ok";
+    }
+}
+
 TEST_CASE("testjudge: a run from the editor", "[testjudge]")
 {
     std::string m;

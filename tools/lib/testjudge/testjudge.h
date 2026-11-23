@@ -101,6 +101,16 @@ struct tj_data {
     const char *result;         /* "ok", "error LINE MESSAGE", "none"; NULL: not captured */
 };
 
+/** @brief A named compile job of the cell (change named-compile-jobs). */
+struct tj_job {
+    const char *name;           /* j000, r001, a jobline ID, a data source's file */
+    const char *block;          /* its block of tedstub's log (bugorig_block);
+                                   NULL or "": not captured */
+    const char *result;         /* a jobline job= or resident= job: its compile
+                                   result ("ok", "error LINE MESSAGE", "none");
+                                   NULL otherwise */
+};
+
 /**
  * @brief The observations of one cell's run.  NULL (or has_ = 0): not
  *        captured, which fails any assertion that queries it.
@@ -126,6 +136,9 @@ struct tj_obs {
     size_t ndata;
     const struct tj_runout *runs;       /* the output files of the started programs */
     size_t nruns;
+    const struct tj_job *jobs;  /* the named compile jobs (compile.log.NAME,
+                                   compile.NAME) */
+    size_t njobs;
 };
 
 /** @brief The result of a cell. */

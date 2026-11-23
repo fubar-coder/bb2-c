@@ -15,8 +15,8 @@ programs touched); emulator tests as named.
 ## 2. Observation and judging (runner, host)
 
 - [x] 2.1 `tests/corpus/runner/bugorig.c`/`.h`: the block of a step in a tedstub log (design D2: the cut, the size, the version line); verify: `test_bugorig` with logs of a job, a job with `bitmap=` lines, a menu item behind a job (its `ezfreq` line in the menu's block), a resident, a job that did not run, two sessions
-- [ ] 2.2 `caserun.c` `cr_observe`: the blocks of the driver's job, the editor run, the jobline jobs (cell log) and the data sources (the part's log where the source has a part; `bNNN` written as `FILE`, the staged path as `@DATA:FILE@`); the results of `job=`/`resident=` jobs; `testjudge`: the two queries ("not captured" without a block); verify: `test_caserun` with recorded cell directories (a cell with j000 and j001, a data source in the cell's job list and one in a part), `testjudge` host tests
-- [ ] 2.3 `cr_cell_pass`: `@DATA:FILE@` replaced by the staged path of the data pass (the same count as `cr_data_pass`); verify: `test_caserun` (two data sources, the second named in a job line gets `b001`; a data source in a part gets the part's path)
+- [x] 2.2 `caserun.c` `cr_observe`: the blocks of the driver's job, the editor run, the jobline jobs (cell log) and the data sources (the part's log where the source has a part; `bNNN` written as `FILE`, the staged path as `@DATA:FILE@`); the results of `job=`/`resident=` jobs; `testjudge`: the two queries ("not captured" without a block); verify: `test_caserun` with recorded cell directories (a cell with j000 and j001, a data source in the cell's job list and one in a part), `testjudge` host tests
+- [x] 2.3 `cr_cell_pass`: `@DATA:FILE@` replaced by the staged path of the data pass (the same count as `cr_data_pass`); verify: `test_caserun` (two data sources, the second named in a job line gets `b001`; a data source in a part gets the part's path)
 
 ## 3. Docs
 
