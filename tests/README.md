@@ -654,6 +654,7 @@ general alternatives and nothing else about the abnormal end (no
 `requester` text, `rc`, `end.*` or `output` assertion of its own):
 
 ```toml
+# an example, not a file of the tree: libs/blitzoslib-boxstring-all-spaces.test.toml
 [ends."libs=cd"]
 reason = "the original ... (#N): memory corruption, so the end is not defined"
 abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
