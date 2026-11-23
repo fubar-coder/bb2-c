@@ -6,12 +6,12 @@
 ; pixels of a bitmap of that size (a plane of 65600 bytes).
 ; Correct: an error check refuses the shape: "Shape too Big", the
 ; command is not done.
-; @fixed #1047
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-BitMap 0,640,820,1
-NPrint "before"
-GetaShape 0,0,0,640,820
-NPrint "after, plane ",Peek.w(Addr Shape(0)+22) AND $FFFF
-End
+
+!TestCase{plane_64k}
+  BitMap 0,640,820,1
+  GetaShape 0,0,0,640,820
+  !Check{0,"after"}
+!EndTestCase

@@ -6,11 +6,11 @@
 ; blit size word $0440, 17 rows of 64 words).
 ; Correct: an error check refuses the shape: "Shape too Big", the
 ; command is not done.
-; @fixed #1046
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-NPrint "before"
-InitShape 0,1000,16,1
-NPrint "after, blit size ",Hex$(Peek.w(Addr Shape(0)+8) AND $FFFF)
-End
+
+!TestCase{blitsize_width}
+  InitShape 0,1000,16,1
+  !Check{0,"after"}
+!EndTestCase

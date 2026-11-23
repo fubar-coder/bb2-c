@@ -7,11 +7,11 @@
 ; row: a plane of 65600 bytes, the word +22 is 64).
 ; Correct: an error check refuses the shape: "Shape too Big", the
 ; command is not done.
-; @fixed #1047
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-NPrint "before"
-InitShape 0,640,820,1
-NPrint "after, plane ",Peek.w(Addr Shape(0)+22) AND $FFFF
-End
+
+!TestCase{plane_64k}
+  InitShape 0,640,820,1
+  !Check{0,"after"}
+!EndTestCase

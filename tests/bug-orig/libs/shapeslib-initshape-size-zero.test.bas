@@ -6,11 +6,11 @@
 ; of the shape (+2).  Nothing is blitted.
 ; Correct: an error check refuses the size: "Illegal Shape Size", the
 ; command is not done.
-; @fixed #1047
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-NPrint "before"
-InitShape 0,16,0,1
-NPrint "after, height ",Peek.w(Addr Shape(0)+2)
-End
+
+!TestCase{size_zero}
+  InitShape 0,16,0,1
+  !Check{0,"after"}
+!EndTestCase
