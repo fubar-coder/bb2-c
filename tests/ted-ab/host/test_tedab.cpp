@@ -185,6 +185,11 @@ TEST_CASE("@fixed-orig: refused", "[fixed]")
     refused("; @fixed-orig #12 R5-C5\n; @fixed-orig #13 R5-C5", "pair R5-C5 named twice");
     refused("; @combos R5 C5\n; @fixed-orig #12 Rc-Cc", "the pair is never compared");
     refused("; @combos C5 Cc\n; @fixed-orig #12 R5-C5", "the pair is never compared");
+    // the old name of the directive: refused with the new one
+    refused("; @fixed #12 R5-C5", "@fixed is now @fixed-orig (@fixed-orig #NNN PAIR...)");
+    refused("; @fixed", "@fixed is now @fixed-orig");
+    // a word that only begins with the name is text, as before
+    CHECK(Test("; @source none\n; @nofiles\n; @fixed-origin #12 R5-C5\n").rc == 0);
 }
 
 TEST_CASE("@fixed-orig: verdict of a pair", "[fixed]")
@@ -1021,6 +1026,9 @@ TEST_CASE("fixed bug-orig test: @fixed-orig #N without a pair", "[bugorig][fixed
     CHECK(parse("; @fixed-orig #123 cc", 1).find("only the word Cc may follow") != std::string::npos);
     CHECK(parse("; @fixed-orig #123 Cc-Pc", 1).find("only the word Cc may follow") != std::string::npos);
     CHECK(parse("; @fixed-orig #123 Cc", 0).find("Cc is no compared pair") != std::string::npos);
+    // the old name of the directive: refused with the new one
+    CHECK(parse("; @fixed #123", 1).find("@fixed is now @fixed-orig (@fixed-orig #NNN)") != std::string::npos);
+    CHECK(parse("; @fixed #123 Cc", 1).find("@fixed is now @fixed-orig") != std::string::npos);
 
     // the verdict from the expectations alone: no recorded original
     const char *bad = "  - expect: blk.txt differs from the expected contents (data)\n";

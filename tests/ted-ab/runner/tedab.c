@@ -347,7 +347,15 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                 }
                 t->combos |= 1u << c;
             }
-        } else if (!strcmp(key, "fixed-orig") || !strcmp(key, "fixed")) {
+        } else if (!strcmp(key, "fixed")) {
+            /* the directive's old name: refused with the new one (read as
+               text it would turn a fixed test into an open one) */
+            snprintf(err, errlen,
+                     bugorig ? "%s line %u: @fixed is now @fixed-orig (@fixed-orig #NNN)"
+                             : "%s line %u: @fixed is now @fixed-orig (@fixed-orig #NNN PAIR...)",
+                     name, no);
+            return -1;
+        } else if (!strcmp(key, "fixed-orig")) {
             /* #NNN PAIR...: NNN > 0 without leading zeros; in a bug-orig
                script (bugorig) #NNN alone, no pair */
             unsigned long issue = 0;

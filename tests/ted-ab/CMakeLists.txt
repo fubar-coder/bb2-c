@@ -122,7 +122,7 @@ set_tests_properties(ted_ab_lint_fixed PROPERTIES
 	PASS_REGULAR_EXPRESSION "^tedab lint: 1 tests, 0 problems\n$")
 add_test(NAME ted_ab_lint_fixed_wrong COMMAND ${TEDAB} lint ${work}-lint-fixed-wrong.pass)
 set_tests_properties(ted_ab_lint_fixed_wrong PROPERTIES PASS_REGULAR_EXPRESSION
-	"^a-no-pair line 4: @fixed-orig #NNN PAIR[^\n]*\nb-bad-pair line 5: @fixed-orig: C5-R5 is no compared pair[^\n]*\nc-not-run: @fixed-orig #123 R5-C5: a combination not in @combos[^\n]*\nd-twice line 5: @fixed-orig: pair R5-C5 named twice\ntedab lint: 0 tests, 4 problems\n$")
+	"^a-no-pair line 4: @fixed-orig #NNN PAIR[^\n]*\nb-bad-pair line 5: @fixed-orig: C5-R5 is no compared pair[^\n]*\nc-not-run: @fixed-orig #123 R5-C5: a combination not in @combos[^\n]*\nd-twice line 5: @fixed-orig: pair R5-C5 named twice\ne-old-name line 4: @fixed is now @fixed-orig \\(@fixed-orig #NNN PAIR\\.\\.\\.\\)\ntedab lint: 0 tests, 5 problems\n$")
 # a script that reads the corpus run (@expect corpus, @xtra norunerr) is refused
 # in a pass without one (corpus_out=-); with the corpus run's directory the
 # same scripts are fine

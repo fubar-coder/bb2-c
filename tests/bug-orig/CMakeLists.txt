@@ -201,11 +201,11 @@ function(bug_orig_test bas name)
 	string(REGEX MATCHALL "(^|\n)<semicolon> @[^\n]*" header "${content}")
 	foreach(h IN LISTS header)
 		string(STRIP "${h}" h)
-		if(h MATCHES "^<semicolon> @fixed(-orig)? #([1-9][0-9]*)$")
+		if(h MATCHES "^<semicolon> @fixed-orig #([1-9][0-9]*)$")
 			if(fixed)
 				message(FATAL_ERROR "bug-orig: ${bas}: @fixed-orig twice")
 			endif()
-			set(fixed ${CMAKE_MATCH_2})
+			set(fixed ${CMAKE_MATCH_1})
 		elseif(h MATCHES "^<semicolon> @configs (.+)$")
 			separate_arguments(configs UNIX_COMMAND "${CMAKE_MATCH_1}")
 			set(configs_given ON)
@@ -885,10 +885,10 @@ function(bug_orig_ted_test scripts id name)
 	# "@fixed-orig #N Cc": fixed in the port's combination only (the fix is in
 	# blitz2-c; C5 keeps the bug, it is run like an open test)
 	set(port_only FALSE)
-	if(drv_text MATCHES "(^|\n)<semicolon> @fixed(-orig)? #[1-9][0-9]*[ \t]+Cc[ \t\r]*(\n|$)")
+	if(drv_text MATCHES "(^|\n)<semicolon> @fixed-orig #[1-9][0-9]*[ \t]+Cc[ \t\r]*(\n|$)")
 		set(port_only TRUE)
 	endif()
-	if(drv_text MATCHES "(^|\n)<semicolon> @fixed(-orig)? #[1-9][0-9]*([ \t]+Cc)?[ \t\r]*(\n|$)")
+	if(drv_text MATCHES "(^|\n)<semicolon> @fixed-orig #[1-9][0-9]*([ \t]+Cc)?[ \t\r]*(\n|$)")
 		set(fixed_test TRUE)
 		# Cc with the build's libraries (all), C5 with the CD's (originals)
 		bug_orig_ted_pass(${scripts} ${id} ${name} ${work} Cc
@@ -1187,7 +1187,7 @@ string(CONCAT text
 file(WRITE ${lint} "${text}")
 add_test(NAME bug_orig_ted_fixed_wrong_lint COMMAND ${TEDAB} lint ${lint})
 set_tests_properties(bug_orig_ted_fixed_wrong_lint PROPERTIES PASS_REGULAR_EXPRESSION
-	"^a-pair line 4: @fixed-orig #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed-orig twice\nc-noissue line 4: @fixed-orig #NNN \\(no pair[^\n]*\ne-port-twice line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nf-port-c5 line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\ntedab lint: 2 tests, 5 problems\n$")
+	"^a-pair line 4: @fixed-orig #NNN \\(no pair[^\n]*\nb-twice line 5: @fixed-orig twice\nc-noissue line 4: @fixed-orig #NNN \\(no pair[^\n]*\ne-port-twice line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nf-port-c5 line 4: @fixed-orig #NNN \\(no pair[^\n]*Cc may follow[^\n]*\nh-old-name line 4: @fixed is now @fixed-orig \\(@fixed-orig #NNN\\)\ntedab lint: 2 tests, 6 problems\n$")
 
 # The recorded originals (ID.orig) written by the target bug-orig-record
 # (record.cmake; not ALL, not a test, reviewed with git diff tests/bug-orig):
@@ -1296,3 +1296,12 @@ add_test(NAME bug_orig_fixed_orig_ok COMMAND ${CMAKE_COMMAND}
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-fixed-orig.cmake)
 set_tests_properties(bug_orig_fixed_orig_ok PROPERTIES PASS_REGULAR_EXPRESSION
 	"every fixed test of [^\n]*fixed-orig-ok has its recorded original")
+# the header's old name "; @fixed #N" is refused with the new one: the fake
+# tree's .bas and TED .drv under the old name are named, the test under the
+# new name is not
+add_test(NAME bug_orig_fixed_old_name_broken COMMAND ${CMAKE_COMMAND}
+	-DROOT=${CMAKE_CURRENT_SOURCE_DIR}/selftest/fixed-old-name
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-fixed-orig.cmake)
+set_tests_properties(bug_orig_fixed_old_name_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"\". @fixed #N\" of a fixed bug-orig test is now[ \n]+\". @fixed-orig #N\".*compiler/old-name\\.bas[ \n]+[^\n]*ted/ted-old-name\\.drv"
+	FAIL_REGULAR_EXPRESSION "new-name|every fixed test")
