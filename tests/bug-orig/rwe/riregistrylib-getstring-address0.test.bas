@@ -6,19 +6,22 @@
 ; vectors) are set to 1 (a string) and to a string "OLD" with interrupts
 ; disabled for the two calls and restored at once.
 ; Correct: without a structure both return "" and read nothing.
-; @fixed #780
-; @rwe riregistrylib
-m.l=AllocMem_(8,$10001)
-Poke.b m,79 : Poke.b m+1,76 : Poke.b m+2,68
-NPrint "open ",IsRegistryOpen
-Disable_
-ow.w=Peek.w(18) : ol.l=Peek.l(24)
-Poke.w 18,1 : Poke.l 24,m
-a$=GetLibraryValue$("x")
-b$=GetRegistryStringVariable("y")
-Poke.w 18,ow : Poke.l 24,ol
-Enable_
-NPrint "[",a$,"]"
-NPrint "[",b$,"]"
-FreeMem_ m,8
-End
+DEFTYPE .l
+
+!TestCase{no_structure}
+  m=AllocMem_(8,$10001)
+  !Require{m<>0,"memory"}
+  Poke.b m,79 : Poke.b m+1,76 : Poke.b m+2,68
+  o=IsRegistryOpen
+  !Require{o=0,"registry_closed"}
+  Disable_
+  ow.w=Peek.w(18) : ol.l=Peek.l(24)
+  Poke.w 18,1 : Poke.l 24,m
+  a$=GetLibraryValue$("x")
+  b$=GetRegistryStringVariable("y")
+  Poke.w 18,ow : Poke.l 24,ol
+  Enable_
+  FreeMem_ m,8
+  !CheckStrEq{a$,"","library_value"}
+  !CheckStrEq{b$,"","string_variable"}
+!EndTestCase

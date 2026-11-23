@@ -1,0 +1,10 @@
+# riregistrylib-getstring-address0.test.bas: the reference library reads the
+# structure at address 18 and 24
+fixed-orig = 780
+rwe = ["riregistrylib"]
+
+[deviations."compiler=orig210"]
+"check.no_structure.library_value" = "== fail"
+"check.no_structure.library_value.actual" = "== \"OLD\""
+"check.no_structure.string_variable" = "== fail"
+"check.no_structure.string_variable.actual" = "== \"OLD\""

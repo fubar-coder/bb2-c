@@ -6,16 +6,17 @@
 ; UnlockRegistry calls registry.library through a base of 0 - a crash
 ; (the CPU halts).  By the library file (the end of its token table: 0,
 ; then $0000FFFF) that is the third pair; the recorded original crashes
-; one pair earlier, so the program prints only once, after the loop.
+; one pair earlier, so the program checks only once, after the loop.
 ; Correct: UnlockRegistry without a pushed lock does nothing; the
-; program prints "done".
-; @fixed #781
-; @rwe riregistrylib
-; @pass timeout=30
-NPrint "open ",IsRegistryOpen
-For i.w=1 To 3
-  a.l=LockRegistry(1)
-  UnlockRegistry
-Next
-NPrint "done"
-End
+; program goes on.
+DEFTYPE .l
+
+!TestCase{three_pairs}
+  o=IsRegistryOpen
+  !Require{o=0,"registry_closed"}
+  For i.w=1 To 3
+    a.l=LockRegistry(1)
+    UnlockRegistry
+  Next
+  !Check{1,"after_loop"}
+!EndTestCase
