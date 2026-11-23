@@ -10,7 +10,7 @@ labels select within them.
 | `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed-orig #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
-| `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
+| `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. A test of the BASIC test model is judged against its declared deviations, a test of the old form against the recorded observation of the original (`ID.orig`); no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
 | `originals` | everything that compares with the original (label `originals`, in no other preset): the compare tests of the recorded originals (`bug_orig_record_ID`: the original's observation of every bug-orig test, open or fixed, against its `tests/bug-orig/*/ID.orig`; they write nothing, the target `bug-orig-record` records), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
 | `coverage` | `all` and the original bugs with the coverage compilers (`coverage/` per test) | as `all` |
 
@@ -30,8 +30,11 @@ Contents: [The test model](#the-test-model) ·
 
 The suites that compare program behaviour with an expectation follow one
 model (spec `testing/test-model`; implemented for the library tests
-("Libraries"), the bug-orig tests (`ID.orig` the `[orig]` side,
-`ID.expect` the expected one, [Recorded originals](#recorded-originals))
+("Libraries"), the bug-orig tests (the BASIC test model: the checks of
+`ID.test.bas` the expected side, the declared deviations of its
+configuration the `[orig]` side; the tests left in the old form for now:
+`ID.orig` the `[orig]` side, `ID.expect` the expected one, [Recorded
+originals](#recorded-originals), [the list](../docs/testing-old-form.md))
 and the corpus (`NAME.orig.out` / `NAME.fixed-N.out`, [Corpus](#corpus));
 the TED oracle keeps its own form for now: rows with an issue). A test is a list of **cases**; a case is a key, an input
 and an expected output, and its verdict is the difference of the actual
@@ -2388,7 +2391,15 @@ by `corpus_runner` and `ted_ab_tedab`.
 
 ## bug-orig tests
 
-Tests of original bugs (`BUG(orig)`). Original bugs are fixed
+Tests of original bugs (`BUG(orig)`). A bug-orig test whose program runs
+is a test of the BASIC test model (`ID.test.bas`, `ID.test.toml`; [Tests
+that judge themselves](#tests-that-judge-themselves)); `fixed-orig = N` in
+its configuration makes it a fixed test. The sections below that speak of
+`ID.bas`, `ID.expect`, `ID.orig` and `; @fixed-orig #N` describe the **old
+form**, which is left **for now** for the TED tests, the compile-only
+tests, the generated expression-matrix tests and a few single tests; they
+are categorised, with what would let them move, in
+[docs/testing-old-form.md](../docs/testing-old-form.md). Original bugs are fixed
 deliberately (CLAUDE.md "Original bugs are fixed deliberately"); the
 tests check the *correct* (expected) behaviour. As long as the bug is
 not fixed the test **fails** (REPRODUCED); the failure message names the
@@ -2431,7 +2442,10 @@ Implode; #275, fixed: it passes).
 
 ### With a Blitz program
 
-**bug-orig tests with a Blitz program** (`tests/bug-orig/`, runner:
+**bug-orig tests with a Blitz program, old form** (`tests/bug-orig/`; the
+tests left in it: [docs/testing-old-form.md](../docs/testing-old-form.md);
+the compile-only and generated ones here, the model tests are run by
+`corpusrun case`; runner of the old form:
 the corpus runner, `corpusrun pass` with `expect=`; verdict in
 `tests/corpus/runner/bugorig.h`): a program that triggers the bug is
 compiled and run in Amiberry by the port (port: blitz2-c with the
@@ -2588,7 +2602,10 @@ progress call or not (#980, `compiler-racing-stripe-wide`). All as
 
 ### Adding a test
 
-*Adding a test* (no shared list, a glob finds the files): two files in
+*Adding a test of the old form* (a test whose program runs is written as
+a test of the model instead: [Tests that judge
+themselves](#tests-that-judge-themselves); no shared list, a glob finds
+the files): two files in
 an area directory (`compiler/`, `libs/` ...), named after the bug ID of
 the issue: `ID.bas` (the program as text; in its header comment
 `; @pass KEY=VALUE` for extra lines of the pass file, see
@@ -2826,9 +2843,10 @@ header `; @fixed-orig #N`) to the BASIC test model (change
 moved six `libs/shapeslib-*` tests (`anim-frames-maximum`,
 `loadshape-plane-step`, `-plane-64k`, `-depth-zero`, `-height-zero`,
 `-width-zero`; all six are fixed bugs) and the extension
-`shapeslib-loadshape-anim-interleave`. Not moved: the TED tests (`.drv`)
-and the tests whose correct result is a compile result only (`.expect`
-without `[run]`); they keep their form. Read [Tests that judge
+`shapeslib-loadshape-anim-interleave`. Not moved, for now: the TED tests (`.drv`), the tests whose correct
+result is a compile result only (`.expect` without `[run]`), the
+generated expression-matrix tests and a few single tests; they keep their
+form, categorised in [docs/testing-old-form.md](../docs/testing-old-form.md). Read [Tests that judge
 themselves](#tests-that-judge-themselves) first, and the moved tests as
 examples (`libs/shapeslib-*.test.bas` with their `.test.toml`).
 

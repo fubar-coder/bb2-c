@@ -762,11 +762,11 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
 - [ ] **Test model beyond the library tests** (OpenSpec change
   `libs-tests-capture`): the shared model (`tests/README.md`, "The test
   model") and the fix-scope check are implemented for the library tests
-  (`libs/tests/expected`) and, since 2026-11-13, the bug-orig tests
-  (OpenSpec change `bug-orig-test-model`: the record test only compares,
-  the target `bug-orig-record` accepts only agreeing runs, varying lines
-  are wildcards behind `# varies: REASON`, a fixed test keeps its
-  `ID.orig`, fix-scope covers `tests/bug-orig`) and the corpus (OpenSpec
+  (`libs/tests/expected`), the bug-orig tests (OpenSpec changes
+  `bug-orig-test-model`, 2026-11-13, and `bug-orig-basic-tests`: the
+  tests whose program runs are tests of the BASIC test model,
+  `ID.test.bas` with `ID.test.toml`, no `.expect`/`.orig`; the old form
+  that is left: "Tests left in the old form") and the corpus (OpenSpec
   change `corpus-test-model`, 2026-11-13: the notes rows of
   `tests/corpus/notes.tsv` are the pairs `NAME.orig.out` /
   `NAME.fixed-N.out` and `NAME.orig.exe` / `NAME.fixed-N.exe` in
@@ -780,6 +780,18 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     block programs take about 2.5 and 3 minutes of the emulator run);
   * `LIBS_CAP_DUMP` (the bytes of a case or block) has no option in
     `libs/tests/emulator.cmake`.
+- [ ] **Tests left in the old form**: the bug-orig tests that are not
+  tests of the BASIC test model yet keep `ID.bas`/`ID.drv`, `ID.expect`
+  and `ID.orig` for now (user decision, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+  "Group 4: split the two long bug-fix-workflow requirements; the old
+  form \"for now\""). Categories, counts, reasons and what would let them
+  move: `docs/testing-old-form.md` (41 TED tests, 71 hand-written and 159
+  generated compile-only tests, 205 generated expression-matrix tests of
+  which 46 with a program run, the self tests of the old runner, two
+  single tests, three runnable tests of round U4 not moved yet). The
+  generated tests (generator `tools/lib/exprmatrix`) move to the new form
+  once several tests can run in one session and the start of the tests
+  through CMake/ctest can be bundled, i.e. without a performance loss.
 - [ ] **libs_emulator misses the restore grace under load**: in both
   `ctest --preset all` runs of 2026-11-21 the session of `libs_emulator`
   did not start from its snapshot within the 15 s grace
