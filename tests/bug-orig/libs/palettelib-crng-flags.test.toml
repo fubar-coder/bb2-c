@@ -1,0 +1,10 @@
+# palettelib-crng-flags.test.bas: the original enters every range, the
+# disabled ones with the rate negated
+fixed-orig = 1002
+files = ["pal.ilbm|@TESTDATA@/palettelib-crng-flags.ilbm"]
+
+[deviations."libs=cd"]
+"check.cycle_flags.decodepalette" = "== fail"
+"check.cycle_flags.decodepalette.actual" = "== \"0 1 -1000, 1 2 2000, 2\""
+"check.cycle_flags.loadpalette" = "== fail"
+"check.cycle_flags.loadpalette.actual" = "== \"0 1 -1000, 1 2 2000, 2\""

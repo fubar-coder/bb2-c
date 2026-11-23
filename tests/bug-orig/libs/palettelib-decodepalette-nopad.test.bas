@@ -8,18 +8,22 @@
 ; find CMAP", whose code is not there without the debugger, #232.)
 ; Correct: the pad byte is skipped, the CRNG is found - cycle 0 of the
 ; palette object (+6: low, high, speed) is 0 1 1000.
-; @fixed #225
-; @configs clib
-; @pass file=pal.ilbm|@TESTDATA@/palettelib-decodepalette-nopad.ilbm
 DEFTYPE .l
-Dim m.l(64)
-If ReadFile(0,"CORPUS:pal.ilbm")
+
+; the byte at a as two hex digits
+Function$ hb{a.l}
+  Function Return Right$(Hex$(Peek.b(a) AND 255),2)
+End Function
+
+!TestCase{odd_name}
+  Dim m.l(64)
+  ok=ReadFile(0,"CORPUS:pal.ilbm")
+  !Require{ok,"file_read"}
   ReadMem 0,&m(0),256
   CloseFile 0
-EndIf
-DecodePalette 0,&m(0)
-o=Addr Palette(0)
-p=Peek.l(o)+4+12
-NPrint "colour 1 ",Hex$(Peek.b(p) AND 255)," ",Hex$(Peek.b(p+4) AND 255)," ",Hex$(Peek.b(p+8) AND 255)
-NPrint "cycle ",Peek.w(o+6)," ",Peek.w(o+8)," ",Peek.w(o+10)
-End
+  DecodePalette 0,&m(0)
+  o=Addr Palette(0)
+  p=Peek.l(o)+4+12
+  !CheckStrEq{hb{p}+" "+hb{p+4}+" "+hb{p+8},"F0 80 10","colour_1"}
+  !CheckStrEq{Str$(Peek.w(o+6))+" "+Str$(Peek.w(o+8))+" "+Str$(Peek.w(o+10)),"0 1 1000","cycle_0"}
+!EndTestCase

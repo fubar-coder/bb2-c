@@ -10,20 +10,29 @@
 ; of palette 1 and changes the cycle's var in palette 2.
 ; Correct: the cycle table of palette 1 ends at once (low -1 at +6),
 ; CyclePalette 1 changes nothing.
-; @fixed #229
-; @configs clib
 DEFTYPE .l
-InitPalette 1,6
-PalRGB 1,1,15,0,0 : PalRGB 1,2,0,15,0
-SetCycle 2,0,1,2
-o=Addr Palette(1) : q=Addr Palette(2)
-NPrint "next object ",q-o
-NPrint "end ",Peek.w(o+6)
-CyclePalette 1
-d=Peek.l(o)
-For i=1 To 2
+
+; the byte at a as two hex digits
+Function$ hb{a.l}
+  Function Return Right$(Hex$(Peek.b(a) AND 255),2)
+End Function
+
+; the three components of colour i of the palette data d as hex bytes
+Function$ rgbhex{d.l,i.l}
   e=d+4+i*12
-  NPrint i," ",Hex$(Peek.b(e) AND 255)," ",Hex$(Peek.b(e+4) AND 255)," ",Hex$(Peek.b(e+8) AND 255)
-Next
-NPrint "palette 2 var ",Peek.w(q+12)
-End
+  Function Return hb{e}+" "+hb{e+4}+" "+hb{e+8}
+End Function
+
+!TestCase{cycle_end}
+  InitPalette 1,6
+  PalRGB 1,1,15,0,0 : PalRGB 1,2,0,15,0
+  SetCycle 2,0,1,2
+  o=Addr Palette(1) : q=Addr Palette(2)
+  !CheckEq{q-o,128,"next_object"}
+  !CheckEq{Peek.w(o+6),-1,"end_mark"}
+  CyclePalette 1
+  d=Peek.l(o)
+  !CheckStrEq{rgbhex{d,1},"FF 00 00","colour_1"}
+  !CheckStrEq{rgbhex{d,2},"00 FF 00","colour_2"}
+  !CheckEq{Peek.w(q+12),0,"palette_2_var"}
+!EndTestCase

@@ -1,0 +1,7 @@
+# palettelib-decodepalette-grow.test.bas: the original loses colour 0 when
+# the palette grows
+fixed-orig = 226
+
+[deviations."libs=cd"]
+"check.grow.colour_0" = "== fail"
+"check.grow.colour_0.actual" = "== \"00 00 00\""
