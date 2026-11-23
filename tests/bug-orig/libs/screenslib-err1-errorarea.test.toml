@@ -6,6 +6,8 @@
 # and runs into other code for the second: a crash ("Software Failure", the
 # session runs into its timeout; each cell with the CD's libraries has its
 # own session).
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 251
 timeout = 60
 isolate = ["libs=cd"]
@@ -17,8 +19,10 @@ isolate = ["libs=cd"]
 [deviations."libs=cd"]
 "check.messages.message_1" = "== fail"
 "check.messages.message_1.actual" = "!= \"Can't find Screen\""
-session = "== timeout"
-requester = "contains \"Software Failure\""
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#251): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

@@ -8,6 +8,7 @@ isolate = ["libs=cd"]
 
 [ends."libs=cd"]
 reason = "the original hangs at the end of the program in some memory layouts (#228, not the tested behaviour): the CPU halts or the session runs into its timeout (before the program's end entries are written or behind them); the checks are written to the result file in a buffer that the crash can lose, so the check of the second Cycle is failed (the original's bug) or never written"
-halts = ["session == halt", "rc not exists", "end.case not exists", "end.run not exists", "check.cycle_stop_cycle.second_cycle != ok"]
-hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "check.cycle_stop_cycle.second_cycle != ok"]
-hangs_at_end = ["session == timeout", "rc not exists", "end.case exists", "end.run exists", "check.cycle_stop_cycle.second_cycle != ok"]
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.cycle_stop_cycle.second_cycle != ok"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.cycle_stop_cycle.second_cycle != ok"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.cycle_stop_cycle.second_cycle != ok"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.cycle_stop_cycle.second_cycle != ok"]

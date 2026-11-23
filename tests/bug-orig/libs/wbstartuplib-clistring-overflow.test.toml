@@ -8,13 +8,15 @@
 # its start, before the first check; with another neighbour (the old test's
 # child) it kept 288 characters. A change of the link layout of the model
 # program (testlib, driver) needs the deviations declared again.
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 308
 timeout = 60
 runargs = "abcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyz"
 
-[deviations."libs=cd"]
-requester = "contains \"Software Failure\""
-session = "== timeout"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#308): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

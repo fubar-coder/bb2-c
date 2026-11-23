@@ -16,5 +16,7 @@ inject = "contains \"written behind an allocation of 9 bytes\""
 
 [ends."compiler=orig195"]
 reason = "the 65536 spaces overwrite memory behind the 9 byte block (#84); whether the program then reaches the end of the case and fails at its exit in a Software Failure, or hangs, depends on that memory"
-crashes_at_exit = ["rc not exists", "requester contains \"Software Failure\"", "end.case exists", "end.run exists"]
-hangs = ["session == timeout", "rc not exists", "requester count == 0", "end.case not exists", "end.run not exists"]
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

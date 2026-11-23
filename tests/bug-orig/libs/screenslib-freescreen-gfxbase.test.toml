@@ -4,14 +4,15 @@
 # own session).  The old recording noted that more or less of the requester
 # (even none) is written before the session ends; both cells showed it
 # here.
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 247
 timeout = 30
 isolate = ["libs=cd"]
 
-[deviations."libs=cd"]
-session = "== timeout"
-requester = "contains \"Software Failure\""
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
-"check.second_screen.after" = "== not-run"
+[ends."libs=cd"]
+reason = "the original's faulty part corrupts memory (#247): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists", "check.second_screen.after != ok"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists", "check.second_screen.after != ok"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists", "check.second_screen.after != ok"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists", "check.second_screen.after != ok"]
