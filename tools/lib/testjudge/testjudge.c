@@ -505,6 +505,22 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             snprintf(got, sizeof got, "\"%.200s\"%s", v, strlen(v) > 200 ? "..." : "");
         break;
     }
+    case TC_Q_COMPILE_LOG_JOB:
+    case TC_Q_COMPILE_JOB: {
+        const char *v = NULL;
+
+        for (size_t i = 0; i < obs->njobs; i++)
+            if (obs->jobs[i].name && !strcmp(obs->jobs[i].name, a->q.rest))
+                v = a->q.kind == TC_Q_COMPILE_JOB ? obs->jobs[i].result : obs->jobs[i].block;
+        if (v && !*v)
+            v = NULL;           /* a block without lines */
+        ok = text_pred(p, v);
+        if (!v)
+            snprintf(got, sizeof got, "not captured");
+        else
+            snprintf(got, sizeof got, "\"%.200s\"%s", v, strlen(v) > 200 ? "..." : "");
+        break;
+    }
     case TC_Q_DATA: {
         const char *v = NULL;
 

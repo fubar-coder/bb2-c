@@ -92,6 +92,32 @@ int bugorig_observe(const struct bugorig_outputs *out, struct bugorig_obs *o);
    RESULT line; malloc'd, NULL = out of memory */
 char *bugorig_compile(const char *log, const char *job);
 
+/* a step of a tedstub log whose block bugorig_block cuts */
+struct bugorig_step {
+    const char *job;            /* its ID in the log (j000, j001, b001, r001) */
+    const char *name;           /* NULL, or the name written in place of the
+                                   ID (a data source: its file) */
+    const char *path;           /* NULL, or a path written as ph (a data
+                                   source: its staged source) */
+    const char *ph;
+};
+
+/* the block of the step s->job in a tedstub log (change named-compile-jobs,
+   design D2): a line KEYWORD<TAB>ID... (JOB, XTRA, XTRAERR, RESULT, MENU,
+   POINTER, OPENIO, PANIC, CLOSEIO, CONSOLE, OUTPUT, REQUESTERS, PROGRESS,
+   STRIPE, GUARD) belongs to the step ID; a line without an ID to the step of
+   the next ID line, but before a JOB line (a job begins with it; a menu
+   item's requesters precede its MENU line) to the step of the previous ID
+   line; lines before the first ID line of a session to its first step, the
+   lines behind its last ID line to that step; BATCH lines and the lines
+   outside a session (the version requester's before BATCH start) to none.
+   The block: the lines of the step in log order (also of a later session)
+   up to its last line that carries its ID, each as in [log] (the size of
+   RESULT ID ok removed, the version as N.NN), its ID field written as
+   s->name and s->path as s->ph if they are given.
+   malloc'd ("" no line), NULL = out of memory */
+char *bugorig_block(const char *log, const struct bugorig_step *s);
+
 /* the text of section NAME of o (NULL = not there) */
 const char *bugorig_get(const struct bugorig_obs *o, const char *name);
 

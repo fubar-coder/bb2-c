@@ -359,7 +359,8 @@ int cr_plan_worst(const struct cr_plan *p);
  *        cell with original material the runner's cd-defaultdbug; the job
  *        lines with @DRIVER@ (TC_DRIVER) replaced by the driver's source on
  *        the cell's volume, CORPUS:src/NAME.bb2 (NAME the base name of
- *        source without .bb2).
+ *        source without .bb2), and @DATA:FILE@ (TC_DATA_PH) by the staged
+ *        source of the data source FILE (cr_data_staged).
  * @param tag     the configuration's tag ("c0")
  * @param work    the run directory
  * @param source  the tokenised driver (its name without .bb2 is the program)
@@ -393,6 +394,15 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
  */
 int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
                  const char *const *built, char **text, char *err, size_t errlen);
+
+/**
+ * @brief The staged tokenised source of the data source FILE (basic-compile)
+ *        in a cell, from the count of cr_data_pass: CORPUS:src/bNNN.bb2 in
+ *        the cell's job list, CORPUS:ID.test/.build-N/src/bNNN.bb2 in a
+ *        compile part (NNN its position among the data sources).
+ * @return malloc'd, NULL = no such data source or out of memory
+ */
+char *cr_data_staged(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *file);
 
 /**
  * @brief The settings that decide the session of a cell, as one text: two
@@ -464,6 +474,10 @@ struct cr_obs {
     struct tj_runout *runs;     /* the output files of the started programs */
     char **rtext;
     size_t nruns;
+    struct tj_job *jobs;        /* the named compile jobs */
+    size_t njobs;
+    char **jtext;               /* their names, blocks and results */
+    size_t njtext;
 };
 
 /**

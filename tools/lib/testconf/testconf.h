@@ -27,6 +27,20 @@
  * placeholder TC_DRIVER is the runner's: it stays in an element of
  * `jobline` (the runner puts the driver's source on the cell's volume in
  * its place) and is an error naming file, line and placeholder elsewhere.
+ * So is `@DATA:FILE@` (TC_DATA_PH): it stays in an element of `jobline`
+ * when FILE is a data source of the test (the action basic-compile; the
+ * runner puts the staged tokenised source in its place) and is an error
+ * naming file, line and placeholder elsewhere or for another FILE.
+ *
+ * The compile jobs of a cell have names (change named-compile-jobs): the
+ * driver's job `j000`, the run from the editor `r001` (a cell with
+ * `editor-run = "on"`), a data source of basic-compile its file, a job of
+ * `jobline` (`job=`, `run=`, `menu=`, `resident=`) its ID.  A jobline ID
+ * matches [a-z][a-z0-9_]*, has at most TC_JOBID_MAX characters, is unique
+ * among the jobline elements and is none of the runner's names (`j000`,
+ * `b` and three digits; `r001` in a cell with `editor-run = "on"`,
+ * tc_matrix_build) nor `log` or `inject`; otherwise the configuration is
+ * refused naming file, line and ID.
  *
  * A run from the editor (change basic-test-editor-run): in a cell with
  * `editor-run = "on"` the driver is compiled as in any cell and run with
@@ -50,6 +64,13 @@ extern "C" {
 
 /** @brief The runner's placeholder of the driver's source (in `jobline` only). */
 #define TC_DRIVER "@DRIVER@"
+
+/** @brief The start of the runner's placeholder `@DATA:FILE@` of a data
+ *         source's staged source (in `jobline` only). */
+#define TC_DATA_PH "@DATA:"
+
+/** @brief The most characters of a jobline ID (tedstub's cur_id[16]). */
+#define TC_JOBID_MAX 15
 
 /** @brief The kind of a key's value. */
 enum tc_vkind {
@@ -244,6 +265,34 @@ struct tc_config {
     size_t ndata;
 };
 
+/** @brief What a name of a compile job is (tc_job_of). */
+enum tc_job {
+    TC_JOB_NONE = -1,           /* no job of the test */
+    TC_JOB_DRIVER,              /* j000 */
+    TC_JOB_EDITOR_RUN,          /* r001 of a cell with editor-run = "on" */
+    TC_JOB_DATA,                /* a data source of basic-compile */
+    TC_JOB_JOB,                 /* jobline job= */
+    TC_JOB_RUN,                 /* jobline run= */
+    TC_JOB_MENU,                /* jobline menu= */
+    TC_JOB_RESIDENT             /* jobline resident= */
+};
+
+/**
+ * @brief The job of a jobline element: TC_JOB_JOB, _RUN, _MENU or
+ *        _RESIDENT with *id (into elem) and *idlen its ID (the text up to
+ *        the first "|"), TC_JOB_NONE for an element without a job
+ *        (bitmap=, max=, ...).
+ */
+int tc_jobline_job(const char *elem, const char **id, size_t *idlen);
+
+/**
+ * @brief What name is among the compile jobs of conf (enum tc_job):
+ *        a jobline ID first, then j000, a data source of basic-compile,
+ *        r001 if a cell of the test may run from the editor (the setting
+ *        or a value of the axis editor-run is "on").
+ */
+int tc_job_of(const struct tc_config *conf, const char *name);
+
 /**
  * @brief Read an environment file.
  * @return 0 = ok, -1 = error (err: "FILE:LINE: TEXT" or "FILE: TEXT")
@@ -425,8 +474,13 @@ enum tc_qkind {
                                    started (done, open, not-run) */
     TC_Q_RUN_RC,                /* run.NS.NAME.rc: its return code */
     TC_Q_RUN_OUTPUT,            /* run.NS.NAME.output: what it wrote */
-    TC_Q_COMPILE_INJECT         /* compile.inject: the report of inject on the
+    TC_Q_COMPILE_INJECT,        /* compile.inject: the report of inject on the
                                    compiler (wrap of inject) */
+    TC_Q_COMPILE_LOG_JOB,       /* compile.log.NAME: the block of the job NAME
+                                   in tedstub's log */
+    TC_Q_COMPILE_JOB            /* compile.NAME: the compile result of the
+                                   jobline job= or resident= job NAME (ok,
+                                   error LINE MESSAGE, none) */
 };
 
 /** @brief A parsed query. */
@@ -436,7 +490,8 @@ struct tc_query {
     char *rest;                 /* TC_Q_CHECK: NAME, NAME.expected or
                                    NAME.actual (the judge splits it against
                                    the names of the checks); TC_Q_DATA: FILE;
-                                   TC_Q_RUN*: NAME */
+                                   TC_Q_RUN*: NAME; TC_Q_COMPILE_LOG_JOB,
+                                   TC_Q_COMPILE_JOB: the job's name */
 };
 
 /** @brief The operators of a predicate. */

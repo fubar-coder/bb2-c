@@ -1,0 +1,17 @@
+# compiler-racing-stripe-wide.test.bas: tedstub gives the compiler a bitmap
+# of 4000 bytes per row with 49152 guard bytes and logs behind every job its
+# progress calls, the stripe and the guards; the driver's job j000 compiles
+# without TED-C's progress call, the jobline job j001 compiles the driver
+# again with it. The original XORs the stripe into the bitmap and before it
+# in both jobs
+fixed-orig = 980
+files = ["src/inc1.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc1", "src/inc2.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc2", "src/inc3.bb2|@TESTDATA@/compiler-racing-stripe-wide.inc3"]
+jobline = ["bitmap=4000|49152", "progress=on", "job=j001|@DRIVER@|CORPUS:out/stripe-j001"]
+
+[asserts]
+"compile.log.j000" = "contains \"RESULT\tj000\tok\nPROGRESS\tj000\tnone\nSTRIPE\tj000\tnone\nGUARD\tj000\tok\n\""
+"compile.log.j001" = "contains \"RESULT\tj001\tok\nPROGRESS\tj001\tbar 0\t2222222222222222222222222222222222222222222222222222222222222222222222222\nPROGRESS\tj001\tbar 1\t22222222222\nPROGRESS\tj001\tbar 2\t2222222\nPROGRESS\tj001\tbar 3\t2222\nSTRIPE\tj001\trow 0\t#########################################################################\nSTRIPE\tj001\trow 1\t###########\nSTRIPE\tj001\trow 2\t#######\nSTRIPE\tj001\trow 3\t####\nSTRIPE\tj001\trow 6\t####\nSTRIPE\tj001\trow 7\t#######\nSTRIPE\tj001\trow 8\t###########\nSTRIPE\tj001\trow 9\t#########################################################################\nGUARD\tj001\tok\n\""
+
+[deviations."compiler=orig195"]
+"compile.log.j000" = "contains \"RESULT\tj000\tok\nPROGRESS\tj000\tnone\nSTRIPE\tj000\trow 0\t#########################################################################\nSTRIPE\tj000\trow 1\t###########\nSTRIPE\tj000\trow 2\t#######\nSTRIPE\tj000\trow 3\t####\nGUARD\tj000\tbefore 95 after 0\n\""
+"compile.log.j001" = "contains \"RESULT\tj001\tok\nPROGRESS\tj001\tnone\nSTRIPE\tj001\trow 0\t#########################################################################\nSTRIPE\tj001\trow 1\t###########\nSTRIPE\tj001\trow 2\t#######\nSTRIPE\tj001\trow 3\t####\nGUARD\tj001\tbefore 95 after 0\n\""

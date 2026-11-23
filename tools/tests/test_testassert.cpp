@@ -107,6 +107,21 @@ TEST_CASE("testassert: queries", "[testassert]")
     CHECK(query("check.a.") == -1);
     CHECK(query("check..x") == -1);
     CHECK(query("check.1a.x") == -1);
+
+    // the named compile jobs: compile.log.NAME and compile.NAME
+    CHECK(query("compile.log.j001", &k, &ns, &rest) == 0);
+    CHECK(k == TC_Q_COMPILE_LOG_JOB);
+    CHECK(rest == "j001");
+    CHECK(query("compile.log.victim.bas", &k, &ns, &rest) == 0);
+    CHECK(k == TC_Q_COMPILE_LOG_JOB);
+    CHECK(rest == "victim.bas");
+    CHECK(query("compile.j001", &k, &ns, &rest) == 0);
+    CHECK(k == TC_Q_COMPILE_JOB);
+    CHECK(rest == "j001");
+    CHECK(query("compile.log.") == -1);
+    CHECK(strstr(msg, "compile.log.NAME expected") != nullptr);
+    CHECK(query("compile.") == -1);
+    CHECK(strstr(msg, "compile.NAME expected") != nullptr);
 }
 
 TEST_CASE("testassert: predicates", "[testassert]")
@@ -310,6 +325,75 @@ TEST_CASE("testassert: checked when resolved", "[testassert]")
     t.write("x.test.toml", "[asserts.\"case=a,libs=cd\"]\nrc = \"== 5\"\n");
     built b(t);
     CHECK(b.rc == 0);
+}
+
+TEST_CASE("testassert: the queries of the named compile jobs", "[testassert]")
+{
+    tree t;
+    std::string own = t.path("x.test.toml");
+
+    t.write("tests.toml", "root = true\n");
+    // valid: a block of every job, the result of a job= and a resident= job
+    t.write("x.test.toml", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\", \"run=r002|CORPUS:a.bb2|RAM:con\", "
+                           "\"menu=m1|9\", \"resident=r|CORPUS:r.bb2|CORPUS:out/r.res\"]\n"
+                           "[data]\n\"victim.bas\" = \"basic-compile\"\n"
+                           "[asserts]\n\"compile.log.j000\" = \"contains \\\"GUARD\\\"\"\n"
+                           "\"compile.log.j001\" = \"not exists\"\n\"compile.log.r002\" = \"exists\"\n"
+                           "\"compile.log.m1\" = \"contains \\\"MENU\\\"\"\n\"compile.log.r\" = \"exists\"\n"
+                           "\"compile.log.victim.bas\" = \"contains \\\"RESULT\\tvictim.bas\\tok\\\"\"\n"
+                           "\"compile.j001\" = \"== ok\"\n\"compile.r\" = \"matches \\\"error *\\\"\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+        if (b.rc)
+            fprintf(stderr, "message: %s\n", err);
+        // no default for a named job
+        CHECK(b.asserts("default", "a") == "compile.log.j000 contains \"GUARD\" @0; compile.log.j001 not exists @0; "
+                                           "compile.log.r002 exists @0; compile.log.m1 contains \"MENU\" @0; "
+                                           "compile.log.r exists @0; compile.log.victim.bas contains "
+                                           "\"RESULT\tvictim.bas\tok\" @0; compile.j001 == ok @0; compile.r matches "
+                                           "\"error *\" @0; rc == 0; requester count == 0; end.case exists; "
+                                           "end.run exists");
+    }
+    // r001 is a name only with a cell that runs from the editor
+    t.write("x.test.toml", "editor-run = \"on\"\n[asserts]\n\"compile.log.r001\" = \"contains \\\"OUTPUT\\\"\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    t.write("x.test.toml", "[asserts]\n\"compile.log.r001\" = \"exists\"\n");
+    resolve_refused(t, own + ":2: compile.log.r001: the test has no compile job r001");
+    // the refusals, each naming file, line and the query that holds the output
+    t.write("x.test.toml", "[asserts]\n\"compile.log.j009\" = \"exists\"\n");
+    resolve_refused(t, own + ":2: compile.log.j009: the test has no compile job j009 (j000, r001 of a cell with "
+                             "editor-run = \"on\", an ID of jobline, a data source of basic-compile)");
+    t.write("x.test.toml", "[asserts]\n\"compile.log.b000\" = \"exists\"\n[data]\n\"v.bas\" = \"basic-compile\"\n");
+    resolve_refused(t, own + ":2: compile.log.b000: the test has no compile job b000");
+    t.write("x.test.toml", "[asserts]\n\"compile.j000\" = \"== ok\"\n");
+    resolve_refused(t, own + ":2: compile.j000: the compile result of the driver's job is the query compile");
+    t.write("x.test.toml", "[asserts]\n\"compile.victim.bas\" = \"== ok\"\n[data]\n\"victim.bas\" = "
+                           "\"basic-compile\"\n");
+    resolve_refused(t, own + ":2: compile.victim.bas: the compile result of a data source is the query "
+                             "data.victim.bas");
+    t.write("x.test.toml", "jobline = [\"run=r002|CORPUS:a.bb2|RAM:con\"]\n[asserts]\n\"compile.r002\" = \"== ok\"\n");
+    resolve_refused(t, own + ":3: compile.r002: a run= step has no compile result; its log block is the query "
+                             "compile.log.r002");
+    t.write("x.test.toml", "jobline = [\"menu=m1|9\"]\n[asserts]\n\"compile.m1\" = \"== ok\"\n");
+    resolve_refused(t, own + ":3: compile.m1: a menu= step has no compile result; its log block is the query "
+                             "compile.log.m1");
+    t.write("x.test.toml", "editor-run = \"on\"\n[asserts]\n\"compile.r001\" = \"== ok\"\n");
+    resolve_refused(t, own + ":3: compile.r001: a run from the editor step has no compile result");
+    t.write("x.test.toml", "[asserts]\n\"compile.j001\" = \"== ok\"\n");
+    resolve_refused(t, own + ":2: compile.j001: the test has no compile job j001");
+    // the predicates of compile.log and of compile
+    t.write("x.test.toml", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n[asserts]\n\"compile.j001\" = \"exists\"\n");
+    resolve_refused(t, own + ":3: compile.j001: the predicate \"exists\": exists is not allowed");
+    t.write("x.test.toml", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n[asserts]\n\"compile.log.j001\" = "
+                           "\"== ok\"\n");
+    resolve_refused(t, own + ":3: compile.log.j001: the predicate \"== ok\"");
+    // in a deviation the same
+    t.write("x.test.toml", "fixed-orig = 1\n[deviations.\"libs=cd\"]\n\"compile.log.j002\" = \"exists\"\n");
+    resolve_refused(t, own + ":3: compile.log.j002: the test has no compile job j002");
 }
 
 TEST_CASE("testassert: defaults", "[testassert]")

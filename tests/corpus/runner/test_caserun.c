@@ -684,6 +684,7 @@ static void test_case_alone(void)
         { "\"compile.log\"", "contains \\\"x\\\"" }, { "output", "contains \\\"ok\\\"" },
         { "serial", "contains \\\"x\\\"" }, { "inject", "contains \\\"x\\\"" }, { "session", "== done" },
         { "\"end.run\"", "exists" }, { "\"compile.inject\"", "contains \\\"x\\\"" },
+        { "\"compile.log.j000\"", "contains \\\"x\\\"" },
     };
     struct tp_source src;
     struct t t;
@@ -734,6 +735,13 @@ static void test_case_alone(void)
         CHECK(alone_of(&t, &src, "a") == 0);
         unload(&t);
     }
+    /* the compile result of a jobline job */
+    put("al/s.test.toml", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n[asserts.\"case=b\"]\n"
+                          "\"compile.j001\" = \"== ok\"\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 1);
+    CHECK(alone_of(&t, &src, "a") == 0);
+    unload(&t);
     /* the queries of a case share: its end entry, its checks */
     put("al/s.test.toml", "[asserts.\"case=b\"]\n\"end.case\" = \"not exists\"\n\"check.b.two\" = \"== fail\"\n");
     load(&t, "al/s.test.bas", ENV_RUNNER);
@@ -1439,6 +1447,138 @@ static void test_observe(void)
     tp_free(&src);
 }
 
+/* the named compile jobs (change named-compile-jobs): @DATA:FILE@ in the
+   cell pass from the count of cr_data_pass, the blocks and results of the
+   jobs in the observation of a recorded cell directory (j000, jobline
+   jobs, a data source in the cell's job list and one in a part) */
+static void test_named_jobs(void)
+{
+    static const char *const built[] = { "/w/d/b000.bb2", "/w/d/in.txt", "/w/d/b001.bb2", "/w/d/b002.bb2" };
+    static const char src_text[] = "!TestCase{c}\n!EndTestCase\n";
+    struct t t;
+    char err[600], *p, *s;
+
+    put("nj/tests.toml", "root = true\n");
+    put("nj/x.test.bas", src_text);
+    put("nj/x.test.toml",
+        "jobline = [\"run=r001|@DATA:victim.bas@|RAM:con|100\", \"job=j002|@DATA:runerr.bas@|CORPUS:out/x\", "
+        "\"x=@DATA:same.bas@@DATA:victim.bas@ @DRIVER@\"]\n"
+        "[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n"
+        "[data]\n\"same.bas\" = \"basic-compile\"\n\"in.txt\" = \"copy\"\n\"victim.bas\" = \"basic-compile\"\n"
+        "[data.\"runerr.bas\"]\naction = \"basic-compile\"\nruntime-errors = \"on\"\n");
+    load(&t, "nj/x.test.bas", ENV_RUNNER);
+    if (!t.ok)
+        return;
+    /* the second data source is b001, whatever comes between; the one of
+       another build configuration has the part's path */
+    s = cr_data_staged(&t.conf, &t.m, cell(&t, "port,clib"), "victim.bas");
+    CHECK(s && !strcmp(s, "CORPUS:src/b001.bb2"));
+    free(s);
+    s = cr_data_staged(&t.conf, &t.m, cell(&t, "port,clib"), "runerr.bas");
+    CHECK(s && !strcmp(s, "CORPUS:x.test/.build-1/src/b002.bb2"));
+    free(s);
+    CHECK(!cr_data_staged(&t.conf, &t.m, cell(&t, "port,clib"), "in.txt"));
+    CHECK(!cr_data_staged(&t.conf, &t.m, cell(&t, "port,clib"), "other.bas"));
+    p = pass(&t, "port,clib", err, sizeof err);
+    CHECK(p && has(p, "jobline=run=r001|CORPUS:src/b001.bb2|RAM:con|100"));
+    CHECK(p && has(p, "jobline=job=j002|CORPUS:x.test/.build-1/src/b002.bb2|CORPUS:out/x"));
+    CHECK(p && has(p, "jobline=x=CORPUS:src/b000.bb2CORPUS:src/b001.bb2 CORPUS:src/test.bb2"));
+    CHECK(p && !strstr(p, "@DATA:"));
+    /* the same count as the data pass: its build_job lines stage there */
+    {
+        char *dp = NULL, *all;
+        struct corpus_pass cp;
+        char perr[400];
+
+        CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "port,clib"), &t.env, built, &dp, err, sizeof err) == 0);
+        all = str_printf("%s%s", p ? p : "", dp ? dp : "");
+        CHECK(all && corpus_parse(all, &cp, perr, sizeof perr) == 0);
+        if (all && cp.nbjobs == 3) {
+            CHECK(!cp.bjobs[1].part && !strcmp(cp.bjobs[1].src, "/w/d/b001.bb2"));
+            CHECK(cp.bjobs[2].part && !strcmp(cp.bjobs[2].part, "x.test/.build-1"));
+            corpus_free(&cp);
+        } else
+            CHECK(!"three build jobs");
+        free(all);
+        free(dp);
+    }
+    free(p);
+    unload(&t);
+
+    /* the observation: the jobs of the cell's log and the data sources, one
+       in the cell's log, one in its part's */
+    put("nj/y.test.bas", src_text);
+    put("nj/y.test.toml",
+        "jobline = [\"job=j001|@DRIVER@|CORPUS:out/again\", \"run=r002|CORPUS:a.bb2|RAM:con\", \"menu=m1|9\", "
+        "\"progress=on\", \"job=j003|CORPUS:b.bb2|CORPUS:out/b\"]\n"
+        "[data]\n\"victim.bas\" = \"basic-compile\"\n"
+        "[data.\"part.bas\"]\naction = \"basic-compile\"\nruntime-errors = \"on\"\n");
+    load(&t, "nj/y.test.bas", ENV_RUNNER);
+    if (!t.ok)
+        return;
+    put("nj/c/out/session.log",
+        "BATCH\tstart\nJOB\tb000\tCORPUS:src/b000.bb2\nRESULT\tb000\tok\t300\n"
+        "JOB\tj000\tCORPUS:src/test.bb2\nRESULT\tj000\tok\t1234\nGUARD\tj000\tok\n"
+        "JOB\tj001\tCORPUS:src/test.bb2\nRESULT\tj001\terror\t7\tSyntax Error\tx=\nGUARD\tj001\tok\n"
+        "JOB\tr002\tCORPUS:a.bb2\nOPENIO\tr002\nOUTPUT\tr002\thi\nCLOSEIO\tr002\n"
+        "ezfreq \"Load\" -> blitz2:dbg\nMENU\tm1\t9\t0\nBATCH\tend\n");
+    put("nj/c/y.test/.build-1/session.log",
+        "BATCH\tstart\nJOB\tb001\tCORPUS:y.test/.build-1/src/b001.bb2\nRESULT\tb001\terror\t2\tSyntax Error\ty\n"
+        "BATCH\tend\n");
+    put("nj/c/out/blitz2.out", "rc=0\n");
+    {
+        struct corpus_pass cp;
+        char *vol = str_printf("%s/nj/c", work);
+        struct cr_cellrun c = { vol, "done", &cp, 0, 0 };
+        struct tp_source src = { 0 };
+        struct tp_params par = { 0 };
+        struct tp_driver drv = { 0 };
+        struct cr_obs ob;
+        const struct tj_job *j;
+
+        par.file = "y.test.bas";
+        par.test_id = "y";
+        CHECK(tp_process(src_text, strlen(src_text), &par, &src) == 0);
+        CHECK(corpus_parse("cell=on\nwork=/w\nreport=/w/r.txt\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                           "source=/s/test.bb2\nbuild=y.test/.build-1|/b|/d|/a|on\n"
+                           "build_job=-|/w/d/b000.bb2|y.test/victim\n"
+                           "build_job=y.test/.build-1|/w/d/b001.bb2|y.test/part\n", &cp, err, sizeof err) == 0);
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "y.test.bas", &ob) == 0);
+        /* j000, the four jobs of jobline (not progress=), the two data sources */
+        CHECK(ob.o.njobs == 7 && ob.o.jobs == ob.jobs);
+        if (ob.o.njobs == 7) {
+            j = &ob.o.jobs[0];
+            CHECK(!strcmp(j->name, "j000") && !j->result);
+            CHECK(!strcmp(j->block, "JOB\tj000\tCORPUS:src/test.bb2\nRESULT\tj000\tok\nGUARD\tj000\tok\n"));
+            j = &ob.o.jobs[1];
+            CHECK(!strcmp(j->name, "j001") && j->result && !strcmp(j->result, "error 7 Syntax Error"));
+            CHECK(!strcmp(j->block, "JOB\tj001\tCORPUS:src/test.bb2\nRESULT\tj001\terror\t7\tSyntax Error\tx=\n"
+                                    "GUARD\tj001\tok\n"));
+            j = &ob.o.jobs[2];
+            CHECK(!strcmp(j->name, "r002") && !j->result);
+            CHECK(!strcmp(j->block, "JOB\tr002\tCORPUS:a.bb2\nOPENIO\tr002\nOUTPUT\tr002\thi\nCLOSEIO\tr002\n"));
+            j = &ob.o.jobs[3];
+            CHECK(!strcmp(j->name, "m1") && !j->result);
+            CHECK(!strcmp(j->block, "ezfreq \"Load\" -> blitz2:dbg\nMENU\tm1\t9\t0\n"));
+            /* a job that did not run: no block, its result none */
+            j = &ob.o.jobs[4];
+            CHECK(!strcmp(j->name, "j003") && !strcmp(j->block, "") && j->result && !strcmp(j->result, "none"));
+            /* the data sources under their files */
+            j = &ob.o.jobs[5];
+            CHECK(!strcmp(j->name, "victim.bas") && !j->result);
+            CHECK(!strcmp(j->block, "JOB\tvictim.bas\t@DATA:victim.bas@\nRESULT\tvictim.bas\tok\n"));
+            j = &ob.o.jobs[6];
+            CHECK(!strcmp(j->name, "part.bas"));
+            CHECK(!strcmp(j->block, "JOB\tpart.bas\t@DATA:part.bas@\nRESULT\tpart.bas\terror\t2\tSyntax Error\ty\n"));
+        }
+        cr_obs_free(&ob);
+        corpus_free(&cp);
+        tp_free(&src);
+        free(vol);
+    }
+    unload(&t);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1471,6 +1611,7 @@ int main(int argc, char **argv)
     test_data_pass();
     test_editor_run_pass();
     test_observe();
+    test_named_jobs();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

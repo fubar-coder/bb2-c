@@ -115,26 +115,109 @@ static const char *rwe_dir_of(const struct tc_config *conf, const struct tc_env 
     return bar2 + 1;
 }
 
+/* the build configuration of data entry d in a cell whose values are
+   cell[TC_DO_N]: o[] its compiler, libraries and runtime error checking
+   ("same" the cell's); 1 = another than the cell's */
+static int data_config(const struct tc_data *d, const char *const *cell, const char **o)
+{
+    int other = 0;
+
+    for (int k = 0; k < TC_DO_N; k++) {
+        o[k] = strcmp(d->opt[k], "same") ? d->opt[k] : cell[k];
+        other |= strcmp(o[k], cell[k]) != 0;
+    }
+    return other;
+}
+
+static int same_config(const char *const *a, const char *const *b)
+{
+    for (int k = 0; k < TC_DO_N; k++)
+        if (strcmp(a[k], b[k]))
+            return 0;
+    return 1;
+}
+
+/* where the data source i (basic-compile) is compiled: 0 in the cell's job
+   list, else K of its part ID.test/.build-K, the parts numbered in the
+   order their configurations first come (*first: i is the first data
+   source of its part); *job its job number NNN of bNNN, its position
+   among the data sources */
+static size_t data_part(const struct tc_config *conf, const char *const *cell, size_t i, int *first, size_t *job)
+{
+    const char *c[TC_DO_N];
+    size_t k = 0;
+
+    *first = 0;
+    *job = 0;
+    for (size_t j = 0; j < i; j++)
+        *job += conf->data[j].action == TC_DA_BASIC_COMPILE;
+    if (!data_config(&conf->data[i], cell, c))
+        return 0;
+    for (size_t j = 0; j <= i; j++) {
+        const char *o[TC_DO_N];
+        int firstj = 1;
+
+        if (conf->data[j].action != TC_DA_BASIC_COMPILE || !data_config(&conf->data[j], cell, o))
+            continue;
+        for (size_t h = 0; h < j && firstj; h++) {
+            const char *q[TC_DO_N];
+
+            if (conf->data[h].action == TC_DA_BASIC_COMPILE && data_config(&conf->data[h], cell, q)
+                && same_config(q, o))
+                firstj = 0;
+        }
+        k += firstj;
+        if (same_config(o, c)) {
+            *first = j == i;
+            return k;
+        }
+    }
+    return k;                   /* not reached: j == i matches */
+}
+
+/* the cell's values of the options of basic-compile */
+static void cell_config(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, char buf[TC_DO_N][24],
+                        const char **v)
+{
+    v[TC_DO_COMPILER] = val(conf, m, cell, "compiler", buf[0]);
+    v[TC_DO_LIBS] = val(conf, m, cell, "libs", buf[1]);
+    v[TC_DO_RUNERR] = val(conf, m, cell, "runtime-errors", buf[2]);
+}
+
+char *cr_data_staged(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *file)
+{
+    char buf[TC_DO_N][24];
+    const char *cv[TC_DO_N];
+
+    cell_config(conf, m, cell, buf, cv);
+    for (size_t i = 0; i < conf->ndata; i++)
+        if (conf->data[i].action == TC_DA_BASIC_COMPILE && !strcmp(conf->data[i].file, file)) {
+            int first;
+            size_t job, k = data_part(conf, cv, i, &first, &job);
+
+            return k ? str_printf("CORPUS:%s.test/.build-%zu/src/b%03zu.bb2", conf->id, k, job)
+                     : str_printf("CORPUS:src/b%03zu.bb2", job);
+        }
+    return NULL;
+}
+
 int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
                  const char *const *built, char **text, char *err, size_t errlen)
 {
-    char b1[24], b2[24], b3[24];
-    const char *ccomp = val(conf, m, cell, "compiler", b1), *clibs = val(conf, m, cell, "libs", b2);
-    const char *crunerr = val(conf, m, cell, "runtime-errors", b3);
+    char buf[TC_DO_N][24];
+    const char *cv[TC_DO_N];
     const char *rwe = rwe_dir_of(conf, env);
-    /* the build configurations other than the cell's, in the order they come */
-    const char **pc = calloc(conf->ndata + 1, sizeof *pc), **pl = calloc(conf->ndata + 1, sizeof *pl);
-    const char **pr = calloc(conf->ndata + 1, sizeof *pr);
-    size_t np = 0;
     struct text t = { 0 };
     int r = -2;
 
     *text = NULL;
-    if (!pc || !pl || !pr)
-        goto out;
+    cell_config(conf, m, cell, buf, cv);
     for (size_t i = 0; i < conf->ndata; i++) {
         const struct tc_data *d = &conf->data[i];
         char *res = tc_data_result(d);
+        const char *o[TC_DO_N];
+        size_t k, job;
+        int first;
 
         if (!res)
             goto out;
@@ -143,39 +226,29 @@ int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
             free(res);
             continue;
         }
-        {
-            const char *comp = strcmp(d->opt[TC_DO_COMPILER], "same") ? d->opt[TC_DO_COMPILER] : ccomp;
-            const char *libs = strcmp(d->opt[TC_DO_LIBS], "same") ? d->opt[TC_DO_LIBS] : clibs;
-            const char *runerr = strcmp(d->opt[TC_DO_RUNERR], "same") ? d->opt[TC_DO_RUNERR] : crunerr;
-            size_t k;
-
-            if (!strcmp(comp, ccomp) && !strcmp(libs, clibs) && !strcmp(runerr, crunerr)) {
-                text_add(&t, "build_job=-|%s|%s.test/%s\n", built[i], conf->id, res);
-                free(res);
-                continue;
-            }
-            for (k = 0; k < np && (strcmp(pc[k], comp) || strcmp(pl[k], libs) || strcmp(pr[k], runerr)); k++)
-                ;
-            if (k == np) {
-                const char *blitz2;
-                char *def, *acid;
-
-                if (build_files(env, comp, libs, strcmp(libs, "cd") ? rwe : NULL, &blitz2, &def, &acid, err,
-                                errlen)) {
-                    free(res);
-                    r = -1;
-                    goto out;
-                }
-                text_add(&t, "build=%s.test/.build-%zu|%s|%s|%s|%s\n", conf->id, np + 1, blitz2, def, acid, runerr);
-                free(def);
-                free(acid);
-                pc[np] = comp;
-                pl[np] = libs;
-                pr[np++] = runerr;
-            }
-            text_add(&t, "build_job=%s.test/.build-%zu|%s|%s.test/%s\n", conf->id, k + 1, built[i], conf->id, res);
+        if (!(k = data_part(conf, cv, i, &first, &job))) {
+            text_add(&t, "build_job=-|%s|%s.test/%s\n", built[i], conf->id, res);
             free(res);
+            continue;
         }
+        if (first) {
+            const char *blitz2;
+            char *def, *acid;
+
+            data_config(d, cv, o);
+            if (build_files(env, o[TC_DO_COMPILER], o[TC_DO_LIBS], strcmp(o[TC_DO_LIBS], "cd") ? rwe : NULL,
+                            &blitz2, &def, &acid, err, errlen)) {
+                free(res);
+                r = -1;
+                goto out;
+            }
+            text_add(&t, "build=%s.test/.build-%zu|%s|%s|%s|%s\n", conf->id, k, blitz2, def, acid,
+                     o[TC_DO_RUNERR]);
+            free(def);
+            free(acid);
+        }
+        text_add(&t, "build_job=%s.test/.build-%zu|%s|%s.test/%s\n", conf->id, k, built[i], conf->id, res);
+        free(res);
     }
     if (t.bad)
         goto out;
@@ -186,9 +259,6 @@ out:
     if (r == -2)
         fail(err, errlen, "out of memory");
     free(t.p);
-    free(pc);
-    free(pl);
-    free(pr);
     return r;
 }
 
@@ -362,7 +432,8 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
                 for (size_t i = 0; i < l->nlist; i++)
                     text_add(&t, "%s=%s\n", lists[k].pass, l->list[i]);
     }
-    /* the job lines, @DRIVER@ the driver's source on the cell's volume */
+    /* the job lines, @DRIVER@ the driver's source on the cell's volume,
+       @DATA:FILE@ the staged source of the data source FILE */
     if ((l = list(conf, "jobline"))) {
         const char *b = strrchr(source, '/');
         size_t bl;
@@ -375,11 +446,36 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
             const char *s = l->list[i], *p;
 
             text_add(&t, "jobline=");
-            while ((p = strstr(s, TC_DRIVER))) {
-                text_add(&t, "%.*sCORPUS:src/%.*s.bb2", (int)(p - s), s, (int)bl, b);
-                s = p + strlen(TC_DRIVER);
+            while (*s) {
+                const char *dr = strstr(s, TC_DRIVER), *da = strstr(s, TC_DATA_PH), *q;
+
+                if (da && (!dr || da < dr) && (q = strchr(da + strlen(TC_DATA_PH), '@'))) {
+                    char *file = strndup(da + strlen(TC_DATA_PH), (size_t)(q - da - strlen(TC_DATA_PH)));
+                    char *staged = file ? cr_data_staged(conf, m, cell, file) : NULL;
+
+                    if (!staged) {
+                        int oom = !file;
+
+                        free(file);
+                        free(t.p);
+                        if (oom)
+                            return -2;
+                        return fail(err, errlen, "%s: jobline: %.*s names no data source of the test", conf->source,
+                                    (int)(q - da + 1), da);
+                    }
+                    text_add(&t, "%.*s%s", (int)(da - s), s, staged);
+                    free(file);
+                    free(staged);
+                    s = q + 1;
+                } else if ((p = dr)) {
+                    text_add(&t, "%.*sCORPUS:src/%.*s.bb2", (int)(p - s), s, (int)bl, b);
+                    s = p + strlen(TC_DRIVER);
+                } else {
+                    text_add(&t, "%s", s);
+                    break;
+                }
             }
-            text_add(&t, "%s\n", s);
+            text_add(&t, "\n");
         }
     }
     if (t.bad) {
@@ -728,6 +824,8 @@ static int whole_program(int kind)
     case TC_Q_SERIAL:
     case TC_Q_INJECT:
     case TC_Q_COMPILE_INJECT:
+    case TC_Q_COMPILE_LOG_JOB:
+    case TC_Q_COMPILE_JOB:
     case TC_Q_SESSION:
     case TC_Q_END_RUN:
         return 1;
@@ -1176,6 +1274,10 @@ void cr_obs_free(struct cr_obs *ob)
         free(ob->rtext[i]);
     free(ob->rtext);
     free(ob->runs);
+    for (size_t i = 0; i < ob->njtext; i++)
+        free(ob->jtext[i]);
+    free(ob->jtext);
+    free(ob->jobs);
     memset(ob, 0, sizeof *ob);
 }
 
@@ -1254,6 +1356,109 @@ static int observe_runs(const struct cr_cellrun *c, const struct tp_source *src,
     }
     ob->o.runs = ob->runs;
     ob->o.nruns = ob->nruns;
+    return 0;
+}
+
+/* a text of the named jobs kept in ob (freed with it); s NULL: out of memory */
+static char *keep_text(struct cr_obs *ob, char *s)
+{
+    char **v;
+
+    if (!s)
+        return NULL;
+    if (!(v = realloc(ob->jtext, (ob->njtext + 1) * sizeof *v))) {
+        free(s);
+        return NULL;
+    }
+    ob->jtext = v;
+    v[ob->njtext++] = s;
+    return s;
+}
+
+/* a named job: its block of log (step s), with its compile result if
+   result; 0, -1 = out of memory */
+static int add_job(struct cr_obs *ob, const char *name, const char *log, const struct bugorig_step *s, int result)
+{
+    struct tj_job *j = &ob->jobs[ob->njobs];
+
+    j->name = name;
+    j->result = NULL;
+    if (!(j->block = keep_text(ob, log ? bugorig_block(log, s) : strdup(""))))
+        return -1;
+    if (result && !(j->result = keep_text(ob, bugorig_compile(log, s->job))))
+        return -1;
+    ob->njobs++;
+    return 0;
+}
+
+/* the named compile jobs of a cell (change named-compile-jobs): j000, the
+   run from the editor r001, the jobline jobs (all from the cell's log) and
+   the data sources (bNNN, from the log of the session that compiled them:
+   the cell's or their part's), their ID written as their file, their
+   staged source as @DATA:FILE@ */
+static int observe_jobs(const struct cr_cellrun *c, const struct tc_config *conf, struct cr_obs *ob)
+{
+    const struct tt_value *jl = list(conf, "jobline");
+    size_t n = 2 + (jl ? jl->nlist : 0) + c->p->nbjobs;
+    struct bugorig_step s = { "j000", NULL, NULL, NULL };
+
+    if (!(ob->jobs = calloc(n, sizeof *ob->jobs)))
+        return -1;
+    if (add_job(ob, "j000", ob->log, &s, 0))
+        return -1;
+    if (c->p->editrun) {
+        s.job = "r001";
+        if (add_job(ob, "r001", ob->log, &s, 0))
+            return -1;
+    }
+    for (size_t i = 0; jl && i < jl->nlist; i++) {
+        const char *id;
+        size_t idlen;
+        int kind = tc_jobline_job(jl->list[i], &id, &idlen);
+        char *name;
+
+        if (kind == TC_JOB_NONE)
+            continue;
+        if (!(name = keep_text(ob, strndup(id, idlen))))
+            return -1;
+        s.job = name;
+        if (add_job(ob, name, ob->log, &s, kind == TC_JOB_JOB || kind == TC_JOB_RESIDENT))
+            return -1;
+    }
+    for (size_t i = 0, j = 0; i < conf->ndata && j < c->p->nbjobs; i++) {
+        const struct corpus_build_job *b = &c->p->bjobs[j];
+        char job[32], *path, *log, *staged, *ph;
+        size_t len;
+        int r;
+
+        if (conf->data[i].action != TC_DA_BASIC_COMPILE)
+            continue;
+        snprintf(job, sizeof job, "b%03zu", j);
+        path = b->part ? str_printf("%s/%s/session.log", c->vol, b->part) : str_printf("%s/out/session.log", c->vol);
+        staged = b->part ? str_printf("CORPUS:%s/src/%s.bb2", b->part, job) : str_printf("CORPUS:src/%s.bb2", job);
+        ph = str_printf(TC_DATA_PH "%s@", conf->data[i].file);
+        if (!path || !staged || !ph) {
+            free(path);
+            free(staged);
+            free(ph);
+            return -1;
+        }
+        log = (char *)read_file(path, &len);
+        free(path);
+        s.job = job;
+        s.name = conf->data[i].file;
+        s.path = staged;
+        s.ph = ph;
+        r = add_job(ob, conf->data[i].file, log, &s, 0);
+        free(log);
+        free(staged);
+        free(ph);
+        if (r)
+            return -1;
+        j++;
+    }
+    ob->o.jobs = ob->jobs;
+    ob->o.njobs = ob->njobs;
     return 0;
 }
 
@@ -1346,7 +1551,7 @@ int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const s
         ob->o.has_rc = 0;
         ob->o.nreq = 0;
     }
-    if (observe_data(c, conf, ob) || observe_runs(c, src, ob))
+    if (observe_data(c, conf, ob) || observe_runs(c, src, ob) || observe_jobs(c, conf, ob))
         goto out;
     r = 0;
 out:

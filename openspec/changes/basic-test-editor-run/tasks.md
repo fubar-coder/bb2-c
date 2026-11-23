@@ -22,7 +22,7 @@ touched and `ctest --preset host`; emulator tests as named.
 
 - [x] 3.1 `libs/dhandlerlib-no-cache-flush` (#409) to `ID.test.bas`/`ID.test.toml` (D8); verify: both sides keep the verdict (port FIXED with the CD, skipped 77 without; originals as declared), fix-scope reports only the move
 - [x] 3.2 `regression/debuglib-setint-runtime-error` and `regression/compiler-macrobuff-nomem`; verify: `regression_*` tests pass on the side port, the old files removed in the same commit
-- [ ] 3.3 `compiler/compiler-insasm-size-byte`, `-libsnode-name`, `-macro-textlen-max`, `-resconsts-last-next`, `-racing-stripe-wide`; verify: each keeps its verdict on both sides, the prev comparison (`-DBLITZ2_PREV=ON`) passes for them
+- [x] 3.3 `compiler/compiler-insasm-size-byte`, `-libsnode-name`, `-macro-textlen-max`, `-resconsts-last-next`, `-racing-stripe-wide`; verify: each keeps its verdict on both sides, the prev comparison (`-DBLITZ2_PREV=ON`) passes for them
 - [x] 3.4 `compiler/compiler-panic-remtask`: no `editor-run = "before"` mode (user, 2026-11-23, Q-A4: "Option (a) war gut/richtig"); the test moved without a runner change: the victim is a data source (`basic-compile`), the PANIC run a `jobline` `run=` in the compile phase, the lock check the driver's run (rounds/tr/decisions.md, "compiler-panic-remtask: try a model form …"); verify: REPRODUCED in `bug-orig`, the side originals passes as declared
 ## 4. Docs
 

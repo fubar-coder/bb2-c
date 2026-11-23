@@ -115,15 +115,18 @@ output is `compile`, with its default), for a data source (`data.FILE`,
 with its default and BROKEN rule) and for `run=`/`menu=` steps (no
 `RESULT ok` line: a successful run logs none, a menu item logs `MENU`),
 each naming the query that holds the output: one query per output, no
-two defaults for one result. Plan choice.
+two defaults for one result. The user's answer (2026-11-23,
+`rounds/tr/decisions.md`, "Named jobs queries; snapshots; the abnormal-end
+rule; hang check and leak threshold"): "(a) one query per output
+(Recommended)".
 
 ### D4 No `compile.inject.NAME`
 
 inject reports once per compiler process (Context), after all jobs of
 the session; its lines cannot be given to one job, and a data source's
 own build session runs without inject. So `compile.inject` stays the one
-query of it; the spec says so. Plan choice (the brief: "only if needed";
-it is not possible in a meaningful form).
+query of it; the spec says so. The user's answer (a) above: "no
+`compile.inject.NAME`"; it is not possible in a meaningful form either.
 
 ### D5 `@DATA:FILE@`
 
@@ -180,12 +183,11 @@ sections). Plan choice.
   and before a menu item) — L1 Unlikely / I1 Low / E2 Reasoned → Monitor;
   as a choice of the query's definition — L2 Possible / I2 Medium / E2
   Reasoned → Plan.
-- D3 `compile.NAME` only for `job=`/`resident=`. Point: a later test needs
-  the compile result of a `run=` step — L2 Possible / I2 Medium / E2
-  Reasoned → Plan (additive).
-- D4 no per-job inject query. Point: wanted later for a data source with
-  its own session — L1 Unlikely / I2 Medium / E3 Proven (inject.c header)
-  → Monitor.
+- D3 `compile.NAME` only for `job=`/`resident=`: decided by the user
+  ("(a) one query per output (Recommended)"), no longer a Plan choice; a
+  later test that needs the compile result of a `run=` step is additive.
+- D4 no per-job inject query: in the user's answer (a) ("no
+  `compile.inject.NAME`"), no longer a Plan choice.
 - D5 the placeholder's form and meaning. Point: the user meant the
   executable — L1 Unlikely / I2 Medium / E2 Reasoned → Monitor.
 - D6 rishapeslib switches too. Point: the user wanted only panic-remtask
@@ -217,3 +219,34 @@ sections). Plan choice.
 
 No migration: new queries and a new placeholder; existing tests are
 unchanged except the three users. Rollback: revert the commits.
+
+## Findings of the implementation
+
+- **The end of a block (D2 against the spec).** D2 gives a line without
+  an ID before a `JOB` line to the previous step; the spec ends the block
+  "up to its last line that carries its ID". `bugorig_block` follows
+  both: it attributes the lines by D2 and cuts the block behind the job's
+  last ID line. So a requester line behind a job's last ID line (before
+  the next `JOB` line or the end of the session, e.g. an `ABORT:` line)
+  is in no block, unless the job runs again in a later session (then it
+  stands before the later ID lines and stays). `compile.log` keeps every
+  line. The spec was not changed.
+- **`r001` as a name** is checked at configuration time, without the
+  cells: it is a job of the test if a cell may run from the editor (the
+  setting or a value of the axis `editor-run` is `on`). In a cell that
+  runs from the shell `compile.log.r001` is then not captured.
+- **The count of the data sources** is one function for the data pass
+  and the placeholder (`data_part` in `caserun.c`, `cr_data_staged`);
+  the lines of `cr_data_pass` are unchanged (`test_caserun`,
+  `test_data_pass`). The observation takes the staged path from the
+  parsed pass (`corpus_build_job.part`), as `corpus.c` stages it.
+- **racing-stripe-wide** checks the sum of its counters with
+  `!CheckEq{a+b+c+d,97,"sum"}` instead of printing it (D6: "a case that
+  prints what `[run]` held"): the model judges it itself. The three cells
+  keep their verdicts: side port FIXED (port,clib), side originals
+  passes as declared (port,cd plain, orig195,cd with the deviations); the
+  prev comparison passes; fix-scope reports only the move and the two
+  changed job lines.
+- **The note in `basic-test-editor-run`'s design** (the size as the
+  obstacle) was corrected in this change on the coordinator's brief; the
+  Risks entry above left it to the coordinator.

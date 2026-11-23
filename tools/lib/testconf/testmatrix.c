@@ -385,6 +385,20 @@ static int check_editor_run(const struct tc_config *conf, const struct tc_matrix
                               "runs from the editor, not from the shell", at->file, at->line, shell[k],
                               k < 3 ? "" : " = \"on\"", er->file, er->line, m->cells[c].name);
         }
+        /* r001 is the run from the editor: no jobline job of that ID */
+        {
+            const struct tc_setting *jl = tc_get(conf, "jobline");
+
+            for (size_t i = 0; jl && jl->value.type == TT_LIST && i < jl->value.nlist; i++) {
+                const char *id;
+                size_t n;
+
+                if (tc_jobline_job(jl->value.list[i], &id, &n) != TC_JOB_NONE && n == 4 && !memcmp(id, "r001", 4))
+                    return tc_err(err, errlen, "%s:%u: jobline: the job ID r001 is the run from the editor in the "
+                                  "cell %s with editor-run = \"on\" (%s:%u)", jl->at.file, jl->at.line,
+                                  m->cells[c].name, er->file, er->line);
+            }
+        }
         /* the assertions, the deviations and the alternative ends on rc and
            requester whose selector matches the cell */
         for (size_t t = 0; t < 3; t++) {

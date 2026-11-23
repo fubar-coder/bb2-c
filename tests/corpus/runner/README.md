@@ -301,7 +301,20 @@ The jobs are `bNNN`, in the order of the data sources; their results are
 the query `data.FILE` (`ok`, `error LINE MESSAGE` with the line of the
 data source, `none`), by default `== ok`: a result its assertion does not
 ask for makes the cases of the cell BROKEN, the report naming
-`ID.test/FILE:LINE` and the message.
+`ID.test/FILE:LINE` and the message. In a `jobline` element `@DATA:FILE@`
+stands for the staged source of the data source `FILE`
+(`CORPUS:src/bNNN.bb2`, or `CORPUS:ID.test/.build-N/src/bNNN.bb2` in a
+compile part; `cr_data_staged`, from the count `cr_data_pass` uses).
+
+The compile jobs of a cell have names (change `named-compile-jobs`):
+`j000`, `r001` of a run from the editor, the IDs of the `jobline` jobs,
+the file of a data source. `cr_observe` gives the judge the block of each
+in tedstub's log (`bugorig_block` in `bugorig.c`, beside
+`bugorig_compile`: the lines of the job's steps, the size of
+`RESULT ID ok` removed; for a data source from the log of the session
+that compiled it, its `bNNN` written as its file and its staged source as
+`@DATA:FILE@`) as the query `compile.log.NAME`, and the compile result of
+a `job=` or `resident=` job of `jobline` as `compile.NAME`.
 
 Without `--case` it runs every case of the source on the side (`caserun.h`,
 "The run of all cases"): the cases share a run of the driver of all of them

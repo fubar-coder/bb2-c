@@ -175,7 +175,7 @@ changes (rule 3), so no `PREV_INTENDED`.
 | `regression/debuglib-setint-runtime-error` | `editor-run`, `runtime-errors = "on"` | `output == "start\n"`, the end entries as the run shows them; `compile.log contains "REQUESTERS\tr001\t0"` |
 | `compiler/compiler-insasm-size-byte`, `-libsnode-name`, `-macro-textlen-max`, `-resconsts-last-next` | `wrap` of inject (`track`, `pad`) | `compile.inject ==` the expected lines; deviation `compiler=orig195` with the original's |
 | `regression/compiler-macrobuff-nomem` | `wrap` (`allocfail`), `jobline` | `compile.inject` and `compile.log contains` the XTRAERR lines |
-| `compiler/compiler-racing-stripe-wide` | `jobline` with `@DRIVER@` | `compile.log contains` the PROGRESS/STRIPE/GUARD lines |
+| `compiler/compiler-racing-stripe-wide` | `jobline` with `@DRIVER@` | `compile.log.j000` and `compile.log.j001 contains` the PROGRESS/STRIPE/GUARD lines (change named-compile-jobs) |
 
 The moves follow `tests/README.md`, "Moving a bug-orig test to the
 model" (each keeps its verdict on both sides; old files removed in the
@@ -232,14 +232,14 @@ model files.
 - **racing-stripe-wide does not fit one `compile.log contains`** (task
   3.3; D5's point came true): the two blocks the test judges (the
   PROGRESS/STRIPE/GUARD lines of j000 and of j001) are not joined by fixed
-  lines only: each block follows its job's `RESULT ID ok SIZE` line, and
-  the size of the executable is the driver's (it changes with the driver
-  and `testlib`). One assertion per query can hold one block, not both.
-  The test stays in the old form until the user chooses (report of the
-  implementation): a further query (D5's "a further query is additive",
-  e.g. the log without the sizes of the RESULT lines, or one query per
-  job), or the move with only j001's block judged (j000's empty bitmap
-  then unchecked: a narrowing), or the old form for good.
+  lines only, and one assertion per query can hold one block, not both.
+  Correction (change named-compile-jobs, design "Risks"): the size of
+  `RESULT ID ok SIZE` is not the obstacle, `compile.log` already shows
+  the line without it (`tests/corpus/runner/bugorig.c`, `log_of`); the
+  obstacle is the one assertion per query. The user's answer to Q-A20
+  ("Together: named jobs (Recommended)", then "(a) one query per output
+  (Recommended)", `rounds/tr/decisions.md`) gave the query per job
+  `compile.log.NAME`; the test moved in change named-compile-jobs.
 - **macro-textlen-max on the original**: with `macrobuf=100000` 1.95's
   compile of a driver does not end ok (its end depends on the memory, #965)
   and it hangs at its exit (#336, as compiler-macrobuff-size), so the old

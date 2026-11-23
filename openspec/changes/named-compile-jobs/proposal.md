@@ -23,6 +23,14 @@ marker; named compile jobs (Q-A17, Q-A20, Q-A24)", status active):
 "Together: named jobs (Recommended)"; and, recorded as a proposed entry
 for this plan ("Q-A23 and Q-A24 remarks"): "Das Ziel sollten benannte
 Ausgaben sein, die dann auch in den assertions genutzt werden können."
+On the planning agent's question how the named outputs are queried the
+user chose (`rounds/tr/decisions.md`, "Named jobs queries; snapshots; the
+abnormal-end rule; hang check and leak threshold", status active):
+"(a) one query per output (Recommended)": `compile.log.NAME` for every
+job, `compile.NAME` only for the `job=`/`resident=` jobs of `jobline`; the
+driver's result stays `compile`, a data source's `data.FILE`
+(`compile.j000` and `compile.FILE` refused with a pointer to that query);
+no `compile.inject.NAME`. This change builds on that answer.
 
 ## What Changes
 

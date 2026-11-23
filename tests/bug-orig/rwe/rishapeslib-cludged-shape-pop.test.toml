@@ -1,5 +1,5 @@
 # rishapeslib-cludged-shape-pop.test.bas: the victim
-# (rishapeslib-cludged-shape-pop.test/victim.bas, the job b000) runs from the
+# (rishapeslib-cludged-shape-pop.test/victim.bas, @DATA:victim.bas@) runs from the
 # editor in the compile phase of the cell, the compiler through inject, which
 # checks afterwards that the file the program loaded is closed. The original
 # returns past the cleanup of LELoadShapes with the stack unbalanced, the
@@ -8,7 +8,7 @@ fixed-orig = 807
 rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
 files = ["s.le|@TESTDATA@/rishapeslib-cludged-shape-pop.le"]
 wrap = "@INJECT@|inuse=CORPUS:s.le"
-jobline = ["run=r001|CORPUS:src/b000.bb2|RAM:con"]
+jobline = ["run=r001|@DATA:victim.bas@|RAM:con"]
 timeout = 120
 
 [data]

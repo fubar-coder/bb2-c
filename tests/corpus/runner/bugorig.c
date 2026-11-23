@@ -247,6 +247,19 @@ static int version_line(struct text *t, const char *p, size_t m)
     return 1;
 }
 
+/* a line of the log (m characters, without \r\n) as the observation shows
+   it: the size of RESULT ID ok SIZE removed, the version as N.NN */
+static void log_line(struct text *t, const char *p, size_t m)
+{
+    const char *ok;
+
+    if (m > 7 && !memcmp(p, "RESULT\t", 7) && (ok = memchr(p + 7, '\t', m - 7))
+        && (size_t)(p + m - ok) > 3 && !memcmp(ok, "\tok\t", 4))
+        m = (size_t)(ok + 3 - p);
+    if (!version_line(t, p, m))
+        text_add(t, "%.*s\n", (int)m, p);
+}
+
 static void log_of(const char *log, struct text *t)
 {
     const char *p = log;
@@ -254,17 +267,151 @@ static void log_of(const char *log, struct text *t)
     while (p && *p) {
         const char *eol = strchr(p, '\n');
         size_t m = eol ? (size_t)(eol - p) : strlen(p);
-        const char *ok;
 
         if (m && p[m - 1] == '\r')
             m--;
-        if (m > 7 && !memcmp(p, "RESULT\t", 7) && (ok = memchr(p + 7, '\t', m - 7))
-            && (size_t)(p + m - ok) > 3 && !memcmp(ok, "\tok\t", 4))
-            m = (size_t)(ok + 3 - p);
-        if (!version_line(t, p, m))
-            text_add(t, "%.*s\n", (int)m, p);
+        log_line(t, p, m);
         p = eol ? eol + 1 : NULL;
     }
+}
+
+/* ------------------------------------------------- the block of a step */
+
+/* the ID of a line KEYWORD<TAB>ID... of tedstub's log (*id, *idlen),
+   0: a line without an ID (a requester line of the frame) */
+static int step_id(const char *p, size_t m, const char **id, size_t *idlen)
+{
+    static const char *const keys[] = { "JOB", "XTRA", "XTRAERR", "RESULT", "MENU", "POINTER", "OPENIO", "PANIC",
+                                         "CLOSEIO", "CONSOLE", "OUTPUT", "REQUESTERS", "PROGRESS", "STRIPE",
+                                         "GUARD" };
+
+    for (size_t k = 0; k < sizeof keys / sizeof keys[0]; k++) {
+        size_t n = strlen(keys[k]);
+        const char *tab;
+
+        if (m > n + 1 && !memcmp(p, keys[k], n) && p[n] == '\t') {
+            *id = p + n + 1;
+            tab = memchr(*id, '\t', m - n - 1);
+            *idlen = tab ? (size_t)(tab - *id) : m - n - 1;
+            return *idlen > 0;
+        }
+    }
+    return 0;
+}
+
+/* a line of the step's block: the ID field written as name, the staged
+   path as ph, then as log_line */
+static void block_line(struct text *t, const char *p, size_t m, const struct bugorig_step *s)
+{
+    struct text l = { 0 };
+    const char *id, *q;
+    size_t idlen;
+
+    if (s->name && step_id(p, m, &id, &idlen)) {
+        text_add(&l, "%.*s%s", (int)(id - p), p, s->name);
+        q = id + idlen;
+    } else
+        q = p;
+    if (s->path && *s->path && s->ph) {
+        size_t pl = strlen(s->path);
+
+        while (q < p + m) {
+            const char *f = NULL;
+
+            for (const char *r = q; (size_t)(p + m - r) >= pl; r++)
+                if (!memcmp(r, s->path, pl)) {
+                    f = r;
+                    break;
+                }
+            if (!f)
+                break;
+            text_add(&l, "%.*s%s", (int)(f - q), q, s->ph);
+            q = f + pl;
+        }
+    }
+    text_add(&l, "%.*s", (int)(p + m - q), q);
+    if (l.bad)
+        t->bad = 1;
+    else
+        log_line(t, l.p ? l.p : "", l.n);
+    free(l.p);
+}
+
+char *bugorig_block(const char *log, const struct bugorig_step *s)
+{
+    struct text t = { 0 };
+    const char *p = log, *pend = NULL;
+    /* the step of the last ID line of the session: it is the job's (1) or
+       another's (0), -1: none yet (outside a session or before its first) */
+    int prev = -1, session = 0;
+    size_t jl = strlen(s->job), keep = 0;
+
+    while (p && *p) {
+        const char *eol = strchr(p, '\n');
+        size_t m = eol ? (size_t)(eol - p) : strlen(p);
+        const char *id;
+        size_t idlen;
+        int mine;
+
+        if (m && p[m - 1] == '\r')
+            m--;
+        if (m >= 6 && !memcmp(p, "BATCH\t", 6)) {
+            /* the lines without an ID behind the session's last ID line:
+               its step's; BATCH lines and the lines before BATCH start
+               belong to no step */
+            for (const char *x = pend; x && prev == 1 && x < p;) {
+                const char *e = strchr(x, '\n');
+                size_t n = e ? (size_t)(e - x) : strlen(x);
+
+                block_line(&t, x, n && x[n - 1] == '\r' ? n - 1 : n, s);
+                x = e ? e + 1 : p;
+            }
+            pend = NULL;
+            prev = -1;
+            session = m == 11 && !memcmp(p + 6, "start", 5);
+        } else if (session && step_id(p, m, &id, &idlen)) {
+            mine = idlen == jl && !memcmp(id, s->job, jl);
+            /* the lines without an ID before it: its step's, but before a
+               JOB line (a job begins with it) the previous step's */
+            if (pend) {
+                int to = m > 4 && !memcmp(p, "JOB\t", 4) && prev >= 0 ? prev : mine;
+
+                for (const char *x = pend; to == 1 && x < p;) {
+                    const char *e = strchr(x, '\n');
+                    size_t n = e ? (size_t)(e - x) : strlen(x);
+
+                    block_line(&t, x, n && x[n - 1] == '\r' ? n - 1 : n, s);
+                    x = e ? e + 1 : p;
+                }
+                pend = NULL;
+            }
+            if (mine) {
+                block_line(&t, p, m, s);
+                keep = t.n;
+            }
+            prev = mine;
+        } else if (session && !pend)
+            pend = p;
+        p = eol ? eol + 1 : NULL;
+    }
+    /* a log that ends inside a session (a crash): the lines behind the last
+       ID line are its step's (and cut below, as those behind the last ID
+       line of a session, unless the ID comes again in a later session) */
+    for (const char *x = pend; x && prev == 1 && *x;) {
+        const char *e = strchr(x, '\n');
+        size_t n = e ? (size_t)(e - x) : strlen(x);
+
+        block_line(&t, x, n && x[n - 1] == '\r' ? n - 1 : n, s);
+        x = e ? e + 1 : x + n;
+    }
+    if (t.bad) {
+        free(t.p);
+        return NULL;
+    }
+    /* the block ends with the last line that carries the ID */
+    if (t.p)
+        t.p[t.n = keep] = 0;
+    return t.p ? t.p : strdup("");
 }
 
 int bugorig_observe(const struct bugorig_outputs *out, struct bugorig_obs *o)

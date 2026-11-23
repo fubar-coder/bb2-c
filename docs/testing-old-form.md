@@ -23,10 +23,10 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | Category | Tests | Technical reason | Missing to move |
 |---|---|---|---|
 | [1. TED tests](#1-ted-tests) | 41 | the test is a keystroke script played against the editor TED and judged on TED's screen, files and log; the model's program is a compiled Blitz driver | an editor-driving step with its judging (large) |
-| [2. Compile-only tests](#2-compile-only-tests) | 63 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; one single gap (section 5) (medium in all) |
+| [2. Compile-only tests](#2-compile-only-tests) | 63 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves (medium in all) |
 | [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator writes the old form; the cost of the model form is not measured | a generator change and a measurement (medium) |
 | [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
-| [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 1 | a compile log of two jobs has one query | one small feature |
+| [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 0 | — | — |
 | [6. Other suites with `.expect`](#6-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
 
 `compiler/` has 151 old-form tests and `regression/` 127 (278 in all; the
@@ -205,8 +205,8 @@ What the probe found:
 - **A wildcard of the old expectation has no counterpart.** The old
   `compiler-loaddmod-pointer.expect` had `MENU j001 9 *`; `contains` takes
   the value both sides print (`-1`), which fixes it in the assertion.
-  Lines with a size (`RESULT ID ok SIZE`) cannot be inside a `contains`,
-  as the table in "Moving a bug-orig test to the model" says.
+  A line `RESULT ID ok SIZE` is `RESULT ID ok` in `compile.log` (the size
+  removed), as the table in "Moving a bug-orig test to the model" says.
 - **A case that never runs on the port** (the compile is refused) needs at
   least one check for the original's cell to pass something; a check that
   is not reached is "not-run", not a failure.
@@ -218,10 +218,10 @@ What the probe found:
 **Missing to move.** For the 45 plain `[compile]` tests and, as far as
 checked, the `[blitz2]` ones, no model feature: the move of each (the
 source into `Case` blocks, a toml with the assertions and the original's
-deviations, a check that the verdict stays on both sides). Missing for the
-rest: one query per compiler job (section 5). Size: the number of tests
-(63 and the 159 of section 3) times a small rewrite each, plus the one
-feature (estimate: medium).
+deviations, a check that the verdict stays on both sides); a test that
+judges the log of several jobs takes one query per job
+(`compile.log.NAME`). Size: the number of tests (63 and the 159 of
+section 3) times a small rewrite each (estimate: medium).
 
 **Proposal (the user's idea, not decided).** "Die Test-Funktion könnte ja
 den Compiler aufrufen und die Compiler-Ausgabe prüfen (hoffentlich,
@@ -340,16 +340,10 @@ file and have no model counterpart.
 
 ## 5. Single tests the model does not express
 
-- **`compiler/compiler-racing-stripe-wide`** (#980). Compiles its own
-  source a second time (a `jobline` job with `@DRIVER@`); the compiler log
-  holds one block per job, each after a line `RESULT j000 ok 10204`, and
-  the number is the executable's size, which changes with the driver and
-  testlib. One `compile.log contains` cannot match both blocks without
-  it, and there is one assertion per query. Missing: a query per job
-  (`compile.log.j001`; a small change of the query grammar in
-  `tools/lib/testconf/testassert.c`, the judge and `tests/README.md`), or
-  an assertion that ignores the size. Small (estimate). Open question
-  Q-A20 (`open-questions.md`) holds the options.
+None. A test whose observation is the compile log of several jobs judges
+the block of each job with `compile.log.NAME` (`tests/README.md`,
+"Assertions"), as `compiler/compiler-racing-stripe-wide` (#980) does with
+its jobs j000 and j001.
 
 ## 6. Other suites with `.expect`
 
