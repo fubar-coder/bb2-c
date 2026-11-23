@@ -1,0 +1,17 @@
+# compiler-fold-buffer-full.test.bas: the object buffer of 2992 bytes (the
+# default of the old test); the original's compile of the child crashes
+# (the CPU halts)
+fixed-orig = 1190
+jobline = ["objbuf=2992"]
+isolate = ["compiler=orig195"]
+timeout = 60
+
+[data]
+"child.bas" = "basic-compile"
+
+[deviations."compiler=orig195"]
+"data.child.bas" = "== none"
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

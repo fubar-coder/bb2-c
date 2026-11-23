@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-REQUESTER: EasyRequest title "Software Failure" text "%s
-%s%lx).
-%s" gadgets "Suspend|Reboot" -> answered 1
-wbrun: no reply, the process ended
-rc=0

@@ -1,0 +1,18 @@
+# wbstartuplib-without-wbstartup.test.bas: wbrunt (wbrun with a reply time
+# of 5 s) starts the child the Workbench way; the launcher answers the
+# requester "Software Failure" with Suspend; the child stays suspended and
+# the session ends by the hang check
+launcherargs = "-harden"
+files = ["wbrunt|@WBRUNT@"]
+
+[data]
+"child.bas" = "basic-compile"
+
+[asserts]
+"run.child.child" = "== open"
+"run.child.child.output" = "== \"wbrun: no reply within 5 s, the process did not end\n\""
+requester = "contains \"Software Failure\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
