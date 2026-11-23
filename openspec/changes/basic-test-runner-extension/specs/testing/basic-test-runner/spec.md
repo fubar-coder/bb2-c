@@ -44,6 +44,15 @@ cell SHALL share its memory and `RAM:` with no other cell's program.
 - **WHEN** a test with the cells `port,cd`, `port,clib` and `orig195,cd` on the same machine gives the cells of `libs=cd` a session of their own
 - **THEN** on the side `originals` the case runs in two sessions, one per cell, and on the side `port` in one
 
+### Requirement: An announced runtime error is matched
+When the result file announces a runtime error, the case SHALL pass this
+point only if the run showed that error's requester after the announcement,
+unless an assertion or a declared deviation names the announcement.
+
+#### Scenario: The error does not come
+- **WHEN** a case announces "Shape too Big" and the run shows no requester
+- **THEN** the case fails naming the announcement
+
 ## ADDED Requirements
 
 ### Requirement: The driver of all cases is printed
@@ -180,3 +189,18 @@ be not captured, which fails an assertion that queries it.
 #### Scenario: Without inject
 - **WHEN** a cell's program does not run through inject and an assertion queries `inject`
 - **THEN** the cell fails naming the assertion as not captured
+
+### Requirement: An announcement is judged like a check
+A named announcement of a runtime error SHALL be the query `check.NS.NAME`
+with the verdict `ok` (its requester came), `fail` (it did not come) or
+`not-run` (the run did not reach it), so that an assertion or a declared
+deviation can judge it; a requester that matches no announcement SHALL
+count for the query `requester`.
+
+#### Scenario: The original shows another error
+- **WHEN** a case announces "Illegal Shape Depth" as `refused`, the port shows that error, and the test's own file declares for `libs=cd` that `check.CASE.refused` is `fail` and the requester contains "Can't Read File"
+- **THEN** the port's cells pass with the announcement, and the cells with the CD's libraries pass with the declared deviation when the original shows "Can't Read File"
+
+#### Scenario: The deviation removed
+- **WHEN** the same test runs without the deviation
+- **THEN** the cells with the CD's libraries fail naming the announcement that did not come

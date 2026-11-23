@@ -322,6 +322,9 @@ static int report_check(const struct tj_test *t, const struct chk *k, struct tj_
     const struct tp_check *c = k->c;
     const struct basictest_entry *x = &k->first_fail->e;
 
+    if (c->kind == TP_EXPECTERROR)
+        return msg(msgs, "%sthe announced runtime error \"%s\" (%s:%u) did not come", why, c->message, t->file,
+                   c->line);
     check_id(id, sizeof id, c);
     if (x->kind == BASICTEST_CHECKSTR) {
         strval_text(e, sizeof e, &x->expected_str, x->expected_length);
@@ -673,12 +676,13 @@ static int judge_cell(const struct tj_test *t, size_t cell, int mode, const stru
                 if (!used[j] && obs->req[j].after >= en->line && obs->req[j].text
                     && strstr(obs->req[j].text, c->message))
                     break;
+            /* judged like a check (by the default, or by an assertion or a
+               deviation that names it): not matched is its failure */
+            if (!k->nent++)
+                k->first = en;
             if (j == obs->nreq) {
-                if (msg(msgs, "the announced runtime error \"%s\" (%s:%u) did not come", c->message, t->file,
-                        c->line))
-                    goto oom;
-                if (res == TJ_PASS)
-                    res = TJ_FAIL;
+                if (!k->first_fail)
+                    k->first_fail = en;
                 continue;
             }
             used[j] = 1;

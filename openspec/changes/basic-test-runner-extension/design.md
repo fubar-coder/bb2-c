@@ -307,3 +307,49 @@ here.
   both sides PASSED; without the `runwrap` the port cell FAILED with
   `assertion inject contains "inject: rc=0" (...) does not hold: not
   captured` (log `~/.local/share/bb2-c-work/accept-runner-ext/s4-inject.log`).
+
+## Addendum: the announced runtime error as a check (section 6)
+
+**D8 `!ExpectError` stays for the port; a deviation declares the
+original's error** (user, 2026-11-23: "Feature into the extension
+(Recommended)", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"!ExpectError stays for the port; a deviation declares the original's
+error"; the user before it: "dass der Testfall mit dem Original dort
+fehlschlägt ist ja eigentlich gewollt ... Wenn aber die Original-Fehler auch
+validiert und als Erfolgreich geprüft werden sollen, dann scheint der
+Workaround die sinnvollere Alternative zu sein - aber nur solange wie
+`!ExpectError` für den Port weiter im Testfall stehen kann/darf."). The
+movers of round U1 found that an announcement is judged in every cell: a
+deviation could not change it, and a test whose original shows another
+error (or none) had to drop `!ExpectError` and spell the error out
+(`requester contains`, `end.case not exists`, the check behind it
+`== not-run`).
+
+The announcement becomes a check of the judge. `!ExpectError{"MESSAGE",
+"NAME"}` already takes an optional name (`basic-test-interface`, "Check
+macros of a test source"; `testpp` keeps it in the table, the driver has
+neither message nor name), so no form, no driver and no library change:
+the query is `check.NS.NAME` as for every other check, with the verdict
+words of the checks: `ok` (the matching requester came after the
+announcement), `fail` (it did not come), `not-run` (no entry). An
+announcement that no assertion or deviation names is judged as today (the
+default "every check with entries passed", reported as "the announced
+runtime error ... did not come"); one that a deviation names, e.g.
+`"check.CASE.NAME" = "== fail"` with `requester = "contains \"Can't Read
+File\""`, is judged by it, and the requester that matched no announcement
+counts for `requester` as before. `.expected`/`.actual` of an announcement
+are refused when judged (it has no values). Not taken: a query by number
+(`check.NS.#N`; no other check is named that way), a verdict word `failed`
+(the checks say `fail`).
+- **The announcement as a check (section 6).** The judge counts an
+  `expect-error` entry as an entry of its check: matched by a requester
+  after it, it passes; not matched, it is the check's failure, reported
+  by the default of the checks as before ("the announced runtime error ...
+  did not come"), now after the assertions of the cell instead of before
+  them. The emulator check is the bug of #1052 (LoadShape of an ILBM with
+  0 planes): `!ExpectError{"Illegal Shape Depth","refused"}`, the CD's
+  libraries stop with "Can't Read File", declared with
+  `"check.depth_zero.refused" = "== fail"`, `requester`, `"end.case" = "not
+  exists"` and `rc = "exists"`; both sides PASSED, without the deviation
+  the side originals FAILED naming the announcement
+  (`selftest/model-expect-error*.test.bas`).

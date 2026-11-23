@@ -190,6 +190,34 @@ set_tests_properties(blitz2_selftest_model_varying_end PROPERTIES LABELS emulato
 set_tests_properties(blitz2_selftest_model_varying_end_one PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
 	"cell hang [^\n]*\n  no alternative end of \\[ends\\.\"compiler=port\"\\] [^\n]* holds:\n    the alternative returns:\n      assertion session == done [^\n]* does not hold: \"timeout\"\n.*model-varying-end-one\\.test\\.bas: case varies: FAILED\n")
+# an announced runtime error judged like a check (selftest/model-expect-error.test.bas): the
+# port shows the announced error, the CD's libraries another one, which a deviation declares;
+# both sides pass, and without the deviation (model-expect-error-removed) the side originals
+# fails naming the announcement
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+foreach(t "port|" "originals|_originals" "originals-removed|_removed")
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 side)
+	list(GET t 1 suffix)
+	set(src model-expect-error)
+	if(side STREQUAL "originals-removed")
+		set(side originals)
+		set(src model-expect-error-removed)
+	endif()
+	add_test(NAME blitz2_selftest_model_expect_error${suffix} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+		--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/${src}.test.bas --case depth_zero --side ${side})
+	if(side STREQUAL "port")
+		set(label emulator)
+	else()
+		set(label originals)
+	endif()
+	set_tests_properties(blitz2_selftest_model_expect_error${suffix} PROPERTIES LABELS ${label} SKIP_RETURN_CODE 77
+		TIMEOUT ${limit})
+endforeach()
+set_tests_properties(blitz2_selftest_model_expect_error blitz2_selftest_model_expect_error_originals PROPERTIES
+	PASS_REGULAR_EXPRESSION "model-expect-error\\.test\\.bas: case depth_zero: PASSED\n")
+set_tests_properties(blitz2_selftest_model_expect_error_removed PROPERTIES PASS_REGULAR_EXPRESSION
+	"case depth_zero, cell cd:\n.*  the announced runtime error \"Illegal Shape Depth\" \\(model-expect-error-removed\\.test\\.bas:[0-9]+\\) did not come\nmodel-expect-error-removed\\.test\\.bas: case depth_zero: FAILED\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md

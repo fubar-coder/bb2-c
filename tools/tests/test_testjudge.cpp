@@ -872,3 +872,68 @@ TEST_CASE("testjudge: alternative ends", "[testjudge]")
         CHECK(verdict(f, hang_obs(), obs(good, 7), m) == TJ_V_PASSED);
     }
 }
+
+// a named announcement, judged like a check (section 6 of
+// basic-test-runner-extension): the port shows the announced error, the
+// original another one, which a deviation declares
+static const char named_error[] =
+    "!TestCase{a}\n"                                        // 1
+    "  !CheckEq{1,1,\"before\"}\n"                          // 2  K0
+    "  !ExpectError{\"Illegal Shape Depth\",\"refused\"}\n" // 3  K1
+    "  !Check{0,\"not_refused\"}\n"                         // 4  K2
+    "!EndTestCase\n";                                       // 5
+
+TEST_CASE("testjudge: an announcement judged like a check", "[testjudge]")
+{
+    const std::string ann = "begin|1\nblock|case|a\ncheck|0|ok|$00000001|$00000001\nexpect-error|1\nincomplete\nend\n";
+    const std::string orig_dev = "fixed-orig = 1\n[deviations.\"libs=cd\"]\n\"check.a.refused\" = \"== fail\"\n"
+                                 "requester = \"contains \\\"Can't Read File\\\"\"\n\"end.case\" = \"not exists\"\n"
+                                 "rc = \"exists\"\n";
+    std::string m;
+
+    {
+        // the port's cell with the announced error, the original's with the
+        // declared one: both pass
+        fixture f(matrix, orig_dev, "a", named_error);
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20).requester("Illegal Shape Depth"), m)
+              == TJ_V_PASSED);
+        // the original raises the announced error after all: the deviation
+        // wants it failed
+        CHECK(verdict(f, obs(ann, 20).requester("Illegal Shape Depth"), obs(ann, 20).requester("Illegal Shape Depth"),
+                      m)
+              == TJ_V_FAILED);
+        CHECK(has(m, "assertion check.a.refused == fail (" + (f.root / "x.test.toml").string()
+                         + ":3, a declared deviation) does not hold: ok"));
+        // the port without its error: the announcement fails as before
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20), m) == TJ_V_FAILED);
+        CHECK(has(m, "case a, cell clib:\n"));
+        CHECK(has(m, "  the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not "
+                     "come"));
+    }
+    {
+        // the deviation removed: the original's cell fails naming the announcement
+        fixture f(matrix, "", "a", named_error);
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20).requester("Illegal Shape Depth"), m)
+              == TJ_V_FAILED);
+        CHECK(has(m, "case a, cell cd:\n"));
+        CHECK(has(m, "  the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not "
+                     "come"));
+        CHECK(has(m, "requester count == 0 ((default):0) does not hold: 1, the first \"Can't Read File\""));
+    }
+    {
+        // the verdicts of the query: ok, fail, not-run
+        fixture ok("[asserts]\n\"check.a.refused\" = \"== ok\"\n", "", "a", named_error);
+        CHECK(judge(ok, obs(ann, 20).requester("Illegal Shape Depth"), m) == TJ_PASS);
+        CHECK(judge(ok, obs(ann, 20), m) == TJ_FAIL);
+        CHECK(has(m, "the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not come"));
+        CHECK(has(m, "assertion check.a.refused == ok"));
+        fixture nr("[asserts]\n\"check.a.refused\" = \"== not-run\"\n\"end.case\" = \"not exists\"\n", "", "a",
+                   named_error);
+        CHECK(judge(nr, obs("begin|1\nblock|case|a\ncheck|0|ok|$00000001|$00000001\nincomplete\nend\n"), m)
+              == TJ_PASS);
+        // an announcement has no values
+        fixture v("[asserts]\n\"check.a.refused.actual\" = \"== 1\"\n", "", "a", named_error);
+        CHECK(judge(v, obs(ann, 20).requester("Illegal Shape Depth"), m) == TJ_ERROR);
+        CHECK(has(m, "this check has no values"));
+    }
+}

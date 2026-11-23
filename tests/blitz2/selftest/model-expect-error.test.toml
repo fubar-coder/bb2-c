@@ -1,0 +1,17 @@
+# model-expect-error.test.bas: the port with the C libraries (side port)
+# and with the CD's (side originals), runtime error checking for the
+# announcement; the CD's libraries stop with another error, the deviation
+fixed-orig = 1052
+runtime-errors = "on"
+
+[matrix]
+libs = ["cd", "clib"]
+
+[asserts]
+"check.depth_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.depth_zero.refused" = "== fail"
+requester = "contains \"Can't Read File\""
+"end.case" = "not exists"
+rc = "exists"
