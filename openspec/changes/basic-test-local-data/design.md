@@ -323,3 +323,14 @@ the machines `a1200` and `a500-68010`: eight cells), run with
   line wrote and the shell's own line for a return code at or above the
   fail limit: `hello` LF `C:Quit failed returncode 20` LF (34 bytes). A
   child that fails thus leaves that line in `printed` too.
+
+### Task 1.4: the name length (2026-11-23)
+
+A model test outside the tree staged a file as
+`CORPUS:palettelib-make4bitrgbs-lowbyte.test/x.txt` (the 36-character
+directory of D7) and, on `a1200` (Kickstart 3.1) and `a500` (Kickstart
+1.3), read it with dos `Open`/`Read`, copied `C:Type` into the directory
+and ran it from there with the file as its argument (`Execute`): both
+cells passed. The cell volume is a host directory of the UAE filesystem,
+which takes the long name on both Kickstarts, so the registration needs
+no refusal of a long id.
