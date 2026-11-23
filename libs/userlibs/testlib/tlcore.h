@@ -41,7 +41,7 @@
  *   tl_finit          incomplete (a block is open), end
  *
  * A call out of order (a block inside a block, a check outside one, the
- * batch init after a case, a case after the batch end, a block end
+ * batch init after a case, a case after the batch cleanup, a block end
  * without a block, a second tl_begin) writes `broken REASON` before its
  * own entry.  A damaged state (its guard words overwritten) writes
  * `broken state damaged` once; then only tl_finit writes, its `end`.

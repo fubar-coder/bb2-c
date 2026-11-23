@@ -224,7 +224,7 @@ routines name:
 * A call out of order writes `broken` with the reason before its own
   entry: `block inside a block`, `check outside a block`, `block end
   without a block`, `batch init after a block`, `case after the batch
-  end`, `second batch end`, `begin inside the run`; a case without a
+  cleanup`, `second batch cleanup`, `begin inside the run`; a case without a
   name or with one too long for a line is written as `?`, followed by
   `case without a name` or `case name too long`. A state whose guard words a wild write changed writes `broken
   state damaged` once; after that only the finit writes, its `end`.
