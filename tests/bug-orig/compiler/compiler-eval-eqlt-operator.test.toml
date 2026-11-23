@@ -1,0 +1,16 @@
+# compiler-eval-eqlt-operator.test.bas: the original compiles "=<" as "<>"
+fixed-orig = 9
+
+[deviations."compiler=orig195"]
+"check.eqlt.equal" = "== fail"
+"check.eqlt.equal.actual" = "== 0"
+"check.eqlt.greater" = "== fail"
+"check.eqlt.greater.actual" = "== -1"
+"check.eqlt.float_equal" = "== fail"
+"check.eqlt.float_equal.actual" = "== 0"
+"check.eqlt.constants" = "== fail"
+"check.eqlt.constants.actual" = "== -1"
+"check.eqlt.if_2" = "== fail"
+"check.eqlt.if_2.actual" = "== 0"
+"check.eqlt.if_3" = "== fail"
+"check.eqlt.if_3.actual" = "== -1"

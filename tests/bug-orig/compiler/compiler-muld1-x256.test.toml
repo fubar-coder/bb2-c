@@ -1,0 +1,26 @@
+# compiler-muld1-x256.test.bas: the original multiplies the index by 65536
+# for an element size of 256 (the arrays of .t256 and the List of .t248),
+# and in the field array of .t256 every element is the first one
+fixed-orig = 15
+
+[deviations."compiler=orig195"]
+"check.element_stride.dist_256_1" = "== fail"
+"check.element_stride.dist_256_1.actual" = "== 65536"
+"check.element_stride.dist_256_2" = "== fail"
+"check.element_stride.dist_256_2.actual" = "== 131072"
+"check.element_stride.dist_list_1" = "== fail"
+"check.element_stride.dist_list_1.actual" = "== 65536"
+"check.element_stride.dist_list_2" = "== fail"
+"check.element_stride.dist_list_2.actual" = "== 131072"
+"check.element_stride.dist_field_1" = "== fail"
+"check.element_stride.dist_field_1.actual" = "== 0"
+"check.element_stride.dist_field_2" = "== fail"
+"check.element_stride.dist_field_2.actual" = "== 0"
+"check.element_stride.raw_256" = "== fail"
+"check.element_stride.raw_256.actual" = "== \"2,0,0\""
+"check.element_stride.raw_list" = "== fail"
+"check.element_stride.raw_list.actual" = "== \"5,0,0\""
+"check.element_stride.raw_field" = "== fail"
+"check.element_stride.raw_field.actual" = "== \"206,0,0\""
+"check.element_stride.name_field" = "== fail"
+"check.element_stride.name_field.actual" = "== \"206,206,206\""

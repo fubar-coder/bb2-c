@@ -1,0 +1,11 @@
+# memacclib-peeks-negative.test.bas: the original copies up to 4 GB into the
+# string buffer and the program does not come back (the session runs into
+# its time limit, the hang check ends it)
+fixed-orig = 214
+timeout = 30
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

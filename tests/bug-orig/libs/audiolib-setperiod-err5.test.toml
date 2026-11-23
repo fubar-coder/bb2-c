@@ -1,0 +1,9 @@
+# audiolib-setperiod-err5.test.bas: the original runs into other code for
+# SetPeriod and passes an address behind the library as the message of
+# LoadSound
+fixed-orig = 70
+
+[deviations."libs=cd"]
+"check.messages.setperiod_message" = "== fail"
+"check.messages.setperiod_message.actual" = "== 0"
+"check.messages.loadsound_message" = "== fail"

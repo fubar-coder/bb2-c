@@ -1,0 +1,7 @@
+# medlib-bxx-word.test.bas
+fixed-orig = 203
+files = ["bxx.med|@TESTDATA@/medlib-bxx-word.med"]
+
+[deviations."libs=cd"]
+"check.jump_position.position" = "== fail"
+"check.jump_position.position.actual" = "== $800"

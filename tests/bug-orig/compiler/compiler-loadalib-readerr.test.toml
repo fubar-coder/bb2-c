@@ -1,0 +1,12 @@
+# compiler-loadalib-readerr.test.bas: inject makes the third Read of the
+# library fail; the original's out-of-memory handler ends the session before
+# the compile
+fixed-orig = 3
+wrap = "@INJECT@|readfail=bugorig.obj/3"
+files = ["blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@", "blitz2/bugorig/bugorig.obj|@USERLIB@"]
+
+[deviations."compiler=orig195"]
+compile = "== none"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

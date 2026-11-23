@@ -1,0 +1,8 @@
+# audiolib-filter-inverted.test.bas
+fixed-orig = 985
+
+[deviations."libs=cd"]
+"check.led_bit.filter_on_bit" = "== fail"
+"check.led_bit.filter_on_bit.actual" = "== 2"
+"check.led_bit.filter_off_bit" = "== fail"
+"check.led_bit.filter_off_bit.actual" = "== 0"

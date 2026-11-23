@@ -1,0 +1,7 @@
+# trackerlib-setvol-byte.test.bas
+fixed-orig = 293
+files = ["setvol.mod|@TESTDATA@/trackerlib-setvol-byte.mod"]
+
+[deviations."libs=cd"]
+"check.slide_after_setvol.voice0_volume" = "== fail"
+"check.slide_after_setvol.voice0_volume.actual" = "== $1B"

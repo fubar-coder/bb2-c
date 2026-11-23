@@ -1,0 +1,6 @@
+# through inject: the AllocMem of the local array (120000 bytes and memlib's 8)
+# fails once; track: what the process leaves allocated
+runwrap = "@INJECT@|allocfail=100000-200000/1 track"
+
+[asserts]
+inject = "contains \"inject: track: 0 allocations left, 0 bytes\""

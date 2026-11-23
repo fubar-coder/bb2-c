@@ -1,0 +1,7 @@
+# medlib-1fxx-retrig.test.bas
+fixed-orig = 205
+files = ["retrig.med|@TESTDATA@/medlib-1fxx-retrig.med"]
+
+[deviations."libs=cd"]
+"check.hold_counter.hold_counter" = "== fail"
+"check.hold_counter.hold_counter.actual" = "== 22"

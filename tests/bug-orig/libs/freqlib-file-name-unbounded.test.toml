@@ -1,0 +1,11 @@
+# freqlib-file-name-unbounded.test.bas: through inject with pad (64 zeroed
+# bytes behind every allocation: the original's overrun of the 40-byte
+# list node, #159, is then harmless), which clicks the line of the file,
+# then CANCEL; the original copies all 70 characters into the 64-byte buffer
+fixed-orig = 1042
+dirs = ["fqname"]
+runwrap = "@INJECT@|pad click=FQ/a123456789b123456789c123456 click=FQ/CANCEL"
+
+[deviations."libs=cd"]
+"check.long_name.file_buffer_chars" = "== fail"
+"check.long_name.file_buffer_chars.actual" = "== 70"

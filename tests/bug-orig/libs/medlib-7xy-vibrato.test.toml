@@ -1,0 +1,7 @@
+# medlib-7xy-vibrato.test.bas
+fixed-orig = 204
+files = ["trem.med|@TESTDATA@/medlib-7xy-vibrato.med"]
+
+[deviations."libs=cd"]
+"check.period_kept.period_of_the_note" = "== fail"
+"check.period_kept.period_of_the_note.actual" = "== 0"

@@ -1,0 +1,7 @@
+# floatquicklib-zero-negative.test.bas: the original converts Quick 0 to the
+# FFP number $00000080, a "-0"
+fixed-orig = 146
+
+[deviations."libs=cd"]
+"check.quick_to_float.zero" = "== fail"
+"check.quick_to_float.zero.actual" = "== $00000080"

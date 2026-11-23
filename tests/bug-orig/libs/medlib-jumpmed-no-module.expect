@@ -1,4 +1,0 @@
-[run]
-before
-REQUESTER: AutoRequest body "No Module Playing" *
-rc=0

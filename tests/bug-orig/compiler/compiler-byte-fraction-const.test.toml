@@ -1,0 +1,25 @@
+# compiler-byte-fraction-const.test.bas: the original cuts a constant to a
+# whole number under a Byte destination (the w_ checks, under Word, hold)
+fixed-orig = 1188
+
+[deviations."compiler=orig195"]
+"check.byte_fraction.b_add" = "== fail"
+"check.byte_fraction.b_add.actual" = "== 2"
+"check.byte_fraction.b_mul_half" = "== fail"
+"check.byte_fraction.b_mul_half.actual" = "== 0"
+"check.byte_fraction.b_mul_var" = "== fail"
+"check.byte_fraction.b_mul_var.actual" = "== 2"
+"check.byte_fraction.b_mul_25" = "== fail"
+"check.byte_fraction.b_mul_25.actual" = "== 4"
+"check.byte_fraction.b_negative" = "== fail"
+"check.byte_fraction.b_negative.actual" = "== -2"
+"check.byte_fraction.b_exponent" = "== fail"
+"check.byte_fraction.b_exponent.actual" = "== 24"
+"check.sb.param" = "== fail"
+"check.sb.param.actual" = "== 2"
+"check.byte_fraction.function" = "== fail"
+"check.byte_fraction.function.actual" = "== 2"
+"check.byte_fraction.field" = "== fail"
+"check.byte_fraction.field.actual" = "== 2"
+"check.byte_fraction.array" = "== fail"
+"check.byte_fraction.array.actual" = "== 2"

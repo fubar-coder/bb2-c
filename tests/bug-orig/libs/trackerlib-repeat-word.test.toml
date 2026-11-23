@@ -1,0 +1,7 @@
+# trackerlib-repeat-word.test.bas
+fixed-orig = 291
+files = ["rep.mod|@TESTDATA@/trackerlib-repeat-word.mod"]
+
+[deviations."libs=cd"]
+"check.loop_start.voice0_loop" = "== fail"
+"check.loop_start.voice0_loop.actual" = "== 0"

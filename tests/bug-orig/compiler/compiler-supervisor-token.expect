@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-supervisor 8192
-rc=0

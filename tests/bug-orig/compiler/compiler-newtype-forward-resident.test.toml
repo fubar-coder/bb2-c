@@ -1,0 +1,16 @@
+# compiler-newtype-forward-resident.test.bas: the original writes the
+# resident with the sizes of the first layout (the line number of *p.tc in
+# the resident's source stands for .tc)
+fixed-orig = 974
+files = ["r.bb2|@TESTDATA@/compiler-newtype-forward-resident.res"]
+jobline = ["resident=r|CORPUS:r.bb2|CORPUS:out/r.res"]
+
+[deviations."compiler=orig195"]
+"check.forward_resident.size_tb" = "== fail"
+"check.forward_resident.size_tb.actual" = "== 6"
+"check.forward_resident.offset_z" = "== fail"
+"check.forward_resident.offset_z.actual" = "== 4"
+"check.forward_resident.size_ta" = "== fail"
+"check.forward_resident.size_ta.actual" = "== 10"
+"check.forward_resident.offset_q" = "== fail"
+"check.forward_resident.offset_q.actual" = "== 6"

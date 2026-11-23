@@ -1,0 +1,9 @@
+# trackerlib-sample-number.test.bas
+fixed-orig = 295
+files = ["smp.mod|@TESTDATA@/trackerlib-sample-number.mod"]
+
+[deviations."libs=cd"]
+"check.sample_32.voice0_note" = "== fail"
+"check.sample_32.voice0_note.actual" = "== $21AC0000"
+"check.sample_32.start_outside_module" = "== fail"
+"check.sample_32.start_outside_module.actual" = "== 1"

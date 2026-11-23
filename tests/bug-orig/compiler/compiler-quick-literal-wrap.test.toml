@@ -1,0 +1,25 @@
+# compiler-quick-literal-wrap.test.bas: the original wraps a Quick literal
+# near 32768 to -32768 and loses the sign
+fixed-orig = 1070
+
+[deviations."compiler=orig195"]
+"check.literal_wrap.a_int" = "== fail"
+"check.literal_wrap.a_int.actual" = "== -32768"
+"check.literal_wrap.a_positive" = "== fail"
+"check.literal_wrap.a_positive.actual" = "== 0"
+"check.literal_wrap.a_hex" = "== fail"
+"check.literal_wrap.a_hex.actual" = "== \"80000000\""
+"check.literal_wrap.b_int" = "== fail"
+"check.literal_wrap.b_int.actual" = "== -32768"
+"check.literal_wrap.b_positive" = "== fail"
+"check.literal_wrap.b_positive.actual" = "== 0"
+"check.literal_wrap.b_hex" = "== fail"
+"check.literal_wrap.b_hex.actual" = "== \"80000000\""
+"check.literal_wrap.c_32768_0" = "== fail"
+"check.literal_wrap.c_32768_0.actual" = "== \"80000000\""
+"check.literal_wrap.j_double_negation" = "== fail"
+"check.literal_wrap.j_double_negation.actual" = "== \"80000000\""
+"check.literal_wrap.k_negated_bracket" = "== fail"
+"check.literal_wrap.k_negated_bracket.actual" = "== \"80000000\""
+"check.literal_wrap.l_one_minus" = "== fail"
+"check.literal_wrap.l_one_minus.actual" = "== \"80010000\""

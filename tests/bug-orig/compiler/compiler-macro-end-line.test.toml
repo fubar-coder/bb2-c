@@ -1,0 +1,9 @@
+# compiler-macro-end-line.test.bas: the original loses the End If of the
+# macro body and the compile fails (nothing runs)
+fixed-orig = 968
+
+[deviations."compiler=orig195"]
+compile = "contains \"If Without End If\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

@@ -1,0 +1,20 @@
+# freqlib-64-lines.test.bas: the RTG variant of the emulator; through inject
+# with guardseg (32 KB of a pattern behind the program's hunk), which clicks
+# CANCEL.  The original writes about 25 KB behind its data block, into the
+# code of the driver behind it: after the case the program is lost in a
+# stream of requesters and inject's report is never written (the cells with
+# the CD's libraries each have a session of their own)
+fixed-orig = 160
+rtg = "on"
+runwrap = "@INJECT@|guardseg click=FQ/CANCEL"
+timeout = 120
+isolate = ["libs=cd"]
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."libs=cd"]
+rc = "not exists"
+inject = "not exists"
+requester = "count == 1"
+"end.run" = "not exists"

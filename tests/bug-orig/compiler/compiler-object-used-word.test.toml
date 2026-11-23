@@ -1,0 +1,10 @@
+# compiler-object-used-word.test.bas: the original loses the high word of
+# the difference with lsr.w
+fixed-orig = 998
+jobline = ["max=160|1100"]
+
+[deviations."compiler=orig195"]
+"check.object_used_word.used_1025" = "== fail"
+"check.object_used_word.used_1025.actual" = "== 1"
+"check.object_used_word.used_second_register" = "== fail"
+"check.object_used_word.used_second_register.actual" = "== 2"

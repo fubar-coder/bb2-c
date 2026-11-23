@@ -1,0 +1,7 @@
+# trackerlib-c-f-sign.test.bas
+fixed-orig = 294
+files = ["speed.mod|@TESTDATA@/trackerlib-c-f-sign.mod"]
+
+[deviations."libs=cd"]
+"check.speed_limit.later_row" = "== fail"
+"check.speed_limit.later_row.actual" = "== 1"

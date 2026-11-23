@@ -1,0 +1,13 @@
+# memlib-err1-null-list.test.bas: through inject, whose AllocMem of 100000 to
+# 200000 bytes fails once, with track; the original's next allocation writes
+# the block's address over ExecBase at address 4
+fixed-orig = 1071
+runwrap = "@INJECT@|allocfail=100000-200000/1 track"
+
+[asserts]
+"check.execbase_kept.allocation_failed" = "== not-run"
+inject = "contains \"track: 0 allocations left, 0 bytes\""
+
+[deviations."libs=cd"]
+"check.execbase_kept.execbase" = "== fail"
+inject = "contains \"track: 1 allocations left, 52 bytes\""

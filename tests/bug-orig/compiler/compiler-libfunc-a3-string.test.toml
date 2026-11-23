@@ -1,0 +1,11 @@
+# compiler-libfunc-a3-string.test.bas: the original writes the rest of the
+# string expression into the shape and the sound objects
+fixed-orig = 46
+
+[deviations."compiler=orig195"]
+"check.a3_string.width_after" = "== fail"
+"check.a3_string.width_after.actual" = "== 8290"
+"check.a3_string.shapewidth_after" = "== fail"
+"check.a3_string.shapewidth_after.actual" = "== 8290"
+"check.a3_string.sound_unchanged" = "== fail"
+"check.a3_string.sound_unchanged.actual" = "== 0"

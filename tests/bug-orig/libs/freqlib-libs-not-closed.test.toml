@@ -1,0 +1,10 @@
+# freqlib-libs-not-closed.test.bas: through inject, which counts the opens
+# minus the closes of three libraries and clicks CANCEL
+fixed-orig = 154
+runwrap = "@INJECT@|opencount=dos.library opencount=intuition.library opencount=graphics.library click=FQ/CANCEL"
+
+[asserts]
+inject = "contains \"opencount: dos.library +0\ninject: opencount: intuition.library +0\ninject: opencount: graphics.library +0\""
+
+[deviations."libs=cd"]
+inject = "contains \"opencount: dos.library +1\ninject: opencount: intuition.library +1\ninject: opencount: graphics.library +1\""

@@ -1,0 +1,12 @@
+# audiolib-loadsound-novhdr-fileopen.test.bas: the handler of the expected
+# error holds the check and ends the program, so the case has no end entry
+fixed-orig = 67
+files = ["novhdr.8svx|@TESTDATA@/audiolib-loadsound-novhdr-fileopen.8svx"]
+
+[asserts]
+"end.case" = "not exists"
+"check.after_error.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.after_error.exclusive_lock" = "== fail"
+"check.after_error.exclusive_lock.actual" = "== 0"

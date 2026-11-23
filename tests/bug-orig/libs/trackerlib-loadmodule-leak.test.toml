@@ -1,0 +1,14 @@
+# trackerlib-loadmodule-leak.test.bas: the handler of the expected error
+# holds the checks and ends the program, so the case has no end entry
+fixed-orig = 296
+dirs = ["t296"]
+
+[asserts]
+"end.case" = "not exists"
+"check.drawer_as_module.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.drawer_as_module.fileinfoblock_kept" = "== fail"
+"check.drawer_as_module.fileinfoblock_kept.actual" = "== 1"
+"check.drawer_as_module.exclusive_lock" = "== fail"
+"check.drawer_as_module.exclusive_lock.actual" = "== 0"

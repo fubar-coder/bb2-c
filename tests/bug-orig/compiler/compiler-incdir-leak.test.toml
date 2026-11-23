@@ -1,0 +1,12 @@
+# compiler-incdir-leak.test.bas: the resident is compiled first (Create
+# Resident); the original keeps its IncDir for the next compile and does not
+# find the include file: no program, no check
+fixed-orig = 342
+files = ["r.bb2|@TESTDATA@/compiler-incdir-leak.res", "src/inc.bb2|@TESTDATA@/compiler-incdir-leak.inc"]
+jobline = ["resident=r|CORPUS:r.bb2|CORPUS:out/r.res"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Can't open Include\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

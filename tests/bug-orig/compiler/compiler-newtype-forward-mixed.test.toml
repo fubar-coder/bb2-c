@@ -1,0 +1,10 @@
+# compiler-newtype-forward-mixed.test.bas: the original lays .ta out with
+# a wrong size for .tb (the line number of *p.tb, a line of the test's
+# driver), so the deviations declare "not the correct value"
+fixed-orig = 974
+
+[deviations."compiler=orig195"]
+"check.forward_mixed.size_ta" = "== fail"
+"check.forward_mixed.size_ta.actual" = "!= 12"
+"check.forward_mixed.offset_m" = "== fail"
+"check.forward_mixed.offset_m.actual" = "!= 10"

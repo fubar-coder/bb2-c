@@ -1,0 +1,7 @@
+# medlib-finetune-range.test.bas
+fixed-orig = 211
+files = ["fine.med|@TESTDATA@/medlib-finetune-range.med"]
+
+[deviations."libs=cd"]
+"check.period_table.period_from_a_table" = "== fail"
+"check.period_table.period_from_a_table.actual" = "== 0"

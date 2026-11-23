@@ -1,0 +1,7 @@
+# floatquicklib-min-positive.test.bas: the original converts -32768.0 as the
+# positive magnitude, +32768.0 ($80000050)
+fixed-orig = 147
+
+[deviations."libs=cd"]
+"check.quick_to_float.minimum" = "== fail"
+"check.quick_to_float.minimum.actual" = "== $80000050"

@@ -4,6 +4,12 @@
 fixed-orig = 258
 serial = "on"
 isolate = ["libs=cd"]
+# the case is silent for its 60 frames of waits; on a heavily loaded host the
+# emulator needs more than the default 8 s of silence for them (the full
+# acceptance run ended the port cell as a hang at 11 s; under heavy load the
+# whole test took 11-13 s instead of 4 s and one of 36 runs ended so), so a
+# hang is judged only after 30 s
+hang-after = 30
 
 [deviations."libs=cd"]
 "check.abort_write.replied" = "== fail"

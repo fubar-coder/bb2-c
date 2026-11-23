@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-REQUESTER: AutoRequest body "Array Size out of Range" *
-rc=0

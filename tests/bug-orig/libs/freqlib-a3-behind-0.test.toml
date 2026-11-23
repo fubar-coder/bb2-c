@@ -1,0 +1,13 @@
+# freqlib-a3-behind-0.test.bas: through inject, which clicks OK; the original
+# holds the 0 behind the name and loses the last character of ".bak"
+fixed-orig = 161
+runwrap = "@INJECT@|click=FQ/OK"
+
+[asserts]
+inject = "contains \"click FQ/OK: answered\""
+
+[deviations."libs=cd"]
+"check.bak.char6" = "== fail"
+"check.bak.char6.actual" = "== 0"
+"check.bak.char9" = "== fail"
+"check.bak.char9.actual" = "== 97"

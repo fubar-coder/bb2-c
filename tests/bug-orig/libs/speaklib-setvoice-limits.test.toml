@@ -1,0 +1,14 @@
+# speaklib-setvoice-limits.test.bas
+fixed-orig = 279
+
+[deviations."libs=cd"]
+"check.minus_32768.rate" = "== fail"
+"check.minus_32768.rate.actual" = "== 400"
+"check.minus_32768.pitch" = "== fail"
+"check.minus_32768.pitch.actual" = "== 320"
+"check.minus_32768.volume" = "== fail"
+"check.minus_32768.volume.actual" = "== 64"
+"check.minus_32768.frequency" = "== fail"
+"check.minus_32768.frequency.actual" = "== 28000"
+"check.minus_32000.frequency" = "== fail"
+"check.minus_32000.frequency.actual" = "== 28000"

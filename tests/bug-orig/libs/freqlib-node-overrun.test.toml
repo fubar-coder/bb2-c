@@ -1,0 +1,11 @@
+# freqlib-node-overrun.test.bas: through inject with guard, which clicks
+# CANCEL when the list has been read
+fixed-orig = 159
+dirs = ["fq159"]
+runwrap = "@INJECT@|guard click=FQ/CANCEL"
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."libs=cd"]
+inject = "contains \"written behind an allocation of 40 bytes\""

@@ -1,0 +1,6 @@
+# compiler-consttype-zero-negative-frac.test.bas: the original compiles
+# q=1.0 to a float constant and a conversion, a longer code than q=1.5
+fixed-orig = 13
+
+[deviations."compiler=orig195"]
+"check.zero_fraction.same_code_length" = "== fail"

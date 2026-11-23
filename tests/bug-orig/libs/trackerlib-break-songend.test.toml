@@ -1,0 +1,7 @@
+# trackerlib-break-songend.test.bas
+fixed-orig = 292
+files = ["break.mod|@TESTDATA@/trackerlib-break-songend.mod"]
+
+[deviations."libs=cd"]
+"check.after_break.voice1_pattern" = "== fail"
+"check.after_break.voice1_pattern.actual" = "== 3"
