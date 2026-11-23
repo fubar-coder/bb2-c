@@ -1,0 +1,16 @@
+# compiler-for-global-string.test.bas: the correct result is a failed
+# compile (Bad Type for For...Next at the For line) and nothing runs; the
+# original accepts the global string as the For variable and the case runs
+fixed-orig = 39
+
+[asserts]
+compile = "== \"error 7 Bad Type for For...Next\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"
