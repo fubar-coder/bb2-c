@@ -1,0 +1,14 @@
+# staticslib-localstat-d2.test.bas: the original changes the third parameter
+# (d2) of every call; the checks of a procedure are named after it (s3, s4,
+# s5), the function's result is a check of the case
+fixed-orig = 1063
+
+[deviations."libs=cd"]
+"check.s3.c" = "== fail"
+"check.s3.c.actual" = "== 65520"
+"check.s4.c" = "== fail"
+"check.s4.c.actual" = "== 65516"
+"check.s5.c" = "== fail"
+"check.s5.c.actual" = "== 65512"
+"check.parameters.f3" = "== fail"
+"check.parameters.f3.actual" = "== 6552054"

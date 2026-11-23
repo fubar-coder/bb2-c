@@ -1,0 +1,7 @@
+# screenslib-displayid-lowword.test.bas: the original keeps only the low
+# word of the display ID
+fixed-orig = 250
+
+[deviations."libs=cd"]
+"check.display_id.display_id" = "== fail"
+"check.display_id.display_id.actual" = "== $9000"

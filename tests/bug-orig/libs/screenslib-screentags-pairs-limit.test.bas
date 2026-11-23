@@ -11,12 +11,14 @@
 ; Runtime error checking on (the debugger); ScreenTags with 16 pairs
 ; (TAG_IGNORE).
 ; Correct: the error check stops it with "Too Many Tags".  The original
-; has no check and opens the screen.
-; @fixed #1039
-; @pass runtime_errors=on
+; has no check and opens the screen.  The message is the tested
+; behaviour, so the error is not announced with !ExpectError (see the
+; configuration).
 DEFTYPE .l
-t=1
-s=ScreenTags(0,"Tags",t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0)
-NPrint "opened ",s<>0
-CloseScreen 0
-End
+
+!TestCase{sixteen_pairs}
+  t=1
+  s=ScreenTags(0,"Tags",t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0,t,0)
+  !Check{s<>0,"opened"}
+  CloseScreen 0
+!EndTestCase

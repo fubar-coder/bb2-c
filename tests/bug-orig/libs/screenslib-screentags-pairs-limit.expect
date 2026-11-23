@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-REQUESTER: AutoRequest body "Too Many Tags" pos "OKAY!" neg "OKAY!" -> answered FALSE
-rc=0
