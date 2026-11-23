@@ -339,15 +339,15 @@ escapes) is refused with file and line.
 | `cost` | integer | the ctest `COST` |
 | `exclude` | list of selectors | the combinations of axis values that are no cell |
 | `root` | boolean | only in a `tests.toml`: the search stops here |
-| `fixed-orig`, `fixed` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug; not both |
+| `fixed-orig`, `fixed`, `extension` | integer | only in an `ID.test.toml`: the issue of the fix of an original bug, of another bug, of an extension of the port ([Fixed tests](#fixed-tests)); at most one |
 
 The keys from `compiler` to `jobline` are the **run settings**; `labels`,
 `cost` and `fixtures` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, the tables `deviations`) in a `tests.toml` or `root` in an
-`ID.test.toml`. `fixed-orig` needs a declared deviation, `fixed` must have
-none.
+`fixed`, `extension`, the tables `deviations`) in a `tests.toml` or `root` in an
+`ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
+`fixed` must have none.
 
 **The matrix.** The table `matrix` names the axes: each key a run
 setting that is no list, each value a non-empty list of its values as
@@ -2528,16 +2528,21 @@ and `all`, not in `bug-orig`, and it is declared directly, not in the
 order of the bug-orig tests (it passes, ctest learns its cost).
 `ctest --preset all -N` lists it, `ctest --preset bug-orig -N` does not.
 
-**An extension of the port** (`; @fixed #NNN/port` in the header of
-`ID.bas`, NNN the issue of the extension; user decision 2026-11-22):
-a test of behaviour the port adds where the original refuses or
-differs, not of an original bug (the first: #1166, ANIM interleaves
-that the original refuses). For
-now it is the same as `; @fixed #NNN` (pass key `fixed=NNN`, `ID.orig`
-recorded, FIXED, the `[fixed #NNN]` case of fix-scope); `/port` only
-marks it, right behind the number (`bugorigcmp` refuses anything else
-there, `test_bugorigcmp`). The rework of the tests gives extensions a
-form of their own and replaces the marker.
+**An extension of the port**: a test of behaviour the port adds where
+the original refuses or does something else, not of an original bug, is
+a test of the BASIC test model with the key `extension = NNN` in its
+`ID.test.toml` (NNN the issue of the extension; user decision
+2026-11-23, change `bug-orig-basic-tests` D5a): its declared deviations
+are what the original does instead, for the cells with the original's
+part (`libs=cd` for a library), and are required (`extension` without
+one is an error naming the test); it is judged and labelled like a test
+with `fixed-orig` (the cells with that part pass with the deviations,
+the others without; label `emulator`), and fix-scope counts the key as
+the case `ID|extension||1 [fixed #NNN]`. At most one of `fixed-orig`,
+`fixed` and `extension`. The first:
+`libs/shapeslib-loadshape-anim-interleave.test.bas` (#1166, ANIM
+interleaves that the original refuses with "Illegal ANIM interleave
+value"). The old form has no marker for an extension.
 
 ### A bug of an RWE userlib
 

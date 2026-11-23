@@ -168,3 +168,23 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   BASIC test model: nothing to record" (`bug_orig_record_target`: one test
   of each form; the model test's runs are not started, its `ID.orig` not
   written).
+- **Tasks 1.5 and 1.6, the key `extension`** (D5a): `tools/lib/testconf`
+  (the key, at most one of the three, `extension` without a deviation
+  refused), `testjudge` (judged as with `fixed-orig`), `testreg` (no
+  label `bug-orig`), `bugorigcmp` (the case `ID|extension||1 [fixed #N]`);
+  host tests with broken input in `testconf`, `testassert`, `testjudge`,
+  `testreg_tool`, `bugorigcmp`. The first user is
+  `libs/shapeslib-loadshape-anim-interleave.test.bas` (#1166): the cells
+  port and 1.95 with the CD's libraries (the side originals) and the port
+  with the C libraries; the original's error "Illegal ANIM interleave
+  value" is caught by `SetErr`, whose check `no_error` fails and whose
+  `End` leaves the case without its end entry (the declared deviations of
+  `libs=cd`); each frame is one entry of the check `frame` ("frame N
+  WIDTH HEIGHT BYTES", the lines of the old `.expect`). Both sides pass.
+  fix-scope with `--fixes 1166` against the tree before the move counts
+  the key as a case of #1166 and reports the new test's checks and keys
+  (9 cases: the move, not a fix). The CMake header parser of the old form
+  no longer takes `/port`; `bugorigcmp` still reads it, since the base of
+  fix-scope may be a tree before the move. A label named like a token
+  (`.frames`) fails the compile; the form check names case names that are
+  tokens, not labels.
