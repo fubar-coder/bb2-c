@@ -7,11 +7,12 @@
 ; manual's test "If StoreNVData(...)" says "stored".
 ; Correct: StoreNVData returns 0 (FALSE) when nothing was stored, -1
 ; (TRUE) when it was.
-; @fixed #1085
-; @rwe rinonvolatilelib
-d.l=$12345678
-NPrint "open ",IsNonvolatile
-r.w=StoreNVData("RWETest","Item",&d,4)
-If r Then NPrint "stored" Else NPrint "not stored"
-NPrint "result ",r
-End
+DEFTYPE .l
+
+!TestCase{nothing_stored}
+  d.l=$12345678
+  o=IsNonvolatile
+  !Require{o=-1,"open"}
+  r.w=StoreNVData("RWETest","Item",&d,4)
+  !CheckEq{r,0,"result"}
+!EndTestCase
