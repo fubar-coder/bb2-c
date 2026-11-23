@@ -9,8 +9,6 @@
 ; (where the original looks, compiler-userlibs-doubleslash).
 ; Correct: a count of 0 means no relocations; the library is loaded and
 ; BugOrigUserLib returns 42.
-; @fixed #1175
-; @pass file=blitz2/userlibs/bugorig/bugorig.obj|@TESTDATA@/compiler-loadalib-reloc-count-0.obj
-; @pass file=blitz2/bugorig/bugorig.obj|@TESTDATA@/compiler-loadalib-reloc-count-0.obj
-NPrint BugOrigUserLib
-End
+!TestCase{userlib_loaded}
+  !CheckEq{BugOrigUserLib,42,"result"}
+!EndTestCase

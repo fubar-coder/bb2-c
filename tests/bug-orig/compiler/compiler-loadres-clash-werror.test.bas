@@ -4,12 +4,8 @@
 ; error.
 ; Correct: the error "Clash in Residents: #c" when the options load, the
 ; residents are dropped as for a clashing type, and the compile fails on
-; #c.
-; @fixed #36
-; @pass file=r1.bb2|@TESTDATA@/compiler-loadres-clash-offset.r1
-; @pass file=r2.bb2|@TESTDATA@/compiler-loadres-clash-offset.r2
-; @pass jobline=resident=r1|CORPUS:r1.bb2|CORPUS:out/r1.res
-; @pass jobline=resident=r2|CORPUS:r2.bb2|CORPUS:out/r2.res
-; @pass jobline=warnings=errors
-NPrint #c
-End
+; #c (nothing runs). The original reports no clash, takes #c of the first
+; resident, and the program runs.
+!TestCase{first_value}
+  !CheckEq{#c,1,"c"}
+!EndTestCase

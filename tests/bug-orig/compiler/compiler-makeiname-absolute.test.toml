@@ -1,0 +1,10 @@
+# compiler-makeiname-absolute.test.bas: the original opens
+# CORPUS:sub/CORPUS:src/inc.bb2 and the compile fails (nothing runs)
+fixed-orig = 341
+files = ["src/inc.bb2|@TESTDATA@/compiler-makeiname-absolute.inc"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Can't open Include\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

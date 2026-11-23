@@ -3,7 +3,6 @@
 ; '/': "blitz2:userlibs//bugorig" is blitz2:bugorig for AmigaDOS, the
 ; library in blitz2:userlibs/bugorig is never loaded.
 ; Correct: the program uses the function of that library (42).
-; @fixed #2
-; @pass file=blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@
-NPrint BugOrigUserLib
-End
+!TestCase{userlib_function}
+  !CheckEq{BugOrigUserLib,42,"result"}
+!EndTestCase
