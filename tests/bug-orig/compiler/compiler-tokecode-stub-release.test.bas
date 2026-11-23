@@ -8,23 +8,24 @@
 ; Correct: without runtime error checking the jsr goes straight to the
 ; routine.  The program counts the jsrs of the TokeJsr and those whose
 ; target starts with a jsr (the stub), and runs Joyb(1).
-; @fixed #1048
+!TestCase{token_jsr}
 .tjstart
-MOVEQ #1,d0
-TokeJsr Joyb
+  MOVEQ #1,d0
+  TokeJsr Joyb
 .tjend
-PutReg d0,b.w
-NPrint "joyb ",b
-s.l=?tjstart
-e.l=?tjend
-j.w=0
-n.w=0
-For p.l=s To e-6 Step 2
-  If Peek.w(p)=$4EB9
-    j+1
-    t.l=Peek.l(p+2)
-    If Peek.w(t)=$4EB9 Then n+1
-  EndIf
-Next
-NPrint "jsrs ",j," stubs ",n
-End
+  PutReg d0,b.w
+  s.l=?tjstart
+  e.l=?tjend
+  j.w=0
+  n.w=0
+  For p.l=s To e-6 Step 2
+    If Peek.w(p)=$4EB9
+      j+1
+      t.l=Peek.l(p+2)
+      If Peek.w(t)=$4EB9 Then n+1
+    EndIf
+  Next
+  !CheckEq{b,0,"joyb"}
+  !CheckEq{j,1,"jsrs"}
+  !CheckEq{n,0,"stubs"}
+!EndTestCase

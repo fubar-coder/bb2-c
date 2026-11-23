@@ -1,4 +1,0 @@
-[run]
-joyb 0
-jsrs 1 stubs 0
-rc=0

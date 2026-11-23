@@ -1,0 +1,9 @@
+# compiler-supervisor-token.test.bas: the original finds Supervisor_ in
+# doslib's token range; the line is a Syntax Error (nothing runs)
+fixed-orig = 960
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

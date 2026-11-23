@@ -1,0 +1,12 @@
+# compiler-stradd-arg7.test.bas: the original loses the right length, the
+# program crashes (Software Failure) at the seven levels and the session
+# ends as a hang; the check of six levels ran before
+fixed-orig = 971
+isolate = ["compiler=orig195"]
+
+[deviations."compiler=orig195"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

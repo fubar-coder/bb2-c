@@ -1,0 +1,34 @@
+# compiler-pow-negative-base.test.bas: the bug is in the CD's mathtrans
+# library (the compiler calls SPPow the same way in every cell): it drops the
+# sign of the power for a whole odd exponent; the actual values are the FFP
+# bits of the magnitudes, so the cells with the CD's libraries (port,cd and
+# orig195,cd) show the deviations and the port's own library does not
+fixed-orig = 1189
+
+[deviations."libs=cd"]
+"check.pow_negative_base.p02_vm_3" = "== fail"
+"check.pow_negative_base.p02_vm_3.actual" = "== $80000144"
+"check.pow_negative_base.p03_vm_m1" = "== fail"
+"check.pow_negative_base.p03_vm_m1.actual" = "== $80000040"
+"check.pow_negative_base.p05_vm_m3" = "== fail"
+"check.pow_negative_base.p05_vm_m3.actual" = "== $8000003E"
+"check.pow_negative_base.p06_vf_float3" = "== fail"
+"check.pow_negative_base.p06_vf_float3.actual" = "== $F9FFFB44"
+"check.pow_negative_base.p07_vf_quick3" = "== fail"
+"check.pow_negative_base.p07_vf_quick3.actual" = "== $F9FFFB44"
+"check.pow_negative_base.p08_vf_word3" = "== fail"
+"check.pow_negative_base.p08_vf_word3.actual" = "== $F9FFFB44"
+"check.pow_negative_base.p09_long_destination" = "== fail"
+"check.pow_negative_base.p09_long_destination.actual" = "== 15"
+"check.pow_negative_base.p11_vm_1" = "== fail"
+"check.pow_negative_base.p11_vm_1.actual" = "== $80000142"
+"check.pow_negative_base.p12_vh_3" = "== fail"
+"check.pow_negative_base.p12_vh_3.actual" = "== $8000003E"
+"check.pow_negative_base.p13_odd_16777215" = "== fail"
+"check.pow_negative_base.p13_odd_16777215.actual" = "== $80000041"
+"check.pow_negative_base.p15_odd_8388609" = "== fail"
+"check.pow_negative_base.p15_odd_8388609.actual" = "== $80000041"
+"check.pow_negative_base.p16_constant" = "== fail"
+"check.pow_negative_base.p16_constant.actual" = "== $D7FFFF42"
+"check.pow_negative_base.p17_unary_minus" = "== fail"
+"check.pow_negative_base.p17_unary_minus.actual" = "== $D8000345"

@@ -1,0 +1,9 @@
+# compiler-quick-literal-data.test.bas: the original refuses the Data.q
+# line as bad data and the compile fails (nothing runs)
+fixed-orig = 1070
+
+[deviations."compiler=orig195"]
+compile = "contains \"Bad Data\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

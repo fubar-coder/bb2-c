@@ -1,0 +1,7 @@
+# compiler-tokecode-stub-release.test.bas: the original builds the stub and
+# the jsr goes to it
+fixed-orig = 1048
+
+[deviations."compiler=orig195"]
+"check.token_jsr.stubs" = "== fail"
+"check.token_jsr.stubs.actual" = "== 1"

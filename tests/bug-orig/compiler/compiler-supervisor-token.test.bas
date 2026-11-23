@@ -6,14 +6,16 @@
 ; doslib (finit, no command) and the line is a Syntax Error.
 ; Here exec Supervisor_ runs a routine in supervisor mode that reads the
 ; status register (S bit 13) and returns with RTE.
-; Correct: the program compiles and prints supervisor 8192.
-; @fixed #960
+; Correct: the program compiles and the routine returns 8192.
 DEFTYPE .l
-r=Supervisor_(?sup)
-NPrint "supervisor ",r
-End
 
-sup:
+!TestCase{supervisor}
+  Goto skip_sup
+.sup
   MOVE.w sr,d0
   ANDI.l #$2000,d0
   RTE
+.skip_sup
+  r=Supervisor_(?sup)
+  !CheckEq{r,8192,"status_register"}
+!EndTestCase
