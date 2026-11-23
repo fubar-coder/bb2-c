@@ -9,16 +9,19 @@
 ; on item 5.
 ; Correct: memory outside the menu list is not changed (byte 13 of the
 ; buffer stays $FF).
-; @configs clib
+; By design (#416): the original (and the port) test the numbers only with
+; runtime error checking, so this test comes out REPRODUCED.
 DEFTYPE .l
-MenuTitle 0,0,"Project"
-MenuItem 0,0,0,0,"Load"
-b=AllocMem(64,$10001)
-Poke.l b,b : Poke.b b+13,$FF
-z=Peek.l(0)
-Poke.l 0,b
-MenuState 0,0,5,Off
-Poke.l 0,z
-NPrint "buffer byte 13 ",Right$(Hex$(Peek.b(b+13)),2)
-FreeMem b,64
-End
+
+!TestCase{item_beyond_end}
+  MenuTitle 0,0,"Project"
+  MenuItem 0,0,0,0,"Load"
+  b=AllocMem(64,$10001)
+  Poke.l b,b : Poke.b b+13,$FF
+  z=Peek.l(0)
+  Poke.l 0,b
+  MenuState 0,0,5,Off
+  Poke.l 0,z
+  !CheckEq{Peek.b(b+13) AND $FF,$FF,"buffer_byte_13"}
+  FreeMem b,64
+!EndTestCase

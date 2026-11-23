@@ -1,0 +1,6 @@
+# menuslib-numbers-unchecked.test.bas: an open bug, by design (#416): the
+# walk past the end of the item list clears bit 4 of byte 13 of the buffer
+# in every cell
+[deviations."libs=cd"]
+"check.item_beyond_end.buffer_byte_13" = "== fail"
+"check.item_beyond_end.buffer_byte_13.actual" = "== $EF"
