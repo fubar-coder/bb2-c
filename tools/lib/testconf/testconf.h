@@ -23,7 +23,20 @@
  * A relative path in a path setting (testconf keys with a path field) is
  * relative to the directory of the file that sets it; a placeholder
  * `@NAME@` in a string value or a list element of a setting or an axis is
- * replaced from the environment file, an unknown one is an error.
+ * replaced from the environment file, an unknown one is an error.  The
+ * placeholder TC_DRIVER is the runner's: it stays in an element of
+ * `jobline` (the runner puts the driver's source on the cell's volume in
+ * its place) and is an error naming file, line and placeholder elsewhere.
+ *
+ * A run from the editor (change basic-test-editor-run): in a cell with
+ * `editor-run = "on"` the driver is compiled as in any cell and run with
+ * the editor's COMPILE/RUN instead of from the shell; its exit code and
+ * requesters are not captured.  tc_matrix_build refuses such a cell with
+ * `runwrap`, `runargs`, `launcherargs` or `pad = "on"` and with an
+ * assertion, a deviation or an alternative end on `rc` or `requester` whose
+ * selector matches it, and a cell with `defaultdbug` (the debugger module,
+ * used only by a run from the editor) without `editor-run = "on"`; each
+ * error names file, line and the keys.
  */
 #ifndef TESTCONF_H
 #define TESTCONF_H
@@ -34,6 +47,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** @brief The runner's placeholder of the driver's source (in `jobline` only). */
+#define TC_DRIVER "@DRIVER@"
 
 /** @brief The kind of a key's value. */
 enum tc_vkind {
@@ -407,7 +423,9 @@ enum tc_qkind {
     TC_Q_RUN,                   /* run.NS.NAME: the program !RunProgram NAME
                                    started (done, open, not-run) */
     TC_Q_RUN_RC,                /* run.NS.NAME.rc: its return code */
-    TC_Q_RUN_OUTPUT             /* run.NS.NAME.output: what it wrote */
+    TC_Q_RUN_OUTPUT,            /* run.NS.NAME.output: what it wrote */
+    TC_Q_COMPILE_INJECT         /* compile.inject: the report of inject on the
+                                   compiler (wrap of inject) */
 };
 
 /** @brief A parsed query. */
@@ -495,10 +513,13 @@ enum tc_judge_mode {
  *        when no file names the query (rc == 0, requester count == 0,
  *        end.case exists, end.run exists); *n their number.  Every check
  *        with entries must have passed unless an assertion names it (the
- *        judge's default, not in this list).
+ *        judge's default, not in this list).  The defaults of what only a
+ *        shell run captures (shell: rc, requester) do not apply in a cell
+ *        with editor-run = "on".
  */
 struct tc_default {
     const char *query, *pred;
+    int shell;                  /* only a run from the shell captures it */
 };
 const struct tc_default *tc_defaults(size_t *n);
 

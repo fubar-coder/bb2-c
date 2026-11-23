@@ -1,0 +1,8 @@
+# rilesdebuglib-getcustomreg-negative-word.test.bas: the original copies a
+# name from in front of its table
+fixed-orig = 714
+rwe = ["rilesdebuglib"]
+
+[deviations."compiler=orig210"]
+"check.ffff0.name_length" = "== fail"
+"check.ffff0.name_length.actual" = "== 8"

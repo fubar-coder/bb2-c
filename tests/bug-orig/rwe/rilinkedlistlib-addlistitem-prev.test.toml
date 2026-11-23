@@ -1,0 +1,6 @@
+# rilinkedlistlib-addlistitem-prev.test.bas: the original's prev skips X
+fixed-orig = 727
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.insert.prev_reaches_x" = "== fail"

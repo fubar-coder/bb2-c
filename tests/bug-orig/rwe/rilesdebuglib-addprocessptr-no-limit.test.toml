@@ -1,0 +1,9 @@
+# rilesdebuglib-addprocessptr-no-limit.test.bas: the original finds the 21st
+# entry
+fixed-orig = 700
+rwe = ["rilesdebuglib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.table_full.result" = "== fail"
+"check.table_full.result.actual" = "== \"<LEAK>\""

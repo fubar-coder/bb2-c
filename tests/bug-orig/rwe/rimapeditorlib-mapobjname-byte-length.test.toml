@@ -1,0 +1,9 @@
+# rimapeditorlib-mapobjname-byte-length.test.bas: the original counts the
+# characters modulo 256
+fixed-orig = 899
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.name_300.length" = "== fail"
+"check.name_300.length.actual" = "== 44"
+"check.name_300.name_whole" = "== fail"

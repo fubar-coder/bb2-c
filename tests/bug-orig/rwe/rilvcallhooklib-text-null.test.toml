@@ -1,0 +1,7 @@
+# rilvcallhooklib-text-null.test.bas: the original draws the text at address 0
+fixed-orig = 742
+rwe = ["rilvcallhooklib"]
+
+[deviations."compiler=orig210"]
+"check.null_text.pixels" = "== fail"
+"check.null_text.pixels.actual" = "== 18"

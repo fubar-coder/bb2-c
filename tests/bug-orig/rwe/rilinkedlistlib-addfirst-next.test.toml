@@ -1,0 +1,6 @@
+# rilinkedlistlib-addfirst-next.test.bas: the original's list loops
+fixed-orig = 724
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.walk_forward.second_step_reaches_b" = "== fail"

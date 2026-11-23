@@ -2,8 +2,9 @@
 // testconf, testmatrix.c) on directory trees in a temporary directory:
 // axes only in the matrix table and only run settings, cells as the
 // product minus exclusions, their names and the side with original
-// material, axes against settings of nearer files, cell selectors - each
-// rule with broken input (a key that is no run setting among them).
+// material, axes against settings of nearer files, cell selectors, the
+// cells that run from the editor - each rule with broken input (a key that
+// is no run setting among them).
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -310,4 +311,67 @@ TEST_CASE("testmatrix: cell selectors", "[testmatrix]")
     CHECK(match("case=a", "b") == "0000");
     CHECK(match("case=a,libs=clib", "a") == "0101");
     CHECK(match("case=a", nullptr) == "0000");
+}
+
+TEST_CASE("testmatrix: a run from the editor", "[testmatrix]")
+{
+    tree t;
+
+    // valid: editor-run with a debugger module, wrap, jobline; the shell
+    // settings and the assertions on rc in the cells that run from the shell
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\ndefaultdbug = \"/m\"\nwrap = \"/w|x\"\n"
+                          "jobline = [\"a=b\"]\n[asserts]\noutput = \"== \\\"start\\n\\\"\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    t.write("tests.toml", "root = true\nrunargs = \"a\"\n[matrix]\neditor-run = [\"off\", \"on\"]\n"
+                          "[asserts.\"editor-run=off\"]\nrc = \"== 5\"\nrequester = \"count == 1\"\n");
+    t.write("x.test.toml", "exclude = [\"editor-run=on\"]\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+        CHECK(b.names() == names{ "off" });
+    }
+    fs::remove(t.root / "x.test.toml");
+    // the settings of the shell start, naming file, line and both keys
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\n\nrunwrap = \"/r|guard\"\n");
+    refused(t, t.path("tests.toml") + ":4: runwrap with editor-run = \"on\" (" + t.path("tests.toml") +
+                   ":2, cell default): the program runs from the editor, not from the shell");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\nrunargs = \"a\"\n");
+    refused(t, ":3: runargs with editor-run = \"on\"");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\nlauncherargs = \"-harden\"\n");
+    refused(t, ":3: launcherargs with editor-run = \"on\"");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\npad = \"on\"\n");
+    refused(t, ":3: pad = \"on\" with editor-run = \"on\"");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\npad = \"off\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    // an axis: the cell that runs from the editor is refused
+    t.write("tests.toml", "root = true\nrunargs = \"a\"\n[matrix]\neditor-run = [\"off\", \"on\"]\n");
+    refused(t, ":2: runargs with editor-run = \"on\" (" + t.path("tests.toml") + ":4, cell on)");
+    // an assertion, a deviation, an alternative end on rc or requester
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\n[asserts]\n\nrc = \"== 0\"\n");
+    refused(t, t.path("tests.toml") + ":5: rc: an assertion on rc in the cell default with editor-run = \"on\" (" +
+                   t.path("tests.toml") + ":2): a run from the editor gives no exit code and no requesters");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\n[asserts.\"case=a\"]\nrequester = \"count == 0\"\n");
+    refused(t, ":4: requester: an assertion on requester in the cell default");
+    t.write("tests.toml", "root = true\n[matrix]\neditor-run = [\"off\", \"on\"]\n[asserts.\"runtime-errors=off\"]\n"
+                          "rc = \"== 0\"\n");
+    refused(t, ":5: rc: an assertion on rc in the cell on");
+    t.write("tests.toml", "root = true\neditor-run = \"on\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    t.write("x.test.toml", "fixed-orig = 1\n[deviations.\"libs=cd\"]\nrc = \"== 3\"\n");
+    refused(t, t.path("x.test.toml") + ":3: rc: a deviation on rc in the cell cd");
+    t.write("x.test.toml", "fixed-orig = 1\n[ends.\"libs=cd\"]\nreason = \"r\"\nhangs = [\"session == timeout\", "
+                           "\"rc not exists\"]\n");
+    refused(t, t.path("x.test.toml") + ":4: hangs: an alternative end on rc in the cell cd");
+    fs::remove(t.root / "x.test.toml");
+    // the debugger module without a run from the editor
+    t.write("tests.toml", "root = true\n\ndefaultdbug = \"/m\"\n");
+    refused(t, t.path("tests.toml") + ":3: defaultdbug without editor-run = \"on\" (cell default): the debugger "
+                                      "module is used only by a run from the editor");
+    t.write("tests.toml", "root = true\ndefaultdbug = \"/m\"\n[matrix]\neditor-run = [\"on\", \"off\"]\n");
+    refused(t, ":2: defaultdbug without editor-run = \"on\" (cell off)");
 }

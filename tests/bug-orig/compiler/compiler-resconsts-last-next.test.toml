@@ -1,0 +1,13 @@
+# compiler-resconsts-last-next.test.bas: the compiler runs through inject
+# with pad (the query compile.inject) and compiles with the resident of one
+# constant, made by tedstub from the test's data before the job
+fixed-orig = 34
+wrap = "@INJECT@|pad"
+files = ["r.bb2|@TESTDATA@/compiler-resconsts-last-next.res"]
+jobline = ["resident=r|CORPUS:r.bb2|CORPUS:out/r.res"]
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "contains \"inject: pad: FreeMem inside an allocation (not done)\n\""

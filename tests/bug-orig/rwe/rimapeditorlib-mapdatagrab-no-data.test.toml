@@ -1,0 +1,6 @@
+# rimapeditorlib-mapdatagrab-no-data.test.bas: the original writes at address 0
+fixed-orig = 895
+rwe = ["rimapeditorlib"]
+
+[deviations."compiler=orig210"]
+"check.no_data.address_0_kept" = "== fail"

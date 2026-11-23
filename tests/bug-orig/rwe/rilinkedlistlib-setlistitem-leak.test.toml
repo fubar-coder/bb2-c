@@ -1,0 +1,6 @@
+# rilinkedlistlib-setlistitem-leak.test.bas: the original loses the old copies
+fixed-orig = 734
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.set_20_times.old_copies_freed" = "== fail"

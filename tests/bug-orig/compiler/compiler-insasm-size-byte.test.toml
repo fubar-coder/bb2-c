@@ -1,0 +1,11 @@
+# compiler-insasm-size-byte.test.bas: the compiler runs through inject with
+# track, which reports what the compiler left allocated and every FreeMem
+# whose size is not the allocation's (the query compile.inject)
+fixed-orig = 1
+wrap = "@INJECT@|track"
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "contains \"inject: track: FreeMem of 8 bytes for an allocation of 264 bytes\n\""

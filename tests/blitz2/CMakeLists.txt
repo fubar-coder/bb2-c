@@ -274,6 +274,25 @@ foreach(side port originals)
 		PASS_REGULAR_EXPRESSION
 		"model-run-program\\.test\\.bas: case returns: PASSED \\(alone\\)\n.*case long: PASSED \\(alone\\)\n.*case twice: PASSED \\(alone\\)\n.*case req: PASSED \\(alone\\)\n.*case hang: PASSED \\(alone\\)\nmodel-run-program\\.test\\.bas: 5 cases, side ${side}: PASSED\n")
 endforeach()
+# a program run from the editor (selftest/model-editor-run.test.bas, change basic-test-editor-run):
+# a case that passes from its result file and its console output, and a case whose program
+# hangs, ended by the hang check armed on the console; inject's report of the compiler, the
+# query compile.inject (selftest/model-compile-inject.test.bas)
+math(EXPR limit "90 + 60 + ${EMULATION_QUEUE_WAIT}")
+foreach(t "prints|" "hangs|_hang")
+	string(REPLACE "|" ";" t "${t}")
+	list(GET t 0 case)
+	list(GET t 1 suffix)
+	add_test(NAME blitz2_selftest_model_editor_run${suffix} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+		--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-editor-run.test.bas --case ${case})
+	set_tests_properties(blitz2_selftest_model_editor_run${suffix} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+		TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "model-editor-run\\.test\\.bas: case ${case}: PASSED\n")
+endforeach()
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME blitz2_selftest_model_compile_inject COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-compile-inject.test.bas --case tracked)
+set_tests_properties(blitz2_selftest_model_compile_inject PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION "model-compile-inject\\.test\\.bas: case tracked: PASSED\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md
