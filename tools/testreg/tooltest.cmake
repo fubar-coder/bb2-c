@@ -201,11 +201,21 @@ list(LENGTH calls ncalls)
 if(NOT ncalls EQUAL 2)
 	message(FATAL_ERROR "--test-env: ${ncalls} calls, not 2 (one per registered test):\n${inc}")
 endif()
-# broken input: an entry of a test of the model of the prefix that is not
-# registered, a malformed file
-file(WRITE ${WORK}/costs-bad.txt "bug_orig_gone__c 5\n")
-refused("costs-bad\\.txt:1: bug_orig_gone__c: no such test" --costs ${WORK}/costs-bad.txt
+# an entry of a test of the model of the prefix that is not registered is
+# ignored: no message, the include file as without it
+file(WRITE ${WORK}/costs-stale.txt "bug_orig_gone__c 5\nbug_orig_order_open__c 7\n")
+run(0 --prefix bug_orig_ --output ${WORK}/stale-tests.cmake ${env} --command run --costs ${WORK}/costs-stale.txt
 	${s}/order/order-open.test.bas)
+if(NOT err STREQUAL "")
+	message(FATAL_ERROR "--costs: a stale entry is reported:\n${err}")
+endif()
+file(READ ${WORK}/stale-tests.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+if(inc MATCHES "bug_orig_gone" OR NOT inc MATCHES "bug_orig_order_open__c PROPERTIES [^)]* COST 7\\)")
+	message(FATAL_ERROR "--costs: with a stale entry, the include file\n${inc}")
+endif()
+# broken input: a malformed file
 file(WRITE ${WORK}/costs-bad.txt "bug_orig_b 5\nbug_orig_a 5\n")
 refused("costs-bad\\.txt:2: bug_orig_a after bug_orig_b: the file is sorted by name" --costs ${WORK}/costs-bad.txt
 	${s}/order/order-open.test.bas)

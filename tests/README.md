@@ -3179,11 +3179,10 @@ every `orig210` cell, `cmake/basic-test-model.cmake`).
    to its `tests.toml`.
 4. `git rm` the `.bas`, `.expect`, `.orig` of the test (and move
    `NAME.spec` data files only if they were the test's: they stay where
-   they are, the key `files` names them as before). Remove the old
-   test's lines from `tests/data/test-costs.txt` in the same commit: the
-   configure step refuses entries of tests that do not exist (the old
-   names `bug_orig_ID`, `bug_orig_record_ID`, with a machine suffix
-   `_a500`, `_a500_204` or `_a1200` where the test had one).
+   they are, the key `files` names them as before). The old test's lines
+   in `tests/data/test-costs.txt` can stay: the build ignores entries of
+   tests that do not exist, and the next full refresh drops them
+   ([The measured COST](#the-measured-cost)).
 5. Build (the registration lists the new tests; `ctest -N -R ID`), run
    `ctest --preset all -R ID` and `ctest --preset originals -R ID`: all
    cells pass (a fixed test), or, for an open bug, `ctest --preset
@@ -3694,15 +3693,13 @@ the model, also in the [order of the bug-orig tests](#order-of-the-bug-orig-test
 a measurement replaces the estimates (the sum of a model test's cells'
 session limits, an old-form bug-orig test's session limit times sessions,
 the list of the long tests), which stay for a test without an entry; a
-`cost` key of a test of the model wins over its entry. An entry whose test no longer exists
-fails the build (the configuration, or the registration step of the
-tests of the model), naming its line. A test that only the
-[prev build](#the-prev-build) has (the comparisons `NAME_prev`,
-`compiler_prev` and `PREFIX_ID_prev` of `cmake/prev.cmake`,
-`corpus_cd_prev`, `corpus_cd_ab3_prev`, `ab3_cli_prev_N`) is named where
-it would be made (`test_cost_prev_only`): without a prev build its entry
-is accepted, since a file refreshed from an acceptance run names it; with
-one the test must exist. After an acceptance run, refresh
+`cost` key of a test of the model wins over its entry. The COST only
+orders the tests: an entry whose test does not exist (a removed or
+renamed test, a test that only the [prev build](#the-prev-build) has in a
+build without one) is ignored, without an error or a warning, both in the
+configuration and in the registration step of the tests of the model; a
+line that is not `NAME COST` stops the build, naming its line. After an
+acceptance run, refresh
 the file from its JUnit file(s) and commit it with the run's other
 results:
 
@@ -3712,8 +3709,8 @@ build/amiga/host/tools/testinfo/testinfo costs --update tests/data/test-costs.tx
 ```
 
 `--update` replaces the entries of the measured tests and keeps the
-others; remove the line of a removed test by hand (the build names it),
-or write the file anew from a full run without `--update`
+others, also those of removed tests; they go away with the next full
+refresh, which writes the file anew from a full run without `--update`
 (`testinfo costs JUNIT... > tests/data/test-costs.txt`).
 
 ## Coverage

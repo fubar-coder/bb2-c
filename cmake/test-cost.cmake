@@ -22,23 +22,16 @@
 # long_test_costs()
 #   at the end of the top-level CMakeLists.txt, after all add_test: the
 #   CMake tests with an entry get its COST, the long tests of the list below
-#   without one its value; then the check of the file: an entry whose test
-#   does not exist (no CMake test, no recorded bug-orig test, no test of the
-#   model of a registered prefix: PREFIX...__CASE, which testreg checks, no
-#   test of the prev build named by test_cost_prev_only without one) stops
-#   the configuration, naming the file's line
-# test_cost_prev_only(NAME)
-#   NAME is a test that only a prev build has (cmake/prev.cmake: the
-#   comparisons NAME_prev and compiler_prev, the model tests' PREFIX_ID_prev;
-#   corpus_cd_prev, corpus_cd_ab3_prev, ab3_cli_prev_N), called where it is
-#   made, before the test of PREV_REQUESTED: without a prev build its entry
-#   is not stale (a file refreshed from a run with the prev build names it);
-#   with one it does nothing, the test exists or its entry is stale
+#   without one its value
+#
+# An entry whose test does not exist (a removed or renamed test, a test of
+# the prev build in a build without one) is ignored, here and in testreg: the
+# COST only orders the tests, and the next full refresh of the file drops the
+# line.  A malformed line stops the configuration.
 
 function(test_costs_load file)
 	set_property(DIRECTORY ${CMAKE_SOURCE_DIR} APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${file})
 	set_property(GLOBAL PROPERTY TEST_COSTS_FILE ${file})
-	set(names "")
 	if(EXISTS ${file})
 		file(STRINGS ${file} lines)
 		set(n 0)
@@ -51,11 +44,8 @@ function(test_costs_load file)
 				message(FATAL_ERROR "${file}:${n}: a line is \"NAME COST\" (COST seconds, at least 1): ${l}")
 			endif()
 			set_property(GLOBAL PROPERTY TEST_COST_${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
-			set_property(GLOBAL PROPERTY TEST_COST_LINE_${CMAKE_MATCH_1} ${n})
-			list(APPEND names ${CMAKE_MATCH_1})
 		endforeach()
 	endif()
-	set_property(GLOBAL PROPERTY TEST_COSTS_NAMES "${names}")
 endfunction()
 
 function(test_cost var name default)
@@ -64,12 +54,6 @@ function(test_cost var name default)
 		set(c ${default})
 	endif()
 	set(${var} ${c} PARENT_SCOPE)
-endfunction()
-
-function(test_cost_prev_only name)
-	if(NOT PREV_REQUESTED)
-		set_property(GLOBAL APPEND PROPERTY TEST_COSTS_PREV_ONLY ${name})
-	endif()
 endfunction()
 
 function(long_test_costs)
@@ -87,14 +71,12 @@ function(long_test_costs)
 		ab3_tokenise_broken 30
 		corpus_serial_runerr 30
 		ab3_tokenise 30)
-	set(known "")
 	set(dirs ${CMAKE_SOURCE_DIR})
 	while(dirs)
 		list(POP_FRONT dirs dir)
 		get_property(sub DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
 		list(APPEND dirs ${sub})
 		get_property(tests DIRECTORY ${dir} PROPERTY TESTS)
-		list(APPEND known ${tests})
 		foreach(t IN LISTS tests)
 			list(FIND costs ${t} i)
 			set(cost "")
@@ -108,33 +90,4 @@ function(long_test_costs)
 			endif()
 		endforeach()
 	endwhile()
-	# the check: every entry names a test
-	get_property(file GLOBAL PROPERTY TEST_COSTS_FILE)
-	get_property(names GLOBAL PROPERTY TEST_COSTS_NAMES)
-	get_property(recorded GLOBAL PROPERTY BUG_ORIG_TESTS)
-	get_property(prefixes GLOBAL PROPERTY BASIC_TEST_PREFIXES)
-	get_property(prev_only GLOBAL PROPERTY TEST_COSTS_PREV_ONLY)
-	list(APPEND known ${recorded} ${prev_only})
-	set(stale "")
-	foreach(name IN LISTS names)
-		if(name IN_LIST known)
-			continue()
-		endif()
-		set(model FALSE)
-		foreach(p IN LISTS prefixes)
-			string(FIND "${name}" "${p}" at)
-			string(FIND "${name}" "__" sep)
-			if(at EQUAL 0 AND sep GREATER 0)
-				set(model TRUE)
-			endif()
-		endforeach()
-		if(NOT model)
-			get_property(line GLOBAL PROPERTY TEST_COST_LINE_${name})
-			string(APPEND stale "\n  ${file}:${line}: ${name}")
-		endif()
-	endforeach()
-	if(stale)
-		message(FATAL_ERROR "the measured COST names tests that do not exist (refresh the file, "
-			"tests/README.md \"The measured COST\"):${stale}")
-	endif()
 endfunction()

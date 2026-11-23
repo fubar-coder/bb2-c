@@ -44,9 +44,8 @@ tests"), so that all of them are declared in one sorted list. With
 `--costs FILE` (`tests/data/test-costs.txt`, `tests/README.md`, "The
 measured COST") a test with an entry gets the measured COST in place of
 the sum of the session limits; the configuration's `cost` wins over the
-entry. An entry
-`PREFIX...__CASE` of the prefix that names no registered test fails the
-step. With `--test-env FILE` the include file includes `FILE` first and
+entry. An entry that names no registered test is ignored (the COST only
+orders the tests; the next full refresh of the file drops it). With `--test-env FILE` the include file includes `FILE` first and
 calls `basic_test_environment(NAME LABELS)` after the properties of each
 test it registers: the script `basic_test_register()` writes gives the
 test the environment of the tests CMake declares (the snapshot owner, the
@@ -97,8 +96,8 @@ OPTIONS:
                               first
           --costs FILE        the measured COST of the tests (tests/data/test-costs.txt): an
                               entry replaces the sum of the cells' session limits, the
-                              configuration's cost wins over it; an entry of a test of the
-                              model of the prefix that is not registered is an error
+                              configuration's cost wins over it; an entry that names no
+                              registered test is ignored
           --test-env FILE     a ctest script that defines basic_test_environment(NAME LABELS),
                               the environment of a test (cmake/basic-test-model.cmake):
                               included by the include file, called for each test

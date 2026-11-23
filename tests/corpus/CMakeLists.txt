@@ -560,8 +560,6 @@ set_tests_properties(corpus_cd_ab3 PROPERTIES LABELS emulator SKIP_RETURN_CODE 7
 # PREV_INTENDED names the source (corpus_cd_prev:PATH).  The table they compare with is
 # the result of the test they follow (fixtures corpus_cd_table, corpus_cd_ab3_table: a
 # run of corpus_cd_prev alone runs corpus_cd first); the two pairs run at the same time.
-test_cost_prev_only(corpus_cd_prev)
-test_cost_prev_only(corpus_cd_ab3_prev)
 if(PREV_REQUESTED)
 	foreach(v cd cd_ab3)
 		if(v STREQUAL "cd")
