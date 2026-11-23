@@ -1,8 +1,9 @@
 /*
  * test_amiga_emulation_join_order - with the emulator (A1200): two
  * sessions of one process, joined in start order as the runners do.  The
- * first hangs until its time limit; the second is a first-save session (a
- * slot directory of its own, so no snapshot exists yet).  While the
+ * first hangs until its time limit (the first use of the configuration:
+ * no snapshot); the second is a first-save session (a slot directory of
+ * its own, so no snapshot exists yet).  While the
  * caller waits for the first, the second must boot, save, restore and run
  * its job on its own (its supervisor), not sit at SNAP:ready until its
  * own limit has run out.  It holds two of the shared slots meanwhile.
@@ -136,7 +137,8 @@ TEST_CASE("amiga_emulation_join_order: sessions joined in start order", "[amiga_
     CHECK(amiga_emulation_join(a) == AMIGA_EMULATION_TIMEOUT);
     joined_a = now() - t0;
     amiga_emulation_get_stats(a, &st);
-    CHECK(st.snapshot == AMIGA_EMULATION_SNAP_FIRST_SAVE);
+    /* the first use of the configuration: no snapshot (amiga_emulation.h) */
+    CHECK(st.snapshot == AMIGA_EMULATION_SNAP_SINGLE);
     CHECK(st.timed >= LIMIT && st.timed < LIMIT + 5);
 
     /* the second has run its job meanwhile, within its limit */

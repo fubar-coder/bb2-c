@@ -10,7 +10,9 @@
  * and then plays the hardfile's user-startup: a cold boot with the
  * snapshot prologue writes SNAP:ready and waits for SNAP:job.script, a
  * restore (--statefile) waits for it at once (a state that is not a fake
- * one ends it, as a failed restore); a job writes SNAP:started, a script
+ * one ends it, as a failed restore; the stuck state loads and never runs
+ * its job, a restore without a start; SAVESTATE writes it while the file
+ * $FAKE_BAD_SAVES counts down); a job writes SNAP:started, a script
  * writes TEST:run.done unless it contains HANG.  A script with SLOWTERM
  * writes run.done, and on SIGTERM takes 2.5 s to end, writing TEST:late as
  * its last act (Amiberry closing down: the session must wait for it).
@@ -38,6 +40,7 @@ extern "C" {
 }
 
 #define FAKE_STATE "ASF fake state\n"  /* begins as a savestate */
+#define FAKE_NO_START "ASF stuck state\n"      /* loads, never runs the job */
 
 static double now(void)
 {
@@ -141,6 +144,23 @@ static const char *fake_regs(void)
     return buf;
 }
 
+/* whether this save writes a state that loads but never starts its job:
+   while the file $FAKE_BAD_SAVES holds a number > 0 (counted down) */
+static int bad_save(void)
+{
+    const char *path = getenv("FAKE_BAD_SAVES");
+    char *s = path ? read_text(path) : nullptr;
+    int n = s ? atoi(s) : 0;
+    char text[16];
+
+    free(s);
+    if (n <= 0)
+        return 0;
+    snprintf(text, sizeof text, "%d\n", n - 1);
+    write_text(path, text);
+    return 1;
+}
+
 /* one command line of the control socket; 1 = QUIT */
 static int fake_command(int fd)
 {
@@ -160,7 +180,7 @@ static int fake_command(int fd)
 
             if (end)
                 *end = 0;
-            write_text(tab, FAKE_STATE);
+            write_text(tab, bad_save() ? FAKE_NO_START : FAKE_STATE);
         }
         quit = !strcmp(line, "QUIT");
         if (!strcmp(line, "GET_CPU_REGS"))
@@ -189,12 +209,13 @@ static int fake_amiberry(int argc, char **argv)
         snap[0] = 0;
     if (statefile) {
         char *s = read_text(statefile);
-        int good = s && !strcmp(s, FAKE_STATE);
+        int good = s && !strcmp(s, FAKE_STATE), stuck = s && !strcmp(s, FAKE_NO_START);
 
         free(s);
-        if (!good)
+        if (!good && !stuck)
             return 3;           /* a broken state: Amiberry ends */
         boot = start;
+        ran = stuck;            /* loaded, but the job never starts */
     }
     srv = socket(AF_UNIX, SOCK_STREAM, 0);
     memset(&sa, 0, sizeof sa);
@@ -285,23 +306,33 @@ static char self[4096];
 static char base[] = "/tmp/amiga-emulation-suptest-XXXXXX";
 static char slots[256];
 
-static struct amiga_emulation *start(const char *script, unsigned timeout)
+/* a session; other 1: another configuration (one change more), hang_after
+   the hang check's seconds */
+static struct amiga_emulation *start_with(const char *script, unsigned timeout, int other,
+                                          unsigned hang_after)
 {
     static const struct amiga_emulation_option changes[] = { { "kickstart_rom_file", nullptr },
-                                                             { "hardfile2", nullptr } };
+                                                             { "hardfile2", nullptr },
+                                                             { "cpu_speed", "max" } };
     struct amiga_emulation_params p = {};
     struct amiga_emulation *e;
     char err[512];
 
     p.changes = changes;
-    p.nchanges = 2;
+    p.nchanges = other ? 3 : 2;
     p.amiberry = self;
     p.script = script;
     p.timeout = timeout;
+    p.hang_after = hang_after;
     e = amiga_emulation_start(&p, err, sizeof err);
     if (!e)
         fprintf(stderr, "test_amiga_emulation_supervisor: start: %s\n", err);
     return e;
+}
+
+static struct amiga_emulation *start(const char *script, unsigned timeout)
+{
+    return start_with(script, timeout, 0, 0);
 }
 
 static char *snap_log(struct amiga_emulation *e)
@@ -342,6 +373,157 @@ static int slot_clean(int k)
         }
     closedir(d);
     return clean;
+}
+
+static void break_snapshots(const char *text);
+
+/* the files of slot k whose names begin with "snap-" and end with suffix */
+static int slot_files(int k, const char *suffix)
+{
+    char dir[300];
+    DIR *d;
+    struct dirent *de;
+    int n = 0;
+
+    snprintf(dir, sizeof dir, "%s/slot-%d", slots, k);
+    if (!(d = opendir(dir)))
+        return 0;
+    while ((de = readdir(d)) != nullptr) {
+        size_t len = strlen(de->d_name), sl = strlen(suffix);
+
+        if (!strncmp(de->d_name, "snap-", 5) && len > sl && !strcmp(de->d_name + len - sl, suffix))
+            n++;
+    }
+    closedir(d);
+    return n;
+}
+
+/* removes the snapshots (and marks) of both slots */
+static void drop_snapshots(void)
+{
+    char path[700];
+    DIR *d;
+    struct dirent *de;
+
+    for (int k = 0; k < 2; k++) {
+        char dir[300];
+
+        snprintf(dir, sizeof dir, "%s/slot-%d", slots, k);
+        if ((d = opendir(dir)) != nullptr) {
+            while ((de = readdir(d)) != nullptr)
+                if (!strncmp(de->d_name, "snap-", 5)) {
+                    snprintf(path, sizeof path, "%s/%s", dir, de->d_name);
+                    unlink(path);
+                }
+            closedir(d);
+        }
+    }
+}
+
+/* one session of the default configuration alone (slot 0): its result,
+   the snapshot use, its snapshot.log must have the texts of want (NULL
+   ends), and the slot is clean after it */
+static void one_session(const char *name, enum amiga_emulation_snapshot_use use,
+                        const char *const *want)
+{
+    struct amiga_emulation *e = start("Echo ok", 10);
+    struct amiga_emulation_stats st;
+    char *log;
+    int ok = 1;
+
+    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_DONE);
+    if (!e)
+        return;
+    amiga_emulation_get_stats(e, &st);
+    log = snap_log(e);
+    ok = st.snapshot == use && log;
+    for (; ok && *want; want++)
+        ok = strstr(log, *want) != nullptr;
+    CHECK(ok);
+    if (!ok)
+        show(name, e);
+    free(log);
+    amiga_emulation_free(e);
+    CHECK(slot_clean(0));
+}
+
+/* the first session of a configuration that no session has used lately:
+   no snapshot, the job runs in the booted machine (use single), the hang
+   check works there; the next session of it saves one */
+static void single_use(void)
+{
+    static const char *const single[] = { "no snapshot", "job started", "done", nullptr };
+    static const char *const saved[] = { "boot cold, save", " saved ", "job started", nullptr };
+    struct amiga_emulation *e;
+    struct amiga_emulation_stats st;
+
+    one_session("single", AMIGA_EMULATION_SNAP_SINGLE, single);
+    CHECK(slot_files(0, "") == 0);
+    one_session("second", AMIGA_EMULATION_SNAP_FIRST_SAVE, saved);
+    CHECK(slot_files(0, ".uss") == 1);
+    /* another configuration, used once, whose job hangs: the hang check ends it */
+    e = start_with("HANG", 30, 1, 2);
+    CHECK(e && amiga_emulation_join(e) == AMIGA_EMULATION_TIMEOUT);
+    if (e) {
+        amiga_emulation_get_stats(e, &st);
+        CHECK(st.snapshot == AMIGA_EMULATION_SNAP_SINGLE && st.hung && st.timed < 10);
+        if (snitch::impl::get_current_test().failures)
+            show("single hang", e);
+    }
+    amiga_emulation_free(e);
+    CHECK(slot_files(0, ".uss") == 1 && slot_clean(0));
+    drop_snapshots();
+}
+
+/* states that load but never start their job (no SNAP:started): one this
+   session has just saved is removed and saved again, at most twice, then
+   the session boots cold; an older one is kept with a mark the first
+   time, removed the second; a start in between removes the mark */
+static void restore_repair(void)
+{
+    static const char *const once[] = { " saved ", "restore failed (no start): removed, save again",
+                                         "job started", nullptr };
+    static const char *const twice[] = { "restore failed (no start): removed, boot cold", nullptr };
+    static const char *const fresh[] = { " saved ", "job started", nullptr };
+    static const char *const kept[] = { "restore failed (no start): kept, boot cold", nullptr };
+    static const char *const gone[] = { "restore failed (no start): removed (no start twice), boot cold",
+                                        nullptr };
+    static const char *const restored[] = { "restore ", "job started", nullptr };
+    char bad[300];
+
+    snprintf(bad, sizeof bad, "%s/bad-saves", base);
+    setenv("FAKE_BAD_SAVES", bad, 1);
+    setenv("AMIGA_EMULATION_SNAP_RESTORE_GRACE", "3", 1);
+    /* the first save does not start, the second does */
+    drop_snapshots();
+    write_text(bad, "1\n");
+    one_session("bad once", AMIGA_EMULATION_SNAP_FIRST_SAVE, once);
+    CHECK(slot_files(0, ".uss") == 1 && slot_files(0, ".nostart") == 0);
+    /* neither does: no snapshot left */
+    drop_snapshots();
+    write_text(bad, "2\n");
+    one_session("bad twice", AMIGA_EMULATION_SNAP_FALLBACK, twice);
+    CHECK(slot_files(0, ".uss") == 0);
+    /* a kept state that stops starting: a mark, then removed */
+    one_session("fresh", AMIGA_EMULATION_SNAP_FIRST_SAVE, fresh);
+    break_snapshots(FAKE_NO_START);
+    one_session("kept", AMIGA_EMULATION_SNAP_FALLBACK, kept);
+    CHECK(slot_files(0, ".uss") == 1 && slot_files(0, ".nostart") == 1);
+    one_session("gone", AMIGA_EMULATION_SNAP_FALLBACK, gone);
+    CHECK(slot_files(0, ".uss") == 0 && slot_files(0, ".nostart") == 0);
+    /* a start between two failures removes the mark: kept again */
+    one_session("fresh again", AMIGA_EMULATION_SNAP_FIRST_SAVE, fresh);
+    break_snapshots(FAKE_NO_START);
+    one_session("kept again", AMIGA_EMULATION_SNAP_FALLBACK, kept);
+    break_snapshots(FAKE_STATE);
+    one_session("restored", AMIGA_EMULATION_SNAP_RESTORED, restored);
+    CHECK(slot_files(0, ".uss") == 1 && slot_files(0, ".nostart") == 0);
+    break_snapshots(FAKE_NO_START);
+    one_session("kept once more", AMIGA_EMULATION_SNAP_FALLBACK, kept);
+    CHECK(slot_files(0, ".uss") == 1 && slot_files(0, ".nostart") == 1);
+    drop_snapshots();
+    unsetenv("AMIGA_EMULATION_SNAP_RESTORE_GRACE");
+    unsetenv("FAKE_BAD_SAVES");
 }
 
 /* a session that is done is not killed while Amiberry is still closing
@@ -816,8 +998,10 @@ TEST_CASE("amiga_emulation_supervisor: sessions without the caller (fake Amiberr
        (set by the emulator test presets) */
     unsetenv("AMIGA_EMULATION_TIMEOUT_STATE");
 
+    single_use();
     join_order();
     restore_and_fallback();
+    restore_repair();
     free_running();
     slot_free_at_end();
     retry_own_ended();

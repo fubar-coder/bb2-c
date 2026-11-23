@@ -82,10 +82,10 @@ OPTIONS:
 
 The COST of a test is the median over the runs of the sum of its emulator
 sessions' times without the slot wait, a session that did not start from a
-snapshot (cold, first-save, fallback) counted as the median of the test's
-sessions that did; a test without such a session gets no entry. Exit status 0, 1
-problems in a JUnit file (reported on stderr), 2 usage error, a file that cannot
-be read or written, a malformed FILE.
+snapshot (cold, first-save, fallback, single) counted as the median of the
+test's sessions that did; a test without such a session gets no entry. Exit
+status 0, 1 problems in a JUnit file (reported on stderr), 2 usage error, a file
+that cannot be read or written, a malformed FILE.
 ```
 
 Writes the measured COST of the tests (`tools/lib/teststats/testcosts.h`,
