@@ -1,0 +1,5 @@
+# compiler-putreg-local.test.bas: an open bug (#1202): the port has the same
+# code as the original, so every cell shows the declared deviation
+[deviations."compiler=orig195"]
+"check.putreg_local.local" = "== fail"
+"check.putreg_local.local.actual" = "== 0"

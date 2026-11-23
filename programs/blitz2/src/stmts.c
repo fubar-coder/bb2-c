@@ -1593,6 +1593,9 @@ void doputreg(UWORD c)
     if ((vtype & TF_POINTER) || (vtype & 0xff) == 0 || (vtype & 0xff) == 7)
         vtype = (vtype & 0xff00) | 3;   /* .issa */
     if (!(vtype & TF_ADDRINA2)) {
+        /* BUG(orig) (#1202): a local variable of a procedure is addressed
+         * from a4, but this is a plain pokewd, not pokewda5s: the register
+         * is stored relative to a5 (blitz2.s:4689-4690; pokewda5s :8453) */
         pokewd(0x45ed);                 /* lea x(a5),a2 */
         pokewd(offset);
     }
