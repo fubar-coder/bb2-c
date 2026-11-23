@@ -35,7 +35,7 @@
 - [x] 4.1 `rundebuglib-printerr-numeric-code` (#6, user 2026-11-23 "With the child feature (Recommended)"): `ID.test/noend.bas` (a program that runs off its end), a case that starts it; port: requester "End of Program"; the deviation `libs=cd` pins the empty text (`AutoRequest body ""`); verify: `ctest --preset all -R rundebuglib_printerr` and `ctest --preset originals -R rundebuglib_printerr` pass twice; with the pinned text changed the originals cell fails
 - [x] 4.2 `editlib-edit-eof`, `rundebuglib-ctrlc-edit`, `rundebuglib-supertrap-d0-lost`, `rundebuglib-two-programs` (D8: the values in BASIC with `*r\rc`/`*r\printed`, the toml only for requesters and ends), the checklist of "Moving a bug-orig test to the model"; verify per test: all and originals pass twice, the old `.bas`/`.expect`/`.orig` removed in the same commit, fix-scope lists only removed and added cases, the report names a changed observation
 - [x] 4.3 `palettelib-make4bitrgbs-lowbyte` (user 2026-11-23 "Old form stays (Recommended)", clarified "möglicherweise später ein neues Feature dafür": this is the feature) and `multi-68010-vbr` (Kickstart 1.3, the rc of 3.1); verify: as 4.2
-- [ ] 4.4 Docs: "Moving a bug-orig test to the model" gets a pitfall "A test that starts a program" (data, `!RunProgram`, the observations of the child) with these tests as examples; verify: no text says that a test starting itself must stay in the old form
+- [x] 4.4 Docs: "Moving a bug-orig test to the model" gets a pitfall "A test that starts a program" (data, `!RunProgram`, the observations of the child) with these tests as examples; verify: no text says that a test starting itself must stay in the old form
 
 ## 5. Acceptance
 

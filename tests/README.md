@@ -2904,6 +2904,32 @@ cells.
   line; name the moved tests in the commit message instead. A case the
   move changes in place (an old case with the same key whose value
   differs) is the one to look at.
+* **A test that starts a program.** An old test whose program runs
+  itself as a child (`NumPars`, `Par$`, dos `Execute` of its own name from
+  `GetProgramName`) moves with its child as test-local data: the child's
+  part of the program becomes `ID.test/child.bas` (the action
+  `basic-compile` in the table `data`; a file it reads becomes a `copy`
+  file), and the case starts it with `*r.TLRun=!RunProgram{"@TESTDIR@/child
+  <NIL:","child"}` ([A started program](#a-started-program)). The child
+  prints as before; the case checks `*r\rc` and `*r\printed` (the whole
+  output as one `!CheckStrEq`, the shell's line `CMD failed returncode N`
+  included), and the deviations declare the original's values with
+  `.actual`. The child's requesters, crash or hang are the case's: its
+  `requester`, and for a child that does not return `"run.CASE.child" =
+  "== open"` with `run.CASE.child.output`, `session`, `end.case`. What the
+  parent did around the start (a patched exec version, a moved VBR, a
+  trap vector of its own, a second program in the background with `Run`)
+  stays in the case around the `!RunProgram`; assembler and its data
+  stand in the case behind a `Goto`. On Kickstart 1.x the system gives no
+  return code (`*r\rcknown` 0). The moved examples:
+  `libs/editlib-edit-eof` (input from `NIL:`), `libs/rundebuglib-ctrlc-edit`
+  (input from a `copy` file, return code 20), `libs/rundebuglib-supertrap-d0-lost`
+  (a trap handler of the case), `libs/rundebuglib-two-programs` (a second
+  child in the background; the original's run stays open),
+  `libs/palettelib-make4bitrgbs-lowbyte` (exec's version patched),
+  `libs/multi-68010-vbr` (Kickstart 1.3, the original's child crashes) and
+  the case `end_of_program_run` of `libs/rundebuglib-printerr-numeric-code`
+  (a child that runs off its end).
 
 **Checklist for a move.**
 
