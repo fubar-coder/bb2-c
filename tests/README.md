@@ -88,6 +88,13 @@ a string literal, under which the check is reported:
 | `!Require{COND}` | a precondition: `COND` is not 0; else the block ends at once |
 | `!ExpectError{"MESSAGE"}` | announces the runtime error the program expects next |
 
+A case starts a program with `!RunProgram{COMMAND$}` (also with a name as
+an extra last argument), which stands in an expression:
+`*r.TLRun=!RunProgram{"@TESTDIR@/child <NIL:","child"}` runs the command
+line and gives the address of its result, the NewType `TLRun` of the macro
+text, whose fields the case checks through the pointer, `*r\FIELD`
+([A started program](#a-started-program)).
+
 `COND` of `!Check` and `!Require` is evaluated in a Long context. With
 the original compilers a Quick variable or function value fetched while
 the type so far is Long (the Long parameter, or a Long left operand) is
@@ -141,6 +148,7 @@ reaches the program:
 | `!CheckStrEq{ACTUAL$,EXPECTED$}` | `!CheckStrEq{K,ACTUAL$,EXPECTED$}` |
 | `!Require{COND}` | `!Require{K,COND}` |
 | `!ExpectError{"MESSAGE"}` | `!ExpectError{K}` |
+| `!RunProgram{COMMAND$}` | `!RunProgram{K,COMMAND$}` (also inside an expression) |
 
 The example above becomes:
 
@@ -192,12 +200,15 @@ end have the fixed labels `tc__init`, `tc__init_end`, `tc__final` and
 | `TLCheckStr K,expected$,actual$` | `!CheckStrEq` | |
 | `TLRequire K,cond` | `!Require` | |
 | `TLExpectError K` | `!ExpectError` | |
+| `r=TLRunProgram(K,command$)` | `!RunProgram` | starts the command line, gives the address of its result (below) |
 | (finit) | the end of the program | writes `incomplete` if a block is open, then `end` |
 
 The library is `libs/userlibs/testlib` (user library 81, built as
 `variants/bb2-2.10/userlibs/testlib/testlib.obj`; its logic `tlcore.c`
 has the host test `testlib_core`). Between `TLBegin` and the end of the
-run it allocates and frees nothing, and every routine keeps `d2`-`d7`
+run it allocates and frees nothing but in `TLRunProgram` (what the system
+and the started program take is theirs; the library opens and closes the
+program's output file and `NIL:` around the start), and every routine keeps `d2`-`d7`
 and `a2`-`a6` besides the registers of the register rule (the free
 memory is the same before and after each routine with the result file
 on `CORPUS:out/`; a handler that keeps the file in the Amiga's memory
@@ -228,6 +239,60 @@ routines name:
   name or with one too long for a line is written as `?`, followed by
   `case without a name` or `case name too long`. A state whose guard words a wild write changed writes `broken
   state damaged` once; after that only the finit writes, its `end`.
+
+### A started program
+
+`TLRunProgram(K,command$)` (the macro `!RunProgram{K,COMMAND$}`) writes
+`run K`, runs the command line as a shell takes it (arguments and
+redirections; the input is `NIL:` unless the line redirects it) with its
+output to `CORPUS:out/run-K.out`, waits for its end (there is no time
+limit: the session's hang check ends a program that hangs), writes
+`runend K` with the return code, and gives the address of its result. From
+Kickstart 2.0 it runs the line with dos `SystemTagList`, which gives the
+return code; on Kickstart 1.x with `Execute`, which gives none: the entry
+is `runend K -` then. Outside a block and in Blitz mode (also under
+`Forbid` or `Disable`) it starts nothing and writes `broken` with the
+reason `run outside a block` or `run in Blitz mode`. The macro text
+declares the result:
+
+```
+NEWTYPE .TLRun
+  rc.l          ; the return code, 0 if unknown
+  rcknown.w     ; -1: the system gave it; 0: it gave none (Kickstart 1.x)
+  cut.w         ; -1: printed holds only the first 1024 bytes
+  size.l        ; the bytes the program wrote
+  printed.s     ; the first 1024 bytes of its output, as they are
+End NEWTYPE
+```
+
+The result is one static block of the library, and the string of
+`printed` (a Blitz string: its length as a long before the characters, a
+0 behind them) is in the library's static memory. Read it through the
+pointer (`*r\rc`, `x$=*r\printed`, `!CheckStrEq{*r\printed,...}`; `r\rc`
+without the `*` is another variable and does not compile) and never assign
+to a field: the program would free the library's memory. A later
+`!RunProgram` overwrites the block, so the address of an earlier run then
+shows the later one: a case that needs both copies the first
+(`a$=*r\printed`, `c=*r\rc`). An output longer than 1024 bytes is cut
+(`cut` -1, `size` the whole length; the query `run.NS.NAME.output` sees
+the whole file). The shell's own line for a return code at or above the
+fail limit (`CMD failed returncode 20`) is part of the output. A case that
+starts a program runs on its own in the run of all cases, so the
+requesters, the crash or the hang of the program are that case's
+observations.
+
+A case that starts `@TESTDIR@/child` (`K` 0), which returns 20, and checks
+`*r\rc` (`K` 1) gives:
+
+```basictest-result
+begin	1
+block	case	ctrlc
+run	0
+runend	0	$00000014
+check	1	ok	$00000014	$00000014
+blockend
+end
+```
 
 ### The result file
 
@@ -262,6 +327,8 @@ string value by length and CRC32, so they hold for cut values as well;
 | `expect-error` | `K` | |
 | `blockend` | | the block ended |
 | `broken` | a reason (string value) | |
+| `run` | `K` | a program is started (`!RunProgram`) |
+| `runend` | `K`, the return code (a long value) or `-` | it returned; `-` where the system gives no return code (Kickstart 1.x) |
 | `incomplete` | | the program ended inside a block |
 | `end` | | the last entry |
 
@@ -427,13 +494,14 @@ An assertion judges what the program cannot state itself: a key `QUERY =
 query      = "rc" | "requester" | "compile" | "compile.log" | "output"
            | "serial" | "inject" | "session" | "end.case" | "end.run"
            | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
+           | "data." FILE | "run." NAMESPACE "." NAME [ ".rc" | ".output" ]
 predicate  = CMP value | ["not "] "contains" string | "matches" string
            | ["not "] "exists" | "count" CMP integer
 CMP        = "==" | "!=" | "<" | "<=" | ">" | ">="
 value      = integer | string | word
 integer    = ["-"] digits | "$" 1*8 hex-digits     ; "$": 32 bits, signed
 string     = '"' { char | '\"' | '\\' } '"'
-word       = "ok" | "fail" | "not-run" | "done" | "timeout" | "halt" | "none"
+word       = "ok" | "fail" | "not-run" | "done" | "open" | "timeout" | "halt" | "none"
 ```
 
 Blanks may stand around the operator and the value. `NAMESPACE` is the
@@ -449,6 +517,10 @@ name (a check that a configuration names must have one).
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
+| `data.FILE` | the compile of the data source `ID.test/FILE` ([Test-local data](#the-run-configuration)): `ok`, `error LINE MESSAGE` (the line of the data source) or `none`; by default `== ok`, and a result its assertion does not ask for makes the cases of the cell BROKEN | as `compile` |
+| `run.NS.NAME` | the program the `!RunProgram` named `NAME` in `NS` started, for what the case cannot check itself: `done` it returned, `open` it did not (it hung or crashed), `not-run`; by default `== done` for every program that ran | `==`/`!=` with `done`, `open`, `not-run` |
+| `run.NS.NAME.rc` | its return code (no default: the case checks `*r\rc`); where the system gave none (`runend K -`) the cell cannot be judged | `CMP integer`, `exists` |
+| `run.NS.NAME.output` | what it wrote, `CORPUS:out/run-K.out`, also when it did not return | `==`/`!=` string, `contains`, `matches`, `exists` |
 | `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string (decided by the length and CRC32 of the whole value, also of a cut one), `contains`, `matches` (strings; only on a value the library did not cut to fit the line: on a cut one the cell cannot be judged); a cut value is reported as its start with `(cut, length N)` |
 
 `contains` holds if the text (a requester, for `requester`) holds the
@@ -500,7 +572,7 @@ layout (it returns or hangs, crashes or not) declares its ends in the
 table `ends."SELECTOR"` of the test's own file: a required `reason` and
 under every other key a named alternative, a non-empty list of `QUERY
 PREDICATE` (the grammar above; the queries `session`, `rc`, `requester`,
-`end.case`, `end.run`, `output`, `check.*`). It is a declared deviation:
+`end.case`, `end.run`, `output`, `check.*`, `run.*`). It is a declared deviation:
 it applies where the deviations apply, counts for `fixed-orig` and
 `extension`, and is refused with `fixed` and in a `tests.toml`. There the
 queries the alternatives name leave the other assertions and the
