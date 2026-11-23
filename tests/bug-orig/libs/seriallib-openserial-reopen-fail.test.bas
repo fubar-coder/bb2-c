@@ -9,18 +9,18 @@
 ; lib_OpenCnt of the device at +32.
 ; Correct: the second OpenSerial returns 0 and leaves the open unit as
 ; it is; CloseSerial closes the device.
-; @fixed #260
-; @configs clib
 DEFTYPE .l
-u=OpenSerial("serial.device",0,9600,0)
-If u=0 Then NPrint "open failed" : End
-dv=Peek.l(u+58)
-sb=Peek.b(u+19)
-NPrint "opened, users ",Peek.w(dv+32)
-u2=OpenSerial("serial.device",0,9600,0)
-NPrint "second open ",u2
-If Peek.l(u)=u+38 Then NPrint "read half open" Else NPrint "read half closed"
-If Peek.b(u+19)=sb Then NPrint "read signal kept" Else NPrint "read signal changed"
-CloseSerial 0
-NPrint "closed, users ",Peek.w(dv+32)
-End
+
+!TestCase{reopen_fail}
+  u=OpenSerial("serial.device",0,9600,0)
+  !Require{u<>0,"opened"}
+  dv=Peek.l(u+58)
+  sb=Peek.b(u+19)
+  !Require{Peek.w(dv+32)=1,"one_user"}
+  u2=OpenSerial("serial.device",0,9600,0)
+  !CheckEq{u2,0,"second_open"}
+  !Check{Peek.l(u)=u+38,"read_half_open"}
+  !Check{Peek.b(u+19)=sb,"read_signal_kept"}
+  CloseSerial 0
+  !CheckEq{Peek.w(dv+32),0,"closed_users"}
+!EndTestCase

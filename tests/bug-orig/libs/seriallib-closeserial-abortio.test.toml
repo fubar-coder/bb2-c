@@ -1,0 +1,12 @@
+# seriallib-closeserial-abortio.test.bas: the serial peer; the original
+# leaves the unit's write pending and the device open, so the cells with the
+# CD's libraries each get a session of their own
+fixed-orig = 258
+serial = "on"
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+"check.abort_write.replied" = "== fail"
+"check.abort_write.replied.actual" = "== 5"
+"check.abort_write.aborted" = "== fail"
+"check.abort_write.aborted.actual" = "== 0"

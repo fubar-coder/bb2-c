@@ -15,33 +15,34 @@
 ; +31; io_SerFlags +79).
 ; Correct: CloseSerial aborts the write and waits for it (replied, error
 ; -2 = IOERR_ABORTED).  The original returns with the write pending.
-; @fixed #258
-; @configs clib
-; @pass serial=on
 DEFTYPE .l
-Dim x.l(31) : io=&x(0)
-u=OpenSerial("serial.device",0,9600,$20)
-If u=0 Then NPrint "open failed" : End
-wq=u+166
-Poke.w io+18,82 : Poke.b io+79,$20 : Poke.s io+100,"serial.device"
-GetReg d0,io+100 : MOVE.l d0,a0 : GetReg d0,io : MOVE.l d0,a1
-MOVEQ #0,d0 : MOVEQ #0,d1 : MOVE.l 4,a6 : JSR -444(a6) : PutReg d0,oerr
-If oerr Then NPrint "second open failed ",oerr : End
-WriteSerialString 0,Chr$(1)+"seriallib-closeserial-abortio"+Chr$(2),3
-WriteSerial 0,5 : WriteSerial 0,83
-For i=1 To 50 : VWait : Next
-Poke.b wq+8,5
-WriteSerialString 0,"held",0
-For i=1 To 10 : VWait : Next
-NPrint "write ",Peek.b(wq+8)
-CloseSerial 0
-NPrint "after close ",Peek.b(wq+8)," error ",Peek.b(wq+31)
-If Peek.b(wq+8)<>7 Then Gosub abwrite
-GetReg d0,io : MOVE.l d0,a1 : MOVE.l 4,a6 : JSR -450(a6)
-End
 
 ; AbortIO and WaitIO of the write request
-abwrite:
+Statement abwrite{wq.l}
   GetReg d0,wq : MOVE.l d0,a1 : MOVE.l 4,a6 : JSR -480(a6)
   GetReg d0,wq : MOVE.l d0,a1 : MOVE.l 4,a6 : JSR -474(a6)
-Return
+End Statement
+
+!TestCase{abort_write}
+  Dim x.l(31) : io=&x(0)
+  u=OpenSerial("serial.device",0,9600,$20)
+  !Require{u<>0,"opened"}
+  wq=u+166
+  Poke.w io+18,82 : Poke.b io+79,$20 : Poke.s io+100,"serial.device"
+  GetReg d0,io+100 : MOVE.l d0,a0 : GetReg d0,io : MOVE.l d0,a1
+  MOVEQ #0,d0 : MOVEQ #0,d1 : MOVE.l 4,a6 : JSR -444(a6) : PutReg d0,oerr
+  !Require{oerr=0,"second_open"}
+  WriteSerialString 0,Chr$(1)+"seriallib-closeserial-abortio"+Chr$(2),3
+  WriteSerial 0,5 : WriteSerial 0,83
+  For i=1 To 50 : VWait : Next
+  Poke.b wq+8,5
+  WriteSerialString 0,"held",0
+  For i=1 To 10 : VWait : Next
+  !Require{Peek.b(wq+8)=5,"write_pending"}
+  CloseSerial 0
+  wst=Peek.b(wq+8) : werr=Peek.b(wq+31)
+  If wst<>7 Then abwrite{wq}
+  GetReg d0,io : MOVE.l d0,a1 : MOVE.l 4,a6 : JSR -450(a6)
+  !CheckEq{wst,7,"replied"}
+  !CheckEq{werr,-2,"aborted"}
+!EndTestCase

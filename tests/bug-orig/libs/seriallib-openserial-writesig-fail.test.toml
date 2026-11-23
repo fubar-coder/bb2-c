@@ -1,0 +1,10 @@
+# seriallib-openserial-writesig-fail.test.bas: the original leaves the
+# device open, so the cells with the CD's libraries each get a session of
+# their own
+fixed-orig = 259
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+"check.writesig_fail.users" = "== fail"
+"check.writesig_fail.users.actual" = "== 1"
+"check.writesig_fail.open_again" = "== fail"

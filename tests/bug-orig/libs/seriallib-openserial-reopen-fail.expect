@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-opened, users 1
-second open 0
-read half open
-read signal kept
-closed, users 0
-rc=0

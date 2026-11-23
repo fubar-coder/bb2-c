@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-write 5
-after close 7 error -2
-rc=0

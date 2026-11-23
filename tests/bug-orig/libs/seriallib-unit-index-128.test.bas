@@ -8,18 +8,18 @@
 ; Offsets: u = read half (request +0, IOExtSer +38, io_Device +58),
 ; u+128 = write half; lib_OpenCnt of the device at +32.
 ; Correct: CloseSerial 1 does nothing, unit 0 stays open.
-; @fixed #252
-; @configs clib
 DEFTYPE .l
-u=OpenSerial("serial.device",0,9600,0)
-If u=0 Then NPrint "open failed" : End
-dv=Peek.l(u+58)
-NPrint "opened, users ",Peek.w(dv+32)
-CloseSerial 1
-If Peek.l(u) Then NPrint "read half open" Else NPrint "read half closed"
-If Peek.l(u+128) Then NPrint "write half open" Else NPrint "write half closed"
-NPrint "users ",Peek.w(dv+32)
-; the device is already closed: the read half is cleared so that the end
-; of the program does not close it a second time
-If Peek.w(dv+32)=0 Then Poke.l u,0
-End
+
+!TestCase{unit_one}
+  u=OpenSerial("serial.device",0,9600,0)
+  !Require{u<>0,"opened"}
+  dv=Peek.l(u+58)
+  !Require{Peek.w(dv+32)=1,"one_user"}
+  CloseSerial 1
+  !Check{Peek.l(u)<>0,"read_half_open"}
+  !Check{Peek.l(u+128)<>0,"write_half_open"}
+  !CheckEq{Peek.w(dv+32),1,"users"}
+  ; the device is already closed in the original: the read half is cleared
+  ; so that the end of the program does not close it a second time
+  If Peek.w(dv+32)=0 Then Poke.l u,0
+!EndTestCase

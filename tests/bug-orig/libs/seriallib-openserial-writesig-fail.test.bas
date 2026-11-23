@@ -7,23 +7,26 @@
 ; OpenSerial: the read half gets it, the write half's AllocSignal fails.
 ; Correct: OpenSerial returns 0 with the device closed again (no users),
 ; a later OpenSerial succeeds.
-; @fixed #259
-; @configs clib
 DEFTYPE .l
-u=OpenSerial("serial.device",0,9600,0)
-If u=0 Then NPrint "open failed" : End
-dv=Peek.l(u+58)
-CloseSerial 0
-NPrint "closed, users ",Peek.w(dv+32)
-t=Peek.l(Peek.l(4)+276)
-sa=Peek.l(t+18)
-k=31
-While k>16 AND (sa AND (1 LSL k))<>0 : k=k-1 : Wend
-Poke.l t+18,-1-(1 LSL k)
-r=OpenSerial("serial.device",0,9600,0)
-Poke.l t+18,sa
-NPrint "open with one free signal ",r
-NPrint "users ",Peek.w(dv+32)
-r=OpenSerial("serial.device",0,9600,0)
-If r Then NPrint "open again ok" : CloseSerial 0 Else NPrint "open again failed"
-End
+
+!TestCase{writesig_fail}
+  u=OpenSerial("serial.device",0,9600,0)
+  !Require{u<>0,"opened"}
+  dv=Peek.l(u+58)
+  CloseSerial 0
+  !Require{Peek.w(dv+32)=0,"closed"}
+  t=Peek.l(Peek.l(4)+276)
+  sa=Peek.l(t+18)
+  k=31
+  While k>16 AND (sa AND (1 LSL k))<>0 : k=k-1 : Wend
+  Poke.l t+18,-1-(1 LSL k)
+  r=OpenSerial("serial.device",0,9600,0)
+  Poke.l t+18,sa
+  us=Peek.w(dv+32)
+  !CheckEq{r,0,"one_free_signal"}
+  !CheckEq{us,0,"users"}
+  r=OpenSerial("serial.device",0,9600,0)
+  ok=r<>0
+  If r Then CloseSerial 0
+  !Check{ok,"open_again"}
+!EndTestCase

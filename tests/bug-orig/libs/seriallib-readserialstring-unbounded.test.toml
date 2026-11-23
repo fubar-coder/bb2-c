@@ -1,0 +1,13 @@
+# seriallib-readserialstring-unbounded.test.bas: the serial peer and a string
+# buffer of 1000000 bytes; the original overwrites the guard behind the
+# buffer and leaves the device open, so the cells with the CD's libraries
+# each get a session of their own
+fixed-orig = 256
+serial = "on"
+jobline = ["strbuf=1000000"]
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+"check.unbounded.fits" = "== fail"
+"check.unbounded.guard" = "== fail"
+"check.unbounded.guard.actual" = "== 504"
