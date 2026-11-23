@@ -28,4 +28,4 @@
 ## 4. Closing
 
 - [x] 4.1 Rename the header `; @fixed #N` of the tests left in the old form (TED, compile-only) to `; @fixed-orig #N`, with the runner, fix-scope, `check-fixed-orig.cmake` and the texts of D5 (wording shown to the user first); verify: `ctest --preset all` and `bug_orig_fixed_orig_broken` pass, no `; @fixed #` left in `tests/bug-orig`
-- [ ] 4.2 Update `tests/README.md`, `docs/testing.md`, the test statistics and TODO.md ("Test model beyond the library tests") to the new state; verify: no text describes a moved test with `.expect`/`.orig`
+- [x] 4.2 Update `tests/README.md`, `docs/testing.md`, the test statistics and TODO.md ("Test model beyond the library tests") to the new state; verify: no text describes a moved test with `.expect`/`.orig`

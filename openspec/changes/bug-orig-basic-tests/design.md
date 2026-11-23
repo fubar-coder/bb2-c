@@ -228,3 +228,25 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   issue"): they are copied whole and were over 500 characters already in
   the main spec; not split here (a split needs the user's answer, as for
   `split-long-requirements`).
+- **Task 4.2, the texts and the list of the old form.** The old-form tests
+  that are left are categorised in `docs/testing-old-form.md` (user
+  decision "Group 4: split the two long bug-fix-workflow requirements; the
+  old form \"for now\"", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`;
+  `TODO.md`, "Tests left in the old form"). Counts from the tree: 41 TED
+  tests; 71 hand-written compile-only tests; 205 generated expression-matrix
+  tests (46 with a program run, 159 compile-only: 123 in `regression/`, 36
+  in `compiler/`); the self tests; `compiler-panic-remtask` (decided: old
+  form for now) and `compiler-racing-stripe-wide` (Q-A20 open). Findings:
+  the planning classification's "48 generated tests with a run" counts two
+  hand-written `regression/compiler-expr-depth*` tests, the generated ones
+  with a run are 46; three hand-written runnable tests are still in the old
+  form because round U4 (task 3.5) is open: `regression/ldivlib-div0-check-fold`,
+  `regression/compiler-expr-depth`, `-depth-d7`; `tests/blitz2` has 13
+  old-form `.expect` tests of its own, outside this change. `tests/README.md`
+  (the model section, the preset table, the bug-orig sections),
+  `docs/testing.md` (suite table, fix steps, fix-scope, recording) and
+  `TODO.md` now say which form is the model and which the old one; the
+  helper descriptions (`inject`, `wbrun`) and the pass keys in
+  `tests/README.md` still name moved tests as examples and the old-form
+  keys (`@pass`) in the "With a Blitz program" sections; a model test
+  states them in its `ID.test.toml`.
