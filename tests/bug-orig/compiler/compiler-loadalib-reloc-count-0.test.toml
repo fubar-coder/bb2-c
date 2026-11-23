@@ -1,0 +1,10 @@
+# compiler-loadalib-reloc-count-0.test.bas: the original compiler aborts the
+# compile at the library (extalloc failed, nothing runs)
+fixed-orig = 1175
+files = ["blitz2/userlibs/bugorig/bugorig.obj|@TESTDATA@/compiler-loadalib-reloc-count-0.obj", "blitz2/bugorig/bugorig.obj|@TESTDATA@/compiler-loadalib-reloc-count-0.obj"]
+
+[deviations."compiler=orig195"]
+compile = "== none"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

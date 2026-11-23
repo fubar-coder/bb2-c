@@ -1,0 +1,11 @@
+# compiler-loadres-clash-offset.test.bas: the warning is a line of the
+# compiler's log (XTRAERR of the job list); the original reports no clash
+fixed-orig = 36
+files = ["r1.bb2|@TESTDATA@/compiler-loadres-clash-offset.r1", "r2.bb2|@TESTDATA@/compiler-loadres-clash-offset.r2"]
+jobline = ["resident=r1|CORPUS:r1.bb2|CORPUS:out/r1.res", "resident=r2|CORPUS:r2.bb2|CORPUS:out/r2.res"]
+
+[asserts]
+"compile.log" = "contains \"XTRAERR\tj000\tWarning: Clash in Residents: #c\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "not contains \"Clash in Residents\""

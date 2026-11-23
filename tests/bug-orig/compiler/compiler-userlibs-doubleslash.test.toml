@@ -1,0 +1,10 @@
+# compiler-userlibs-doubleslash.test.bas: the original never loads the
+# library; the function is a token it does not find and the compile fails
+fixed-orig = 2
+files = ["blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Token Not Found\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

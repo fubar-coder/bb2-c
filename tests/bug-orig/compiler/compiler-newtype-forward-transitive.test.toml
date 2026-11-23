@@ -1,0 +1,19 @@
+# compiler-newtype-forward-transitive.test.bas: the original lays .tb out
+# with a wrong size for .tc (the line number of *p.tc, a line of the test's
+# driver) and does not lay .ta and .te out again, so the deviations declare
+# "not the correct value"
+fixed-orig = 974
+
+[deviations."compiler=orig195"]
+"check.forward_transitive.size_tb" = "== fail"
+"check.forward_transitive.size_tb.actual" = "!= 16"
+"check.forward_transitive.offset_z" = "== fail"
+"check.forward_transitive.offset_z.actual" = "!= 14"
+"check.forward_transitive.size_ta" = "== fail"
+"check.forward_transitive.size_ta.actual" = "!= 20"
+"check.forward_transitive.offset_q" = "== fail"
+"check.forward_transitive.offset_q.actual" = "!= 16"
+"check.forward_transitive.size_te" = "== fail"
+"check.forward_transitive.size_te.actual" = "!= 34"
+"check.forward_transitive.offset_g" = "== fail"
+"check.forward_transitive.offset_g.actual" = "!= 32"

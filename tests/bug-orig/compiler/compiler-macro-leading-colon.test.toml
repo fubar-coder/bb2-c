@@ -1,0 +1,9 @@
+# compiler-macro-leading-colon.test.bas: the original expands the macro to
+# ":1" and the compile fails with a Syntax Error (nothing runs)
+fixed-orig = 942
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

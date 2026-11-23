@@ -1,0 +1,28 @@
+# compiler-resident-stale-bytes.test.bas: the compiler runs through inject
+# (guard: a pattern byte behind every allocation, fill=a5: the allocations
+# start with $a5), so the stale bytes of the original's resident are not 0;
+# the flags are 1 for a kind with such bytes
+fixed-orig = 970
+wrap = "@INJECT@|guard fill=a5"
+files = ["r.bb2|@TESTDATA@/compiler-resident-stale-bytes.res"]
+jobline = ["resident=r|CORPUS:r.bb2|CORPUS:out/r.res"]
+
+[deviations."compiler=orig195"]
+"check.stale_bytes.pad_field" = "== fail"
+"check.stale_bytes.pad_field.actual" = "== 1"
+"check.stale_bytes.pad_type" = "== fail"
+"check.stale_bytes.pad_type.actual" = "== 1"
+"check.stale_bytes.pad_macro" = "== fail"
+"check.stale_bytes.pad_macro.actual" = "== 1"
+"check.stale_bytes.pad_text" = "== fail"
+"check.stale_bytes.pad_text.actual" = "== 1"
+"check.stale_bytes.pad_constant" = "== fail"
+"check.stale_bytes.pad_constant.actual" = "== 1"
+"check.stale_bytes.constant_data" = "== fail"
+"check.stale_bytes.constant_data.actual" = "== 1"
+"check.stale_bytes.constant_procnum" = "== fail"
+"check.stale_bytes.constant_procnum.actual" = "== 1"
+"check.stale_bytes.field_type_low_word" = "== fail"
+"check.stale_bytes.field_type_low_word.actual" = "== 1"
+"check.stale_bytes.type_next" = "== fail"
+"check.stale_bytes.type_next.actual" = "== 1"

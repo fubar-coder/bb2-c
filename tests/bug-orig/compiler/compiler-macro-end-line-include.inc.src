@@ -1,3 +1,3 @@
 Macro m
-NPrint "x" : End
+x_seen=1 : If 0 Then End
 End Macro

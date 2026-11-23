@@ -1,0 +1,12 @@
+# compiler-reloc32-one-block.test.bas: the original's executable has one
+# HUNK_RELOC32 block of more than 65535 offsets; LoadSeg refuses it (the
+# program fails with rc 10, "file is not executable") and nothing runs.  The
+# compile is slow (a table of 69632 relocations): a long limit
+fixed-orig = 943
+timeout = 180
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+rc = "== 10"
+"end.case" = "not exists"
+"end.run" = "not exists"

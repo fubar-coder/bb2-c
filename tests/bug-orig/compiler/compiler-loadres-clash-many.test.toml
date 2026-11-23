@@ -1,0 +1,13 @@
+# compiler-loadres-clash-many.test.bas: the warnings are lines of the
+# compiler's log (XTRAERR of the job list); the original reports no clash.
+# The ten clashing names are reported as eight and "2 more", so none was
+# reported for #s (it would count as a third)
+fixed-orig = 36
+files = ["r1.bb2|@TESTDATA@/compiler-loadres-clash-many.r1", "r2.bb2|@TESTDATA@/compiler-loadres-clash-many.r2"]
+jobline = ["resident=r1|CORPUS:r1.bb2|CORPUS:out/r1.res", "resident=r2|CORPUS:r2.bb2|CORPUS:out/r2.res"]
+
+[asserts]
+"compile.log" = "contains \"XTRAERR\tj000\tWarning: Clash in Residents: #a0\nXTRAERR\tj000\tWarning: Clash in Residents: #a1\nXTRAERR\tj000\tWarning: Clash in Residents: #a2\nXTRAERR\tj000\tWarning: Clash in Residents: #a3\nXTRAERR\tj000\tWarning: Clash in Residents: #a4\nXTRAERR\tj000\tWarning: Clash in Residents: #a5\nXTRAERR\tj000\tWarning: Clash in Residents: #a6\nXTRAERR\tj000\tWarning: Clash in Residents: #a7\nXTRAERR\tj000\tWarning: Clash in Residents: 2 more\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "not contains \"Clash in Residents\""
