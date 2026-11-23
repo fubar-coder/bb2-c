@@ -108,9 +108,9 @@ round that moved eight tests of this section is described below):
 
 | Area | Judged by | Tests | Example |
 |---|---|---|---|
-| `compiler/` | `[compile]` | 45 | `compiler-compare-right-operand-refused` |
-| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 9 | `compiler-incbin-leaks` |
-| `compiler/` | `[blitz2]` | 4 | `compiler-flushlibs-leak` |
+| `compiler/` | `[compile]` | 28 | `compiler-compare-right-operand-refused` |
+| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 7 | `compiler-incbin-leaks` |
+| `compiler/` | `[blitz2]` | 3 | `compiler-flushlibs-leak` |
 | `compiler/` | `[session]` and `[blitz2]` | 1 | `compiler-wbexit-returncode` |
 | `regression/` | `[compile]` | 3 | `compiler-data-quick-over` |
 | `regression/` | `[compile]`, `[blitz2]`, `[log]` | 1 | `compiler-macrobuff-nomem-limit` |
