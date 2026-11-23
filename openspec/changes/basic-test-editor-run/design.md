@@ -240,8 +240,11 @@ model files.
   e.g. the log without the sizes of the RESULT lines, or one query per
   job), or the move with only j001's block judged (j000's empty bitmap
   then unchecked: a narrowing), or the old form for good.
-- **macro-textlen-max on the original**: with `macrobuf=100000` every
-  compile of a driver by 1.95 hangs (#336, as compiler-macrobuff-size), so
-  the old "Macro too Big" is not reached; the deviation is the hang
-  (`compile == none`, `session == timeout`), with `isolate` for 1.95 (the
-  hang ended the shared session before the cell port,cd had run).
+- **macro-textlen-max on the original**: with `macrobuf=100000` 1.95's
+  compile of a driver does not end ok (its end depends on the memory, #965)
+  and it hangs at its exit (#336, as compiler-macrobuff-size), so the old
+  "Macro too Big" is no stable observation; the deviation declares what
+  holds every time (`compile != ok`, `session == timeout`, no inject
+  report), with `isolate` for 1.95 (the hang ended the shared session
+  before the cell port,cd had run). The two runs here gave `compile ==
+  none`.
