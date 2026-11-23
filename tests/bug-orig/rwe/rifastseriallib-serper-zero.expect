@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-reply: HELLO
-baud 0
-result 0
-rc=0

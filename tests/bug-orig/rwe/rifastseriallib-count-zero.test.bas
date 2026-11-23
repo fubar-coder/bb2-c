@@ -10,24 +10,24 @@
 ; Correct: a count of 0 means no transfer; DoSerialIO without argument
 ; returns at once after InitSerialIO baud,0,... and after SetIOSize 0,
 ; and the input buffer stays as it was.
-; @fixed #1164
-; @rwe rifastseriallib
-; @pass serial=on
-; @pass timeout=30
 DEFTYPE .l
-b=AllocMem_(64,$10001)
-If b=0 Then NPrint "no memory" : End
-For i=0 To 15 : Poke.b b+32+i,Asc("x") : Next
-r=InitSerialIO(19200,0,b,b+32)
-q$=Chr$(1)+"rifastseriallib-count-zero"+Chr$(2)
-For i=1 To Len(q$) : PutSerial Asc(Mid$(q$,i,1)) : Next
-DoSerialIO
-NPrint "InitSerialIO 0: ",Peek.b(b)
-SetIOSize 4
-SetIOSize 0
-DoSerialIO
-NPrint "SetIOSize 0: ",Peek.b(b)
-PutSerial 4
-FinitSerialIO
-FreeMem_ b,64
-End
+
+!TestCase{count_zero}
+  b=AllocMem_(64,$10001)
+  !Require{b<>0,"memory"}
+  For i=0 To 15 : Poke.b b+32+i,Asc("x") : Next
+  r=InitSerialIO(19200,0,b,b+32)
+  q$=Chr$(1)+"rifastseriallib-count-zero"+Chr$(2)
+  For i=1 To Len(q$) : PutSerial Asc(Mid$(q$,i,1)) : Next
+  DoSerialIO
+  v1=Peek.b(b)
+  SetIOSize 4
+  SetIOSize 0
+  DoSerialIO
+  v2=Peek.b(b)
+  PutSerial 4
+  FinitSerialIO
+  FreeMem_ b,64
+  !CheckEq{v1,0,"init_count_0"}
+  !CheckEq{v2,0,"setiosize_0"}
+!EndTestCase

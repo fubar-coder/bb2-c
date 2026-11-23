@@ -9,28 +9,25 @@
 ; divides by (DIVU.L: a division by zero exception).
 ; Correct: the library is initialised after InitSerialIO 3546895 (the
 ; reply comes); InitSerialIO refuses baud 0 (result 0).
-; @fixed #653
-; @rwe rifastseriallib
-; @pass serial=on
-; @pass timeout=60
 DEFTYPE .l
-b=AllocMem_(16,$10001)
-If b=0 Then NPrint "no memory" : End
-r=InitSerialIO(3546895,16,b,b)
-SetIOSpeed 19200
-q$=Chr$(1)+"rifastseriallib-serper-zero"+Chr$(2)+Chr$(5)+"B"
-For i=1 To Len(q$) : PutSerial Asc(Mid$(q$,i,1)) : Next
-a$="" : n=0
-While Len(a$)<5 AND n<100
-  c=CheckSerial
-  If c=-1 Then VWait : n+1 Else a$+Chr$(c AND 255)
-Wend
-NPrint "reply: ",a$
-PutSerial 4
-FinitSerialIO
-NPrint "baud 0"
-r=InitSerialIO(0,16,b,b)
-NPrint "result ",r
-FinitSerialIO
-FreeMem_ b,16
-End
+
+!TestCase{serper_zero}
+  b=AllocMem_(16,$10001)
+  !Require{b<>0,"memory"}
+  r=InitSerialIO(3546895,16,b,b)
+  SetIOSpeed 19200
+  q$=Chr$(1)+"rifastseriallib-serper-zero"+Chr$(2)+Chr$(5)+"B"
+  For i=1 To Len(q$) : PutSerial Asc(Mid$(q$,i,1)) : Next
+  a$="" : n=0
+  While Len(a$)<5 AND n<100
+    c=CheckSerial
+    If c=-1 Then VWait : n+1 Else a$+Chr$(c AND 255)
+  Wend
+  PutSerial 4
+  FinitSerialIO
+  !CheckStrEq{a$,"HELLO","reply"}
+  r=InitSerialIO(0,16,b,b)
+  !CheckEq{r,0,"baud_0_refused"}
+  FinitSerialIO
+  FreeMem_ b,16
+!EndTestCase

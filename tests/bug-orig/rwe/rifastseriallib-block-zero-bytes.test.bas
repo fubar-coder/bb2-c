@@ -4,18 +4,15 @@
 ; memory from the buffer on, 4 GB at 19200 baud - the program does not
 ; come back (the session ends in a timeout).
 ; Correct: a block of 0 bytes sends nothing, the program goes on.
-; @fixed #646
-; @rwe rifastseriallib
-; @pass serial=on
-; @pass timeout=30
 DEFTYPE .l
-b=AllocMem_(16,$10001)
-If b=0 Then NPrint "no memory" : End
-r=InitSerialIO(19200,16,b,b)
-NPrint "before"
-n=0
-PutSerial b,n
-NPrint "after"
-FinitSerialIO
-FreeMem_ b,16
-End
+
+!TestCase{block_of_zero}
+  b=AllocMem_(16,$10001)
+  !Require{b<>0,"memory"}
+  r=InitSerialIO(19200,16,b,b)
+  n=0
+  PutSerial b,n
+  !Check{1,"returned"}
+  FinitSerialIO
+  FreeMem_ b,16
+!EndTestCase

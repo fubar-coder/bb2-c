@@ -10,25 +10,24 @@
 ; end).
 ; Correct: without InitSerialIO DoSerialIO does nothing (the marker
 ; stays).
-; @fixed #652
-; @rwe rifastseriallib
-; @pass serial=on
 DEFTYPE .l
-ie.w=Peek.w($DFF01C)
-Poke.w $DFF09A,$0800
-Poke.w $DFF032,183
-q$=Chr$(1)+"rifastseriallib-no-init-check"+Chr$(2)+Chr$(5)+"B"
-For i=1 To Len(q$)
+
+!TestCase{do_without_init}
+  ie.w=Peek.w($DFF01C)
+  Poke.w $DFF09A,$0800
+  Poke.w $DFF032,183
+  q$=Chr$(1)+"rifastseriallib-no-init-check"+Chr$(2)+Chr$(5)+"B"
+  For i=1 To Len(q$)
+    While (Peek.w($DFF018) AND $2000)=0 : Wend
+    Poke.w $DFF030,$100 OR Asc(Mid$(q$,i,1))
+  Next
+  o=Peek.l(0)
+  Poke.l 0,$12345678
+  DoSerialIO 0
+  m=Peek.l(0)
+  Poke.l 0,o
   While (Peek.w($DFF018) AND $2000)=0 : Wend
-  Poke.w $DFF030,$100 OR Asc(Mid$(q$,i,1))
-Next
-o=Peek.l(0)
-Poke.l 0,$12345678
-DoSerialIO 0
-m=Peek.l(0)
-Poke.l 0,o
-If m=$12345678 Then NPrint "address 0 kept" Else NPrint "address 0 written"
-While (Peek.w($DFF018) AND $2000)=0 : Wend
-Poke.w $DFF030,$104
-If ie AND $0800 Then Poke.w $DFF09A,$8800
-End
+  Poke.w $DFF030,$104
+  If ie AND $0800 Then Poke.w $DFF09A,$8800
+  !CheckEq{m,$12345678,"address_0_kept"}
+!EndTestCase
