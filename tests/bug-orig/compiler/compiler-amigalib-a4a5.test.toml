@@ -1,0 +1,15 @@
+# compiler-amigalib-a4a5.test.bas: the original's library call leaves a
+# garbage base in a6: the child reads the local wrong and then the CPU
+# halts
+fixed-orig = 958
+
+[data]
+"child.bas" = "basic-compile"
+
+[deviations."compiler=orig195"]
+"run.child.child" = "== open"
+"run.child.child.output" = "== \"local wrong\n\""
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
