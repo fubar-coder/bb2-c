@@ -1,0 +1,7 @@
+# model-all-cases.test.bas: ends never reaches its end entry; prints asserts
+# its output, so it runs on its own in the run of all cases
+[asserts."case=ends"]
+"end.case" = "not exists"
+
+[asserts."case=prints"]
+output = "contains \"hello\""

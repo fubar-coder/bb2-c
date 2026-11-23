@@ -7,12 +7,14 @@
 #include <errno.h>
 #include <spawn.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 #include "amiga_emulation.h"
+#include "basictest.h"
 #include "bugorig.h"
 #include "corpus.h"
 #include "runwork.h"
@@ -436,6 +438,245 @@ char *cr_compile_mapped(const char *result, const struct tp_driver *d, const cha
     return str_printf("error driver:%lu %s", dl, msg);
 }
 
+/* ------------------------------------------------- the run of all cases */
+
+/* the rank of a verdict: the higher, the worse */
+static int rank(int v)
+{
+    switch (v) {
+    case TJ_V_PASSED: return 0;
+    case TJ_V_REPRODUCED: return 1;
+    case CR_SKIPPED: return 2;
+    case TJ_V_FAILED: return 3;
+    case TJ_V_BROKEN: return 4;
+    default: return 5;          /* error, and anything unknown */
+    }
+}
+
+int cr_verdict_worse(int a, int b)
+{
+    return rank(a) > rank(b);
+}
+
+const char *cr_verdict_name(int v)
+{
+    static const char *const n[] = { "PASSED", "REPRODUCED", "ERROR", "BROKEN", "FAILED" };
+
+    if (v == CR_SKIPPED)
+        return "SKIPPED";
+    return v >= 0 && v <= 4 ? n[v] : "?";
+}
+
+/* a query of the whole program: one per cell's run, not per case */
+static int whole_program(int kind)
+{
+    switch (kind) {
+    case TC_Q_RC:
+    case TC_Q_REQUESTER:
+    case TC_Q_COMPILE:
+    case TC_Q_COMPILE_LOG:
+    case TC_Q_OUTPUT:
+    case TC_Q_SERIAL:
+    case TC_Q_INJECT:
+    case TC_Q_SESSION:
+    case TC_Q_END_RUN:
+        return 1;
+    }
+    return 0;
+}
+
+int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
+                  const struct tp_source *src, const char *case_name)
+{
+    static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
+
+    for (size_t i = 0; i < src->nchecks; i++)
+        if (src->checks[i].kind == TP_EXPECTERROR && src->checks[i].nskind == TP_NS_CASE
+            && !strcmp(src->checks[i].ns, case_name))
+            return 1;
+    for (size_t c = 0; c < ncells; c++)
+        for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
+            struct tc_assertions as;
+            char err[600];
+            int r = tc_assertions_for(conf, m, cells[c], case_name, modes[k], &as, err, sizeof err);
+
+            if (r == -2)
+                return -1;
+            if (r)
+                return 1;
+            for (size_t a = 0; a < as.n; a++)
+                if (whole_program(as.a[a].q.kind) && strcmp(as.a[a].at.file, "(default)")) {
+                    tc_assertions_free(&as);
+                    return 1;
+                }
+            tc_assertions_free(&as);
+        }
+    return 0;
+}
+
+int cr_cell_clean(const struct tj_obs *o)
+{
+    const char *l, *end;
+    int kinds[2] = { -1, -1 };  /* the last entry, the one before it */
+
+    if (!o->session || strcmp(o->session, "done") || !o->compile || strcmp(o->compile, "ok") || o->nreq
+        || !o->has_rc || o->rc != 0 || !o->has_result || !o->result || !o->result_len)
+        return 0;
+    end = o->result + o->result_len;
+    if (end[-1] != '\n')
+        return 0;
+    for (int k = 0; k < 2 && end > o->result; k++) {
+        uint8_t line[64];
+        struct basictest_entry e;
+        size_t n;
+
+        for (l = end - 1; l > o->result && l[-1] != '\n'; l--)
+            ;
+        n = (size_t)(end - 1 - l);
+        if (n < sizeof line) {
+            memcpy(line, l, n);
+            if (basictest_read(line, n, 0, &e, NULL) == BASICTEST_OK)
+                kinds[k] = e.kind;
+        }
+        end = l;
+    }
+    /* the run's end entry, and the program did not end inside a block (the
+       library's finit writes incomplete before the end entry then: End in a
+       case, a crash it survived) */
+    return kinds[0] == BASICTEST_END && kinds[1] != BASICTEST_INCOMPLETE;
+}
+
+int cr_open_case(const char *result, size_t len, char *name, size_t namelen)
+{
+    uint8_t *buf;
+    int open = 0;
+    size_t p = 0;
+
+    if (namelen)
+        name[0] = 0;
+    if (!result || !len || !(buf = malloc(len)))
+        return 0;
+    /* the codec decodes in place */
+    memcpy(buf, result, len);
+    while (p < len) {
+        uint8_t *nl = memchr(buf + p, '\n', len - p);
+        struct basictest_entry e;
+        struct basictest_error be;
+
+        if (!nl)
+            break;
+        if (!basictest_read(buf + p, (size_t)(nl - (buf + p)), 0, &e, &be)) {
+            if (e.kind == BASICTEST_BLOCK && e.block == BASICTEST_BLOCK_CASE) {
+                size_t n = e.name.length < namelen ? e.name.length : namelen - 1;
+
+                memcpy(name, e.name.data, n);
+                name[n] = 0;
+                open = 1;
+            } else if (e.kind == BASICTEST_BLOCK || e.kind == BASICTEST_BLOCKEND)
+                open = 0;
+        }
+        p = (size_t)(nl - buf) + 1;
+    }
+    free(buf);
+    if (!open && namelen)
+        name[0] = 0;
+    return open;
+}
+
+void cr_plan_free(struct cr_plan *p)
+{
+    free(p->state);
+    free(p->verdict);
+    free(p->alone);
+    free(p->shared);
+    memset(p, 0, sizeof *p);
+}
+
+int cr_plan_init(struct cr_plan *p, size_t n, const int *alone)
+{
+    memset(p, 0, sizeof *p);
+    p->n = n;
+    if (!(p->state = calloc(n + 1, sizeof *p->state)) || !(p->verdict = calloc(n + 1, sizeof *p->verdict))
+        || !(p->alone = calloc(n + 1, sizeof *p->alone)) || !(p->shared = calloc(n + 1, sizeof *p->shared))) {
+        cr_plan_free(p);
+        return -1;
+    }
+    for (size_t i = 0; i < n; i++) {
+        p->state[i] = alone && alone[i] ? CR_C_ALONE : CR_C_SHARED;
+        p->verdict[i] = -1;
+        p->shared[i] = -1;
+    }
+    return 0;
+}
+
+int cr_plan_next(struct cr_plan *p, size_t *set, size_t *nset, int *kind)
+{
+    size_t n = 0;
+
+    for (size_t i = 0; i < p->n; i++)
+        if (p->state[i] == CR_C_SHARED)
+            set[n++] = i;
+    if (n == 1)
+        p->state[set[0]] = CR_C_ALONE;      /* a set of one: the case on its own */
+    else if (n) {
+        *nset = n;
+        *kind = CR_RUN_SHARED;
+        return 1;
+    }
+    for (size_t i = 0; i < p->n; i++)
+        if (p->state[i] == CR_C_ALONE || p->state[i] == CR_C_CONFIRM) {
+            set[0] = i;
+            *nset = 1;
+            *kind = CR_RUN_ALONE;
+            return 1;
+        }
+    *nset = 0;
+    return 0;
+}
+
+void cr_plan_unclean(struct cr_plan *p, const size_t *set, size_t nset, const long *open, size_t nopen)
+{
+    int any = 0, all = 0;
+
+    for (size_t k = 0; k < nopen; k++) {
+        size_t j;
+
+        for (j = 0; j < nset && (open[k] < 0 || set[j] != (size_t)open[k]); j++)
+            ;
+        if (j == nset)
+            all = 1;            /* no open case of the set: every case on its own */
+        else {
+            p->state[set[j]] = CR_C_ALONE;
+            any = 1;
+        }
+    }
+    if (all || !any)
+        for (size_t j = 0; j < nset; j++)
+            p->state[set[j]] = CR_C_ALONE;
+}
+
+void cr_plan_judged(struct cr_plan *p, size_t c, int v, int alone)
+{
+    if (!alone && (v == TJ_V_FAILED || v == TJ_V_BROKEN || v == TJ_V_ERROR)) {
+        p->shared[c] = v;
+        p->state[c] = CR_C_CONFIRM;
+        return;
+    }
+    p->verdict[c] = v;
+    p->alone[c] = alone;
+    p->state[c] = CR_C_DONE;
+}
+
+int cr_plan_worst(const struct cr_plan *p)
+{
+    int w = TJ_V_PASSED;
+
+    for (size_t i = 0; i < p->n; i++)
+        if (p->verdict[i] >= 0 && cr_verdict_worse(p->verdict[i], w))
+            w = p->verdict[i];
+    return w;
+}
+
 /* ------------------------------------------------------- the configuration */
 
 static void print_value(FILE *out, const struct tt_value *v)
@@ -555,7 +796,7 @@ static int spawn(char *const argv[], FILE *log)
 /* a cell of the run */
 struct cell {
     size_t idx;                 /* in the matrix */
-    char tag[16];               /* c0, c1, ... */
+    char tag[24];               /* c0, c1, ... */
     struct corpus_pass p;
     char *key;                  /* cr_session_key */
     int done;                   /* observed */
@@ -845,13 +1086,6 @@ static int missing(const struct corpus_pass *p, FILE *log)
     return 0;
 }
 
-static const char *verdict_name(int v)
-{
-    static const char *const n[] = { "PASSED", "REPRODUCED", "ERROR", "BROKEN", "FAILED" };
-
-    return v >= 0 && v <= 4 ? n[v] : "?";
-}
-
 /* the token list of the cells: the build's, or one with the RWE user libraries
    (bbsrc tokens), written to dir/tokens.txt */
 static char *token_list(const struct tc_config *conf, const struct tc_env *env, const char *dir, FILE *log,
@@ -1090,36 +1324,423 @@ out:
     return rc;
 }
 
+/* ------------------------------------------------------- the runs of a set */
+
+/* what every run of a set of cases needs */
+struct ctx {
+    const struct caserun_opts *o;
+    FILE *log;
+    struct tc_env env;
+    struct tc_config conf;
+    struct tc_matrix m;
+    struct tp_source src;
+    const char *file;           /* the source's name in the report */
+    char *mac;                  /* the macro text of the driver */
+    size_t mlen;
+    char *tokens;               /* the token list */
+    size_t *side;               /* the matrix cells of the side */
+    size_t nside;
+    const char *base;           /* the work base (the @stat lines) */
+    size_t nsessions;
+    int ran;                    /* a session has started */
+};
+
+/* a run of the driver of a set of cases in cells of the side */
+struct set {
+    const char **cases;         /* the cases the driver calls */
+    size_t ncases;
+    size_t *idx;                /* the matrix cells */
+    size_t ncells;
+    char *dir;                  /* its run directory */
+    const char *label;          /* its name in the report (the base name of
+                                   dir), NULL: the run of one case */
+    struct tp_driver drv;
+    struct cell *c;
+    struct obs *ob;
+};
+
+static void set_free(struct set *s)
+{
+    for (size_t i = 0; s->c && i < s->ncells; i++) {
+        corpus_free(&s->c[i].p);
+        free(s->c[i].key);
+    }
+    for (size_t i = 0; s->ob && i < s->ncells; i++)
+        obs_free(&s->ob[i]);
+    free(s->c);
+    free(s->ob);
+    free(s->cases);
+    free(s->idx);
+    free(s->dir);
+    tp_driver_free(&s->drv);
+    memset(s, 0, sizeof *s);
+}
+
+/* the driver of the cases cases[0..n); 0, -1 (reported) */
+static int make_driver(struct ctx *x, const char *const *cases, size_t n, struct tp_driver *drv)
+{
+    struct tp_driver_params dp = { 0 };
+    char err[800];
+    int r;
+
+    dp.macros = x->mac;
+    dp.macros_len = x->mlen;
+    dp.result = CR_RESULT;
+    dp.cases = cases;
+    dp.ncases = n;
+    if ((r = tp_driver_write(&x->src, &dp, drv, err, sizeof err))) {
+        fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
+        return -1;
+    }
+    return 0;
+}
+
+/* runs s: its driver tokenised in s->dir, a pass per cell, the sessions (the
+   cells with the same key, in order; again for the cells a session did not
+   reach), the observations.  0 = observed, 2 = error, 77 = skipped (a file
+   of a cell is missing, no emulator) */
+static int run_set(struct ctx *x, struct set *s)
+{
+    char err[800], *drvpath = NULL, *bb2 = NULL;
+    const char *tedsrc;
+    int rc = 2;
+
+    if (make_driver(x, s->cases, s->ncases, &s->drv))
+        return 2;
+    if (mkdir_p(s->dir) || !(drvpath = str_printf("%s/driver.bas", s->dir))
+        || !(bb2 = str_printf("%s/" CR_PROGRAM ".bb2", s->dir)) || write_file(drvpath, s->drv.text, s->drv.len)) {
+        fprintf(x->log, "corpusrun case: cannot write the driver\n");
+        goto out;
+    }
+    if (!(tedsrc = need(&x->env, "tedsrc", err, sizeof err))) {
+        fprintf(x->log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    {
+        char *argv[] = { (char *)tedsrc, (char *)"tok", x->tokens, drvpath, bb2, NULL };
+
+        if (spawn(argv, x->log)) {
+            fprintf(x->log, "corpusrun case: the driver %s cannot be tokenised\n", drvpath);
+            goto out;
+        }
+    }
+    if (!(s->c = calloc(s->ncells + 1, sizeof *s->c)) || !(s->ob = calloc(s->ncells + 1, sizeof *s->ob))) {
+        fprintf(x->log, "corpusrun case: out of memory\n");
+        goto out;
+    }
+    /* a pass per cell */
+    for (size_t k = 0; k < s->ncells; k++) {
+        struct cell *c = &s->c[k];
+        char *pt;
+        int r;
+
+        c->idx = s->idx[k];
+        snprintf(c->tag, sizeof c->tag, "c%zu", k);
+        if ((r = cr_cell_pass(&x->conf, &x->m, c->idx, &x->env, c->tag, s->dir, bb2, &pt, err, sizeof err))) {
+            fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
+            goto out;
+        }
+        r = corpus_parse(pt, &c->p, err, sizeof err);
+        free(pt);
+        if (r) {
+            fprintf(x->log, "corpusrun case: cell %s: %s\n", x->m.cells[c->idx].name, err);
+            goto out;
+        }
+        if (missing(&c->p, x->log)) {
+            rc = 77;
+            goto out;
+        }
+        if (!(c->key = cr_session_key(&x->conf, &x->m, c->idx))) {
+            fprintf(x->log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+    }
+    /* the sessions: the cells with the same key, in order; again for the cells
+       a session did not reach */
+    for (;;) {
+        struct cell **group = calloc(s->ncells + 1, sizeof *group);
+        size_t n = 0, first;
+        int r;
+
+        if (!group) {
+            fprintf(x->log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+        for (first = 0; first < s->ncells && s->c[first].done; first++)
+            ;
+        if (first == s->ncells) {
+            free(group);
+            break;
+        }
+        for (size_t i = first; i < s->ncells; i++)
+            if (!s->c[i].done && !strcmp(s->c[i].key, s->c[first].key))
+                group[n++] = &s->c[i];
+        x->ran = 1;
+        r = run_session(group, n, x->base, x->log, &x->nsessions);
+        free(group);
+        if (r) {
+            rc = r;
+            goto out;
+        }
+    }
+    /* the observations */
+    for (size_t k = 0; k < s->ncells; k++)
+        if (observe_cell(&s->c[k], &s->drv, x->file, &s->ob[k])) {
+            fprintf(x->log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+    rc = 0;
+out:
+    free(drvpath);
+    free(bb2);
+    return rc;
+}
+
+/* judges the case name over n cells of the side, the i-th observed in from[i]
+   (its cell at[i]): the block of the report to out, its verdict line marked
+   with mark.  The verdict, -1 = out of memory */
+static int judge_case(struct ctx *x, const char *name, const struct set *const *from, const size_t *at, size_t n,
+                      const char *mark, FILE *out)
+{
+    size_t *idx = calloc(n + 1, sizeof *idx);
+    struct tj_obs *to = calloc(n + 1, sizeof *to);
+    struct tj_msgs msgs = { 0 };
+    struct tj_test t = { x->file, &x->src, &x->conf, &x->m, name, x->o->require_deviation, NULL, 0 };
+    int v = -1;
+
+    if (!idx || !to)
+        goto out;
+    for (size_t i = 0; i < n; i++) {
+        idx[i] = from[i]->c[at[i]].idx;
+        to[i] = from[i]->ob[at[i]].o;
+        /* the blocks of the other cases the driver called are theirs */
+        if (from[i]->ncases > 1) {
+            t.cases = from[i]->cases;
+            t.ncases = from[i]->ncases;
+        }
+    }
+    fprintf(out, "== %s, case %s, side %s:", x->file, name, x->o->originals ? "originals" : "port");
+    for (size_t i = 0; i < n; i++)
+        if (from[i]->label)
+            fprintf(out, " %s (%s/%s)", x->m.cells[idx[i]].name, from[i]->label, from[i]->c[at[i]].tag);
+        else
+            fprintf(out, " %s (%s)", x->m.cells[idx[i]].name, from[i]->c[at[i]].tag);
+    fprintf(out, "\n");
+    for (size_t i = 0; i < n; i++)
+        if (from[i]->ob[at[i]].where)
+            fprintf(out, "cell %s: compile error: %s\n", x->m.cells[idx[i]].name, from[i]->ob[at[i]].where);
+    v = tj_verdict(&t, idx, to, n, &msgs);
+    for (size_t i = 0; i < msgs.n; i++)
+        fprintf(out, "%s\n", msgs.v[i]);
+    tj_msgs_free(&msgs);
+    if (v >= 0)
+        fprintf(out, "%s: case %s: %s%s\n", x->file, name, cr_verdict_name(v), mark);
+out:
+    free(idx);
+    free(to);
+    return v;
+}
+
+/* ------------------------------------------------------- the run of all cases */
+
+/* the run of all cases of the source in rundir (caserun.h); the exit status */
+static int run_all(struct ctx *x, const char *rundir)
+{
+    size_t n = x->src.ncases, nsets = 0, nshared = 0, nset;
+    int *alone = calloc(n + 1, sizeof *alone);
+    size_t *set = calloc(n + 1, sizeof *set);
+    long *judged_in = calloc(n + 1, sizeof *judged_in);
+    char **block = calloc(n + 1, sizeof *block);
+    const struct set **from = calloc(x->nside + 1, sizeof *from);
+    size_t *at = calloc(x->nside + 1, sizeof *at);
+    long *open = calloc(x->nside + 1, sizeof *open);
+    struct set **sets = NULL;
+    struct cr_plan p = { 0 };
+    int kind, rc = 2;
+
+    if (!alone || !set || !judged_in || !block || !from || !at || !open)
+        goto oom;
+    for (size_t i = 0; i < n; i++) {
+        int a = cr_case_alone(&x->conf, &x->m, x->side, x->nside, &x->src, x->src.cases[i].name);
+
+        if (a < 0)
+            goto oom;
+        alone[i] = a;
+        judged_in[i] = -1;
+    }
+    if (cr_plan_init(&p, n, alone))
+        goto oom;
+    while (cr_plan_next(&p, set, &nset, &kind)) {
+        struct set *s, **v = realloc(sets, (nsets + 1) * sizeof *v);
+        int r;
+
+        if (!v)
+            goto oom;
+        sets = v;
+        if (!(s = calloc(1, sizeof *s)))
+            goto oom;
+        sets[nsets++] = s;
+        if (!(s->cases = calloc(nset + 1, sizeof *s->cases)) || !(s->idx = calloc(x->nside + 1, sizeof *s->idx)))
+            goto oom;
+        for (size_t k = 0; k < nset; k++)
+            s->cases[k] = x->src.cases[set[k]].name;
+        s->ncases = nset;
+        memcpy(s->idx, x->side, x->nside * sizeof *s->idx);
+        s->ncells = x->nside;
+        if (kind == CR_RUN_SHARED)
+            s->dir = str_printf("%s/shared-%zu", rundir, nshared++);
+        else
+            s->dir = str_printf("%s/alone-%s", rundir, s->cases[0]);
+        if (!s->dir)
+            goto oom;
+        s->label = base_name(s->dir);
+        if (kind == CR_RUN_SHARED) {
+            fprintf(x->log, "corpusrun case: %s: the cases", s->label);
+            for (size_t k = 0; k < nset; k++)
+                fprintf(x->log, " %s", s->cases[k]);
+            fprintf(x->log, "\n");
+        } else
+            fprintf(x->log, "corpusrun case: %s: the case %s on its own\n", s->label, s->cases[0]);
+        r = run_set(x, s);
+        if (r == 77 && !x->ran) {
+            rc = 77;            /* the side is skipped before any session */
+            goto out;
+        }
+        if (r) {
+            for (size_t k = 0; k < nset; k++) {
+                int vd = r == 77 ? CR_SKIPPED : TJ_V_ERROR;
+
+                cr_plan_judged(&p, set[k], vd, 1);
+                free(block[set[k]]);
+                if (!(block[set[k]] = str_printf("%s: case %s: %s\n", x->file, s->cases[k], cr_verdict_name(vd))))
+                    goto oom;
+            }
+            continue;
+        }
+        if (kind == CR_RUN_SHARED) {
+            size_t nopen = 0;
+
+            for (size_t i = 0; i < s->ncells; i++) {
+                char name[200];
+                long c = -1;
+
+                if (cr_cell_clean(&s->ob[i].o))
+                    continue;
+                if (cr_open_case(s->ob[i].o.result, s->ob[i].o.result_len, name, sizeof name))
+                    for (size_t j = 0; j < n; j++)
+                        if (!strcmp(x->src.cases[j].name, name))
+                            c = (long)j;
+                open[nopen++] = c;
+                if (c >= 0)
+                    fprintf(x->log, "corpusrun case: %s: cell %s did not end cleanly, the case %s open\n", s->label,
+                            x->m.cells[s->c[i].idx].name, name);
+                else
+                    fprintf(x->log, "corpusrun case: %s: cell %s did not end cleanly, no case open\n", s->label,
+                            x->m.cells[s->c[i].idx].name);
+            }
+            if (nopen) {
+                cr_plan_unclean(&p, set, nset, open, nopen);
+                continue;
+            }
+        }
+        for (size_t k = 0; k < nset; k++) {
+            size_t c = set[k], blen = 0;
+            char *buf = NULL;
+            FILE *mf = open_memstream(&buf, &blen);
+            int vd;
+
+            if (!mf)
+                goto oom;
+            for (size_t i = 0; i < s->ncells; i++) {
+                from[i] = s;
+                at[i] = i;
+            }
+            vd = judge_case(x, s->cases[k], from, at, s->ncells, kind == CR_RUN_ALONE ? " (alone)" : "", mf);
+            if (vd >= 0 && kind == CR_RUN_ALONE && p.shared[c] >= 0 && p.shared[c] != vd && judged_in[c] >= 0) {
+                const struct set *sh = sets[judged_in[c]];
+                int first = 1;
+
+                fprintf(mf, "case %s: %s alone (%s in the run shared with", s->cases[k], cr_verdict_name(vd),
+                        cr_verdict_name(p.shared[c]));
+                for (size_t j = 0; j < sh->ncases; j++)
+                    if (strcmp(sh->cases[j], s->cases[k])) {
+                        fprintf(mf, "%s%s", first ? " " : ", ", sh->cases[j]);
+                        first = 0;
+                    }
+                fprintf(mf, ")\n");
+            }
+            if (fclose(mf) || vd < 0) {
+                free(buf);
+                goto oom;
+            }
+            cr_plan_judged(&p, c, vd, kind == CR_RUN_ALONE);
+            if (p.state[c] == CR_C_CONFIRM) {
+                /* its verdict comes from its run on its own */
+                judged_in[c] = (long)(nsets - 1);
+                free(buf);
+                continue;
+            }
+            free(block[c]);
+            block[c] = buf;
+        }
+    }
+    for (size_t i = 0; i < n; i++)
+        if (block[i])
+            fputs(block[i], x->log);
+    rc = cr_plan_worst(&p);
+    fprintf(x->log, "%s: %zu case%s, side %s: %s\n", x->file, n, n == 1 ? "" : "s",
+            x->o->originals ? "originals" : "port", cr_verdict_name(rc));
+    goto out;
+oom:
+    fprintf(x->log, "corpusrun case: out of memory\n");
+    rc = 2;
+out:
+    for (size_t i = 0; i < nsets; i++) {
+        set_free(sets[i]);
+        free(sets[i]);
+    }
+    for (size_t i = 0; block && i < n; i++)
+        free(block[i]);
+    free(sets);
+    free(block);
+    free(alone);
+    free(set);
+    free(judged_in);
+    free(from);
+    free(at);
+    free(open);
+    cr_plan_free(&p);
+    return rc;
+}
+
 int caserun(const struct caserun_opts *o, FILE *log)
 {
-    struct tc_env env = { 0 };
-    struct tc_config conf = { 0 };
-    struct tc_matrix m = { 0 };
-    struct tp_source src = { 0 };
-    struct tp_driver drv = { 0 };
+    struct ctx x;
     struct runwork rw = { NULL, NULL, -1 };
-    struct cell *cells = NULL;
-    struct obs *obs = NULL;
-    size_t ncells = 0, nsessions = 0;
-    char err[800], *text = NULL, *workbase = NULL, *drvpath = NULL, *bb2 = NULL, *tokens = NULL;
-    const char *file = base_name(o->source), *macros_path;
+    struct set one = { 0 };
+    char err[800], *text = NULL, *workbase = NULL;
+    const char *macros_path;
     size_t len;
-    int rc = 2, ran = 0;
+    int rc = 2;
 
-    if (tc_env_load(o->env, &env, err, sizeof err)) {
+    memset(&x, 0, sizeof x);
+    x.o = o;
+    x.log = log;
+    x.file = base_name(o->source);
+    if (tc_env_load(o->env, &x.env, err, sizeof err)) {
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
-    if (tc_resolve(o->source, &env, &conf, err, sizeof err) || tc_matrix_build(&conf, &m, err, sizeof err)) {
+    if (tc_resolve(o->source, &x.env, &x.conf, err, sizeof err) || tc_matrix_build(&x.conf, &x.m, err, sizeof err)) {
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
     if (o->print_config) {
-        rc = cr_print_config(log, &conf, &m) ? 2 : 0;
+        rc = cr_print_config(log, &x.conf, &x.m) ? 2 : 0;
         goto out;
     }
     if (o->prev) {
-        rc = prev_run(o, &env, &conf, &m, log);
+        rc = prev_run(o, &x.env, &x.conf, &x.m, log);
         goto out;
     }
     if (!(text = (char *)read_file(o->source, &len))) {
@@ -1130,94 +1751,84 @@ int caserun(const struct caserun_opts *o, FILE *log)
         struct tp_params par = { 0 };
         int n;
 
-        par.file = file;
-        par.test_id = conf.id;
+        par.file = x.file;
+        par.test_id = x.conf.id;
         par.testdata = CR_TESTDATA;
-        if ((n = tp_process(text, len, &par, &src)) != 0) {
-            for (size_t i = 0; i < src.errors.n; i++)
-                fprintf(log, "%s\n", src.errors.v[i]);
+        if ((n = tp_process(text, len, &par, &x.src)) != 0) {
+            for (size_t i = 0; i < x.src.errors.n; i++)
+                fprintf(log, "%s\n", x.src.errors.v[i]);
             if (n < 0)
                 fprintf(log, "corpusrun case: out of memory\n");
             goto out;
         }
     }
+    if (!(macros_path = need(&x.env, "macros", err, sizeof err))) {
+        fprintf(log, "corpusrun case: %s\n", err);
+        goto out;
+    }
+    if (!(x.mac = (char *)read_file(macros_path, &x.mlen))) {
+        fprintf(log, "corpusrun case: cannot read %s\n", macros_path);
+        goto out;
+    }
     {
-        struct tp_driver_params dp = { 0 };
-        size_t mlen;
-        char *mac;
-        int n;
-        const char *one[1] = { o->case_name };
-        const char **cases = one;
-        size_t ncases = 1;
+        /* the driver of the selection: the case, or every case (the build
+           step, the run of all cases) */
+        const char **cases = calloc(x.src.ncases + 1, sizeof *cases);
+        struct tp_driver drv = { 0 };
+        size_t ncases = 0;
+        int r;
 
-        /* the driver of the build step: every case */
-        if (!o->case_name) {
-            if (!(cases = calloc(src.ncases + 1, sizeof *cases))) {
-                fprintf(log, "corpusrun case: out of memory\n");
-                goto out;
-            }
-            for (ncases = 0; ncases < src.ncases; ncases++)
-                cases[ncases] = src.cases[ncases].name;
-        }
-
-        if (!(macros_path = need(&env, "macros", err, sizeof err))) {
-            fprintf(log, "corpusrun case: %s\n", err);
-            if (cases != one)
-                free(cases);
+        if (!cases) {
+            fprintf(log, "corpusrun case: out of memory\n");
             goto out;
         }
-        if (!(mac = (char *)read_file(macros_path, &mlen))) {
-            fprintf(log, "corpusrun case: cannot read %s\n", macros_path);
-            if (cases != one)
-                free(cases);
+        if (o->case_name)
+            cases[ncases++] = o->case_name;
+        else
+            for (; ncases < x.src.ncases; ncases++)
+                cases[ncases] = x.src.cases[ncases].name;
+        r = make_driver(&x, cases, ncases, &drv);
+        free(cases);
+        if (r)
             goto out;
-        }
-        dp.macros = mac;
-        dp.macros_len = mlen;
-        dp.result = CR_RESULT;
-        dp.cases = cases;
-        dp.ncases = ncases;
-        n = tp_driver_write(&src, &dp, &drv, err, sizeof err);
-        free(mac);
-        if (cases != one)
-            free(cases);
-        if (n) {
-            fprintf(log, "corpusrun case: %s\n", n == -2 ? "out of memory" : err);
+        if (o->print_driver) {
+            fwrite(drv.text, 1, drv.len, log);
+            rc = ferror(log) ? 2 : 0;
+        } else if (o->write_driver)
+            rc = write_driver(o, &x.env, &x.conf, &drv, log);
+        tp_driver_free(&drv);
+        if (o->print_driver || o->write_driver)
             goto out;
-        }
-    }
-    if (o->print_driver) {
-        fwrite(drv.text, 1, drv.len, log);
-        rc = ferror(log) ? 2 : 0;
-        goto out;
-    }
-    if (o->write_driver) {
-        rc = write_driver(o, &env, &conf, &drv, log);
-        goto out;
     }
 
     /* the cells of the side */
-    for (size_t i = 0; i < m.ncells; i++)
-        if (m.cells[i].originals == o->originals)
-            ncells++;
-    if (!ncells) {
-        fprintf(log, "corpusrun case: %s has no cell of the side %s\n", conf.id,
-                o->originals ? "originals" : "port");
-        goto out;
-    }
-    if (!(cells = calloc(ncells, sizeof *cells)) || !(obs = calloc(ncells, sizeof *obs))) {
+    if (!(x.side = calloc(x.m.ncells + 1, sizeof *x.side))) {
         fprintf(log, "corpusrun case: out of memory\n");
         goto out;
     }
+    for (size_t i = 0; i < x.m.ncells; i++)
+        if (x.m.cells[i].originals == o->originals)
+            x.side[x.nside++] = i;
+    if (!x.nside) {
+        fprintf(log, "corpusrun case: %s has no cell of the side %s\n", x.conf.id,
+                o->originals ? "originals" : "port");
+        goto out;
+    }
     {
-        const char *work = need(&env, "work", err, sizeof err);
+        const char *work = need(&x.env, "work", err, sizeof err);
 
-        if (!work || !(workbase = str_printf("%s/%s__%s%s", work, conf.id, o->case_name,
-                                             o->originals ? "_originals" : ""))) {
+        if (!work)
+            workbase = NULL;
+        else if (o->case_name)
+            workbase = str_printf("%s/%s__%s%s", work, x.conf.id, o->case_name, o->originals ? "_originals" : "");
+        else
+            workbase = str_printf("%s/%s%s", work, x.conf.id, o->originals ? "_originals" : "");
+        if (!workbase) {
             fprintf(log, "corpusrun case: %s\n", work ? "out of memory" : err);
             goto out;
         }
     }
+    x.base = workbase;
     if (runwork_open(&rw, workbase, err, sizeof err)) {
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
@@ -1226,156 +1837,59 @@ int caserun(const struct caserun_opts *o, FILE *log)
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
-    /* the driver, tokenised */
-    if (!(drvpath = str_printf("%s/driver.bas", rw.dir)) || !(bb2 = str_printf("%s/" CR_PROGRAM ".bb2", rw.dir))
-        || write_file(drvpath, drv.text, drv.len)) {
-        fprintf(log, "corpusrun case: cannot write the driver\n");
-        goto out;
-    }
-    if (!(tokens = token_list(&conf, &env, rw.dir, log, err, sizeof err))) {
+    if (!(x.tokens = token_list(&x.conf, &x.env, rw.dir, log, err, sizeof err))) {
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
-    {
-        const char *tedsrc = need(&env, "tedsrc", err, sizeof err);
-        char *argv[] = { (char *)tedsrc, (char *)"tok", tokens, drvpath, bb2, NULL };
-
-        if (!tedsrc) {
-            fprintf(log, "corpusrun case: %s\n", err);
-            goto out;
-        }
-        if (spawn(argv, log)) {
-            fprintf(log, "corpusrun case: the driver %s cannot be tokenised\n", drvpath);
-            goto out;
-        }
+    if (!o->case_name) {
+        rc = run_all(&x, rw.dir);
+        goto out;
     }
-    /* a pass per cell */
-    {
-        size_t k = 0;
-
-        for (size_t i = 0; i < m.ncells; i++) {
-            struct cell *c;
-            char *pt;
-            int r;
-
-            if (m.cells[i].originals != o->originals)
-                continue;
-            c = &cells[k];
-            c->idx = i;
-            snprintf(c->tag, sizeof c->tag, "c%zu", k);
-            k++;
-            if ((r = cr_cell_pass(&conf, &m, i, &env, c->tag, rw.dir, bb2, &pt, err, sizeof err))) {
-                fprintf(log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
-                goto out;
-            }
-            r = corpus_parse(pt, &c->p, err, sizeof err);
-            free(pt);
-            if (r) {
-                fprintf(log, "corpusrun case: cell %s: %s\n", m.cells[i].name, err);
-                goto out;
-            }
-            if (missing(&c->p, log)) {
-                rc = 77;
-                goto out;
-            }
-            if (!(c->key = cr_session_key(&conf, &m, i))) {
-                fprintf(log, "corpusrun case: out of memory\n");
-                goto out;
-            }
-        }
+    /* the run of one case: a set of one, in the run directory itself */
+    if (!(one.cases = calloc(2, sizeof *one.cases)) || !(one.idx = calloc(x.nside + 1, sizeof *one.idx))
+        || !(one.dir = strdup(rw.dir))) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        goto out;
     }
-    /* the sessions: the cells with the same key, in order; again for the cells
-       a session did not reach */
-    for (;;) {
-        struct cell **group = calloc(ncells, sizeof *group);
-        size_t n = 0, first;
-        int r;
-
-        if (!group) {
-            fprintf(log, "corpusrun case: out of memory\n");
-            goto out;
-        }
-        for (first = 0; first < ncells && cells[first].done; first++)
-            ;
-        if (first == ncells) {
-            free(group);
-            break;
-        }
-        for (size_t i = first; i < ncells; i++)
-            if (!cells[i].done && !strcmp(cells[i].key, cells[first].key))
-                group[n++] = &cells[i];
-        ran = 1;
-        r = run_session(group, n, workbase, log, &nsessions);
-        free(group);
-        if (r) {
-            rc = r;
-            goto out;
-        }
-    }
-    /* the observations and the verdict */
+    one.cases[0] = o->case_name;
+    one.ncases = 1;
+    memcpy(one.idx, x.side, x.nside * sizeof *one.idx);
+    one.ncells = x.nside;
+    if ((rc = run_set(&x, &one)) != 0)
+        goto out;
     {
-        size_t *idx = calloc(ncells, sizeof *idx);
-        struct tj_obs *to = calloc(ncells, sizeof *to);
-        struct tj_msgs msgs = { 0 };
-        struct tj_test t = { file, &src, &conf, &m, o->case_name, o->require_deviation };
-        int v;
+        const struct set **from = calloc(x.nside + 1, sizeof *from);
+        size_t *at = calloc(x.nside + 1, sizeof *at);
+        int v = -1;
 
-        if (!idx || !to) {
-            free(idx);
-            free(to);
-            fprintf(log, "corpusrun case: out of memory\n");
-            goto out;
-        }
-        for (size_t i = 0; i < ncells; i++) {
-            if (observe_cell(&cells[i], &drv, file, &obs[i])) {
-                free(idx);
-                free(to);
-                fprintf(log, "corpusrun case: out of memory\n");
-                goto out;
+        if (from && at) {
+            for (size_t i = 0; i < x.nside; i++) {
+                from[i] = &one;
+                at[i] = i;
             }
-            idx[i] = cells[i].idx;
-            to[i] = obs[i].o;
+            v = judge_case(&x, o->case_name, from, at, x.nside, "", log);
         }
-        fprintf(log, "== %s, case %s, side %s:", file, o->case_name, o->originals ? "originals" : "port");
-        for (size_t i = 0; i < ncells; i++)
-            fprintf(log, " %s (%s)", m.cells[cells[i].idx].name, cells[i].tag);
-        fprintf(log, "\n");
-        for (size_t i = 0; i < ncells; i++)
-            if (obs[i].where)
-                fprintf(log, "cell %s: compile error: %s\n", m.cells[cells[i].idx].name, obs[i].where);
-        v = tj_verdict(&t, idx, to, ncells, &msgs);
-        for (size_t i = 0; i < msgs.n; i++)
-            fprintf(log, "%s\n", msgs.v[i]);
-        tj_msgs_free(&msgs);
-        free(idx);
-        free(to);
+        free(from);
+        free(at);
         if (v < 0) {
             fprintf(log, "corpusrun case: out of memory\n");
+            rc = 2;
             goto out;
         }
-        fprintf(log, "%s: case %s: %s\n", file, o->case_name, verdict_name(v));
         rc = v;
     }
 out:
     if (rw.fd >= 0)
-        rc = runwork_finish(&rw, ran, rc, NULL, NULL, log, "corpusrun case");
-    for (size_t i = 0; cells && i < ncells; i++) {
-        corpus_free(&cells[i].p);
-        free(cells[i].key);
-    }
-    for (size_t i = 0; obs && i < ncells; i++)
-        obs_free(&obs[i]);
-    free(obs);
-    free(cells);
+        rc = runwork_finish(&rw, x.ran, rc, NULL, NULL, log, "corpusrun case");
+    set_free(&one);
     free(text);
     free(workbase);
-    free(drvpath);
-    free(bb2);
-    free(tokens);
-    tp_driver_free(&drv);
-    tp_free(&src);
-    tc_matrix_free(&m);
-    tc_free(&conf);
-    tc_env_free(&env);
+    free(x.mac);
+    free(x.tokens);
+    free(x.side);
+    tp_free(&x.src);
+    tc_matrix_free(&x.m);
+    tc_free(&x.conf);
+    tc_env_free(&x.env);
     return rc;
 }

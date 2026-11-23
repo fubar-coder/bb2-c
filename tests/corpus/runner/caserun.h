@@ -129,11 +129,151 @@ const char *cr_prev_unknown(const char *test, const char *const *names, size_t n
                             size_t nentries, size_t *cursor);
 
 /**
- * @brief Run (or show) one case of a test.
+ * @brief Run (or show) one case of a test, or with case_name NULL all cases
+ *        of the source (below).
  * @param out  the report, the diagnostics, the @stat lines
  * @return the verdict as above
  */
 int caserun(const struct caserun_opts *o, FILE *out);
+
+/*
+ * The run of all cases of a source (case_name NULL; change
+ * basic-test-runner-extension, D1-D4): the driver of a set of cases runs in
+ * the cells of the side as the driver of one case does (the same passes and
+ * sessions), and each case of the set is judged from its block of the
+ * result file, the batch init and the batch cleanup, with the assertions and
+ * deviations of its own run (tj_test.cases: the blocks of the other cases
+ * of the driver are theirs).  The work directory is ID (ID_originals), each
+ * run of a set a directory of its own in it: shared-N, alone-CASE.
+ *
+ *   - The cases that run on their own from the start (cr_case_alone): those
+ *     whose assertions or deviations name an observation of the whole
+ *     program other than by the defaults, and those that announce a runtime
+ *     error; the others share the run.
+ *   - A shared run whose cells all ended cleanly (cr_cell_clean) judges
+ *     each of its cases; if a cell did not, the case whose block was open at
+ *     its end (cr_open_case) runs on its own and the others run again
+ *     without it, and with no open block every case of the set runs on its
+ *     own.  A set of one case is a run of that case on its own.
+ *   - A case judged failed, broken or error in a shared run runs again on
+ *     its own, and that verdict counts (cr_plan).
+ *
+ * The report: per case its block (as for one case, the cells named with the
+ * run they were judged from), its verdict line marked " (alone)" when it was
+ * judged on its own, a line "case NAME: VERDICT alone (VERDICT2 in the run
+ * shared with ...)" when the two verdicts differ, and at the end the line
+ * "ID.test.bas: N cases, side SIDE: VERDICT".  The exit status is the worst
+ * verdict (cr_verdict_worse); a case whose run could not start after others
+ * were judged is SKIPPED (CR_SKIPPED); 77 when the side is skipped before any
+ * session.
+ */
+
+/** @brief The verdict of a case whose run could not start. */
+#define CR_SKIPPED 77
+
+/**
+ * @brief Whether the verdict a is worse than b, in the order error (2),
+ *        broken (3), failed (4), skipped (77), reproduced (1), passed (0).
+ */
+int cr_verdict_worse(int a, int b);
+
+/** @brief The name of a verdict: PASSED, REPRODUCED, ERROR, BROKEN, FAILED, SKIPPED. */
+const char *cr_verdict_name(int v);
+
+/**
+ * @brief Whether a case runs on its own in the run of all cases: in a cell
+ *        of cells[0..ncells) and a judging mode (plain, with the
+ *        deviations, with them as if their axis terms matched) an
+ *        assertion other than a default names an observation of the whole
+ *        program (rc, requester, compile, compile.log, output, serial,
+ *        inject, session, end.run), or the case's namespace holds an
+ *        !ExpectError (the table of the preprocessor).  A conflict of
+ *        assertions counts as such (the run of the case reports it).
+ * @return 1 on its own, 0 shared, -1 out of memory
+ */
+int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
+                  const struct tp_source *src, const char *case_name);
+
+/**
+ * @brief Whether a cell's program in a shared run ended cleanly: its session
+ *        ended (done), it compiled (ok), it showed no requester, its exit
+ *        code is 0 and the result file has the run's end entry without an
+ *        incomplete entry before it (the program did not end inside a
+ *        block: End in a case, a crash the library's finit survived).
+ */
+int cr_cell_clean(const struct tj_obs *o);
+
+/**
+ * @brief The case whose block is open at the end of a result file (a block
+ *        entry of a case without its block end).
+ * @param name  its name (cut to namelen)
+ * @return 1 = open (name), 0 = none
+ */
+int cr_open_case(const char *result, size_t len, char *name, size_t namelen);
+
+/** @brief The runs of the plan. */
+enum cr_runkind {
+    CR_RUN_SHARED,              /* a set of cases in the shared cells */
+    CR_RUN_ALONE                /* one case on its own in every cell */
+};
+
+/** @brief The state of a case in the plan. */
+enum cr_cstate {
+    CR_C_SHARED,                /* waits for a shared run */
+    CR_C_ALONE,                 /* waits for its run on its own */
+    CR_C_CONFIRM,               /* judged not passing in a shared run: waits
+                                   for its run on its own */
+    CR_C_DONE                   /* its verdict counts */
+};
+
+/**
+ * @brief The plan of the run of all cases: which run comes next, from the
+ *        results of the runs before (D3).
+ */
+struct cr_plan {
+    size_t n;                   /* the cases, in the order of the source */
+    int *state;                 /* enum cr_cstate */
+    int *verdict;               /* the verdict that counts, -1 none yet */
+    int *alone;                 /* the verdict comes from its run on its own */
+    int *shared;                /* the verdict of the shared run its run on
+                                   its own replaced, -1 none */
+};
+
+/**
+ * @brief Start a plan: the cases alone[i] != 0 run on their own, the others
+ *        share.
+ * @return 0, -1 = out of memory
+ */
+int cr_plan_init(struct cr_plan *p, size_t n, const int *alone);
+void cr_plan_free(struct cr_plan *p);
+
+/**
+ * @brief The next run: its kind and its cases set[0..*nset) (set has room
+ *        for every case).  The shared cases come first (a single one becomes
+ *        a run on its own), then the runs on their own in the order of the
+ *        source.
+ * @return 1 = a run, 0 = every case has its verdict
+ */
+int cr_plan_next(struct cr_plan *p, size_t *set, size_t *nset, int *kind);
+
+/**
+ * @brief A shared run of set[0..nset) that did not end cleanly: open[k] (k
+ *        < nopen) is the case open at the end of the k-th cell that did not
+ *        end cleanly, or -1 if none was.  The open cases run on their own,
+ *        the others of the set again; with a cell without an open case every
+ *        case of the set runs on its own.
+ */
+void cr_plan_unclean(struct cr_plan *p, const size_t *set, size_t nset, const long *open, size_t nopen);
+
+/**
+ * @brief A case judged: v the verdict, alone whether from its run on its
+ *        own.  A case judged failed, broken or error in a shared run waits
+ *        for its run on its own (CR_C_CONFIRM); any other verdict counts.
+ */
+void cr_plan_judged(struct cr_plan *p, size_t c, int v, int alone);
+
+/** @brief The worst verdict that counts (cr_verdict_worse); 0 without cases. */
+int cr_plan_worst(const struct cr_plan *p);
 
 /**
  * @brief The pass file text (corpus.h) of one cell: configuration TAG,

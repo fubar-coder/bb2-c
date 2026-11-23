@@ -140,6 +140,24 @@ add_test(NAME blitz2_selftest_model_compile_error COMMAND ${CORPUSRUN} case --en
 set_tests_properties(blitz2_selftest_model_compile_error PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
 	"compile error: model-compile-error\\.test\\.bas:7: [^\n]*\n.*model-compile-error\\.test\\.bas: case broken: FAILED")
+# the run of all cases of a source (corpusrun case without --case;
+# selftest/model-all-cases.test.bas): each case's line, the cases judged on their own, the case
+# whose verdict on its own differs from the shared run's, and the summary line; and the exit
+# status of the worst verdict, failed (4: runner-exit.cmake, whose check for run directories
+# left looks into a directory of its own, as the failed run stays in the model's work directory)
+math(EXPR limit "6 * ${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+set(model_all_cases ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source
+	${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-all-cases.test.bas --side port)
+add_test(NAME blitz2_selftest_model_all_cases COMMAND ${model_all_cases})
+set_tests_properties(blitz2_selftest_model_all_cases PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"shared-0: cell default did not end cleanly, the case ends open\n.*model-all-cases\\.test\\.bas: case pass1: PASSED\n.*model-all-cases\\.test\\.bas: case fails: FAILED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case ends: PASSED \\(alone\\)\n.*model-all-cases\\.test\\.bas: case behind: PASSED\n.*model-all-cases\\.test\\.bas: case victim: PASSED \\(alone\\)\ncase victim: PASSED alone \\(FAILED in the run shared with pass1, fails, behind\\)\n.*model-all-cases\\.test\\.bas: case prints: PASSED \\(alone\\)\nmodel-all-cases\\.test\\.bas: 6 cases, side port: FAILED\n")
+add_test(NAME blitz2_selftest_model_all_cases_exit COMMAND ${CMAKE_COMMAND} "-DCMD=${model_all_cases}" -DWANT=4
+	"-DREGEX=model-all-cases\\.test\\.bas: 6 cases, side port: FAILED\n"
+	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/model-all-cases-exit
+	-P ${PROJECT_SOURCE_DIR}/tests/corpus/runner/runner-exit.cmake)
+set_tests_properties(blitz2_selftest_model_all_cases_exit PROPERTIES LABELS emulator TIMEOUT ${limit}
+	PASS_REGULAR_EXPRESSION "runner-exit: as expected" SKIP_REGULAR_EXPRESSION "exit status 77, expected")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md
@@ -192,6 +210,21 @@ add_test(NAME blitz2_model_driver_all_cases COMMAND ${CMAKE_COMMAND}
 	-DDRIVER=${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-numbering.bas
 	"-DWANT=\n\\.tc__skip\nGosub tc__init\nGosub tc_first\nGosub tc_second\nGosub tc__final\nEnd\n$"
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/model-driver-check.cmake)
+# the driver of all cases printed (--print-driver without --case) is the text that build step
+# writes, byte for byte; with the driver of another source the check fails (_broken)
+foreach(variant "" _broken)
+	if(variant STREQUAL "")
+		set(want ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-numbering.bas)
+	else()
+		set(want ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-prev.bas)
+	endif()
+	add_test(NAME blitz2_model_driver_printed${variant} COMMAND ${CMAKE_COMMAND}
+		"-DCMD=${CORPUSRUN};case;--env;${BASIC_TEST_ENV};--source;${CMAKE_CURRENT_SOURCE_DIR}/model-numbering.test.bas;--print-driver"
+		-DDRIVER=${want} -DOUT=${CMAKE_CURRENT_BINARY_DIR}/model-driver-printed${variant}.bas
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/model-driver-print.cmake)
+endforeach()
+set_tests_properties(blitz2_model_driver_printed PROPERTIES PASS_REGULAR_EXPRESSION "printed the same")
+set_tests_properties(blitz2_model_driver_printed_broken PROPERTIES WILL_FAIL TRUE)
 add_test(NAME blitz2_selftest_model_driver_broken COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
 	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-driver-broken.test.bas
 	--write-driver ${CMAKE_CURRENT_BINARY_DIR}/model-drivers-broken/model-driver-broken.bb2)

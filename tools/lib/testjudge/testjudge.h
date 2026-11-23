@@ -110,6 +110,13 @@ struct tj_test {
     int require_deviation;      /* a bug-orig test: one without any declared
                                    deviation is broken (it would not show its
                                    bug), whatever its cells show */
+    const char *const *cases;   /* the cases the driver called (the run of all
+                                   cases of a source, caserun.h); NULL: the
+                                   judged case alone.  A block of one of the
+                                   others belongs to that case, its entries
+                                   are not judged; a block of a case the
+                                   driver did not call fails the cell */
+    size_t ncases;
 };
 
 /**

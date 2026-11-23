@@ -739,3 +739,69 @@ TEST_CASE("testjudge: calls out of order", "[testjudge]")
     CHECK(has(m, "check init initcheck (x.test.bas:6) failed: 1: expected 1 ($00000001), actual 2 ($00000002) "
                  "(its first failed entry)"));
 }
+
+// two cases and a batch cleanup, run by one driver (the run of all cases of
+// a source, corpusrun case without --case)
+static const char two_cases[] =
+    "!TestCase{a}\n"                                        // 1
+    "  !CheckEq{1,1,\"one\"}\n"                             // 2  K0
+    "!EndTestCase\n"                                        // 3
+    "!TestCase{b}\n"                                        // 4
+    "  !CheckEq{2,2,\"two\"}\n"                             // 5  K1
+    "!EndTestCase\n"                                        // 6
+    "!TestBatchCleanup\n"                                   // 7
+    "  !CheckEq{3,3,\"fin\"}\n"                             // 8  K2
+    "!EndTestBatchCleanup\n";                               // 9
+
+TEST_CASE("testjudge: the blocks of the other cases the driver called", "[testjudge]")
+{
+    static const char *const ab[] = { "a", "b" };
+    static const char *const a_only[] = { "a" };
+    fixture fa("", "", "a", two_cases), fb("", "", "b", two_cases);
+    std::string m;
+    const std::string pre = "begin|1\nblock|case|a\n", mid = "blockend\nblock|case|b\n";
+    const std::string fin = "blockend\nblock|final\ncheck|2|ok|$00000003|$00000003\nblockend\nend\n";
+
+    fa.t.cases = ab;
+    fa.t.ncases = 2;
+    fb.t.cases = ab;
+    fb.t.ncases = 2;
+    // two cases in one result file, each judged from its own block
+    obs both(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|ok|$00000002|$00000002\n" + fin);
+    CHECK(judge(fa, both, m) == TJ_PASS);
+    CHECK(m == "");
+    CHECK(judge(fb, both, m) == TJ_PASS);
+    CHECK(m == "");
+    // a failed check in b does not fail a
+    obs bfail(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|fail|$00000002|$00000005\n" + fin);
+    CHECK(judge(fa, bfail, m) == TJ_PASS);
+    CHECK(m == "");
+    CHECK(judge(fb, bfail, m) == TJ_FAIL);
+    CHECK(has(m, "check b two (x.test.bas:5) failed"));
+    // nor does the library's broken state reported in b's block
+    obs bbroken(pre + "check|0|ok|$00000001|$00000001\n" + mid + "broken|block end without a block\n" + fin);
+    CHECK(judge(fa, bbroken, m) == TJ_PASS);
+    CHECK(judge(fb, bbroken, m) == TJ_BROKEN);
+    // a failed check of the batch cleanup fails both
+    obs cfail(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|ok|$00000002|$00000002\n"
+              "blockend\nblock|final\ncheck|2|fail|$00000003|$00000004\nblockend\nend\n");
+    CHECK(judge(fa, cfail, m) == TJ_FAIL);
+    CHECK(has(m, "check cleanup fin (x.test.bas:8) failed"));
+    CHECK(judge(fb, cfail, m) == TJ_FAIL);
+    CHECK(has(m, "check cleanup fin (x.test.bas:8) failed"));
+    // the block of a case the driver did not call still fails the cell
+    fa.t.cases = a_only;
+    fa.t.ncases = 1;
+    CHECK(judge(fa, both, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case b (line 5), which was not selected"));
+    fa.t.cases = nullptr;
+    fa.t.ncases = 0;
+    CHECK(judge(fa, both, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case b (line 5), which was not selected"));
+    // the judged case twice stays a fault of the file, called or not
+    fa.t.cases = ab;
+    fa.t.ncases = 2;
+    obs twice(pre + "check|0|ok|$00000001|$00000001\nblockend\nblock|case|a\n" + fin);
+    CHECK(judge(fa, twice, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case a twice"));
+}

@@ -229,3 +229,33 @@ None: no test changes form or name. The pilot tests keep working
 (`output` keeps inject's lines); `plane-64k` may add its cell `port,cd`
 back with `isolate = ["libs=cd"]` in a round of `bug-orig-basic-tests`, not
 here.
+
+## Findings
+
+- **`End` in a case leaves the run's end entry (task 1.5).** The test
+  library's finit writes `incomplete` and then the run's `end` entry when
+  the program ends inside a block (`basic-testlib`, "The end of a case and
+  of the run are marked"), so a shared run whose case `b` executes `End`
+  has its end entry, and D3's list (session done, compiled, exit code 0,
+  end entry, no requester) would call it clean: `b` would be judged from
+  it (and pass with `"end.case" = "not exists"`), and every case behind it
+  would fail as not started. The scenario "A case ends the program" of the
+  delta spec needs it unclean, so `cr_cell_clean` also requires that the
+  entry before the run's end entry is no `incomplete` (the program did not
+  end inside a block). The requirement "A case open at an unclean end runs
+  again" lists conditions that make a run unclean; this one is added, no
+  listed one is dropped, so the spec text stands. The open case is the one
+  whose block the `incomplete` closes (`cr_open_case`); a block of the
+  batch init or cleanup open at the end is no case, and every case of the
+  set runs on its own.
+- **A case that asserts nothing of the whole program but is set apart in
+  every judging mode (task 1.4).** D2 counts the assertions and deviations
+  "in any cell of the side and any judging mode", so the deviation of a
+  fixed bug for the other side's cells (`libs=cd`) also sets the case apart
+  on the side `port`, where it is never judged with the deviations
+  (`TC_DEVIATED_ANY` sees it with its axis terms ignored). Taken as
+  written: the case only runs on its own more often than needed.
+- **The tags of the report.** In the run of all cases the cell list of a
+  case names the run each cell was judged from (`port,cd (shared-0/c0)`,
+  `(alone-NAME/c0)`), the directory below the run's work directory that
+  holds that cell's `CORPUS:`; the run of one case keeps `port,cd (c0)`.

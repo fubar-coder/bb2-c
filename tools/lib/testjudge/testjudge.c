@@ -53,6 +53,7 @@ struct ent {
     int block;                  /* the block it belongs to: -1 none, else
                                    BASICTEST_BLOCK_* */
     int in_case;                /* it belongs to the judged case */
+    int other;                  /* it belongs to another case the driver called */
 };
 
 /* what one check did in the run */
@@ -120,12 +121,21 @@ static int same_name(const struct basictest_str *s, const char *name)
     return s->length == strlen(name) && !memcmp(s->data, name, s->length);
 }
 
+/* a case the driver called (tj_test.cases) */
+static int called(const struct tj_test *t, const struct basictest_str *s)
+{
+    for (size_t i = 0; i < t->ncases; i++)
+        if (t->cases && t->cases[i] && same_name(s, t->cases[i]))
+            return 1;
+    return 0;
+}
+
 /* the file read and checked; 0, TJ_ERROR (msgs), -1 out of memory */
 static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct run *r, struct tj_msgs *msgs)
 {
     size_t p = 0, cap = 0;
     unsigned line = 0;
-    int block = -1, cur_is_case = 0, seen_case = 0;
+    int block = -1, cur_is_case = 0, cur_other = 0, seen_case = 0;
 
     if (!(r->chk = calloc(t->src->nchecks + 1, sizeof *r->chk)))
         return -1;
@@ -173,12 +183,15 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
             break;
         case BASICTEST_BLOCK:
             block = en->e.block;
-            cur_is_case = 0;
+            cur_is_case = cur_other = 0;
             if (block == BASICTEST_BLOCK_CASE) {
                 char name[200];
 
                 str_text(name, sizeof name, &en->e.name);
-                if (!same_name(&en->e.name, t->case_name)) {
+                if (!same_name(&en->e.name, t->case_name) && called(t, &en->e.name)) {
+                    /* another case of the driver: its entries are its own */
+                    cur_other = 1;
+                } else if (!same_name(&en->e.name, t->case_name)) {
                     r->foreign = 1;
                     if (msg(msgs, "the result file holds the case %s (line %u), which was not selected", name, line))
                         return -1;
@@ -200,8 +213,9 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
                 r->case_ended = 1;
             en->block = block;
             en->in_case = cur_is_case;
+            en->other = cur_other;
             block = -1;
-            cur_is_case = 0;
+            cur_is_case = cur_other = 0;
             r->n++;
             continue;
         case BASICTEST_INCOMPLETE:
@@ -220,6 +234,7 @@ static int read_run(const struct tj_test *t, const struct tj_obs *obs, struct ru
         }
         en->block = block;
         en->in_case = cur_is_case;
+        en->other = cur_other;
         r->n++;
     }
     return 0;
@@ -593,6 +608,8 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
         const struct tp_check *c;
         struct chk *k;
 
+        if (en->other)
+            continue;           /* the block of another case the driver called */
         if (en->e.kind == BASICTEST_BROKEN) {
             char reason[200];
 
