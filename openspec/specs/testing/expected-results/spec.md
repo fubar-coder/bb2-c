@@ -34,7 +34,7 @@ Where expected data is derived from the original (the CD result table `tests/dat
 - **THEN** `corpus_cd` passes and reports the row as an informational executable difference, and the table update leaves the row as it is
 
 ### Requirement: Intended-difference lists
-`refcheck data`, `rwe_declarations_NAME` and the `refcheck asm` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlib compare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed #NNN PAIR...` naming the combo pairs that must differ.
+`refcheck data`, `rwe_declarations_NAME` and the `refcheck asm` tests SHALL accept an explicit list of intended differences with issue numbers, and each listed entry SHALL occur (a stale entry fails), as `blitzlib compare INTENDED` does. `ted_ab` scripts SHALL take a directive `; @fixed-orig #NNN PAIR...` naming the combo pairs that must differ; the directive's old name `; @fixed` SHALL be refused with an error naming the new one.
 
 #### Scenario: Stale entry
 - **WHEN** a list names a difference that no longer occurs
