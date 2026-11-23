@@ -239,9 +239,10 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   form for now) and `compiler-racing-stripe-wide` (Q-A20 open). Findings:
   the planning classification's "48 generated tests with a run" counts two
   hand-written `regression/compiler-expr-depth*` tests, the generated ones
-  with a run are 46; three hand-written runnable tests are still in the old
-  form because round U4 (task 3.5) is open: `regression/ldivlib-div0-check-fold`,
-  `regression/compiler-expr-depth`, `-depth-d7`; `tests/blitz2` has 13
+  with a run are 46; the three hand-written runnable tests
+  (`regression/ldivlib-div0-check-fold`, `regression/compiler-expr-depth`,
+  `-depth-d7`) have moved to the model in round U4, which stays open for
+  `compiler-racing-stripe-wide` (Q-A20); `tests/blitz2` has 13
   old-form `.expect` tests of its own, outside this change. `tests/README.md`
   (the model section, the preset table, the bug-orig sections),
   `docs/testing.md` (suite table, fix steps, fix-scope, recording) and

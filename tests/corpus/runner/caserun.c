@@ -404,9 +404,10 @@ int cr_prev_pass(const char *cell_pass, const char *test, const char *name, cons
                  const char *prev_blitz2, const char *prev_libs, const char *const *entries, size_t nentries,
                  char **text, char *err, size_t errlen)
 {
-    /* the keys of a run, not of a compile (as prev_compile_test drops them), and
+    /* the keys of a run, not of a compile (as prev_compile_test drops them; rcput stays: a compile
+       on a Kickstart 1.x machine needs it, elsewhere it does nothing), and
        the ones this pass sets itself */
-    static const char *const drop[] = { "cell", "launcher", "rcput", "hang_after", "hang_from", "serial",
+    static const char *const drop[] = { "cell", "launcher", "hang_after", "hang_from", "serial",
                                         "runwrap", "runargs", "launcherargs", "defaultdbug", "editrun", "floppy",
                                         "parallel", "report", "work", "source", "run", "test", "intended" };
     struct text t = { 0 };

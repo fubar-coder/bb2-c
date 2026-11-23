@@ -26,10 +26,9 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator condition, below |
 | [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | the old form is gone |
 | [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 2 | a two-run mode (not planned); open question Q-A20 |
-| [6. Runnable tests not moved yet](#6-runnable-tests-not-moved-yet) | 3 | round U4 (task 3.5) |
-| [7. Other suites with `.expect`](#7-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | outside the change |
+| [6. Other suites with `.expect`](#6-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | outside the change |
 
-`compiler/` has 151 old-form tests and `regression/` 130 (281 in all; the
+`compiler/` has 151 old-form tests and `regression/` 127 (278 in all; the
 Blitz self tests of `selftest/` are in section 4 and not counted there).
 
 ## 1. TED tests
@@ -109,8 +108,8 @@ check `exprmatrix_committed`; `tools/exprmatrix/README.md`, "Outputs"):
 
 The 82 files of `compiler/compiler-expr-*` are 46 + 36. The three
 `regression/compiler-expr-depth*` tests are hand-written (the generator
-has no depth cells); `compiler-expr-depth` and `compiler-expr-depth-d7`
-are in section 6, `compiler-expr-depth-prec` (`[compile]` only) in
+has no depth cells); `compiler-expr-depth` and `compiler-expr-depth-d7` have
+moved to the model, `compiler-expr-depth-prec` (`[compile]` only) is in
 section 2.
 
 **Why it does not fit.** Two reasons, one per group. The 159 with
@@ -198,20 +197,7 @@ file and have no model counterpart.
   questions. What moves it: that query (a small spec change) or option
   (b) of Q-A20.
 
-## 6. Runnable tests not moved yet
-
-`regression/ldivlib-div0-check-fold`, `regression/compiler-expr-depth` and
-`regression/compiler-expr-depth-d7` have a program run, are hand-written
-and fit the model (class (a) of the planning classification names the
-other `regression/` tests with a run as expressible). They are old-form
-tests only because round U4 (`openspec/changes/bug-orig-basic-tests`, task
-3.5) is not finished. Nothing in the model blocks them. Risk for the
-mover: the driver's own text and code are compiled with the test, so a
-test that sits on a compiler limit may need re-tuning (the planning
-classification, "Risks for the movers"; `compiler-expr-depth` tests the
-depth of expressions).
-
-## 7. Other suites with `.expect`
+## 6. Other suites with `.expect`
 
 - `tests/blitz2/*.expect`: 13 port tests of the compiler (7 with
   `[run]`, 6 compile-only), next to 10 model tests in the same directory
