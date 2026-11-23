@@ -1,0 +1,2 @@
+# the job line sets the maximum of the BitMap objects (bitmaplib = 160, maximum 512)
+jobline = ["max=160|512"]

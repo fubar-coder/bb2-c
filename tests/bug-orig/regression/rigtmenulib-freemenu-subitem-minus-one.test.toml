@@ -1,0 +1,4 @@
+# with runtime error checking: the error check of GTFreeMenu accepts the sub item -1
+rwe = ["rigtmenulib"]
+runtime-errors = "on"
+timeout = 30

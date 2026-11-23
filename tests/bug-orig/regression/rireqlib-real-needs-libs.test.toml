@@ -1,0 +1,9 @@
+# the real req.library 2.8 staged in CORPUS:libs, but without inject's libs=
+# the Workbench's LIBS: does not have it
+rwe = ["rireqlib"]
+files = ["libs/req.library|@REQLIB@"]
+runwrap = "@INJECT@|opencount=req.library"
+timeout = 60
+
+[asserts]
+inject = "contains \"inject: opencount: req.library +0\""

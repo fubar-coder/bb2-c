@@ -1,0 +1,9 @@
+# the real req.library 2.8 staged in CORPUS:libs, which inject's libs= puts
+# into LIBS:; the three requesters are ended by a click on their cancel gadget
+rwe = ["rireqlib"]
+files = ["libs/req.library|@REQLIB@"]
+runwrap = "@INJECT@|libs=CORPUS:libs opencount=req.library click=*/Forget_it click=*/Forget_it click=*/Cancel"
+timeout = 60
+
+[asserts]
+inject = "contains \"inject: opencount: req.library +0\ninject: click */Forget_it: answered\ninject: click window: \\\"RQ\\\"\ninject: click */Forget_it: answered\ninject: click window: \\\"\\\"\ninject: click */Cancel: answered\ninject: click window: \\\" Palette \\\"\""
