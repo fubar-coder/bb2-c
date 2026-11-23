@@ -1,6 +1,6 @@
 ---
 title: Reading library test results
-weight: 3
+weight: 4
 description: How to read a line of the library tests' expected data or a failure message - the four parts of a case key, what the input part says in the test programs, and the forms a value takes.
 ---
 
