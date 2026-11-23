@@ -1,0 +1,18 @@
+# compiler-macrobuff-size-small.test.bas: the job line sets the Macro Buffer
+# of the options to 1024; the correct result is a failed compile (Macro too
+# Big in the 14th line of big) and nothing runs; the original keeps the
+# buffer at 8192 bytes, compiles and the case runs
+fixed-orig = 336
+jobline = ["macrobuf=1024"]
+
+[asserts]
+compile = "== \"error 21 Macro too Big\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

@@ -1,0 +1,19 @@
+# compiler-newtype-self-field.test.bas: the compiler runs through inject
+# with fill=01 (the memory donewtype takes without clearing it holds $01);
+# the correct result is a failed compile (Illegal Type at the field x) and
+# nothing runs; the original compiles with the field x of 257 bytes and the
+# case runs (its checks hold the sizes the original's compile gives)
+fixed-orig = 973
+wrap = "@INJECT@|fill=01"
+
+[asserts]
+compile = "== \"error 11 Illegal Type\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"
