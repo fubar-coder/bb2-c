@@ -219,3 +219,34 @@ sections). Plan choice.
 
 No migration: new queries and a new placeholder; existing tests are
 unchanged except the three users. Rollback: revert the commits.
+
+## Findings of the implementation
+
+- **The end of a block (D2 against the spec).** D2 gives a line without
+  an ID before a `JOB` line to the previous step; the spec ends the block
+  "up to its last line that carries its ID". `bugorig_block` follows
+  both: it attributes the lines by D2 and cuts the block behind the job's
+  last ID line. So a requester line behind a job's last ID line (before
+  the next `JOB` line or the end of the session, e.g. an `ABORT:` line)
+  is in no block, unless the job runs again in a later session (then it
+  stands before the later ID lines and stays). `compile.log` keeps every
+  line. The spec was not changed.
+- **`r001` as a name** is checked at configuration time, without the
+  cells: it is a job of the test if a cell may run from the editor (the
+  setting or a value of the axis `editor-run` is `on`). In a cell that
+  runs from the shell `compile.log.r001` is then not captured.
+- **The count of the data sources** is one function for the data pass
+  and the placeholder (`data_part` in `caserun.c`, `cr_data_staged`);
+  the lines of `cr_data_pass` are unchanged (`test_caserun`,
+  `test_data_pass`). The observation takes the staged path from the
+  parsed pass (`corpus_build_job.part`), as `corpus.c` stages it.
+- **racing-stripe-wide** checks the sum of its counters with
+  `!CheckEq{a+b+c+d,97,"sum"}` instead of printing it (D6: "a case that
+  prints what `[run]` held"): the model judges it itself. The three cells
+  keep their verdicts: side port FIXED (port,clib), side originals
+  passes as declared (port,cd plain, orig195,cd with the deviations); the
+  prev comparison passes; fix-scope reports only the move and the two
+  changed job lines.
+- **The note in `basic-test-editor-run`'s design** (the size as the
+  obstacle) was corrected in this change on the coordinator's brief; the
+  Risks entry above left it to the coordinator.
