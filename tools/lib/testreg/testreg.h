@@ -14,7 +14,7 @@
  * "_originals" behind it for the side with original material; only
  * [a-z0-9_]; a name given twice is an error.  Labels: "originals" for the
  * side with original material, else "bug-orig" and "emulator" for a case
- * with a declared deviation of an open bug (no fixed-orig) and "emulator"
+ * with a declared deviation of an open bug (no fixed-orig or extension) and "emulator"
  * for the others, then the configuration's `labels`; the time limit is
  * the sum of the cells' `timeout` (else the default) plus an extra; the
  * cost and the fixtures are the configuration's `cost` and `fixtures`,

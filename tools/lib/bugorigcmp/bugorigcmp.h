@@ -162,7 +162,8 @@ int bugorigcmp_project_test(FILE *out, const char *id, const char *source, int t
  *                               it, a selector as written), valued by its
  *                               value
  *     ID|fixed-orig||1 [fixed #N]   the key fixed-orig = N (fixed = N: the
- *                               case ID|fixed||1 [fixed #N])
+ *                               case ID|fixed||1 [fixed #N], extension = N:
+ *                               ID|extension||1 [fixed #N])
  * and a directory's tests.toml (ROOT/tests.toml, ROOT/AREA/tests.toml) onto
  * the cases AREA/tests.toml|toml:TABLE.KEY||1 (tests.toml|... for ROOT's).
  * So the fix that sets fixed-orig = N adds a case of issue N and nothing

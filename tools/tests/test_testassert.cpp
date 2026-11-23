@@ -297,6 +297,9 @@ TEST_CASE("testassert: checked when resolved", "[testassert]")
     resolve_refused(t, t.path("x.test.toml") + ":1: test x: fixed-orig without a declared deviation");
     t.write("x.test.toml", "fixed = 7\n[deviations.\"libs=cd\"]\n\"check.a.b\" = \"== fail\"\n");
     resolve_refused(t, ":1: test x: fixed with a declared deviation");
+    t.write("x.test.toml", "extension = 7\n");
+    resolve_refused(t, t.path("x.test.toml") + ":1: test x: extension without a declared deviation (what the "
+                                               "original does instead)");
     // valid: the selector with case=
     t.write("x.test.toml", "[asserts.\"case=a,libs=cd\"]\nrc = \"== 5\"\n");
     built b(t);

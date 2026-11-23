@@ -62,8 +62,8 @@ static char *value_text(const struct tt_value *v)
 }
 
 /* the entries of a configuration file as cases ROUTINE|toml:TABLE.KEY||1;
-   with own, the keys fixed-orig and fixed are the case ROUTINE|KEY||1
-   [fixed #N] (the fix's own) */
+   with own, the keys fixed-orig, fixed and extension are the case
+   ROUTINE|KEY||1 [fixed #N] (the fix's own) */
 static int put_toml(FILE *out, const char *routine, const char *text, const char *path, int own, char *err,
                     size_t errlen)
 {
@@ -80,7 +80,8 @@ static int put_toml(FILE *out, const char *routine, const char *text, const char
         const struct tt_entry *e = &d.e[i];
         char *v;
 
-        if (own && !e->ntable && (!strcmp(e->key, "fixed-orig") || !strcmp(e->key, "fixed"))
+        if (own && !e->ntable && (!strcmp(e->key, "fixed-orig") || !strcmp(e->key, "fixed")
+                    || !strcmp(e->key, "extension"))
             && e->value.type == TT_INTEGER && e->value.integer > 0) {
             put_part(out, routine);
             fprintf(out, "|%s||1 [fixed #%lld]\t%s %lld\n", e->key, e->value.integer, e->key, e->value.integer);

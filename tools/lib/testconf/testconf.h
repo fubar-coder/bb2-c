@@ -14,8 +14,9 @@
  * The keys (tc_keys()): the run settings (compiler, libraries, machine,
  * runtime error checking, time limits, files, wrappers of the run, ...),
  * the keys of the registration (labels, cost, fixtures), `root` (only in
- * a `tests.toml`), the keys of a single test (`fixed`, `fixed-orig`, the
- * table `deviations`; only in an `ID.test.toml`), `exclude` and the
+ * a `tests.toml`), the keys of a single test (`fixed`, `fixed-orig`,
+ * `extension` - at most one of the three -, the table `deviations`; only
+ * in an `ID.test.toml`), `exclude` and the
  * tables.  An unknown key or table is an error naming file, line and key.
  *
  * A relative path in a path setting (testconf keys with a path field) is

@@ -336,6 +336,7 @@ static int check_entries(const struct tc_tabkey *v, size_t n, const char *table,
 int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
 {
     const struct tc_setting *fo = tc_get(c, "fixed-orig"), *fx = tc_get(c, "fixed");
+    const struct tc_setting *ex = tc_get(c, "extension");
 
     if (check_entries(c->asserts, c->nasserts, "asserts", err, errlen)
         || check_entries(c->deviations, c->ndeviations, "deviations", err, errlen))
@@ -343,6 +344,9 @@ int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
     if (fo && c->ndeviations == 0)
         return tc_err(err, errlen, "%s:%u: test %s: fixed-orig without a declared deviation", fo->at.file,
                       fo->at.line, c->id);
+    if (ex && c->ndeviations == 0)
+        return tc_err(err, errlen, "%s:%u: test %s: extension without a declared deviation (what the original "
+                      "does instead)", ex->at.file, ex->at.line, c->id);
     if (fx && c->ndeviations)
         return tc_err(err, errlen, "%s:%u: test %s: fixed with a declared deviation (an original bug is "
                       "fixed-orig)", fx->at.file, fx->at.line, c->id);

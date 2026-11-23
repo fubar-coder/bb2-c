@@ -210,6 +210,13 @@ TEST_CASE("testconf: keys of a single test and of directories", "[testconf]")
     refused(t, "x.test.bas", { t.path("x.test.toml") + ":2: a deviation needs the cell selector" });
     t.write("x.test.toml", "fixed = 3\nfixed-orig = 4\n");
     refused(t, "x.test.bas", { "test x: fixed-orig and fixed exclude each other" });
+    t.write("x.test.toml", "extension = 3\nfixed-orig = 4\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":1: test x: fixed-orig and extension exclude each other" });
+    t.write("x.test.toml", "fixed = 3\n\nextension = 4\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":3: test x: fixed and extension exclude each other" });
+    t.write("tests.toml", "root = true\nextension = 17\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: extension is a key of a single test" });
+    t.write("tests.toml", "root = true\n");
 
     // the same keys where they belong
     tc_env e = env_of(t);
@@ -220,6 +227,10 @@ TEST_CASE("testconf: keys of a single test and of directories", "[testconf]")
     CHECK(!strcmp(c.deviations[0].sel, "libs=cd"));
     CHECK(!strcmp(c.deviations[0].key, "check.a.b"));
     CHECK(c.deviations[0].at.line == 3);
+    tc_free(&c);
+    t.write("x.test.toml", "extension = 4\n[deviations.\"libs=cd\"]\n\"check.a.b\" = \"== fail\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(tc_get(&c, "extension") != nullptr);
     tc_free(&c);
     tc_env_free(&e);
 }

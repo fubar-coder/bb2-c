@@ -776,7 +776,8 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
                struct tj_msgs *msgs)
 {
     int dev = tj_case_has_deviation(t);
-    int fixed = tc_get(t->conf, "fixed-orig") != NULL;
+    /* the test of an extension is judged like that of a fixed original bug */
+    int fixed = tc_get(t->conf, "fixed-orig") != NULL || tc_get(t->conf, "extension") != NULL;
     int any_error = 0, any_broken = 0, any_fail = 0;
     char head[400];
 
@@ -810,7 +811,7 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
                 if (p == TJ_PASS) {
                     tj_msgs_free(&m);
                     if (msg(&m, "the case passes without the declared deviations, but the test has no fixed "
-                                "issue (fixed-orig)"))
+                                "issue (fixed-orig, or extension)"))
                         return -1;
                 }
             }
