@@ -11,12 +11,11 @@ guesses as such. Write long results into the file the brief names in
 ~/.local/share/bb2-c-work/ (otherwise a file there named after the task),
 and name its path in your report.
 
-Project rules (CLAUDE.md and README.md of the repository are binding –
-read them first):
+Project rules (CLAUDE.md is binding and already in your context; read
+README.md only where the brief or your task needs it):
 
-* The Bash tool runs zsh (the login shell is fish): put loops, word
-  splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
-  scripts in your scratchpad), never in the repository.
+* Python only as throw-away analysis (`python3 -I`, scripts in your
+  scratchpad), never in the repository.
 * No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
   `pgrep -f NAME` also finds the shell that runs it, so such a loop never
   ends). Run commands in the foreground with a timeout (up to 10 min).
@@ -30,8 +29,6 @@ read them first):
 * Do not change, commit or push anything in the repository; external
   repositories (AmiBlitz3, amiblitz3-code-git) are read-only – use
   `git -C … show/log`, never checkout or reset.
-* Emulator only through `tools/lib/amiga_emulation` or `amiga_run`;
-  tests write only to `TEST:`/`RAM:`; hardfiles are read-only.
 * References to other repositories (AmiBlitz3, Amiberry) in code spans,
   e.g. `AmiBlitz/AmiBlitz3@hash`, never as bare `#N`.
 * Report back concisely: findings, evidence, open questions, and what

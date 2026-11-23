@@ -108,12 +108,8 @@ round that moved eight tests of this section is described below):
 
 | Area | Judged by | Tests | Example |
 |---|---|---|---|
-| `compiler/` | `[compile]` | 45 | `compiler-compare-right-operand-refused` |
-| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 9 | `compiler-incbin-leaks` |
-| `compiler/` | `[blitz2]` | 4 | `compiler-flushlibs-leak` |
-| `compiler/` | `[session]` and `[blitz2]` | 1 | `compiler-wbexit-returncode` |
-| `regression/` | `[compile]` | 3 | `compiler-data-quick-over` |
-| `regression/` | `[compile]`, `[blitz2]`, `[log]` | 1 | `compiler-macrobuff-nomem-limit` |
+| `compiler/` | `[compile]` | 17 | `compiler-compare-right-operand-refused` |
+| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 5 | `compiler-incbin-leaks` |
 
 (The grouping is by the sections of the `.expect` files; the example is one
 file of the group, to be checked there.) The three `[log]` tests that drove

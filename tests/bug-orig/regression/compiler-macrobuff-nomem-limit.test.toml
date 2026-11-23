@@ -1,0 +1,14 @@
+# compiler-macrobuff-nomem-limit.test.bas: the compiler runs through inject
+# with allocfail: the first allocation of 16384 bytes (the Macro Buffer of
+# the job line) fails; the old buffer of 8192 bytes stays and the macro big
+# does not fit
+wrap = "@INJECT@|allocfail=16384-16384/f=1/1"
+jobline = ["macrobuf=16384"]
+
+[asserts]
+compile = "== \"error 119 Macro too Big\""
+"compile.inject" = "== \"inject: allocfail: 1 allocations failed\ninject: rc=0\n\""
+"compile.log" = "contains \"XTRA\tj000\tdefaults\nXTRAERR\tj000\tOut of Memory\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

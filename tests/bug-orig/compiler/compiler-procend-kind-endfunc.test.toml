@@ -1,0 +1,16 @@
+# compiler-procend-kind-endfunc.test.bas: the correct result is a failed
+# compile (Illegal End Procedure at the End Function line) and nothing
+# runs; the original compiles the Statement and the case runs
+fixed-orig = 940
+
+[asserts]
+compile = "== \"error 7 Illegal End Procedure\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

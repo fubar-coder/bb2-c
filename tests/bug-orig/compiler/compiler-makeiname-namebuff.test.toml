@@ -1,0 +1,13 @@
+# compiler-makeiname-namebuff.test.bas: the correct result is a failed compile
+# (Path too Long at the Include line) and nothing runs; the original copies
+# past namebuff and refuses with Can't open Include
+fixed-orig = 325
+
+[asserts]
+compile = "== \"error 12 Path too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 12 Can't open Include\""

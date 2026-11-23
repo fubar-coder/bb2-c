@@ -1,0 +1,11 @@
+# compiler-wb-exit-permit.test.bas: the compiler is started through wbrun
+# with freeseg; the session ends normally in both compilers, blitz2 returns 0. The original
+# runs into the overwritten code: wbrun reports that the process did not end
+fixed-orig = 337
+wrap = "@WBRUN@|freeseg"
+
+[asserts]
+"compile.log" = "contains \"wbrun: seglist overwritten and freed after the reply\nrc=0\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"wbrun: seglist overwritten and freed after the reply\nwbrun: the process did not end\nrc=0\n\""

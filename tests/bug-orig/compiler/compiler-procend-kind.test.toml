@@ -1,0 +1,21 @@
+# compiler-procend-kind.test.bas: the correct result is a failed compile
+# (Illegal End Procedure at the End Statement line) and nothing runs; the
+# original compiles the Function and the program returns into garbage (a
+# stray return code or a crash, depending on the memory layout: the session
+# ends at its limit)
+fixed-orig = 940
+timeout = 30
+
+[asserts]
+compile = "== \"error 10 Illegal End Procedure\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

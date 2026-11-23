@@ -1,0 +1,8 @@
+# compiler-data-quick-over.test.bas: the correct result is a failed compile
+# (Bad Data at the Data line) and nothing runs, in the port and in the
+# original
+[asserts]
+compile = "== \"error 7 Bad Data\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

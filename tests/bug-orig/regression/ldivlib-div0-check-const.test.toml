@@ -1,0 +1,9 @@
+# ldivlib-div0-check-const.test.bas: the compile is refused (Division by
+# Zero at the #constant line) and nothing runs; runtime error checking is on
+runtime-errors = "on"
+
+[asserts]
+compile = "== \"error 8 Division by Zero\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

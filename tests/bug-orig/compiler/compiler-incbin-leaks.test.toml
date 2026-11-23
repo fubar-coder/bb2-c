@@ -1,0 +1,17 @@
+# compiler-incbin-leaks.test.bas: IncBin names the directory CORPUS:bindir;
+# the compiler runs through inject with inuse (the query compile.inject),
+# which tries an exclusive Lock after blitz2; the correct result is the
+# error and the directory not in use; the original leaves the lock behind
+fixed-orig = 38
+dirs = ["bindir"]
+wrap = "@INJECT@|inuse=CORPUS:bindir"
+
+[asserts]
+compile = "== \"error 8 Can't open Include\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+"compile.inject" = "contains \"inject: not in use: CORPUS:bindir\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "contains \"inject: in use: CORPUS:bindir\n\""

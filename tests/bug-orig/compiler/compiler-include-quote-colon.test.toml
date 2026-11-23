@@ -1,0 +1,14 @@
+# compiler-include-quote-colon.test.bas: the correct result is a failed compile
+# (Syntax Error at the Include line) and nothing runs; the original takes the
+# rest of the line into the file name and refuses with Can't open Include
+fixed-orig = 17
+files = ["src/inc.bb2|@TESTDATA@/compiler-incdir-quote-next.inc"]
+
+[asserts]
+compile = "== \"error 9 Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 9 Can't open Include\""

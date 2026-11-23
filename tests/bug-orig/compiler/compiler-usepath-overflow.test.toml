@@ -1,0 +1,19 @@
+# compiler-usepath-overflow.test.bas: the correct result is a failed compile
+# (Path too Long at the first UsePath) and nothing runs; the original
+# overwrites the first instruction of dousepath, the next UsePath runs the
+# damaged code: no compile result, the session ends at its limit
+fixed-orig = 31
+timeout = 30
+
+[asserts]
+compile = "== \"error 16 Path too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

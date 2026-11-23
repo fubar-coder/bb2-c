@@ -9,12 +9,11 @@ there; the coordinator merges. Start with `git merge --ff-only main`.
 Follow the patterns of the neighbouring tests (the sections of tests/README.md on the
 test suites, `tests/bug-orig/`, `tests/ab3/`, `tools/tests/`).
 
-Project rules (CLAUDE.md and README.md of the repository are binding –
-read them first):
+Project rules (CLAUDE.md is binding and already in your context; read
+README.md only where the brief or your task needs it):
 
-* The Bash tool runs zsh (the login shell is fish): put loops, word
-  splitting and heredocs in `bash -c '…'`. Python only as throw-away analysis (`python3 -I`,
-  scripts in your scratchpad), never in the build or the repository.
+* Python only as throw-away analysis (`python3 -I`, scripts in your
+  scratchpad), never in the build or the repository.
 * No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
   `pgrep -f NAME` also finds the shell that runs it, so such a loop never
   ends). Run commands in the foreground with a timeout (up to 10 min).
@@ -27,8 +26,7 @@ read them first):
   PIDs you started and recorded, after checking their command line.
 * Every check needs a test on deliberately broken input (e.g. a wrong
   expect file must fail). Emulator tests: label `emulator`, return 77
-  when Amiberry or the data are missing; tests write only to
-  `TEST:`/`RAM:`.
+  when Amiberry or the data are missing.
 * A bug-orig test checks the expected (correct) behaviour: for an open
   bug it comes out REPRODUCED in `ctest --preset bug-orig` (not BROKEN:
   the original shows the bug); once the bug is fixed it must come out
