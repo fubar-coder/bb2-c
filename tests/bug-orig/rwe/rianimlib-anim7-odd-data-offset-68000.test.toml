@@ -4,7 +4,10 @@
 fixed-orig = 1121
 rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
 machine = "a600"
-timeout = 30
+# hang-after: the first session of a machine boots cold and saves a snapshot (2.7 s alone,
+# 13.6 s on a loaded host); the default 8 s of silence ended it
+hang-after = 20
+timeout = 40
 files = ["anim|@TESTDATA@/rianimlib-anim7-odd-data-offset-68000.anim"]
 isolate = ["compiler=orig210"]
 
