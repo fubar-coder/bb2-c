@@ -16,7 +16,7 @@
  *     message (`!CheckEq{ACTUAL,EXPECTED,"name"}` -> `!CheckEq{K,ACTUAL,EXPECTED}`,
  *     `!ExpectError{"MESSAGE"}` -> `!ExpectError{K}`);
  *   - keeps the table of every check: K, kind, namespace (the case, the
- *     procedure, `init` for the batch init, `end` for the batch end), the
+ *     procedure, `init` for the batch init, `cleanup` for the batch cleanup), the
  *     number in the namespace (from 0), the name, the line and the text of
  *     the expressions (the message of `!ExpectError`) - none of that text
  *     reaches the program;
@@ -32,7 +32,7 @@
  * a check, a call without `{`, a wrong number of arguments, a name or
  * message that is no string literal, an empty argument, the same check
  * name twice in a namespace, and a procedure holding checks whose name is
- * that of a case or `init` or `end`.  Every message names file and line.
+ * that of a case or `init` or `cleanup`.  Every message names file and line.
  *
  * The preprocessed text has the lines of the source, so a compile error
  * of the driver keeps its line.
@@ -68,7 +68,7 @@ enum tp_nskind {
     TP_NS_CASE,
     TP_NS_PROC,
     TP_NS_INIT,                 /* the batch init: "init" */
-    TP_NS_END                   /* the batch end: "end" */
+    TP_NS_CLEANUP               /* the batch cleanup: "cleanup" */
 };
 
 /** @brief A check of the table. */
@@ -76,7 +76,7 @@ struct tp_check {
     unsigned k;                 /* the number over the source */
     int kind;                   /* enum tp_kind */
     int nskind;                 /* enum tp_nskind */
-    char *ns;                   /* the case, the procedure, "init", "end" */
+    char *ns;                   /* the case, the procedure, "init", "cleanup" */
     unsigned number;            /* the number in the namespace */
     char *name;                 /* the name, NULL: none */
     unsigned line;
@@ -110,7 +110,7 @@ struct tp_source {
     struct tp_case *cases;
     size_t ncases;
     unsigned init_line;         /* the line of !TestBatchInit, 0: none */
-    unsigned final_line;        /* of !TestBatchEnd, 0: none */
+    unsigned cleanup_line;      /* of !TestBatchCleanup, 0: none */
     unsigned nlines;
     struct tp_errors errors;
 };
@@ -146,7 +146,7 @@ void tp_free(struct tp_source *src);
  *   - a block macro stands on a line of its own; only blanks and a
  *     comment may follow it;
  *   - the blocks pair in source order: at most one batch init, before the
- *     first case; one or more cases; at most one batch end, after the
+ *     first case; one or more cases; at most one batch cleanup, after the
  *     last case; every opening macro has its closing macro before the
  *     next opening one (a missing or extra end names the case at fault);
  *   - conditional compilation (CNIF, CSIF, CELSE, CEND) does not cut a
@@ -159,7 +159,7 @@ void tp_free(struct tp_source *src);
  *   - a case name matches [a-z][a-z0-9_]*, holds no "__", does not end in
  *     "_originals", is no token of par->tokens (case ignored) and is
  *     unique in the source; a case named init or end beside a batch init
- *     or batch end is refused, its namespace would be ambiguous.
+ *     or batch cleanup is refused, its namespace would be ambiguous.
  *
  * @return the number of messages in src->errors, -1 = out of memory
  */

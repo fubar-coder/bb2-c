@@ -606,7 +606,7 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
             && en->e.kind != BASICTEST_CHECKFLT && en->e.kind != BASICTEST_REQUIRE
             && en->e.kind != BASICTEST_EXPECT_ERROR)
             continue;
-        /* the blocks of the run: the batch init, the judged case, the batch end */
+        /* the blocks of the run: the batch init, the judged case, the batch cleanup */
         if (en->block < 0 || (en->block == BASICTEST_BLOCK_CASE && !en->in_case))
             continue;
         if (!(c = tp_by_k(t->src, en->e.k))) {

@@ -207,7 +207,7 @@ Three options print or write something and start no emulator:
   It needs no `--case`.
 * **`--case NAME --print-driver`** prints the driver of one case: the
   macros of the test library, the source with every check numbered, and
-  the calls of the batch init, the case and the batch end at the end.
+  the calls of the batch init, the case and the batch cleanup at the end.
   This is the program the compiler sees; a compile error in the report
   points into the source, and this is where to look when it is unclear.
 * **`--write-driver FILE`** writes the driver of all cases, tokenised as
@@ -244,7 +244,7 @@ again and writes the list anew. Building only the target
 `blitz2_model_tests` (or `bug_orig_model_tests`) is enough for that. Until
 then, `ctest -N` shows the old list: a new test is missing, a renamed one
 still has its old name. If the build refuses the source or its
-configuration, for example a case after the batch end, it stops with a
+configuration, for example a case after the batch cleanup, it stops with a
 message naming the file and line, and the list stays as it was.
 
 ### The names

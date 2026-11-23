@@ -12,13 +12,13 @@ unchanged for the tested program, for the original compilers and the port.
 ### Requirement: A test source holds declarations and blocks
 A test source SHALL consist of declarations (including the definitions of
 `Statement` and `Function` procedures), at most one batch init, one or more
-cases and at most one batch end, and SHALL NOT be a main program of its own:
+cases and at most one batch cleanup, and SHALL NOT be a main program of its own:
 its text is compiled as part of the driver the runner generates
 (`testing/basic-test-runner`), which calls its blocks. Executable code
 outside the blocks SHALL be refused at build time with file and line.
 
 #### Scenario: A statement outside the blocks
-- **WHEN** a test source calls `LoadShape` or has a `Dim` outside its batch init, cases and batch end
+- **WHEN** a test source calls `LoadShape` or has a `Dim` outside its batch init, cases and batch cleanup
 - **THEN** the build-time check of the source reports it with file and line
 
 #### Scenario: A helper procedure
@@ -45,7 +45,7 @@ source; the build-time check SHALL refuse any other name.
 Every check SHALL be identified by its namespace and its number in it,
 counted from 0 in source order, and MAY carry a name; a check that a run
 configuration names SHALL have one. The namespace SHALL be the case, the
-procedure, `init` (batch init) or `end` (batch end) the check stands in.
+procedure, `init` (batch init) or `cleanup` (batch cleanup) the check stands in.
 The identification SHALL be the same in every compile and in every run of
 the same source.
 

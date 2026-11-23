@@ -413,7 +413,7 @@ Inside the TOML string, the quotes of a string value are escaped:
 
 A check is named by its *namespace* and its name: `NS` is the case it
 stands in, the procedure it stands in, `init` for the batch init or
-`end` for the batch end (below), and `NAME` is the name given as its
+`cleanup` for the batch cleanup (below), and `NAME` is the name given as its
 last argument. A check that a configuration names must have a name, and
 the build refuses an assertion that names a check the source does not
 have. A check named by an assertion is judged by that assertion only,
@@ -638,7 +638,7 @@ this order:
   which runs first and prepares data the cases read;
 * one or more **cases**, `!TestCase{NAME}` ... `!EndTestCase`; the run
   of a CTest test runs one case;
-* at most one **batch end**, `!TestBatchEnd` ... `!EndTestBatchEnd`,
+* at most one **batch cleanup**, `!TestBatchCleanup` ... `!EndTestBatchCleanup`,
   which runs last.
 
 Each block macro stands on a line of its own. Outside the blocks only
@@ -705,7 +705,7 @@ for sources, including the limits of the compiler a test can meet.
 #### Write the case
 
 Add a block `!TestCase{NAME}` ... `!EndTestCase` to `ID.test.bas`,
-after the other cases and before a batch end. Give it a name that is
+after the other cases and before a batch cleanup. Give it a name that is
 new in the test, and give the checks names if a configuration is to
 name them.
 

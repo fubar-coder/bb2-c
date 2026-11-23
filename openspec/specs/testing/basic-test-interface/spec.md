@@ -12,12 +12,12 @@ so that the test library (`testing/basic-testlib`) and the runner
 ### Requirement: Block macros of a test source
 A test source SHALL mark its blocks with `!TestBatchInit` / `!EndTestBatchInit`
 (at most one, before the first case), `!TestCase{NAME}` / `!EndTestCase`
-(one or more) and `!TestBatchEnd` / `!EndTestBatchEnd` (at most one, after
+(one or more) and `!TestBatchCleanup` / `!EndTestBatchCleanup` (at most one, after
 the last case). Only a comment SHALL follow a block macro on its line.
 
 #### Scenario: A source with all blocks
-- **WHEN** a source has a batch init, two cases and a batch end in this order
-- **THEN** the preprocessor accepts it and the driver calls the batch init, the selected cases and the batch end
+- **WHEN** a source has a batch init, two cases and a batch cleanup in this order
+- **THEN** the preprocessor accepts it and the driver calls the batch init, the selected cases and the batch cleanup
 
 ### Requirement: Check macros of a test source
 A test source SHALL check with `!Check{COND}` (ok if not 0),
@@ -62,7 +62,7 @@ macro defines (`N` the macros' use counter).
 - **THEN** the compile fails
 
 ### Requirement: The driver's labels and the check macros
-The batch init and the batch end SHALL use the fixed labels `tc__init`,
+The batch init and the batch cleanup SHALL use the fixed labels `tc__init`,
 `tc__init_end`, `tc__final` and `tc__final_end`; labels with `__` SHALL
 belong to the driver. The check macros SHALL call the library routines
 with `K` as the first argument; `!Check{K,COND}` SHALL call
@@ -96,12 +96,12 @@ then `end`.
 The driver SHALL define the macro text, call `TLBegin` with the name of the
 result file, jump over the preprocessed text of the source, and then call
 with `Gosub` the batch init (only if the source has one and a case is
-selected), each selected case in source order, and the batch end (only if
+selected), each selected case in source order, and the batch cleanup (only if
 the source has one), and end.
 
 #### Scenario: No case selected
 - **WHEN** the driver is generated with no case selected
-- **THEN** it calls neither the batch init nor the batch end
+- **THEN** it calls neither the batch init nor the batch cleanup
 
 ### Requirement: Lines of the result file
 The result file SHALL hold one entry per line, fields separated by TAB, each
@@ -167,14 +167,14 @@ float value with `!CheckFltNear`.
 A failed precondition SHALL write its `require` entry and `blockend`: the
 library closes the block. After a failed precondition in the batch init
 every case the driver calls SHALL get its `block` entry, that `require`
-entry again and `blockend`, and SHALL NOT run; the batch end SHALL NOT run
+entry again and `blockend`, and SHALL NOT run; the batch cleanup SHALL NOT run
 and SHALL write nothing. After a failed check in the batch init every case
 SHALL get the first failed check of the init again after its `block`
 entry, and SHALL run.
 
 #### Scenario: A failed precondition in the batch init
-- **WHEN** the batch init fails `TLRequire 2,0` and the driver calls the cases a and b and the batch end
-- **THEN** the file holds for a and for b `block` `case` NAME, `require` `2` `broken` and `blockend`, neither case runs, and nothing of the batch end
+- **WHEN** the batch init fails `TLRequire 2,0` and the driver calls the cases a and b and the batch cleanup
+- **THEN** the file holds for a and for b `block` `case` NAME, `require` `2` `broken` and `blockend`, neither case runs, and nothing of the batch cleanup
 
 #### Scenario: A failed check in the batch init
 - **WHEN** the batch init fails check 0 with expected 1 and actual 2, and the driver calls case a

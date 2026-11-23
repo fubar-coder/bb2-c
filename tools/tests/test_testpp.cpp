@@ -121,7 +121,7 @@ TEST_CASE("testpp: the example of tests/README.md", "[testpp]")
     CHECK(p.s.cases[0].end_line == 9);
     CHECK(p.s.cases[1].line == 11);
     CHECK(p.s.init_line == 1);
-    CHECK(p.s.final_line == 0);
+    CHECK(p.s.cleanup_line == 0);
     CHECK(tp_find(&p.s, "shape_size", "width") == &c[1]);
     CHECK(tp_find(&p.s, "tab_string", "width") == nullptr);
     CHECK(tp_by_k(&p.s, 3) == &c[3]);
@@ -183,7 +183,7 @@ TEST_CASE("testpp: the table of tests/blitz2/model-numbering.test.bas is stable"
     static const char *const want[][2] = {
         { "count_up", "arg" }, { "twice", "inner" }, { "init", "base" },   { "first", "one" },
         { "first", "loop" },   { "first", "twice" }, { "first", "str" },   { "second", "two" },
-        { "second", "skipped" }, { "second", "base_kept" }, { "end", "final" },
+        { "second", "skipped" }, { "second", "base_kept" }, { "cleanup", "final" },
     };
     REQUIRE(a.s.nchecks == sizeof want / sizeof want[0]);
     for (size_t i = 0; i < a.s.nchecks; i++) {
@@ -243,9 +243,9 @@ TEST_CASE("testpp: numbers over two cases, namespaces", "[testpp]")
          "!TestCase{b}\n"
          "  For i=1 To 3 : !CheckEq{i,i} : Next\n"
          "!EndTestCase\n"
-         "!TestBatchEnd\n"
+         "!TestBatchCleanup\n"
          "  !Check{-1,\"done\"}\n"
-         "!EndTestBatchEnd\n");
+         "!EndTestBatchCleanup\n");
     REQUIRE(p.rc == 0);
     REQUIRE(p.s.nchecks == 6);
     const tp_check *c = p.s.checks;
@@ -254,11 +254,11 @@ TEST_CASE("testpp: numbers over two cases, namespaces", "[testpp]")
     CHECK((!strcmp(c[2].ns, "a") && c[2].number == 0 && c[2].k == 2));
     CHECK((!strcmp(c[3].ns, "a") && c[3].number == 1 && c[3].k == 3 && c[3].line == 9));
     CHECK((!strcmp(c[4].ns, "b") && c[4].number == 0 && c[4].k == 4));
-    CHECK((c[5].nskind == TP_NS_END && !strcmp(c[5].ns, "end") && c[5].number == 0 && c[5].k == 5));
+    CHECK((c[5].nskind == TP_NS_CLEANUP && !strcmp(c[5].ns, "cleanup") && c[5].number == 0 && c[5].k == 5));
     CHECK(p.text().find("  !Check{2,1}:!Check{3,2}\n") != std::string::npos);
     CHECK(p.text().find("  For i=1 To 3 : !CheckEq{4,i,i} : Next\n") != std::string::npos);
     CHECK(p.text().find("!Check{5,-1}\n") != std::string::npos);
-    CHECK(p.s.final_line == 15);
+    CHECK(p.s.cleanup_line == 15);
 }
 
 TEST_CASE("testpp: the arguments by the compiler's rules", "[testpp]")
@@ -416,9 +416,11 @@ TEST_CASE("testpp: namespaces refused", "[testpp]")
     refused("!Check{1}\n!TestCase{a}\n!EndTestCase\n", "x.test.bas:1: !Check outside the blocks and procedures");
     refused("!TestCase{a}\n!EndTestCase\n!Require{1}\n", "x.test.bas:3: !Require outside the blocks and procedures");
     refused("Statement a{}\n!Check{1}\nEnd Statement\n!TestCase{a}\n!EndTestCase\n",
-            "x.test.bas:2: the procedure a holds checks and has the name of a case or of init or end");
+            "x.test.bas:2: the procedure a holds checks and has the name of a case or of init or cleanup");
     refused("Function init{}\n!Check{1}\n!Check{2}\nEnd Function\n!TestCase{a}\n!EndTestCase\n",
-            "x.test.bas:2: the procedure init holds checks and has the name of a case or of init or end");
+            "x.test.bas:2: the procedure init holds checks and has the name of a case or of init or cleanup");
+    refused("Statement cleanup{}\n!Check{1}\nEnd Statement\n!TestCase{a}\n!EndTestCase\n",
+            "x.test.bas:2: the procedure cleanup holds checks and has the name of a case or of init or cleanup");
     // Statement Return is no definition
     pp p("Statement s{}\n  Statement Return\n  !Check{1}\nEnd Statement\n!TestCase{a}\n!EndTestCase\n");
     CHECK(p.rc == 0);

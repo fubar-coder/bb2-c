@@ -66,7 +66,7 @@ std::vector<std::string> args(const std::string &call, const std::string &name)
 TEST_CASE("macros.bas defines the macros of the spec and no other", "[basictest]")
 {
     std::set<std::string> want = { "TestBatchInit", "EndTestBatchInit", "TestCase",
-                                   "EndTestCase",   "TestBatchEnd",     "EndTestBatchEnd",
+                                   "EndTestCase",   "TestBatchCleanup", "EndTestBatchCleanup",
                                    "Check",         "CheckEq",          "CheckStrEq",
                                    "CheckQEq",      "CheckFltNear",     "Require",
                                    "ExpectError" };
@@ -85,8 +85,8 @@ TEST_CASE("macros.bas: the text of every macro", "[basictest]")
         { "EndTestBatchInit", { "TLBlockEnd : Return", ".tc__init_end" } },
         { "TestCase", { "Dc.l tc_end_`@", ".tc_`1", "If TLCase(\"`1\")=0 Then Return" } },
         { "EndTestCase", { "TLBlockEnd : Return", ".tc_end_`@" } },
-        { "TestBatchEnd", { "Dc.l tc__final_end", ".tc__final", "If TLFinal=0 Then Return" } },
-        { "EndTestBatchEnd", { "TLBlockEnd : Return", ".tc__final_end" } },
+        { "TestBatchCleanup", { "Dc.l tc__final_end", ".tc__final", "If TLFinal=0 Then Return" } },
+        { "EndTestBatchCleanup", { "TLBlockEnd : Return", ".tc__final_end" } },
         { "Check", { "TLCheck `1,-1,(`2)<>0" } },
         { "CheckEq", { "TLCheck `1,`3,`2" } },
         { "CheckStrEq", { "TLCheckStr `1,`3,`2" } },
@@ -111,7 +111,7 @@ TEST_CASE("macros.bas: a block refers to the label of its closing macro", "[basi
     } blocks[] = {
         { "TestBatchInit", "EndTestBatchInit", ".tc__init", "tc__init_end", "TLInit=0" },
         { "TestCase", "EndTestCase", ".tc_`1", "tc_end_`@", "TLCase(\"`1\")=0" },
-        { "TestBatchEnd", "EndTestBatchEnd", ".tc__final", "tc__final_end", "TLFinal=0" },
+        { "TestBatchCleanup", "EndTestBatchCleanup", ".tc__final", "tc__final_end", "TLFinal=0" },
     };
     for (const auto &b : blocks) {
         CAPTURE(b.open);

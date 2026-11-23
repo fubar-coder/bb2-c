@@ -163,7 +163,7 @@ int tp_block_macro(const char *l, size_t s, size_t e, size_t len, const char **n
     } m[] = {
         { "TestBatchInit", TP_B_INIT }, { "EndTestBatchInit", TP_B_END_INIT },
         { "TestCase", TP_B_CASE }, { "EndTestCase", TP_B_END_CASE },
-        { "TestBatchEnd", TP_B_FINAL }, { "EndTestBatchEnd", TP_B_END_FINAL },
+        { "TestBatchCleanup", TP_B_CLEANUP }, { "EndTestBatchCleanup", TP_B_END_CLEANUP },
     };
     size_t p = s + 1, ne;
 
@@ -243,7 +243,7 @@ struct ctx {
     unsigned macro_line;
     char *macro_name;
     char *proc;
-    int block;                  /* TP_B_NONE, TP_B_INIT, TP_B_CASE, TP_B_FINAL */
+    int block;                  /* TP_B_NONE, TP_B_INIT, TP_B_CASE, TP_B_CLEANUP */
     char *case_name;
     unsigned k;
     struct nscount *nsc;
@@ -411,9 +411,9 @@ static int one_call(struct ctx *c, const char *l, size_t len, size_t bang, size_
     } else if (c->block == TP_B_INIT) {
         chk.nskind = TP_NS_INIT;
         chk.ns = tp_strndup("init", 4);
-    } else if (c->block == TP_B_FINAL) {
-        chk.nskind = TP_NS_END;
-        chk.ns = tp_strndup("end", 3);
+    } else if (c->block == TP_B_CLEANUP) {
+        chk.nskind = TP_NS_CLEANUP;
+        chk.ns = tp_strndup("cleanup", 7);
     } else {
         put(out, l + bang, *end - bang);
         err(c, "!%s outside the blocks and procedures", kind_names[kind]);
@@ -518,7 +518,7 @@ static void context(struct ctx *c, const char *l, size_t len, size_t s, size_t e
     b = tp_block_macro(l, s, e, len, &name, &nlen);
     switch (b) {
     case TP_B_INIT:
-    case TP_B_FINAL:
+    case TP_B_CLEANUP:
         c->block = b;
         break;
     case TP_B_CASE:
@@ -528,7 +528,7 @@ static void context(struct ctx *c, const char *l, size_t len, size_t s, size_t e
         break;
     case TP_B_END_INIT:
     case TP_B_END_CASE:
-    case TP_B_END_FINAL:
+    case TP_B_END_CLEANUP:
         c->block = TP_B_NONE;
         free(c->case_name);
         c->case_name = NULL;
@@ -551,8 +551,8 @@ static void context(struct ctx *c, const char *l, size_t len, size_t s, size_t e
         c->src->cases[c->src->ncases - 1].end_line = c->line;
     if (b == TP_B_INIT && !c->src->init_line)
         c->src->init_line = c->line;
-    if (b == TP_B_FINAL && !c->src->final_line)
-        c->src->final_line = c->line;
+    if (b == TP_B_CLEANUP && !c->src->cleanup_line)
+        c->src->cleanup_line = c->line;
 }
 
 static int ph_char(int ch, int first)
@@ -749,12 +749,12 @@ int tp_process(const char *text, size_t len, const struct tp_params *par, struct
 
         if (k->nskind != TP_NS_PROC || (i && !strcmp(src->checks[i - 1].ns, k->ns)))
             continue;
-        clash = !strcmp(k->ns, "init") || !strcmp(k->ns, "end");
+        clash = !strcmp(k->ns, "init") || !strcmp(k->ns, "cleanup");
         for (size_t j = 0; j < src->ncases && !clash; j++)
             clash = !strcmp(src->cases[j].name, k->ns);
         if (clash) {
             c.line = k->line;
-            err(&c, "the procedure %s holds checks and has the name of a case or of init or end", k->ns);
+            err(&c, "the procedure %s holds checks and has the name of a case or of init or cleanup", k->ns);
         }
     }
     free(c.macro_name);

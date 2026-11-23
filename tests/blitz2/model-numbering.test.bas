@@ -45,6 +45,6 @@ CNIF #yes=1
 !EndTestCase
 CEND
 
-!TestBatchEnd
+!TestBatchCleanup
   !CheckEq{base+990,1000,"final"}
-!EndTestBatchEnd
+!EndTestBatchCleanup

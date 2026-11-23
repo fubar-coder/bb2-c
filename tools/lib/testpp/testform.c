@@ -27,10 +27,10 @@ struct fstate {
     int oom;
     int in_macro, in_proc, in_newtype;
     char *macro_name;
-    int block;                  /* TP_B_NONE, TP_B_INIT, TP_B_CASE, TP_B_FINAL */
+    int block;                  /* TP_B_NONE, TP_B_INIT, TP_B_CASE, TP_B_CLEANUP */
     unsigned block_line;
     char *case_name;
-    unsigned init_line, final_line, ncases;
+    unsigned init_line, cleanup_line, ncases;
     /* conditional compilation: a frame id per CNIF (a CELSE gives a new one) */
     unsigned *cn, *cn_open;
     size_t ncn, ncn_open, capcn;
@@ -57,12 +57,12 @@ static void ferr(struct fstate *f, unsigned line, const char *fmt, ...)
 
 static const char *block_text(int b)
 {
-    return b == TP_B_INIT ? "the batch init" : b == TP_B_FINAL ? "the batch end" : "the case";
+    return b == TP_B_INIT ? "the batch init" : b == TP_B_CLEANUP ? "the batch cleanup" : "the case";
 }
 
 static const char *closing_name(int b)
 {
-    return b == TP_B_INIT ? "!EndTestBatchInit" : b == TP_B_FINAL ? "!EndTestBatchEnd" : "!EndTestCase";
+    return b == TP_B_INIT ? "!EndTestBatchInit" : b == TP_B_CLEANUP ? "!EndTestBatchCleanup" : "!EndTestCase";
 }
 
 /* "the case NAME (line N)" / "the batch init (line N)" of the open block */
@@ -174,14 +174,14 @@ static void open_block(struct fstate *f, int b, const char *name, size_t nlen)
             ferr(f, f->line, "the batch init must stand before the first case");
         if (!f->init_line)
             f->init_line = f->line;
-    } else if (b == TP_B_FINAL) {
-        if (f->final_line)
-            ferr(f, f->line, "a second batch end (the first in line %u)", f->final_line);
-        if (!f->final_line)
-            f->final_line = f->line;
+    } else if (b == TP_B_CLEANUP) {
+        if (f->cleanup_line)
+            ferr(f, f->line, "a second batch cleanup (the first in line %u)", f->cleanup_line);
+        if (!f->cleanup_line)
+            f->cleanup_line = f->line;
     } else {
-        if (f->final_line)
-            ferr(f, f->line, "a case after the batch end (line %u)", f->final_line);
+        if (f->cleanup_line)
+            ferr(f, f->line, "a case after the batch cleanup (line %u)", f->cleanup_line);
         check_name(f, name, nlen);
         f->ncases++;
         f->case_name = tp_strndup(name, nlen);
@@ -201,13 +201,13 @@ static void open_block(struct fstate *f, int b, const char *name, size_t nlen)
 
 static void end_block(struct fstate *f, int b)
 {
-    int opens = b == TP_B_END_INIT ? TP_B_INIT : b == TP_B_END_FINAL ? TP_B_FINAL : TP_B_CASE;
+    int opens = b == TP_B_END_INIT ? TP_B_INIT : b == TP_B_END_CLEANUP ? TP_B_CLEANUP : TP_B_CASE;
     const char *name = closing_name(opens);
     char what[200];
 
     if (f->block == TP_B_NONE) {
         ferr(f, f->line, "%s without %s before it", name,
-             opens == TP_B_CASE ? "a case" : opens == TP_B_INIT ? "a batch init" : "a batch end");
+             opens == TP_B_CASE ? "a case" : opens == TP_B_INIT ? "a batch init" : "a batch cleanup");
         return;
     }
     if (f->block != opens) {
@@ -401,12 +401,12 @@ static void statement(struct fstate *f, const char *l, size_t len, size_t s, siz
     switch (b) {
     case TP_B_INIT:
     case TP_B_CASE:
-    case TP_B_FINAL:
+    case TP_B_CLEANUP:
         open_block(f, b, name, nlen);
         return;
     case TP_B_END_INIT:
     case TP_B_END_CASE:
-    case TP_B_END_FINAL:
+    case TP_B_END_CLEANUP:
         end_block(f, b);
         return;
     }
@@ -495,9 +495,9 @@ int tp_check_form(const char *text, size_t len, const struct tp_params *par, str
     if (!f.ncases)
         ferr(&f, 1, "the source has no case");
     for (size_t i = 0; i < f.nnames; i++)
-        if ((!strcmp(f.names[i], "init") && f.init_line) || (!strcmp(f.names[i], "end") && f.final_line))
+        if ((!strcmp(f.names[i], "init") && f.init_line) || (!strcmp(f.names[i], "cleanup") && f.cleanup_line))
             ferr(&f, f.name_lines[i], "the case name %s is the namespace of the batch %s", f.names[i],
-                 f.names[i][0] == 'i' ? "init" : "end");
+                 f.names[i][0] == 'i' ? "init" : "cleanup");
     free(f.macro_name);
     free(f.case_name);
     free(f.cn);

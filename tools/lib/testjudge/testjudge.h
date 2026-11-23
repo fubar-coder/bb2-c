@@ -10,7 +10,7 @@
  * (tc_assertions_for: the configured ones, the deviations of the cell when
  * it is judged with them, the defaults rc == 0, requester count == 0,
  * end.case exists, end.run exists) and every check with entries in the
- * blocks of the run (the batch init, the case, the batch end) passed,
+ * blocks of the run (the batch init, the case, the batch cleanup) passed,
  * unless an assertion names the check.  A failed precondition (`require`)
  * or a `broken` entry makes the cell broken; an entry the library wrote
  * outside a block after a `broken` one (a call out of order) belongs to

@@ -119,7 +119,7 @@ For each run the runner SHALL generate a driver program that defines the
 library's macros, holds the preprocessed text of the test source, jumps over
 it, starts the library with the name of the result file, runs the batch init
 only if a case is selected, calls the selected cases by name, and runs the
-batch end. The runner SHALL print the driver on request.
+batch cleanup. The runner SHALL print the driver on request.
 
 #### Scenario: A renamed case
 - **WHEN** a case is renamed in the source and the registration was not rebuilt
@@ -127,7 +127,7 @@ batch end. The runner SHALL print the driver on request.
 
 #### Scenario: One case selected
 - **WHEN** the test of case b of a source with the cases a and b runs
-- **THEN** the batch init, case b and the batch end run, case a does not
+- **THEN** the batch init, case b and the batch cleanup run, case a does not
 
 #### Scenario: A compile error in the test's text
 - **WHEN** the driver fails to compile because of line 12 of `ID.test.bas`
@@ -320,8 +320,8 @@ test) and SHALL fail naming file, line and case.
 ### Requirement: Ambiguous names and hidden code are refused
 The registration step SHALL refuse, naming file and line: the same check
 name twice in one namespace; a procedure that holds checks and has the name
-of a case or of `init` or `end`; a case named `init` or `end` beside a
-batch init or batch end; and, outside the blocks, a call of one of the
+of a case or of `init` or `cleanup`; a case named `init` or `cleanup` beside a
+batch init or batch cleanup; and, outside the blocks, a call of one of the
 test's own macros and an `INCLUDE` or `XINCLUDE`.
 
 #### Scenario: A check name twice

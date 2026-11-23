@@ -81,7 +81,7 @@ enum basictest_kind {
 enum basictest_block {
     BASICTEST_BLOCK_INIT,       /* the batch init */
     BASICTEST_BLOCK_CASE,       /* a case, with its name */
-    BASICTEST_BLOCK_FINAL       /* the batch end */
+    BASICTEST_BLOCK_FINAL       /* the batch cleanup */
 };
 
 /** @brief A string value: bytes, any value, not 0-terminated. */
