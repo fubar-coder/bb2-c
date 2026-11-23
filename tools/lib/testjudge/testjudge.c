@@ -501,6 +501,19 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             snprintf(got, sizeof got, "\"%.200s\"%s", v, strlen(v) > 200 ? "..." : "");
         break;
     }
+    case TC_Q_DATA: {
+        const char *v = NULL;
+
+        for (size_t i = 0; i < obs->ndata; i++)
+            if (obs->data[i].file && !strcmp(obs->data[i].file, a->q.rest))
+                v = obs->data[i].result;
+        ok = text_pred(p, v);
+        if (!v)
+            snprintf(got, sizeof got, "not captured");
+        else
+            snprintf(got, sizeof got, "\"%.200s\"", v);
+        break;
+    }
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: {
         int present = a->q.kind == TC_Q_END_CASE ? (r->case_ended || r->case_ended_at_error) : r->has_end;
@@ -743,8 +756,44 @@ static int judge_cell(const struct tj_test *t, size_t cell, int mode, const stru
             goto oom;
         if (e == TJ_ERROR)
             res = TJ_ERROR;
+        else if (e == 0 && a->q.kind == TC_Q_DATA)
+            broken = 1;         /* the setup failed */
         else if (e == 0 && res == TJ_PASS)
             res = TJ_FAIL;
+    }
+    /* the default of the data sources: their compile is ok */
+    for (size_t i = 0; i < t->conf->ndata; i++) {
+        const struct tc_data *d = &t->conf->data[i];
+        const char *v = NULL;
+        size_t k;
+
+        if (d->action != TC_DA_BASIC_COMPILE)
+            continue;
+        for (k = 0; k < as.n; k++)
+            if (as.a[k].q.kind == TC_Q_DATA && !strcmp(as.a[k].q.rest, d->file))
+                break;
+        if (k < as.n)
+            continue;           /* an assertion names it */
+        for (k = 0; k < obs->ndata; k++)
+            if (obs->data[k].file && !strcmp(obs->data[k].file, d->file))
+                v = obs->data[k].result;
+        if (v && !strcmp(v, "ok"))
+            continue;
+        broken = 1;
+        if (v && !strncmp(v, "error ", 6)) {
+            char *end;
+            unsigned long line = strtoul(v + 6, &end, 10);
+
+            if (end > v + 6 && *end == ' ') {
+                if (msg(msgs, "the data source %s.test/%s does not compile (%s:%u): %s.test/%s:%lu: %s",
+                        t->conf->id, d->file, d->at.file, d->at.line, t->conf->id, d->file, line, end + 1))
+                    goto oom;
+                continue;
+            }
+        }
+        if (msg(msgs, "the data source %s.test/%s (%s:%u): its compile gave %s, not ok", t->conf->id, d->file,
+                d->at.file, d->at.line, v ? v : "nothing (not captured)"))
+            goto oom;
     }
     /* the alternative ends: one alternative of each holds wholly */
     for (size_t i = 0; i < ends.n; i++) {

@@ -68,6 +68,14 @@ int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msgle
         q->ns[p - ns] = 0;
         return 0;
     }
+    if (!strncmp(text, "data.", 5)) {
+        if (!text[5])
+            return tc_err(msg, msglen, "the query \"%s\": data.FILE expected (FILE a data file of ID.test/)", text);
+        q->kind = TC_Q_DATA;
+        if (!(q->rest = tc_strdup(text + 5)))
+            return -2;
+        return 0;
+    }
     return tc_err(msg, msglen, "unknown query \"%s\"", text);
 }
 
@@ -99,7 +107,8 @@ static unsigned allowed_ops(int qkind)
     switch (qkind) {
     case TC_Q_RC: return CMP | EX;
     case TC_Q_REQUESTER: return B(TC_P_CONTAINS) | B(TC_P_NOT_CONTAINS) | B(TC_P_MATCHES) | EX | B(TC_P_COUNT);
-    case TC_Q_COMPILE: return TEXT;
+    case TC_Q_COMPILE:
+    case TC_Q_DATA: return TEXT;
     case TC_Q_COMPILE_LOG:
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
@@ -116,7 +125,8 @@ static unsigned allowed_ops(int qkind)
 static const char *allowed_words(int qkind)
 {
     switch (qkind) {
-    case TC_Q_COMPILE: return "ok|none";
+    case TC_Q_COMPILE:
+    case TC_Q_DATA: return "ok|none";
     case TC_Q_SESSION: return "done|timeout|halt";
     case TC_Q_CHECK: return "ok|fail|not-run";
     }
@@ -299,7 +309,8 @@ int tc_pred_parse(const char *text, int qkind, struct tc_pred *pr, char *msg, si
 
 /* ------------------------------------------------------------ validation */
 
-static int check_entries(const struct tc_tabkey *v, size_t n, const char *table, char *err, size_t errlen)
+static int check_entries(const struct tc_config *c, const struct tc_tabkey *v, size_t n, const char *table,
+                         char *err, size_t errlen)
 {
     for (size_t i = 0; i < n; i++) {
         const struct tc_tabkey *t = &v[i];
@@ -322,6 +333,20 @@ static int check_entries(const struct tc_tabkey *v, size_t n, const char *table,
             return tc_err(err, errlen, "out of memory");
         if (r)
             return tc_err(err, errlen, "%s:%u: %s", t->at.file, t->at.line, msg);
+        if (q.kind == TC_Q_DATA) {
+            /* data.FILE names a data source of the test (basic-compile) */
+            size_t k;
+
+            for (k = 0; k < c->ndata; k++)
+                if (c->data[k].action == TC_DA_BASIC_COMPILE && !strcmp(c->data[k].file, q.rest))
+                    break;
+            if (k == c->ndata) {
+                tc_err(err, errlen, "%s:%u: %s: the test has no data source %s (the action basic-compile in its "
+                       "table data)", t->at.file, t->at.line, t->key, q.rest);
+                tc_query_free(&q);
+                return -1;
+            }
+        }
         r = tc_pred_parse(t->value.str, q.kind, &p, msg, sizeof msg);
         tc_query_free(&q);
         if (r == -2)
@@ -438,8 +463,8 @@ int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
     const struct tc_setting *fo = tc_get(c, "fixed-orig"), *fx = tc_get(c, "fixed");
     const struct tc_setting *ex = tc_get(c, "extension");
 
-    if (check_entries(c->asserts, c->nasserts, "asserts", err, errlen)
-        || check_entries(c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
+    if (check_entries(c, c->asserts, c->nasserts, "asserts", err, errlen)
+        || check_entries(c, c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
         return -1;
     /* the alternative ends are a declared deviation */
     if (fo && c->ndeviations == 0 && c->nends == 0)
@@ -667,6 +692,8 @@ int tc_query_same(const struct tc_query *a, const struct tc_query *b)
 {
     if (a->kind != b->kind)
         return 0;
+    if (a->kind == TC_Q_DATA)
+        return a->rest && b->rest && !strcmp(a->rest, b->rest);
     if (a->kind != TC_Q_CHECK)
         return 1;
     return a->ns && b->ns && a->rest && b->rest && !strcmp(a->ns, b->ns) && !strcmp(a->rest, b->rest);

@@ -937,3 +937,58 @@ TEST_CASE("testjudge: an announcement judged like a check", "[testjudge]")
         CHECK(has(m, "this check has no values"));
     }
 }
+
+// the compile of a data source (change basic-test-local-data, D5): data.FILE,
+// by default == ok; an unexpected result makes the cell broken
+TEST_CASE("testjudge: the compile of a data source", "[testjudge]")
+{
+    const std::string own = "[data.\"child.bas\"]\naction = \"basic-compile\"\n[data]\n\"in.txt\" = \"copy\"\n";
+    std::string m;
+    tj_data ok[] = { { "child.bas", "ok" } };
+    tj_data bad[] = { { "child.bas", "error 3 Syntax Error" } };
+    tj_data none[] = { { "child.bas", "none" } };
+
+    {
+        fixture f("", own);
+        obs o(good);
+
+        o.o.data = ok;
+        o.o.ndata = 1;
+        CHECK(judge(f, o, m) == TJ_PASS);
+        CHECK(m == "");
+        // an error without an assertion: broken, naming the data file and its line
+        o.o.data = bad;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "the data source x.test/child.bas does not compile"));
+        CHECK(has(m, "x.test/child.bas:3: Syntax Error"));
+        o.o.data = none;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "its compile gave none, not ok"));
+        // not captured at all
+        o.o.data = nullptr;
+        o.o.ndata = 0;
+        CHECK(judge(f, o, m) == TJ_BROKEN);
+        CHECK(has(m, "nothing (not captured)"));
+        // a failed check stays a failure besides
+        obs o2(head + "check|3|fail|$00000010|$00000000\n" + tail);
+        o2.o.data = ok;
+        o2.o.ndata = 1;
+        CHECK(judge(f, o2, m) == TJ_FAIL);
+    }
+    {
+        // a declared compile error of the original: the cells with it run
+        // without the file; the others still need ok
+        fixture f("", "fixed-orig = 7\n" + own + "[deviations.\"libs=cd\"]\n\"data.child.bas\" = \"contains \\\"Syntax Error\\\"\"\n"
+                  "[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+        obs o(good);
+
+        o.o.data = bad;
+        o.o.ndata = 1;
+        CHECK(judge(f, o, m, "cd", TC_DEVIATED) == TJ_PASS);
+        CHECK(judge(f, o, m, "clib", TC_DEVIATED) == TJ_BROKEN);
+        CHECK(m.find("assertion data.child.bas") == std::string::npos);
+        o.o.data = ok;
+        CHECK(judge(f, o, m, "cd", TC_DEVIATED) == TJ_BROKEN);
+        CHECK(has(m, "assertion data.child.bas contains \"Syntax Error\""));
+    }
+}

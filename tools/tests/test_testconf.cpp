@@ -503,6 +503,18 @@ TEST_CASE("testconf: test-local data", "[testconf]")
     t.write("tests.toml", "root = true\n[data]\n\"child.bas\" = \"copy\"\n");
     refused(t, "x.test.bas", { t.path("tests.toml") + ":2: data is a table of a single test" });
     t.write("tests.toml", "root = true\n");
+    // the query data.FILE names a data source of the test
+    t.write("x.test.toml", "[data]\n\"in.txt\" = \"copy\"\n[asserts]\n\"data.in.txt\" = \"== ok\"\n");
+    refused(t, "x.test.bas", { own + ":4: data.in.txt: the test has no data source in.txt" });
+    t.write("x.test.toml", "[data]\n\"c.bas\" = \"basic-compile\"\n[asserts]\n\"data.c.bas\" = \"> 3\"\n");
+    refused(t, "x.test.bas", { own + ":4: data.c.bas: " });
+    t.write("x.test.toml", "[data]\n\"c.bas\" = \"basic-compile\"\n[asserts]\n\"data.c.bas\" = \"contains \\\"Syntax\\\"\"\n");
+    {
+        tc_config cd;
+
+        REQUIRE(resolve(t, "x.test.bas", &cd, &e) == 0);
+        tc_free(&cd);
+    }
 
     // D4: a fixed option that needs original material, in a test with a
     // cell of the side port (the matrix of the test)

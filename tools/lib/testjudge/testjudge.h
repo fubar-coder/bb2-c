@@ -29,6 +29,11 @@
  * `not-run` and fails no default: the checks behind a declared crash count
  * as not run.
  *
+ * The compile of every data source of ID.test/ (the action basic-compile,
+ * change basic-test-local-data) is the query data.FILE, by default == ok;
+ * one that does not give what its assertion (or the default) asks makes
+ * the cell broken: the setup failed, the tested behaviour was not reached.
+ *
  * Where the deviations apply, the alternative ends of the cell (testconf.h
  * tc_ends_for) judge the queries their alternatives name instead of the
  * assertions and the defaults: one alternative must hold wholly; the report
@@ -68,6 +73,12 @@ struct tj_requester {
                                    all of them */
 };
 
+/** @brief The compile of a data source of ID.test/ (basic-compile). */
+struct tj_data {
+    const char *file;           /* its path relative to ID.test/ */
+    const char *result;         /* "ok", "error LINE MESSAGE", "none"; NULL: not captured */
+};
+
 /**
  * @brief The observations of one cell's run.  NULL (or has_ = 0): not
  *        captured, which fails any assertion that queries it.
@@ -86,6 +97,8 @@ struct tj_obs {
     int has_result;             /* the result file exists */
     const char *result;         /* its bytes */
     size_t result_len;
+    const struct tj_data *data; /* the compiles of the data sources of the cell */
+    size_t ndata;
 };
 
 /** @brief The result of a cell. */

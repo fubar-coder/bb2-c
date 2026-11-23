@@ -401,7 +401,9 @@ enum tc_qkind {
     TC_Q_SESSION,               /* session: done, timeout, halt */
     TC_Q_END_CASE,              /* end.case: the end entry of the case */
     TC_Q_END_RUN,               /* end.run: the end entry of the run */
-    TC_Q_CHECK                  /* check.NS.NAME[.expected|.actual] */
+    TC_Q_CHECK,                 /* check.NS.NAME[.expected|.actual] */
+    TC_Q_DATA                   /* data.FILE: the compile of a data source of
+                                   ID.test/ (ok, error LINE MESSAGE, none) */
 };
 
 /** @brief A parsed query. */
@@ -410,7 +412,7 @@ struct tc_query {
     char *ns;                   /* TC_Q_CHECK: the namespace */
     char *rest;                 /* TC_Q_CHECK: NAME, NAME.expected or
                                    NAME.actual (the judge splits it against
-                                   the names of the checks) */
+                                   the names of the checks); TC_Q_DATA: FILE */
 };
 
 /** @brief The operators of a predicate. */

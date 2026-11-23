@@ -334,6 +334,28 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
                  char **text, char *err, size_t errlen);
 
 /**
+ * @brief The pass lines of the test-local data of a cell (change
+ *        basic-test-local-data, D3): for a file of copy or mktestdata
+ *        file=ID.test/NAME|BUILT; for a data source (basic-compile) whose
+ *        build configuration (compiler, libraries, runtime error checking,
+ *        "same" the cell's value) is the cell's a job of the cell's job
+ *        list, build_job=-|BUILT|ID.test/NAME, and for every other build
+ *        configuration, in the order the data name them, a compile part
+ *        build=ID.test/.build-N|BLITZ2|DEFLIBS|ACIDLIBS|on|off (N from 1)
+ *        with the jobs build_job=ID.test/.build-N|BUILT|ID.test/NAME.
+ *        NAME is tc_data_result's; the build_job= lines come in the order
+ *        of the data sources, so job bNNN is the NNN-th data source.
+ * @param built  per entry of conf->data the host file: the tokenised source
+ *               of a data source, the file made by mktestdata, the file of
+ *               a copy
+ * @param text   the lines (malloc'd)
+ * @return 0 = ok, -1 = refused (err: a runner value the environment lacks),
+ *         -2 = out of memory
+ */
+int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
+                 const char *const *built, char **text, char *err, size_t errlen);
+
+/**
  * @brief The settings that decide the session of a cell, as one text: two
  *        cells share a session if their keys are the same.  A cell with
  *        serial=on, and a cell the setting isolate names (tc_cell_isolated),

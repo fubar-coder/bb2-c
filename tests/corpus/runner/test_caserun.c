@@ -1129,6 +1129,77 @@ static void test_side_status(void)
     tp_free(&src);
 }
 
+/* the pass lines of the test-local data (cr_data_pass, change
+   basic-test-local-data D3): copy and mktestdata as files, a data source of
+   the cell's build configuration in its job list, the others in compile
+   parts of their own, one per build configuration */
+static void test_data_pass(void)
+{
+    static const char *const built[] = { "/w/d/in.txt", "/w/d/d001", "/w/d/b002.bb2", "/w/d/b003.bb2",
+                                         "/w/d/b004.bb2", "/w/d/b005.bb2" };
+    struct t t;
+    char err[600], *p;
+
+    put("data/tests.toml", "root = true\n");
+    put("data/x.test.bas", "!TestCase{a}\n!EndTestCase\n");
+    put("data/x.test.toml",
+        "[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n"
+        "[data]\n\"in.txt\" = \"copy\"\n\"cmap.spec\" = \"mktestdata\"\n\"same.bas\" = \"basic-compile\"\n"
+        "[data.\"port.bas\"]\naction = \"basic-compile\"\ncompiler = \"port\"\n"
+        "[data.\"runerr.bas\"]\naction = \"basic-compile\"\nruntime-errors = \"on\"\n"
+        "[data.\"port2.bas\"]\naction = \"basic-compile\"\ncompiler = \"port\"\n");
+    load(&t, "data/x.test.bas", ENV_RUNNER);
+    if (!t.ok)
+        return;
+    /* the cell port,clib: port.bas and port2.bas are the cell's, runerr.bas a part */
+    CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "port,clib"), &t.env, built, &p, err, sizeof err) == 0);
+    CHECK(p && !strcmp(p, "file=x.test/in.txt|/w/d/in.txt\n"
+                          "file=x.test/cmap|/w/d/d001\n"
+                          "build_job=-|/w/d/b002.bb2|x.test/same\n"
+                          "build_job=-|/w/d/b003.bb2|x.test/port\n"
+                          "build=x.test/.build-1|/b/blitz2|/b/deflibs|/b/acidlibs|on\n"
+                          "build_job=x.test/.build-1|/w/d/b004.bb2|x.test/runerr\n"
+                          "build_job=-|/w/d/b005.bb2|x.test/port2\n"));
+    free(p);
+    /* the cell orig195,cd: the two port sources share one part */
+    CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, built, &p, err, sizeof err) == 0);
+    CHECK(p && !strcmp(p, "file=x.test/in.txt|/w/d/in.txt\n"
+                          "file=x.test/cmap|/w/d/d001\n"
+                          "build_job=-|/w/d/b002.bb2|x.test/same\n"
+                          "build=x.test/.build-1|/b/blitz2|/cd/DEFLIBS|/cd/ACIDLIBS|off\n"
+                          "build_job=x.test/.build-1|/w/d/b003.bb2|x.test/port\n"
+                          "build=x.test/.build-2|/b/ref/blitz2|/cd/DEFLIBS|/cd/ACIDLIBS|on\n"
+                          "build_job=x.test/.build-2|/w/d/b004.bb2|x.test/runerr\n"
+                          "build_job=x.test/.build-1|/w/d/b005.bb2|x.test/port2\n"));
+    /* the pass with them parses */
+    {
+        char *cp = NULL, *all;
+        struct corpus_pass cpass;
+        char perr[400];
+
+        CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, "c0", "/w/run", "/w/run/test.bb2", &cp,
+                           err, sizeof err) == 0);
+        all = str_printf("%s%s", cp ? cp : "", p ? p : "");
+        CHECK(all && corpus_parse(all, &cpass, perr, sizeof perr) == 0);
+        if (all && !corpus_parse(all, &cpass, perr, sizeof perr)) {
+            CHECK(cpass.nbuilds == 2 && cpass.nbjobs == 4 && !cpass.bjobs[0].part
+                  && !strcmp(cpass.bjobs[1].part, "x.test/.build-1"));
+            corpus_free(&cpass);
+        }
+        free(all);
+        free(cp);
+    }
+    free(p);
+    unload(&t);
+    /* a runner value the environment lacks */
+    load(&t, "data/x.test.bas", "[runner]\nblitz2 = \"/b/blitz2\"\n");
+    if (t.ok) {
+        CHECK(cr_data_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, built, &p, err, sizeof err) == -1
+              && strstr(err, "no runner value"));
+        unload(&t);
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1158,6 +1229,7 @@ int main(int argc, char **argv)
     test_isolate_keys();
     test_verdict_order();
     test_side_status();
+    test_data_pass();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);
