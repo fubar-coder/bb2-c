@@ -4,6 +4,7 @@
 # the same session its driver ends at once with return code 20)
 fixed-orig = 958
 isolate = ["compiler=orig195"]
+flaky = "the original's cell failed as the second cell of a session after a snapshot restore (rc 20, no result file); isolate = [\"compiler=orig195\"] is the workaround; cause not analysed (Q-A17)"
 
 [data]
 "child.bas" = "basic-compile"

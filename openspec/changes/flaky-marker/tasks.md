@@ -5,4 +5,4 @@
 
 ## 2. The marked test
 
-- [ ] 2.1 `tests/bug-orig/compiler/compiler-amigalib-a4a5.test.toml` gets `flaky` (Q-A17); verify: `ctest -N -L flaky` lists its tests
+- [x] 2.1 `tests/bug-orig/compiler/compiler-amigalib-a4a5.test.toml` gets `flaky` (Q-A17); verify: `ctest -N -L flaky` lists its tests
