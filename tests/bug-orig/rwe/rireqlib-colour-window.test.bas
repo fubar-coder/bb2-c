@@ -14,14 +14,12 @@
 ; 16387 ($4003).
 ; Correct: the requester opens for the window and returns the colour it
 ; started on, 2.
-; @fixed #1091
-; @rwe rireqlib
-; @pass file=libs/req.library|@REQLIB@
-; @pass runwrap=@INJECT@|libs=CORPUS:libs click=*/__Ok__
-; @pass timeout=60
-WbToScreen 0
-Window 0,20,30,200,80,$000E,"RQWIN",1,2
-DefaultOutput
-ReqOutput 0
-NPrint "colour ",ReqColour(2)
-End
+DEFTYPE .l
+
+!TestCase{colour_2}
+  WbToScreen 0
+  Window 0,20,30,200,80,$000E,"RQWIN",1,2
+  ReqOutput 0
+  c=ReqColour(2)
+  !CheckEq{c,2,"colour"}
+!EndTestCase

@@ -1,0 +1,15 @@
+# rireqlib-colour-default-word.test.bas: the real req.library 2.8 staged in
+# CORPUS:libs, which inject's libs= puts into LIBS:; the requester is ended by
+# a click on its OK gadget; the reference library returns 0
+fixed-orig = 1091
+rwe = ["rireqlib"]
+files = ["libs/req.library|@REQLIB@"]
+runwrap = "@INJECT@|libs=CORPUS:libs click=*/__Ok__"
+timeout = 60
+
+[asserts]
+inject = "contains \"inject: click */__Ok__: answered\ninject: click window: \\\" Palette \\\"\""
+
+[deviations."compiler=orig210"]
+"check.colour_3.colour" = "== fail"
+"check.colour_3.colour.actual" = "== 0"

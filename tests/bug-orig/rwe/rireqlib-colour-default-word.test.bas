@@ -15,10 +15,9 @@
 ; it into LIBS: (libs=) and answers the requester with its OK gadget
 ; (click=, `*` for the title).
 ; Correct: the colour the requester started on, 3, comes back from OK.
-; @fixed #1091
-; @rwe rireqlib
-; @pass file=libs/req.library|@REQLIB@
-; @pass runwrap=@INJECT@|libs=CORPUS:libs click=*/__Ok__
-; @pass timeout=60
-NPrint "colour ",ReqColour(3)
-End
+DEFTYPE .l
+
+!TestCase{colour_3}
+  c=ReqColour(3)
+  !CheckEq{c,3,"colour"}
+!EndTestCase

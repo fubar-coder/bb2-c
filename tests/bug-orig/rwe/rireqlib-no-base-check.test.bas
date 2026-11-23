@@ -9,14 +9,15 @@
 ; also with a title: the rest of the expression follows at once;
 ; ReqFileLoc returns 0) and ReqColour 65535 ($FFFF, what the real
 ; ColorRequester returns on cancel), the program goes on.
-; @fixed #788
-; @rwe rireqlib
-; @pass runwrap=@INJECT@|openlibfail=req.library
-; @pass timeout=30
-NPrint ReqFileLoc
-f$=ReqFileRequest
-NPrint "result ",Len(f$)
-g$="<"+ReqFileRequest("Load")+">"
-NPrint "title ",g$
-NPrint "colour ",ReqColour(5)
-End
+DEFTYPE .l
+
+!TestCase{open_fails}
+  fl=ReqFileLoc
+  !CheckEq{fl,0,"fileloc"}
+  f$=ReqFileRequest
+  !CheckEq{Len(f$),0,"file_result"}
+  g$="<"+ReqFileRequest("Load")+">"
+  !CheckStrEq{g$,"<>","file_title"}
+  c=ReqColour(5)
+  !CheckEq{c,65535,"colour"}
+!EndTestCase

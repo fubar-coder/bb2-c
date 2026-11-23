@@ -11,12 +11,10 @@
 ; writes the title the window had).
 ; Correct: the title is for that call only; the second requester has the
 ; title of the empty title buffer, "".
-; @fixed #789
-; @rwe rireqlib
-; @pass file=libs/req.library|@REQLIB@
-; @pass runwrap=@INJECT@|libs=CORPUS:libs click=*/Forget_it click=*/Forget_it
-; @pass timeout=60
-a$=ReqFileRequest("First title")
-b$=ReqFileRequest
-NPrint "done"
-End
+DEFTYPE .l
+
+!TestCase{second_call}
+  a$=ReqFileRequest("First title")
+  b$=ReqFileRequest
+  !Check{1,"done"}
+!EndTestCase
