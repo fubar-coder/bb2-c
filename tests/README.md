@@ -3312,7 +3312,13 @@ session limits, an old-form bug-orig test's session limit times sessions,
 the list of the long tests), which stay for a test without an entry; a
 `cost` key of a test of the model wins over its entry. An entry whose test no longer exists
 fails the build (the configuration, or the registration step of the
-tests of the model), naming its line. After an acceptance run, refresh
+tests of the model), naming its line. A test that only the
+[prev build](#the-prev-build) has (the comparisons `NAME_prev`,
+`compiler_prev` and `PREFIX_ID_prev` of `cmake/prev.cmake`,
+`corpus_cd_prev`, `corpus_cd_ab3_prev`, `ab3_cli_prev_N`) is named where
+it would be made (`test_cost_prev_only`): without a prev build its entry
+is accepted, since a file refreshed from an acceptance run names it; with
+one the test must exist. After an acceptance run, refresh
 the file from its JUnit file(s) and commit it with the run's other
 results:
 
