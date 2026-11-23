@@ -73,7 +73,9 @@ and presets".
    compatibility with the bugs fixed (D-003), not identical executables.
    Every fix follows `docs/development.md`, "Fixing an original bug" (spec
    `testing/bug-fix-workflow`): one issue per bug; one fix commit with the
-   code change, the test of the expected behaviour (`; @fixed #N`, FIXED)
+   code change, the test of the expected behaviour (FIXED; in a test of the BASIC test
+   model the key `fixed-orig = N` in its `ID.test.toml`, in a test of the
+   old form the header `; @fixed #N`)
    — for a library bug that no Blitz program can show (it needs a fake
    library or scripted messages), the `[orig]`/`[fixed #N]` pair in
    `libs_emulator` is that test (D-019) —, `Fixed (#N)`, the kind-F entry in `docs/*/deviations.md`, the changed
@@ -85,7 +87,10 @@ and presets".
    `BUG(orig) (#N)` and a bug-orig test that comes out REPRODUCED; checked
    only in the error check area on purpose: `By design (#N)`, label
    `as-designed`. Which bugs get fixed and how: decisions.md (D-005 to
-   D-007).
+   D-007). A fix of a bug that is
+   not in the original sets `fixed = N` instead; the test of an extension of
+   the port (behaviour the original does not have) sets `extension = N`, its
+   declared deviations being what the original does instead.
 5. **Testing an agent's work:** agents run the tests their brief names,
    the tests of what they touched and `ctest --preset host`, in the
    foreground; the coordinator runs `all`, `bug-orig` and `originals` once

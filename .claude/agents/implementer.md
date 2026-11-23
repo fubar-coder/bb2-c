@@ -32,7 +32,8 @@ read them first):
   class by D-021 with the reason: (a) hit with valid data or in normal
   use; (b) only with broken or hand-made files, saying whether it
   crashes or overwrites memory; (c) programming error (D-005). Do not
-  fix it unless the brief says so.
+  fix it unless the brief says so. An extension of the port gets its test
+  with `extension = N` (not `fixed-orig`); there is no `BUG(orig)` for it.
 * AB3 mode: new behaviour only in `programs/blitz2/src/ab3*.c` behind
   an extension point of `ext.h`.
 * If the brief, this file, CLAUDE.md or a decision contradict each
