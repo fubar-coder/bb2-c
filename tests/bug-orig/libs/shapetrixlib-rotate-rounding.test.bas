@@ -9,7 +9,6 @@
 ; pixels of the shape's data.
 ; Correct: a quarter turn gives 9x21, a half turn 21x9, and all 189
 ; pixels are set in both.
-; @fixed #1004
 DEFTYPE .l
 Function.l bits{s.l}
   a.l=Addr Shape(s) : d.l=Peek.l(a+14) : n.l=0
@@ -21,13 +20,25 @@ Function.l bits{s.l}
   Next
   Function Return n
 End Function
-BitMap 0,64,32,1
-Use BitMap 0
-Boxf 0,0,20,8,1
-GetaShape 0,0,0,21,9
-Rotate 0,0.25
-NPrint "quarter ",ShapeWidth(0)," ",ShapeHeight(0)," pixels ",bits{0}
-GetaShape 0,0,0,21,9
-Rotate 0,0.5
-NPrint "half ",ShapeWidth(0)," ",ShapeHeight(0)," pixels ",bits{0}
-End
+
+!TestCase{quarter_turn}
+  BitMap 0,64,32,1
+  Use BitMap 0
+  Boxf 0,0,20,8,1
+  GetaShape 0,0,0,21,9
+  Rotate 0,0.25
+  !CheckEq{ShapeWidth(0),9,"width"}
+  !CheckEq{ShapeHeight(0),21,"height"}
+  !CheckEq{bits{0},189,"pixels"}
+!EndTestCase
+
+!TestCase{half_turn}
+  BitMap 0,64,32,1
+  Use BitMap 0
+  Boxf 0,0,20,8,1
+  GetaShape 0,0,0,21,9
+  Rotate 0,0.5
+  !CheckEq{ShapeWidth(0),21,"width"}
+  !CheckEq{ShapeHeight(0),9,"height"}
+  !CheckEq{bits{0},189,"pixels"}
+!EndTestCase

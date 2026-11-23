@@ -12,15 +12,17 @@
 ; Correct: the one pixel of row 0 collects only the 16 pixels of the
 ; row: colour 0.  (Only row 0 is looked at: in the original row 3 reads
 ; behind the shape.)
-; @fixed #273
-; @configs clib
 DEFTYPE .l
-BitMap 0,16,4,1
-Use BitMap 0
-Cls 0
-Boxf 0,1,15,3,1
-GetaShape 0,0,0,16,4
-Scale 0,0.02,1
-d=Peek.l(Addr Shape(0)+14)
-NPrint ShapeWidth(0)," ",ShapeHeight(0)," colour ",(Peek.b(d) AND $80) LSR 7
-End
+
+!TestCase{scale_ratio_002}
+  BitMap 0,16,4,1
+  Use BitMap 0
+  Cls 0
+  Boxf 0,1,15,3,1
+  GetaShape 0,0,0,16,4
+  Scale 0,0.02,1
+  d=Peek.l(Addr Shape(0)+14)
+  !CheckEq{ShapeWidth(0),1,"width"}
+  !CheckEq{ShapeHeight(0),4,"height"}
+  !CheckEq{(Peek.b(d) AND $80) LSR 7,0,"colour"}
+!EndTestCase

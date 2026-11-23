@@ -1,0 +1,10 @@
+# shapetrixlib-word-arithmetic.test.bas
+fixed-orig = 274
+
+[deviations."libs=cd"]
+"check.yflip_plane_33280.top" = "== fail"
+"check.yflip_plane_33280.top.actual" = "== $AB"
+"check.yflip_plane_33280.bottom" = "== fail"
+"check.yflip_plane_33280.bottom.actual" = "== 0"
+"check.xflip_rows_65600.last_row" = "== fail"
+"check.xflip_rows_65600.last_row.actual" = "== $8000"

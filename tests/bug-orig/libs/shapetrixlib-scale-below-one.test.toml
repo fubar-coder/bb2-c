@@ -1,0 +1,6 @@
+# shapetrixlib-scale-below-one.test.bas
+fixed-orig = 273
+
+[deviations."libs=cd"]
+"check.scale_ratio_002.colour" = "== fail"
+"check.scale_ratio_002.colour.actual" = "== 1"

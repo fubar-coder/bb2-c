@@ -10,20 +10,34 @@
 ; the blit is 5 rows of 16 words), 16x1100 (the blit is 76 rows).
 ; Correct: every byte of the stencil is $FF.  The original leaves the
 ; last rows of the two big ones 0.
-; @fixed #284
-; @configs clib
 DEFTYPE .l
 Statement mkst{w.l,h.l}
+  SHARED fb.l,lb.l
   BitMap 0,w,h,1
   Use BitMap 0
   Boxf 0,0,w-1,h-1,1
   Stencil 0,0
   m=Peek.l(Addr Stencil(0)+4)
   b=w/8
-  NPrint w,"x",h,": ",Hex$(Peek.b(m+b*(h-1)) AND 255)," ",Hex$(Peek.b(m+b*h-1) AND 255)
+  fb=Peek.b(m+b*(h-1)) AND 255
+  lb=Peek.b(m+b*h-1) AND 255
   Free BitMap 0
 End Statement
-mkst{320,4}
-mkst{1280,4}
-mkst{16,1100}
-End
+
+!TestCase{stencil_320x4}
+  mkst{320,4}
+  !CheckEq{fb,$FF,"last_row_first_byte"}
+  !CheckEq{lb,$FF,"last_byte"}
+!EndTestCase
+
+!TestCase{stencil_1280x4}
+  mkst{1280,4}
+  !CheckEq{fb,$FF,"last_row_first_byte"}
+  !CheckEq{lb,$FF,"last_byte"}
+!EndTestCase
+
+!TestCase{stencil_16x1100}
+  mkst{16,1100}
+  !CheckEq{fb,$FF,"last_row_first_byte"}
+  !CheckEq{lb,$FF,"last_byte"}
+!EndTestCase

@@ -1,0 +1,10 @@
+# shapetrixlib-rotate-rounding.test.bas
+fixed-orig = 1004
+
+[deviations."libs=cd"]
+"check.quarter_turn.width" = "== fail"
+"check.quarter_turn.width.actual" = "== 10"
+"check.half_turn.width" = "== fail"
+"check.half_turn.width.actual" = "== 22"
+"check.half_turn.height" = "== fail"
+"check.half_turn.height.actual" = "== 10"
