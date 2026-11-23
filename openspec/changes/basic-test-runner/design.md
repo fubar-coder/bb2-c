@@ -442,3 +442,37 @@ PREV REGEX [PREV_EXCLUDE ID...])`).
 - **Time limit**: the ctest time limit assumes the default session limit
   (`BASIC_TEST_TIMEOUT`); a test with a larger `timeout` of its own is
   not known when CMake configures.
+
+## Findings of the move of the runerrs twins
+
+Task 5.2: the eight pairs (`array-index-code`, `intrinsic-asc`, `-frac`,
+`-frac-lib`, `-int`, `-int-lib`, `-len`, `-len-lib`) and
+`array-index-div0-runerrs` are `ID.test.bas` with `[matrix]
+runtime-errors = ["off", "on"]` (`array-index-div0.test.bas`:
+`runtime-errors = "on"`, no matrix).
+
+- **The twins were not the same program**: only `intrinsic-frac` and
+  `intrinsic-int` had the same `.expect`. The others differ in JSR counts
+  and code sizes (the checks of runtime error checking: `NPrint Asc(a$)`
+  1 or 2 calls, `a(iw,jw)` 44 or 116 bytes), `array-index-code-runerrs`
+  left out the two folded constants, and `intrinsic-int-lib-runerrs` has
+  a string argument more (the runtime error "Illegal Type"). The context
+  of this design ("the same code and `.expect`") was wrong for them.
+- **How a source tells the cells apart**: the program cannot be told the
+  cell, so it finds out: `runerrs{?a,?b}` looks for the debugger's
+  `trap #1` (`$4E41`, `debugstuff` puts it in front of every statement
+  with runtime error checking) between two labels around a plain
+  statement in the batch init, and `rv{OFF,ON}` gives the expected value
+  of the cell. A wrong probe would make every count that differs fail
+  (checked: with the two values swapped both cells fail). The checks the
+  old `-runerrs` program did not have (the size of the folded constants)
+  stand in `If re=0`, the string argument of `Int` in `If re`, so each
+  cell checks what its old program checked (the offsets of the folded
+  constants are checked in both).
+- **What the old tests printed** besides the values (the line of
+  `NPrint Asc(a$)`, `NPrint Int(q)`, `NPrint Frac(q1)`, the subject of the
+  count) is the assertion `output` of the case in `ID.test.toml`.
+- **The prev comparison** of the twins is now `blitz2_ID_prev` with the
+  compiles `ID` and `ID-runerrs` (before: `compiler_prev:ID` and
+  `blitz2_ID_runerrs_prev:ID-runerrs`); `array-index-div0` has only
+  `array-index-div0-runerrs`, the name it had.

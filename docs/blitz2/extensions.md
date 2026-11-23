@@ -123,12 +123,13 @@ in range, the executable is 64 bytes shorter).
 * `ab3_cli_ref` confirms `debugconst_off` (also the replacing definition)
   with AmiBlitz3, whose command line has no debugger, so `debugconst_on`
   and `debugconst_res` give 0 there (`docs/ab3/variant.md`);
-* the intrinsics: `blitz2_intrinsic_int`, `_frac`, `_len`, `_asc` (the
-  values and no call) and `_int_lib`, `_frac_lib`, `_len_lib` (where the
-  call stays), each also `_runerrs` with runtime error checking
-  (`tests/blitz2/`: the programs count the JSRs between two labels around
-  the statement; the self test `blitz2_selftest_intrinsic_selftest_wrong`
-  must come out REGRESSED); in AB3 mode `intrinsic_int` and
+* the intrinsics: `blitz2_intrinsic_int__CASE`, `_frac__CASE`,
+  `_len__CASE`, `_asc__CASE` (the values and no call) and
+  `_int_lib__CASE`, `_frac_lib__CASE`, `_len_lib__CASE` (where the call
+  stays), each without and with runtime error checking (`tests/blitz2/`,
+  tests of the BASIC test model: the programs count the JSRs between two
+  labels around the statement and check the count; the self test
+  `blitz2_selftest_intrinsic_selftest_wrong` must come out REGRESSED); in AB3 mode `intrinsic_int` and
   `intrinsic_frac` of `ab3_cli`, confirmed by `ab3_cli_ref`; the cycles
   in `tests/perf/budgets.txt` (`bmath.int`, `.intn`, `.frac`, `.fracn`,
   `bstr.len`, `.asc` and their lines at 10, 100 and 1000 characters);

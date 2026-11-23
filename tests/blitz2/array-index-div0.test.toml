@@ -1,0 +1,7 @@
+# array-index-div0.test.bas: only with runtime error checking (without it
+# the trap of the division is not caught); the check behind the error must
+# not run
+runtime-errors = "on"
+
+[asserts]
+"check.divisor_zero.after" = "== not-run"

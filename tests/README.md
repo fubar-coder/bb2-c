@@ -1252,13 +1252,19 @@ changes its `ID.expect` in the same commit and names the issue
 (`#N` in the commit message), like a [fixed test](#fixed-tests); the
 program is not edited to avoid the difference.
 
-The tests of the intrinsics (`intrinsic-*.bas`, the library functions
-blitz2 compiles inline, `openspec/specs/compiler/intrinsics`) check the
-compiled code as well as the value: the program counts the JSR
-instructions (`$4EB9`, the form of every library call) between two labels
-around the statement (`jsrs{?a,?b}`, the routine in each test) and prints
-the count, so its expectation says which cases call the library and
-which do not. The self test `blitz2_selftest_intrinsic_selftest_wrong`
+The tests of the intrinsics (`intrinsic-*.test.bas`, the library
+functions blitz2 compiles inline, `openspec/specs/compiler/intrinsics`;
+tests of the BASIC test model, [Tests that judge
+themselves](#tests-that-judge-themselves)) check the compiled code as well
+as the value: the program counts the JSR instructions (`$4EB9`, the form
+of every library call) between two labels around the statement
+(`jsrs{?a,?b}`, the routine in each test) and checks the count, so the
+source says which cases call the library and which do not. Each runs
+without and with runtime error checking (the axis `runtime-errors`); a
+count that differs between the two is `rv{OFF,ON}`, and the program tells
+the cells apart by the debugger's `trap #1` (`$4E41`) in front of a
+statement (`runerrs{?a,?b}` in the batch init). So does
+`array-index-code.test.bas`. The self test `blitz2_selftest_intrinsic_selftest_wrong`
 (`tests/blitz2/selftest/`, an expectation of no call for `Int` of a
 Float) must come out REGRESSED with the case in the report (its line
 `; @want REGEX`, the ctest `PASS_REGULAR_EXPRESSION`: the observed

@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-7
-before
-REQUESTER: AutoRequest body "GURU! - Division by Zero" *
-rc=0

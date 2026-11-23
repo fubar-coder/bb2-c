@@ -1,0 +1,3 @@
+# array-index-code.test.bas: without and with runtime error checking
+[matrix]
+runtime-errors = ["off", "on"]
