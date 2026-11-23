@@ -10,14 +10,15 @@
 ; writes the colours (otherwise it crashes): it shows that no check
 ; stopped the command before.
 ; Correct: the error check stops SaveBitmap with "Uninitialized Palette"
-; (the message of a palette without colours).  The message is the tested
-; behaviour, so the error is not announced with !ExpectError (see the
-; configuration).
+; (the message of a palette without colours).  The error is
+; announced with !ExpectError; the original stops at the Open instead (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{empty_palette}
   BitMap 0,32,2,1
   InitPalette 0,0
+  !ExpectError{"Uninitialized Palette","refused"}
   SaveBitmap 0,"CORPUS:bo182-nodir/p.iff",0
   !Check{0,"saved"}
 !EndTestCase

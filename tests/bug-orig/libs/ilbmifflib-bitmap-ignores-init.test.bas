@@ -8,13 +8,14 @@
 ; does not exist: the buffer is empty, the search for "BODY" fails at
 ; once, and the message is "Can't Find IFF 'BODY'".
 ; Correct: a file that cannot be opened is the runtime error "Can't Open
-; File" (the library's message that the original never uses).  The message
-; is the tested behaviour, so the error is not announced with
-; !ExpectError (see the configuration).
+; File" (the library's message that the original never uses).  The error
+; is announced with !ExpectError; the original raises another one (see the
+; configuration).
 DEFTYPE .l
 
 !TestCase{missing_file}
   BitMap 1,16,4,1
+  !ExpectError{"Can't Open File","refused"}
   LoadBitMap 1,"CORPUS:bo187.missing"
   !Check{0,"loaded"}
 !EndTestCase
