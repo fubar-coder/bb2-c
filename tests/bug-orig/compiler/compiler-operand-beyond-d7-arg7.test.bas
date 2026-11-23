@@ -7,8 +7,10 @@
 ; same expression as b*c+a or a+(b*c) is right.
 ; Correct: the compile error "Expression too Complex" at the line, no
 ; wrong code.
-; @fixed-orig #1185
-a.l=1 : b.l=5 : c.l=6
-NPrint "hit(b*c+a) ",RectsHit(20,0,10,10,0,0,b*c+a,10)
-NPrint "hit(a+b*c) ",RectsHit(20,0,10,10,0,0,a+b*c,10)
-End
+!TestCase{arg7}
+  a.l=1 : b.l=5 : c.l=6
+  h1.l=RectsHit(20,0,10,10,0,0,b*c+a,10)
+  !CheckEq{h1,-1,"hit_bc_plus_a"}
+  h2.l=RectsHit(20,0,10,10,0,0,a+b*c,10)
+  !CheckEq{h2,0,"hit_a_plus_bc"}
+!EndTestCase

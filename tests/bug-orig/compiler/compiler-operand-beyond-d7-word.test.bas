@@ -6,8 +6,9 @@
 ; Failure).
 ; Correct: the compile error "Expression too Complex" at the line, no
 ; wrong code.
-; @fixed-orig #1185
-aw.w=1 : bw.w=5 : cw.w=6
-NPrint "before"
-NPrint "hit(aw+bw*cw) ",RectsHit(20,0,10,10,0,0,aw+bw*cw,10)
-End
+!TestCase{word7}
+  aw.w=1 : bw.w=5 : cw.w=6
+  !CheckEq{1,1,"before"}
+  h.l=RectsHit(20,0,10,10,0,0,aw+bw*cw,10)
+  !CheckEq{h,0,"hit_word"}
+!EndTestCase

@@ -6,8 +6,7 @@
 ; compiling (guru 8000 0004), no result (hence a session of its own).
 ; Correct: the compile error "Expression too Complex" at the line, no
 ; code run.
-; @fixed-orig #1185
-; @pass timeout=30
-NPrint "before"
-NPrint "hit(1+5*6) ",RectsHit(20,0,10,10,0,0,1+5*6,10)
-End
+!TestCase{const7}
+  h.l=RectsHit(20,0,10,10,0,0,1+5*6,10)
+  !CheckEq{h,0,"hit_const"}
+!EndTestCase

@@ -11,8 +11,10 @@
 ; k AND m>l (the error of the expression stacks), no wrong code.  The
 ; other shapes: compiler-operand-beyond-d7-arg7 (a 7th argument),
 ; -word (Word operands), -const (constants).
-; @fixed-orig #1185
-c.l=1 : d.l=2 : e.l=3 : h.l=4 : i.l=5 : j.l=6 : k.l=-1 : m.l=3 : l.l=1
-r.l=c+(d+(e+(h+(i+(j+(k AND m>l)))))) : NPrint "01 k AND m>l ",r
-r=c+(d+(e+(h+(i+(j+(k+m+l)))))) : NPrint "02 k+m+l ",r
-End
+!TestCase{beyond_d7}
+  c.l=1 : d.l=2 : e.l=3 : h.l=4 : i.l=5 : j.l=6 : k.l=-1 : m.l=3 : l.l=1
+  r.l=c+(d+(e+(h+(i+(j+(k AND m>l))))))
+  !CheckEq{r,21,"k_and_m_gt_l"}
+  r=c+(d+(e+(h+(i+(j+(k+m+l))))))
+  !CheckEq{r,24,"k_plus_m_plus_l"}
+!EndTestCase

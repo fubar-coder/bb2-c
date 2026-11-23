@@ -1,0 +1,21 @@
+# compiler-operand-beyond-d7-word.test.bas: the correct result is a failed
+# compile (Expression too Complex at the line of RectsHit) and nothing runs;
+# the original compiles an illegal instruction: the program crashes (a
+# Software Failure requester after the check "before") and the session ends
+# as a hang
+fixed-orig = 1185
+isolate = ["compiler=orig195"]
+
+[asserts]
+compile = "== \"error 12 Expression too Complex\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
