@@ -12,7 +12,7 @@
 ## 2. Pilot round
 
 - [x] 2.1 Move the five `shapeslib-*` tests of round R12's I4 (starting from the copies of spike 2) to `ID.test.bas` / `ID.test.toml` and a `tests.toml` for `tests/bug-orig/libs`; verify: each keeps its verdict with `ref`, `port` and `clib`, and their `.expect`/`.orig` are removed in the same commit
-- [ ] 2.2 Write the instructions for the movers from the pilot (D2 of design.md, with examples) into `tests/README.md`; verify: the coordinator's review of the pilot round
+- [x] 2.2 Write the instructions for the movers from the pilot (D2 of design.md, with examples) into `tests/README.md`; verify: the coordinator's review of the pilot round (reviewed by the user 2026-11-23)
 
 ## 3. Rounds by area
 
