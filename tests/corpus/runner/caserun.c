@@ -348,13 +348,33 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
     {
         static const struct { const char *key, *pass; } lists[] = {
             { "dirs", "dir" }, { "remove", "remove" }, { "mount", "mount" },
-            { "floppy", "floppy" }, { "uae", "uae" }, { "jobline", "jobline" },
+            { "floppy", "floppy" }, { "uae", "uae" },
         };
 
         for (size_t k = 0; k < sizeof lists / sizeof lists[0]; k++)
             if ((l = list(conf, lists[k].key)))
                 for (size_t i = 0; i < l->nlist; i++)
                     text_add(&t, "%s=%s\n", lists[k].pass, l->list[i]);
+    }
+    /* the job lines, @DRIVER@ the driver's source on the cell's volume */
+    if ((l = list(conf, "jobline"))) {
+        const char *b = strrchr(source, '/');
+        size_t bl;
+
+        b = b ? b + 1 : source;
+        bl = strlen(b);
+        if (bl > 4 && !strcmp(b + bl - 4, ".bb2"))
+            bl -= 4;
+        for (size_t i = 0; i < l->nlist; i++) {
+            const char *s = l->list[i], *p;
+
+            text_add(&t, "jobline=");
+            while ((p = strstr(s, TC_DRIVER))) {
+                text_add(&t, "%.*sCORPUS:src/%.*s.bb2", (int)(p - s), s, (int)bl, b);
+                s = p + strlen(TC_DRIVER);
+            }
+            text_add(&t, "%s\n", s);
+        }
     }
     if (t.bad) {
         free(t.p);
@@ -687,6 +707,7 @@ static int whole_program(int kind)
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
     case TC_Q_INJECT:
+    case TC_Q_COMPILE_INJECT:
     case TC_Q_SESSION:
     case TC_Q_END_RUN:
         return 1;
@@ -1026,7 +1047,8 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
 
         fprintf(out, "default assertions (where no file names the query):\n");
         for (size_t i = 0; i < nd; i++)
-            fprintf(out, "  %s = \"%s\"\n", d[i].query, d[i].pred);
+            fprintf(out, "  %s = \"%s\"%s\n", d[i].query, d[i].pred,
+                    d[i].shell ? "    # not in a cell with editor-run = \"on\"" : "");
         fprintf(out, "  every check with entries passed, unless an assertion names it\n");
     }
     fprintf(out, "axes:%s\n", m->naxes ? "" : " none");
@@ -2407,6 +2429,10 @@ int caserun(const struct caserun_opts *o, FILE *log)
                 fprintf(log, "%s\n", x.src.errors.v[i]);
             if (n < 0)
                 fprintf(log, "corpusrun case: out of memory\n");
+            goto out;
+        }
+        if (tj_editor_run_refused(x.file, &x.src, &x.conf, &x.m, err, sizeof err)) {
+            fprintf(log, "%s\n", err);
             goto out;
         }
     }

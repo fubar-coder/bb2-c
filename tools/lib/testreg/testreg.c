@@ -596,6 +596,10 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         rc = pushf(&r->errors, "%s", err) ? -1 : 1;
         goto out;
     }
+    if (tj_editor_run_refused(source, &src, &conf, &m, err, sizeof err)) {
+        rc = pushf(&r->errors, "%s", err) ? -1 : 1;
+        goto out;
+    }
     if (r->errors.n > before) {
         rc = 1;
         goto out;

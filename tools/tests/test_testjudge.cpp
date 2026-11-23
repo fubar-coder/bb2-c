@@ -487,6 +487,63 @@ TEST_CASE("testjudge: the other observations", "[testjudge]")
     CHECK(has(m, "assertion compile.log exists (" + (f.root / "tests.toml").string() + ":8) does not hold: not captured"));
 }
 
+TEST_CASE("testjudge: inject's report of the compiler", "[testjudge]")
+{
+    std::string m;
+    fixture f("[asserts]\n\"compile.inject\" = \"contains \\\"inject: CreateProc Debug: caches flushed before\\\"\"\n");
+    obs o(good);
+
+    // captured: the inject lines of the compiler's output
+    o.o.compile_inject = "inject: rc=0\ninject: CreateProc Debug: caches flushed before\n";
+    CHECK(judge(f, o, m) == TJ_PASS);
+    o.o.compile_inject = "inject: rc=0\ninject: CreateProc Debug: caches not flushed before\n";
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    CHECK(has(m, "assertion compile.inject contains \"inject: CreateProc Debug: caches flushed before\" ("
+                     + (f.root / "tests.toml").string() + ":3) does not hold: \"inject: rc=0\n"));
+    // a compiler that does not run through inject: not captured
+    o.o.compile_inject = nullptr;
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    CHECK(has(m, "assertion compile.inject contains") && has(m, "does not hold: not captured"));
+    // the query of the program's report is another one
+    o.o.inject = "inject: CreateProc Debug: caches flushed before\n";
+    CHECK(judge(f, o, m) == TJ_FAIL);
+}
+
+TEST_CASE("testjudge: a run from the editor", "[testjudge]")
+{
+    std::string m;
+    char er[300];
+    fixture f("editor-run = \"on\"\n[asserts]\noutput = \"== \\\"start\\n\\\"\"\n");
+    obs o(good);
+
+    // no exit code, no requesters: their defaults do not apply
+    o.o.has_rc = 0;
+    o.o.editor_run = 1;
+    o.o.output = "start\n";
+    CHECK(judge(f, o, m) == TJ_PASS);
+    CHECK(m == "");
+    o.o.output = "start\nmore\n";
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    CHECK(has(m, "assertion output == \"start\n\""));
+    // the end entries stay
+    o.o.output = "start\n";
+    obs crashed(head + "check|3|ok|$00000010|$00000010\n");
+    crashed.o.has_rc = 0;
+    crashed.o.editor_run = 1;
+    crashed.o.output = "start\n";
+    CHECK(judge(f, crashed, m) == TJ_FAIL);
+    CHECK(has(m, "assertion end.case exists ((default):0)"));
+    // an announced runtime error is refused (the source's !ExpectError, line 13)
+    CHECK(tj_editor_run_refused("x.test.bas", &f.src, &f.conf, &f.m, er, sizeof er) == 1);
+    CHECK(has(er, "x.test.bas:13: !ExpectError in a test whose cell default runs from the editor (editor-run = "
+                  "\"on\"): a run from the editor captures no requester"));
+    fixture g("");
+    CHECK(tj_editor_run_refused("x.test.bas", &g.src, &g.conf, &g.m, er, sizeof er) == 0);
+    // only the cells that run from the editor
+    fixture h("[matrix]\neditor-run = [\"off\"]\n");
+    CHECK(tj_editor_run_refused("x.test.bas", &h.src, &h.conf, &h.m, er, sizeof er) == 0);
+}
+
 TEST_CASE("testjudge: malformed result files", "[testjudge]")
 {
     fixture f("");

@@ -232,8 +232,9 @@ const char *cr_side_verdict_name(int v, int originals);
  *        of cells[0..ncells) and a judging mode (plain, with the
  *        deviations, with them as if their axis terms matched) an
  *        assertion other than a default names an observation of the whole
- *        program (rc, requester, compile, compile.log, output, serial,
- *        inject, session, end.run), or the case's namespace holds an
+ *        program (rc, requester, compile, compile.log, compile.inject,
+ *        output, serial, inject, session, end.run), or the case's namespace
+ *        holds an
  *        !ExpectError or a !RunProgram (the table of the preprocessor), or
  *        a !RunProgram stands outside every case (a procedure, the batch
  *        init or cleanup).  A conflict of
@@ -348,7 +349,10 @@ int cr_plan_worst(const struct cr_plan *p);
 
 /**
  * @brief The pass file text (corpus.h) of one cell: configuration TAG,
- *        source the tokenised driver, work= WORK.
+ *        source the tokenised driver, work= WORK; the job lines with
+ *        @DRIVER@ (TC_DRIVER) replaced by the driver's source on the cell's
+ *        volume, CORPUS:src/NAME.bb2 (NAME the base name of source without
+ *        .bb2).
  * @param tag     the configuration's tag ("c0")
  * @param work    the run directory
  * @param source  the tokenised driver (its name without .bb2 is the program)

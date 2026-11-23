@@ -6,10 +6,10 @@ touched and `ctest --preset host`; emulator tests as named.
 
 ## 1. Configuration and judging (host)
 
-- [ ] 1.1 `tools/lib/testconf`: the run settings `editor-run` (`off`, `on`; an axis like any single value) and `defaultdbug` (a path setting), the refusals of the spec (an assertion on `rc`/`requester`, `runwrap`/`runargs`/`launcherargs`/`pad = "on"` with `editor-run = "on"`, `defaultdbug` without it), each naming file, line and keys; `--print-config` shows both; verify: `testconf` and `testassert` host tests with broken input for each refusal
-- [ ] 1.2 The query `compile.inject` (`testassert.c` query table, `testjudge`): judged like `inject`, "not captured" without a compiler through inject, counted as a whole-program observation for the cases that run on their own; verify: `testjudge` host tests (captured, not captured, a case asserting it runs on its own)
-- [ ] 1.3 The defaults of an editor-run cell: `rc` and `requester` defaults not applied; a case with `!ExpectError` in such a cell refused at registration naming the line; verify: `testjudge` and `testreg_tool` host tests with broken input
-- [ ] 1.4 `@DRIVER@` in `jobline` replaced by the driver's source on the cell's volume, refused elsewhere; verify: `test_caserun` (the cell pass holds the job line), `testconf` (refused in `files`)
+- [x] 1.1 `tools/lib/testconf`: the run settings `editor-run` (`off`, `on`; an axis like any single value) and `defaultdbug` (a path setting), the refusals of the spec (an assertion on `rc`/`requester`, `runwrap`/`runargs`/`launcherargs`/`pad = "on"` with `editor-run = "on"`, `defaultdbug` without it), each naming file, line and keys; `--print-config` shows both; verify: `testconf` and `testassert` host tests with broken input for each refusal
+- [x] 1.2 The query `compile.inject` (`testassert.c` query table, `testjudge`): judged like `inject`, "not captured" without a compiler through inject, counted as a whole-program observation for the cases that run on their own; verify: `testjudge` host tests (captured, not captured, a case asserting it runs on its own)
+- [x] 1.3 The defaults of an editor-run cell: `rc` and `requester` defaults not applied; a case with `!ExpectError` in such a cell refused at registration naming the line; verify: `testjudge` and `testreg_tool` host tests with broken input
+- [x] 1.4 `@DRIVER@` in `jobline` replaced by the driver's source on the cell's volume, refused elsewhere; verify: `test_caserun` (the cell pass holds the job line), `testconf` (refused in `files`)
 
 ## 2. The cell pass and the session (runner)
 

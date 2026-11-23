@@ -139,7 +139,8 @@ static void test_cell_passes(void)
     put("a/x.test.toml", "stack = 20000\nmachine = \"a600\"\nwrap = \"@TESTDATA@/w|x y\"\n"
         "files = [\"data/f|f.bin\", \"blitz2/x|/abs/x|libs=cd\", \"data/g|/abs/g|compiler=orig210,libs=cd\"]\n"
         "dirs = [\"d1\"]\nremove = [\"blitz2/ted\"]\nmount = [\"BB2|/cd\"]\nuae = [\"chipmem_size=4\"]\n"
-        "jobline = [\"run=r002|CORPUS:src/x.bb2|RAM:con\"]\nrunargs = \"a b\"\nlauncherargs = \"-harden\"\n");
+        "jobline = [\"run=r002|CORPUS:src/x.bb2|RAM:con\", \"job=j001|@DRIVER@|CORPUS:out/again\"]\n"
+        "runargs = \"a b\"\nlauncherargs = \"-harden\"\n");
     load(&t, "a/x.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 5);
     /* the port with the C libraries: the port side, no debugger module */
@@ -165,6 +166,8 @@ static void test_cell_passes(void)
     CHECK(p && has(p, "mount=BB2|/cd"));
     CHECK(p && has(p, "uae=chipmem_size=4"));
     CHECK(p && has(p, "jobline=run=r002|CORPUS:src/x.bb2|RAM:con"));
+    /* @DRIVER@: the driver's source on the cell's volume */
+    CHECK(p && has(p, "jobline=job=j001|CORPUS:src/test.bb2|CORPUS:out/again"));
     {
         char *f = str_printf("file=data/f|%s/a/f.bin", work);
 
@@ -474,6 +477,7 @@ static void test_print_config(void)
                       "  rtg = \"off\"    # (default)\n"
                       "  pad = \"off\"    # (default)\n"
                       "  isolate = \"off\"    # (default)\n"
+                      "  editor-run = \"off\"    # (default)\n"
                       "  labels = [\"libs\"]    # %s/h/sub/tests.toml:1\n"
                       "  root = true    # %s/h/tests.toml:1\n"
                       "  fixed-orig = 12    # %s/h/sub/deep/p.test.toml:1\n"
@@ -484,8 +488,8 @@ static void test_print_config(void)
                       "deviations:\n"
                       "  deviations.\"libs=cd\".check.c.n = \"== fail\"    # %s/h/sub/deep/p.test.toml:3\n"
                       "default assertions (where no file names the query):\n"
-                      "  rc = \"== 0\"\n"
-                      "  requester = \"count == 0\"\n"
+                      "  rc = \"== 0\"    # not in a cell with editor-run = \"on\"\n"
+                      "  requester = \"count == 0\"    # not in a cell with editor-run = \"on\"\n"
                       "  end.case = \"exists\"\n"
                       "  end.run = \"exists\"\n"
                       "  every check with entries passed, unless an assertion names it\n"
@@ -677,7 +681,7 @@ static void test_case_alone(void)
         { "rc", "== 0" }, { "requester", "count == 0" }, { "compile", "== ok" },
         { "\"compile.log\"", "contains \\\"x\\\"" }, { "output", "contains \\\"ok\\\"" },
         { "serial", "contains \\\"x\\\"" }, { "inject", "contains \\\"x\\\"" }, { "session", "== done" },
-        { "\"end.run\"", "exists" },
+        { "\"end.run\"", "exists" }, { "\"compile.inject\"", "contains \\\"x\\\"" },
     };
     struct tp_source src;
     struct t t;
