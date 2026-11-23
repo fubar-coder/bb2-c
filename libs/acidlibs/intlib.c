@@ -20,6 +20,13 @@
  * SetInt/ClrInt/VWait are Blitz/Amiga variants (`Dc $a001`, see
  * BLITZ_AB_ROUTINE): the Blitz mode version comes first in the prefix.
  * Everything is C; the prefixes are the only assembler.
+ *
+ * Fixed (#1201): VWait 0 (also a count that is 0 at run time) arrives as
+ * $FFFF after the compiler's `subq #1,d0` and waits 65536 frames (about
+ * 22 minutes on a PAL machine: the program looks frozen).  The release
+ * code is unchanged; with runtime error checking the check vwaitchk
+ * (error check area only; the original had none and no error check area)
+ * raises "Can't VWait 0 Frames!".
  */
 #include "blitzlib.h"
 #include "blitzexec.h"
@@ -32,19 +39,23 @@
 /* entry points (thunks / asm, defined below) */
 void setint(void), clrint(void), newint(void), oldint(void), dovwait(void);
 void intlib_goblitz(void), intlib_goamiga(void), intlib_codeinit(void);
+void vwaitchk(void);
 static void cleanup(void);
 
 BLITZ_ENTRY_DECL(init);
 
-/* !syslibheader{#intlib,$c100,$c108,_init,0,0,0} */
-BLITZ_SYSLIBHEADER7(LIB_intlib, 0xc100, 0xc108, init, BL_NORET, 0, 0);
+/* !syslibheader{#intlib,$c100,$c108,_init,0,0,0}; Fixed (#1201): the
+   error check area holds vwaitchk */
+BLITZ_SYSLIBHEADER7(LIB_intlib, 0xc100, 0xc108, init, BL_NORET, 0,
+                    BLITZ_ERROR_AREA);
 BLITZ_NULLSUB(setint, 0, 0);                    /* $C100 */
 BLITZ_NULLSUB(clrint, 0, 0);                    /* $C101 */
 BLITZ_NULLSUB(newint, 0, 0);                    /* $C102 */
 BLITZ_NULLSUB(oldint, 0, 0);                    /* $C103 */
 /* !nullsub{dovwait,0,0,#graphicslib,$5600}: $5600 = #la6|$4000 as in the
-   original (graphics base in a6) */
-BLITZ_NULLSUB(dovwait, 0, 0, LIB_graphicslib, BL_IFAMIGA|BL_LA6); /* $C104 */
+   original (graphics base in a6); Fixed (#1201): err1 = vwaitchk, so the
+   compiler's dovwait (tokejsr) calls it with runtime error checking */
+BLITZ_NULLSUB(dovwait, vwaitchk, 0, LIB_graphicslib, BL_IFAMIGA|BL_LA6); /* $C104 */
 BLITZ_NULLSUB(cleanup, 0, 0);                   /* $C105 */
 BLITZ_NULLSUB(intlib_goblitz, 0, 0);            /* $C106 */
 BLITZ_NULLSUB(intlib_goamiga, 0, 0);            /* $C107 */
@@ -71,6 +82,8 @@ static UWORD blitzintson;                       /* are blitz ints on? */
  *
  * WaitTOF with the graphics base in a6 (!libs); the original (MOVE d0,d2)
  * keeps no register but a6 and d3-d7/a2-a5.
+ * Errors (debugger, vwaitchk; both modes): "Can't VWait 0 Frames!"
+ * (#1201: the original had no check, VWait 0 waited 65536 frames).
  *
  * @param n    d0.w: the DBF count (0 = once, $FFFF = 65536 times)
  * @param gfx  a6: graphics.library
@@ -329,3 +342,18 @@ static void BLITZ_ROUTINE goamiga_c(void)
     intsoff(bints);
 }
 BLITZ_THUNK(intlib_goamiga, goamiga_c, "d0-d1/a0-a1");
+
+/* ------------------------------------------- error checks (debugger only) */
+
+BLITZ_ERRCHK_MESSAGE(vwaitmess, "Can't VWait 0 Frames!");
+
+/* vwaitchk - not in the original (#1201): VWait with a count of 0, which
+   the compiler's subq #1,d0 turns into the DBF count $FFFF (65536
+   frames); d0.w = the count as $C104 gets it.  Called before $C104 in
+   both modes. */
+static void BLITZ_ERRCHK vwaitchk_c(UWORD n BL_REG(d0))
+{
+    if (n == 0xffff)
+        BLITZ_RUNERR(vwaitmess);
+}
+BLITZ_ERRCHK_THUNK(vwaitchk, vwaitchk_c, "d0-d1/a0-a1");

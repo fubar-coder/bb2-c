@@ -443,7 +443,10 @@ void dotokejsr(UWORD c)
     pokel(0);
 }
 
-/* blitz2.s:3610 dovwait */
+/* blitz2.s:3610 dovwait.  Fixed (#1201): a count of 0 (the DBF count
+   $FFFF after fvwait's subq, 65536 frames) is a runtime error with runtime
+   error checking: intlib's $C104 has the error check vwaitchk (err1),
+   which tokejsr (makelsub3) emits before the call in that build only. */
 void dovwait(UWORD c)
 {
     UWORD type;

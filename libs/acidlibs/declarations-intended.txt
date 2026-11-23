@@ -220,3 +220,8 @@ lib 65500: end of the table +$2D0: $FF != $00
 lib 65500: 33 entries != 36
 lib 65500: declaration part $2D6 != $312 bytes
 lib 65500: relocations in the declaration part 30 != 31
+# #1201: intlib gets an error check area and the check vwaitchk as err1
+# of VWait ($C104)
+lib 65520: header +$2C: code offset set in only one of them
+lib 65520: entry 4 ($C104) (nullsub) +$C: code offset set in only one of them
+lib 65520: relocations in the declaration part 10 != 12

@@ -1,0 +1,38 @@
+# intlib-vwait-zero.test.bas: with runtime error checking; the original
+# raises no error and hangs in VWait 0 (65536 frames): its cells of the
+# three zero cases end by the time limit, each in a session of its own
+fixed-orig = 1201
+runtime-errors = "on"
+timeout = 30
+isolate = ["libs=cd"]
+
+[asserts]
+"check.zero.not_refused" = "== not-run"
+"check.var_zero.not_refused" = "== not-run"
+"check.blitz_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd,case=zero"]
+"check.zero.refused" = "== fail"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+requester = "count == 0"
+
+[deviations."libs=cd,case=var_zero"]
+"check.var_zero.refused" = "== fail"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+requester = "count == 0"
+
+# the original hangs in Blitz mode before the announcement reaches the
+# result file: the run reports it not run
+[deviations."libs=cd,case=blitz_zero"]
+"check.blitz_zero.refused" = "== not-run"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+requester = "count == 0"
