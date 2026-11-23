@@ -7,16 +7,17 @@
 ; (a match of 3 bytes), "01" + 00000 (offset 0).  The 3 bytes go to
 ; dest + 1, dest and dest - 1; a guard byte at dest - 1 shows it.
 ; Correct: nothing is written below the destination.
-; @fixed #833
-; @rwe ristcdecrunchlib
 DEFTYPE .l
-m=AllocMem_(64,$10001)
-If m=0 Then NPrint "no memory" : End
-Poke.l m,$53343034 : Poke.l m+4,0 : Poke.l m+8,2 : Poke.l m+12,8
-Poke.w m+20,0 : Poke.w m+22,$E800 : Poke.w m+24,15
-d=m+40
-Poke.b d-1,$5A
-r=STCDecrunch(m,d)
-If Peek.b(d-1)=$5A Then NPrint "guard kept" Else NPrint "guard overwritten"
-FreeMem_ m,64
-End
+
+!TestCase{no_checks}
+  m=AllocMem_(64,$10001)
+  !Require{m<>0,"memory"}
+  Poke.l m,$53343034 : Poke.l m+4,0 : Poke.l m+8,2 : Poke.l m+12,8
+  Poke.w m+20,0 : Poke.w m+22,$E800 : Poke.w m+24,15
+  d=m+40
+  Poke.b d-1,$5A
+  r=STCDecrunch(m,d)
+  k=(Peek.b(d-1)=$5A)
+  FreeMem_ m,64
+  !CheckEq{k,-1,"guard_kept"}
+!EndTestCase
