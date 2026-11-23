@@ -1,0 +1,10 @@
+# rilvcallhooklib-lineptrn.test.bas: the original leaves $AAAA, respectively
+# $FFFF, in the RastPort
+fixed-orig = 738
+rwe = ["rilvcallhooklib"]
+
+[deviations."compiler=orig210"]
+"check.line_pattern.pattern_indent_8" = "== fail"
+"check.line_pattern.pattern_indent_8.actual" = "== 43690"
+"check.line_pattern.pattern_indent_32" = "== fail"
+"check.line_pattern.pattern_indent_32.actual" = "== 65535"
