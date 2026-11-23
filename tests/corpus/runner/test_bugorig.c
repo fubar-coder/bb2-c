@@ -107,6 +107,114 @@ int main(void)
     CHECK(!strcmp(bugorig_get(&c, "compile"), "none\n"));
     bugorig_free(&c);
 
+    /* the block of a step */
+    {
+        static const char log[] =
+            "openreq \"Blitz Basic 2 Version 2.10\"\n"
+            "getinput \"Blitz Basic 2 Version 2.10\" -> gadget 1 \" OKEE DOKEE \" (version requester)\n"
+            "BATCH\tstart\n"
+            "JOB\tj000\tCORPUS:src/t.bb2\r\n"
+            "XTRA\tj000\tdefaults\n"
+            "ezfreq \"Name of Executable to create\" -> CORPUS:out/t\n"
+            "RESULT\tj000\tok\t1234\n"
+            "PROGRESS\tj000\tnone\n"
+            "STRIPE\tj000\tnone\n"
+            "GUARD\tj000\tok\n"
+            "JOB\tj001\tCORPUS:src/t.bb2\n"
+            "ezfreq \"Name of Executable to create\" -> CORPUS:out/stripe-j001\n"
+            "RESULT\tj001\tok\t1300\n"
+            "PROGRESS\tj001\tbar 0\t222\n"
+            "STRIPE\tj001\trow 0\t###\n"
+            "GUARD\tj001\tbefore 95 after 0\n"
+            "ezfreq \"Load Debug Module\" -> blitz2:dbgmod\n"
+            "MENU\tm1\t9\t0\n"
+            "POINTER\tm1\tnormal\n"
+            "JOB\tr\tCORPUS:r.bb2\n"
+            "RESULT\tr\tok\t200\n"
+            "MENU\tr\tresident\t0\n"
+            "POINTER\tr\tnormal\n"
+            "ABORT: the last words\n"
+            "BATCH\tend\n";
+        struct bugorig_step s = { "j000", NULL, NULL, NULL };
+        char *blk = bugorig_block(log, &s);
+
+        /* the job's lines with the requesters behind its JOB line; no
+           version line, no BATCH line, the size removed, \r removed */
+        CHECK(blk && !strcmp(blk, "JOB\tj000\tCORPUS:src/t.bb2\nXTRA\tj000\tdefaults\n"
+                              "ezfreq \"Name of Executable to create\" -> CORPUS:out/t\nRESULT\tj000\tok\n"
+                              "PROGRESS\tj000\tnone\nSTRIPE\tj000\tnone\nGUARD\tj000\tok\n"));
+        free(blk);
+        /* a job with bitmap= lines; the requester behind its last line goes
+           with the menu item that follows */
+        s.job = "j001";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, "JOB\tj001\tCORPUS:src/t.bb2\n"
+                              "ezfreq \"Name of Executable to create\" -> CORPUS:out/stripe-j001\n"
+                              "RESULT\tj001\tok\nPROGRESS\tj001\tbar 0\t222\nSTRIPE\tj001\trow 0\t###\n"
+                              "GUARD\tj001\tbefore 95 after 0\n"));
+        free(blk);
+        s.job = "m1";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, "ezfreq \"Load Debug Module\" -> blitz2:dbgmod\nMENU\tm1\t9\t0\nPOINTER\tm1\tnormal\n"));
+        free(blk);
+        /* a resident: one block; the line behind the session's last ID line is its */
+        s.job = "r";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, "JOB\tr\tCORPUS:r.bb2\nRESULT\tr\tok\nMENU\tr\tresident\t0\nPOINTER\tr\tnormal\n"
+                              "ABORT: the last words\n"));
+        free(blk);
+        /* a job that did not run, a prefix of an ID */
+        s.job = "j002";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, ""));
+        free(blk);
+        s.job = "j00";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, ""));
+        free(blk);
+        blk = bugorig_block("", &s);
+        CHECK(blk && !strcmp(blk, ""));
+        free(blk);
+    }
+    {
+        /* two sessions: the second run of the ID appended; the lines before
+           BATCH start belong to no step, the first lines of a session to its
+           first step */
+        static const char log[] =
+            "BATCH\tstart\n"
+            "openreq \"***** COMPILING *****\"\n"
+            "JOB\tj001\tCORPUS:a.bb2\n"
+            "RESULT\tj001\tfailed\tabort: the compiler waits\n"
+            "BATCH\tend\n"
+            "openreq \"Blitz Basic 2 Version 1.95\"\n"
+            "BATCH\tstart\n"
+            "JOB\tj001\tCORPUS:a.bb2\n"
+            "RESULT\tj001\tok\t5\n"
+            "JOB\tj002\tCORPUS:b.bb2\n"
+            "openreq \"x\"\n";                  /* a crash: no BATCH end */
+        struct bugorig_step s = { "j001", NULL, NULL, NULL };
+        char *blk = bugorig_block(log, &s);
+
+        CHECK(blk && !strcmp(blk, "openreq \"***** COMPILING *****\"\nJOB\tj001\tCORPUS:a.bb2\n"
+                              "RESULT\tj001\tfailed\tabort: the compiler waits\nJOB\tj001\tCORPUS:a.bb2\n"
+                              "RESULT\tj001\tok\n"));
+        free(blk);
+        s.job = "j002";
+        blk = bugorig_block(log, &s);
+        CHECK(blk && !strcmp(blk, "JOB\tj002\tCORPUS:b.bb2\nopenreq \"x\"\n"));
+        free(blk);
+    }
+    {
+        /* a data source: its ID written as its file, its staged source as the placeholder */
+        static const char log[] = "BATCH\tstart\nJOB\tb001\tCORPUS:src/b001.bb2\nRESULT\tb001\tok\t99\n"
+                                  "JOB\tb0010\tCORPUS:src/b0010.bb2\nBATCH\tend\n";
+        struct bugorig_step s = { "b001", "victim.bas", "CORPUS:src/b001.bb2", "@DATA:victim.bas@" };
+        char *blk = bugorig_block(log, &s);
+
+        CHECK(blk && !strcmp(blk, "JOB\tvictim.bas\t@DATA:victim.bas@\nRESULT\tvictim.bas\tok\n"));
+        free(blk);
+    }
+
     /* verdicts: a = the original (the bug: prints 42), c = a port that
        reproduces it, d = a fixed port (prints 41) */
     observe(&c, "done", LOG_OK, "rc=0\n", "42\nrc=0\n");
