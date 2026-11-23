@@ -23,7 +23,7 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | Category | Tests | Technical reason | Missing to move |
 |---|---|---|---|
 | [1. TED tests](#1-ted-tests) | 41 | the test is a keystroke script played against the editor TED and judged on TED's screen, files and log; the model's program is a compiled Blitz driver | an editor-driving step with its judging (large) |
-| [2. Compile-only tests](#2-compile-only-tests) | 63 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; one single gap (section 5) (medium in all) |
+| [2. Compile-only tests](#2-compile-only-tests) | 42 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; one single gap (section 5) (medium in all) |
 | [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator writes the old form; the cost of the model form is not measured | a generator change and a measurement (medium) |
 | [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
 | [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 1 | a compile log of two jobs has one query | one small feature |
@@ -103,13 +103,13 @@ Funktionen haben, die die ".drv"-Funktionalität nachbildet und in einer
 **What.** Tests whose correct result is a compile result: an error with a
 line and a message (the compiler refuses the input), or a compile that ends
 without a program to run, judged by the compiler's own output (`[compile]`,
-`[blitz2]`, `[log]`, `[session]`). 63 are hand-written (the probe of the
+`[blitz2]`, `[log]`, `[session]`). 42 are hand-written (the probe of the
 round that moved eight tests of this section is described below):
 
 | Area | Judged by | Tests | Example |
 |---|---|---|---|
-| `compiler/` | `[compile]` | 45 | `compiler-compare-right-operand-refused` |
-| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 9 | `compiler-incbin-leaks` |
+| `compiler/` | `[compile]` | 29 | `compiler-compare-right-operand-refused` |
+| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 4 | `compiler-incbin-leaks` |
 | `compiler/` | `[blitz2]` | 4 | `compiler-flushlibs-leak` |
 | `compiler/` | `[session]` and `[blitz2]` | 1 | `compiler-wbexit-returncode` |
 | `regression/` | `[compile]` | 3 | `compiler-data-quick-over` |
@@ -211,6 +211,15 @@ What the probe found:
   the value both sides print (`-1`), which fixes it in the assertion.
   Lines with a size (`RESULT ID ok SIZE`) cannot be inside a `contains`,
   as the table in "Moving a bug-orig test to the model" says.
+- **Order and size inside the driver.** A use that must come before a
+  declaration (`SizeOf`, `Dim` before `NEWTYPE .fwd`) stands in the case
+  together with the declaration; a Macro Buffer below what the driver's own
+  macros need ends the compile in "Macro Buffer Overflow" (`macrobuf=64`
+  became 1024); a Macro without End Macro stands behind the last case, so
+  the error is reported at the end of the source; a case name that the
+  original's libraries know as a token (`cycle3`) is refused by the
+  original; a value the original read from uninitialised memory (6, now
+  76) is not checked.
 - **A case that never runs on the port** (the compile is refused) needs at
   least one check for the original's cell to pass something; a check that
   is not reached is "not-run", not a failure.
@@ -224,7 +233,7 @@ checked, the `[blitz2]` ones, no model feature: the move of each (the
 source into `Case` blocks, a toml with the assertions and the original's
 deviations, a check that the verdict stays on both sides). Missing for the
 rest: one query per compiler job (section 5). Size: the number of tests
-(63 and the 159 of section 3) times a small rewrite each, plus the one
+(42 and the 159 of section 3) times a small rewrite each, plus the one
 feature (estimate: medium).
 
 **Proposal (the user's idea, not decided).** "Die Test-Funktion könnte ja
