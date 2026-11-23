@@ -1,5 +1,5 @@
 # ctest testreg_tool: testreg on sample directories - the ctest include
-# file (names, sides, labels, time limits, cost, fixtures), the depfile, and
+# file (names, sides, labels and flaky, time limits, cost, fixtures), the depfile, and
 # every check with broken input: a source of the wrong form, a case name
 # that is a token, a bad configuration, a query of a check the source does
 # not have, a case selector of a case it does not have, a test id that is
@@ -108,6 +108,36 @@ endforeach()
 refused("--cell-fixture compiler=orig195 is not SELECTOR\\|FIXTURE" --cell-fixture "compiler=orig195"
 	${s}/libs/sub/fixed-one.test.bas)
 refused("--cell-fixture nokey=1\\|f: " --cell-fixture "nokey=1|f" ${s}/libs/sub/fixed-one.test.bas)
+
+# flaky: both sides get the label flaky behind the others (also when
+# labels already names it, once); the key of a single test only
+file(MAKE_DIRECTORY ${s}/flaky)
+file(WRITE ${s}/flaky/flaky-one.test.bas "!TestCase{c}\n  !CheckEq{1,1,\"w\"}\n!EndTestCase\n")
+file(WRITE ${s}/flaky/flaky-one.test.toml "flaky = \"rc 20 as the second cell of a session\"\n"
+	"[deviations.\"libs=cd\"]\n\"check.c.w\" = \"== fail\"\n")
+file(WRITE ${s}/flaky/flaky-two.test.bas "!TestCase{c}\n!EndTestCase\n")
+file(WRITE ${s}/flaky/flaky-two.test.toml "flaky = \"x\"\nlabels = [\"flaky\", \"y\"]\n")
+run(0 --prefix bug_orig_ --output ${WORK}/flaky.cmake ${env} --command run
+	${s}/flaky/flaky-one.test.bas ${s}/flaky/flaky-two.test.bas)
+file(READ ${WORK}/flaky.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+foreach(want
+		"set_tests_properties( bug_orig_flaky_one__c PROPERTIES LABELS bug-orig;emulator;flaky TIMEOUT 60 "
+		"set_tests_properties( bug_orig_flaky_one__c_originals PROPERTIES LABELS originals;flaky TIMEOUT 120 "
+		"set_tests_properties( bug_orig_flaky_two__c PROPERTIES LABELS emulator;flaky;y TIMEOUT 60 "
+		"set_tests_properties( bug_orig_flaky_two__c_originals PROPERTIES LABELS originals;flaky;y TIMEOUT 120 ")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "flaky: the include file lacks\n  ${want}\nin\n${inc}")
+	endif()
+endforeach()
+file(WRITE ${s}/flaky/tests.toml "flaky = \"x\"\n")
+refused("flaky/tests\\.toml:1: flaky is a key of a single test" ${s}/flaky/flaky-two.test.bas)
+file(REMOVE ${s}/flaky/tests.toml)
+file(WRITE ${s}/flaky/flaky-two.test.toml "flaky = \"\"\n")
+refused("flaky/flaky-two\\.test\\.toml:1: flaky must be a non-empty string" ${s}/flaky/flaky-two.test.bas)
+file(REMOVE_RECURSE ${s}/flaky)
 
 # --order: the bug-orig tests of the old form (cmake/bug-orig-order.cmake)
 # declared with the tests of an open bug, the largest COST first and equal

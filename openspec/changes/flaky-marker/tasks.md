@@ -1,7 +1,7 @@
 ## 1. The key and the label
 
-- [ ] 1.1 `flaky` in `tools/lib/testconf` (non-empty string, only in an `ID.test.toml`) and the label in `tools/lib/testreg`; verify: `test_testconf` (empty description, wrong type, in a `tests.toml`, as an axis) and `testreg_tool` (the label on both sides, once; refusals), also with `-DHOST_SANITIZE=ON`
-- [ ] 1.2 Docs: `tests/README.md` (key table, "Writing a test source"), `tools/testreg/README.md`; verify: `testconf_readme`, `testreg_readme`
+- [x] 1.1 `flaky` in `tools/lib/testconf` (non-empty string, only in an `ID.test.toml`) and the label in `tools/lib/testreg`; verify: `test_testconf` (empty description, wrong type, in a `tests.toml`, as an axis) and `testreg_tool` (the label on both sides, once; refusals), also with `-DHOST_SANITIZE=ON`
+- [x] 1.2 Docs: `tests/README.md` (key table, "Writing a test source"), `tools/testreg/README.md`; verify: `testconf_readme`, `testreg_readme`
 
 ## 2. The marked test
 

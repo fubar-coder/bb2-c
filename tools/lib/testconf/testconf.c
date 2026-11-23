@@ -83,6 +83,8 @@ static const struct tc_keydef keys[] = {
       "the issue that fixed a bug that is not in the original", NULL },
     { "extension", TC_V_INT, TC_IN_TEST, 0, NULL, 1, -1,
       "the issue of the extension of the port the test shows (the original does something else)", NULL },
+    { "flaky", TC_V_STRING, TC_IN_TEST, TC_REG, NULL, 1, -1,
+      "what is known of a test that fails in full runs but passes alone: its tests get the ctest label flaky", NULL },
 };
 
 const struct tc_keydef *tc_keys(size_t *n)
@@ -528,6 +530,8 @@ int tc_check_type(const char *file, unsigned line, const struct tc_keydef *def,
     if (def->vkind == TC_V_ENUM && !tc_enum_ok(def, v->str))
         return tc_err(err, errlen, "%s:%u: %s must be one of %s, not \"%s\"", file, line, def->name,
                       def->values, v->str);
+    if (def->vkind == TC_V_STRING && def->min > 0 && !*v->str)
+        return tc_err(err, errlen, "%s:%u: %s must be a non-empty string", file, line, def->name);
     if (def->vkind == TC_V_INT && v->integer < def->min)
         return tc_err(err, errlen, "%s:%u: %s must be at least %lld, not %lld", file, line, def->name,
                       def->min, v->integer);

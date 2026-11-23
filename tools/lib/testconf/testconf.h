@@ -16,8 +16,8 @@
  * cells with an emulator session of their own, ...),
  * the keys of the registration (labels, cost, fixtures), `root` (only in
  * a `tests.toml`), the keys of a single test (`fixed`, `fixed-orig`,
- * `extension` - at most one of the three -, the table `deviations`; only
- * in an `ID.test.toml`), `exclude` and the
+ * `extension` - at most one of the three -, `flaky`, the table
+ * `deviations`; only in an `ID.test.toml`), `exclude` and the
  * tables.  An unknown key or table is an error naming file, line and key.
  *
  * A relative path in a path setting (testconf keys with a path field) is
@@ -82,7 +82,8 @@ struct tc_keydef {
     unsigned where;             /* enum tc_where */
     unsigned flags;             /* enum tc_keyflags */
     const char *values;         /* TC_V_ENUM: the values, "|" between them */
-    long long min;              /* TC_V_INT: the least value */
+    long long min;              /* TC_V_INT: the least value; TC_V_STRING:
+                                   1 the string must not be empty */
     int pathfield;              /* -1, or the field ("|" between the fields,
                                    from 0) of the string or of every list
                                    element that is a path */

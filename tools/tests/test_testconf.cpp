@@ -216,7 +216,20 @@ TEST_CASE("testconf: keys of a single test and of directories", "[testconf]")
     refused(t, "x.test.bas", { t.path("x.test.toml") + ":3: test x: fixed and extension exclude each other" });
     t.write("tests.toml", "root = true\nextension = 17\n");
     refused(t, "x.test.bas", { t.path("tests.toml") + ":2: extension is a key of a single test" });
+    // flaky: a description of the test's own failure, so only in its file
+    t.write("tests.toml", "root = true\nflaky = \"fails in full runs\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: flaky is a key of a single test" });
     t.write("tests.toml", "root = true\n");
+    t.write("x.test.toml", "\nflaky = \"\"\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":2: flaky must be a non-empty string" });
+    t.write("x.test.toml", "flaky = ''\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":1: flaky must be a non-empty string" });
+    t.write("x.test.toml", "flaky = true\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":1: flaky must be a string, not a boolean" });
+    t.write("x.test.toml", "flaky = [\"a\"]\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":1: flaky must be a string, not a list" });
+    t.write("x.test.toml", "[matrix]\nflaky = [\"a\", \"b\"]\n");
+    refused(t, "x.test.bas", { t.path("x.test.toml") + ":2: flaky is no run setting and cannot be an axis" });
 
     // the same keys where they belong
     tc_env e = env_of(t);
@@ -231,6 +244,12 @@ TEST_CASE("testconf: keys of a single test and of directories", "[testconf]")
     t.write("x.test.toml", "extension = 4\n[deviations.\"libs=cd\"]\n\"check.a.b\" = \"== fail\"\n");
     REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
     CHECK(tc_get(&c, "extension") != nullptr);
+    tc_free(&c);
+    t.write("x.test.toml", "flaky = \"rc 20 as the second cell of a session\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    REQUIRE(tc_get(&c, "flaky") != nullptr);
+    CHECK(!strcmp(tc_get(&c, "flaky")->value.str, "rc 20 as the second cell of a session"));
+    CHECK(tc_get(&c, "flaky")->at.line == 1);
     tc_free(&c);
     tc_env_free(&e);
 }
