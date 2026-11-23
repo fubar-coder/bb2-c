@@ -5,17 +5,17 @@
 ; gadget (click=).  Own 320x256 screen: on the emulator's tall Workbench
 ; the requester writes past its data block (see t93_freq).
 ; Correct: every library the process opened is closed again (+0).  The
-; original leaves each of the three opened once more.
-; @fixed #154
-; @configs clib
-; @pass runwrap=@INJECT@|opencount=dos.library opencount=intuition.library opencount=graphics.library click=FQ/CANCEL
-; @pass timeout=120
-Screen 0,0,0,320,256,2,0,"freqlib",1,2
-Use Screen 0
-MaxLen p$=160
-MaxLen f$=64
-p$="RAM:"
-f$="x"
-r$=FileRequest$("FQ",p$,f$)
-NPrint "cancel ",Len(r$)
-End
+; original leaves each of the three opened once more (inject's report,
+; asserted on `inject`).
+DEFTYPE .l
+
+!TestCase{opencount}
+  Screen 0,0,0,320,256,2,0,"freqlib",1,2
+  Use Screen 0
+  MaxLen p$=160
+  MaxLen f$=64
+  p$="RAM:"
+  f$="x"
+  r$=FileRequest$("FQ",p$,f$)
+  !CheckEq{Len(r$),0,"cancel"}
+!EndTestCase

@@ -9,21 +9,21 @@
 ; Own 320x256 screen (see t93_freq).
 ; Correct: the entry is left out, CANCEL is answered and the program
 ; ends.  The original crashes.
-; CORPUS: (dir= makes the drawer) is a host directory with long names;
+; CORPUS: (dirs makes the drawer) is a host directory with long names;
 ; in RAM: of the emulator's system the original showed no overrun.
-; @fixed #159
-; @configs clib
-; @pass dir=fq159a
-; @pass runwrap=@INJECT@|allocfail=40-40/f=1 click=FQ/CANCEL
-; @pass timeout=60
-Screen 0,0,0,320,256,2,0,"freqlib",1,2
-Use Screen 0
-MaxLen p$=160
-MaxLen f$=64
-n$="CORPUS:fq159a/abcdefghijabcdefghijabcdefghijabcd"
-If WriteFile(0,n$) Then CloseFile 0
-p$="CORPUS:fq159a"
-f$="x"
-r$=FileRequest$("FQ",p$,f$)
-NPrint "cancel ",Len(r$)
-End
+DEFTYPE .l
+
+!TestCase{node_fails}
+  Screen 0,0,0,320,256,2,0,"freqlib",1,2
+  Use Screen 0
+  MaxLen p$=160
+  MaxLen f$=64
+  n$="CORPUS:fq159a/abcdefghijabcdefghijabcdefghijabcd"
+  ok=WriteFile(0,n$)
+  !Require{ok,"file_written"}
+  CloseFile 0
+  p$="CORPUS:fq159a"
+  f$="x"
+  r$=FileRequest$("FQ",p$,f$)
+  !CheckEq{Len(r$),0,"cancel"}
+!EndTestCase

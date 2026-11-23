@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-cancel 0
-inject: allocfail: 1 allocations failed
-inject: rc=0
-inject: click FQ/CANCEL: answered
-rc=0

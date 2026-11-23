@@ -1,0 +1,11 @@
+# freqlib-parentdir-leak.test.bas: through inject in CORPUS:a/b, which clicks
+# PARENT, then CANCEL, and checks whether CORPUS:a is still in use
+fixed-orig = 158
+dirs = ["a/b"]
+runwrap = "@INJECT@|cd=CORPUS:a/b inuse=CORPUS:a click=FQ/PARENT click=FQ/CANCEL"
+
+[asserts]
+inject = "contains \"inject: not in use: CORPUS:a\""
+
+[deviations."libs=cd"]
+inject = "contains \"inject: in use: CORPUS:a\""

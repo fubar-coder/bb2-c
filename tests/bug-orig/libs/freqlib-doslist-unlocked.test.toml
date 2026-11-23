@@ -1,0 +1,11 @@
+# freqlib-doslist-unlocked.test.bas: through inject, which holds the DOS list
+# locked while it clicks DRIVES, then CANCEL; its report says when CANCEL
+# was answered
+fixed-orig = 156
+runwrap = "@INJECT@|doslocked click=FQ/DRIVES click=FQ/CANCEL"
+
+[asserts]
+inject = "contains \"click FQ/CANCEL: answered after the DOS list was unlocked\""
+
+[deviations."libs=cd"]
+inject = "matches \"inject: click FQ/CANCEL: answered\""

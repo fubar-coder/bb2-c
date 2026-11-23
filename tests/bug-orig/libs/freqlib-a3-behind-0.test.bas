@@ -7,16 +7,17 @@
 ; Own 320x256 screen (see t93_freq).
 ; Correct: FileRequest$(...)+".bak" is "RAM:x.bak" (length 9, the 6th
 ; character "." = 46, the 9th "k" = 107).
-; @fixed #161
-; @configs clib
-; @pass runwrap=@INJECT@|click=FQ/OK
-; @pass timeout=120
-Screen 0,0,0,320,256,2,0,"freqlib",1,2
-Use Screen 0
-MaxLen p$=160
-MaxLen f$=64
-p$="RAM:"
-f$="x"
-r$=FileRequest$("FQ",p$,f$)+".bak"
-NPrint Len(r$)," ",Asc(Mid$(r$,6))," ",Asc(Mid$(r$,9))
-End
+DEFTYPE .l
+
+!TestCase{bak}
+  Screen 0,0,0,320,256,2,0,"freqlib",1,2
+  Use Screen 0
+  MaxLen p$=160
+  MaxLen f$=64
+  p$="RAM:"
+  f$="x"
+  r$=FileRequest$("FQ",p$,f$)+".bak"
+  !CheckEq{Len(r$),9,"length"}
+  !CheckEq{Asc(Mid$(r$,6)),46,"char6"}
+  !CheckEq{Asc(Mid$(r$,9)),107,"char9"}
+!EndTestCase

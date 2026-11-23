@@ -15,37 +15,36 @@
 ; and answers the requester with its CANCEL gadget (click=).
 ; Correct: the requester opens and is cancelled, nothing is written behind
 ; an allocation (the port: at most 64 lines, the window at most 597 high).
-; @fixed #160
-; @pass rtg=on
-; @pass runwrap=@INJECT@|guardseg click=FQ/CANCEL
-; @pass timeout=120
 DEFTYPE .l
-MaxLen p$=160
-MaxLen f$=64
-p$="RAM:"
-f$="x"
-s$="bo160"
-t=AllocMem_(128,$10001)
-Poke.l t,$80000004 : Poke.l t+4,1024        ; BIDTAG_NominalWidth
-Poke.l t+8,$80000005 : Poke.l t+12,768      ; BIDTAG_NominalHeight
-Poke.l t+16,$80000008 : Poke.l t+20,8       ; BIDTAG_Depth
-Poke.l t+24,0
-id=BestModeIDA_(t)
-Poke.l t,$80000032 : Poke.l t+4,id          ; SA_DisplayID
-Poke.l t+8,$80000023 : Poke.l t+12,1024     ; SA_Width
-Poke.l t+16,$80000024 : Poke.l t+20,2048    ; SA_Height
-Poke.l t+24,$80000025 : Poke.l t+28,8       ; SA_Depth
-Poke.l t+32,$80000028 : Poke.l t+36,&s$     ; SA_Title
-Poke.l t+40,$8000003A : Poke.l t+44,t+120   ; SA_Pens: the new look
-Poke.w t+120,-1
-Poke.l t+48,0
-scr=OpenScreenTagList_(0,t)
-If scr=0 Then NPrint "no screen" : FreeMem_ t,128 : End
-h=Peek.w(scr+14)
-If h>=645 Then NPrint "tall screen" Else NPrint "screen of ",h," lines"
-FindScreen 0,"bo160"
-r$=FileRequest$("FQ",p$,f$)
-NPrint "cancel ",Len(r$)
-CloseScreen_ scr
-FreeMem_ t,128
-End
+
+!TestCase{tall_screen}
+  MaxLen p$=160
+  MaxLen f$=64
+  p$="RAM:"
+  f$="x"
+  s$="bo160"
+  t=AllocMem_(128,$10001)
+  !Require{t<>0,"memory"}
+  Poke.l t,$80000004 : Poke.l t+4,1024        ; BIDTAG_NominalWidth
+  Poke.l t+8,$80000005 : Poke.l t+12,768      ; BIDTAG_NominalHeight
+  Poke.l t+16,$80000008 : Poke.l t+20,8       ; BIDTAG_Depth
+  Poke.l t+24,0
+  id=BestModeIDA_(t)
+  Poke.l t,$80000032 : Poke.l t+4,id          ; SA_DisplayID
+  Poke.l t+8,$80000023 : Poke.l t+12,1024     ; SA_Width
+  Poke.l t+16,$80000024 : Poke.l t+20,2048    ; SA_Height
+  Poke.l t+24,$80000025 : Poke.l t+28,8       ; SA_Depth
+  Poke.l t+32,$80000028 : Poke.l t+36,&s$     ; SA_Title
+  Poke.l t+40,$8000003A : Poke.l t+44,t+120   ; SA_Pens: the new look
+  Poke.w t+120,-1
+  Poke.l t+48,0
+  scr=OpenScreenTagList_(0,t)
+  !Require{scr<>0,"screen_opened"}
+  h=Peek.w(scr+14)
+  !Require{h>=645,"tall_screen"}
+  FindScreen 0,"bo160"
+  r$=FileRequest$("FQ",p$,f$)
+  !CheckEq{Len(r$),0,"cancel"}
+  CloseScreen_ scr
+  FreeMem_ t,128
+!EndTestCase

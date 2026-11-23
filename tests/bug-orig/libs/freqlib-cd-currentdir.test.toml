@@ -1,0 +1,11 @@
+# freqlib-cd-currentdir.test.bas: through inject, whose own lock is the
+# current directory; it clicks CD, then CANCEL, and reports where the
+# current directory ended and whether the start lock was unlocked
+fixed-orig = 157
+runwrap = "@INJECT@|cd click=FQ/CD click=FQ/CANCEL"
+
+[asserts]
+inject = "contains \"current dir at end: start\""
+
+[deviations."libs=cd"]
+inject = "contains \"current dir: the start lock was unlocked\""

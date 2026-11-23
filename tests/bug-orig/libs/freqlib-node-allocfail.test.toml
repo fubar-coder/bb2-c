@@ -1,0 +1,18 @@
+# freqlib-node-allocfail.test.bas: through inject, whose AllocMem of 40 bytes
+# fails once; inject clicks CANCEL when the list has been read.  The original
+# writes over the ExecBase pointer at 4: the CPU halts (the cells with the CD's
+# libraries each have a session of their own)
+fixed-orig = 159
+dirs = ["fq159a"]
+runwrap = "@INJECT@|allocfail=40-40/f=1 click=FQ/CANCEL"
+isolate = ["libs=cd"]
+
+[asserts]
+inject = "contains \"allocfail: 1 allocations failed\""
+
+[deviations."libs=cd"]
+session = "== halt"
+rc = "not exists"
+inject = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

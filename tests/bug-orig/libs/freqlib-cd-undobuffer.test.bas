@@ -9,17 +9,17 @@
 ; those before the CANCEL (undobuf); the gadget is not activated (that
 ; would overwrite low memory).  The path is a root (RAM:), as in
 ; freqlib-cd-currentdir.
-; Correct: CD leaves the UndoBuffer pointers alone.
-; @fixed #345
-; @configs clib
-; @pass runwrap=@INJECT@|undobuf click=FQ/CD click=FQ/CANCEL
-; @pass timeout=120
-Screen 0,0,0,320,256,2,0,"freqlib",1,2
-Use Screen 0
-MaxLen p$=160
-MaxLen f$=64
-p$="RAM:"
-f$="x"
-r$=FileRequest$("FQ",p$,f$)
-NPrint "cancel ",Len(r$)
-End
+; Correct: CD leaves the UndoBuffer pointers alone (inject's report,
+; asserted on `inject`).
+DEFTYPE .l
+
+!TestCase{cd_gadget}
+  Screen 0,0,0,320,256,2,0,"freqlib",1,2
+  Use Screen 0
+  MaxLen p$=160
+  MaxLen f$=64
+  p$="RAM:"
+  f$="x"
+  r$=FileRequest$("FQ",p$,f$)
+  !CheckEq{Len(r$),0,"cancel"}
+!EndTestCase

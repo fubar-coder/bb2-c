@@ -8,17 +8,17 @@
 ; reads it while it is locked and answers CANCEL at once.
 ; Own 320x256 screen (see t93_freq).
 ; Correct: CANCEL is answered after the DOS list was unlocked.  The
-; original answers it while the list is locked.
-; @fixed #156
-; @configs clib
-; @pass runwrap=@INJECT@|doslocked click=FQ/DRIVES click=FQ/CANCEL
-; @pass timeout=120
-Screen 0,0,0,320,256,2,0,"freqlib",1,2
-Use Screen 0
-MaxLen p$=160
-MaxLen f$=64
-p$="RAM:"
-f$="x"
-r$=FileRequest$("FQ",p$,f$)
-NPrint "cancel ",Len(r$)
-End
+; original answers it while the list is locked (inject's report, asserted
+; on `inject`).
+DEFTYPE .l
+
+!TestCase{drives}
+  Screen 0,0,0,320,256,2,0,"freqlib",1,2
+  Use Screen 0
+  MaxLen p$=160
+  MaxLen f$=64
+  p$="RAM:"
+  f$="x"
+  r$=FileRequest$("FQ",p$,f$)
+  !CheckEq{Len(r$),0,"cancel"}
+!EndTestCase
