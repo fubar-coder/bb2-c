@@ -78,6 +78,12 @@ correctly.
 * **The fixed bugs** nearly all have a test program with the correct
   behaviour as its expectation. The port, with its own libraries, must
   show that behaviour; the original is not needed for these tests.
+* **Tests that judge themselves** are Blitz Basic programs that check
+  their results with a small test library; the expected values are in
+  the program, and a configuration file says with which compilers and
+  libraries it runs. How to write one and every setting of its
+  configuration:
+  [Tests that judge themselves]({{< relref "self-judging-tests" >}}).
 
 ## The expected data of the library tests
 
