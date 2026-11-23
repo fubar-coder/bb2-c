@@ -1,0 +1,18 @@
+# ripacklib-ilbmpalette-offset-ignored.test.bas: the reference library
+# ignores the offset: the palette has the 4 colours of the CMAP
+fixed-orig = 769
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.offset_6.colours" = "== fail"
+"check.offset_6.colours.actual" = "== 4"
+"check.offset_6.colour_0" = "== fail"
+"check.offset_6.colour_0.actual" = "== $F08010"
+"check.offset_6.colour_5" = "== fail"
+"check.offset_6.colour_5.actual" = "== -1"
+"check.offset_6.colour_6" = "== fail"
+"check.offset_6.colour_6.actual" = "== -1"
+"check.offset_6.colour_7" = "== fail"
+"check.offset_6.colour_7.actual" = "== -1"
+"check.offset_6.colour_9" = "== fail"
+"check.offset_6.colour_9.actual" = "== -1"

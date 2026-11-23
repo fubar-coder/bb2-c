@@ -1,0 +1,8 @@
+# ripacklib-unpackpbm-limits.test.bas: the reference library writes the byte
+# at dest + destlength
+fixed-orig = 778
+rwe = ["ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.destlength_100.byte_100" = "== fail"
+"check.destlength_100.byte_100.actual" = "== 88"

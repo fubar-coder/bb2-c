@@ -1,0 +1,9 @@
+# ripacklib-loadiff-ignores-unpack-result.test.bas: the reference library
+# returns -1 for a file that is no ILBM
+fixed-orig = 771
+rwe = ["ripacklib", "riamosfunclib"]
+files = ["x.bin|@TESTDATA@/ripacklib-loadiff-ignores-unpack-result.bin"]
+
+[deviations."compiler=orig210"]
+"check.no_ilbm.result" = "== fail"
+"check.no_ilbm.result.actual" = "== -1"
