@@ -1,0 +1,13 @@
+# rigfxlib-palred-no-paletteinfo.test.bas: with runtime error checking for
+# the announced error; the original raises none, the case goes on
+fixed-orig = 686
+rwe = ["rigfxlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.no_paletteinfo.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.no_paletteinfo.refused" = "== fail"
+"check.no_paletteinfo.not_refused" = "== fail"
+requester = "count == 0"
