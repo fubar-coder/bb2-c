@@ -1,0 +1,15 @@
+# rishapeslib-lecludgeshapes-odd-cmap-68000.test.bas: on the A600 (68000) the
+# original's odd read is an address error; the session of its own ends in the
+# hang check
+fixed-orig = 1118
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+machine = "a600"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

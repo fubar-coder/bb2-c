@@ -1,0 +1,18 @@
+# ristcdecrunchlib-optidec-real-data.test.bas: the files are from ancient's
+# test files; the original checks nothing: corrupt data are written below the
+# destination, efficiency 17 and the odd length are not refused
+fixed-orig = 833
+rwe = ["ristcdecrunchlib", "ristonecrackerlib"]
+files = ["c1.pack410|@ANCIENT@/testing/test_files/test_C1.pack410", "c1.pack410_0|@ANCIENT@/testing/test_files/test_C1.pack410_0", "c1.raw|@ANCIENT@/testing/test_files/test_C1.raw"]
+
+[deviations."compiler=orig210"]
+"check.real_data.efficiency_17_refused" = "== fail"
+"check.real_data.efficiency_17_refused.actual" = "== 1"
+"check.real_data.odd_length_refused" = "== fail"
+"check.real_data.odd_length_refused.actual" = "== 1"
+"check.real_data.length_plus_100_below_kept" = "== fail"
+"check.real_data.length_plus_100_below_kept.actual" = "== 0"
+"check.real_data.length_minus_100_below_kept" = "== fail"
+"check.real_data.length_minus_100_below_kept.actual" = "== 0"
+"check.real_data.bit_flip_below_kept" = "== fail"
+"check.real_data.bit_flip_below_kept.actual" = "== 0"

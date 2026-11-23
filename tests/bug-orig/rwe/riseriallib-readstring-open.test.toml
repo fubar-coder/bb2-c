@@ -1,0 +1,14 @@
+# riseriallib-readstring-open.test.bas: with the serial port of the emulator;
+# the original returns to the wrong address (the session of its own ends in
+# the time limit)
+fixed-orig = 796
+rwe = ["riseriallib"]
+serial = "on"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

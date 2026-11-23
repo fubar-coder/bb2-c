@@ -1,0 +1,13 @@
+# risortlib-finit-closelibrary-unchecked.test.bas: on the a500 (Kickstart
+# 1.3, no utility.library); the original's finit calls CloseLibrary(0): the
+# stub of the program hangs there, behind the end of the program
+fixed-orig = 824
+rwe = ["risortlib"]
+machine = "a500"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.run" = "not exists"

@@ -1,0 +1,9 @@
+# risoundlib-stale-sample-pointer.test.bas: with runtime error checking; the
+# original frees the sample twice and raises Unable to Free Memory
+fixed-orig = 831
+rwe = ["risoundlib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+requester = "contains \"Unable to Free Memory\""
+"end.case" = "not exists"

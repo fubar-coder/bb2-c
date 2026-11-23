@@ -1,0 +1,11 @@
+# riseriallib-receive-ring-full.test.bas: with the serial port of the
+# emulator; the original keeps 44 bytes from @
+fixed-orig = 1160
+rwe = ["riseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.ring_full.bytes" = "== fail"
+"check.ring_full.bytes.actual" = "== 44"
+"check.ring_full.first" = "== fail"
+"check.ring_full.first.actual" = "== 64"

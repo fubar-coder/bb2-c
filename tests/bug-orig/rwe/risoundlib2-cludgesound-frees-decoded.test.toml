@@ -1,0 +1,10 @@
+# risoundlib2-cludgesound-frees-decoded.test.bas: with runtime error
+# checking; the original frees the BODY data of the file and raises Unable to
+# Free Memory
+fixed-orig = 945
+rwe = ["risoundlib2"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+requester = "contains \"Unable to Free Memory\""
+"end.case" = "not exists"

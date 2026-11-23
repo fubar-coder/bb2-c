@@ -1,0 +1,8 @@
+# risortlib-priority-swap-stale.test.bas: the original swaps in every later
+# item with a larger priority
+fixed-orig = 826
+rwe = ["risortlib"]
+
+[deviations."compiler=orig210"]
+"check.swap_stale.order" = "== fail"
+"check.swap_stale.order.actual" = "== \"2 c,3 b,1 a,\""

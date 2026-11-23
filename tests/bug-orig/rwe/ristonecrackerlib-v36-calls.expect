@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-loaded: -1 65
-after
-rc=0

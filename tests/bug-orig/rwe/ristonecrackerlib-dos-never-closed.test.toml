@@ -1,0 +1,11 @@
+# ristonecrackerlib-dos-never-closed.test.bas: through inject the opens minus
+# the closes of dos.library are counted; the original leaves it open
+fixed-orig = 834
+rwe = ["ristonecrackerlib"]
+runwrap = "@INJECT@|opencount=dos.library"
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: opencount: dos.library +1\""
+
+[asserts]
+inject = "contains \"inject: opencount: dos.library +0\""

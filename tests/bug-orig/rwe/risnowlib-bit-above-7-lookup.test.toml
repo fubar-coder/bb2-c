@@ -1,0 +1,9 @@
+# risnowlib-bit-above-7-lookup.test.bas: the original moves the flake right
+fixed-orig = 910
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.bit_above_7.moved_left" = "== fail"
+"check.bit_above_7.moved_left.actual" = "== 0"
+"check.bit_above_7.not_moved_right" = "== fail"
+"check.bit_above_7.not_moved_right.actual" = "== 1"

@@ -1,0 +1,8 @@
+# rishapeslib-cludgeshapes-empty-stale-size.test.bas: the original walks too
+# far after an empty shape
+fixed-orig = 809
+rwe = ["rishapeslib", "ripacklib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.empty_stale_size.width_2" = "== fail"
+"check.empty_stale_size.width_2.actual" = "== 0"

@@ -1,0 +1,8 @@
+# risoundlib-copy-length-word.test.bas: the original copies the low word of
+# the length
+fixed-orig = 829
+rwe = ["risoundlib"]
+
+[deviations."compiler=orig210"]
+"check.copy_length.words" = "== fail"
+"check.copy_length.words.actual" = "== 2232"
