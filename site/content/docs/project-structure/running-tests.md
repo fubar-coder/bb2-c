@@ -361,6 +361,57 @@ ctest --test-dir build/amiga -L emulator -R 'blitz2_intrinsic_'
 ctest --test-dir build/amiga -LE originals -R 'blitz2_model_numbering__'
 ```
 
+### Snapshots: why a later run starts faster
+
+Booting the emulated Amiga takes a few seconds, and a full run starts
+hundreds of sessions. So the emulator does not boot for every session. It
+boots once, saves the machine's state at the moment it waits for work (a
+*snapshot*), and every later session with the same machine settings starts
+from that saved state, in about a second. The test's own files and
+programs are never part of a snapshot: the session sets them up after the
+start, so one test cannot leave anything behind for the next.
+
+What you notice is that the **first session of a configuration is
+slower**: it boots, saves the snapshot and then restores it. This happens
+once per emulator slot (one of the places that bound how many emulators
+run at once) and per configuration, not once per run. Snapshots are
+kept between runs and belong to the build directory, so a second run is
+the fast one. They are small files (a few hundred kilobytes) that live in
+the slot directories under `$XDG_RUNTIME_DIR/amiga-emulation-slots/`
+(`/tmp/amiga-emulation-slots-UID/` without that variable).
+
+The emulator decides by itself when to make, keep or drop one:
+
+* **A configuration that only one session uses gets no snapshot.** Most
+  configurations are used by a single test. A session saves a snapshot
+  only if another session of the same configuration started within the
+  last ten minutes; otherwise it boots, runs its test in that machine and
+  saves nothing. Running the same test again within ten minutes counts as
+  shared.
+* **A snapshot is replaced when its inputs change.** A new Kickstart ROM,
+  hard disk image, machine setting or emulator makes the old snapshot
+  unusable. The next session of that configuration boots, saves a new
+  one and removes the old.
+* **A snapshot that does not restore is saved again or removed.** If a
+  restored machine does not report in within 15 seconds, the session
+  boots normally instead. A snapshot saved by that same session is
+  removed and saved once more, at most twice. An older one is kept for
+  one more try and removed when it fails again, so no slot keeps a
+  snapshot that never starts.
+* **Each slot keeps its 24 most recently used snapshots.**
+
+If something looks odd, for example a session that keeps failing to
+restore, you can clear the snapshots of a build directory while no tests
+run. The next sessions then boot and save them again:
+
+```
+build/amiga/host/tools/amiga_run/amiga_run --purge-snapshots build/amiga
+```
+
+`AMIGA_EMULATION_SNAPSHOT=0` in the environment turns snapshots off, so
+every session boots. The test statistics name what each session did
+(for example `restored`, `first-save`, `single`, `cold`).
+
 ### Other useful options
 
 * **`--output-on-failure`** prints the runner's report of a test that
