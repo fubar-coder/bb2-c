@@ -1,0 +1,15 @@
+# ribbmaplib-shadowvalue-past-shdw.test.bas: with runtime error checking for
+# the announced error; the reference library has no error check and reads the
+# id of the next chunk
+fixed-orig = 1114
+rwe = ["ribbmaplib"]
+runtime-errors = "on"
+
+[asserts]
+"check.set_2.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.set_2.refused" = "== fail"
+requester = "count == 0"
+"end.case" = "exists"
+"check.set_2.not_refused" = "== fail"

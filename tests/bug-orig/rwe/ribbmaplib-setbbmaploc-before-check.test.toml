@@ -1,0 +1,11 @@
+# ribbmaplib-setbbmaploc-before-check.test.bas: the reference library keeps
+# the rejected address: the width is read from address 0 (the upper word of
+# ExecBase) and the start position is not found
+fixed-orig = 554
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.failed_call.width_before" = "== fail"
+"check.failed_call.width_before.actual" = "== 16384"
+"check.failed_call.start" = "== fail"
+"check.failed_call.start.actual" = "== 0"

@@ -1,0 +1,11 @@
+# ribbmaplib-getpalette-past-colr.test.bas: the reference library takes
+# colour 2 from the id of the next chunk ("NNNN") and colour 3 from its id
+# and length
+fixed-orig = 1113
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.two_colours_in_chunk.colour_2_kept" = "== fail"
+"check.two_colours_in_chunk.colour_2_kept.actual" = "== $4E4E4E4E"
+"check.two_colours_in_chunk.colour_3_kept" = "== fail"
+"check.two_colours_in_chunk.colour_3_kept.actual" = "== $54545454"

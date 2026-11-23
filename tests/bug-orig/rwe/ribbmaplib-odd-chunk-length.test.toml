@@ -1,0 +1,8 @@
+# ribbmaplib-odd-chunk-length.test.bas: on the 68020 the reference library
+# does not find the chunk behind the odd one
+fixed-orig = 552
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.odd_length_chunk.level" = "== fail"
+"check.odd_length_chunk.level.actual" = "== 0"
