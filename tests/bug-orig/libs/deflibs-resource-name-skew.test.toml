@@ -1,0 +1,10 @@
+# deflibs-resource-name-skew.test.bas: the original hangs at its start,
+# before the first statement
+fixed-orig = 45
+timeout = 30
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
