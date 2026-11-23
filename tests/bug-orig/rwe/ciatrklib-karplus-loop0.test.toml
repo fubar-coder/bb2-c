@@ -1,5 +1,7 @@
 # ciatrklib-karplus-loop0.test.bas: the original overwrites the memory from
 # address 0 on and the CPU halts
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 439
 rwe = ["ciatrklib"]
 timeout = 30
@@ -7,8 +9,9 @@ files = ["k.mod|@TESTDATA@/ciatrklib-karplus-loop0.mod"]
 # the crash ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 
-[deviations."compiler=orig210"]
-session = "== halt"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#439): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]

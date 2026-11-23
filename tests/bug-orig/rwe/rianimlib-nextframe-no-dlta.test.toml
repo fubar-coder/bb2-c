@@ -1,14 +1,16 @@
 # rianimlib-nextframe-no-dlta.test.bas: the original returns to the saved d1
 # and crashes (a session of its own)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 515
 rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
 timeout = 30
 files = ["anim|@TESTDATA@/rianimlib-nextframe-no-dlta.anim"]
 isolate = ["compiler=orig210"]
 
-[deviations."compiler=orig210"]
-session = "== timeout"
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
-requester = "contains \"Software Failure\""
+[ends."compiler=orig210"]
+reason = "the original's faulty part corrupts memory (#515): its end is not defined, it may crash, hang or halt"
+abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
+abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
+abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
