@@ -808,6 +808,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   in `corpus.c`; `editrun` is per cell), so a member behind the first
   needs an arm of its own; one volume for the bundle (design decision 5 of
   `basic-test-bundle-key`) does not change that.
+- [ ] **Further work on the test run time** (user decision 2026-11-23,
+  dropped for now: `rounds/tb/decisions.md`, "Test-speed work ends with U1
+  and T1"): bundling brought `ctest --preset all` from 521 s to 478 s; the
+  rest of the time lies in a few large tests (`ted_ab` 267 s,
+  `corpus_req`, `libs_emulator`, `host_emulator`, `ab3_bb2_equivalence`),
+  the prev comparisons, the tests that run alone and the wait for emulator
+  slots. Not done: a measurement of an undisturbed full run (emulator CPU
+  and state samples, the critical path, idle time per session phase:
+  emulators were seen idle while all slots were taken); bundling the
+  originals side; more port cases in bundles (own whole-program assertions
+  of one-case members, 190 cases; sources with more than one port cell, 14
+  cases, with per-source cells). Analyses:
+  `~/.local/share/bb2-c-work/analysis-bundling/`, `analysis-timeouts/`,
+  `analysis-bundle-filter/`.
 - [ ] **libs_emulator misses the restore grace under load**: in both
   `ctest --preset all` runs of 2026-11-21 the session of `libs_emulator`
   did not start from its snapshot within the 15 s grace
