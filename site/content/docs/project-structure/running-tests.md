@@ -86,7 +86,7 @@ The options:
 |---|---|
 | `--env FILE` | the environment file of the build, always `build/amiga/tests/model-env.toml` |
 | `--source FILE` | the test source `ID.test.bas`; its configuration files are found from there |
-| `--case NAME` | the case to run, the name in `!TestCase{NAME}` |
+| `--case NAME` | the case to run, the name in `!TestCase{NAME}`; without it every case of the source runs ([Running all cases of a source](#running-all-cases-of-a-source)) |
 | `--side port` | the cells without original material: the port's compiler with the port's libraries (the default) |
 | `--side originals` | the cells with an original compiler or the CD's libraries |
 | `--require-deviation` | for a test in `tests/bug-orig/` (not in `regression/`): without a declared deviation the test is broken, as in its CTest test |
@@ -94,7 +94,10 @@ The options:
 The runner preprocesses the source, writes the program that calls the
 case (the *driver*), compiles and runs it in every cell of the side, and
 judges the result files. Cells that need the same emulator settings
-share one emulator session. This is the case `calls` of a test whose
+share one emulator session, unless the setting `isolate` gives them a
+session of their own (`isolate = "on"` for every cell, or a list of cell
+selectors such as `["libs=cd"]`), for an original that wrecks the memory
+the next cell would run in. This is the case `calls` of a test whose
 configuration makes `runtime-errors` an axis, so its side `port` has two
 cells, `off` and `on`:
 
@@ -149,6 +152,42 @@ the compile of the driver fails with `Label not Found` and the verdict is
 *failed*. A test without a cell of the side you ask for, for example
 `--side originals` for a test that runs only with the port, is an error:
 `... has no cell of the side originals`.
+
+### Running all cases of a source
+
+Without `--case` the runner runs every case of the source on the side,
+and still judges each case on its own:
+
+```
+build/amiga/host/corpus-runner/corpusrun case --env build/amiga/tests/model-env.toml \
+    --source tests/blitz2/model-numbering.test.bas --side port
+```
+
+To save time the cases share one run of a program that calls all of
+them, and each case is judged from its own part of the result file. A
+case runs on its own instead:
+
+* when its configuration asserts something of the whole program (the
+  exit code, a requester, the printed output, how the session ended, ...)
+  or it announces a runtime error with `!ExpectError`: those observations
+  belong to the whole run, not to one case;
+* when the shared run did not end cleanly (the program ended inside a
+  case, crashed or showed a requester): the case that was running then
+  runs on its own, the others run again without it;
+* when it did not pass in the shared run: its verdict on its own counts,
+  as its CTest test would show it. If the two differ, the report says so,
+  for example `case victim: PASSED alone (FAILED in the run shared with
+  pass1, fails, behind)`: a case that depends on what another case left
+  behind.
+
+The report gives each case as for a single case, marked ` (alone)` when
+it was judged on its own, and ends with a summary line such as
+`model-numbering.test.bas: 2 cases, side port: PASSED`. The exit code is
+that of the worst verdict, in the order error, broken, failed, skipped,
+reproduced, passed. The runs live in `build/amiga/tests/model-runs/ID/`
+(`ID_originals`), one directory per run: `shared-0`, `alone-CASE`, and
+`isolated-CASE` for the cells with a session of their own. CTest still
+runs one case per test.
 
 ### The files of a run
 
@@ -210,6 +249,8 @@ Three options print or write something and start no emulator:
   the calls of the batch init, the case and the batch cleanup at the end.
   This is the program the compiler sees; a compile error in the report
   points into the source, and this is where to look when it is unclear.
+  Without `--case` it prints the driver of all cases, the text that
+  `--write-driver` writes.
 * **`--write-driver FILE`** writes the driver of all cases, tokenised as
   the compiler reads it, to `FILE`, with its text beside it as a `.bas`
   file. The build uses it to compare the compilers of two commits; it
