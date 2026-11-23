@@ -1,0 +1,12 @@
+# ridatatypeslib-finit-closes-up-to-zero.test.bas: the program runs through
+# inject with the open of datatypes.library failing; the original's finit
+# stops at the first 0 and leaves the three other libraries open
+fixed-orig = 602
+rwe = ["ridatatypeslib"]
+runwrap = "@INJECT@|openlibfail=types.library opencount=dos.library opencount=tion.library opencount=hics.library"
+
+[asserts]
+inject = "contains \"opencount: dos.library +0\ninject: opencount: tion.library +0\ninject: opencount: hics.library +0\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"opencount: dos.library +1\ninject: opencount: tion.library +1\ninject: opencount: hics.library +1\""

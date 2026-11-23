@@ -1,0 +1,8 @@
+# ridatatypeslib-open-name-overflow.test.bas: the original's long name becomes
+# the BitMapHeader pointer, so DataTypeWidth reads the fake header (1234)
+fixed-orig = 604
+rwe = ["ridatatypeslib"]
+
+[deviations."compiler=orig210"]
+"check.long_name.width" = "== fail"
+"check.long_name.width.actual" = "== 1234"

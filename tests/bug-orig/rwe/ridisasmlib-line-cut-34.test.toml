@@ -1,0 +1,10 @@
+# ridisasmlib-line-cut-34.test.bas: the original returns the first 34 columns
+# of the long line
+fixed-orig = 616
+rwe = ["ridisasmlib"]
+
+[deviations."compiler=orig210"]
+"check.long_line.long_length" = "== fail"
+"check.long_line.long_length.actual" = "== 34"
+"check.long_line.long_line" = "== fail"
+"check.long_line.long_line.actual" = "== \"move.l   ([-2147483648,a0,d0.w],-2\""

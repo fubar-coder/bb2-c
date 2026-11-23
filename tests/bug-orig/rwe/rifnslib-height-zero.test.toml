@@ -1,0 +1,7 @@
+# rifnslib-height-zero.test.bas: the original draws 65536 rows
+fixed-orig = 663
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.height_zero.pixel_1_5" = "== fail"
+"check.height_zero.pixel_1_5.actual" = "== 1"

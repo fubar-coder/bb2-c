@@ -1,0 +1,7 @@
+# rigfxlib-copycolour-negative.test.bas: the original copies the colour -1
+fixed-orig = 678
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.negative_colour.result" = "== fail"
+"check.negative_colour.result.actual" = "== -1"

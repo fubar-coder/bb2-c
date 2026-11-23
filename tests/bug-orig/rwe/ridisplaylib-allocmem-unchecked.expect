@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-low memory kept
-0
-inject: allocfail: 1 allocations failed
-inject: rc=0
-rc=0

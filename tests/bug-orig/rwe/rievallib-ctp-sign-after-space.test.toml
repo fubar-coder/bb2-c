@@ -1,0 +1,26 @@
+# rievallib-ctp-sign-after-space.test.bas: the original takes the "-" behind
+# a space for a binary minus; the cells with the CD's libraries get the
+# acidlibs of the library's variant (library 121 is the CD's polylib)
+fixed-orig = 633
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.sign_after_space.times_postfix" = "== fail"
+"check.sign_after_space.times_postfix.actual" = "== \"4 * 2 - \""
+"check.sign_after_space.times_result" = "== fail"
+"check.sign_after_space.times_result.actual" = "== 0"
+"check.sign_after_space.times_error" = "== fail"
+"check.sign_after_space.times_error.actual" = "== 1"
+"check.sign_after_space.minus_postfix" = "== fail"
+"check.sign_after_space.minus_postfix.actual" = "== \"3 - 4 - \""
+"check.sign_after_space.minus_result" = "== fail"
+"check.sign_after_space.minus_result.actual" = "== 0"
+"check.sign_after_space.minus_error" = "== fail"
+"check.sign_after_space.minus_error.actual" = "== 1"
+"check.sign_after_space.leading_postfix" = "== fail"
+"check.sign_after_space.leading_postfix.actual" = "== \"5 - \""
+"check.sign_after_space.leading_result" = "== fail"
+"check.sign_after_space.leading_result.actual" = "== 0"
+"check.sign_after_space.leading_error" = "== fail"
+"check.sign_after_space.leading_error.actual" = "== 1"

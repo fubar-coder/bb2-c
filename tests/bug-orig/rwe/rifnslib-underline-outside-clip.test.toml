@@ -1,0 +1,10 @@
+# rifnslib-underline-outside-clip.test.bas: the original draws one pixel
+# of an underline outside the clip zone
+fixed-orig = 1130
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.underline_outside.pixel_0" = "== fail"
+"check.underline_outside.pixel_0.actual" = "== 1"
+"check.underline_outside.pixel_310" = "== fail"
+"check.underline_outside.pixel_310.actual" = "== 1"

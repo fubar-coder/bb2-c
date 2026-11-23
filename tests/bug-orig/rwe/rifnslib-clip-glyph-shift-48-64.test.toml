@@ -1,0 +1,10 @@
+# rifnslib-clip-glyph-shift-48-64.test.bas: the original takes the wrong
+# words after a clipped row
+fixed-orig = 656
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.glyph_shift.pixel_0_20" = "== fail"
+"check.glyph_shift.pixel_0_20.actual" = "== 0"
+"check.glyph_shift.pixel_32_21" = "== fail"
+"check.glyph_shift.pixel_32_21.actual" = "== 1"

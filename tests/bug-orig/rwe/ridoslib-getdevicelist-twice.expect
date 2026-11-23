@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-results -1 -1
-inject: rc=0
-inject: doslist: free
-rc=0

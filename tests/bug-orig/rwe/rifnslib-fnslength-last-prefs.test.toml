@@ -1,0 +1,8 @@
+# rifnslib-fnslength-last-prefs.test.bas: the original takes the prefs of
+# the last FNSPrint
+fixed-orig = 661
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.last_prefs.same" = "== fail"
+"check.last_prefs.same.actual" = "== 31"

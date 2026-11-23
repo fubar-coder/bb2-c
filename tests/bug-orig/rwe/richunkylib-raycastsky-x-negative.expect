@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-x 0: 170
-REQUESTER: AutoRequest body "RaycastSky outside the chunky bitmap" *
-rc=0

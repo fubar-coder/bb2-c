@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
--1
-leaked 0
-rc=0

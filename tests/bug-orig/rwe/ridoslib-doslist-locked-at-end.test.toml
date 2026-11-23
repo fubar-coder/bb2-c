@@ -1,0 +1,13 @@
+# ridoslib-doslist-locked-at-end.test.bas: through inject, whose doslist
+# locks the DOS list for writing after the program; the original leaves it
+# locked for reading
+fixed-orig = 1081
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|doslist"
+timeout = 60
+
+[asserts]
+inject = "contains \"doslist: free\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"doslist: locked (1 read locks released)\""

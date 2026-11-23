@@ -1,0 +1,15 @@
+# ridisplaylib-cmove-absolute-addresses-68000.test.bas: on the A600 (68000)
+# the original's word reads from odd addresses are an address error; its
+# session of its own ends in the time limit
+fixed-orig = 889
+rwe = ["ridisplaylib"]
+machine = "a600"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software Failure\""
+"end.case" = "not exists"
+"end.run" = "not exists"

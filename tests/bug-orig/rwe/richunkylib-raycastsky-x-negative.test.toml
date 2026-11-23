@@ -1,0 +1,11 @@
+# richunkylib-raycastsky-x-negative.test.bas: with runtime error checking for
+# the announced error; the original raises none and writes the byte before
+# the data
+fixed-orig = 887
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.x_minus1.refused" = "== fail"
+"check.x_minus1.byte_before_kept" = "== fail"

@@ -1,0 +1,9 @@
+# richunkylib-c2p-planes-check.test.bas: with runtime error checking for the
+# announced error; the original raises none (and ignores the plane pointer)
+fixed-orig = 884
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.spacing.refused" = "== fail"

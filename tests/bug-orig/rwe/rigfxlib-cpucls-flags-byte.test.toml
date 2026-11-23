@@ -1,0 +1,7 @@
+# rigfxlib-cpucls-flags-byte.test.bas: the original clears 257 planes
+fixed-orig = 679
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.flags_byte.b_cleared_longs" = "== fail"
+"check.flags_byte.b_cleared_longs.actual" = "== 160"

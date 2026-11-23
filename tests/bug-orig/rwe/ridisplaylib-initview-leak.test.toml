@@ -1,0 +1,11 @@
+# ridisplaylib-initview-leak.test.bas: through inject, which tracks the
+# allocations the process leaves; the original leaves nine of the ten lists
+fixed-orig = 891
+rwe = ["ridisplaylib"]
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"track: 0 allocations left, 0 bytes\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"track: 9 allocations left, 4518 bytes\""

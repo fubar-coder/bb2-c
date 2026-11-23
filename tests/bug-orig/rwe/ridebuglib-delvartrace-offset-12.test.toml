@@ -1,0 +1,10 @@
+# ridebuglib-delvartrace-offset-12.test.bas: with runtime error checking (the
+# commands work in their error check routines); the original's DelVarTrace
+# message keeps the name of the AddVarTrace before
+fixed-orig = 610
+rwe = ["ridebuglib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.messages.del_name" = "== fail"
+"check.messages.del_name.actual" = "== \"bb\""

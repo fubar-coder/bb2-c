@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-constant: 0 2 2
-word: 0 3 3
-long: 0 4 4
-rc=0

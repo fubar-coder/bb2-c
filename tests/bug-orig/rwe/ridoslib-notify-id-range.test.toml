@@ -1,0 +1,13 @@
+# ridoslib-notify-id-range.test.bas: with runtime error checking; the
+# original has no check of the id and returns normally
+fixed-orig = 626
+rwe = ["ridoslib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.id_minus_1.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.id_minus_1.refused" = "== fail"
+"check.id_minus_1.not_refused" = "== fail"

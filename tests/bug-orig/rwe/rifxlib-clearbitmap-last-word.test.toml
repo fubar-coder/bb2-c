@@ -1,0 +1,10 @@
+# rifxlib-clearbitmap-last-word.test.bas: the original leaves the last word
+# of the area and clears the word in front of it
+fixed-orig = 668
+rwe = ["rifxlib"]
+
+[deviations."compiler=orig210"]
+"check.last_word.row_0" = "== fail"
+"check.last_word.row_0.actual" = "== -65536"
+"check.last_word.row_2" = "== fail"
+"check.last_word.row_2.actual" = "== 65535"

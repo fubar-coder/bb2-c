@@ -1,0 +1,8 @@
+# ricommoditieslib-sethotkey-objects-leak.test.bas: the original leaks the
+# replaced filter and sender
+fixed-orig = 563
+rwe = ["ricommoditieslib"]
+
+[deviations."compiler=orig210"]
+"check.replace.leaked" = "== fail"
+"check.replace.leaked.actual" = "== -1"

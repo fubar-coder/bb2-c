@@ -1,0 +1,11 @@
+# ricommoditieslib-no-replymsg.test.bas: the original leaks about 100 bytes per
+# message; the program is silent for about 16 s, more than the default
+# hang check
+fixed-orig = 561
+rwe = ["ricommoditieslib"]
+hang-after = 40
+timeout = 90
+
+[deviations."compiler=orig210"]
+"check.leak.leaked" = "== fail"
+"check.leak.leaked.actual" = "== -1"

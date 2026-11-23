@@ -1,0 +1,24 @@
+# rievallib-digits-unchecked.test.bas: the original takes every character
+# for a digit; the cells with the CD's libraries get the acidlibs of the
+# library's variant (library 121 is the CD's polylib)
+fixed-orig = 634
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.non_digits.decimal_letter_result" = "== fail"
+"check.non_digits.decimal_letter_result.actual" = "== 192"
+"check.non_digits.decimal_letter_error" = "== fail"
+"check.non_digits.decimal_letter_error.actual" = "== 0"
+"check.non_digits.binary_two_result" = "== fail"
+"check.non_digits.binary_two_result.actual" = "== 2"
+"check.non_digits.binary_two_error" = "== fail"
+"check.non_digits.binary_two_error.actual" = "== 0"
+"check.non_digits.hex_g_result" = "== fail"
+"check.non_digits.hex_g_result.actual" = "== 16"
+"check.non_digits.hex_g_error" = "== fail"
+"check.non_digits.hex_g_error.actual" = "== 0"
+"check.non_digits.dot_result" = "== fail"
+"check.non_digits.dot_result.actual" = "== 2645"
+"check.non_digits.dot_error" = "== fail"
+"check.non_digits.dot_error.actual" = "== 0"

@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-A cleared
-B untouched
-rc=0

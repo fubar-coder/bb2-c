@@ -1,0 +1,11 @@
+# richunkylib-c2p-width16-check.test.bas: with runtime error checking for the
+# announced error; the original raises none (it converts 40 x 10 as well)
+fixed-orig = 884
+rwe = ["richunkylib"]
+runtime-errors = "on"
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.widths.refused" = "== fail"
+"check.widths.row1_plane0" = "== fail"
+"check.widths.row1_plane0.actual" = "== 0"

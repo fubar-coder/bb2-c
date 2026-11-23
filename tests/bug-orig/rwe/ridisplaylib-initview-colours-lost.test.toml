@@ -1,0 +1,8 @@
+# ridisplaylib-initview-colours-lost.test.bas: the original's second list is
+# not larger
+fixed-orig = 890
+rwe = ["ridisplaylib"]
+
+[deviations."compiler=orig210"]
+"check.two_lists.more_bytes" = "== fail"
+"check.two_lists.more_bytes.actual" = "== 0"

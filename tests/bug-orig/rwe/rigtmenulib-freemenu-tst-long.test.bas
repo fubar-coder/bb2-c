@@ -1,0 +1,38 @@
+; rigtmenulib-freemenu-tst-long (#691) - GTFreeMenu declares Item and
+; Subitem as words but decides with TST.l whether they are given: a
+; negative upper word of d3 counts as "no sub item" and GTFreeMenu frees
+; the whole item instead (a negative upper word of d2 frees the whole
+; title, as an item: not done here, it crashes).  Here the upper word of
+; d3 is set negative (GetReg) right before the call with a word
+; variable; the program builds a text of the lists (title, items, sub
+; items) from the object (the titles at +4, a text at +4, a title's
+; items at +8, an item's sub items at +18): "Title:Item(Sub,Sub);...".
+; Correct: the upper word does not matter: sub item S1 goes, A and S0
+; stay.
+DEFTYPE .l
+
+!TestCase{sub_item}
+  GTMenuTitle 0,0,"Project"
+  GTMenuItem 0,0,0,0,"A"
+  GTMenuItem 0,0,0,1,"B"
+  GTSubItem 0,0,0,0,0,"S0"
+  GTSubItem 0,0,0,0,1,"S1"
+  n.w=1
+  GetReg d3,$80000000
+  GTFreeMenu 0,0,0,n
+  t=Peek.l(Addr GTMenuList(0)+4)
+  l$=Peek$(Peek.l(t+4))+":"
+  i=Peek.l(t+8)
+  While i
+    l$=l$+Peek$(Peek.l(i+4))+"("
+    s=Peek.l(i+18)
+    While s
+      l$=l$+Peek$(Peek.l(s+4))
+      s=Peek.l(s)
+      If s Then l$=l$+","
+    Wend
+    l$=l$+");"
+    i=Peek.l(i)
+  Wend
+  !CheckStrEq{l$,"Project:A(S0);B();","lists"}
+!EndTestCase

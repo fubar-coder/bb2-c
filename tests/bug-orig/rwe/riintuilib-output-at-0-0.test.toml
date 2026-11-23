@@ -1,0 +1,12 @@
+# riintuilib-output-at-0-0.test.bas: the original draws everything at the
+# top left corner
+fixed-orig = 697
+rwe = ["riintuilib"]
+
+[deviations."compiler=orig210"]
+"check.output_position.ab" = "== fail"
+"check.output_position.ab.actual" = "== 0"
+"check.output_position.c" = "== fail"
+"check.output_position.c.actual" = "== 0"
+"check.output_position.corner" = "== fail"
+"check.output_position.corner.actual" = "== -1"

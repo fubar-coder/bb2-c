@@ -1,0 +1,8 @@
+# ricopperfxlib-colsplit-line0-wait.test.bas: the original's split from line 0
+# starts with the wait for line 256 ($FFE1FFFE)
+fixed-orig = 588
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.splits.line0_word" = "== fail"
+"check.splits.line0_word.actual" = "== -1966082"

@@ -1,0 +1,8 @@
+# ricompactdisclib-trackmins-offset.test.bas: with runtime error checking for
+# the announced error; the original raises none
+fixed-orig = 586
+rwe = ["ricompactdisclib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.offset2.refused" = "== fail"

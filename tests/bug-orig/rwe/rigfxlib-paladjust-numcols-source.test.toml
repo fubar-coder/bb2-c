@@ -1,0 +1,13 @@
+# rigfxlib-paladjust-numcols-source.test.bas: with runtime error checking
+# for the announced error; the original raises none, the case goes on
+fixed-orig = 685
+rwe = ["rigfxlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.numcols.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.numcols.refused" = "== fail"
+"check.numcols.not_refused" = "== fail"
+requester = "count == 0"

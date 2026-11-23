@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-object -1
-result -1
-colour 1 red 000000F0
-colours 4-7 kept -1
-rc=0
