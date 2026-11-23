@@ -1,0 +1,16 @@
+# animlib-freeanim-after-free.test.bas: the program runs through inject with
+# freefill=FF; the ANIM is staged as CORPUS:onedelta.anim.  The original
+# follows the pointer $FFFFFFFF: a crash ("Software Failure", the session
+# runs into its timeout; each cell with the CD's libraries has its own
+# session).
+fixed-orig = 399
+files = ["onedelta.anim|@TESTDATA@/animlib-freeanim-after-free.anim"]
+runwrap = "@INJECT@|freefill=FF"
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

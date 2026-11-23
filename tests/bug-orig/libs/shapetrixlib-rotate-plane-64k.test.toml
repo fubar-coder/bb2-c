@@ -1,16 +1,15 @@
-# shapetrixlib-rotate-plane-64k.test.bas: with runtime error checking; the requester with its text
-# is the tested behaviour, the case ends in it and the check behind the
-# command does not run (no !ExpectError: the original raises no error)
+# shapetrixlib-rotate-plane-64k.test.bas: with runtime error checking for
+# the announced error; the original raises none, so the announcement fails
+# there and the case runs on to its check
 fixed-orig = 1047
 runtime-errors = "on"
 timeout = 300
 
 [asserts]
-requester = "contains \"Shape too Big\""
-"end.case" = "not exists"
 "check.rotate_plane_64k.after" = "== not-run"
 
 [deviations."libs=cd"]
+"check.rotate_plane_64k.refused" = "== fail"
 requester = "count == 0"
 "end.case" = "exists"
 "check.rotate_plane_64k.after" = "== fail"

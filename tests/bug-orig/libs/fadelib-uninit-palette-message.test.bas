@@ -4,14 +4,15 @@
 ; message "Uninitialized Palette" (mess3, err3) is never used.
 ; Here: with runtime error checking, Blitz mode, a slice of 8 colours
 ; and FadeIn of palette 3, which the program never created.
-; Correct: the runtime error "Uninitialized Palette".  The message is the
-; tested behaviour, so the error is not announced with !ExpectError (see
-; the configuration).
+; Correct: the runtime error "Uninitialized Palette".  The error is
+; announced with !ExpectError; the original raises another one (see the
+; configuration).
 DEFTYPE .l
 
 !TestCase{palette_missing}
   BLITZ
   Slice 0,44,320,200,$fff8,3,8,8,320,320
+  !ExpectError{"Uninitialized Palette","refused"}
   FadeIn 3
   FreeSlices
   AMIGA

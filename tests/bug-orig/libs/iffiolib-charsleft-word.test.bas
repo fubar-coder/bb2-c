@@ -40,6 +40,7 @@ End Statement
   !CheckEq{Peek.w(a+2),4,"shape0_height"}
   !CheckEq{Peek.b(Peek.l(a+14)) AND 255,1,"shape0_data"}
   KillFile "CORPUS:bo177.iff"
+  !ExpectError{"Can't open Shapes File","refused"}
   LoadShape 1,"PRT:"
   !Check{0,"not_refused"}
 !EndTestCase

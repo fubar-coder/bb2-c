@@ -6,11 +6,12 @@
 ; of the shape (+2).  Nothing is blitted.
 ; Correct: an error check refuses the size: "Illegal Shape Size", the
 ; command is not done.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{size_zero}
+  !ExpectError{"Illegal Shape Size","refused"}
   InitShape 0,16,0,1
   !Check{0,"after"}
 !EndTestCase

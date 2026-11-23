@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-x 16 depth 2
-ok
-rc=0

@@ -1,0 +1,13 @@
+# blitzcoplib-maxslice-zero.test.bas: Slice maximum 0 in the options of the
+# compile; the session runs without the JIT (cachesize=0, with the JIT even
+# Amiberry itself could die); each cell with the CD's libraries has its own
+# session, since the original's end is a hang
+fixed-orig = 406
+timeout = 30
+jobline = ["max=144|0"]
+uae = ["cachesize=0"]
+isolate = ["libs=cd"]
+
+[ends."libs=cd"]
+reason = "the original relocates 65536 objects of 64 bytes from the empty object area on and corrupts the memory (#406); how the program then fails depends on the memory layout (the old recording also saw a halt of the CPU; in this program's layout only the hang was observed: the session runs into its timeout)"
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "check.no_slices.after == not-run"]

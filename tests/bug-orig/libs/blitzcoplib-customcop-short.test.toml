@@ -1,0 +1,13 @@
+# blitzcoplib-customcop-short.test.bas: the original copies 2^32 longs over
+# the memory behind the copper list and does not come back: the session runs
+# into its timeout; each cell with the CD's libraries has its own session
+fixed-orig = 404
+timeout = 30
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.empty_string.after" = "== not-run"

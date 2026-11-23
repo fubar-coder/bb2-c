@@ -1,0 +1,14 @@
+# polylib-word-range.test.bas: an open bug (#1019, won't fix): the cells
+# without the original's part show it too, so they must show exactly the
+# declared deviations
+timeout = 120
+
+[deviations."libs=cd"]
+"check.bitmap_slope.differ_4096" = "== fail"
+"check.bitmap_slope.differ_4096.actual" = "== 4880"
+"check.bitmap_cover.full_16384" = "== fail"
+"check.bitmap_cover.full_16384.actual" = "== 0"
+"check.chunky_slope.differ_4096" = "== fail"
+"check.chunky_slope.differ_4096.actual" = "== 960"
+"check.chunky_cover.pixels_16384" = "== fail"
+"check.chunky_cover.pixels_16384.actual" = "== 0"

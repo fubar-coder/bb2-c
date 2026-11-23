@@ -8,8 +8,8 @@
 ; colour 14 (no error), then with colour 15, in a short BLITZ ... AMIGA
 ; section (RenderPoly is Blitz mode only).
 ; Correct: the error check refuses colour 15: "Illegal Colour".
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{colour_15}
@@ -23,6 +23,7 @@ DEFTYPE .l
   BLITZ
   RenderToChunky 0
   RenderPoly 3,a,14
+  !ExpectError{"Illegal Colour","refused"}
   RenderPoly 3,a,15
   VWait 2
   AMIGA

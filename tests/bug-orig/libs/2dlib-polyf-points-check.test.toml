@@ -1,0 +1,16 @@
+# 2dlib-polyf-points-check.test.bas: with runtime error checking for the
+# announced error; the original raises none and overwrites its code.  What
+# the overwritten code then does depends on the compiler's code layout (see
+# the ends); each cell with the CD's libraries has its own session, since
+# one of the ends is a hang.
+fixed-orig = 395
+runtime-errors = "on"
+isolate = ["libs=cd"]
+
+[asserts]
+"check.points_17.after" = "== not-run"
+
+[ends."libs=cd"]
+reason = "the original copies the 17 points behind a buffer of 16 and overwrites the code of the library (#395); what the overwritten code does depends on the code layout of the program: the port's compiler runs into an illegal instruction (the requester is answered and the case ends), the original's hangs (the session runs into its timeout)"
+guru_requester = ["requester contains \"GURU! - ILLEGAL Instruction\"", "end.case not exists", "check.points_17.refused == fail"]
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "check.points_17.refused == not-run"]

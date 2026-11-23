@@ -1,13 +1,13 @@
-# polylib-bitmappoly-points-check.test.bas: with runtime error checking; the requester with its text
-# is the tested behaviour, the case ends in it and the check behind the
-# command does not run (no !ExpectError: the original shows a crash requester instead)
+# polylib-bitmappoly-points-check.test.bas: with runtime error checking for
+# the announced error; the original shows a crash requester, so the
+# announcement fails there
 fixed-orig = 395
 runtime-errors = "on"
 
 [asserts]
-requester = "contains \"Too Many Points\""
-"end.case" = "not exists"
 "check.points_17.after" = "== not-run"
 
 [deviations."libs=cd"]
+"check.points_17.refused" = "== fail"
 requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"

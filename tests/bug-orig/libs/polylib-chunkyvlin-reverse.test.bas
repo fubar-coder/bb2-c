@@ -12,8 +12,8 @@
 ; error), then ChunkyVlin 0,50,40.  Counted: words written.
 ; Correct: the error check refuses the second line: "ChunkyVlin y1 MUST
 ; NOT be greater than y2".  The original writes about 65536 words.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 Function.l nset{m.l}
   n.l=0
@@ -33,6 +33,7 @@ End Function
   Poke.l c+96,m : Poke.w c+108,2
   ChunkyVlin 0,40,50,$FFF
   !CheckEq{nset{m},11,"forty_to_fifty"}
+  !ExpectError{"ChunkyVlin y1 MUST NOT be greater than y2","refused"}
   ChunkyVlin 0,50,40,$FFF
   !Check{0,"after"}
 !EndTestCase
