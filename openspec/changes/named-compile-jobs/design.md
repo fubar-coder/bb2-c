@@ -115,15 +115,18 @@ output is `compile`, with its default), for a data source (`data.FILE`,
 with its default and BROKEN rule) and for `run=`/`menu=` steps (no
 `RESULT ok` line: a successful run logs none, a menu item logs `MENU`),
 each naming the query that holds the output: one query per output, no
-two defaults for one result. Plan choice.
+two defaults for one result. The user's answer (2026-11-23,
+`rounds/tr/decisions.md`, "Named jobs queries; snapshots; the abnormal-end
+rule; hang check and leak threshold"): "(a) one query per output
+(Recommended)".
 
 ### D4 No `compile.inject.NAME`
 
 inject reports once per compiler process (Context), after all jobs of
 the session; its lines cannot be given to one job, and a data source's
 own build session runs without inject. So `compile.inject` stays the one
-query of it; the spec says so. Plan choice (the brief: "only if needed";
-it is not possible in a meaningful form).
+query of it; the spec says so. The user's answer (a) above: "no
+`compile.inject.NAME`"; it is not possible in a meaningful form either.
 
 ### D5 `@DATA:FILE@`
 
@@ -180,12 +183,11 @@ sections). Plan choice.
   and before a menu item) — L1 Unlikely / I1 Low / E2 Reasoned → Monitor;
   as a choice of the query's definition — L2 Possible / I2 Medium / E2
   Reasoned → Plan.
-- D3 `compile.NAME` only for `job=`/`resident=`. Point: a later test needs
-  the compile result of a `run=` step — L2 Possible / I2 Medium / E2
-  Reasoned → Plan (additive).
-- D4 no per-job inject query. Point: wanted later for a data source with
-  its own session — L1 Unlikely / I2 Medium / E3 Proven (inject.c header)
-  → Monitor.
+- D3 `compile.NAME` only for `job=`/`resident=`: decided by the user
+  ("(a) one query per output (Recommended)"), no longer a Plan choice; a
+  later test that needs the compile result of a `run=` step is additive.
+- D4 no per-job inject query: in the user's answer (a) ("no
+  `compile.inject.NAME`"), no longer a Plan choice.
 - D5 the placeholder's form and meaning. Point: the user meant the
   executable — L1 Unlikely / I2 Medium / E2 Reasoned → Monitor.
 - D6 rishapeslib switches too. Point: the user wanted only panic-remtask
