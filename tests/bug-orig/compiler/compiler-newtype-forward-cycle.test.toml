@@ -1,0 +1,16 @@
+# compiler-newtype-forward-cycle.test.bas: the correct result is a failed
+# compile (Illegal Type at the field y.ta) and nothing runs; the original
+# compiles and the case runs
+fixed-orig = 974
+
+[asserts]
+compile = "== \"error 13 Illegal Type\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"
