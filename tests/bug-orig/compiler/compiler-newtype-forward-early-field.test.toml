@@ -1,0 +1,16 @@
+# compiler-newtype-forward-early-field.test.bas: the correct result is a failed
+# compile (Type not yet defined at v\y=1) and nothing runs; the original
+# compiles and the case runs (the offset of x is 0)
+fixed-orig = 974
+
+[asserts]
+compile = "== \"error 17 Type not yet defined\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

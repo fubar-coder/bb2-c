@@ -1,0 +1,19 @@
+# compiler-operand-beyond-d7-const.test.bas: the correct result is a failed
+# compile (Expression too Complex at the line of RectsHit) and nothing runs;
+# the original crashes while folding the constants: a Software Failure, no
+# compile result, the session ends at its limit
+fixed-orig = 1185
+timeout = 30
+
+[asserts]
+compile = "== \"error 10 Expression too Complex\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

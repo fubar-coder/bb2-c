@@ -1,0 +1,17 @@
+# compiler-copyconst-source.test.bas: the correct result is a failed
+# compile (Operand too Long at the line of the macro's move) and nothing
+# runs; the original compiles, writes its 0 behind namebuff2 and the case
+# runs
+fixed-orig = 997
+
+[asserts]
+compile = "== \"error 15 Operand too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

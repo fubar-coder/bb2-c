@@ -1,0 +1,16 @@
+# compiler-wbexit-returncode.test.bas: blitz2:ted is removed, so the
+# compiler gives up at once and compiles nothing; inject shows the return
+# value of blitz2. The original returns 0
+fixed-orig = 22
+wrap = "@INJECT@"
+remove = ["blitz2/ted"]
+
+[asserts]
+compile = "== none"
+"compile.inject" = "== \"inject: rc=-1\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\n\""

@@ -1,0 +1,16 @@
+# compiler-incdir-quote-garbage.test.bas: the correct result is a failed compile
+# (Syntax Error at the IncDir line) and nothing runs; the original takes the
+# text behind the quote into the path and the case runs
+fixed-orig = 17
+
+[asserts]
+compile = "== \"error 8 Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

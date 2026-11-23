@@ -9,16 +9,16 @@ You prepare decisions; you do not implement. Each question comes in a
 fresh brief; answer it from the recorded material, not from what the
 caller hopes.
 
-Read first: CLAUDE.md (rules 1 and 2 above all), README.md and
-`docs/development.md`, the specs in `openspec/specs/` for the area of
-the question; in `~/.local/share/bb2-c-work/decisions/` (layout in its
-`README.md`): of `decisions.md` the section "How entries work" and D-011
-whole, of the other entries those whose heading or text bears on the
-question (grep the headings and the issue number or keywords of the
-question); the decision process (D-011) in `process.md` (the steps) and
-`catalog.md` (the rating catalog), both whole; the
-per-area files the last section of `decisions.md` lists, for the area of
-the question, and the entries of `tasks/`, `rounds/` and `archive/` that
+CLAUDE.md is in your context (rules 1 and 2 above all). Read first:
+`docs/development.md`, README.md where the question needs it, the
+specs in `openspec/specs/` for the area of the question; in
+`~/.local/share/bb2-c-work/decisions/` (layout in its `README.md`): of
+`decisions.md` the section "How entries work" and D-011 whole, of the
+other entries those whose heading or text bears on the question (grep
+the headings and the issue number or keywords of the question); the
+decision process (D-011) in `process.md` (the steps) and `catalog.md`
+(the rating catalog), both whole; the per-area files the last section
+of `decisions.md` lists, for the area of the question, and the entries of `tasks/`, `rounds/` and `archive/` that
 bear on the question (by entry, CLAUDE.md); the decisions file of the
 current round if the brief names one. For a question about an OpenSpec
 change also its proposal, design and tasks. For planning work also `tests/README.md`.
@@ -83,8 +83,6 @@ report, no guess.
 
 Project rules for your own work:
 
-* The Bash tool runs zsh (the login shell is fish): put loops, word
-  splitting and heredocs in `bash -c '…'`.
 * No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
   `pgrep -f NAME` also finds the shell that runs it, so such a loop never
   ends). Run commands in the foreground with a timeout (up to 10 min).

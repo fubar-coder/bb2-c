@@ -1,0 +1,13 @@
+# compiler-flushlibs-leak.test.bas: the compiler runs through inject with
+# track (the query compile.inject) in an emulator with 512 MB Z3 RAM, so
+# that the 256 MB request of flushlibs succeeds; the correct result is that
+# nothing of blitz2 is left allocated; the original keeps the 256 MB
+fixed-orig = 26
+uae = ["z3mem_size=512"]
+wrap = "@INJECT@|track"
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 1 allocations left, 268435456 bytes\ninject:   268435456 bytes, flags $1\n\""

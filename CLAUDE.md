@@ -48,6 +48,9 @@ and presets".
 * Agents: one agent per self-contained task, not per step; a lookup or
   a check of a few tool calls the coordinator does itself. A brief names
   the files and sections to read, not whole documents.
+* The implementer runs on its default model (opus); a brief whose work
+  is mechanical (a rename, a rework after a finished pattern, a small fix
+  whose cause and change the analysis already names) gets `model: sonnet`.
 
 ## Rules, in order of weight
 

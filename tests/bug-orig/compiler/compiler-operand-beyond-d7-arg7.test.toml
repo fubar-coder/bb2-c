@@ -1,0 +1,17 @@
+# compiler-operand-beyond-d7-arg7.test.bas: the correct result is a failed
+# compile (Expression too Complex at the line of a+b*c) and nothing runs;
+# the original compiles wrong code and the case runs (its checks hold what
+# the original's program printed: -1 and 0)
+fixed-orig = 1185
+
+[asserts]
+compile = "== \"error 14 Expression too Complex\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

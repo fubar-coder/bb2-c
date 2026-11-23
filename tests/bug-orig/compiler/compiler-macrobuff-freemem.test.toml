@@ -1,0 +1,14 @@
+# compiler-macrobuff-freemem.test.bas: the compiler runs through inject with
+# track (the query compile.inject), the job line sets the Macro Buffer to 1024
+# bytes; the original frees its 8192 byte block with the 1024 bytes. (The old
+# test used 64; the driver's own macros need more than that, so the compile
+# ends in "Macro Buffer Overflow" there.)
+fixed-orig = 336
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=1024"]
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\ninject: track: FreeMem of 1024 bytes for an allocation of 8192 bytes\n\""
