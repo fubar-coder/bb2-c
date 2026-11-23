@@ -7,16 +7,14 @@
 ; mark stays in memory of the program).
 ; Correct: the error check refuses the 64th member: "Group holds at most
 ; 63 members".
-; @fixed #904
-; @rwe rimapshapeslib
-; @pass runwrap=@INJECT@|pad
-; @pass runtime_errors=on
 DEFTYPE .l
-SetNumMapShapes 10
-g=ResetGroup(16,16)
-NPrint "before"
-For i=1 To 64
-  AddGroupMember 7,1,1
-Next
-NPrint "64 members added"
-End
+
+!TestCase{group_full}
+  SetNumMapShapes 10
+  g=ResetGroup(16,16)
+  !ExpectError{"Group holds at most 63 members","refused"}
+  For i=1 To 64
+    AddGroupMember 7,1,1
+  Next
+  !Check{0,"all_added"}
+!EndTestCase

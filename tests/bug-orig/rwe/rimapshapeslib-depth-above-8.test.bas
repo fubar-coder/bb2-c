@@ -9,19 +9,18 @@
 ; the end); only its plane addresses are written, its data is not read.
 ; Map shape 1 shows the overrun.
 ; Correct: the error check refuses the shape: "Illegal Shape Depth".
-; @fixed #903
-; @rwe rimapshapeslib
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,64,1
-Boxf 0,0,15,15,1
-GetaShape 0,0,0,16,16
-SetNumMapShapes 10
-a=MapShapeAddr(1)
-s=Addr Shape(0)
-Poke.w s+4,14
-NPrint "before"
-ShapeToMapShape 0,0
-Poke.w s+4,1
-If Peek.l(a)=0 Then NPrint "map shape 1 clear" Else NPrint "map shape 1 overwritten"
-End
+
+!TestCase{depth_14}
+  BitMap 0,320,64,1
+  Boxf 0,0,15,15,1
+  GetaShape 0,0,0,16,16
+  SetNumMapShapes 10
+  a=MapShapeAddr(1)
+  s=Addr Shape(0)
+  Poke.w s+4,14
+  !ExpectError{"Illegal Shape Depth","refused"}
+  ShapeToMapShape 0,0
+  Poke.w s+4,1
+  !Check{Peek.l(a)=0,"map_shape_1_clear"}
+!EndTestCase

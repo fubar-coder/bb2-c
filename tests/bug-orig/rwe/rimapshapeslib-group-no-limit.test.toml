@@ -1,0 +1,12 @@
+# rimapshapeslib-group-no-limit.test.bas: through inject pad; the reference
+# library writes the members behind the 512-byte block
+fixed-orig = 904
+rwe = ["rimapshapeslib"]
+pad = "on"
+
+[asserts]
+inject = "not contains \"inject: pad\""
+
+[deviations."compiler=orig210"]
+"check.no_write_behind.behind_block_clear" = "== fail"
+inject = "contains \"inject: pad: written behind an allocation of 516 bytes\""

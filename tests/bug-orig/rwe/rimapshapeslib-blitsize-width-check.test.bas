@@ -6,21 +6,19 @@
 ; screen (the blit only reads behind the data).
 ; Correct: the error check refuses the width: "BlitMapShapeSize wider
 ; than the map shape".
-; @fixed #906
-; @rwe rimapshapeslib
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,64,1
-Boxf 0,0,15,15,1
-GetaShape 0,0,0,16,16
-SetNumMapShapes 10
-ShapeToMapShape 0,0
-WbToScreen 0
-Window 0,20,30,200,80,$000E,"BlitMapShapeSize",1,2
-DefaultOutput
-NPrint "before"
-BlitMapShapeSize 0,0,20,20,16,16
-NPrint "16 wide"
-BlitMapShapeSize 0,0,20,20,64,16
-NPrint "64 wide"
-End
+
+!TestCase{wide_refused}
+  BitMap 0,320,64,1
+  Boxf 0,0,15,15,1
+  GetaShape 0,0,0,16,16
+  SetNumMapShapes 10
+  ShapeToMapShape 0,0
+  WbToScreen 0
+  Window 0,20,30,200,80,$000E,"BlitMapShapeSize",1,2
+  BlitMapShapeSize 0,0,20,20,16,16
+  !Check{1,"sixteen_wide"}
+  !ExpectError{"BlitMapShapeSize wider than the map shape","refused"}
+  BlitMapShapeSize 0,0,20,20,64,16
+  !Check{0,"sixtyfour_wide"}
+!EndTestCase

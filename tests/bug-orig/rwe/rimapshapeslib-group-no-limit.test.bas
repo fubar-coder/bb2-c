@@ -8,14 +8,13 @@
 ; group's start.
 ; Correct: the group holds at most what fits into its 512 bytes, nothing
 ; is written behind the block.
-; @fixed #904
-; @rwe rimapshapeslib
-; @pass runwrap=@INJECT@|pad
 DEFTYPE .l
-SetNumMapShapes 10
-g=ResetGroup(16,16)
-For i=0 To 65
-  AddGroupMember 7,1,1
-Next
-If Peek.l(g+520)=MapShapeAddr(7) Then NPrint "written behind the block" Else NPrint "nothing behind the block"
-End
+
+!TestCase{no_write_behind}
+  SetNumMapShapes 10
+  g=ResetGroup(16,16)
+  For i=0 To 65
+    AddGroupMember 7,1,1
+  Next
+  !Check{Peek.l(g+520)<>MapShapeAddr(7),"behind_block_clear"}
+!EndTestCase

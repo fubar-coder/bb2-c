@@ -1,0 +1,13 @@
+# rimapshapeslib-blitsize-width-check.test.bas: with runtime error checking;
+# the reference library raises no error and blits the 64 pixels
+fixed-orig = 906
+rwe = ["rimapshapeslib"]
+runtime-errors = "on"
+
+[asserts]
+"check.wide_refused.sixtyfour_wide" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.wide_refused.refused" = "== fail"
+"check.wide_refused.sixtyfour_wide" = "== fail"
+requester = "count == 0"

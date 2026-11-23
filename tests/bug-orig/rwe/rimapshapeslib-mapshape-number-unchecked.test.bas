@@ -5,13 +5,13 @@
 ; the width word of map shape 0, at address 0; the long there holds a
 ; marker (put back at the end).
 ; Correct: without map shapes nothing is written (the marker stays).
-; @fixed #906
-; @rwe rimapshapeslib
 DEFTYPE .l
-o=Peek.l(0)
-Poke.l 0,$12345678
-FreeMapShapes 0,0
-m=Peek.l(0)
-Poke.l 0,o
-If m=$12345678 Then NPrint "address 0 kept" Else NPrint "address 0 written"
-End
+
+!TestCase{address0_kept}
+  o=Peek.l(0)
+  Poke.l 0,$12345678
+  FreeMapShapes 0,0
+  m=Peek.l(0)
+  Poke.l 0,o
+  !CheckEq{m,$12345678,"marker"}
+!EndTestCase

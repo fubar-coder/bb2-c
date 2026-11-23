@@ -7,15 +7,15 @@
 ; Made safe: interrupts off (Disable_) from before AddGroupMember until the
 ; three longs at 0, 4 and 8 are put back.
 ; Correct: the member goes into the (empty) group: addresses 0-11 stay.
-; @fixed #901
-; @rwe rimapshapeslib
 DEFTYPE .l
-SetNumMapShapes 10
-Disable_
-o0=Peek.l(0) : o4=Peek.l(4) : o8=Peek.l(8)
-AddGroupMember 3,1,1
-n0=Peek.l(0) : n4=Peek.l(4) : n8=Peek.l(8)
-Poke.l 0,o0 : Poke.l 4,o4 : Poke.l 8,o8
-Enable_
-If n0=o0 AND n4=o4 AND n8=o8 Then NPrint "addresses 0-11 kept" Else NPrint "addresses 0-11 written"
-End
+
+!TestCase{before_reset}
+  SetNumMapShapes 10
+  Disable_
+  o0=Peek.l(0) : o4=Peek.l(4) : o8=Peek.l(8)
+  AddGroupMember 3,1,1
+  n0=Peek.l(0) : n4=Peek.l(4) : n8=Peek.l(8)
+  Poke.l 0,o0 : Poke.l 4,o4 : Poke.l 8,o8
+  Enable_
+  !Check{n0=o0 AND n4=o4 AND n8=o8,"addresses_kept"}
+!EndTestCase

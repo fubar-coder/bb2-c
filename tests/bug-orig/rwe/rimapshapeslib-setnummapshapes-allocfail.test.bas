@@ -9,16 +9,16 @@
 ; marker (put back at the end); MapShapeAddr(5) gives 5 x 64 from 0.
 ; Correct: without map shapes nothing is written (the marker stays) and
 ; MapShapeAddr returns 0.
-; @fixed #906
-; @rwe rimapshapeslib
-; @pass runwrap=@INJECT@|allocfail=6400-6416/1
 DEFTYPE .l
-SetNumMapShapes 100
-o=Peek.l(0)
-Poke.l 0,$12345678
-FreeMapShapes 0,0
-m=Peek.l(0)
-Poke.l 0,o
-NPrint "address ",MapShapeAddr(5)
-If m=$12345678 Then NPrint "address 0 kept" Else NPrint "address 0 written"
-End
+
+!TestCase{allocation_failed}
+  SetNumMapShapes 100
+  o=Peek.l(0)
+  Poke.l 0,$12345678
+  FreeMapShapes 0,0
+  m=Peek.l(0)
+  Poke.l 0,o
+  a=MapShapeAddr(5)
+  !CheckEq{a,0,"address"}
+  !CheckEq{m,$12345678,"marker"}
+!EndTestCase

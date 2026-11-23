@@ -9,16 +9,14 @@
 ; program).
 ; Correct: the error check refuses the number: "Map shape not allocated
 ; by SetNumMapShapes".
-; @fixed #906
-; @rwe rimapshapeslib
-; @pass runwrap=@INJECT@|pad
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,64,1
-Boxf 0,0,15,15,1
-GetaShape 0,0,0,16,16
-SetNumMapShapes 10
-NPrint "before"
-ShapeToMapShape 0,10
-NPrint "after"
-End
+
+!TestCase{number_refused}
+  BitMap 0,320,64,1
+  Boxf 0,0,15,15,1
+  GetaShape 0,0,0,16,16
+  SetNumMapShapes 10
+  !ExpectError{"Map shape not allocated by SetNumMapShapes","refused"}
+  ShapeToMapShape 0,10
+  !Check{0,"after"}
+!EndTestCase

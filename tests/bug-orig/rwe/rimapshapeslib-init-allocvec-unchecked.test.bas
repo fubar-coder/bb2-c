@@ -7,15 +7,14 @@
 ; end).
 ; Correct: without a group block ResetGroup writes nothing (the marker
 ; stays).
-; @fixed #905
-; @rwe rimapshapeslib
-; @pass runwrap=@INJECT@|allocfail=512-528/1
 DEFTYPE .l
-o=Peek.l(0)
-Poke.l 0,$12345678
-g=ResetGroup(16,16)
-m=Peek.l(0)
-Poke.l 0,o
-NPrint "group ",g
-If m=$12345678 Then NPrint "address 0 kept" Else NPrint "address 0 written"
-End
+
+!TestCase{address0_kept}
+  o=Peek.l(0)
+  Poke.l 0,$12345678
+  g=ResetGroup(16,16)
+  m=Peek.l(0)
+  Poke.l 0,o
+  !CheckEq{g,0,"group"}
+  !CheckEq{m,$12345678,"marker"}
+!EndTestCase

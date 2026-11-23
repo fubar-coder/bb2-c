@@ -1,0 +1,17 @@
+# rimapshapeslib-mapshape-number-check.test.bas: with runtime error checking,
+# through inject pad; the reference library raises no error and writes behind
+# the block
+fixed-orig = 906
+rwe = ["rimapshapeslib"]
+runtime-errors = "on"
+pad = "on"
+
+[asserts]
+inject = "not contains \"inject: pad\""
+"check.number_refused.after" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.number_refused.refused" = "== fail"
+"check.number_refused.after" = "== fail"
+requester = "count == 0"
+inject = "contains \"inject: pad: written behind an allocation of 644 bytes\""

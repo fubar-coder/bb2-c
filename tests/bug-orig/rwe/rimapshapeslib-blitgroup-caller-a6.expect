@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-pixel before 0
-pixel after 1
-rc=0

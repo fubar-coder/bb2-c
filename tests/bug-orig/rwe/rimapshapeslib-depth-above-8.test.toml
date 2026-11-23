@@ -1,0 +1,10 @@
+# rimapshapeslib-depth-above-8.test.bas: with runtime error checking; the
+# reference library raises no error and overwrites map shape 1
+fixed-orig = 903
+rwe = ["rimapshapeslib"]
+runtime-errors = "on"
+
+[deviations."compiler=orig210"]
+"check.depth_14.refused" = "== fail"
+"check.depth_14.map_shape_1_clear" = "== fail"
+requester = "count == 0"

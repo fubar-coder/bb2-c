@@ -1,0 +1,14 @@
+# rimapshapeslib-kick13-allocvec.test.bas: Kickstart 1.3; the reference
+# library crashes in its init, before the first line of the program
+# ("Software error - task held")
+fixed-orig = 1141
+rwe = ["rimapshapeslib"]
+machine = "a500"
+timeout = 30
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+requester = "contains \"Software error - task held\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

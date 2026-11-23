@@ -1,0 +1,15 @@
+# rimapshapeslib-group-full-check.test.bas: with runtime error checking, through
+# inject pad; the reference library raises no error and writes the end mark
+# of the 64th member behind the block
+fixed-orig = 904
+rwe = ["rimapshapeslib"]
+runtime-errors = "on"
+pad = "on"
+
+[asserts]
+inject = "not contains \"inject: pad\""
+
+[deviations."compiler=orig210"]
+"check.group_full.refused" = "== fail"
+"check.group_full.all_added" = "== fail"
+requester = "count == 0"
