@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-read 4 sizes 1
-pad 0
-same p0 1 p1 1
-rc=0

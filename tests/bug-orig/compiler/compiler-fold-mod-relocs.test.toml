@@ -1,0 +1,7 @@
+# compiler-fold-mod-relocs.test.bas: the original frees the relocations of
+# modlib with those of the fold; the JSR of a Long Mod keeps its
+# compile-time target
+fixed-orig = 1049
+
+[deviations."compiler=orig195"]
+"check.mod_relocs.jsr_outside_hunks" = "== fail"

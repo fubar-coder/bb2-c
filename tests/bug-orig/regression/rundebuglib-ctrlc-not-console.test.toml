@@ -1,0 +1,2 @@
+# runtime error checking: the Ctrl-C check ends a program at its next console output
+runtime-errors = "on"

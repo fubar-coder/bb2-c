@@ -1,0 +1,11 @@
+# compiler-byte-const-compare.test.bas: in the original the comparisons with
+# the constant 144 never match
+fixed-orig = 978
+
+[deviations."compiler=orig195"]
+"check.byte_const.eq_hex" = "== fail"
+"check.byte_const.eq_hex.actual" = "== 0"
+"check.byte_const.const_left" = "== fail"
+"check.byte_const.const_left.actual" = "== 0"
+"check.byte_const.not_different" = "== fail"
+"check.byte_const.not_different.actual" = "== -1"

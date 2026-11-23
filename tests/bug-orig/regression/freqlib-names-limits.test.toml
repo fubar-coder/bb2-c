@@ -1,0 +1,8 @@
+# the drawer the requester shows; inject answers the requesters by clicks (one
+# window title per call), and reports each click it answered
+dirs = ["fqname"]
+runwrap = "@INJECT@|click=F1/m123456789m123456789m123456 click=F1/OK click=F2/PARENT click=F2/OK click=F3/OK"
+timeout = 120
+
+[asserts]
+inject = "contains \"inject: click F1/m123456789m123456789m123456: answered\ninject: click F1/OK: answered\ninject: click F2/PARENT: answered\ninject: click F2/OK: answered\ninject: click F3/OK: answered\""

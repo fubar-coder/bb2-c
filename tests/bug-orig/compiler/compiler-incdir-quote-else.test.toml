@@ -1,0 +1,10 @@
+# compiler-incdir-quote-else.test.bas: the original takes the Else into the
+# path and refuses the program: no check
+fixed-orig = 17
+files = ["src/inc.bb2|@TESTDATA@/compiler-incdir-quote-next.inc"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

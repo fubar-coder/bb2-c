@@ -1,0 +1,15 @@
+# compiler-exe-pad-word.test.bas: the compiler runs through inject, whose
+# guard puts its pattern behind the object buffer; jobs j001 to j004 compile
+# the two sources twice each. The original's pad word is the pattern. Whether
+# the two compiles of a source differ (the pattern differs) depends on the
+# memory layout: those checks are not required to fail
+fixed-orig = 1184
+wrap = "@INJECT@|guard"
+files = ["p0.bb2|@TESTDATA@/compiler-exe-pad-word.p0", "p1.bb2|@TESTDATA@/compiler-exe-pad-word.p1"]
+jobline = ["job=j001|CORPUS:p0.bb2|CORPUS:out/p0a", "job=j002|CORPUS:p1.bb2|CORPUS:out/p1a", "job=j003|CORPUS:p0.bb2|CORPUS:out/p0b", "job=j004|CORPUS:p1.bb2|CORPUS:out/p1b"]
+
+[deviations."compiler=orig195"]
+"check.pad_word.pad_word" = "== fail"
+"check.pad_word.pad_word.actual" = "== 1"
+"check.pad_word.same_p0" = "!= not-run"
+"check.pad_word.same_p1" = "!= not-run"
