@@ -293,6 +293,7 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
                 goto oom;
     if ((s = tc_get(conf, "cost"))) {
         t.has_cost = 1;
+        t.cost_configured = 1;
         t.cost = s->value.integer;
     } else if (has(&t.labels, "bug-orig")) {
         /* an open bug fails on purpose, so ctest never learns its cost: the
@@ -697,7 +698,8 @@ int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file
     for (size_t i = 0; i < r->n; i++) {
         const struct tcost *e = tcosts_find(c, r->t[i].name);
 
-        if (e) {
+        /* the configuration's cost wins; a measurement replaces the estimate */
+        if (e && !r->t[i].cost_configured) {
             r->t[i].has_cost = 1;
             r->t[i].cost = e->cost;
         }

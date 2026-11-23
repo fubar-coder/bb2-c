@@ -56,6 +56,7 @@ struct treg_test {
     struct treg_strs labels;
     long long timeout;
     int has_cost;
+    int cost_configured;        /* the cost is the configuration's `cost` */
     long long cost;
     struct treg_strs fixtures;
     struct treg_strs cells;     /* the names of the side's cells */
@@ -131,9 +132,9 @@ struct tcosts;
 
 /**
  * @brief The measured COST (testcosts.h, tests/data/test-costs.txt): a test
- *        with an entry gets its COST, which wins over the configuration's
- *        `cost` and the sum of the cells' session limits (a measurement
- *        replaces the estimates); an entry of a test of the model of this
+ *        with an entry and without the configuration's `cost` gets its COST,
+ *        which replaces the estimate (the sum of the cells' session limits);
+ *        the configuration's `cost` wins over the entry.  An entry of a test of the model of this
  *        prefix (PREFIX...__CASE) that names no registered test is an error
  *        (file:line), the entries of other tests are left to their checks
  *        (cmake/test-cost.cmake).

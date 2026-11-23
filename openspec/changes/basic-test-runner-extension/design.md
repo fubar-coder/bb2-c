@@ -412,13 +412,16 @@ rounded up, at least 1. The design choices:
   a test that happened to take a slot first does not look dear; a test
   that had no warm session in the runs gets no entry (it keeps its
   estimate) rather than a COST from a boot.
-- **Measurement or `cost` key.** A measurement wins over every estimate:
-  a model test's `cost` key, the sum of its cells' session limits, an
-  old-form bug-orig test's session limit times sessions, and the list of
-  long tests in `cmake/test-cost.cmake`; the estimates stay for the tests
-  without an entry. Why: the keys and the list were guesses for lack of a
-  measurement (the list itself is "the rounded durations of one cost
-  file"). The list stays as the fallback until the file covers those
+- **Measurement or `cost` key.** A model test's explicit `cost` key wins
+  over its measurement (user, 2026-11-23: "Key wins (Recommended)",
+  `rounds/tr/decisions.md`, "COST: an explicit key wins over a
+  measurement"); a measurement replaces every estimate: the sum of a
+  model test's cells' session limits, an old-form bug-orig test's session
+  limit times sessions, and the list of long tests in
+  `cmake/test-cost.cmake`; the estimates stay for the tests without an
+  entry. Why: the estimates were guesses for lack of a measurement (the
+  list itself is "the rounded durations of one cost file"); a key is
+  written on purpose. The list stays as the fallback until the file covers those
   tests; then it can go (not here: the order of the long tests must stay
   sensible, and the file of this change holds only what this agent ran).
 - **Where it is read.** CMake reads the file at the start of the top

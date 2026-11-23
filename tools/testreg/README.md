@@ -39,8 +39,9 @@ to that file (`cmake/bug-orig-order.cmake`, a line `# @test NAME COST`
 before each declaration; `tests/README.md`, "Order of the bug-orig
 tests"), so that all of them are declared in one sorted list. With
 `--costs FILE` (`tests/data/test-costs.txt`, `tests/README.md`, "The
-measured COST") a test with an entry gets the measured COST, which wins
-over `cost` and the sum of the session limits; an entry
+measured COST") a test with an entry gets the measured COST in place of
+the sum of the session limits; the configuration's `cost` wins over the
+entry. An entry
 `PREFIX...__CASE` of the prefix that names no registered test fails the
 step. The depfile
 names every file the tool read (the sources, the configuration files, the
@@ -85,8 +86,9 @@ OPTIONS:
                               declared with the tests of the label bug-orig, the largest COST
                               first
           --costs FILE        the measured COST of the tests (tests/data/test-costs.txt): an
-                              entry wins over the configuration's cost; an entry of a test of
-                              the model of the prefix that is not registered is an error
+                              entry replaces the sum of the cells' session limits, the
+                              configuration's cost wins over it; an entry of a test of the
+                              model of the prefix that is not registered is an error
 
 The include file is written only when every source and configuration passed the
 checks; the depfile is written in any case. Exit status 0 ok, 1 a check failed

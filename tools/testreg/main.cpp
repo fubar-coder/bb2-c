@@ -208,9 +208,9 @@ int main(int argc, char **argv)
                    "the label bug-orig, the largest COST first")
         ->type_name("FILE");
     app.add_option("--costs", costfile,
-                   "the measured COST of the tests (tests/data/test-costs.txt): an entry wins over the "
-                   "configuration's cost; an entry of a test of the model of the prefix that is not registered "
-                   "is an error")
+                   "the measured COST of the tests (tests/data/test-costs.txt): an entry replaces the sum of "
+                   "the cells' session limits, the configuration's cost wins over it; an entry of a test of the "
+                   "model of the prefix that is not registered is an error")
         ->type_name("FILE");
     app.footer("The include file is written only when every source and configuration passed the checks; "
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
