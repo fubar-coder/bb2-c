@@ -1,0 +1,9 @@
+# compiler-float-zerofrac-exponent.test.bas: the original reads "e5" as
+# garbage at the end of the line: no program, no check
+fixed-orig = 11
+
+[deviations."compiler=orig195"]
+compile = "contains \"Garbage at End of Line\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

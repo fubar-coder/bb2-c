@@ -1,0 +1,10 @@
+# compiler-compare-compound-left.test.bas: an open bug (#1183): the port has
+# the same behaviour as the original, so every cell shows the declared
+# deviations
+[deviations."compiler=orig195"]
+"check.compound_left.times_greater" = "== fail"
+"check.compound_left.times_greater.actual" = "== 0"
+"check.compound_left.plus_greater" = "== fail"
+"check.compound_left.plus_greater.actual" = "== 0"
+"check.compound_left.times_equal" = "== fail"
+"check.compound_left.times_equal.actual" = "== 0"

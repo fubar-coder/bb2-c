@@ -1,0 +1,9 @@
+# compiler-float-trailing-dot.test.bas: the original refuses "1." as a
+# syntax error: no program, no check
+fixed-orig = 10
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

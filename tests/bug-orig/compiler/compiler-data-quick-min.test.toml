@@ -1,0 +1,9 @@
+# compiler-data-quick-min.test.bas: the original refuses the data as bad
+# data: no program, no check
+fixed-orig = 1074
+
+[deviations."compiler=orig195"]
+compile = "contains \"Bad Data\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

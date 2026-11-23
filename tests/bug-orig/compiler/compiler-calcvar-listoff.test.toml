@@ -1,0 +1,9 @@
+# compiler-calcvar-listoff.test.bas: the original reads another element
+# for a(b(1)) and c(a(1)/100)
+fixed-orig = 937
+
+[deviations."compiler=orig195"]
+"check.listoff.list_index_in_array" = "== fail"
+"check.listoff.list_index_in_array.actual" = "== 100"
+"check.listoff.array_index_in_list" = "== fail"
+"check.listoff.array_index_in_list.actual" = "== 21"
