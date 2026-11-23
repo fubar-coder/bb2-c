@@ -9,7 +9,7 @@
 ; destination and in Dc (to the end of the 8 bytes), 133 in the
 ; destination operand (likewise); and 125 with a local label in Dc
 ; (copyconst puts the 59 characters of the last global label in front).
-; Correct: the program compiles and stores 63, 131, 7, 131 and the
+; Correct: the program compiles and checks 63, 131, 7, 131 and the
 ; address of the local label (difference 0).
 ; A regression test of the fix of #997: the original already gives this (correct) result.
 Macro s
@@ -25,26 +25,30 @@ End Macro
 Macro c
 Dc.l `1+`1+`1+`1+`2
 End Macro
-Goto skip
-.dats
-Dc.l 0
-.datr
-Dc.l 0
-.dests
-Dc.l 0
-.datc
-!c{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1}
-.skip
-!s{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1}
-!r{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1}
-!d{0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0}
-NPrint Peek.l(?dats)
-NPrint Peek.l(?datr)
-NPrint Peek.l(?dests)
-NPrint Peek.l(?datc)
-a.l=?ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-NPrint Peek.l(a)-a
-End
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc:
-'l
-Dc.l 'l+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0
+
+!TestCase{copyconst_limit}
+  Goto skip
+  .dats
+  Dc.l 0
+  .datr
+  Dc.l 0
+  .dests
+  Dc.l 0
+  .datc
+  !c{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1}
+  .skip
+  !s{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1}
+  !r{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1,1+1+1+1+1+1+1+1+1+1+1}
+  !d{0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0}
+  !CheckEq{Peek.l(?dats),63,"source_operand_125"}
+  !CheckEq{Peek.l(?datr),131,"source_operand_register"}
+  !CheckEq{Peek.l(?dests),7,"destination_operand_133"}
+  !CheckEq{Peek.l(?datc),131,"dc_operand_261"}
+  a.l=?ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !CheckEq{Peek.l(a)-a,0,"local_label_in_dc"}
+  Goto done
+  ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc:
+  'l
+  Dc.l 'l+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0
+  .done
+!EndTestCase

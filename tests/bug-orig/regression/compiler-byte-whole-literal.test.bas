@@ -6,12 +6,23 @@
 ; A regression test of the fix of #1188, which makes only a literal with a
 ; non-zero fraction a Float under a Byte type so far: the original already
 ; gives these (correct) results.
-vb.b=3 : rb.b=0
-rb=vb+2.0 : NPrint "01 rb.b=vb+2.0 ",rb
-rb=vb AND 2.0 : NPrint "02 rb.b=vb AND 2.0 ",rb
-rb=vb+1.5e1 : NPrint "03 rb.b=vb+1.5e1 ",rb
-rb=vb ASL 1.0 : NPrint "04 rb.b=vb ASL 1.0 ",rb
-Read db.b : NPrint "05 Data.b 1.5 ",db
-Read db : NPrint "06 Data.b -1.5 ",db
-End
+
+.pts
 Data.b 1.5,-1.5
+
+!TestCase{byte_whole_literal}
+  vb.b=3 : rb.b=0
+  rb=vb+2.0
+  !CheckEq{rb,5,"add_whole_point"}
+  rb=vb AND 2.0
+  !CheckEq{rb,2,"and_whole_point"}
+  rb=vb+1.5e1
+  !CheckEq{rb,18,"add_exponent"}
+  rb=vb ASL 1.0
+  !CheckEq{rb,6,"asl_whole_point"}
+  Restore pts
+  Read db.b
+  !CheckEq{db,1,"data_fraction_positive"}
+  Read db
+  !CheckEq{db,-1,"data_fraction_negative"}
+!EndTestCase
