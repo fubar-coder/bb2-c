@@ -9,19 +9,25 @@
 ; list box.  The page object is at Addr Page(0), its +4 is the address of
 ; the boxes.  Runtime error checking on (the error is raised by the
 ; debugger's requester).
+; The statement neverrun is never called: its LoadShape makes blitz2
+; allocate the shape objects (#335).
 ; Correct: range 3, SetBox 0,1 selects entry 1.
-; @fixed #989
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,200,2
-InitPage 0,0,4
-AddBox 0,0,10,10,100,40,10,"one|two|three"
-b=Peek.l(Addr Page(0)+4)
-NPrint "range ",Peek.w(b+14)
-BLITZ
-SetBox 0,1
-v=BoxValue(0)
-AMIGA
-NPrint "value ",v
-End
-LoadShape 0,"x"
+
+Statement neverrun{}
+  LoadShape 0,"x"
+End Statement
+
+!TestCase{list_range}
+  BitMap 0,320,200,2
+  InitPage 0,0,4
+  AddBox 0,0,10,10,100,40,10,"one|two|three"
+  b=Peek.l(Addr Page(0)+4)
+  r=Peek.w(b+14)
+  !CheckEq{r,3,"range"}
+  BLITZ
+  SetBox 0,1
+  v=BoxValue(0)
+  AMIGA
+  !CheckEq{v,1,"value"}
+!EndTestCase

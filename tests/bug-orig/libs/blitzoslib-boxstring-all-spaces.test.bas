@@ -5,19 +5,22 @@
 ; copied into the string buffer.
 ; Here a string box 160 pixels wide (20 bytes) with the prompt "Name: ",
 ; never edited: the answer is 13 spaces.
-; The command after End is never run: it makes blitz2 allocate the shape
-; objects (#335).
+; The statement neverrun is never called: its LoadShape makes blitz2
+; allocate the shape objects (#335).
 ; Correct: the answer is the empty string.
-; @fixed #85
-; @configs clib
-; @pass timeout=30
-BitMap 0,320,200,2
-InitPage 0,0,1
-AddBox 0,0,0,0,160,12,4,"Name: "
-NPrint "before"
-BLITZ
-a$=BoxString(0)
-AMIGA
-NPrint "len ",Len(a$)
-End
-LoadShape 0,"x"
+DEFTYPE .l
+
+Statement neverrun{}
+  LoadShape 0,"x"
+End Statement
+
+!TestCase{all_spaces}
+  BitMap 0,320,200,2
+  InitPage 0,0,1
+  AddBox 0,0,0,0,160,12,4,"Name: "
+  BLITZ
+  a$=BoxString(0)
+  AMIGA
+  n=Len(a$)
+  !CheckEq{n,0,"length"}
+!EndTestCase

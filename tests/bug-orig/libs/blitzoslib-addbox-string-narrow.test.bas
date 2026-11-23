@@ -6,17 +6,19 @@
 ; The program runs through inject with guard (runwrap=): every AllocMem
 ; of the program gets a pattern behind it, checked at FreeMem and at the
 ; end.
-; The command after End is never run: it makes blitz2 allocate the shape
-; objects (#335).
+; The statement neverrun is never called: its LoadShape makes blitz2
+; allocate the shape objects (#335).
 ; Correct: the 1-byte text is just the 0, nothing is written behind an
 ; allocation.
-; @fixed #84
-; @configs clib
-; @pass runwrap=@INJECT@|guard
-; @pass timeout=30
-BitMap 0,320,200,2
-InitPage 0,0,1
-AddBox 0,0,0,0,12,12,4
-NPrint "added"
-End
-LoadShape 0,"x"
+DEFTYPE .l
+
+Statement neverrun{}
+  LoadShape 0,"x"
+End Statement
+
+!TestCase{string_narrow}
+  BitMap 0,320,200,2
+  InitPage 0,0,1
+  AddBox 0,0,0,0,12,12,4
+  !Check{Peek.l(Addr Page(0)+4)<>0,"added"}
+!EndTestCase

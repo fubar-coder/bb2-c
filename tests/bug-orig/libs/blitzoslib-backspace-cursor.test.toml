@@ -1,0 +1,5 @@
+# blitzoslib-backspace-cursor.test.bas: the original leaves the cursor off
+fixed-orig = 91
+
+[deviations."libs=cd"]
+"check.cursor_on.plane_0_as_before" = "== fail"

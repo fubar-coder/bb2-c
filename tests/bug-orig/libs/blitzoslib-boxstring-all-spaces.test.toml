@@ -1,0 +1,22 @@
+# blitzoslib-boxstring-all-spaces.test.bas: the original copies 65535 bytes
+# into the string buffer and ends in a Software Failure.  Where it happens
+# depends on the code layout of the cell, but is the same on every run of
+# a cell: with the port's compiler the program stops before the check
+# (the string buffer holds the test library's data too), with the original
+# compiler it goes on to the end of the case and fails at the exit.
+fixed-orig = 85
+timeout = 30
+
+[deviations."libs=cd"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+rc = "not exists"
+
+[deviations."compiler=port,libs=cd"]
+"check.all_spaces.length" = "== not-run"
+"end.case" = "not exists"
+"end.run" = "not exists"
+
+[deviations."compiler=orig195"]
+"check.all_spaces.length" = "== fail"
+"check.all_spaces.length.actual" = "== 65535"

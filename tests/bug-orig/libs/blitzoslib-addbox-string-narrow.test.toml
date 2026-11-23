@@ -1,0 +1,18 @@
+# blitzoslib-addbox-string-narrow.test.bas: through inject with guard; the
+# original writes 65536 spaces behind the allocation.  inject reports it with
+# the port's compiler; with the original compiler the cell's code layout
+# lets the program go on to the end of the case and fail at the exit in a
+# Software Failure (the same on every run of the cell)
+fixed-orig = 84
+runwrap = "@INJECT@|guard"
+timeout = 30
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."compiler=port,libs=cd"]
+inject = "contains \"written behind an allocation of 9 bytes\""
+
+[deviations."compiler=orig195"]
+requester = "contains \"Software Failure\""
+rc = "not exists"

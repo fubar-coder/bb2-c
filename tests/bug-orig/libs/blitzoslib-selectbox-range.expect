@@ -1,5 +1,0 @@
-[run]
-before
-valid passed
-REQUESTER: AutoRequest body "Illegal Box# For Page" *
-rc=0

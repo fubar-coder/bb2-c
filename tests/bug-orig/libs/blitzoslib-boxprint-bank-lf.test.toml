@@ -1,0 +1,6 @@
+# blitzoslib-boxprint-bank-lf.test.bas: the original replaces the LF by 0
+fixed-orig = 87
+
+[deviations."libs=cd"]
+"check.bank_lf.byte_2" = "== fail"
+"check.bank_lf.byte_2.actual" = "== 0"

@@ -5,18 +5,19 @@
 ; error check.
 ; Here runtime error checking is on: InitPage 0,0,32768, then the memory
 ; size of the page (+0 of the page object).
-; The command after End is never run: it makes blitz2 allocate the shape
-; objects (#335).
+; The statement neverrun is never called: its LoadShape makes blitz2
+; allocate the shape objects (#335).
 ; Correct: an error check refuses the number: "Illegal Number of Boxes",
 ; the command is not done.
-; @fixed #1043
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
 DEFTYPE .l
-BitMap 0,320,200,2
-NPrint "before"
-InitPage 0,0,32768
-NPrint "after, size ",Hex$(Peek.l(Addr Page(0)))
-End
-LoadShape 0,"x"
+
+Statement neverrun{}
+  LoadShape 0,"x"
+End Statement
+
+!TestCase{numboxes}
+  BitMap 0,320,200,2
+  !ExpectError{"Illegal Number of Boxes","refused"}
+  InitPage 0,0,32768
+  !Check{0,"not_refused"}
+!EndTestCase
