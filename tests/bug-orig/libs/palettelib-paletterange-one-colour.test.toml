@@ -1,0 +1,14 @@
+# palettelib-paletterange-one-colour.test.bas: the original divides by 0
+# (Guru 8000 0005): a crash ("Software Failure", the session runs into its
+# timeout; each cell with the CD's libraries has its own session)
+fixed-orig = 227
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.one_colour.red" = "== not-run"
+"check.one_colour.went_on" = "== not-run"

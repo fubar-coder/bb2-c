@@ -1,0 +1,21 @@
+# shapeslib-messages-errarea.test.bas: the trap handler of the program
+# continues at the label rec; the checks behind the faulty statements
+# (no_error_N) are reached only if no error is raised.  The original raises
+# the errors with a message read from the memory its pointer leads to (a
+# text that depends on the memory layout), so the deviation says that it is
+# not the message.
+fixed-orig = 953
+timeout = 60
+
+[asserts]
+"check.messages.no_error_1" = "== not-run"
+"check.messages.no_error_2" = "== not-run"
+"check.messages.no_error_3" = "== not-run"
+
+[deviations."libs=cd"]
+"check.messages.message_1" = "== fail"
+"check.messages.message_1.actual" = "!= \"Can't open Shapes File\""
+"check.messages.message_2" = "== fail"
+"check.messages.message_2.actual" = "!= \"Can't open Shapes File\""
+"check.messages.message_3" = "== fail"
+"check.messages.message_3.actual" = "!= \"Can't open Shapes File\""

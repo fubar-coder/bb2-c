@@ -7,12 +7,13 @@
 ; 849 x 849 pixels, 108 bytes per row, 93390 bytes with the extra word).
 ; Correct: an error check refuses the new shape: "Shape too Big", the
 ; command is not done.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{rotate_plane_64k}
   InitShape 0,600,600,1
+  !ExpectError{"Shape too Big","refused"}
   Rotate 0,0.125
   !Check{0,"after"}
 !EndTestCase

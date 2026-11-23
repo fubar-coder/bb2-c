@@ -9,14 +9,15 @@
 ; Correct: the error check stops SColl(0,1) with "Sprite channels must
 ; be of different pairs".  The original has no check and returns a
 ; value.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{same_pair}
   BLITZ
   Slice 0,44,320,200,$fff8,2,8,8,320,320
   DoColl
+  !ExpectError{"Sprite channels must be of different pairs","refused"}
   a=SColl(0,1)
   AMIGA
   !Check{0,"after"}

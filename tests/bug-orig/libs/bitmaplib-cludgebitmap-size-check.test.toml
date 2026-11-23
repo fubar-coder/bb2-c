@@ -1,16 +1,14 @@
-# bitmaplib-cludgebitmap-size-check.test.bas: with runtime error checking;
-# the requester with its text is the tested behaviour, the case ends in it,
-# and the check behind the command does not run; the original raises no
-# error and runs on
+# bitmaplib-cludgebitmap-size-check.test.bas: with runtime error checking
+# for the announced error; the original raises none, so the announcement
+# fails there and the case runs on to its check
 fixed-orig = 78
 runtime-errors = "on"
 
 [asserts]
-requester = "contains \"Illegal BitMap Size\""
-"end.case" = "not exists"
 "check.height_zero.after" = "== not-run"
 
 [deviations."libs=cd"]
+"check.height_zero.refused" = "== fail"
 requester = "count == 0"
 "end.case" = "exists"
 "check.height_zero.after" = "== fail"

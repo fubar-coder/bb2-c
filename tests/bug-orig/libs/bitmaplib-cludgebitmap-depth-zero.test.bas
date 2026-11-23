@@ -8,14 +8,15 @@
 ; (tedstub max=, bitmaplib = 160), so that the 65536 pointers lie in
 ; objects of this program; they are cleared again before the case ends.
 ; Correct: an error check refuses the depth (0 or more than 8, as for
-; BitMap): "Illegal BitMap Depth", the command is not done.  The message
-; is part of the tested behaviour, so the error is not announced with
-; !ExpectError (see the configuration).
+; BitMap): "Illegal BitMap Depth", the command is not done.  The error is
+; announced with !ExpectError; the original raises none (see the
+; configuration).
 DEFTYPE .l
 
 !TestCase{depth_zero}
   m=AllocMem(256,$10003)
   !Require{m<>0,"memory"}
+  !ExpectError{"Illegal BitMap Depth","refused"}
   CludgeBitMap 0,16,8,0,m
   o=Addr BitMap(0)
   For i=0 To 4200*64-4 Step 4 : Poke.l o+i,0 : Next

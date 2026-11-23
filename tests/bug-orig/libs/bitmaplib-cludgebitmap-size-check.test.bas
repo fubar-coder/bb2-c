@@ -6,8 +6,8 @@
 ; Here with runtime error checking: CludgeBitMap with 16 x 10 (no error),
 ; then with height 0.
 ; Correct: the error check refuses the size: "Illegal BitMap Size".  The
-; message is part of the tested behaviour, so the error is not announced
-; with !ExpectError (see the configuration).
+; error is announced with !ExpectError; the original raises none (see the
+; configuration).
 DEFTYPE .l
 
 !TestCase{height_zero}
@@ -15,6 +15,7 @@ DEFTYPE .l
   !Require{m<>0,"memory"}
   CludgeBitMap 0,16,10,1,m
   !CheckEq{Peek.w(Addr BitMap(0)+2),10,"rows_10"}
+  !ExpectError{"Illegal BitMap Size","refused"}
   CludgeBitMap 1,16,0,1,m
   !Check{0,"after"}
   FreeMem m,1000
