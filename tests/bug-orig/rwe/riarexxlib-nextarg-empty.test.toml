@@ -1,0 +1,8 @@
+# riarexxlib-nextarg-empty.test.bas: the reference library stays at the
+# empty argument
+fixed-orig = 534
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.empty_second.next_3" = "== fail"
+"check.empty_second.next_3.actual" = "== \"\""

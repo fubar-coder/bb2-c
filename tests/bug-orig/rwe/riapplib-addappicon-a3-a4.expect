@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-5 ab0cd
-local 7
-done
-rc=0

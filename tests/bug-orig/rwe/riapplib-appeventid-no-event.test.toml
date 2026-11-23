@@ -1,0 +1,12 @@
+# riapplib-appeventid-no-event.test.bas: the reference library returns 0
+# without an App event
+fixed-orig = 1102
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.event_id.before_event" = "== fail"
+"check.event_id.before_event.actual" = "== 0"
+"check.event_id.no_message" = "== fail"
+"check.event_id.no_message.actual" = "== 0"
+"check.event_id.after_last_message" = "== fail"
+"check.event_id.after_last_message.actual" = "== 0"

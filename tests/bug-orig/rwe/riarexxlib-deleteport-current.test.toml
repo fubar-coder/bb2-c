@@ -1,0 +1,8 @@
+# riarexxlib-deleteport-current.test.bas: the reference library never replies
+# the message that is current (the reply is an address: only the verdict)
+fixed-orig = 1101
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.current_message.replied" = "== fail"
+"check.current_message.replied.actual" = "== 0"

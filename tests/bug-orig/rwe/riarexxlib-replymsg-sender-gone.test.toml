@@ -1,0 +1,10 @@
+# riarexxlib-replymsg-sender-gone.test.bas: the reference library makes the
+# result string before it looks for the sender's port; the message sent to the
+# own port is never replied and finit waits 5 s for its reply
+fixed-orig = 540
+rwe = ["riarexxlib"]
+hang-after = 20
+
+[deviations."compiler=orig210"]
+"check.sender_gone.result2_set" = "== fail"
+"check.sender_gone.result2_set.actual" = "== -1"

@@ -1,0 +1,8 @@
+# riarexxlib-createport-name-exists.test.bas: the reference library adds a
+# second port of the name
+fixed-orig = 1096
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.name_exists.refused" = "== fail"
+"check.name_exists.refused.actual" = "== 0"

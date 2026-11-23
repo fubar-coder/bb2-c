@@ -1,0 +1,14 @@
+# riapplib-init-fail-cleanup.test.bas: through inject the OpenLibrary of
+# icon.library fails (inject counts the failed opens); the program is silent
+# for about 11 s
+fixed-orig = 526
+rwe = ["riapplib"]
+runwrap = "@INJECT@|openlibfail=icon.library opencount=workbench.library opencount=dos.library"
+hang-after = 30
+
+[asserts]
+inject = "contains \"inject: openlibfail: 2 opens failed\ninject: rc=0\ninject: opencount: workbench.library +0\ninject: opencount: dos.library +0\""
+
+[deviations."compiler=orig210"]
+"check.port_after_failed_init.port" = "== fail"
+"check.port_after_failed_init.port.actual" = "!= 0"

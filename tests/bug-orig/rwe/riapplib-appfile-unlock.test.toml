@@ -1,0 +1,9 @@
+# riapplib-appfile-unlock.test.bas: the reference library unlocks the lock of
+# the argument and clears it in the message, so the second path differs
+fixed-orig = 521
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.lock_stays.second_path" = "== fail"
+"check.lock_stays.lock_kept" = "== fail"
+"check.lock_stays.lock_kept.actual" = "== 0"

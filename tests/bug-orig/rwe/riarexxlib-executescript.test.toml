@@ -1,0 +1,19 @@
+# riarexxlib-executescript.test.bas: the reference library loads no script
+# (RexxMast reports "Arithmetic conversion error" to the output) and neither
+# waits nor returns -1; nothing arrives
+fixed-orig = 544
+rwe = ["riarexxlib"]
+timeout = 60
+
+[deviations."compiler=orig210"]
+"check.scripts.ok_result" = "== fail"
+"check.scripts.ok_result.actual" = "== 0"
+"check.scripts.bad_result" = "== fail"
+"check.scripts.bad_result.actual" = "== 0"
+"check.scripts.bad_code" = "== fail"
+"check.scripts.bad_code.actual" = "== 0"
+"check.scripts.run_result" = "== fail"
+"check.scripts.run_result.actual" = "== 0"
+"check.scripts.hello_arrived" = "== fail"
+"check.scripts.hello_text" = "== not-run"
+output = "contains \"+++ Error 47 in line 1: Arithmetic conversion error\""

@@ -1,0 +1,11 @@
+# ribbmaplib-getpalette-low-gt-high.test.bas: through inject (guard) the
+# reference library's write behind the colour block shows
+fixed-orig = 549
+rwe = ["ribbmaplib"]
+runwrap = "@INJECT@|guard"
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: guard: written behind an allocation of 208 bytes\""

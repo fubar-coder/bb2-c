@@ -1,0 +1,12 @@
+# riarexxlib-defaultport-no-limit.test.bas: the reference library overwrites
+# rexxbase; the next message crashes (the session halts)
+fixed-orig = 529
+rwe = ["riarexxlib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.long_name.received" = "== not-run"

@@ -1,0 +1,8 @@
+# riapplib-delappwindow-empty.test.bas: the reference library reports success
+# for a slot without an App window
+fixed-orig = 523
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.empty_slot.result" = "== fail"
+"check.empty_slot.result.actual" = "== -1"

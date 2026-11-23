@@ -1,0 +1,8 @@
+# riarexxlib-runcommand-result.test.bas: the reference library returns the d0
+# that PutMsg leaves (0 here)
+fixed-orig = 543
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.sent.result_is_true" = "== fail"
+"check.sent.result_is_true.actual" = "== 0"

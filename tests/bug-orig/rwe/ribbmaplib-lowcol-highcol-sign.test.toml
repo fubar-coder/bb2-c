@@ -1,0 +1,10 @@
+# ribbmaplib-lowcol-highcol-sign.test.bas: the reference library returns the
+# colours with their sign
+fixed-orig = 550
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.colours_81_to_83.low" = "== fail"
+"check.colours_81_to_83.low.actual" = "== -127"
+"check.colours_81_to_83.high" = "== fail"
+"check.colours_81_to_83.high.actual" = "== -125"

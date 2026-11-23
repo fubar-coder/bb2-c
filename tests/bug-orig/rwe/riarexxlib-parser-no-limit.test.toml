@@ -1,0 +1,14 @@
+# riarexxlib-parser-no-limit.test.bas: the reference library's buffer lies in
+# front of the tokenizer's code: the four bytes of the command are an
+# instruction that makes the message arrive without arguments
+fixed-orig = 537
+rwe = ["riarexxlib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.long_command.args" = "== fail"
+"check.long_command.args.actual" = "== 0"
+"check.long_command.arg_1" = "== fail"
+"check.long_command.arg_1.actual" = "== \"\""
+"check.long_command.arg_2_length" = "== fail"
+"check.long_command.arg_2_length.actual" = "== 0"

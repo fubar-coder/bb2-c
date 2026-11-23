@@ -1,0 +1,8 @@
+# riarexxlib-returncode-no-message.test.bas: the reference library returns 0
+# when no message is current
+fixed-orig = 542
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.return_code.code" = "== fail"
+"check.return_code.code.actual" = "== 0"

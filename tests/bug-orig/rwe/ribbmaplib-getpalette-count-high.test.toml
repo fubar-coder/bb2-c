@@ -1,0 +1,14 @@
+# ribbmaplib-getpalette-count-high.test.bas: the reference library sets the
+# count to high (31) and allocates a new block at every call
+fixed-orig = 548
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.high_colour_32.object_count" = "== fail"
+"check.high_colour_32.object_count.actual" = "== 31"
+"check.high_colour_32.block_count" = "== fail"
+"check.high_colour_32.block_count.actual" = "== 31"
+"check.high_colour_32.same_block" = "== fail"
+"check.high_colour_32.same_block.actual" = "== 0"
+"check.high_colour_32.second_count" = "== fail"
+"check.high_colour_32.second_count.actual" = "== 31"

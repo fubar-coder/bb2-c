@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-received -1
-args 2 <aaa> 4
-rc=0

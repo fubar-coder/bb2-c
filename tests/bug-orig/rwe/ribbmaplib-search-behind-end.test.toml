@@ -1,0 +1,8 @@
+# ribbmaplib-search-behind-end.test.bas: the reference library takes the
+# bytes behind the file for a DEST chunk
+fixed-orig = 553
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.dest_behind_the_file.dest" = "== fail"
+"check.dest_behind_the_file.dest.actual" = "== 30"

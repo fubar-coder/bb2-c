@@ -1,0 +1,14 @@
+# riapplib-appfile-a3-behind-0.test.bas: the reference library writes the next
+# part one byte too far: the 0 of the name stays and the last character is lost
+fixed-orig = 519
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.bak_suffix.next_dot" = "== fail"
+"check.bak_suffix.next_dot.actual" = "== 0"
+"check.bak_suffix.next_last" = "== fail"
+"check.bak_suffix.next_last.actual" = "== 97"
+"check.bak_suffix.file_dot" = "== fail"
+"check.bak_suffix.file_dot.actual" = "== 0"
+"check.bak_suffix.file_last" = "== fail"
+"check.bak_suffix.file_last.actual" = "== 97"

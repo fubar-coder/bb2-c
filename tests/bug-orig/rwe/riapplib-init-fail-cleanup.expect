@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-port 0
-inject: openlibfail: 2 opens failed
-inject: rc=0
-inject: opencount: workbench.library +0
-inject: opencount: dos.library +0
-rc=0

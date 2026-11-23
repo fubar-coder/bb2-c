@@ -1,0 +1,8 @@
+# riarexxlib-tokenise-upper-word.test.bas: the reference library tests the
+# long: tokenising stays on
+fixed-orig = 547
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.upper_word.args" = "== fail"
+"check.upper_word.args.actual" = "== 3"

@@ -1,0 +1,16 @@
+# riapplib-addappicon-a3-a4.test.bas: the reference library leaves a3 and a4
+# changed: the string expression is written into the DiskObject, the local
+# of the Statement reads as 0 and its return loads the stack pointer from 0
+# (the program never returns)
+fixed-orig = 516
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.icon_registers.string" = "== fail"
+"check.appicon.local" = "== fail"
+"check.appicon.local.actual" = "== 0"
+"check.icon_registers.statement_returned" = "== not-run"
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

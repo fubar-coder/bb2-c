@@ -1,0 +1,12 @@
+# riarexxlib-args-no-limit-16.test.bas: the reference library stores all 18
+# words: 18 arguments, rm_PassPort set, the 16th argument only the 16th word
+fixed-orig = 527
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.eighteen_words.args" = "== fail"
+"check.eighteen_words.args.actual" = "== 18"
+"check.eighteen_words.passport_set" = "== fail"
+"check.eighteen_words.passport_set.actual" = "== -1"
+"check.eighteen_words.arg_16" = "== fail"
+"check.eighteen_words.arg_16.actual" = "== \"16\""

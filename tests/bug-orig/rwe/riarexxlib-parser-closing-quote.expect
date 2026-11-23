@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-6: <one> <two> <three> <four> <five> <six>
-2: <say> <hi>
-2: <g> <h>
-rc=0

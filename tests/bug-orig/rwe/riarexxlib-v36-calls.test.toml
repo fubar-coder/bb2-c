@@ -1,0 +1,24 @@
+# riarexxlib-v36-calls.test.bas: the reference library crashes at RXCreatePort
+# on Kickstart 1.3 (a500: "Software error - task held") and on Kickstart 2.04
+# (a500-204: the requester "Software Failure"); the session ends in a timeout.
+# The A1200 runs it.
+fixed-orig = 1144
+rwe = ["riarexxlib"]
+timeout = 30
+
+[matrix]
+machine = ["a500", "a500-204", "a1200"]
+
+[deviations."compiler=orig210,machine=a500"]
+session = "== timeout"
+requester = "contains \"Software error - task held\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+
+[deviations."compiler=orig210,machine=a500-204"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

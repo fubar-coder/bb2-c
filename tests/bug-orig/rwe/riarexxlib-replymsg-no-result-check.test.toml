@@ -1,0 +1,8 @@
+# riarexxlib-replymsg-no-result-check.test.bas: the reference library makes
+# a result string although none was asked for
+fixed-orig = 539
+rwe = ["riarexxlib"]
+
+[deviations."compiler=orig210"]
+"check.no_result_flag.result2_set" = "== fail"
+"check.no_result_flag.result2_set.actual" = "== -1"

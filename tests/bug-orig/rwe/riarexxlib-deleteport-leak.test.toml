@@ -1,0 +1,11 @@
+# riarexxlib-deleteport-leak.test.bas: through inject (track) the leak of the
+# 256-byte block shows
+fixed-orig = 530
+rwe = ["riarexxlib"]
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"inject: track: 0 allocations left, 0 bytes\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: track: 1 allocations left, 260 bytes\ninject:   260 bytes, flags $10001\""

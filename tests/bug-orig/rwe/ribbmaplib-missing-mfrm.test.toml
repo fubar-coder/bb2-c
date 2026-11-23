@@ -1,0 +1,14 @@
+# ribbmaplib-missing-mfrm.test.bas: the reference library takes the bytes
+# behind the file as the info chunk
+fixed-orig = 551
+rwe = ["ribbmaplib"]
+
+[deviations."compiler=orig210"]
+"check.no_info_chunk.info" = "== fail"
+"check.no_info_chunk.info.actual" = "== 28"
+"check.no_info_chunk.id" = "== fail"
+"check.no_info_chunk.id.actual" = "== 5"
+"check.no_info_chunk.width" = "== fail"
+"check.no_info_chunk.width.actual" = "== 99"
+"check.no_info_chunk.height" = "== fail"
+"check.no_info_chunk.height.actual" = "== 77"

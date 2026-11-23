@@ -1,0 +1,15 @@
+# ribbmaplib-odd-chunk-length-68000.test.bas: on the A600 (68000) the
+# reference library reads the id at an odd address: an address error, the
+# session ends in a timeout
+fixed-orig = 552
+rwe = ["ribbmaplib"]
+machine = "a600"
+timeout = 30
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.odd_length_chunk_68000.level" = "== not-run"

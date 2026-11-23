@@ -1,0 +1,8 @@
+# riapplib-appfile-index-le-0.test.bas: the reference library returns the
+# WBArg in front of the argument list
+fixed-orig = 520
+rwe = ["riapplib"]
+
+[deviations."compiler=orig210"]
+"check.index_zero.result" = "== fail"
+"check.index_zero.result.actual" = "== \"the WBArg before the list\""
