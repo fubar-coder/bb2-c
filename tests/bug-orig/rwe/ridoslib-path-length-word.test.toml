@@ -1,0 +1,12 @@
+# ridoslib-path-length-word.test.bas: the string buffer raised to 300000
+# bytes for the long arguments; the original takes the length as a word
+fixed-orig = 628
+rwe = ["ridoslib"]
+timeout = 60
+jobline = ["strbuf=300000"]
+
+[deviations."compiler=orig210"]
+"check.long_arguments.path_length" = "== fail"
+"check.long_arguments.path_length.actual" = "== 2"
+"check.long_arguments.file_part" = "== fail"
+"check.long_arguments.file_part.actual" = "== \"cc\""

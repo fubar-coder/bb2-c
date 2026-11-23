@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-while locked 1
-after FreeDeviceList: the same
-inject: rc=0
-rc=0

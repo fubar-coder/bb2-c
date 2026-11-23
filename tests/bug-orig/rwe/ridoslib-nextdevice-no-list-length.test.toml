@@ -1,0 +1,11 @@
+# ridoslib-nextdevice-no-list-length.test.bas: the original's result has the
+# length d0 held on entry
+fixed-orig = 625
+rwe = ["ridoslib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.no_list.before_list" = "== fail"
+"check.no_list.before_list.actual" = "== 3"
+"check.no_list.after_free" = "== fail"
+"check.no_list.after_free.actual" = "== 3"

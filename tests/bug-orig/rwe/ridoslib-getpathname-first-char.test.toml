@@ -1,0 +1,11 @@
+# ridoslib-getpathname-first-char.test.bas: the original does not look at
+# the first character
+fixed-orig = 624
+rwe = ["ridoslib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.first_character.colon_first" = "== fail"
+"check.first_character.colon_first.actual" = "== \"\""
+"check.first_character.slash_first" = "== fail"
+"check.first_character.slash_first.actual" = "== \"\""

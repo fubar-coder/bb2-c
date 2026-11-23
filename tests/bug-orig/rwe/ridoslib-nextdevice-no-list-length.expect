@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before GetDeviceList: length 0
-after FreeDeviceList: length 0
-rc=0

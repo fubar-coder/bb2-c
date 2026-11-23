@@ -1,0 +1,8 @@
+# ridoslib-addnotify-id-reused.test.bas: the original's lost request still
+# sends its message
+fixed-orig = 620
+rwe = ["ridoslib"]
+
+[deviations."compiler=orig210"]
+"check.lost_request.messages" = "== fail"
+"check.lost_request.messages.actual" = "== 1"

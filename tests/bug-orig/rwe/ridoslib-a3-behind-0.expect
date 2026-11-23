@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-9 47 120
-volume: last 120, zeros 0
-rc=0
