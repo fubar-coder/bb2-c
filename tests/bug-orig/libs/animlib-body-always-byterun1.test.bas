@@ -10,18 +10,23 @@
 ;    anim's width.
 ; Correct: 1. the rows as stored; 2. row 0 $1111 and nothing behind it
 ; (bytes 2-3 stay 0), row 1 $2222.
-; @fixed #397
-; @configs clib
-; @pass file=raw.anim|@TESTDATA@/animlib-body-always-byterun1-raw.anim
-; @pass file=run.anim|@TESTDATA@/animlib-body-always-byterun1-run.anim
 DEFTYPE .l
-BitMap 0,32,2,1
-p=Peek.l(Addr BitMap(0)+8)
-LoadAnim 0,"CORPUS:raw.anim"
-InitAnim 0
-NPrint "raw ",Hex$(Peek.l(p))," ",Hex$(Peek.l(p+4))
-Cls
-LoadAnim 1,"CORPUS:run.anim"
-InitAnim 1
-NPrint "run ",Hex$(Peek.l(p))," ",Hex$(Peek.l(p+4))
-End
+
+!TestCase{raw_body}
+  BitMap 0,32,2,1
+  p=Peek.l(Addr BitMap(0)+8)
+  LoadAnim 0,"CORPUS:raw.anim"
+  InitAnim 0
+  !CheckStrEq{Hex$(Peek.l(p)),"FDAAFDBB","row_0"}
+  !CheckStrEq{Hex$(Peek.l(p+4)),"FCCC0102","row_1"}
+!EndTestCase
+
+!TestCase{run_past_row}
+  BitMap 0,32,2,1
+  p=Peek.l(Addr BitMap(0)+8)
+  Cls
+  LoadAnim 1,"CORPUS:run.anim"
+  InitAnim 1
+  !CheckStrEq{Hex$(Peek.l(p)),"11110000","row_0"}
+  !CheckStrEq{Hex$(Peek.l(p+4)),"22220000","row_1"}
+!EndTestCase

@@ -11,15 +11,20 @@
 ; Correct: a picture with a dimension 0 has no data to decode: LoadAnim
 ; keeps no BODY and no deltas, so InitAnim and NextFrame do nothing.
 ; The original keeps both.
-; @fixed #402
-; @configs clib
-; @pass file=depth0.anim|@TESTDATA@/animlib-zero-dimensions-load-depth.anim
-; @pass file=width0.anim|@TESTDATA@/animlib-zero-dimensions-load-width.anim
 DEFTYPE .l
-LoadAnim 0,"CORPUS:depth0.anim"
-a=Addr Anim(0)
-NPrint "depth 0: body ",Peek.l(a+14)," frames ",Frames(0)," deltas ",Peek.l(a+18)<>0
-LoadAnim 1,"CORPUS:width0.anim"
-a=Addr Anim(1)
-NPrint "width 0: body ",Peek.l(a+14)," frames ",Frames(1)," deltas ",Peek.l(a+18)<>0
-End
+
+!TestCase{depth_zero}
+  LoadAnim 0,"CORPUS:depth0.anim"
+  a=Addr Anim(0)
+  !CheckEq{Peek.l(a+14),0,"body_length"}
+  !CheckEq{Frames(0),1,"frames"}
+  !CheckEq{Peek.l(a+18)<>0,0,"has_delta"}
+!EndTestCase
+
+!TestCase{width_zero}
+  LoadAnim 1,"CORPUS:width0.anim"
+  a=Addr Anim(1)
+  !CheckEq{Peek.l(a+14),0,"body_length"}
+  !CheckEq{Frames(1),1,"frames"}
+  !CheckEq{Peek.l(a+18)<>0,0,"has_delta"}
+!EndTestCase

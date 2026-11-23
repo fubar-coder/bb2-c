@@ -8,18 +8,18 @@
 ; Correct: a picture of height 0 has no row to decode: LoadAnim keeps no
 ; BODY (length 0), InitAnim leaves the plane 0.  The
 ; original decodes all 65536 rows (the last one leaves $FFFF).
-; @fixed #402
-; @configs clib
-; @pass file=height0.anim|@TESTDATA@/animlib-zero-dimensions.anim
 DEFTYPE .l
-BitMap 0,16,8,1
-b=Addr BitMap(0)
-LoadAnim 0,"CORPUS:height0.anim"
-a=Addr Anim(0)
-NPrint "height ",Peek.w(a+2)," body ",Peek.l(a+14)
-w=Peek.w(b)
-Poke.w b,0
-InitAnim 0
-Poke.w b,w
-NPrint "row ",Hex$(Peek.w(Peek.l(b+8)) AND $FFFF)
-End
+
+!TestCase{height_zero}
+  BitMap 0,16,8,1
+  b=Addr BitMap(0)
+  LoadAnim 0,"CORPUS:height0.anim"
+  a=Addr Anim(0)
+  !CheckEq{Peek.w(a+2),0,"height"}
+  !CheckEq{Peek.l(a+14),0,"body_length"}
+  w=Peek.w(b)
+  Poke.w b,0
+  InitAnim 0
+  Poke.w b,w
+  !CheckStrEq{Hex$(Peek.w(Peek.l(b+8)) AND $FFFF),"00000000","row"}
+!EndTestCase
