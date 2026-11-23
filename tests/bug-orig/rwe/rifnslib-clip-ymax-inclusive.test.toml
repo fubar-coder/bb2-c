@@ -1,0 +1,7 @@
+# rifnslib-clip-ymax-inclusive.test.bas: the original draws row 256
+fixed-orig = 1128
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.ymax.pixel_256" = "== fail"
+"check.ymax.pixel_256.actual" = "== 1"

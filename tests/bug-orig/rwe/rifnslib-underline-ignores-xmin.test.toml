@@ -1,0 +1,8 @@
+# rifnslib-underline-ignores-xmin.test.bas: the original draws the
+# underline left of xmin
+fixed-orig = 667
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.underline_xmin.left_of_xmin" = "== fail"
+"check.underline_xmin.left_of_xmin.actual" = "== 32"

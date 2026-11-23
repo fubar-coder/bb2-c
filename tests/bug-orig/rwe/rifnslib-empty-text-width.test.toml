@@ -1,0 +1,8 @@
+# rifnslib-empty-text-width.test.bas: the original underlines an empty line
+# with one pixel
+fixed-orig = 659
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.empty_text.longs_with_pixels" = "== fail"
+"check.empty_text.longs_with_pixels.actual" = "== 4"

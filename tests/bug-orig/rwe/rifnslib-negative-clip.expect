@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "FNSClip zone must not start below 0" *
-rc=0
