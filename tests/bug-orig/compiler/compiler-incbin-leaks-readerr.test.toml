@@ -1,0 +1,18 @@
+# compiler-incbin-leaks-readerr.test.bas: the first Read of
+# CORPUS:incbin.bin fails (inject readfail) and inject checks with inuse
+# (the query compile.inject) whether the file is still in use after
+# blitz2; the correct result is the error and the file not in use; the
+# original leaves the file open
+fixed-orig = 38
+files = ["incbin.bin|@TESTDATA@/compiler-incbin-leaks-readerr.bin"]
+wrap = "@INJECT@|readfail=incbin.bin/1 inuse=CORPUS:incbin.bin"
+
+[asserts]
+compile = "== \"error 8 Error Reading File\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+"compile.inject" = "contains \"inject: not in use: CORPUS:incbin.bin\n\""
+
+[deviations."compiler=orig195"]
+"compile.inject" = "contains \"inject: in use: CORPUS:incbin.bin\n\""

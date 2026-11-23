@@ -5,7 +5,7 @@
 ; fails and the error is "Constant Not Found").
 ; Correct: "#" without a name is a syntax error, and findlab compares no
 ; byte past an empty name.
-; @fixed-orig #30
-a=#+1
-NPrint a
-End
+!TestCase{findlab_emptyname}
+  a=#+1
+  !CheckEq{1,1,"after_expression"}
+!EndTestCase

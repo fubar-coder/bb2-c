@@ -8,9 +8,10 @@
 ; been defined by the program.
 ; Correct: the name clash is refused at the Goto (line 13) with the error
 ; for a name used as a constant.
-; @fixed-orig #977
 #foo=0
-Goto foo
-foo:
-NPrint "label"
-End
+
+!TestCase{const0_label}
+  Goto foo
+  foo:
+  !CheckEq{1,1,"after_label"}
+!EndTestCase

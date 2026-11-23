@@ -1,0 +1,18 @@
+# compiler-dcb-negative.test.bas: the correct result is a failed compile
+# (Illegal Constant at the Dcb) and nothing runs; the original takes the
+# count as unsigned and compiles for hours: the session ends at its limit
+fixed-orig = 37
+timeout = 30
+
+[asserts]
+compile = "== \"error 7 Illegal Constant\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

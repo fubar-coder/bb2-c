@@ -2,10 +2,9 @@
 ; of -1 makes 2^32-1 copies, the compiler runs for hours (here: the
 ; session's time limit).
 ; Correct: a negative count is an error.
-; @fixed-orig #37
-; @pass timeout=30
-Goto skip
-Dcb.w -1,0
-.skip
-NPrint "ok"
-End
+!TestCase{dcb_negative}
+  Goto skip
+  Dcb.w -1,0
+  .skip
+  !CheckEq{1,1,"after_dcb"}
+!EndTestCase

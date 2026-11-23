@@ -7,7 +7,8 @@
 ; Float has no AND, OR, EOR or shift, so the expression is refused with
 ; "Illegal Operator for Type", as rf.f=fh AND w is (spec
 ; compiler/expression-types).
-; @fixed-orig #1182
-l1.l=1 : fh.f=0.5 : rf.f=0
-rf=fh AND (l1=l1) : NPrint "01 rf.f=fh AND (l1=l1) ",rf
-End
+!TestCase{compare_right_operand}
+  l1.l=1 : fh.f=0.5 : rf.f=0
+  rf=fh AND (l1=l1)
+  !CheckEq{rf,0,"rf_and_compare"}
+!EndTestCase
