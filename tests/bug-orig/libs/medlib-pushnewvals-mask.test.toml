@@ -1,0 +1,9 @@
+# medlib-pushnewvals-mask.test.bas
+fixed-orig = 208
+files = ["mask.med|@TESTDATA@/medlib-pushnewvals-mask.med"]
+
+[deviations."libs=cd"]
+"check.channel_2.lc_at_the_sample" = "== fail"
+"check.channel_2.lc_at_the_sample.actual" = "== 1"
+"check.channel_2.len" = "== fail"
+"check.channel_2.len.actual" = "== 32"

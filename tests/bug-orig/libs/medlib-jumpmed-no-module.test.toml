@@ -1,0 +1,10 @@
+# medlib-jumpmed-no-module.test.bas: with runtime error checking for the
+# announced error; the original raises none and writes the vector
+fixed-orig = 210
+runtime-errors = "on"
+
+[deviations."libs=cd"]
+"check.no_module.refused" = "== fail"
+requester = "count == 0"
+"check.no_module.vector_changed" = "== fail"
+"check.no_module.vector_changed.actual" = "== 1"

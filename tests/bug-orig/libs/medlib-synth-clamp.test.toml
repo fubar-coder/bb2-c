@@ -1,0 +1,7 @@
+# medlib-synth-clamp.test.bas
+fixed-orig = 206
+files = ["synth.med|@TESTDATA@/medlib-synth-clamp.med"]
+
+[deviations."libs=cd"]
+"check.periods.tick_3" = "== fail"
+"check.periods.tick_3.actual" = "== 102"

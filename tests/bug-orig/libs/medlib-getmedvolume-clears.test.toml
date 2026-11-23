@@ -1,0 +1,7 @@
+# medlib-getmedvolume-clears.test.bas
+fixed-orig = 212
+files = ["vol.med|@TESTDATA@/medlib-getmedvolume-clears.med"]
+
+[deviations."libs=cd"]
+"check.next_tick.next_tick" = "== fail"
+"check.next_tick.next_tick.actual" = "== 0"

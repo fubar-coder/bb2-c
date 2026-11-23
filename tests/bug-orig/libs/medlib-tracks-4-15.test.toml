@@ -1,0 +1,9 @@
+# medlib-tracks-4-15.test.bas
+fixed-orig = 209
+files = ["tracks.med|@TESTDATA@/medlib-tracks-4-15.med"]
+
+[deviations."libs=cd"]
+"check.track_4_note.buffer_written" = "== fail"
+"check.track_4_note.buffer_written.actual" = "== 1"
+"check.track_4_note.track_8_kept" = "== fail"
+"check.track_4_note.track_8_kept.actual" = "== 6"

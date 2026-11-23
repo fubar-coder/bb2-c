@@ -1,0 +1,7 @@
+# medlib-tracks-8-11-cmd3.test.bas
+fixed-orig = 1067
+files = ["cmd3.med|@TESTDATA@/medlib-tracks-8-11-cmd3.med"]
+
+[deviations."libs=cd"]
+"check.track_12_volume.track_12_volume" = "== fail"
+"check.track_12_volume.track_12_volume.actual" = "== 32"

@@ -1,0 +1,11 @@
+# medlib-mask-noteptr.test.bas
+fixed-orig = 334
+files = ["mask.med|@TESTDATA@/medlib-mask-noteptr.med"]
+
+[deviations."libs=cd"]
+"check.masked_track_0.track_1" = "== fail"
+"check.masked_track_0.track_1.actual" = "== 13"
+"check.masked_track_0.track_2" = "== fail"
+"check.masked_track_0.track_2.actual" = "== 25"
+"check.masked_track_0.track_3" = "== fail"
+"check.masked_track_0.track_3.actual" = "== 37"
