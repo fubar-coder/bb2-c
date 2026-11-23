@@ -1,0 +1,21 @@
+# model-editor-run.test.bas: the port with the C libraries (the side port),
+# the driver run from the editor with runtime error checking (the debugger
+# of the run; the cell has no module of its own, blitz2:defaultdbug is not
+# staged); the queries of such a run: no exit code and no requesters
+editor-run = "on"
+runtime-errors = "on"
+timeout = 90
+
+[asserts."case=prints"]
+output = "contains \"start\n\""
+"compile.log" = "contains \"OPENIO\tr001\""
+
+# the program hangs: the hang check (armed on the console) ends the
+# session, the line before the hang is in the console, the check behind it
+# is not run
+[asserts."case=hangs"]
+output = "contains \"before the hang\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.hangs.behind" = "== not-run"

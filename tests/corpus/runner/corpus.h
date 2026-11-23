@@ -243,6 +243,18 @@
  *                     corpusrun case, never run by corpus_run, which judges
  *                     nothing of it.  Not with expect=, expect_dir=, orig=,
  *                     fixed=, regression=on, record=, gate=, publish=
+ *   editrun=on        with cell=on: the program runs from the editor
+ *                     instead of from the shell (change
+ *                     basic-test-editor-run): behind the job list (its
+ *                     jobs, the jobline= lines) the line
+ *                     run=r001|CORPUS:src/NAME.bb2|CORPUS:out/NAME.con
+ *                     (tedstub's COMPILE/RUN, the editor's console the
+ *                     file NAME.con), and no run of the program in the
+ *                     second script half; the cell has ended when its
+ *                     blitz2.out ends with rc=N.  With hang_from=run the
+ *                     hang check arms on NAME.con, which tedstub opens
+ *                     when the program starts.  Not with runwrap=,
+ *                     runargs=, launcherargs= (the shell start)
  *   build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off
  *                     with cell=on: a compile part of the cell's own (the
  *                     data of a test that another build configuration
@@ -314,6 +326,7 @@ struct corpus_pass {
     int mask_traps;                     /* mask_traps=on: the trap blocks of the executables are masked as with runtime_errors */
     int must_compile;                   /* must_compile=on (run=off): a source that does not compile fails */
     int cell;                           /* cell=on: a cell of the BASIC test model (caserun.h) */
+    int editrun;                        /* editrun=on (cell=on): the program runs from the editor */
     unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
     int hang_from_run;                  /* hang_from=run: the silence counts from the first run */
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check */

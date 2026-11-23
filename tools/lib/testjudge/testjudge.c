@@ -489,9 +489,11 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
     case TC_Q_INJECT:
+    case TC_Q_COMPILE_INJECT:
     case TC_Q_SESSION: {
         const char *v = a->q.kind == TC_Q_COMPILE ? obs->compile
                         : a->q.kind == TC_Q_COMPILE_LOG ? obs->compile_log
+                        : a->q.kind == TC_Q_COMPILE_INJECT ? obs->compile_inject
                         : a->q.kind == TC_Q_OUTPUT ? obs->output
                         : a->q.kind == TC_Q_SERIAL ? obs->serial
                         : a->q.kind == TC_Q_INJECT ? obs->inject : obs->session;
@@ -978,6 +980,25 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
 }
 
 /* ------------------------------------------------------------ the verdict */
+
+int tj_editor_run_refused(const char *file, const struct tp_source *src, const struct tc_config *conf,
+                          const struct tc_matrix *m, char *err, size_t errlen)
+{
+    for (size_t c = 0; c < m->ncells; c++) {
+        char buf[24];
+
+        if (strcmp(tc_cell_value(conf, m, c, tc_key("editor-run"), buf), "on"))
+            continue;
+        for (size_t i = 0; i < src->nchecks; i++)
+            if (src->checks[i].kind == TP_EXPECTERROR) {
+                snprintf(err, errlen, "%s:%u: !ExpectError in a test whose cell %s runs from the editor "
+                         "(editor-run = \"on\"): a run from the editor captures no requester", file,
+                         src->checks[i].line, m->cells[c].name);
+                return 1;
+            }
+    }
+    return 0;
+}
 
 int tj_case_has_deviation(const struct tj_test *t)
 {

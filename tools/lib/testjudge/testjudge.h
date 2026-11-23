@@ -42,6 +42,14 @@
  * must have returned unless an assertion names its query run.NS.NAME; its
  * return code has no default.
  *
+ * The query compile.inject is inject's report of the compiler (a cell whose
+ * compiler runs through inject; tj_obs.compile_inject, NULL: not captured).
+ * A program run from the editor (editor-run = "on", change
+ * basic-test-editor-run) gives no exit code and no requesters: the defaults
+ * of rc and requester do not apply in its cell (tc_assertions_for), and
+ * tj_editor_run_refused refuses a test with such a cell and an announced
+ * runtime error, which only a requester shows.
+ *
  * Where the deviations apply, the alternative ends of the cell (testconf.h
  * tc_ends_for) judge the queries their alternatives name instead of the
  * assertions and the defaults: one alternative must hold wholly; the report
@@ -104,6 +112,9 @@ struct tj_obs {
     const char *output;         /* the printed output */
     const char *serial;
     const char *inject;
+    const char *compile_inject; /* inject's report of the compiler (a wrap of inject) */
+    int editor_run;             /* the program ran from the editor: its exit
+                                   code and its requesters are not captured */
     int has_rc;
     long long rc;
     const struct tj_requester *req;
@@ -162,6 +173,18 @@ struct tj_test {
  */
 int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct tj_obs *obs,
                   struct tj_msgs *msgs);
+
+/**
+ * @brief A test with a cell whose program runs from the editor
+ *        (editor-run = "on") and an announced runtime error (!ExpectError,
+ *        judged by its requester, which such a run does not capture) is
+ *        refused.
+ * @param file  the source's name in the message
+ * @return 0 = none, 1 = refused (err: "FILE:LINE: TEXT", the line of the
+ *         announcement)
+ */
+int tj_editor_run_refused(const char *file, const struct tp_source *src, const struct tc_config *conf,
+                          const struct tc_matrix *m, char *err, size_t errlen);
 
 /** @brief Whether a deviation is declared that applies to the case. */
 int tj_case_has_deviation(const struct tj_test *t);
