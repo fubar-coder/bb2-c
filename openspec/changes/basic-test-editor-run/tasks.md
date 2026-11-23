@@ -27,7 +27,7 @@ touched and `ctest --preset host`; emulator tests as named.
 
 ## 4. Docs
 
-- [ ] 4.1 `tests/README.md` ("The run configuration": the two keys in the table; "Assertions": `compile.inject` in the grammar and the table, the queries of an editor-run cell; "Moving a bug-orig test to the model": `jobline=run=` becomes `editor-run`, `defaultdbug=`, `[blitz2]` becomes `compile.inject`, a multi-line `compile.log contains` for `[log]`, `@DRIVER@`), `tests/corpus/runner/README.md`, the comment of `corpus.h`; verify: `basictest_readme` and the other README host tests pass, no text says the editor run is not in the model
+- [x] 4.1 `tests/README.md` ("The run configuration": the two keys in the table; "Assertions": `compile.inject` in the grammar and the table, the queries of an editor-run cell; "Moving a bug-orig test to the model": `jobline=run=` becomes `editor-run`, `defaultdbug=`, `[blitz2]` becomes `compile.inject`, a multi-line `compile.log contains` for `[log]`, `@DRIVER@`), `tests/corpus/runner/README.md`, the comment of `corpus.h`; verify: `basictest_readme` and the other README host tests pass, no text says the editor run is not in the model
 
 ## Workflow follow-up
 
