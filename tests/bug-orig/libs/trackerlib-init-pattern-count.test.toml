@@ -1,0 +1,9 @@
+# trackerlib-init-pattern-count.test.bas
+fixed-orig = 289
+files = ["init.mod|@TESTDATA@/trackerlib-init-pattern-count.mod"]
+
+[deviations."libs=cd"]
+"check.pattern_markers.pattern_2" = "== fail"
+"check.pattern_markers.pattern_2.actual" = "== $11111111"
+"check.pattern_markers.pattern_78" = "== fail"
+"check.pattern_markers.pattern_78.actual" = "== 0"

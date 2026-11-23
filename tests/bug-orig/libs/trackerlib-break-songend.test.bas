@@ -5,7 +5,7 @@
 ; compared with its first byte (and the restart position read from the
 ; second).  The module here (generated, song length 2, restart 0) breaks
 ; in row 16 of its last song position (pattern 1, F01 makes it speed 1);
-; position 2 behind the song end holds pattern 2.  The program finds the
+; position 2 behind the song end holds pattern 2.  The case finds the
 ; voice data of the player in its own code (the library is linked behind
 ; it: the table of the 31 sample starts, known from the module, with the
 ; four voices of 28 bytes behind it) and reads the row marker of voice 1
@@ -13,9 +13,6 @@
 ; after PlayModule: the break comes after 87 frames.
 ; Correct: after the break the song starts again at the restart position
 ; (pattern 0).
-; @fixed #292
-; @configs clib
-; @pass file=break.mod|@TESTDATA@/trackerlib-break-songend.mod
 DEFTYPE .l
 Function.l findmt{b.l,s0.l,s30.l}
   For a.l=b To b+65536 Step 2
@@ -25,15 +22,20 @@ Function.l findmt{b.l,s0.l,s30.l}
   Next
   Function Return 0
 End Function
-here:
-LoadModule 0,"CORPUS:break.mod"
-d=Peek.l(Addr Module(0))
-s=d+$43C+3*1024
-PlayModule 0
-VWait 100
-StopModule
-t=findmt{?here,s,s}
-NPrint "voices found ",t<>0
-v=t+124+28
-NPrint "voice 1 command ",Hex$(Peek.b(v+2) AND 255)," pattern ",Peek.b(v+3)
-End
+
+!TestCase{after_break}
+  here:
+  LoadModule 0,"CORPUS:break.mod"
+  d=Peek.l(Addr Module(0))
+  s=d+$43C+3*1024
+  PlayModule 0
+  VWait 100
+  StopModule
+  t=findmt{?here,s,s}
+  !Require{t<>0,"voices_found"}
+  v=t+124+28
+  cmd=Peek.b(v+2) AND 255
+  pat=Peek.b(v+3)
+  !CheckEq{cmd,8,"voice1_command"}
+  !CheckEq{pat,1,"voice1_pattern"}
+!EndTestCase

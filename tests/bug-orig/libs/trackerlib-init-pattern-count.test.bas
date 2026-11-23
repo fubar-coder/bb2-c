@@ -5,18 +5,19 @@
 ; table.  The module here (generated) uses pattern 1 first at position
 ; 126; the search then takes the "M" of M.K. (77) as the highest pattern,
 ; puts the samples behind "pattern 78" and clears their first long there
-; (mt_lop3) instead of at the start of pattern 2.  PlayModule runs
-; mt_init; the program reads both markers back.
+; (mt_lop3) instead of at the start of pattern 2.
+; Here: PlayModule runs mt_init; the case reads both markers back.
 ; Correct: the highest pattern is 1 - the samples begin at pattern 2, the
 ; long there is cleared, the marker at pattern 78 stays.
-; @fixed #289
-; @configs clib
-; @pass file=init.mod|@TESTDATA@/trackerlib-init-pattern-count.mod
 DEFTYPE .l
-LoadModule 0,"CORPUS:init.mod"
-d=Peek.l(Addr Module(0))
-PlayModule 0
-StopModule
-NPrint "pattern 2 ",Hex$(Peek.l(d+$43C+2*1024))
-NPrint "pattern 78 ",Hex$(Peek.l(d+$43C+78*1024))
-End
+
+!TestCase{pattern_markers}
+  LoadModule 0,"CORPUS:init.mod"
+  d=Peek.l(Addr Module(0))
+  PlayModule 0
+  StopModule
+  p2=Peek.l(d+$43C+2*1024)
+  p78=Peek.l(d+$43C+78*1024)
+  !CheckEq{p2,$00000000,"pattern_2"}
+  !CheckEq{p78,$22222222,"pattern_78"}
+!EndTestCase
