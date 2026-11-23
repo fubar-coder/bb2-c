@@ -855,9 +855,10 @@ the rest, naming file and line):
   be declared in a case (the `Dim` must come before the function): use an
   allocated block (`AllocMem`) or a global array outside the blocks. A
   `Function` that stores a register into one of its own locals with
-  `PutReg` leaves the local 0 and overwrites memory in front of the
-  globals (#1202, an original bug, open): `PutReg` only into `SHARED` or
-  global variables, in a `Statement` or inline in the case.
+  `PutReg` leaves the local 0 in the original and overwrites memory in
+  front of the globals (#1202, fixed in the port): a case that also runs
+  against the original uses `PutReg` only into `SHARED` or global
+  variables, in a `Statement` or inline in the case.
 * **A trap handler that continues the case**: the trap leaves the frames
   of the library on the stack, and the block's final `Return` would
   return into the program behind the faulty call (the case runs again).
