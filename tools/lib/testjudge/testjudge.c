@@ -1018,10 +1018,32 @@ static int whole_program(int kind)
     return 0;
 }
 
+static int case_has_deviation(const struct tc_config *conf, const struct tp_source *src, const char *case_name);
+
+/* The one mode in which a cell of a case is judged (tj_verdict, and
+   tj_case_alone for what the run of all cases has to check): no deviation
+   applies to the case: plain; a fixed original bug or an extension: the
+   original's faulty part with its deviations, the other cells plain; an
+   open bug: the faulty part with the deviations, the other cells with them
+   as if their axis terms matched. */
+static int cell_mode(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *case_name,
+                     int dev)
+{
+    int fixed = tc_get(conf, "fixed-orig") != NULL || tc_get(conf, "extension") != NULL;
+    int faulty;
+
+    if (!dev)
+        return TC_PLAIN;
+    faulty = tc_cell_faulty(conf, m, cell, case_name);
+    if (fixed)
+        return faulty ? TC_DEVIATED : TC_PLAIN;
+    return faulty ? TC_DEVIATED : TC_DEVIATED_ANY;
+}
+
 int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
                   const struct tp_source *src, const char *case_name)
 {
-    static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
+    int dev = case_has_deviation(conf, src, case_name);
 
     for (size_t i = 0; i < src->nchecks; i++) {
         const struct tp_check *k = &src->checks[i];
@@ -1035,11 +1057,13 @@ int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
         if (k->kind == TP_RUNPROGRAM && k->nskind != TP_NS_CASE)
             return 1;
     }
-    for (size_t c = 0; c < ncells; c++)
-        for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
+    for (size_t c = 0; c < ncells; c++) {
+        int mode = cell_mode(conf, m, cells[c], case_name, dev);
+
+        {
             struct tc_assertions as;
             char err[600];
-            int r = tc_assertions_for(conf, m, cells[c], case_name, modes[k], &as, err, sizeof err);
+            int r = tc_assertions_for(conf, m, cells[c], case_name, mode, &as, err, sizeof err);
 
             if (r == -2)
                 return -1;
@@ -1056,7 +1080,7 @@ int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
                 struct tc_ends e;
                 int any = 0;
 
-                r = tc_ends_for(conf, m, cells[c], case_name, modes[k], &e, err, sizeof err);
+                r = tc_ends_for(conf, m, cells[c], case_name, mode, &e, err, sizeof err);
                 if (r == -2)
                     return -1;
                 if (r)
@@ -1070,6 +1094,7 @@ int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
                     return 1;
             }
         }
+    }
     return 0;
 }
 
@@ -1158,10 +1183,10 @@ int tj_editor_run_refused(const char *file, const struct tp_source *src, const s
     return 0;
 }
 
-int tj_case_has_deviation(const struct tj_test *t)
+static int case_has_deviation(const struct tc_config *conf, const struct tp_source *src, const char *case_name)
 {
-    for (size_t i = 0; i < t->conf->ndeviations; i++) {
-        const struct tc_tabkey *d = &t->conf->deviations[i];
+    for (size_t i = 0; i < conf->ndeviations; i++) {
+        const struct tc_tabkey *d = &conf->deviations[i];
         struct tc_query q;
         char m[300];
         int applies = 1;
@@ -1172,12 +1197,12 @@ int tj_case_has_deviation(const struct tj_test *t)
             if (tc_selector_parse(d->sel, 1, &sel, m, sizeof m))
                 continue;
             for (size_t j = 0; j < sel.n; j++)
-                if (!sel.t[j].def && strcmp(sel.t[j].value, t->case_name))
+                if (!sel.t[j].def && strcmp(sel.t[j].value, case_name))
                     applies = 0;
             tc_selector_free(&sel);
         }
         if (applies && tc_query_parse(d->key, &q, m, sizeof m) == 0) {
-            if (q.kind == TC_Q_CHECK && is_case(t->src, q.ns) && strcmp(q.ns, t->case_name))
+            if (q.kind == TC_Q_CHECK && is_case(src, q.ns) && strcmp(q.ns, case_name))
                 applies = 0;
             tc_query_free(&q);
         }
@@ -1185,21 +1210,26 @@ int tj_case_has_deviation(const struct tj_test *t)
             return 1;
     }
     /* the alternative ends whose selector names no other case */
-    for (size_t i = 0; i < t->conf->nends; i++) {
+    for (size_t i = 0; i < conf->nends; i++) {
         struct tc_selector sel;
         char m[300];
         int applies = 1;
 
-        if (tc_selector_parse(t->conf->ends[i].sel, 1, &sel, m, sizeof m))
+        if (tc_selector_parse(conf->ends[i].sel, 1, &sel, m, sizeof m))
             continue;
         for (size_t j = 0; j < sel.n; j++)
-            if (!sel.t[j].def && strcmp(sel.t[j].value, t->case_name))
+            if (!sel.t[j].def && strcmp(sel.t[j].value, case_name))
                 applies = 0;
         tc_selector_free(&sel);
         if (applies)
             return 1;
     }
     return 0;
+}
+
+int tj_case_has_deviation(const struct tj_test *t)
+{
+    return case_has_deviation(t->conf, t->src, t->case_name);
 }
 
 static int append(struct tj_msgs *to, struct tj_msgs *from, const char *head)
@@ -1226,18 +1256,19 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
         size_t cell = cells[i];
         const char *name = t->m->cells[cell].name;
         int faulty = dev && tc_cell_faulty(t->conf, t->m, cell, t->case_name);
+        int mode = cell_mode(t->conf, t->m, cell, t->case_name, dev);
         struct tj_msgs m = { 0 }, nt = { 0 };
         int r;
 
         if (!dev) {
-            r = judge_cell(t, cell, TC_PLAIN, &obs[i], &m, &nt);
+            r = judge_cell(t, cell, mode, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s:", t->case_name, name);
         } else if (fixed) {
-            r = judge_cell(t, cell, faulty ? TC_DEVIATED : TC_PLAIN, &obs[i], &m, &nt);
+            r = judge_cell(t, cell, mode, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s%s:", t->case_name, name,
                      faulty ? " (the original's faulty part, its declared deviations)" : "");
         } else {
-            r = judge_cell(t, cell, faulty ? TC_DEVIATED : TC_DEVIATED_ANY, &obs[i], &m, &nt);
+            r = judge_cell(t, cell, mode, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s (an open bug: its declared deviations):", t->case_name,
                      name);
             if (r == TJ_FAIL && !faulty) {

@@ -1306,8 +1306,10 @@ TEST_CASE("testjudge: the cases that run on their own", "[testjudge]")
         CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 1);
         CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "a") == 0);
     }
-    // any judging mode counts, also for a fixed bug: its deviation of the
-    // other side's cells sets the case apart on both sides; case a not
+    // each cell counts in the one mode tj_verdict judges it in.  A fixed
+    // bug: its deviation of the other side's cell sets the case apart only
+    // for that cell (the faulty part), not for the port's cell, which is
+    // judged plain; case a not
     {
         fixture f("",
                   "fixed-orig = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
@@ -1315,9 +1317,47 @@ TEST_CASE("testjudge: the cases that run on their own", "[testjudge]")
                   "a", sharedsrc);
         size_t clib = f.cell("clib"), cd = f.cell("cd");
 
-        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 1);
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 0);
         CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "a") == 0);
         CHECK(tj_case_alone(&f.conf, &f.m, &cd, 1, &f.src, "b") == 1);
+    }
+    // an extension is judged like a fixed bug
+    {
+        fixture f("",
+                  "extension = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
+                  "session = \"== timeout\"\n",
+                  "a", sharedsrc);
+        size_t clib = f.cell("clib"), cd = f.cell("cd");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 0);
+        CHECK(tj_case_alone(&f.conf, &f.m, &cd, 1, &f.src, "b") == 1);
+    }
+    // no deviation applies to the case (the deviation is case b's): case a
+    // is judged plain in every cell
+    {
+        fixture f("", "[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\nsession = \"== timeout\"\n",
+                  "a", sharedsrc);
+        size_t cd = f.cell("cd");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &cd, 1, &f.src, "a") == 0);
+    }
+    // an alternative end of the other side's cell: with a fixed bug it
+    // leaves the port's cell plain, with an open bug it sets the case apart
+    {
+        fixture f("", "fixed-orig = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[ends.\"libs=cd,case=b\"]\nreason = \"r\"\n"
+                      "one = [\"session == timeout\"]\n",
+                  "a", sharedsrc);
+        size_t clib = f.cell("clib");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 0);
+    }
+    {
+        fixture f("", "[matrix]\nlibs = [\"cd\", \"clib\"]\n[ends.\"libs=cd,case=b\"]\nreason = \"r\"\n"
+                      "one = [\"session == timeout\"]\n",
+                  "a", sharedsrc);
+        size_t clib = f.cell("clib");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 1);
     }
 }
 

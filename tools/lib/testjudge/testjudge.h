@@ -201,12 +201,14 @@ int tj_editor_run_refused(const char *file, const struct tp_source *src, const s
 
 /**
  * @brief Whether a case runs on its own in the run of all cases: in a cell
- *        of cells[0..ncells) and a judging mode (plain, with the
- *        deviations, with them as if their axis terms matched) an
- *        assertion other than a default names an observation of the whole
- *        program (rc, requester, compile, compile.log, compile.inject,
- *        output, serial, inject, session, end.run), or the case's namespace
- *        holds an
+ *        of cells[0..ncells), in the one mode tj_verdict judges that cell
+ *        in (no deviation applies: plain; fixed-orig or extension: the
+ *        faulty cell with the deviations, the others plain; an open bug:
+ *        the faulty cell with the deviations, the others as if their axis
+ *        terms matched), an assertion other than a default names an
+ *        observation of the whole program (rc, requester, compile,
+ *        compile.log, compile.inject, output, serial, inject, session,
+ *        end.run), or the case's namespace holds an
  *        !ExpectError or a !RunProgram (the table of the preprocessor), or
  *        a !RunProgram stands outside every case (a procedure, the batch
  *        init or cleanup).  A conflict of

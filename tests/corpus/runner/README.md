@@ -338,7 +338,9 @@ Without `--case` it runs every case of the source on the side (`caserun.h`,
 "The run of all cases"): the cases share a run of the driver of all of them
 and each is judged from its own block; a case that asserts an observation
 of the whole program or announces a runtime error runs on its own from the
-start (`tj_case_alone` of `tools/lib/testjudge`), a shared run that does not end cleanly runs the case open at its
+start (`tj_case_alone` of `tools/lib/testjudge`; it looks at each cell in
+the one mode its verdict uses, so the deviations of the original's cells
+do not set a case of a fixed bug apart on the port), a shared run that does not end cleanly runs the case open at its
 end on its own and the others again, and a case that does not pass in a
 shared run is confirmed on its own. In the cells `isolate` names every case
 runs on its own. The report has a block per case (` (alone)` when judged

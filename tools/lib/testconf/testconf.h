@@ -589,7 +589,8 @@ enum tc_judge_mode {
                                    matches the cell */
     TC_DEVIATED_ANY             /* with the deviations as if their axis
                                    terms matched (the cells without the
-                                   faulty part of an open bug) */
+                                   faulty part of an open bug; tj_verdict and
+                                   tj_case_alone use it for no other cell) */
 };
 
 /**
