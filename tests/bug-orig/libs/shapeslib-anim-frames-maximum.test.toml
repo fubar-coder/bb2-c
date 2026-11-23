@@ -1,0 +1,9 @@
+# shapeslib-anim-frames-maximum.test.bas: the program runs through inject
+# with pad, which makes the 64 bytes behind the shape table a padding of the
+# table's block
+fixed-orig = 265
+pad = "on"
+
+[deviations."libs=cd"]
+"check.anim_into_last_shape.behind" = "== fail"
+"check.anim_into_last_shape.behind.actual" = "matches \"00100004000100020102000000000001*\""

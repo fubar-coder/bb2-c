@@ -1,0 +1,15 @@
+# shapeslib-loadshape-width-zero.test.bas: the program runs through inject
+# with guard (a pattern behind every AllocMem, checked at FreeMem and at the
+# end), and the report lines are part of the program's output, so the output
+# is what the guard is judged by; the handler of the expected error ends the
+# program, so the case has no end entry
+fixed-orig = 1054
+runwrap = "@INJECT@|guard"
+
+[asserts]
+output = "not contains \"inject: guard\""
+"end.case" = "not exists"
+"check.width_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+output = "contains \"written behind an allocation of 8 bytes\""

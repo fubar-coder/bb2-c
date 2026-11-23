@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-refused, shape width 0
-inject: rc=0
-rc=0

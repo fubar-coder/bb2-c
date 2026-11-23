@@ -1,0 +1,23 @@
+# shapeslib-loadshape-plane-64k.test.bas: the program runs through inject
+# with guard (a pattern behind every AllocMem, checked at FreeMem and at the
+# end), and the report lines are part of the program's output, so the output
+# is what the guard is judged by; the handler of the expected error ends the
+# program, so the case has no end entry.  The original writes 66560 bytes
+# behind a block of 1032 and wrecks the memory of the emulated machine; the
+# cells of a side share one session, so a second cell with the CD's
+# libraries would end in a Software Failure: the cell of the port compiler
+# with the CD's libraries is left out (the original compiler with them
+# shows the bug, as the recorded original did)
+fixed-orig = 263
+runwrap = "@INJECT@|guard"
+exclude =["compiler=orig195,libs=clib", "compiler=port,libs=cd"]
+
+[asserts]
+output = "not contains \"inject: guard\""
+"end.case" = "not exists"
+"check.plane_64k.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.plane_64k.shape_width" = "== fail"
+"check.plane_64k.shape_width.actual" = "== 1024"
+output = "contains \"written behind an allocation of 1032 bytes\""
