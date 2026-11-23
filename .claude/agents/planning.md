@@ -12,8 +12,11 @@ caller hopes.
 Read first: CLAUDE.md (rules 1 and 2 above all), README.md and
 `docs/development.md`, the specs in `openspec/specs/` for the area of
 the question; in `~/.local/share/bb2-c-work/decisions/` (layout in its
-`README.md`): `decisions.md`, the decision process (D-011) in
-`process.md` (the steps) and `catalog.md` (the rating catalog), the
+`README.md`): of `decisions.md` the section "How entries work" and D-011
+whole, of the other entries those whose heading or text bears on the
+question (grep the headings and the issue number or keywords of the
+question); the decision process (D-011) in `process.md` (the steps) and
+`catalog.md` (the rating catalog), both whole; the
 per-area files the last section of `decisions.md` lists, for the area of
 the question, and the entries of `tasks/`, `rounds/` and `archive/` that
 bear on the question (by entry, CLAUDE.md); the decisions file of the
@@ -29,7 +32,8 @@ Answer each question in this form:
   or a recorded answer (the entries of `tasks/decisions.md` and of a
   round's decisions file have no status: a later answer for the same
   case replaces an earlier one), and whether the question is inside the
-  case or scope it was given for.
+  case or scope it was given for. Name the entries of `decisions.md` you
+  read and the greps you ran.
 * **Step 1:** if a rule, an `active` entry within its scope or the
   latest recorded answer within its case answers the question without
   doubt, and nothing recorded contradicts it, give the answer by
