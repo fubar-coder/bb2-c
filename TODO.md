@@ -788,10 +788,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   move: `docs/testing-old-form.md` (41 TED tests, 71 hand-written and 159
   generated compile-only tests, 205 generated expression-matrix tests of
   which 46 with a program run, the self tests of the old runner, two
-  single tests, three runnable tests of round U4 not moved yet). The
-  generated tests (generator `tools/lib/exprmatrix`) move to the new form
-  once several tests can run in one session and the start of the tests
-  through CMake/ctest can be bundled, i.e. without a performance loss.
+  single tests, three runnable tests of round U4 not moved yet). Several
+  tests of the model run in one session for the first set: the bundle
+  tests (`tests/README.md`, "Bundle tests"; one cell on the side port, a
+  plain session key), started through ctest. Open: the generated tests
+  (generator `tools/lib/exprmatrix`, `corpus_exprmatrix`) move to the new
+  form once they can be bundled the same way, i.e. without a performance
+  loss.
 - [ ] **Bundles with test-local data and runs from the editor** (user
   decision, `~/.local/share/bb2-c-work/decisions/rounds/tb/decisions.md`,
   "K2, R1, Q17" and "K1, K2 follow-up, G1": left out of the first set for

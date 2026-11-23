@@ -9,7 +9,8 @@
 # basic_test_register: testreg declares them at build time, the port and
 # the originals side of a test and a test of an open bug, label bug-orig);
 # builds it, lists the tests with ctest --show-only=json-v1 and reads their
-# environments.
+# environments.  The project is a coverage build (BLITZ2_COVERAGE), so the
+# model registers no bundle test, which is checked too.
 #
 #   cmake -DQUEUE=emulation-queue.cmake -DMODEL=basic-test-model.cmake
 #         -DTESTREG=testreg -DCMAKE_GENERATOR=G [-DBROKEN=ON|model] -DWORK=DIR
@@ -60,6 +61,8 @@ add_subdirectory(sub)
 # token list of the model, the tools
 set(TESTREG ${TESTREG})
 set(CORPUSRUN ${CMAKE_COMMAND})
+# the coverage configuration (emulation_coverage below): no bundle tests
+set(BLITZ2_COVERAGE ON)
 file(WRITE \${BASIC_TEST_ENV} \"top = \\\"${WORK}/src/model\\\"\\n\")
 file(WRITE \${BASIC_TEST_TOKENS} \"8001 End\\n\")
 add_custom_target(basic_test_tokens)
@@ -134,6 +137,10 @@ foreach(i RANGE ${last})
 			message(SEND_ERROR "emulation-owner-test: ${name} has AMIGA_EMULATION_COVERAGE (${cov})")
 			set(failed TRUE)
 		endif()
+	endif()
+	if(name MATCHES "bundle_")
+		message(SEND_ERROR "emulation-owner-test: a bundle test in a coverage build: ${name}")
+		set(failed TRUE)
 	endif()
 	if(name STREQUAL "m_open__c" AND NOT labels MATCHES "bug-orig")
 		message(SEND_ERROR "emulation-owner-test: m_open__c is no test of the label bug-orig: ${labels}")

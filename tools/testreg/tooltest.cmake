@@ -7,7 +7,11 @@
 # assertion on the exit code or an announced runtime error; then a sample
 # CMake project whose ctest -N lists the registered tests after the build,
 # and again
-# after a tests.toml changed (the step depends on the files it read).
+# after a tests.toml changed (the step depends on the files it read);
+# last the bundle tests: their include file, --no-bundle, a bundle named as
+# a test of the old form, and a sample project whose ctest -N lists the
+# bundles and their members, a case alone by -R and the bundle of the label
+# bug-orig by -L.
 #   cmake -DTESTREG=... -DCMAKE_GENERATOR=... -DCTEST=... -DWORK=DIR -P tooltest.cmake
 file(REMOVE_RECURSE ${WORK})
 set(s ${WORK}/sample)
@@ -32,7 +36,9 @@ file(WRITE ${s}/libs/sub/ext-one.test.bas "!TestCase{a}\n  !CheckEq{1,1,\"loaded
 file(WRITE ${s}/libs/sub/ext-one.test.toml
 	"extension = 13\n[deviations.\"libs=cd\"]\n\"check.a.loaded\" = \"== fail\"\n")
 
-set(env --env ${WORK}/env.toml --tokens ${WORK}/tokens.txt)
+# the samples above have a port cell of a plain key each: the cases of
+# the tests below run alone (the bundles: at the end)
+set(env --env ${WORK}/env.toml --tokens ${WORK}/tokens.txt --no-bundle)
 function(run expect_rc)
 	execute_process(COMMAND ${TESTREG} ${ARGN} RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE err)
 	if(NOT rc EQUAL expect_rc)
@@ -368,7 +374,7 @@ file(GLOB sources CONFIGURE_DEPENDS ${s}/*/*.test.bas ${s}/*/*/*.test.bas)
 set(inc \${CMAKE_BINARY_DIR}/blitz-tests.cmake)
 add_custom_command(OUTPUT \${inc}
 	COMMAND ${TESTREG} --prefix regression_ --output \${inc} --depfile \${inc}.d
-		--env ${WORK}/env.toml --command run \${sources}
+		--env ${WORK}/env.toml --no-bundle --command run \${sources}
 	DEPFILE \${inc}.d)
 add_custom_target(blitz_tests ALL DEPENDS \${inc})
 set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES \${inc})
@@ -412,5 +418,103 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build ${p}/build RESULT_VARIABLE rc O
 if(rc EQUAL 0 OR NOT out MATCHES "fixed-one\\.test/extra\\.bin: a file of fixed-one\\.test/")
 	message(FATAL_ERROR "a file added to ID.test/ does not register again (exit ${rc}):\n${out}")
 endif()
+
+# bundles (change basic-test-bundle-registration): the cases of one port
+# cell and a plain key share a bundle test; a case that asserts the output
+# runs alone; an open bug's case is in a bundle of the label bug-orig
+set(b ${WORK}/bsample)
+file(MAKE_DIRECTORY ${b}/x)
+file(WRITE ${WORK}/benv.toml "top = \"${b}\"\n[runner]\ntimeout = \"90\"\n")
+file(WRITE ${b}/tests.toml "root = true\n")
+file(WRITE ${b}/x/plain-a.test.bas
+	"!TestCase{a}\n  !Check{1}\n!EndTestCase\n!TestCase{b}\n  !Check{1}\n!EndTestCase\n")
+file(WRITE ${b}/x/plain-b.test.bas "!TestCase{a}\n  !Check{1}\n!EndTestCase\n")
+file(WRITE ${b}/x/alone.test.bas "!TestCase{a}\n  !Check{1}\n!EndTestCase\n")
+file(WRITE ${b}/x/alone.test.toml "[asserts]\noutput = \"contains \\\"x\\\"\"\n")
+file(WRITE ${b}/x/open-one.test.bas "!TestCase{c}\n  !CheckEq{1,1,\"w\"}\n!EndTestCase\n")
+file(WRITE ${b}/x/open-one.test.toml "[deviations.\"compiler=port\"]\n\"check.c.w\" = \"== fail\"\n")
+set(bsrc ${b}/x/plain-a.test.bas ${b}/x/plain-b.test.bas ${b}/x/alone.test.bas ${b}/x/open-one.test.bas)
+set(benv --env ${WORK}/benv.toml --tokens ${WORK}/tokens.txt)
+run(0 --prefix bug_orig_ --output ${WORK}/bundles.cmake ${benv} --timeout-extra 30 --command run --command case
+	${bsrc})
+file(READ ${WORK}/bundles.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+foreach(want
+		"add_test( bug_orig_bundle_1 run case --bundle bug_orig_bundle_1 --member bug_orig_plain_a__a ${b}/x/plain-a.test.bas a --member bug_orig_plain_a__b ${b}/x/plain-a.test.bas b --member bug_orig_plain_b__a ${b}/x/plain-b.test.bas a)"
+		"set_tests_properties( bug_orig_bundle_1 PROPERTIES LABELS emulator TIMEOUT 300 SKIP_RETURN_CODE 77)"
+		"add_test( bug_orig_plain_a__b run case --source ${b}/x/plain-a.test.bas --case b --side port --test bug_orig_plain_a__b --from-bundle bug_orig_bundle_1)"
+		"set_tests_properties( bug_orig_plain_a__b PROPERTIES LABELS emulator TIMEOUT 120 SKIP_RETURN_CODE 77 DEPENDS bug_orig_bundle_1)"
+		"add_test( bug_orig_bundle_2 run case --bundle bug_orig_bundle_2 --member bug_orig_open_one__c ${b}/x/open-one.test.bas c)"
+		"set_tests_properties( bug_orig_bundle_2 PROPERTIES LABELS bug-orig;emulator TIMEOUT 300 SKIP_RETURN_CODE 77 COST 90)"
+		"set_tests_properties( bug_orig_open_one__c PROPERTIES LABELS bug-orig;emulator TIMEOUT 120 SKIP_RETURN_CODE 77 COST 90 DEPENDS bug_orig_bundle_2)"
+		"add_test( bug_orig_alone__a run case --source ${b}/x/alone.test.bas --case a --side port)\n")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "bundles: the include file lacks\n  ${want}\nin\n${inc}")
+	endif()
+endforeach()
+if(inc MATCHES "alone__a [^\n]*DEPENDS")
+	message(FATAL_ERROR "bundles: a case that asserts the output depends on a bundle:\n${inc}")
+endif()
+# --no-bundle: no bundle test, no option of a member, no DEPENDS
+run(0 --prefix bug_orig_ --output ${WORK}/nobundles.cmake ${benv} --no-bundle --command run ${bsrc})
+file(READ ${WORK}/nobundles.cmake inc)
+if(inc MATCHES "bundle_|DEPENDS|--from-bundle|--test")
+	message(FATAL_ERROR "--no-bundle: a bundle in\n${inc}")
+endif()
+# broken input: a bundle's name is the name of a test of the old form
+file(WRITE ${WORK}/border.cmake "# @test bug_orig_bundle_1 5\nadd_test(x run)\n")
+file(REMOVE ${WORK}/bad.cmake)
+run(1 --prefix bug_orig_ --output ${WORK}/bad.cmake ${benv} --command run --order ${WORK}/border.cmake ${bsrc})
+if(NOT err MATCHES "the test bug_orig_bundle_1 is also a test of the old form" OR EXISTS ${WORK}/bad.cmake)
+	message(FATAL_ERROR "a bundle named as a test of the old form:\n${err}")
+endif()
+# a sample CMake project: ctest reads the include file with the bundles
+set(p ${WORK}/bproject)
+file(MAKE_DIRECTORY ${p})
+file(WRITE ${p}/CMakeLists.txt "cmake_minimum_required(VERSION 3.20)
+project(bsample NONE)
+enable_testing()
+set(inc \${CMAKE_BINARY_DIR}/blitz-tests.cmake)
+add_custom_command(OUTPUT \${inc}
+	COMMAND ${TESTREG} --prefix regression_ --output \${inc} --env ${WORK}/benv.toml --command run ${bsrc})
+add_custom_target(blitz_tests ALL DEPENDS \${inc})
+set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES \${inc})
+")
+execute_process(COMMAND ${CMAKE_COMMAND} -S ${p} -B ${p}/build -G "${CMAKE_GENERATOR}"
+	RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+if(NOT rc EQUAL 0)
+	message(FATAL_ERROR "the bundle project does not configure:\n${out}")
+endif()
+# ctest_list(COUNT [MUST NAME...] [NOT NAME...] -- ARGS...)
+function(ctest_list want_count)
+	cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "MUST;NOT;ARGS")
+	execute_process(COMMAND ${CTEST} -N ${arg_ARGS} WORKING_DIRECTORY ${p}/build OUTPUT_VARIABLE list
+		ERROR_VARIABLE list)
+	if(NOT list MATCHES "Total Tests: ${want_count}\n")
+		message(FATAL_ERROR "bundles: ctest -N ${arg_ARGS}: not ${want_count} tests:\n${list}")
+	endif()
+	foreach(name IN LISTS arg_MUST)
+		if(NOT list MATCHES "Test +#[0-9]+: ${name}\n")
+			message(FATAL_ERROR "bundles: ctest -N ${arg_ARGS} lacks ${name}:\n${list}")
+		endif()
+	endforeach()
+	foreach(name IN LISTS arg_NOT)
+		if(list MATCHES "Test +#[0-9]+: ${name}\n")
+			message(FATAL_ERROR "bundles: ctest -N ${arg_ARGS} lists ${name}:\n${list}")
+		endif()
+	endforeach()
+endfunction()
+execute_process(COMMAND ${CMAKE_COMMAND} --build ${p}/build RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+if(NOT rc EQUAL 0)
+	message(FATAL_ERROR "the bundle project does not build:\n${out}")
+endif()
+# the bundles and their members; a case alone (without its bundle: DEPENDS
+# orders, it does not select); the bundle of the label bug-orig
+ctest_list(7 MUST regression_bundle_1 regression_bundle_2 regression_plain_a__a regression_plain_a__b
+	regression_plain_b__a regression_open_one__c regression_alone__a)
+ctest_list(1 MUST regression_plain_a__b ARGS -R "^regression_plain_a__b$")
+ctest_list(2 MUST regression_bundle_2 regression_open_one__c NOT regression_bundle_1 ARGS -L bug-orig)
 file(REMOVE_RECURSE ${WORK})
 message("testreg_tool: all cases as expected")

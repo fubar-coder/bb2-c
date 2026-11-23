@@ -61,8 +61,32 @@ new `tests.toml` or `ID.test.toml` reaches the registration only through
 a glob of the configuration files with `CONFIGURE_DEPENDS` next to the
 one of the sources. The logic is `tools/lib/testreg`,
 tested by `testreg_tool` (`tooltest.cmake`: the include file, the
-depfile, every check with broken input, and a sample CMake project whose
-`ctest -N` lists the tests after the build).
+depfile, every check with broken input, and sample CMake projects whose
+`ctest -N` lists the tests after the build) and the host test `testreg`
+(`tools/tests/test_testreg.cpp`: the bundle tests).
+
+Bundle tests (change `basic-test-bundle-registration`; `tests/README.md`,
+"Bundle tests"): unless `--no-bundle` is given, the case tests that may
+share an emulator session with other sources (`tj_bundle_case`,
+`tools/lib/testjudge`: one cell on the side port, no session of its own,
+a plain session key, the case not alone in the run of all cases) are
+grouped by their session key (`tc_session_key` with the environment of
+`--env`), their labels and their fixtures, in the order of the sources and
+cases, and each group is cut into chunks of 16. A chunk is the test
+`PREFIXbundle_N` (N from 1 in the order of the groups, then the chunks):
+`COMMAND... --bundle NAME` and `--member TEST SOURCE CASE` per member, the
+group's labels and fixtures, `TIMEOUT` 3 x the key's time limit plus
+`--timeout-extra` (the runner starts at most 3 sessions per chunk),
+`SKIP_RETURN_CODE 77`, and as `COST` its entry of `--costs`, else the sum of
+its members' COSTs; with the label `bug-orig` it is ordered with those
+tests by that COST. Each member's case test keeps its name, labels,
+`TIMEOUT` and `COST`; its command gains `--test TEST --from-bundle NAME`
+(it is served from the bundle's stored verdict, or runs alone) and its
+properties `DEPENDS NAME`, which orders it after the bundle but does not
+select the bundle nor needs it to pass: `ctest -R CASE` runs the case
+alone. Bundles stay within one run of the tool (one registration); a
+bundle's name has no `__`, so it cannot be the name of a case test, and
+is checked against the tests of `--order` like them.
 
 ## Usage
 
@@ -102,6 +126,10 @@ OPTIONS:
           --test-env FILE     a ctest script that defines basic_test_environment(NAME LABELS),
                               the environment of a test (cmake/basic-test-model.cmake):
                               included by the include file, called for each test
+          --no-bundle         no bundle tests: every case test runs alone (without it, the case
+                              tests that may share an emulator session with other sources are
+                              put into bundle tests PREFIXbundle_N of 16 at most, each served
+                              from its bundle)
 
 The include file is written only when every source and configuration passed the
 checks; the depfile is written in any case. Exit status 0 ok, 1 a check failed
@@ -111,4 +139,7 @@ or a file cannot be read or written, 2 usage error.
 The build runs it per directory through `basic_test_register()`
 (`cmake/basic-test-model.cmake`, called by `tests/bug-orig/CMakeLists.txt`
 and `tests/blitz2/CMakeLists.txt`) with the command `corpusrun case --env
-ENV` (`tests/corpus/runner/caserun.h`).
+ENV` (`tests/corpus/runner/caserun.h`), and with `--no-bundle` when the
+cache option `BASIC_TEST_BUNDLE` is off or in a coverage build
+(`BLITZ2_COVERAGE`: a served case would leave no coverage file of its
+own).

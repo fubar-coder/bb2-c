@@ -147,6 +147,9 @@ void treg_free(struct treg_result *r)
         treg_strs_free(&t->labels);
         treg_strs_free(&t->fixtures);
         treg_strs_free(&t->cells);
+        free(t->key);
+        free(t->from_bundle);
+        free(t->members);
     }
     free(r->t);
     treg_strs_free(&r->deps);
@@ -614,9 +617,28 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
     for (size_t c = 0; c < src.ncases; c++) {
         struct tj_test jt = { par.file, &src, &conf, &m, src.cases[c].name, 0, NULL, 0 };
         int dev = tj_case_has_deviation(&jt);
+        size_t n = r->n;
 
-        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 0, o, dev)
-            || add_test(r, abs, &conf, &m, &src, src.cases[c].name, 1, o, dev))
+        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 0, o, dev))
+            goto out;
+        /* the case test of the side port that may be bundled: its key */
+        if (o->bundle && r->n > n) {
+            struct treg_test *t = &r->t[r->n - 1];
+            size_t cell;
+            int b = tj_bundle_case(&conf, &m, &src, o->env, src.cases[c].name, &cell);
+
+            if (b < 0)
+                goto out;
+            if (b) {
+                char buf[24];
+                const char *to = tc_cell_value(&conf, &m, cell, tc_key("timeout"), buf);
+
+                if (!(t->key = tc_session_key(&conf, &m, cell, o->env)))
+                    goto out;
+                t->limit = *to ? strtoll(to, NULL, 10) : o->timeout_default;
+            }
+        }
+        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 1, o, dev))
             goto out;
     }
     rc = 0;
@@ -645,6 +667,103 @@ int treg_check_names(struct treg_result *r)
     return bad;
 }
 
+/* whether a and b hold the same strings (as sets of distinct ones: labels,
+   fixtures) */
+static int same_set(const struct treg_strs *a, const struct treg_strs *b)
+{
+    for (size_t i = 0; i < a->n; i++)
+        if (!has(b, a->v[i]))
+            return 0;
+    for (size_t i = 0; i < b->n; i++)
+        if (!has(a, b->v[i]))
+            return 0;
+    return 1;
+}
+
+static int copy_strs(struct treg_strs *to, const struct treg_strs *from)
+{
+    for (size_t i = 0; i < from->n; i++)
+        if (push(to, from->v[i]))
+            return -1;
+    return 0;
+}
+
+/* the COST of bundle b: the sum of its members' COSTs (none if no member has one) */
+static void bundle_cost(struct treg_result *r, struct treg_test *b)
+{
+    b->has_cost = 0;
+    b->cost = 0;
+    for (size_t k = 0; k < b->nmembers; k++) {
+        const struct treg_test *t = &r->t[b->members[k]];
+
+        if (t->has_cost) {
+            b->has_cost = 1;
+            b->cost += t->cost;
+        }
+    }
+}
+
+int treg_make_bundles(struct treg_result *r, const struct treg_opts *o)
+{
+    size_t ncases = r->n, nbundles = 0, *chunk = malloc(TREG_BUNDLE_MAX * sizeof *chunk);
+
+    if (!chunk)
+        return -1;
+    for (size_t i = 0; i < ncases; i++) {
+        size_t n = 0;
+
+        if (!r->t[i].key || r->t[i].from_bundle)
+            continue;
+        /* the group of i, in the order of r, chunk by chunk */
+        for (size_t j = i; j <= ncases; j++) {
+            if (j < ncases) {
+                const struct treg_test *a = &r->t[i], *t = &r->t[j];
+
+                if (!t->key || t->from_bundle || strcmp(t->key, a->key) || !same_set(&t->labels, &a->labels)
+                    || !same_set(&t->fixtures, &a->fixtures))
+                    continue;
+                chunk[n++] = j;
+            }
+            if (n == TREG_BUNDLE_MAX || (j == ncases && n)) {
+                struct treg_test b, *v;
+                char name[512];
+
+                memset(&b, 0, sizeof b);
+                snprintf(name, sizeof name, "%sbundle_%zu", o->prefix, ++nbundles);
+                b.bundle = 1;
+                b.nmembers = n;
+                if (!(b.name = strdup(name)) || !(b.source = strdup(r->t[chunk[0]].source))
+                    || !(b.members = malloc(n * sizeof *b.members)) || copy_strs(&b.labels, &r->t[chunk[0]].labels)
+                    || copy_strs(&b.fixtures, &r->t[chunk[0]].fixtures)
+                    || !(v = realloc(r->t, (r->n + 1) * sizeof *v))) {
+                    free(b.name);
+                    free(b.source);
+                    free(b.members);
+                    treg_strs_free(&b.labels);
+                    treg_strs_free(&b.fixtures);
+                    free(chunk);
+                    return -1;
+                }
+                r->t = v;
+                memcpy(b.members, chunk, n * sizeof *chunk);
+                /* 3 sessions at most (basic-test-bundle-runner, design decision 4) */
+                b.timeout = 3 * r->t[chunk[0]].limit + o->timeout_extra;
+                for (size_t k = 0; k < n; k++)
+                    if (!(r->t[chunk[k]].from_bundle = strdup(name))) {
+                        r->t[r->n++] = b;   /* freed with r */
+                        free(chunk);
+                        return -1;
+                    }
+                r->t[r->n++] = b;
+                bundle_cost(r, &r->t[r->n - 1]);
+                n = 0;
+            }
+        }
+    }
+    free(chunk);
+    return 0;
+}
+
 /* a bracket argument [==[...]==] */
 static int bracket(FILE *f, const char *s)
 {
@@ -667,15 +786,32 @@ static int bracket_list(FILE *f, const struct treg_strs *l)
 }
 
 /* one registered test; testenv: the call of the test's environment */
-static int write_test(FILE *f, const struct treg_test *t, const char *const *command, size_t ncommand, int testenv)
+static int write_test(FILE *f, const struct treg_result *r, const struct treg_test *t, const char *const *command,
+                      size_t ncommand, int testenv)
 {
     if (fputs("add_test(", f) < 0 || bracket(f, t->name))
         return -1;
     for (size_t c = 0; c < ncommand; c++)
         if (bracket(f, command[c]))
             return -1;
-    if (bracket(f, "--source") || bracket(f, t->source) || bracket(f, "--case") || bracket(f, t->case_name)
-        || bracket(f, "--side") || bracket(f, t->originals ? "originals" : "port") || fputs(")\n", f) < 0)
+    if (t->bundle) {
+        /* the bundle test (basic-test-bundle-key, I1) */
+        if (bracket(f, "--bundle") || bracket(f, t->name))
+            return -1;
+        for (size_t k = 0; k < t->nmembers; k++) {
+            const struct treg_test *m = &r->t[t->members[k]];
+
+            if (bracket(f, "--member") || bracket(f, m->name) || bracket(f, m->source) || bracket(f, m->case_name))
+                return -1;
+        }
+    } else if (bracket(f, "--source") || bracket(f, t->source) || bracket(f, "--case") || bracket(f, t->case_name)
+               || bracket(f, "--side") || bracket(f, t->originals ? "originals" : "port"))
+        return -1;
+    /* a member: served from its bundle (I2) */
+    if (t->from_bundle
+        && (bracket(f, "--test") || bracket(f, t->name) || bracket(f, "--from-bundle") || bracket(f, t->from_bundle)))
+        return -1;
+    if (fputs(")\n", f) < 0)
         return -1;
     if (fputs("set_tests_properties(", f) < 0 || bracket(f, t->name) || fputs(" PROPERTIES LABELS", f) < 0
         || bracket_list(f, &t->labels) || fprintf(f, " TIMEOUT %lld SKIP_RETURN_CODE 77", t->timeout) < 0)
@@ -683,6 +819,10 @@ static int write_test(FILE *f, const struct treg_test *t, const char *const *com
     if (t->has_cost && fprintf(f, " COST %lld", t->cost) < 0)
         return -1;
     if (t->fixtures.n && (fputs(" FIXTURES_REQUIRED", f) < 0 || bracket_list(f, &t->fixtures)))
+        return -1;
+    /* the order only: a case test runs also when its bundle failed or was
+       not selected */
+    if (t->from_bundle && (fputs(" DEPENDS", f) < 0 || bracket(f, t->from_bundle)))
         return -1;
     if (fputs(")\n", f) < 0)
         return -1;
@@ -730,7 +870,7 @@ int treg_write_include(FILE *f, const struct treg_result *r, const char *const *
             v[n].name = t->name;
             v[n].cost = t->has_cost ? t->cost : 0;
             v[n++].t = t;
-        } else if (write_test(f, t, command, ncommand, testenv != NULL))
+        } else if (write_test(f, r, t, command, ncommand, testenv != NULL))
             goto out;
     }
     for (size_t i = 0; i < ne; i++) {
@@ -743,7 +883,7 @@ int treg_write_include(FILE *f, const struct treg_result *r, const char *const *
     if (n && fprintf(f, "# the tests of the label bug-orig, the largest COST first\n") < 0)
         goto out;
     for (size_t i = 0; i < n; i++)
-        if (v[i].t ? write_test(f, v[i].t, command, ncommand, testenv != NULL) : fputs(v[i].e->text, f) < 0)
+        if (v[i].t ? write_test(f, r, v[i].t, command, ncommand, testenv != NULL) : fputs(v[i].e->text, f) < 0)
             goto out;
     rc = 0;
 out:
@@ -877,9 +1017,21 @@ void treg_apply_costs(struct treg_result *r, const struct tcosts *c)
         const struct tcost *e = tcosts_find(c, r->t[i].name);
 
         /* the configuration's cost wins; a measurement replaces the estimate */
-        if (e && !r->t[i].cost_configured) {
+        if (e && !r->t[i].cost_configured && !r->t[i].bundle) {
             r->t[i].has_cost = 1;
             r->t[i].cost = e->cost;
         }
+    }
+    /* a bundle: its entry, else the sum of its members' COSTs as measured */
+    for (size_t i = 0; i < r->n; i++) {
+        const struct tcost *e;
+
+        if (!r->t[i].bundle)
+            continue;
+        if ((e = tcosts_find(c, r->t[i].name))) {
+            r->t[i].has_cost = 1;
+            r->t[i].cost = e->cost;
+        } else
+            bundle_cost(r, &r->t[i]);
     }
 }

@@ -81,3 +81,25 @@ and `-R`/`-L` selections keep selecting what they select today.
 After `basic-test-bundle-key`; parallel with `basic-test-bundle-runner`
 (tasks 1-3 need only the interface; task 4 needs the runner merged) and
 `basic-test-bundle-costs`.
+
+## Findings (implementation, tasks 1-3)
+
+- The tree's registration with bundles (cmake 4.5.1, 2026-11-23): 41
+  bundle tests (`bug_orig_` 37, of them one with the label bug-orig,
+  `regression_` 3, `blitz2_` 1) with 580 members (553, 25, 2): the 580
+  cases `tj_bundle_case` admits in the spike of `basic-test-bundle-key`.
+  `ctest -N`: 3241 tests against 3200. With `-DBASIC_TEST_BUNDLE=OFF` the
+  three include files and `ctest --show-only=json-v1` are byte-identical
+  to those of main (no comment line differs).
+- testreg has `--no-bundle` only (bundles are its default); the proposal's
+  `--bundle` would be a second spelling of the default.
+- The samples of `testreg_tool` before the bundle section have a port cell
+  of a plain key each, so they would be bundled; their runs pass
+  `--no-bundle` and keep their expectations, the bundles have a sample of
+  their own at the end.
+- `cmake/emulation-owner-test.cmake` is a coverage configuration
+  (`emulation_coverage()`), whose sample cases would be bundled; it sets
+  `BLITZ2_COVERAGE` and checks that no bundle test is registered (the test
+  of decision 4's coverage rule).
+- A bundle's COST when no member has one (none configured, none measured,
+  no open bug): none, as for its members.

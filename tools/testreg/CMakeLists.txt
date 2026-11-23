@@ -8,7 +8,8 @@ host_readme_test(testreg README.md)
 
 # the tool on sample directories: the include file, the depfile, every
 # check with broken input, and a sample CMake project whose ctest -N lists
-# the registered tests after the build and again after a tests.toml changed
+# the registered tests after the build and again after a tests.toml changed,
+# and one with bundle tests
 add_test(NAME testreg_tool COMMAND ${CMAKE_COMMAND} -DTESTREG=$<TARGET_FILE:testreg>
 	-DCMAKE_GENERATOR=${CMAKE_GENERATOR} -DCTEST=${CMAKE_CTEST_COMMAND}
 	-DWORK=${CMAKE_CURRENT_BINARY_DIR}/tooltest

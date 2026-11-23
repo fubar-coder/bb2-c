@@ -5,10 +5,12 @@
  *   testreg --prefix P --output FILE [--env FILE] [--depfile FILE]
  *           [--tokens FILE]... [--cell-fixture SELECTOR|FIXTURE]...
  *           [--timeout-default SEC] [--timeout-extra SEC] [--order FILE] [--costs FILE]
- *           [--test-env FILE] --command WORD [--command WORD]... SOURCE...
+ *           [--test-env FILE] [--no-bundle] --command WORD [--command WORD]... SOURCE...
  *
  * Reads every source and its configuration, checks them, and writes the
- * ctest include file (only when nothing failed) and the depfile.
+ * ctest include file (only when nothing failed) and the depfile; the case
+ * tests that may share a session are put into bundle tests unless
+ * --no-bundle is given.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +29,7 @@ namespace fs = std::filesystem;
 static int run(const std::string &prefix, const std::string &output, const std::string &envfile,
                const std::string &depfile, const std::string &orderfile, const std::string &costfile,
                const std::string &testenv, const std::vector<std::string> &tokfiles,
-               long long tdef, long long textra,
+               long long tdef, long long textra, bool bundle,
                const std::vector<std::string> &command, const std::vector<std::string> &cellfix,
                const std::vector<std::string> &sources)
 {
@@ -57,6 +59,7 @@ static int run(const std::string &prefix, const std::string &output, const std::
     o.ntokens = tokens.n;
     o.timeout_default = tdef;
     o.timeout_extra = textra;
+    o.bundle = bundle;
     std::vector<const char *> cf;
     for (const std::string &c : cellfix) {
         if (treg_cell_fixture_ok(c.c_str(), err, sizeof err)) {
@@ -72,6 +75,10 @@ static int run(const std::string &prefix, const std::string &output, const std::
             fprintf(stderr, "testreg: out of memory\n");
             rc = 1;
         }
+    if (bundle && treg_make_bundles(&r, &o) < 0) {
+        fprintf(stderr, "testreg: out of memory\n");
+        rc = 1;
+    }
     if (treg_check_names(&r) < 0) {
         fprintf(stderr, "testreg: out of memory\n");
         rc = 1;
@@ -167,6 +174,7 @@ int main(int argc, char **argv)
     std::string prefix, output, envfile, depfile, orderfile, costfile, testenv;
     std::vector<std::string> tokfiles, command, cellfix, sources;
     long long tdef = 90, textra = 0;
+    bool nobundle = false;
     int status = 0;
 
     app.add_option("SOURCE", sources, "the test sources (ID.test.bas)")->required()->type_name("FILE");
@@ -216,12 +224,16 @@ int main(int argc, char **argv)
                    "a ctest script that defines basic_test_environment(NAME LABELS), the environment of a test "
                    "(cmake/basic-test-model.cmake): included by the include file, called for each test")
         ->type_name("FILE");
+    app.add_flag("--no-bundle", nobundle,
+                 "no bundle tests: every case test runs alone (without it, the case tests that may share an "
+                 "emulator session with other sources are put into bundle tests PREFIXbundle_N of 16 at most, "
+                 "each served from its bundle)");
     app.footer("The include file is written only when every source and configuration passed the checks; "
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
                "or written, 2 usage error.");
     app.callback([&] {
-        status = run(prefix, output, envfile, depfile, orderfile, costfile, testenv, tokfiles, tdef, textra, command, cellfix,
-                     sources);
+        status = run(prefix, output, envfile, depfile, orderfile, costfile, testenv, tokfiles, tdef, textra, !nobundle,
+                     command, cellfix, sources);
     });
     return cli::run(app, argc, argv, status);
 }

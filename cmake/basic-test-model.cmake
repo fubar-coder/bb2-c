@@ -30,7 +30,11 @@
 #   cmake/emulation-queue.cmake: the snapshot owner, the coverage
 #   directory): testreg --test-env, the script PREFIX-model-env.cmake that
 #   the end of the top directory writes, which ctest reads with the include
-#   file and calls for each test with its labels
+#   file and calls for each test with its labels.  With BASIC_TEST_BUNDLE
+#   (ON; off in a coverage build, BLITZ2_COVERAGE) testreg also registers
+#   the bundle tests PREFIX + "bundle_" + N: the cases that may share a
+#   session with other sources, 16 at most per bundle, each case test
+#   served from its bundle and DEPENDS on it (tools/testreg/README.md)
 # basic_test_driver(SOURCE OUT [CONFS...])
 #   the build writes the driver of all cases of SOURCE, tokenised, to OUT
 #   (NAME.bb2; corpusrun case --write-driver), a step of the target that
@@ -42,6 +46,8 @@ set(BASIC_TEST_WORK ${CMAKE_BINARY_DIR}/tests/model-runs)
 set(BASIC_TEST_TIMEOUT 90 CACHE STRING "BASIC test model: the time limit of an emulator session without timeout (seconds)")
 set(BASIC_TEST_RUN_HANG_AFTER 8 CACHE STRING
 	"BASIC test model: seconds of silence of a program run after which a session ends (0: only the time limit)")
+option(BASIC_TEST_BUNDLE
+	"BASIC test model: bundle tests (16 cases of other sources in one emulator session; off in a coverage build)" ON)
 
 function(basic_test_model_env)
 	set(cd ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
@@ -169,6 +175,12 @@ function(basic_test_register prefix dir)
 	endif()
 	if(arg_ORDER)
 		list(APPEND order --order ${arg_ORDER})
+	endif()
+	# the bundle tests: none when switched off, and none in a coverage build
+	# (a served case would have no tracefile of its own, the bundle's would
+	# hold the functions of all its members)
+	if(NOT BASIC_TEST_BUNDLE OR BLITZ2_COVERAGE)
+		list(APPEND order --no-bundle)
 	endif()
 	add_custom_command(OUTPUT ${inc}
 		COMMAND ${TESTREG} --prefix ${prefix} --output ${inc} --depfile ${inc}.d --env ${BASIC_TEST_ENV}

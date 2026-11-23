@@ -21,6 +21,15 @@
  * cost and the fixtures are the configuration's `cost` and `fixtures`,
  * and the fixtures of the build that a cell of the side needs (the
  * option cell_fixtures: the build of blitz2.s for compiler=orig195).
+ *
+ * Bundles (change basic-test-bundle-registration; tests/README.md, "Bundle
+ * tests"): the case tests that may share an emulator session with other
+ * sources (tj_bundle_case) are grouped by session key, labels and
+ * fixtures, in the order of the sources and cases, and each group is cut
+ * into chunks of 16; a chunk is one more ctest test, PREFIX + "bundle_" +
+ * N, that runs its members in one session and stores their verdicts; each
+ * member's case test names it (`--test TEST --from-bundle NAME`) and
+ * DEPENDS on it for the order only.
  */
 #ifndef TESTREG_H
 #define TESTREG_H
@@ -61,6 +70,15 @@ struct treg_test {
     long long cost;
     struct treg_strs fixtures;
     struct treg_strs cells;     /* the names of the side's cells */
+    /* bundles (treg_make_bundles) */
+    char *key;                  /* a case test that may be bundled (tj_bundle_case):
+                                   the session key of its cell, else NULL */
+    long long limit;            /* with key: its cell's time limit */
+    char *from_bundle;          /* a member: the name of its bundle */
+    int bundle;                 /* a bundle test: source is its first member's,
+                                   case_name NULL */
+    size_t *members;            /* a bundle: the indexes of its members in r->t */
+    size_t nmembers;
 };
 
 /** @brief What the sources gave. */
@@ -86,6 +104,8 @@ struct treg_opts {
                                            requires FIXTURE (the build of
                                            blitz2.s for compiler=orig195) */
     size_t ncell_fixtures;
+    int bundle;                 /* 1: note the session key of the case tests
+                                   that may be bundled (treg_make_bundles) */
 };
 
 /** @brief Whether spec is SELECTOR|FIXTURE with a valid cell selector (err: why not). */
@@ -96,6 +116,23 @@ int treg_cell_fixture_ok(const char *spec, char *err, size_t errlen);
  * @return 0, 1 = errors, -1 = out of memory
  */
 int treg_add_source(const char *source, const struct treg_opts *o, struct treg_result *r);
+
+/** @brief The number of members of a bundle at most (Q4). */
+#define TREG_BUNDLE_MAX 16
+
+/**
+ * @brief The bundle tests (after the last treg_add_source with o->bundle):
+ *        the case tests with a key, grouped by (key, labels, fixtures; the
+ *        two as sets) in the order of r, each group cut into chunks of
+ *        TREG_BUNDLE_MAX; a chunk is appended to r as the test PREFIX +
+ *        "bundle_" + N (N from 1 in the order of the groups, then the
+ *        chunks) with the group's labels and fixtures, the time limit
+ *        3 x its key's limit + timeout_extra (3 sessions at most,
+ *        basic-test-bundle-runner) and as COST the sum of its members'
+ *        COSTs (none if no member has one); its members get from_bundle.
+ * @return 0, -1 = out of memory
+ */
+int treg_make_bundles(struct treg_result *r, const struct treg_opts *o);
 
 /** @brief The names given twice; 0 = none, 1 = errors added, -1 = out of memory. */
 int treg_check_names(struct treg_result *r);
@@ -136,14 +173,19 @@ struct tcosts;
  *        with an entry and without the configuration's `cost` gets its COST,
  *        which replaces the estimate (the sum of the cells' session limits);
  *        the configuration's `cost` wins over the entry.  An entry that names
- *        no registered test is ignored (the COST only orders the tests).
+ *        no registered test is ignored (the COST only orders the tests).  A
+ *        bundle test gets its entry, else the sum of its members' COSTs after
+ *        theirs were applied.
  */
 void treg_apply_costs(struct treg_result *r, const struct tcosts *c);
 
 /**
  * @brief Write the ctest include file (TEST_INCLUDE_FILES): an add_test()
  *        and a set_tests_properties() per test; the test runs COMMAND...
- *        --source SOURCE --case CASE --side port|originals.  First the
+ *        --source SOURCE --case CASE --side port|originals, a member of a
+ *        bundle also --test TEST --from-bundle NAME and the property
+ *        DEPENDS NAME; a bundle test runs COMMAND... --bundle NAME and
+ *        --member TEST SOURCE CASE per member.  First the
  *        tests without the label bug-orig, in the order of r, then those
  *        with it (a test of an open bug, which has a COST: its configured
  *        cost, else the sum of its cells' session limits) together with the

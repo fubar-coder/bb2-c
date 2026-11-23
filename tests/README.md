@@ -1061,6 +1061,32 @@ cleanly there, or `ctest -R` ran the case test alone), with one of other
 inputs, or a malformed one (named in the output) the case runs alone as
 above.
 
+### Bundle tests
+
+A case whose test has one cell on the side port, a session of no special
+kind and the time limit of the environment, 30 or 60 seconds, and that
+does not run on its own in the run of all cases (`tj_bundle_case`,
+`tools/lib/testjudge`) can share an emulator session with cases of other
+sources. The registration (`tools/testreg/README.md`) groups such cases of
+one directory's registration (`bug_orig_`, `regression_`, `blitz2_`) by
+their session key, labels and fixtures and registers a ctest test per 16
+of them: `PREFIX_bundle_N` (`bug_orig_bundle_3`), with the group's labels
+and fixtures. It runs its members in one session and stores their
+verdicts; it passes when it ran through, whatever the verdicts. The
+verdicts are the case tests': each member's case test keeps its name,
+labels, time limit and COST, takes its verdict from the bundle when the
+bundle stored one and runs the case alone otherwise. It `DEPENDS` on the
+bundle, which only orders the two: a preset or `-L LABEL` selects a bundle
+together with its members (they have the same labels), and runs the
+bundle first; `ctest -R ID__` selects the case tests without their bundle,
+so they run alone, as does a list of case tests (`testinfo select`,
+`--rerun-failed`). `ctest -N -R _bundle_` lists the bundles.
+
+The cache option `BASIC_TEST_BUNDLE` (ON) switches them off
+(`-DBASIC_TEST_BUNDLE=OFF`: no bundle test, every case test runs alone, the
+registration as without bundles); a coverage build (`BLITZ2_COVERAGE`)
+registers none, as a served case would leave no coverage file of its own.
+
 ## Original material and presets
 
 Some tests need original material that is not in the repository (the CD,
