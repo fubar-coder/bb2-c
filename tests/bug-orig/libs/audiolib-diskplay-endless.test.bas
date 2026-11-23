@@ -5,11 +5,10 @@
 ; a BODY of 2048 bytes, the buffer is 1024 bytes: the program hangs in
 ; DiskPlay (the audio DMA plays the last buffer again and again).
 ; Correct: DiskPlay returns after the 2048 bytes.
-; @fixed #69
-; @configs clib
-; @pass timeout=30
-; @pass file=t.8svx|@TESTDATA@/audiolib-diskplay-endless.8svx
-DiskBuffer 1024
-DiskPlay "CORPUS:t.8svx",1
-NPrint "played"
-End
+DEFTYPE .l
+
+!TestCase{two_buffers}
+  DiskBuffer 1024
+  DiskPlay "CORPUS:t.8svx",1
+  !Check{1,"returned"}
+!EndTestCase

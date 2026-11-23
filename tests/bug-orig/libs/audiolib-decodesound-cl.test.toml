@@ -1,0 +1,10 @@
+# audiolib-decodesound-cl.test.bas
+fixed-orig = 68
+
+[deviations."libs=cd"]
+"check.mark_and_leaks.fast_mark" = "== fail"
+"check.mark_and_leaks.fast_mark.actual" = "== $634C"
+"check.mark_and_leaks.leak" = "== fail"
+"check.mark_and_leaks.leak.actual" = "== 24"
+"check.mark_and_leaks.initsound_leak" = "== fail"
+"check.mark_and_leaks.initsound_leak.actual" = "== 1008"

@@ -12,8 +12,6 @@
 ; Correct: the mark goes with the freed in-place data (+14 = 0 after the
 ; DecodeSound of fast memory) and Free Sound returns the copy and the
 ; InitSound memory (leak 0).
-; @fixed #68
-; @configs clib
 DEFTYPE .l
 Function.l chipfree{}
   h.l=Peek.l(Peek.l(4)+322) : f.l=0
@@ -31,23 +29,28 @@ Statement mk8svx{a.l}
   Poke.l a+40,$424F4459 : Poke.l a+44,16
   For i.l=0 To 15 : Poke.b a+48+i,i*7 : Next
 End Statement
-c=AllocMem_(64,$10002) : f=AllocMem_(64,$10004)
-If c=0 OR f=0 Then NPrint "no memory" : End
-mk8svx{c} : mk8svx{f}
-DecodeSound 0,c
-NPrint "chip ",Hex$(Peek.w(Addr Sound(0)+14) AND $FFFF)
-f0=chipfree{}
-DecodeSound 0,f
-k=Peek.w(Addr Sound(0)+14) AND $FFFF
-Free Sound 0
-f1=chipfree{}
-NPrint "fast ",Hex$(k)
-NPrint "leak ",f0-f1
-DecodeSound 0,c
-f0=chipfree{}
-InitSound 0,1000
-Free Sound 0
-f1=chipfree{}
-NPrint "initsound leak ",f0-f1
-FreeMem_ c,64 : FreeMem_ f,64
-End
+
+!TestCase{mark_and_leaks}
+  c=AllocMem_(64,$10002) : f=AllocMem_(64,$10004)
+  !Require{c<>0 AND f<>0,"memory"}
+  mk8svx{c} : mk8svx{f}
+  DecodeSound 0,c
+  m1=Peek.w(Addr Sound(0)+14) AND $FFFF
+  f0=chipfree{}
+  DecodeSound 0,f
+  k=Peek.w(Addr Sound(0)+14) AND $FFFF
+  Free Sound 0
+  f1=chipfree{}
+  leak1=f0-f1
+  DecodeSound 0,c
+  f0=chipfree{}
+  InitSound 0,1000
+  Free Sound 0
+  f1=chipfree{}
+  leak2=f0-f1
+  FreeMem_ c,64 : FreeMem_ f,64
+  !CheckEq{m1,$634C,"chip_mark"}
+  !CheckEq{k,0,"fast_mark"}
+  !CheckEq{leak1,0,"leak"}
+  !CheckEq{leak2,0,"initsound_leak"}
+!EndTestCase
