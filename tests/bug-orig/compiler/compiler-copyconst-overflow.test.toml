@@ -1,0 +1,14 @@
+# compiler-copyconst-overflow.test.bas: the correct result is a failed
+# compile (Operand too Long at the line of the macro's move) and nothing
+# runs; the original cuts the source expression and refuses with a Syntax
+# Error
+fixed-orig = 997
+
+[asserts]
+compile = "== \"error 20 Operand too Long\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
