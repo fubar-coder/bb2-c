@@ -5,8 +5,6 @@
 ; blitz2 fail, tedstub runs the program with COMPILE/RUN and logs the
 ; requesters still open behind it.
 ; Correct: no requester is left open.
-; @fixed-orig #25
-; @pass wrap=@INJECT@|createprocfail
-; @pass jobline=run=r001|CORPUS:src/compiler-createproc-fail.bb2|RAM:con
-NPrint "hello"
-End
+!TestCase{createproc_fail}
+  !CheckEq{1,1,"hello"}
+!EndTestCase
