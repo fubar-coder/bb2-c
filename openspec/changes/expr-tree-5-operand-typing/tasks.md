@@ -10,6 +10,7 @@ After `compare-compound-left`. Open questions 1-4 answered between groups 1 and 
 ## 2. Tests first
 
 - [ ] 2.1 The named cells as bug-orig/fixed tests in the matrix's form (REPRODUCED on main); `quick-arith-long` lines 20/21 and the spec scenarios as a bug-orig test; verify: `ctest --preset bug-orig -R exprmatrix|operand-order` REPRODUCED.
+- [ ] 2.2 The type check of `blitz2_exprtype` against the matrix model by types, not only by values: `tools/lib/exprmatrix/model.c` returns the type so far of an evaluated cell (for example a field in `em_value`), and `programs/blitz2/tests/host/test_exprtype.cpp` compares the type of `exprtype_binop` with it for every two-operand cell both define (first with the original rules, before the rule of 1.2 is applied to the function); a planted wrong result type that keeps the value fails; verify: `ctest --preset host -R "blitz2_exprtype|exprmatrix"`, also with `-DHOST_SANITIZE=ON`. Source: rounds/tree/decisions.md 2026-11-23 "Model check: types later, before step 5".
 
 ## 3. Implementation
 
