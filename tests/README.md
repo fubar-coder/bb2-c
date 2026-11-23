@@ -557,11 +557,50 @@ the rest, naming file and line):
   procedure or a subroutine inside a case, never a `Gosub` target outside
   the blocks; `INCLUDE`/`XINCLUDE` and calls of the source's own macros
   are refused there (their text would hide checks from the numbering).
+  A label outside the blocks is a BASIC label (`.name`); `name:` counts
+  as executable code and is refused. Assembler instructions are code too:
+  an assembler routine or a trap handler stands inside the case behind a
+  `Goto` that skips it (a `Dc` table it uses may stand there too), and
+  its labels are `.name` labels as well. `Data` stays outside the blocks
+  behind a `.label` that the case reads with `Restore`; inside a case it
+  would run as code.
+* **Helpers**: a `Gosub` helper of an old program becomes a `Function` or
+  `Statement` (its checks belong to the case that calls it) or a label
+  inside the case. A `Statement` takes at most 6 parameters ("Too many
+  parameters" at the 7th). An array that a helper `Function` uses cannot
+  be declared in a case (the `Dim` must come before the function): use an
+  allocated block (`AllocMem`) or a global array outside the blocks. A
+  `Function` that stores a register into one of its own locals with
+  `PutReg` leaves the local 0 and overwrites memory in front of the
+  globals (#1202, an original bug, open): `PutReg` only into `SHARED` or
+  global variables, in a `Statement` or inline in the case.
+* **A trap handler that continues the case**: the trap leaves the frames
+  of the library on the stack, and the block's final `Return` would
+  return into the program behind the faulty call (the case runs again).
+  Save the stack pointer before the act (`LEA sv(pc),a0 : MOVE.l
+  a7,(a0)`) and restore it in the handler (`MOVE.l (a0),a7`) before the
+  checks; a handler that only ends the program needs neither. A check
+  cannot follow a `SetErr` jump into the end of the case: the handler
+  holds the checks and the `End`.
 * **Names**: a case name is `[a-z][a-z0-9_]*`, holds no `__`, does not
   end in `_originals` and is no token of any library set (case ignored;
-  `on`, `add` or `count` are tokens). A check that a configuration names
+  `on`, `add` or `count` are tokens). The names of procedures (`Statement`,
+  `Function`) and variables must not be library tokens either (`colour`,
+  `bset`, `st`, `er`, `allocfill`, `weekday` were seen): the registration
+  reports a case name at once, but a procedure or variable name fails
+  only in the compile of the run, with a bare `Syntax Error` and the line.
+  A check that a configuration names
   needs a name (the last argument, a string literal); a name is unique in
-  its namespace (the case, the procedure, `init`, `cleanup`).
+  its namespace (the case, the procedure, `init`, `cleanup`); within a
+  case two checks must not have the same name (use two names for two
+  paths).
+* **Types of variables**: an untyped variable in a case is a Quick, not a
+  Long. A test that holds pointers or addresses puts `DEFTYPE .l` outside
+  the blocks (a pointer in a Quick variable gives errors such as "Unable
+  to Free Memory").
+* **Line length**: a line is at most 128 characters after the expansion
+  of the macros (`tedsrc`: "a line is longer than TED allows"); a long
+  string-building line is split.
 * **What runs**: the driver calls the batch init only if a case is
   selected, then the case of the test, then the batch cleanup. Cases share
   the program's globals (they are subroutines of one program), so each
@@ -2709,7 +2748,11 @@ cells.
   `check.CASE.NAME` (`ok` the error came, `fail` it did not, `not-run`),
   and the cells with the original's faulty part declare it
   `"check.CASE.NAME" = "== fail"` with the original's `requester`
-  (`tests/blitz2/selftest/model-expect-error.test.toml`). The form without
+  (`tests/blitz2/selftest/model-expect-error.test.toml`). After an
+  announced error the runner lets the case go on (the port's `end.case`
+  exists), but the original's error is an unannounced requester that ends
+  the program: its deviation needs `"end.case" = "not exists"` (and `rc`
+  where the end differs). The form without
   `!ExpectError` (the requester, `end.case` and the check behind the
   faulty statement spelled out) is only for a case where the port itself
   raises no error.
@@ -2724,7 +2767,11 @@ cells.
   Software Failure. Give such cells a session of their own:
   `isolate = ["libs=cd"]` (or `isolate = "on"` for every cell) in the
   `.test.toml`, with the reason in a comment; their memory and `RAM:` are
-  then shared with no other cell's program. Cells whose bug writes only a
+  then shared with no other cell's program. The same setting avoids the
+  double run when the first cell with the CD's libraries hangs (the hang
+  ends the shared session, and the second cell runs again), and keeps a
+  state the original leaks (an open font that stays in the session's
+  list, `fontlib-loadblitzfont-not-closed`) out of the next cell. Cells whose bug writes only a
   few bytes (the three `-zero` tests) can stay together.
 * **Helpers and their output.** `runwrap = "@INJECT@|guard"` runs the
   program through inject; its report lines (`inject: rc=0`, `inject: guard:
@@ -2737,7 +2784,9 @@ cells.
 * **Cases are subroutines.** `Dim` and top-level statements do not stand
   outside the blocks: arrays and the setup go into the case (or the batch
   init), helpers (`Statement`, `Function`) stay outside. Cases share the
-  globals; each sets up what it uses.
+  globals; each sets up what it uses. Arrays that a helper `Function`
+  uses and `Data` do not go into a case ([Writing a test
+  source](#writing-a-test-source)).
 * **A test whose bug does not show in a check.** `shapeslib-loadshape-width-zero`
   prints the same shape width with the original; only inject's guard line
   differs. It keeps the check (it is the observation the old test judged)
@@ -2765,11 +2814,55 @@ cells.
   the alternatives are stricter than the old wildcard lines, keep them
   so.
 * **Hang tests.** A program that hangs ends by the hang check
-  (`hang-after`, the runner's default 8 s; `timeout` the limit): the
-  deviation is `session = "== timeout"` and the missing end entry; the
-  checks behind it are not run. Set `hang-after`/`timeout` in the test's
-  configuration where the old one had `; @pass hang_after=`/`timeout=`.
-  Not exercised by the pilot.
+  (`hang-after`, the runner's default 8 s of silence; `timeout` the
+  limit): the deviation is `session = "== timeout"` and the missing end
+  entry; the checks behind it are not run. Set `hang-after`/`timeout` in
+  the test's configuration where the old one had `; @pass
+  hang_after=`/`timeout=`. Declare `session == timeout` only for a
+  program that really hangs.
+* **Slow originals.** The old form had no hang check unless the `.orig`
+  said timeout; the model ends a run after 8 s without output. An
+  original that computes for longer (`stringfunclib-mid-overflow` copies
+  2 GB; `menuslib-menuchecked-sub-loops` walks about 2^32 reads for
+  item 1, subitem 1) needs `hang-after` and `timeout` above its time, and
+  then declares only the check that differs. A test that is merely slow
+  under load gets a `hang-after` margin (`seriallib-closeserial-abortio`:
+  30 s; alone it takes 4 s, but a loaded host went silent for more than
+  8 s once).
+* **A crashed original loses result lines.** The result file is
+  buffered; after a crash a check that ran can show as `not-run`. A check
+  that a crash can hide is asserted `!= ok` instead of a fixed verdict
+  (`palettelib-stopcycle-cycon`, check `second_cycle`).
+* **An original that does not compile.** `compile = "contains \"Syntax
+  Error\""` declares the original's compile error for the cells that
+  show it (`brexxlib-playwait-noarg`).
+* **Selectors and keys the declarations use.** A deviation table takes
+  `compiler=` selectors too (`[deviations."compiler=port,libs=cd"]`,
+  `[deviations."compiler=orig195"]`) for cells of one side whose end
+  differs by code layout, and `[asserts."libs=clib"]` limits an assert
+  to those cells. The alternatives of `[ends]` cannot name `inject`: use
+  `output contains`. `jobline` is a list of strings (`["strbuf=150000"]`),
+  as the other list keys. `end.run` exists after a Ctrl-C break (rc 20),
+  unlike after a crash.
+* **A check named only by its `.actual`** (`"check.CASE.NAME.actual"`
+  without `"check.CASE.NAME" = "== fail"`) is not required to pass or
+  fail: a mutation check of the deviations removes both lines.
+* **The original's end follows the link layout.** What an original does
+  after its bug (returns, hangs, crashes at the exit) can depend on what
+  the linker places behind the faulty library, which is the layout of the
+  test program including `testlib` and the driver
+  (`wbstartuplib-clistring-overflow`: the 52 bytes beyond the argument
+  buffer land in the head of the next library; the original crashes at its
+  start). A change of `testlib` or the driver can change such an end, so
+  the declaration names this in its `reason`.
+* **Tests that start themselves.** An old test that runs its own
+  executable as a child process (`dos Execute` of itself with an argument
+  or redirected input, a second program at once) cannot be written as a
+  model case: the model's program is the driver, so a child would run the
+  whole driver again. Such tests stay in the old form until the change
+  `basic-test-local-data` (`!RunProgram`, the directory `ID.test/`) is
+  implemented; do not rebuild them with a workaround (an argument given as
+  the cell's `runargs` instead of a child changes the observation).
 * **Prev comparison.** The `_prev` tests of the model (`PREFIX_ID_prev`)
   exist for the tests of `tests/blitz2`, and in `tests/bug-orig` for
   `compiler/` and `regression/compiler-*` only
