@@ -8,11 +8,12 @@
 ; parameter of 65 characters: 130.
 ; Correct: a path that does not fit is refused, with "Path too Long" at
 ; the first UsePath.
-; @fixed-orig #31
 Macro p
 `1`1
 End Macro
-UsePath !p{qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq}
-UsePath q
-NPrint 1
-End
+
+!TestCase{usepath_long}
+  UsePath !p{qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq}
+  UsePath q
+  !CheckEq{1,1,"after_usepath"}
+!EndTestCase
