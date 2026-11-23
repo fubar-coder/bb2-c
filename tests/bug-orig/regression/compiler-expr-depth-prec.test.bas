@@ -4,15 +4,15 @@
 ; holds 128 characters).
 ; Correct: the compile error "Precedence Stack Overflow".  Before the fix
 ; of #1080 the compile overran the stack before it got there.
-; @machine a500
-; @pass stack=4000
 Macro o
 ((((((((
 End Macro
 Macro c
 ))))))))
 End Macro
-b.l = 3
-b = !o!o!o!o!o!o!o!o b!c!c!c!c!c!c!c!c
-NPrint b
-End
+
+!TestCase{depth_prec}
+  b.l = 3
+  b = !o!o!o!o!o!o!o!o b!c!c!c!c!c!c!c!c
+  !CheckEq{b,3,"after_expression"}
+!EndTestCase

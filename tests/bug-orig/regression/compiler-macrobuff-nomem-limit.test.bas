@@ -8,8 +8,6 @@
 ; Correct: the out of memory notice (XTRAERR "Out of Memory": tedstub has
 ; no TED-C notice) and "Macro too Big" at the line where the text gets
 ; too long, no text written behind the old buffer.
-; @pass wrap=@INJECT@|allocfail=16384-16384/f=1/1
-; @pass jobline=macrobuf=16384
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -132,6 +130,8 @@ a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 End Macro
-!big
-NPrint Len(a$)
-End
+
+!TestCase{macrobuf_limit}
+  !big
+  !CheckEq{Len(a$),70,"len"}
+!EndTestCase

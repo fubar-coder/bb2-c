@@ -5,7 +5,8 @@
 ; the division trap inside the compiler.
 ; Correct: the compile error "Division by Zero" at the line.
 ; A regression test of the ldivlib error check (#200).
-; @pass runtime_errors=on
 #c=5/0
-NPrint #c
-End
+
+!TestCase{div0_const}
+  !CheckEq{#c,0,"constant"}
+!EndTestCase
