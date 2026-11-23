@@ -10,19 +10,18 @@
 ; (the wrong message, #330) and ends; the poked pointer then gives
 ; "Unable to Free Memory" at the end.  (The word test of the slice is
 ; right: +0 of a slice is the word y; only the palette half is a bug.)
-; @fixed #135
-; @configs clib
-; @pass runtime_errors=on
 DEFTYPE .l
-For i=0 To 7 : PalRGB 0,i,i*2,15-i*2,i : Next
-pa=Addr Palette(0) : p=Peek.l(pa)
-BLITZ
-Slice 0,44,320,200,$fff8,3,8,8,320,320
-Poke.l pa,$8000
-ASyncFade On
-FadeIn 0
-Poke.l pa,p
-FreeSlices
-AMIGA
-NPrint "faded"
-End
+
+!TestCase{low_palette}
+  For i=0 To 7 : PalRGB 0,i,i*2,15-i*2,i : Next
+  pa=Addr Palette(0) : p=Peek.l(pa)
+  BLITZ
+  Slice 0,44,320,200,$fff8,3,8,8,320,320
+  Poke.l pa,$8000
+  ASyncFade On
+  FadeIn 0
+  Poke.l pa,p
+  FreeSlices
+  AMIGA
+  !Check{1,"faded"}
+!EndTestCase

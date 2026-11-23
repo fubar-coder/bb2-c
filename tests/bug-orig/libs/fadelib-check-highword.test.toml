@@ -1,0 +1,9 @@
+# fadelib-check-highword.test.bas: with runtime error checking; the original
+# refuses the palette (the message of #330) and ends in the requester, so the
+# case has no end entry and the check behind the FadeIn is not run
+fixed-orig = 135
+runtime-errors = "on"
+
+[deviations."libs=cd"]
+requester = "contains \"Not enough colours in Slice\""
+"end.case" = "not exists"
