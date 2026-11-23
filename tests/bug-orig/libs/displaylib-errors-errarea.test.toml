@@ -11,8 +11,7 @@ isolate = ["libs=cd"]
 "end.case" = "not exists"
 "check.nine_planes.no_trap" = "== not-run"
 
-[deviations."libs=cd"]
-session = "== timeout"
-requester = "contains \"Software Failure\""
-rc = "not exists"
-"end.run" = "not exists"
+[ends."libs=cd"]
+reason = "the original runs into other code and crashes; the Software Failure requester is written more or less before the session ends (a run showed only the start of its EasyRequest line)"
+crash = ["session == timeout", "requester contains \"Software Failure\"", "rc not exists", "end.run not exists"]
+crash_partial = ["session == timeout", "requester contains \"EasyRequest title \"", "rc not exists", "end.run not exists"]
