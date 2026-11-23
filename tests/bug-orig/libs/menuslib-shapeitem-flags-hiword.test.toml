@@ -1,0 +1,13 @@
+# menuslib-shapeitem-flags-hiword.test.bas: the CD's libraries take the
+# flags from the upper word and give the default flags
+fixed-orig = 218
+
+[deviations."libs=cd"]
+"check.shape_flags.item_0_flags" = "== fail"
+"check.shape_flags.item_0_flags.actual" = "== $50"
+"check.shape_flags.item_2_flags" = "== fail"
+"check.shape_flags.item_2_flags.actual" = "== $50"
+"check.shape_flags.item_2_exclude" = "== fail"
+"check.shape_flags.item_2_exclude.actual" = "== 0"
+"check.shape_flags.sub_0_flags" = "== fail"
+"check.shape_flags.sub_0_flags.actual" = "== $50"

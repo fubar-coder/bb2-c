@@ -1,0 +1,9 @@
+# menuslib-menustate-menu-bit.test.bas: the CD's libraries change bit 4 of
+# the menu's flags
+fixed-orig = 216
+
+[deviations."libs=cd"]
+"check.menu_enabled_bit.off_flags" = "== fail"
+"check.menu_enabled_bit.off_flags.actual" = "== 1"
+"check.menu_enabled_bit.on_flags" = "== fail"
+"check.menu_enabled_bit.on_flags.actual" = "== 17"

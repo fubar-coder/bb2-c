@@ -1,0 +1,12 @@
+# menuslib-empty-item-text.test.bas: the CD's libraries store 0 as the text
+# of an empty item and subitem and read the string at address 0
+fixed-orig = 981
+
+[deviations."libs=cd"]
+"check.empty_texts.item_width" = "== fail"
+"check.empty_texts.item_width.actual" = "== 32"
+"check.empty_texts.item_itext_set" = "== fail"
+"check.empty_texts.subitem_width" = "== fail"
+"check.empty_texts.subitem_width.actual" = "== 32"
+"check.empty_texts.subitem_itext_set" = "== fail"
+"check.empty_texts.title_name_set" = "== fail"

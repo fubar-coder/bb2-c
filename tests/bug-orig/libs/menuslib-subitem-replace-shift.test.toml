@@ -1,0 +1,11 @@
+# menuslib-subitem-replace-shift.test.bas: the CD's libraries move the
+# following subitems when one is replaced
+fixed-orig = 220
+
+[deviations."libs=cd"]
+"check.replace_subitems.after_aa_2" = "== fail"
+"check.replace_subitems.after_aa_2.actual" = "== 4"
+"check.replace_subitems.after_aa_3" = "== fail"
+"check.replace_subitems.after_aa_3.actual" = "== 16"
+"check.replace_subitems.after_bb_3" = "== fail"
+"check.replace_subitems.after_bb_3.actual" = "== 5"
