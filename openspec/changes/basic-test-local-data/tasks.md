@@ -39,4 +39,4 @@
 
 ## 5. Acceptance
 
-- [ ] 5.1 The agent's runs: `ctest --preset host` (also with `-DHOST_SANITIZE=ON` for the changed host tests), the tests of 2.4, 3.6 and section 4, a clean rebuild without warnings and without findings of `blitzlib check`; no result of the compilers or libraries changes but testlib.obj (named); verify: the run logs named in the report
+- [x] 5.1 The agent's runs: `ctest --preset host` (also with `-DHOST_SANITIZE=ON` for the changed host tests), the tests of 2.4, 3.6 and section 4, a clean rebuild without warnings and without findings of `blitzlib check`; no result of the compilers or libraries changes but testlib.obj (named); verify: the run logs named in the report
