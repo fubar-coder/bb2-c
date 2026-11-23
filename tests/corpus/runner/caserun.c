@@ -844,6 +844,22 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
         fprintf(out, "alternative ends:\n");
         print_tab(out, "ends", conf->ends, conf->nends);
     }
+    if (conf->ndata) {
+        fprintf(out, "data (%s.test/):\n", conf->id);
+        for (size_t i = 0; i < conf->ndata; i++) {
+            const struct tc_data *d = &conf->data[i];
+
+            fprintf(out, "  \"%s\": action = \"%s\"    # %s:%u\n", d->file, tc_daction_name(d->action), d->at.file,
+                    d->at.line);
+            for (int k = 0; k < TC_DO_N && d->action == TC_DA_BASIC_COMPILE; k++) {
+                if (d->optline[k])
+                    fprintf(out, "    %s = \"%s\"    # %s:%u\n", tc_dopt_name(k), d->opt[k], d->at.file,
+                            d->optline[k]);
+                else
+                    fprintf(out, "    %s = \"%s\"    # (default)\n", tc_dopt_name(k), d->opt[k]);
+            }
+        }
+    }
     {
         size_t nd;
         const struct tc_default *d = tc_defaults(&nd);

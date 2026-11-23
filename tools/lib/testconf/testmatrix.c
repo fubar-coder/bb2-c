@@ -402,6 +402,28 @@ int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err
                ex ? ex->at.line : 0, conf->id);
         goto out;
     }
+    /* a data file whose fixed option needs original material, in a test
+       with a cell of the side port (basic-test-local-data D4) */
+    for (size_t i = 0; i < conf->ndata; i++) {
+        const struct tc_data *d = &conf->data[i];
+        int k = -1;
+
+        if (d->action != TC_DA_BASIC_COMPILE)
+            continue;
+        if (strcmp(d->opt[TC_DO_COMPILER], "same") && strcmp(d->opt[TC_DO_COMPILER], "port"))
+            k = TC_DO_COMPILER;
+        else if (!strcmp(d->opt[TC_DO_LIBS], "cd"))
+            k = TC_DO_LIBS;
+        if (k < 0)
+            continue;
+        for (size_t c = 0; c < m->ncells; c++)
+            if (!m->cells[c].originals) {
+                tc_err(err, errlen, "%s:%u: data \"%s\": %s = \"%s\" needs original material, but the test has "
+                       "the cell %s of the side port", d->at.file, d->optline[k], d->file, tc_dopt_name(k),
+                       d->opt[k], m->cells[c].name);
+                goto out;
+            }
+    }
     r = 0;
     goto out;
 oom:
