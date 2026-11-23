@@ -1,0 +1,8 @@
+# pt23a-9xx-signed-length-ciatrklib.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 472
+rwe = ["ciatrklib"]
+files = ["pt.mod|@TESTDATA@/pt23a-9xx-signed-length-ciatrklib.mod"]
+
+[deviations."compiler=orig210"]
+"check.offset_signed.start_moved" = "== fail"
+"check.offset_signed.length_kept" = "== fail"

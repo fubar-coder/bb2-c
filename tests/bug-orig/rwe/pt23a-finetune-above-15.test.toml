@@ -1,0 +1,8 @@
+# pt23a-finetune-above-15.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 476
+rwe = ["ritrackerlib"]
+files = ["pt.mod|@TESTDATA@/pt23a-finetune-above-15.mod"]
+
+[deviations."compiler=orig210"]
+"check.finetune.period" = "== fail"
+"check.finetune.period.actual" = "== 0"

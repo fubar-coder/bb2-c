@@ -1,0 +1,10 @@
+# ciatrklib-pause-after-stop.test.bas: the original plays in the steps
+# "free", "stop_twice" and "stop"; its last call pauses in "again"
+fixed-orig = 1076
+rwe = ["ciatrklib"]
+files = ["p.mod|@TESTDATA@/ciatrklib-free-while-playing.mod"]
+
+[deviations."compiler=orig210"]
+"check.pause_states.free" = "== fail"
+"check.pause_states.stop_twice" = "== fail"
+"check.pause_states.stop" = "== fail"

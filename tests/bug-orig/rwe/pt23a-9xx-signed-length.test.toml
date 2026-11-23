@@ -1,0 +1,9 @@
+# pt23a-9xx-signed-length.test.bas: the original keeps the start and sets the
+# length to 1
+fixed-orig = 472
+rwe = ["ritrackerlib"]
+files = ["pt.mod|@TESTDATA@/pt23a-9xx-signed-length.mod"]
+
+[deviations."compiler=orig210"]
+"check.offset_signed.start_moved" = "== fail"
+"check.offset_signed.length_kept" = "== fail"

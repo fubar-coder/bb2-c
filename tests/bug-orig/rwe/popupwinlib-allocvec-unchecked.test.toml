@@ -1,0 +1,19 @@
+# popupwinlib-allocvec-unchecked.test.bas: the program runs through inject with
+# the third allocation of 68 bytes failing; the original opens a window for
+# garbage and waits for a mouse button
+fixed-orig = 467
+rwe = ["popupwinlib"]
+timeout = 30
+runwrap = "@INJECT@|allocfail=68-68/f=10001/1+2"
+# the hang ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+inject = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

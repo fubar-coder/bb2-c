@@ -1,0 +1,8 @@
+# pt23a-samplenum-over-31-ciatrklib.test.bas: the original's play routine shows the bug in its voice data
+fixed-orig = 480
+rwe = ["ciatrklib"]
+files = ["pt.mod|@TESTDATA@/pt23a-samplenum-over-31-ciatrklib.mod"]
+
+[deviations."compiler=orig210"]
+"check.sample_number.sample_1" = "== fail"
+"check.sample_number.not_module" = "== fail"

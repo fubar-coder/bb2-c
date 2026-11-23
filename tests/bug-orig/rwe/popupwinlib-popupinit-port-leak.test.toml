@@ -1,0 +1,8 @@
+# popupwinlib-popupinit-port-leak.test.bas: the original keeps a port and its
+# signal bit for every PopUpInit
+fixed-orig = 470
+rwe = ["popupwinlib"]
+
+[deviations."compiler=orig210"]
+"check.signals_lost.signals_lost" = "== fail"
+"check.signals_lost.signals_lost.actual" = "== 3"

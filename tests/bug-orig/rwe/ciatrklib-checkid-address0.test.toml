@@ -1,0 +1,10 @@
+# ciatrklib-checkid-address0.test.bas: the original returns the long at
+# address 0 for a module without the ID
+fixed-orig = 430
+rwe = ["ciatrklib"]
+
+[deviations."compiler=orig210"]
+"check.check_id.no_id" = "== fail"
+"check.check_id.no_id.actual" = "== 305419896"
+"check.check_id.empty_slot" = "== fail"
+"check.check_id.empty_slot.actual" = "== 305419896"

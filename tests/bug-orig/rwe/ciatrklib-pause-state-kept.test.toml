@@ -1,0 +1,8 @@
+# ciatrklib-pause-state-kept.test.bas: the original's second PauseModule
+# only enables playing, the module goes on
+fixed-orig = 1076
+rwe = ["ciatrklib"]
+files = ["p.mod|@TESTDATA@/ciatrklib-free-while-playing.mod"]
+
+[deviations."compiler=orig210"]
+"check.pause_kept.paused" = "== fail"

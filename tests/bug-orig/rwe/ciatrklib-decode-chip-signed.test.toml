@@ -1,0 +1,12 @@
+# ciatrklib-decode-chip-signed.test.bas: the emulator runs with 24 bit
+# addressing, so the address plus $80000000 reaches the module; the original
+# leaves it where it is
+fixed-orig = 432
+rwe = ["ciatrklib"]
+uae = ["cpu_24bit_addressing=true", "z3mem_size=0"]
+
+[deviations."compiler=orig210"]
+"check.decode_high.copied" = "== fail"
+"check.decode_high.chip" = "== fail"
+"check.decode_high.size" = "== fail"
+"check.decode_high.size.actual" = "== 1"

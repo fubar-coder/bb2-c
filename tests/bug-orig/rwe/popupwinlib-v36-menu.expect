@@ -1,5 +1,0 @@
-[run]
-before
-messages sent 2
-after
-rc=0

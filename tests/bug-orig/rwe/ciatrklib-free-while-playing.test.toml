@@ -1,0 +1,14 @@
+# ciatrklib-free-while-playing.test.bas: with runtime error checking for the
+# announced error; the original raises none, the module goes on playing
+fixed-orig = 436
+rwe = ["ciatrklib"]
+runtime-errors = "on"
+files = ["f.mod|@TESTDATA@/ciatrklib-free-while-playing.mod"]
+
+[asserts]
+"check.free_playing.not_playing" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.free_playing.refused" = "== fail"
+"check.free_playing.not_playing" = "== fail"
+requester = "count == 0"

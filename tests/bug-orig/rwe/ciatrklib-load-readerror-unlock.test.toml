@@ -1,0 +1,12 @@
+# ciatrklib-load-readerror-unlock.test.bas: the program runs through inject,
+# whose report judges the unlocks; the original unlocks the lock a second time
+fixed-orig = 444
+rwe = ["ciatrklib"]
+files = ["e.mod|@TESTDATA@/ciatrklib-free-while-playing.mod"]
+runwrap = "@INJECT@|readfail=e.mod/1 ownedunlock"
+
+[asserts]
+inject = "contains \"inject: readfail: 1 reads failed\ninject: ownedunlock: 0 UnLocks of a lock a file owns\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: readfail: 1 reads failed\ninject: ownedunlock: 1 UnLocks of a lock a file owns\""

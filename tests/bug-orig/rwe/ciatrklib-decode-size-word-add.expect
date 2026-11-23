@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-allocated -1
-copied -1
-size 131073
-end -1
-rc=0
