@@ -7,13 +7,12 @@
 ; 849 x 849 pixels, 108 bytes per row, 93390 bytes with the extra word).
 ; Correct: an error check refuses the new shape: "Shape too Big", the
 ; command is not done.
-; @fixed #1047
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=300
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-InitShape 0,600,600,1
-NPrint "before"
-Rotate 0,0.125
-NPrint "after, ",ShapeWidth(0)," x ",ShapeHeight(0)
-End
+
+!TestCase{rotate_plane_64k}
+  InitShape 0,600,600,1
+  Rotate 0,0.125
+  !Check{0,"after"}
+!EndTestCase

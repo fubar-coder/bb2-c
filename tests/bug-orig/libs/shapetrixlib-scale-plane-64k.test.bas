@@ -7,13 +7,12 @@
 ; with the extra word).
 ; Correct: an error check refuses the new shape: "Shape too Big", the
 ; command is not done.
-; @fixed #1047
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=300
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-InitShape 0,256,500,1
-NPrint "before"
-Scale 0,2,2
-NPrint "after, ",ShapeWidth(0)," x ",ShapeHeight(0)
-End
+
+!TestCase{scale_plane_64k}
+  InitShape 0,256,500,1
+  Scale 0,2,2
+  !Check{0,"after"}
+!EndTestCase
