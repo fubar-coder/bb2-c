@@ -173,7 +173,8 @@ function(basic_test_register prefix dir)
 	add_custom_command(OUTPUT ${inc}
 		COMMAND ${TESTREG} --prefix ${prefix} --output ${inc} --depfile ${inc}.d --env ${BASIC_TEST_ENV}
 			--tokens ${BASIC_TEST_TOKENS} --timeout-default ${BASIC_TEST_TIMEOUT} --timeout-extra ${extra}
-			--cell-fixture "compiler=orig195|originals_refbuild" --test-env ${tenv} ${order}
+			--cell-fixture "compiler=orig195|originals_refbuild"
+			--cell-fixture "compiler=orig210|rwe_refbuild" --test-env ${tenv} ${order}
 			${cmd} ${srcs}
 		DEPENDS ${srcs} ${confs} ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS} basic_test_tokens ${TESTREG} host_tools
 			${arg_ORDER} ${costs}
