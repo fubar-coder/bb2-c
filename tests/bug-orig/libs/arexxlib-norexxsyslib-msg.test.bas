@@ -6,8 +6,9 @@
 ; The program runs through inject: the OpenLibrary of rexxsyslib.library
 ; fails (openlibfail=) and the alerts are answered at once (alerts).
 ; Correct: after the alert the message is no RexxMsg: the result is 0.
-; @fixed #56
-; @configs clib
-; @pass runwrap=@INJECT@|openlibfail=rexxsyslib.library alerts
-NPrint "result ",GetRexxResult(12345,2)
-End
+DEFTYPE .l
+
+!TestCase{result_without_library}
+  v=GetRexxResult(12345,2)
+  !CheckEq{v,0,"result"}
+!EndTestCase

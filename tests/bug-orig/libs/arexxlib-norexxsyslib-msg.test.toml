@@ -1,0 +1,12 @@
+# arexxlib-norexxsyslib-msg.test.bas: through inject: the OpenLibrary of
+# rexxsyslib.library fails and the alerts are answered; the CD's libraries
+# return the long word at address $24 (an address that varies)
+fixed-orig = 56
+runwrap = "@INJECT@|openlibfail=rexxsyslib.library alerts"
+
+[asserts]
+inject = "contains \"alert: SORRY CAN NOT OPEN REXXSYSLIB.LIBRARY\""
+
+[deviations."libs=cd"]
+"check.result_without_library.result" = "== fail"
+"check.result_without_library.result.actual" = "!= 0"

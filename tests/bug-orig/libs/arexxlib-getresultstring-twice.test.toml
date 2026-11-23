@@ -1,0 +1,6 @@
+# arexxlib-getresultstring-twice.test.bas: the CD's libraries leave rm_Result2
+# pointing to the freed block
+fixed-orig = 53
+
+[deviations."libs=cd"]
+"check.result_twice.result2_cleared" = "== fail"

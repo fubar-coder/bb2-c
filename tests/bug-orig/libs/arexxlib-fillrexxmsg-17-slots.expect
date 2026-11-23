@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-fill passport -1 slot16 -1
-clear passport -1 host -1 slot16 0
-rc=0

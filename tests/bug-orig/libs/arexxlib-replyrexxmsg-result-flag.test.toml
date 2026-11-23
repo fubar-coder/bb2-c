@@ -1,0 +1,9 @@
+# arexxlib-replyrexxmsg-result-flag.test.bas: the CD's libraries test the
+# wrong bit: the command gets no result string, the function one
+fixed-orig = 48
+
+[deviations."libs=cd"]
+"check.result_flag.command_result_string" = "== fail"
+"check.result_flag.command_result_string.actual" = "== \"\""
+"check.result_flag.function_result2" = "== fail"
+"check.result_flag.function_result2.actual" = "!= 7"

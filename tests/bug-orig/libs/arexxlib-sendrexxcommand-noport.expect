@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-inject: alert: SORRY CAN NOT FIND THE REXXPORT PRESS ANY MOUSE BUTTON TO CONTINUE
-idnest 255
-inject: alerts: 1 alerts answered
-inject: rc=0
-rc=0

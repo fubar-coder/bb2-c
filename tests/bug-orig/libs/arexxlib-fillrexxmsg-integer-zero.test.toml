@@ -1,0 +1,7 @@
+# arexxlib-fillrexxmsg-integer-zero.test.bas: the CD's libraries stop at the
+# integer 0 and lose the argument behind it
+fixed-orig = 50
+
+[deviations."libs=cd"]
+"check.integer_zero_slot.slot_3" = "== fail"
+"check.integer_zero_slot.slot_3.actual" = "== \"\""

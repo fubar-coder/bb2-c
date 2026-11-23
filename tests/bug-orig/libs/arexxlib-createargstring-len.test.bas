@@ -7,11 +7,15 @@
 ; Correct: an ArgString holds at most 65535 characters (ra_Length is a
 ; word): the string is cut to 65535 characters, all of them copied, then
 ; the 0, in a block of 65535+9 bytes.
-; @fixed #57
-; @configs clib
-; @pass jobline=strbuf=150000
-s$=String$("a",70000)
-a.l=CreateArgString(s$)
-NPrint Peek.l(a-8) AND $7FFFFFFF," ",Peek.w(a-4) AND $FFFF
-NPrint Peek.b(a+4463)," ",Peek.b(a+4464)," ",Peek.b(a+65534)," ",Peek.b(a+65535)
-End
+DEFTYPE .l
+
+!TestCase{string_70000}
+  s$=String$("a",70000)
+  a.l=CreateArgString(s$)
+  !CheckEq{Peek.l(a-8) AND $7FFFFFFF,65544,"block_size"}
+  !CheckEq{Peek.w(a-4) AND $FFFF,65535,"ra_length"}
+  !CheckEq{Peek.b(a+4463),97,"char_4463"}
+  !CheckEq{Peek.b(a+4464),97,"char_4464"}
+  !CheckEq{Peek.b(a+65534),97,"char_65534"}
+  !CheckEq{Peek.b(a+65535),0,"terminator"}
+!EndTestCase

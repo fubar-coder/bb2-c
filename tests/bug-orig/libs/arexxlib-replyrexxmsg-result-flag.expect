@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-comm [sent]
-func -1
-rc=0

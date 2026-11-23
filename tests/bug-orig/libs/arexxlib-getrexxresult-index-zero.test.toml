@@ -1,0 +1,13 @@
+# arexxlib-getrexxresult-index-zero.test.bas: with runtime error checking;
+# the port refuses n = 0, the CD's libraries return rm_Action
+fixed-orig = 51
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.index_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.index_zero.refused" = "== fail"
+"check.index_zero.not_refused" = "== fail"
+requester = "count == 0"
