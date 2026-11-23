@@ -67,6 +67,15 @@ errors (warnings: fix what is reasonable). Never edit another chunk's .c.
 * `BUG(orig): …` = quirk/bug of the original kept on purpose (keep them all!).
 * `DIFF: …` = deliberate deviation, only where C cannot do the same thing
   (stack tricks, register frames). Say what the asm did.
+* Restructured code (the expression evaluator, the `expr-tree-*` changes of
+  #1180): a C function that takes over a routine of `blitz2.s`, or part of
+  one, without keeping its algorithm begins with `/* no asm counterpart;
+  replaces blitz2.s:NNN LABEL – what it does */`, naming the lines it takes
+  over; a function that keeps its algorithm keeps its `/* blitz2.s:LINE
+  label */` head. Every original routine, or part of one, that no longer has
+  a function of its own is listed in the mapping table of
+  `docs/blitz2/expression-tree.md` (asm label and lines -> C function or
+  node rule), updated in the commit that moves it.
 
 ## 5. Types and state
 
