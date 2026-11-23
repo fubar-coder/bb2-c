@@ -1,0 +1,12 @@
+# rievallib-value-count-byte.test.bas: the original counts the values in a
+# signed byte; the cells with the CD's libraries get the acidlibs of the
+# library's variant (library 121 is the CD's polylib)
+fixed-orig = 645
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.many_values.sum" = "== fail"
+"check.many_values.sum.actual" = "== 0"
+"check.many_values.error" = "== fail"
+"check.many_values.error.actual" = "== 1"

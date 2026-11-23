@@ -1,0 +1,16 @@
+# rievallib-extra-values-no-error.test.bas: the original returns the top of
+# the stack without an error; the cells with the CD's libraries get the
+# acidlibs of the library's variant (library 121 is the CD's polylib)
+fixed-orig = 635
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.extra_values.two_values_result" = "== fail"
+"check.extra_values.two_values_result.actual" = "== 2"
+"check.extra_values.two_values_error" = "== fail"
+"check.extra_values.two_values_error.actual" = "== 0"
+"check.extra_values.sum_and_value_result" = "== fail"
+"check.extra_values.sum_and_value_result.actual" = "== 3"
+"check.extra_values.sum_and_value_error" = "== fail"
+"check.extra_values.sum_and_value_error.actual" = "== 0"

@@ -1,0 +1,12 @@
+# rievallib-ctp-dot-at-end.test.bas: the original converts the bytes behind
+# the string too; the cells with the CD's libraries get the acidlibs of the
+# library's variant (library 121 is the CD's polylib)
+fixed-orig = 631
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.dot_at_end.postfix" = "== fail"
+"check.dot_at_end.postfix.actual" = "== \"1 2.\""
+"check.dot_at_end.bytes_not_0" = "== fail"
+"check.dot_at_end.bytes_not_0.actual" = "== 9"
