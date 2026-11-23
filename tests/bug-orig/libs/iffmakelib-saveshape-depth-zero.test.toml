@@ -1,0 +1,18 @@
+# iffmakelib-saveshape-depth-zero.test.bas: the handler of the expected
+# error holds the check and ends the program, so the case has no end entry.
+# The original overwrites its own code: a crash ("Software Failure", the
+# session runs into its timeout; each cell with the CD's libraries has its
+# own session).
+fixed-orig = 326
+isolate = ["libs=cd"]
+
+[asserts]
+"end.case" = "not exists"
+"check.depth_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.run" = "not exists"
+"check.depth_zero.refused" = "== not-run"

@@ -1,16 +1,14 @@
-# iffiolib-charsleft-word.test.bas: with runtime error checking; the case
-# ends in the runtime error of the failed read (any text), so it has no end
-# entry and the check behind the LoadShape is not run; the original takes the
-# old buffer as the file and loads shape 1
+# iffiolib-charsleft-word.test.bas: with runtime error checking for the
+# announced error; the original takes the old buffer as the file and loads
+# shape 1, so the announcement fails there and the case runs on
 fixed-orig = 177
 runtime-errors = "on"
 
 [asserts]
-requester = "count == 1"
-"end.case" = "not exists"
 "check.read_error.not_refused" = "== not-run"
 
 [deviations."libs=cd"]
+"check.read_error.refused" = "== fail"
 requester = "count == 0"
 "end.case" = "exists"
 "check.read_error.not_refused" = "== fail"

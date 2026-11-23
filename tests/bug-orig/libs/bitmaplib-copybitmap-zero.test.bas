@@ -7,11 +7,12 @@
 ; BitMap 1,0,10,1 (width 0); CopyBitMap is not called (the original would
 ; overwrite the memory).
 ; Correct: the error check refuses the size: "Illegal BitMap Size".  The
-; message is part of the tested behaviour, so the error is not announced
-; with !ExpectError (see the configuration).
+; error is announced with !ExpectError; the original raises none (see the
+; configuration).
 !TestCase{width_zero}
   BitMap 0,16,10,1
   !CheckEq{Peek.w(Addr BitMap(0)+2),10,"rows_10"}
+  !ExpectError{"Illegal BitMap Size","refused"}
   BitMap 1,0,10,1
   !Check{0,"after"}
 !EndTestCase

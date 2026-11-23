@@ -7,11 +7,12 @@
 ; row: a plane of 65600 bytes, the word +22 is 64).
 ; Correct: an error check refuses the shape: "Shape too Big", the
 ; command is not done.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{plane_64k}
+  !ExpectError{"Shape too Big","refused"}
   InitShape 0,640,820,1
   !Check{0,"after"}
 !EndTestCase

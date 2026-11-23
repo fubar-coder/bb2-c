@@ -1,15 +1,14 @@
-# shapeslib-initshape-blitsize.test.bas: with runtime error checking; the requester with its text
-# is the tested behaviour, the case ends in it and the check behind the
-# command does not run (no !ExpectError: the original raises no error)
+# shapeslib-initshape-blitsize.test.bas: with runtime error checking for
+# the announced error; the original raises none, so the announcement fails
+# there and the case runs on to its check
 fixed-orig = 1046
 runtime-errors = "on"
 
 [asserts]
-requester = "contains \"Shape too Big\""
-"end.case" = "not exists"
 "check.blitsize_height.after" = "== not-run"
 
 [deviations."libs=cd"]
+"check.blitsize_height.refused" = "== fail"
 requester = "count == 0"
 "end.case" = "exists"
 "check.blitsize_height.after" = "== fail"

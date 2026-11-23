@@ -1,0 +1,20 @@
+# screenslib-screentags-taglist-overflow.test.bas: the original runs into
+# the overwritten code (an illegal instruction, caught by the handler,
+# which fails the check "illegal_instruction" and ends the program, so the
+# case has no end entry) and the program's end then runs into the
+# overwritten code too: a crash with the "Software Failure" requester (the
+# session runs into its timeout; each cell with the CD's libraries has its
+# own session).  The old recording noted that more or less of the requester
+# (even none) is written before the session ends; both cells showed it
+# here.
+fixed-orig = 249
+timeout = 60
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+"check.taglist_overflow.illegal_instruction" = "== fail"
+session = "== timeout"
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"check.taglist_overflow.screen_x" = "== not-run"

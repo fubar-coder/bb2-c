@@ -1,0 +1,8 @@
+# shapeslib-anim-delta-bounds.test.bas: an open bug (#1193): the cells
+# without the original's part show it too, so they must show exactly the
+# declared deviation; the ANIM is staged as CORPUS:anim.iff
+files = ["anim.iff|@TESTDATA@/shapeslib-anim-delta-bounds.anim"]
+
+[deviations."libs=cd"]
+"check.delta_bounds.plane1" = "== fail"
+"check.delta_bounds.plane1.actual" = "== $EE04"
