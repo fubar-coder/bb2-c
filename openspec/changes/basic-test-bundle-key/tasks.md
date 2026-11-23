@@ -22,12 +22,12 @@ answered (`rounds/tb/decisions.md`, "K2, R1, Q17"; "K1, K2 follow-up, G1").
 ## 3. Checks
 
 - [x] 3.1 `ctest --preset host`, also in a `-DHOST_SANITIZE=ON` build of the host tools. Verify: pass.
-- [ ] 3.2 `ctest --preset all -R '^(blitz2_|regression_)'` and the prev comparison: no result changes (rule 3). Verify: pass, no `PREV_INTENDED`.
+- [x] 3.2 `ctest --preset all -R '^(blitz2_|regression_)'` and the prev comparison: no result changes (rule 3). Verify: pass, no `PREV_INTENDED`.
 
 ## 4. Documents
 
-- [ ] 4.1 `tests/corpus/runner/README.md` (the key with the environment's time limit; `tj_case_alone` in testjudge), the comment of `tc_session_key`; a `TODO.md` line for the follow-up change of K2 (bundling cells with `[data]` and runs from the editor, after the first set; with the note of design decision 5 on the editor run's hang check). Verify: coordinator's review.
+- [x] 4.1 `tests/corpus/runner/README.md` (the key with the environment's time limit; `tj_case_alone` in testjudge), the comment of `tc_session_key`; a `TODO.md` line for the follow-up change of K2 (bundling cells with `[data]` and runs from the editor, after the first set; with the note of design decision 5 on the editor run's hang check). Verify: coordinator's review.
 
 ## 5. Commit and report
 
-- [ ] 5.1 One commit. Report: the files, whether any registered test's session grouping changed (a list of the tests with a cell without `timeout` beside one with 90), the spike's result (G1 (b) or (a)). Verify: `git show --stat`.
+- [x] 5.1 One commit. Report: the files, whether any registered test's session grouping changed (a list of the tests with a cell without `timeout` beside one with 90), the spike's result (G1 (b) or (a)). Verify: `git show --stat`.
