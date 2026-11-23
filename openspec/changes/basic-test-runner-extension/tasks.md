@@ -32,7 +32,7 @@
 
 - [x] 5.1 `tests/corpus/runner/README.md`, `cmd_case.cpp`'s help and footer, `tests/README.md` ("Tests that judge themselves", the key table, the assertions), the site page `site/content/docs/project-structure/running-tests.md` (running all cases, the report, the exit status, `--print-driver` without `--case`); verify: the texts name the run of all cases, `isolate`, `ends`, `inject` and the announcement as a check (section 6), and no text says that `--print-driver` needs `--case`
 - [x] 5.2 The section "Moving a bug-orig test to the model" of `tests/README.md` (after the pilot's merge): the three pitfalls (inject not filled, own session per cell, varying end) rewritten to the new keys, and the announced error: `!ExpectError` stays for the port, a deviation declares the original's error (section 6), the form without it only where the port itself raises no error; verify: no text says the query `inject` is not filled or that a varying end cannot be declared
-- [ ] 5.3 Acceptance of the agent: `ctest --preset host` (also with `-DHOST_SANITIZE=ON` for the changed host tests), the tests of 1.2, 1.5, 2.1, 3.3, 4.1, a clean rebuild without warnings; no result of the compilers or libraries changes (the prev comparison of the coordinator's `all` run); verify: the run logs named in the report
+- [x] 5.3 Acceptance of the agent: `ctest --preset host` (also with `-DHOST_SANITIZE=ON` for the changed host tests), the tests of 1.2, 1.5, 2.1, 3.3, 4.1, a clean rebuild without warnings; no result of the compilers or libraries changes (the prev comparison of the coordinator's `all` run); verify: the run logs named in the report
 
 ## 6. The announced runtime error as a check
 
