@@ -34,6 +34,8 @@ static const struct {
     { "broken", BASICTEST_BROKEN, 2 },
     { "incomplete", BASICTEST_INCOMPLETE, 1 },
     { "end", BASICTEST_END, 1 },
+    { "run", BASICTEST_RUN, 2 },
+    { "runend", BASICTEST_RUNEND, 3 },
 };
 
 static int is(const struct field *f, const char *s)
@@ -292,6 +294,19 @@ int basictest_read(uint8_t *line, size_t length, uint32_t line_number,
     case BASICTEST_BROKEN:
         if (!strval(f[1].data, f[1].length, &e->reason))
             return fail(err, BASICTEST_E_VALUE, 2);
+        break;
+    case BASICTEST_RUN:
+        if (!decimal(f[1].data, f[1].length, &e->k))
+            return fail(err, BASICTEST_E_VALUE, 2);
+        break;
+    case BASICTEST_RUNEND:
+        if (!decimal(f[1].data, f[1].length, &e->k))
+            return fail(err, BASICTEST_E_VALUE, 2);
+        if (f[2].length == 1 && f[2].data[0] == '-')
+            break;
+        if (!longval(&f[2], &e->actual))
+            return fail(err, BASICTEST_E_VALUE, 3);
+        e->ok = 1;
         break;
     default:
         break;

@@ -53,3 +53,17 @@ End Macro
 Macro ExpectError
   TLExpectError `1
 End Macro
+; The result of a started program (the macro RunProgram, the routine
+; TLRunProgram): one static block of the library that a later run
+; overwrites; read only, its fields read through the pointer the macro
+; gives (*r.TLRun=!RunProgram{K,c$} : x=*r\rc).
+NEWTYPE .TLRun
+  rc.l          ; the return code, 0 if unknown
+  rcknown.w     ; -1: the system gave it; 0: it gave none (Kickstart 1.x)
+  cut.w         ; -1: printed holds only the first 1024 bytes
+  size.l        ; the bytes the program wrote
+  printed.s     ; the first 1024 bytes of its output, as they are
+End NEWTYPE
+Macro RunProgram
+TLRunProgram(`1,`2)
+End Macro

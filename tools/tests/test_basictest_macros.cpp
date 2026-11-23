@@ -17,19 +17,58 @@ namespace {
 
 using body = std::vector<std::string>;
 
+// the NewTypes of the file: name -> the fields as "NAME.TYPE" (the
+// comment and the blanks removed)
+std::map<std::string, body> newtypes()
+{
+    std::ifstream in(BASICTEST_MACROS, std::ios::binary);
+    REQUIRE(in.good());
+    std::map<std::string, body> t;
+    std::string line, open;
+    while (std::getline(in, line)) {
+        if (line.starts_with("NEWTYPE .")) {
+            open = line.substr(9);
+            REQUIRE(!t.contains(open));
+            t[open];
+            continue;
+        }
+        if (open.empty())
+            continue;
+        if (line == "End NEWTYPE") {
+            open.clear();
+            continue;
+        }
+        std::string f = line.substr(0, line.find(';'));
+        f.erase(0, f.find_first_not_of(' '));
+        f.erase(f.find_last_not_of(' ') + 1);
+        t[open].push_back(f);
+    }
+    REQUIRE(open.empty());
+    return t;
+}
+
 // the macros of the file: name -> lines of the body without leading blanks
+// (a NEWTYPE block between them is no macro)
 std::map<std::string, body> macros()
 {
     std::ifstream in(BASICTEST_MACROS, std::ios::binary);
     REQUIRE(in.good());
     std::map<std::string, body> m;
     std::string line, open;
-    bool inside = false;
+    bool inside = false, type = false;
     while (std::getline(in, line)) {
         REQUIRE(line.find('\r') == std::string::npos);
+        if (type) {
+            type = line != "End NEWTYPE";
+            continue;
+        }
         if (!inside) {
             if (line.empty() || line[0] == ';')
                 continue;
+            if (line.starts_with("NEWTYPE ")) {
+                type = true;
+                continue;
+            }
             REQUIRE(line.starts_with("Macro "));
             open = line.substr(6);
             REQUIRE(!m.contains(open));
@@ -69,7 +108,7 @@ TEST_CASE("macros.bas defines the macros of the spec and no other", "[basictest]
                                    "EndTestCase",   "TestBatchCleanup", "EndTestBatchCleanup",
                                    "Check",         "CheckEq",          "CheckStrEq",
                                    "CheckQEq",      "CheckFltNear",     "Require",
-                                   "ExpectError" };
+                                   "ExpectError",   "RunProgram" };
     std::set<std::string> have;
     for (const auto &[name, b] : macros()) {
         have.insert(name);
@@ -94,6 +133,7 @@ TEST_CASE("macros.bas: the text of every macro", "[basictest]")
         { "CheckFltNear", { "TLCheckFlt `1,`3,`2,`4" } },
         { "Require", { "TLRequire `1,`2" } },
         { "ExpectError", { "TLExpectError `1" } },
+        { "RunProgram", { "TLRunProgram(`1,`2)" } },
     };
     auto m = macros();
     for (const auto &[name, b] : want) {
@@ -177,4 +217,17 @@ TEST_CASE("macros.bas: labels with __ are the driver's fixed ones", "[basictest]
             }
         }
     }
+}
+
+// the result of a started program (change basic-test-local-data, D6): the
+// NewType TLRun, the macro RunProgram a function call that stands in an
+// expression
+TEST_CASE("macros.bas: the NewType TLRun", "[basictest]")
+{
+    auto t = newtypes();
+    REQUIRE(t.size() == 1u);
+    REQUIRE(t.contains("TLRun"));
+    // the layout the library fills: rc at 0, rcknown at 4, cut at 6, size at 8,
+    // printed at 12 (the address of the characters)
+    CHECK(t["TLRun"] == body{ "rc.l", "rcknown.w", "cut.w", "size.l", "printed.s" });
 }
