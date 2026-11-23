@@ -173,7 +173,7 @@ enum {
 #define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189)  /* the port of this commit, C libraries */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
-   get "; @fixed #N" (expect.c, option T1) */
+   get "; @fixed-orig #N" (expect.c, option T1) */
 #define EM_RULES_MATRIX (EM_R_1177 | EM_R_1186 | EM_R_1187)
 #define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189)
 
@@ -283,7 +283,7 @@ int em_classes(const struct em_matrix *m, const struct em_table *t, struct em_cl
  * the source tree, LF line ends): the corpus sources and expected files of
  * the agreement, baseline and fixed cells, the bug-orig tests of the open
  * cells (and of the cells of an issue fixed after the matrix was
- * committed, EM_RULES_MATRIX, with "; @fixed #N"), the tests of the
+ * committed, EM_RULES_MATRIX, with "; @fixed-orig #N"), the tests of the
  * refused cells and the list of the cells left
  * out (README.md, "expect").  *report: the counts.  Returns 0; 1 with the
  * errors in *errors; -1 out of memory.
