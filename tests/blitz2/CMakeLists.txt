@@ -218,6 +218,23 @@ set_tests_properties(blitz2_selftest_model_expect_error blitz2_selftest_model_ex
 	PASS_REGULAR_EXPRESSION "model-expect-error\\.test\\.bas: case depth_zero: PASSED\n")
 set_tests_properties(blitz2_selftest_model_expect_error_removed PROPERTIES PASS_REGULAR_EXPRESSION
 	"case depth_zero, cell cd:\n.*  the announced runtime error \"Illegal Shape Depth\" \\(model-expect-error-removed\\.test\\.bas:[0-9]+\\) did not come\nmodel-expect-error-removed\\.test\\.bas: case depth_zero: FAILED\n")
+# the test's own data (selftest/model-local-data.test.bas and its directory
+# model-local-data.test/, change basic-test-local-data): a copied file and one made by mktestdata
+# that a case reads, a data source compiled with each cell's build configuration and one with a
+# fixed option (a compile part of its own in the cell without runtime error checking), both
+# started by a case; a data source that does not compile (model-local-data-broken) makes the
+# case BROKEN, the report naming the line of the data source
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+add_test(NAME blitz2_selftest_model_local_data COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-local-data.test.bas --side port)
+add_test(NAME blitz2_selftest_model_local_data_broken COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+	--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-local-data-broken.test.bas --case child)
+set_tests_properties(blitz2_selftest_model_local_data blitz2_selftest_model_local_data_broken PROPERTIES
+	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit})
+set_tests_properties(blitz2_selftest_model_local_data PROPERTIES PASS_REGULAR_EXPRESSION
+	"model-local-data\\.test\\.bas: case files: PASSED\n.*model-local-data\\.test\\.bas: case children: PASSED\nmodel-local-data\\.test\\.bas: 2 cases, side port: PASSED\n")
+set_tests_properties(blitz2_selftest_model_local_data_broken PROPERTIES PASS_REGULAR_EXPRESSION
+	"the data source model-local-data-broken\\.test/child\\.bas does not compile \\([^\n]*model-local-data-broken\\.test\\.toml:3\\): model-local-data-broken\\.test/child\\.bas:3: No Terminating Quote\nmodel-local-data-broken\\.test\\.bas: case child: BROKEN\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md
