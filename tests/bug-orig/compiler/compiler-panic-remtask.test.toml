@@ -1,0 +1,11 @@
+# compiler-panic-remtask.test.bas: the victim runs from the editor in the
+# compile phase of the cell and hits PANIC; its data source is the job b000
+# (CORPUS:src/b000.bb2).  #24 stays open on purpose
+jobline = ["run=r001|CORPUS:src/b000.bb2|RAM:con|100"]
+
+[data]
+"victim.bas" = "basic-compile"
+
+[deviations."compiler=orig195"]
+"check.lock_after_panic.exclusive_lock" = "== fail"
+"check.lock_after_panic.exclusive_lock.actual" = "== 0"
