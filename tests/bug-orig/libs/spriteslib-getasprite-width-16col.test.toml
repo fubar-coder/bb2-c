@@ -1,0 +1,15 @@
+# spriteslib-getasprite-width-16col.test.bas: with runtime error checking; the requester with its text
+# is the tested behaviour, the case ends in it and the check behind the
+# command does not run (no !ExpectError: the original raises no error)
+fixed-orig = 988
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Sprite too Wide\""
+"end.case" = "not exists"
+"check.width_128_16col.after" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"end.case" = "exists"
+"check.width_128_16col.after" = "== fail"
