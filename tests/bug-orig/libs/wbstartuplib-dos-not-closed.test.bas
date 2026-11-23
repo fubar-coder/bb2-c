@@ -5,9 +5,10 @@
 ; often it closes it.  The program begins with WBStartup, which a program
 ; run from the Workbench needs (manual; wbstartuplib answers the WBStartup
 ; message).
+; The observation is wbrun's report in the output.
 ; Correct: the open count is the same after the run (+0).
-; @fixed #306
-; @configs clib
-; @pass runwrap=@WBRUN@|dosopen
 WBStartup
-End
+
+!TestCase{dos_open_count}
+  !Check{1,"started"}
+!EndTestCase

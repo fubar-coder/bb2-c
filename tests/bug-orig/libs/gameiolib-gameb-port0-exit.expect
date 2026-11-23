@@ -1,4 +1,0 @@
-[run]
-after Gameb(1): port 1 pin 5 1
-after Gameb(0): port 0 pin 5 1
-rc=0

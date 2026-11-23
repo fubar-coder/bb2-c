@@ -1,0 +1,10 @@
+# wbstartuplib-currentdir.test.bas: the program runs through wbrun, which
+# reports the current directory at the end of the process
+fixed-orig = 307
+runwrap = "@WBRUN@|cd"
+
+[asserts]
+output = "contains \"wbrun: current dir at end: start\""
+
+[deviations."libs=cd"]
+output = "contains \"wbrun: current dir at end: tool dir\""

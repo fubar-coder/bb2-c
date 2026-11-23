@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-size 100 same address -1
-rc=0

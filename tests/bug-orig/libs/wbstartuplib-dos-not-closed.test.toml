@@ -1,0 +1,10 @@
+# wbstartuplib-dos-not-closed.test.bas: the program runs through wbrun,
+# which reports the open count of dos.library
+fixed-orig = 306
+runwrap = "@WBRUN@|dosopen"
+
+[asserts]
+output = "contains \"wbrun: dos.library open count +0\""
+
+[deviations."libs=cd"]
+output = "contains \"wbrun: dos.library open count +1\""
