@@ -1,0 +1,6 @@
+# spriteslib-size-spritemode.test.bas: the file goes to CORPUS:
+fixed-orig = 280
+
+[deviations."libs=cd"]
+"check.size_in_other_mode.file_size" = "== fail"
+"check.size_in_other_mode.file_size.actual" = "== 88"

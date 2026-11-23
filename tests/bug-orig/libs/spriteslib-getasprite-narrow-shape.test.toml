@@ -1,0 +1,8 @@
+# spriteslib-getasprite-narrow-shape.test.bas
+fixed-orig = 282
+
+[deviations."libs=cd"]
+"check.narrow_shape.row_0_plane_0" = "== fail"
+"check.narrow_shape.row_0_plane_0.actual" = "== \"0000FFFF\""
+"check.narrow_shape.row_0_plane_1" = "== fail"
+"check.narrow_shape.row_0_plane_1.actual" = "== \"0000FFFF\""

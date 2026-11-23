@@ -9,29 +9,30 @@
 ; them alike with and without #939).  Printed: the height word (+4, lines
 ; + 1) of a sprite with data, else "-".
 ; Correct: all three sprites are back.
-; @fixed #999
-; @pass jobline=max=112|2100
 DEFTYPE .l
-Statement heights{t$}
-  Print t$
+Function.s heights{}
+  a$=""
   For s=0 To 2
     a=Addr Sprite(s)
-    If Peek.l(a) Then Print " ",Peek.w(a+4) Else Print " -"
+    If Peek.l(a) Then a$=a$+Str$(Peek.w(a+4)) Else a$=a$+"-"
+    a$=a$+" "
   Next
-  NPrint ""
-End Statement
-BitMap 0,16,10,2
-Use BitMap 0
-Boxf 0,0,15,9,3
-For s=0 To 2
-  GetaShape s,0,0,16,8+s
-  GetaSprite s,s
-Next
-heights{"made"}
-SaveSprites 0,2,"RAM:bo999.spr"
-For s=0 To 2 : Free Sprite s : Next
-heights{"freed"}
-LoadSprites 0,"RAM:bo999.spr"
-heights{"loadsprites"}
-KillFile "RAM:bo999.spr"
-End
+  Function Return a$
+End Function
+
+!TestCase{loadsprites_word}
+  BitMap 0,16,10,2
+  Use BitMap 0
+  Boxf 0,0,15,9,3
+  For s=0 To 2
+    GetaShape s,0,0,16,8+s
+    GetaSprite s,s
+  Next
+  !CheckStrEq{heights{},"9 10 11 ","made"}
+  SaveSprites 0,2,"CORPUS:bo999.spr"
+  For s=0 To 2 : Free Sprite s : Next
+  !CheckStrEq{heights{},"- - - ","freed"}
+  LoadSprites 0,"CORPUS:bo999.spr"
+  !CheckStrEq{heights{},"9 10 11 ","loadsprites"}
+  KillFile "CORPUS:bo999.spr"
+!EndTestCase

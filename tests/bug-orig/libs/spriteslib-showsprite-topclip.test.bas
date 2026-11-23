@@ -10,27 +10,27 @@
 ; +10, ptl at +14) from the sprite's data.
 ; Correct: both offsets are 5 lines of 8 bytes, 40.  The original gives
 ; 20 and 65556.
-; @fixed #283
-; @configs clib
 DEFTYPE .l
-SpriteMode 1
-BitMap 0,320,200,2
-BitMap 1,32,20,2
-Use BitMap 1 : Boxf 0,0,31,19,3
-GetaShape 0,0,0,32,20
-GetaSprite 0,0
-d=Peek.l(Addr Sprite(0))
-BLITZ
-Slice 0,44,320,200,$fff8,2,8,8,320,320
-Show 0
-ShowSprite 0,100,-5,0
-m=Peek.l(Addr Slice(0)+14)
-p1=(Peek.w(m+10) LSL 16) OR (Peek.w(m+14) AND $FFFF)
-y=$1FFFB
-ShowSprite 0,100,y,0
-p2=(Peek.w(m+10) LSL 16) OR (Peek.w(m+14) AND $FFFF)
-AMIGA
-SpriteMode 0
-NPrint "offset ",p1-d
-NPrint "offset ",p2-d
-End
+
+!TestCase{topclip}
+  SpriteMode 1
+  BitMap 0,320,200,2
+  BitMap 1,32,20,2
+  Use BitMap 1 : Boxf 0,0,31,19,3
+  GetaShape 0,0,0,32,20
+  GetaSprite 0,0
+  d=Peek.l(Addr Sprite(0))
+  BLITZ
+  Slice 0,44,320,200,$fff8,2,8,8,320,320
+  Show 0
+  ShowSprite 0,100,-5,0
+  m=Peek.l(Addr Slice(0)+14)
+  p1=(Peek.w(m+10) LSL 16) OR (Peek.w(m+14) AND $FFFF)
+  y=$1FFFB
+  ShowSprite 0,100,y,0
+  p2=(Peek.w(m+10) LSL 16) OR (Peek.w(m+14) AND $FFFF)
+  AMIGA
+  SpriteMode 0
+  !CheckEq{p1-d,40,"offset_word_y"}
+  !CheckEq{p2-d,40,"offset_long_y"}
+!EndTestCase

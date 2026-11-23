@@ -10,18 +10,19 @@
 ; Correct: the sprite's pixels right of the shape's 16 are 0: row 0 is
 ; 0 in both planes, row 1 has the shape's row in its left half
 ; ($FFFF0000).
-; @fixed #282
-; @configs clib
 DEFTYPE .l
-BitMap 0,16,2,2
-Use BitMap 0
-Cls 0
-Line 0,1,15,1,3
-GetaShape 0,0,0,16,2
-SpriteMode 1
-GetaSprite 0,0
-SpriteMode 0
-d=Peek.l(Addr Sprite(0))
-NPrint "row 0: ",Hex$(Peek.l(d))," ",Hex$(Peek.l(d+4))
-NPrint "row 1: ",Hex$(Peek.l(d+8))
-End
+
+!TestCase{narrow_shape}
+  BitMap 0,16,2,2
+  Use BitMap 0
+  Cls 0
+  Line 0,1,15,1,3
+  GetaShape 0,0,0,16,2
+  SpriteMode 1
+  GetaSprite 0,0
+  SpriteMode 0
+  d=Peek.l(Addr Sprite(0))
+  !CheckStrEq{Hex$(Peek.l(d)),"00000000","row_0_plane_0"}
+  !CheckStrEq{Hex$(Peek.l(d+4)),"00000000","row_0_plane_1"}
+  !CheckStrEq{Hex$(Peek.l(d+8)),"FFFF0000","row_1"}
+!EndTestCase

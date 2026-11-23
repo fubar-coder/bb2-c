@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-made 9 10 11
-freed - - -
-loadsprites 9 10 11
-rc=0

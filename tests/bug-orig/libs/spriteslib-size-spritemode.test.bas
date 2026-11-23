@@ -6,21 +6,21 @@
 ; of 8 bytes (72 bytes, the second half from behind the data).
 ; Correct: the file holds the 16 byte block and the 36 bytes of the
 ; sprite (52 bytes), whatever the SpriteMode at the time of saving.
-; @fixed #280
-; @configs clib
 DEFTYPE .l
-BitMap 0,16,8,2
-Use BitMap 0
-GetaShape 0,0,0,16,8
-SpriteMode 0
-GetaSprite 0,0
-NPrint "bytes per image ",Peek.w(Addr Sprite(0)+10)
-SpriteMode 1
-SaveSprites 0,0,"RAM:bo280.spr"
-SpriteMode 0
-If ReadFile(0,"RAM:bo280.spr")
-  NPrint "file ",Lof(0)
+
+!TestCase{size_in_other_mode}
+  BitMap 0,16,8,2
+  Use BitMap 0
+  GetaShape 0,0,0,16,8
+  SpriteMode 0
+  GetaSprite 0,0
+  !CheckEq{Peek.w(Addr Sprite(0)+10),36,"bytes_per_image"}
+  SpriteMode 1
+  SaveSprites 0,0,"CORPUS:bo280.spr"
+  SpriteMode 0
+  ok=ReadFile(0,"CORPUS:bo280.spr")
+  !Require{ok,"sprites_file_read"}
+  !CheckEq{Lof(0),52,"file_size"}
   CloseFile 0
-EndIf
-KillFile "RAM:bo280.spr"
-End
+  KillFile "CORPUS:bo280.spr"
+!EndTestCase

@@ -11,11 +11,12 @@
 ; spriteslib-getasprite-width-16col.
 ; Correct: GetaSprite accepts it (8 channels do).  The original shows
 ; "Sprite too Wide" (a requester of the debugger).
-; @fixed #988
-; @pass runtime_errors=on
-BitMap 0,128,16,2
-Use BitMap 0
-GetaShape 0,0,0,128,16
-GetaSprite 0,0
-NPrint "accepted"
-End
+DEFTYPE .l
+
+!TestCase{width_128_4col}
+  BitMap 0,128,16,2
+  Use BitMap 0
+  GetaShape 0,0,0,128,16
+  GetaSprite 0,0
+  !Check{1,"accepted"}
+!EndTestCase
