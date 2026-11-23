@@ -7,13 +7,19 @@
 ; NumDays(Date$(d)) around the second.
 ; Correct: 31/12/1977 is -1, the round trip gives the day back.  The
 ; original gives 65535 and 131071.
-; @fixed #122
-; @configs clib
 DEFTYPE .l
-NPrint "30/12/1977 ",NumDays("30/12/1977")
-NPrint "31/12/1977 ",NumDays("31/12/1977")
-NPrint "1/1/1978 ",NumDays("1/1/1978")
-For d=65534 To 65536
-  NPrint d," ",NumDays(Date$(d))
-Next
-End
+
+!TestCase{word_carry}
+  a=NumDays("30/12/1977")
+  b=NumDays("31/12/1977")
+  c=NumDays("1/1/1978")
+  d1$=Date$(65534) : r1=NumDays(d1$)
+  d2$=Date$(65535) : r2=NumDays(d2$)
+  d3$=Date$(65536) : r3=NumDays(d3$)
+  !CheckEq{a,-2,"before_boundary"}
+  !CheckEq{b,-1,"boundary"}
+  !CheckEq{c,0,"after_boundary"}
+  !CheckEq{r1,65534,"round_65534"}
+  !CheckEq{r2,65535,"round_65535"}
+  !CheckEq{r3,65536,"round_65536"}
+!EndTestCase

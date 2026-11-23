@@ -13,9 +13,11 @@
 ; month after #124 anyway.)
 ; Correct: a field that ends at the end of the string is invalid input:
 ; 0; a complete date is unchanged.
-; @fixed #1029
-; @configs clib
 DEFTYPE .l
-a$="99/05/1990" : n=NumDays("") : NPrint "[] ",n
-NPrint "[1/1/1990] ",NumDays("1/1/1990")
-End
+
+!TestCase{short_field}
+  a$="99/05/1990" : n=NumDays("")
+  !CheckEq{n,0,"empty"}
+  n=NumDays("1/1/1990")
+  !CheckEq{n,4383,"complete"}
+!EndTestCase

@@ -1,0 +1,8 @@
+# datelib-numdays-short-year.test.bas: the original's counts depend on the
+# memory behind the string, only the verdicts are declared
+fixed-orig = 125
+
+[deviations."libs=cd"]
+"check.short_year.two_digits" = "== fail"
+"check.short_year.three_digits" = "== fail"
+"check.short_year.empty_year" = "== fail"

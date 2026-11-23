@@ -1,0 +1,7 @@
+# datelib-weekday-borrow.test.bas: the check of the weekday is repeated for
+# every day; its actual value is that of the first day that fails (-1569)
+fixed-orig = 121
+
+[deviations."libs=cd"]
+"check.week_days.weekday" = "== fail"
+"check.week_days.weekday.actual" = "== 1"

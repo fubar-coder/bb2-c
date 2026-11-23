@@ -1,0 +1,7 @@
+# datelib-numdays-short-field.test.bas: the original parses a date from the
+# bytes behind the empty string
+fixed-orig = 1029
+
+[deviations."libs=cd"]
+"check.short_field.empty" = "== fail"
+"check.short_field.empty.actual" = "== 4031"
