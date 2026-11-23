@@ -1,0 +1,11 @@
+# stringfunclib-replace-empty-a3.test.bas: the original writes the next part
+# of the expression behind the replacement, the characters are 0
+fixed-orig = 424
+
+[deviations."libs=cd"]
+"check.empty_find.first_third" = "== fail"
+"check.empty_find.first_third.actual" = "== 0"
+"check.empty_find.second_third" = "== fail"
+"check.empty_find.second_third.actual" = "== 0"
+"check.empty_find.second_fourth" = "== fail"
+"check.empty_find.second_fourth.actual" = "== 0"

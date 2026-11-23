@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-empty0 1
-empty-5 1
-b0 2
-empty1 1
-rc=0

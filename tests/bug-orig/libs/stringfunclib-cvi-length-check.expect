@@ -1,6 +1,0 @@
-[run]
-cvi ab 24930
-cvl abcd 61626364
-cvq abcd 61626364
-REQUESTER: AutoRequest body "Cvi needs a String of at least 2 Characters" *
-rc=0

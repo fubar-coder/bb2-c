@@ -8,9 +8,10 @@
 ; Len("WXYZ") left in the string buffer ($0058595A).
 ; Correct: the error check refuses the short string: "Cvq needs a String
 ; of at least 4 Characters".
-; @fixed #288
-; @configs clib
-; @pass runtime_errors=on
-NPrint "before"
-x.l=Len("WXYZ") : q.q=Cvq("") : NPrint "cvq ",Hex$(Peek.l(&q))
-End
+DEFTYPE .l
+
+!TestCase{short_cvq}
+  !ExpectError{"Cvq needs a String of at least 4 Characters","refused"}
+  x=Len("WXYZ") : q.q=Cvq("")
+  !Check{0,"not_refused"}
+!EndTestCase

@@ -6,12 +6,13 @@
 ; compares memory far from s$ until it finds f$ somewhere or hangs.
 ; f$ needs 2 characters or more for the overflow.
 ; Correct: a start position beyond the end of s$ finds nothing: 0.
-; @fixed #1030
-; @configs clib
-; @pass timeout=30
 DEFTYPE .l
-NPrint "before"
-NPrint "instr ",Instr("abc","xy",$7FFFFFFF)
-NPrint "instr ",Instr("abc","bc",$7FFFFFFE)
-NPrint "instr ",Instr("abcxy","xy",4)
-End
+
+!TestCase{far_start}
+  v=Instr("abc","xy",$7FFFFFFF)
+  !CheckEq{v,0,"max"}
+  v=Instr("abc","bc",$7FFFFFFE)
+  !CheckEq{v,0,"max_minus_one"}
+  v=Instr("abcxy","xy",4)
+  !CheckEq{v,4,"inside"}
+!EndTestCase

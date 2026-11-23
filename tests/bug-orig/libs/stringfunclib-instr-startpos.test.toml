@@ -1,0 +1,9 @@
+# stringfunclib-instr-startpos.test.bas: the original finds the empty
+# string at the bytes before the string
+fixed-orig = 287
+
+[deviations."libs=cd"]
+"check.start_below_one.empty_0" = "== fail"
+"check.start_below_one.empty_0.actual" = "== 0"
+"check.start_below_one.empty_minus5" = "== fail"
+"check.start_below_one.empty_minus5.actual" = "== -5"

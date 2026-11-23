@@ -6,10 +6,13 @@
 ; string buffer is raised to 150000 bytes (tedstub strbuf=) so that it
 ; fits.
 ; Correct: Right$(a$,3) and UnRight$(a$,40000) are "xyz".
-; @fixed #285
-; @configs clib
-; @pass jobline=strbuf=150000
-a$=String$("a",40000)+"xyz"
-NPrint "right ",Right$(a$,3)="xyz"," ",Len(Right$(a$,3))
-NPrint "unright ",UnRight$(a$,40000)="xyz"
-End
+DEFTYPE .l
+
+!TestCase{word_offset}
+  a$=String$("a",40000)+"xyz"
+  r$=Right$(a$,3)
+  u$=UnRight$(a$,40000)
+  !CheckStrEq{r$,"xyz","right"}
+  !CheckEq{Len(r$),3,"right_len"}
+  !CheckStrEq{u$,"xyz","unright"}
+!EndTestCase

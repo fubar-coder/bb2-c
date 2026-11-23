@@ -1,6 +1,0 @@
-[run]
-before
-instr 0
-instr 0
-instr 4
-rc=0

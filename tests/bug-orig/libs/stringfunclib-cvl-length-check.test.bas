@@ -7,10 +7,10 @@
 ; terminating 0 behind the string as the fourth byte ($61626300).
 ; Correct: the error check refuses the short string: "Cvl needs a String
 ; of at least 4 Characters".
-; @fixed #288
-; @configs clib
-; @pass runtime_errors=on
 DEFTYPE .l
-NPrint "before"
-x=Len("WXYZ") : v=Cvl("abc") : NPrint "cvl abc ",Hex$(v)
-End
+
+!TestCase{short_cvl}
+  !ExpectError{"Cvl needs a String of at least 4 Characters","refused"}
+  x=Len("WXYZ") : v=Cvl("abc")
+  !Check{0,"not_refused"}
+!EndTestCase

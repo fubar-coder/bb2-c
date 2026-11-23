@@ -1,0 +1,9 @@
+# stringfunclib-right-word-offset.test.bas: a string buffer of 150000 bytes;
+# the original takes the characters from before the string (foreign
+# memory, so no actual value is declared)
+fixed-orig = 285
+jobline = ["strbuf=150000"]
+
+[deviations."libs=cd"]
+"check.word_offset.right" = "== fail"
+"check.word_offset.unright" = "== fail"

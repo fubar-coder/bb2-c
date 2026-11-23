@@ -9,11 +9,15 @@
 ; and gives 0 for the empty find string.
 ; Correct: the error check refuses the start position: "Instr Startpos
 ; MUST be greater than zero".
-; @fixed #287
-; @configs clib
-; @pass runtime_errors=on
-a$="abc"
-NPrint "b1 ",Instr(a$,"b",1)
-NPrint "c3 ",Instr(a$,"c",3)
-NPrint "empty0 ",Instr(a$,"",0)
-End
+DEFTYPE .l
+
+!TestCase{start_zero}
+  a$="abc"
+  v=Instr(a$,"b",1)
+  !CheckEq{v,2,"b_1"}
+  v=Instr(a$,"c",3)
+  !CheckEq{v,3,"c_3"}
+  !ExpectError{"Instr Startpos MUST be greater than zero","refused"}
+  v=Instr(a$,"",0)
+  !Check{0,"not_refused"}
+!EndTestCase

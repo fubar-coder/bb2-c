@@ -4,11 +4,16 @@
 ; "found" there: Instr(s$,"",0) is 0, Instr(s$,"",-5) is -5.
 ; Correct: a start position below 1 searches from the first character, as
 ; Instr(s$,f$) does: 1 for the empty find string, 2 for "b".
-; @fixed #287
-; @configs clib
-a$="abc"
-NPrint "empty0 ",Instr(a$,"",0)
-NPrint "empty-5 ",Instr(a$,"",-5)
-NPrint "b0 ",Instr(a$,"b",0)
-NPrint "empty1 ",Instr(a$,"",1)
-End
+DEFTYPE .l
+
+!TestCase{start_below_one}
+  a$="abc"
+  v=Instr(a$,"",0)
+  !CheckEq{v,1,"empty_0"}
+  v=Instr(a$,"",-5)
+  !CheckEq{v,1,"empty_minus5"}
+  v=Instr(a$,"b",0)
+  !CheckEq{v,2,"b_0"}
+  v=Instr(a$,"",1)
+  !CheckEq{v,1,"empty_1"}
+!EndTestCase

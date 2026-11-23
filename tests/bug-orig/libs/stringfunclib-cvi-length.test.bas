@@ -6,14 +6,21 @@
 ; Correct: only the string's own bytes count, the missing ones are 0:
 ; Cvl("a") = $61000000, Cvl("ab") = $61620000, Cvl("") = 0, Cvi("") = 0,
 ; Cvi("a") = $6100.
-; @fixed #288
-; @configs clib
 DEFTYPE .l
-x=Len("WXYZWXYZ") : v=Cvl("a") : NPrint "cvl a ",Hex$(v)
-x=Len("WXYZWXYZ") : v=Cvl("ab") : NPrint "cvl ab ",Hex$(v)
-x=Len("WXYZWXYZ") : v=Cvl("") : NPrint "cvl ",Hex$(v)
-x=Len("WXYZWXYZ") : v=Cvi("") : NPrint "cvi ",v
-x=Len("WXYZWXYZ") : v=Cvi("a") : NPrint "cvi a ",v
-x=Len("WXYZWXYZ") : v=Cvl("abcd") : NPrint "cvl abcd ",Hex$(v)
-x=Len("WXYZWXYZ") : v=Cvi("ab") : NPrint "cvi ab ",v
-End
+
+!TestCase{short_strings}
+  x=Len("WXYZWXYZ") : v=Cvl("a")
+  !CheckEq{v,$61000000,"cvl_a"}
+  x=Len("WXYZWXYZ") : v=Cvl("ab")
+  !CheckEq{v,$61620000,"cvl_ab"}
+  x=Len("WXYZWXYZ") : v=Cvl("")
+  !CheckEq{v,0,"cvl_empty"}
+  x=Len("WXYZWXYZ") : v=Cvi("")
+  !CheckEq{v,0,"cvi_empty"}
+  x=Len("WXYZWXYZ") : v=Cvi("a")
+  !CheckEq{v,24832,"cvi_a"}
+  x=Len("WXYZWXYZ") : v=Cvl("abcd")
+  !CheckEq{v,$61626364,"cvl_abcd"}
+  x=Len("WXYZWXYZ") : v=Cvi("ab")
+  !CheckEq{v,24930,"cvi_ab"}
+!EndTestCase
