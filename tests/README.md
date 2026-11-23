@@ -527,6 +527,21 @@ name (a check that a configuration names must have one).
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`
 any characters, `#` a decimal number, `\c` the character `c`).
 
+**Writing a predicate in TOML.** The predicate is a TOML string, so its
+own quotes are `\"`: `inject = "contains \"written behind\""`; a quote
+that belongs to the compared text needs the escape of both levels
+(`\\\"`). `inject == "..."` compares the whole report, so the string ends
+with `\n`; a `contains` over several lines writes `\n` between them and
+the prefix `inject: ` at the start of each following line
+(`"contains \"a\ninject: b\""`). There is no `and` or `or` in a predicate:
+two conditions are two assertions on two queries, or the alternatives of
+`[ends]`. `== ""` is the empty string.
+
+**A CPU halt** (`session == halt`) removes `rc`, `inject`, `end.case` and
+`end.run`: the deviation of such a cell declares them `"not exists"`
+(`inject` too, where `[asserts]` names `inject`). `end.run` exists after
+an `End` in a case and after a Ctrl-C break (rc 20), unlike after a crash.
+
 **One assertion per query.** For a query only one assertion applies to a
 cell: that of the nearest file, and in it that of the most specific
 selector; assertions are never added up. Two different ones of the same
@@ -624,7 +639,7 @@ model](#moving-a-bug-orig-test-to-the-model).
 
 | File | |
 |---|---|
-| `DIR/ID.test.bas` | the source: declarations and blocks (below); `ID` lower-case kebab-case |
+| `DIR/ID.test.bas` | the source: declarations and blocks (below); `ID` lower-case kebab-case (letters, digits and `-`; the registration refuses `_`: `bb-blitlib-*`) |
 | `DIR/ID.test.toml` | its own configuration (optional): the run settings, the matrix, the assertions; `fixed-orig`/`fixed` and the deviations only here |
 | `DIR/ID.test/` | its own data (optional): the files its `ID.test.toml` declares in the table `data`, each with a build action ([Test-local data](#the-run-configuration)); a cell finds them built under `CORPUS:ID.test/` (`@TESTDIR@`) |
 | `DIR/tests.toml` | a directory's configuration, inherited by the tests below it |
@@ -672,10 +687,11 @@ the rest, naming file and line):
   `Goto` that skips it (a `Dc` table it uses may stand there too), and
   its labels are `.name` labels as well. `Data` stays outside the blocks
   behind a `.label` that the case reads with `Restore`; inside a case it
-  would run as code.
+  would run as code. A label behind data of odd length (`IncBin`, `Dc.b`)
+  needs an `Even` before it when a `Goto` jumps to it.
 * **Helpers**: a `Gosub` helper of an old program becomes a `Function` or
-  `Statement` (its checks belong to the case that calls it) or a label
-  inside the case. A `Statement` takes at most 6 parameters ("Too many
+  `Statement` (its checks are named by the procedure, see **What runs**)
+  or a label inside the case. A `Statement` takes at most 6 parameters ("Too many
   parameters" at the 7th). An array that a helper `Function` uses cannot
   be declared in a case (the `Dim` must come before the function): use an
   allocated block (`AllocMem`) or a global array outside the blocks. A
@@ -694,8 +710,10 @@ the rest, naming file and line):
 * **Names**: a case name is `[a-z][a-z0-9_]*`, holds no `__`, does not
   end in `_originals` and is no token of any library set (case ignored;
   `on`, `add` or `count` are tokens). The names of procedures (`Statement`,
-  `Function`) and variables must not be library tokens either (`colour`,
-  `bset`, `st`, `er`, `allocfill`, `weekday` were seen): the registration
+  `Function`) and variables must not be library tokens either, and a
+  token also hits a plain variable name (`colour`, `bset`, `st`, `st0`,
+  `er`, `on`, `before`, `after`, `eof`, `volume`, `instr`, `allocfill`,
+  `weekday` were seen): the registration
   reports a case name at once, but a procedure or variable name fails
   only in the compile of the run, with a bare `Syntax Error` and the line.
   A check that a configuration names
@@ -714,8 +732,10 @@ the rest, naming file and line):
   selected, then the case of the test, then the batch cleanup. Cases share
   the program's globals (they are subroutines of one program), so each
   case sets up what it uses; the batch init only provides data the cases
-  read. A check in a procedure belongs to the case that runs it; a
-  procedure with checks must not be named like a case, `init` or `cleanup`.
+  read. A check in a `Statement` or `Function` runs in the case that calls
+  it, but it is addressed by the procedure's name (`check.PROC.NAME`, not
+  `check.CASE.NAME`); a procedure with checks must not be named like a
+  case, `init` or `cleanup`.
 * **Preconditions and checks**: `!Require{COND}` is the setup (a failed
   one ends the block at once: the case is BROKEN, the tested behaviour
   was not reached; in the batch init it breaks every case); `!Check...`
@@ -731,6 +751,20 @@ the rest, naming file and line):
   port), so a test that runs with them checks a quick value with
   `!CheckQEq` and a float value with `!CheckFltNear`, never a quick or
   float comparison with `!Check`.
+* **Reading a value**: `.actual` of `!CheckQEq` and `!CheckFltNear` is
+  the raw 32 bits (`$00018000` for the quick 1.5), of `!CheckEq` a signed
+  decimal long (`$FFFFFFFF` is `-1`), of `!CheckStrEq` the text. To read
+  what a check saw, take the failing check's `.actual` from the report,
+  or the result file `out/test.res` in the run directory kept in
+  `build/amiga/tests/model-runs/` ([Running and reading a
+  test](#running-and-reading-a-test)); declare it in a deviation only if it
+  is the bug's value and not an address.
+* **Preconditions of the program's environment**: the path of a cell's
+  volume is `CELL0:` (`CORPUS:` is an assign to it), so a program that
+  compares or prints a path sees `CELL0:...`, never `CORPUS:...`; a test
+  that needs the volume's name checks the part after the `:`. The original's
+  `LoadTrackerModule` needs `a6` = `DOSBase` (#443): a test that is not
+  about that sets it before the call (`ciatrklib-*`).
 * **Acts that depend on a register or the string buffer**: set it in the
   statement right before the act, with no check between the two (the
   library keeps `d2`-`d7` and `a2`-`a6`, but not what the compiler leaves
@@ -2813,6 +2847,12 @@ section describe the environment):
 | an end that varies with the memory layout (returns or hangs, a crash or not) | `[ends."libs=cd"]` with a `reason` and one named alternative per end, each a list of `QUERY PREDICATE` (`returns = ["session == done", "rc == 0", ...]`, `hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]`) |
 | a line only a `# varies:` wildcard matched | the pattern of the validator, or, if the line is not the tested behaviour, no assertion about it |
 
+A test of a compiler bug whose cause is in a library (the compiler
+calls the library the same way in every cell) declares its deviations by
+`libs=cd`, not `compiler=...`: the cells `port,cd` and `orig195,cd` then
+show them and the port's own library does not
+(`compiler-pow-negative-base`, #1189).
+
 **An open bug.** A test without `fixed-orig`/`fixed`/`extension` is an open
 bug: the cells without the original's faulty part (`port,clib`) are judged
 like the cells with it, they must show exactly the declared deviations
@@ -2891,7 +2931,11 @@ cells.
   ends the shared session, and the second cell runs again), and keeps a
   state the original leaks (an open font that stays in the session's
   list, `fontlib-loadblitzfont-not-closed`) out of the next cell. Cells whose bug writes only a
-  few bytes (the three `-zero` tests) can stay together.
+  few bytes (the three `-zero` tests) can stay together. A cell whose
+  compiler or program hangs, crashes, halts the CPU, keeps the blitter
+  owned (`OwnBlitter`) or leaves memory contents behind needs `isolate`
+  for the other cells' sake; so does a test in which every cell halts
+  (`isolate = "on"`).
 * **Helpers and their output.** `runwrap = "@INJECT@|guard"` runs the
   program through inject; its report lines (`inject: rc=0`, `inject: guard:
   written behind ...`) are the query `inject` of the assertions, and stay
@@ -2933,8 +2977,9 @@ cells.
   the alternatives are stricter than the old wildcard lines, keep them
   so.
 * **Hang tests.** A program that hangs ends by the hang check
-  (`hang-after`, the runner's default 8 s of silence; `timeout` the
-  limit): the deviation is `session = "== timeout"` and the missing end
+  (`hang-after`, at least 1, the runner's default 8 s of silence; `timeout` the
+  limit; a hang during the compile keeps the whole `timeout`, the check
+  does not apply there): the deviation is `session = "== timeout"` and the missing end
   entry; the checks behind it are not run. Set `hang-after`/`timeout` in
   the test's configuration where the old one had `; @pass
   hang_after=`/`timeout=`. Declare `session == timeout` only for a
@@ -2952,6 +2997,14 @@ cells.
   buffered; after a crash a check that ran can show as `not-run`. A check
   that a crash can hide is asserted `!= ok` instead of a fixed verdict
   (`palettelib-stopcycle-cycon`, check `second_cycle`).
+* **`macrobuf` other than 8192.** The original compiler hangs at its
+  exit with any other size (#336), so the originals side of such a test
+  shows `session == timeout` (with `isolate` and a `timeout` of its own);
+  the port is fixed. The old observation "Macro too Big" is not
+  reproducible in the model: that message and the compile hang (alert
+  8100 0005) are one memory-dependent original bug (#965), at the default
+  size too, so a deviation on the compile result (`compile == none`) is
+  that bug's outcome, not the buffer's.
 * **An original that does not compile.** `compile = "contains \"Syntax
   Error\""` declares the original's compile error for the cells that
   show it (`brexxlib-playwait-noarg`).
@@ -2961,8 +3014,7 @@ cells.
   differs by code layout, and `[asserts."libs=clib"]` limits an assert
   to those cells. The alternatives of `[ends]` cannot name `inject`: use
   `output contains`. `jobline` is a list of strings (`["strbuf=150000"]`),
-  as the other list keys. `end.run` exists after a Ctrl-C break (rc 20),
-  unlike after a crash.
+  as the other list keys.
 * **A check named only by its `.actual`** (`"check.CASE.NAME.actual"`
   without `"check.CASE.NAME" = "== fail"`) is not required to pass or
   fail: a mutation check of the deviations removes both lines.
@@ -2977,11 +3029,20 @@ cells.
 * **Tests that start themselves.** An old test that runs its own
   executable as a child process (`dos Execute` of itself with an argument
   or redirected input, a second program at once) cannot be written as a
-  model case: the model's program is the driver, so a child would run the
-  whole driver again. Such tests stay in the old form until the change
-  `basic-test-local-data` (`!RunProgram`, the directory `ID.test/`) is
-  implemented; do not rebuild them with a workaround (an argument given as
-  the cell's `runargs` instead of a child changes the observation).
+  model case with itself as the child: the model's program is the
+  driver, so a child would run the whole driver again. It moves with a
+  child program of its own, see **A test that starts a program** below;
+  do not rebuild it with a workaround (an argument given as the cell's
+  `runargs` instead of a child changes the observation).
+* **A result that depends on the program's layout or a source line.**
+  The driver's code changes the layout (the end address, the first
+  library, the last code-generating statement) and the source line
+  numbers, so an original whose result depends on them (an error line, an
+  address, a size) cannot be declared as its old value: the test can
+  declare only `!=` the correct value in the cells with the faulty part.
+  Where that observation is the point of the test, it uses a child
+  program (`ID.test/`, `!RunProgram`: the child is compiled alone, without
+  the driver) or stays in the old form.
 * **Prev comparison.** The `_prev` tests of the model (`PREFIX_ID_prev`)
   exist for the tests of `tests/blitz2`, and in `tests/bug-orig` for
   `compiler/` and `regression/compiler-*` only
@@ -3024,6 +3085,26 @@ cells.
   the case `end_of_program_run` of `libs/rundebuglib-printerr-numeric-code`
   (a child that runs off its end).
 
+**A `regression/` test** (a bug of the port, [Port regression
+tests](#port-regression-tests)) moves like the others, with these
+differences: the directory has no `tests.toml` and the test needs no
+declared deviation (there is no original to deviate; the cells are the
+port's with the C libraries); the ctest prefix is `regression_`
+(`regression_ID__CASE`), and a compiler test (`regression/compiler-*`)
+also gets `regression_ID_prev` ([The prev build](#the-prev-build)).
+
+**An RWE userlib test** (`tests/bug-orig/rwe/`, [A bug of an RWE
+userlib](#a-bug-of-an-rwe-userlib)) takes its matrix from
+`tests/bug-orig/rwe/tests.toml`: `compiler` `port` and `orig210` (the CD's
+blitz2 2.10; 1.95 never loads a library of `blitz2:userlibs/DIR`, #2),
+`libs` `cd` and `clib`, the cell `orig210,clib` excluded. The test sets
+`rwe = ["LIB", ...]` (the libraries the program uses). The cell `port,cd`
+runs the C build of the user library and must pass like `port,clib`, so
+the deviations are declared for `compiler=orig210`, not for `libs=cd`.
+The cells with the original compiler need the fixture `rwe_refbuild`
+(the reference build of the library; the registration requires it for
+every `orig210` cell, `cmake/basic-test-model.cmake`).
+
 **Checklist for a move.**
 
 1. Read the old test (`.bas` header, `.expect`, `.orig`) and the issue:
@@ -3038,7 +3119,11 @@ cells.
    to its `tests.toml`.
 4. `git rm` the `.bas`, `.expect`, `.orig` of the test (and move
    `NAME.spec` data files only if they were the test's: they stay where
-   they are, the key `files` names them as before).
+   they are, the key `files` names them as before). Remove the old
+   test's lines from `tests/data/test-costs.txt` in the same commit: the
+   configure step refuses entries of tests that do not exist (the old
+   names `bug_orig_ID`, `bug_orig_record_ID`, with a machine suffix
+   `_a500`, `_a500_204` or `_a1200` where the test had one).
 5. Build (the registration lists the new tests; `ctest -N -R ID`), run
    `ctest --preset all -R ID` and `ctest --preset originals -R ID`: all
    cells pass (a fixed test), or, for an open bug, `ctest --preset
