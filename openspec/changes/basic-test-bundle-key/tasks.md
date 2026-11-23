@@ -5,7 +5,7 @@ answered (`rounds/tb/decisions.md`, "K2, R1, Q17"; "K1, K2 follow-up, G1").
 
 ## 0. Spike (G1)
 
-- [ ] 0.1 Spike in a separate build directory (no commit; design decision 5): a session with one writable volume `BUNDLE:`, the directories `c0`..`cN` and `Assign CELLn: BUNDLE:cN` before each cell's part, for 1, 4 and 16 cells of the first set (the prototype's sources): the verdicts equal those of the runs alone; the second session of another size restores the first one's snapshot (`snapshot=restored`); the list of design decision 5 checked (which tests of the first set use `CORPUS:/`, `Info`, free space or the volume name). Verify: the report gives (b) works / does not, the measurements and the tests found; the coordinator updates `basic-test-bundle-runner` and `basic-test-bundle-registration` before their marked tasks.
+- [x] 0.1 Spike in a separate build directory (no commit; design decision 5): a session with one writable volume `BUNDLE:`, the directories `c0`..`cN` and `Assign CELLn: BUNDLE:cN` before each cell's part, for 1, 4 and 16 cells of the first set (the prototype's sources): the verdicts equal those of the runs alone; the second session of another size restores the first one's snapshot (`snapshot=restored`); the list of design decision 5 checked (which tests of the first set use `CORPUS:/`, `Info`, free space or the volume name). Verify: the report gives (b) works / does not, the measurements and the tests found; the coordinator updates `basic-test-bundle-runner` and `basic-test-bundle-registration` before their marked tasks.
 
 ## 1. Tests first
 

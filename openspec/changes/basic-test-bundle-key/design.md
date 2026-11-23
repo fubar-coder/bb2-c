@@ -83,6 +83,77 @@ following changes fixed before they start.
    `corpus.c:1570-1573`; `editrun` per cell); a shared volume does not change
    that.
 
+## The result of the spike (task 0.1)
+
+**(b) works.** One writable volume `BUNDLE:` per session, the directories
+`c0`..`cN-1` in it and `Assign CELLn: BUNDLE:cN` for every cell at the start
+of the script (the compile and run parts unchanged: `Assign CORPUS: CELLn:`
+before each cell's part; the assign of an assign is the directory). The
+emulator configuration and its snapshot are the same for any number of
+cells: no padding, a bundle of one case is a plain session.
+
+The spike (no commit; `~/.local/share/bb2-c-work/agent-bundle-key/spike`
+and `spike2`, separate build directories): the Q9 prototype
+(`corpusrun case --bundle`), once on its own source (9dcd48bef) and once
+ported onto this change's code with `tj_bundle_case` as the filter, plus a
+switch for (b) in `run_session` and `corpus_session_start`. The staged
+volume of each cell (`WORK/TAG/vol`) is renamed to
+`WORK_FIRST/bundle/cN` before the session and back after it, so
+`cell_complete`, `cr_observe` and `observe_*` read the paths they read
+today.
+
+- Snapshot: a first save with 4 cells, then 16, 4, 1 and 16 cells all
+  `snapshot=restored` (with a volume per cell, 16 volumes were another
+  configuration: `snapshot=single`). In the first-set run below, 48
+  sessions of 2 to 16 cells: 7 `first-save` (one per slot and time
+  limit), 1 `single`, 40 `restored`.
+- Times (restored, load about 2): 1 cell 1.00 s, 4 cells 1.21 s, 16 cells
+  2.41-2.51 s; with a volume per cell the same sets took the same (16:
+  2.42-2.50 s, the S0 set of 14 cells 4.02 s either way).
+- Verdicts: the Q9 sets (pool16 16, risk 16 with FAILED, BROKEN and
+  REPRODUCED cells, S0 14) equal in (b), with a volume per cell and alone
+  (46 of 46); the hanging case in the middle of 5 ends the session after
+  9.97 s, the cells behind it run again, all 5 verdicts as alone (the hang
+  check armed from `c0`'s run file, below).
+- The first set: of the 1085 registered case tests of the side port,
+  `tj_bundle_case` admits 580 (550 sources; keys of the environment's 90 s,
+  30 s and 60 s). All 580 ran in bundles (7 runner processes, chunks of 16
+  per key, 48 sessions, no session ended early) and once alone with the
+  build's `corpusrun` and their ctest command line: 580 of 580 verdicts
+  equal (573 PASSED, 7 REPRODUCED). Session time 147 s bundled against
+  708 s alone (4.8x).
+
+What depends on `CELLn:` being a real volume (the list of decision 5,
+checked):
+
+- `CORPUS:/`, `Info`/`DiskInfo`, free space, the volume name: no source of
+  the first set uses `CORPUS:/` or `DiskInfo`/`Info`; the 13 sources a
+  search for paths, locks and names finds (`ProgPath$`/`ProgDir$`,
+  `GetPathName`, `DeviceName`, `ParPath$`, `DataTypeOpen("CORPUS:")`, a
+  drawer as a module, `riapplib-appfile-unlock`, `ridoslib-*`,
+  `rimisclib-progpath-*`, a chunk named `info`) give the same verdicts
+  bundled: the tests check the part after the `:` or no path
+  (tests/README.md, "Preconditions of the program's environment"). What a
+  program sees changes: a path in `CORPUS:` is `BUNDLE:cN/...`, not
+  `CELLn:...`; the README's sentence on `CELL0:` needs that for bundles. The
+  `AvailMem` of the leak tests is per case and not affected.
+- `names_volume` and `mount`: no test sets `mount`, and a cell with `mount`
+  has another key and is not bundled; `BUNDLE` can clash with no mount of a
+  bundle member. The runner should still refuse a mount named `BUNDLE`.
+- The host side: with the rename the observations are unchanged; staging
+  directly into `WORK/bundle/cN` is the other way (then `cell_complete`,
+  `cr_observe`, `observe_*` and `run_session`'s volume list need the
+  bundle's path).
+- Found beyond the list: the hang check's arm file. `corpus_session_start`
+  takes the arm file (`out/FILE.run`, `out/gate.run`, `out/FILE.con`) below
+  the first volume's host directory (`vols[0].host_dir`); with (b) that is
+  `WORK/bundle`, so the arm path must be `WORK/bundle/c0/out/...`. Without
+  that the hang check never arms (a hang costs the full time limit).
+- The serial output (`serial_stop` into the first volume's `out/`): serial
+  cells are not bundled.
+- Isolation: a cell can reach the others' directories through `BUNDLE:`;
+  no source of the first set does.
+
 ## The fixed interface (for the three following changes)
 
 Fixed here so that `basic-test-bundle-runner` (R), `basic-test-bundle-registration`
