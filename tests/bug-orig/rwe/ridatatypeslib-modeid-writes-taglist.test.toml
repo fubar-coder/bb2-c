@@ -1,0 +1,9 @@
+# ridatatypeslib-modeid-writes-taglist.test.bas: the original overwrites the
+# start of the program's tag list
+fixed-orig = 603
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-modeid-writes-taglist.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.tag_list.list_kept" = "== fail"
+"check.tag_list.list_kept.actual" = "== 0"

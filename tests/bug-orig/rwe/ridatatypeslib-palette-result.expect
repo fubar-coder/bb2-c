@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-object -1
-result 0
-colour 0 kept -1
-rc=0

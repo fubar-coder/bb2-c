@@ -1,0 +1,9 @@
+# ridatatypeslib-attach-words-as-longs.test.bas: the original's tags hold words
+# with the upper words the code before left
+fixed-orig = 597
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-attach-words-as-longs.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.tags.tags_as_longs" = "== fail"
+"check.tags.tags_as_longs.actual" = "== 0"

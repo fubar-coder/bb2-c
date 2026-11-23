@@ -1,0 +1,9 @@
+# ridatatypeslib-palette-count.test.bas: the original overwrites the colours
+# 4-7 of the larger palette
+fixed-orig = 606
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-palette-count.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.eight_colours.colours_4_7_kept" = "== fail"
+"check.eight_colours.colours_4_7_kept.actual" = "== 0"

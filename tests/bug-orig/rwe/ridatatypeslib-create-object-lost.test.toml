@@ -1,0 +1,11 @@
+# ridatatypeslib-create-object-lost.test.bas: the original makes the second
+# object and loses the first
+fixed-orig = 600
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-create-object-lost.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.two_objects.second" = "== fail"
+"check.two_objects.second.actual" = "== -1"
+"check.two_objects.lost" = "== fail"
+"check.two_objects.lost.actual" = "== -1"

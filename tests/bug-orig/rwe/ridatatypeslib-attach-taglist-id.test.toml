@@ -1,0 +1,11 @@
+# ridatatypeslib-attach-taglist-id.test.bas: the original never uses the
+# program's tag list: the object stays at 0, 0
+fixed-orig = 596
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-attach-taglist-id.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.position.left" = "== fail"
+"check.position.left.actual" = "== 0"
+"check.position.top" = "== fail"
+"check.position.top.actual" = "== 0"

@@ -1,0 +1,11 @@
+# ridatatypeslib-attach-no-object.test.bas: the original reports both forms as
+# attached
+fixed-orig = 1098
+rwe = ["ridatatypeslib"]
+files = ["p.ilbm|@TESTDATA@/ridatatypeslib-attach-no-object.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.no_object.coordinates" = "== fail"
+"check.no_object.coordinates.actual" = "== -1"
+"check.no_object.taglist" = "== fail"
+"check.no_object.taglist.actual" = "== -1"

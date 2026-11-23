@@ -1,0 +1,9 @@
+# ridatatypeslib-open-obtain-unchecked.test.bas: the lock of the empty file
+# stays in the original and the picture does not open
+fixed-orig = 605
+rwe = ["ridatatypeslib"]
+files = ["e.dat|@TESTDATA@/ridatatypeslib-open-obtain-unchecked.dat", "p.ilbm|@TESTDATA@/ridatatypeslib-open-obtain-unchecked.ilbm"]
+
+[deviations."compiler=orig210"]
+"check.picture_after.picture" = "== fail"
+"check.picture_after.picture.actual" = "== 0"

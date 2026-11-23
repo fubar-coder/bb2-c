@@ -1,0 +1,9 @@
+# ridatatypeslib-bitmap-getattr-unchecked.test.bas: the original returns the
+# tag $80001002 that SetDataTypeAttr left in the buffer
+fixed-orig = 598
+rwe = ["ridatatypeslib"]
+files = ["t.txt|@TESTDATA@/ridatatypeslib-bitmap-getattr-unchecked.txt"]
+
+[deviations."compiler=orig210"]
+"check.text_object.bitmapheader" = "== fail"
+"check.text_object.bitmapheader.actual" = "== -2147479550"
