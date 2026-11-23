@@ -2,7 +2,8 @@
 # original writes 65536 spaces behind the allocation.  inject reports it with
 # the port's compiler; with the original compiler the cell's code layout
 # lets the program go on to the end of the case and fail at the exit in a
-# Software Failure (the same on every run of the cell)
+# Software Failure, or hang without a requester (observed alternating
+# between runs of the cell)
 fixed-orig = 84
 runwrap = "@INJECT@|guard"
 timeout = 30
@@ -13,6 +14,7 @@ inject = "not contains \"inject: guard\""
 [deviations."compiler=port,libs=cd"]
 inject = "contains \"written behind an allocation of 9 bytes\""
 
-[deviations."compiler=orig195"]
-requester = "contains \"Software Failure\""
-rc = "not exists"
+[ends."compiler=orig195"]
+reason = "the 65536 spaces overwrite memory behind the 9 byte block (#84); whether the program then reaches the end of the case and fails at its exit in a Software Failure, or hangs, depends on that memory"
+crashes_at_exit = ["rc not exists", "requester contains \"Software Failure\"", "end.case exists", "end.run exists"]
+hangs = ["session == timeout", "rc not exists", "requester count == 0", "end.case not exists", "end.run not exists"]
