@@ -632,7 +632,13 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   parser with its own operator/precedence stack; it generates code directly into
   data register `D(regat)` (from d0 upwards; if they are not enough, via the
   stack). Types: 1 byte, 2 word, 3 long, 4 quick (16.16), 5 float (FFP),
-  7 string; the default type is quick.
+  7 string; the default type is quick. In the port the stack is a window
+  of nodes (`exprtree.c`: a node per pending operator, bracket, `NOT`,
+  run of minus signs and expression, a leaf per operand, in a static arena
+  reset per statement) and the precedence climbing of `eval5` is the walk
+  `exprtree_climb`, whose hooks in `eval.c` emit each operator when the
+  original did; the type of each operation is decided by `exprtype.c`
+  (`docs/blitz2/expression-tree.md`, issue #1180).
 * Code is produced from **templates** (machine code snippets in the data area
   of the compiler, `blitz2.s:914 objects` … `1254`, also in `tokens1`/
   `tokens2`), which are copied (`pokecode`) or written as an opcode word with

@@ -25,7 +25,7 @@ before.
 
 | Original (`blitz2.s`) | What it decided | Now |
 |---|---|---|
-| 8989-8993 `eval5` `.higher`: `move d2,-(a7)`, `bsr eval5` | the right operand starts with the type so far of the left one | `exprtype_leftop` (`compare`: a comparison starts it at 0, #1177; a raw left Quick is a Quick, #1178), called by `eval5` |
+| 8989-8993 `eval5` `.higher`: `move d2,-(a7)`, `bsr eval5` | the right operand starts with the type so far of the left one | `exprtype_leftop` (`compare`: a comparison starts it at 0, #1177; a raw left Quick is a Quick, #1178), called by `exprtree_pre` |
 | 8995-8998 `eval5`: `move (a7)+,d3`, `beq .skip`, `bsr convtypef` | the left operand converted to the type so far after the right one | `exprtype_binop` (`lconv`), emitted by `operate` (`eval.c`) |
 | 8999-9000 `eval5` `.skip`: `bsr popprec`, `bsr doop` | the handler of that type | `exprtype_binop` (`handler`, `result`), emitted by `operate` |
 | 9142 `doop` | "Illegal Operator for Type" for type 0 or a type without a handler | `exprtype_optype` (0: none); `doop` raises the error and calls the handler |
@@ -52,3 +52,44 @@ What stays where it was: the patch mechanisms that act on the decisions
 `cmpownleft`'s rewind, `fraclitfloat`), the end of an expression
 (`maineval2`), the unary operators, and the code of each conversion and
 handler.
+
+## Step 2: the operators as nodes (`expr-tree-2-operators`)
+
+Each binary operator, each bracket, each `NOT`, each run of minus signs
+and each expression (the one of a statement, a function argument, an
+index) is a node (`programs/blitz2/src/exprtree.c`, `struct exprnode`);
+each operand is an opaque leaf that records where its code begins and
+ends. The nodes live in a static arena of `EXPRTREE_NODES` (136) that
+`prepstack` resets for every statement. A node is released when its
+operator has been emitted, at the moment the original emitted it, so the
+arena holds only the window of the pending operators and their left
+operands: at most the 64 counted nodes, the 65th before its count, and
+one leaf or one run of minus signs per level (129; 63 times `-(` keep 128
+live). The elements are still emitted while they are read, the constant
+fold still works on `forthstack`. The code the compiler emits is the
+same as before.
+
+The walk `exprtree_climb` is `eval5`'s control: an operand, then each
+operator that binds tighter than the pending one with its right operand
+(one level deeper, as the original recursed) and its emission; along a
+chain of one precedence it loops, so a chain of any length needs no
+stack. What the original did in between is in the walk's hooks in
+`eval.c`, called at the same moments. The limits stay where they were:
+"Precedence Stack Overflow" at the 65th counted node (the expression,
+each bracket, each `NOT`, each pending operator), "Expression too
+Complex" at the 33rd pending element (`forthstack`) and for an operand
+beyond d7 (#1185). The host test `blitz2_exprtree` runs the walk with an
+evaluator of its own; `tests/blitz2/expr-limits.test.bas` pins the
+limits.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 9171 `precsp`, 9173 `precstack` (6 bytes x 64) | the pending operators and the sentinels of brackets and `NOT` | the counted nodes of the arena (`exprtree.c`: `pend`, `npend`, `struct exprnode.down`) |
+| 9153 `pushprec` | push an operator and its precedence | `exprtree_push` (the limit checked before, as the port did) |
+| 9161 `popprec` | pull it after the right operand | `exprtree_release` of the operator's node after its emission (`exprtree_climb`); the original's check there cannot be reached (the push checks) |
+| 8972-8980 `eval4` | the sentinel of precedence 1, `eval5`, `subq.l #6,precsp` | `eval4` makes the expression's node (`EXN_EXPR`, `EXN_BRACKET`, `EXN_NOT`) and calls the walk; its caller releases the node (`eval4end`): `eval3`, `bracket`, and `notit` after its `not` |
+| 8983-8987 `eval5`, `.more` | the operand (`bsr eval2`) and the test of the next operator against the pending one | `exprtree_climb`; the operand: `exprtree_operand` (`eval2` gives the operator's index), the leaf and the raw Quick cut of #1178: `exprtree_left`, the end of a level: `exprtree_done` |
+| 8989-8992 `eval5` `.higher` | `bsr pushprec`, the left type saved, `addq #1,regat`, `bsr eval5` for the right operand | `exprtree_climb`; before the count `exprtree_pre` (#1185, #1177, #978's facts), after it `exprtree_enter` |
+| 8993-9083 `eval5` after the right operand | `subq #1,regat`, the conversion, `popprec`, `doop`, the constant fold | `exprtree_emit` (`operate`, `constfold`) |
+| 9667 `negate` and its recursion through `getelement2` | one `neg` per minus sign, innermost first | `negate`: a run of minus signs is one node (`EXN_NEG`, the count) and a loop; then one `neg` (or `SPNeg`) per sign |
+| 9718 `getelement2` | `bsr getchar3`, then the element | `getelement2` reads the char, `element` the element (so that `negate` can hand it the char after the run) |

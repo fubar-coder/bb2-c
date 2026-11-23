@@ -453,13 +453,6 @@ struct opentry {
 };
 OFFS(opentry, h, 2); OFFS(opentry, prec, 30); SIZE(opentry, 32);
 
-/* precedence stack entry (pushprec/popprec, 6 bytes) */
-struct precent {
-    struct opentry *op;     /* 0  (eval4's sentinel: garbage) */
-    UWORD prec;             /* 4 */
-};
-SIZE(precent, 6);
-
 /* ------------------------------------------------------------- editor */
 
 /* line item of the editor's text list (ted.s rsreset) */

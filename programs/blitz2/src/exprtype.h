@@ -4,10 +4,11 @@
  * operator the conversions of its operands, the type whose handler
  * computes it and the type so far after it; for an element (a variable,
  * a function value, a constant) the type so far after it.  The evaluator
- * (eval.c: eval5, doop, compareop, mixedop, cmpownleft, varcont;
- * libcall.c: consttype2) asks these functions and emits what they return;
- * the rules are described in docs/blitz2/expression-types.md, their
- * mapping to the original's routines in docs/blitz2/expression-tree.md.
+ * (eval.c: exprtree_pre, operate, doop, compareop, mixedop, cmpownleft,
+ * varcont; libcall.c: consttype2) asks these functions and emits what
+ * they return; the rules are described in docs/blitz2/expression-types.md,
+ * their mapping to the original's routines in
+ * docs/blitz2/expression-tree.md.
  *
  * Pure C99 without the compiler's globals or AmigaOS headers: blitz2 and
  * blitz2-ab3 compile it, and the host test
@@ -71,7 +72,7 @@ struct exprtype_binfacts {
 
 /** @brief The decision for a binary operator.  A conversion is from -> to
  *         (from 0: none); the emitter does them in the order of its path
- *         (eval.c, eval5). */
+ *         (eval.c, operate). */
 struct exprtype_bin {
     unsigned char path;         /* ETP_* */
     unsigned char rup_from, rup_to;     /* the right operand up to the left one's type (#1182; a comparison) */

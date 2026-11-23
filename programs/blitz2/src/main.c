@@ -637,12 +637,13 @@ static int blitz2main(int argc, char **argv)
 
 /* Fixed (#1080, a port defect): the compiler gets a stack of its own when
    the one it is started with is smaller than COMPILERSTACK.  The C
-   expression evaluator recurses with about 270 bytes per parenthesis and
+   expression evaluator recurses with about 250 bytes per parenthesis and
    490 per function call (blitz2.s about 40-50).  The depth the
-   original's tables allow (precstack: 63 entries, "Precedence Stack
-   Overflow"; forthstack: 31 nested elements, "Expression too Complex")
-   needs up to about 25 KB (measured: 31 nested calls with 32 parentheses
-   inside), the coverage build (amiga-cov) about 30 % more; the shell's
+   original's tables allow (the precedence limit, exprtree.h: 63
+   parentheses, "Precedence Stack Overflow"; forthstack: 31 nested
+   elements, "Expression too Complex") needs up to about 25 KB (measured:
+   31 nested calls with 32 parentheses inside, and 63 times "-("), the
+   coverage build (amiga-cov) about 30 % more; the shell's
    default stack is 4000 bytes.  The editor (TED, ab3cli) is called in
    this process and runs on the same stack.  The stack size handed to the
    compiled programs (stackfuck) stays the one of the start. */

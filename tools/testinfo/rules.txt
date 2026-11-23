@@ -32,6 +32,12 @@ programs/blitz2/src/glue*.c     all
 # compiler tests with the prev build
 programs/blitz2/src/exprtype.c  coverage name:host/blitz2_exprtype name:corpus_exprmatrix* name:compiler_prev
 programs/blitz2/src/exprtype.h  header name:host/blitz2_exprtype name:corpus_exprmatrix* name:compiler_prev
+# the nodes of an expression and the walk over them (exprtree.c, change
+# expr-tree-2-operators): beside the tests of its functions its host test,
+# the tests of the evaluator's limits, the expression matrix's corpus and
+# the compile-only comparison of the compiler tests with the prev build
+programs/blitz2/src/exprtree.c  coverage name:host/blitz2_exprtree name:blitz2_expr_limits* name:corpus_exprmatrix* name:compiler_prev
+programs/blitz2/src/exprtree.h  header name:host/blitz2_exprtree name:blitz2_expr_limits* name:corpus_exprmatrix* name:compiler_prev
 programs/blitz2/src/*.c         coverage
 programs/blitz2/src/*.h         header
 
@@ -39,6 +45,7 @@ programs/blitz2/src/*.h         header
 programs/ted/tests/host/**      name:host/*
 programs/blitz2/tests/host/exprtype.tsv       name:host/blitz2_exprtype
 programs/blitz2/tests/host/test_exprtype.cpp  name:host/blitz2_exprtype
+programs/blitz2/tests/host/test_exprtree.cpp  name:host/blitz2_exprtree
 programs/blitz2/tests/host/**   name:host/*
 tools/tests/**                  name:host/*
 tests/ted-ab/host/**            name:host/*

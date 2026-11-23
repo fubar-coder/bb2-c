@@ -40,3 +40,22 @@ target_compile_options(test_exprtype PRIVATE -Wall -Wextra)
 own_warnings(test_exprtype)
 set_target_properties(test_exprtype PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME blitz2_exprtype COMMAND test_exprtype)
+
+#   exprtree the nodes of an expression and the walk over them
+#            (src/exprtree.c, issue #1180, change expr-tree-2-operators):
+#            the order of the emission, the limit of the counted nodes,
+#            the bound of the arena, and a chain of 100 000 operators of
+#            one precedence on a stack that does not grow.  The hooks of
+#            the walk are the test's own small evaluator.
+add_library(blitz2_exprtree_host STATIC ${BLITZ2_SRC}/exprtree.c)
+set_target_properties(blitz2_exprtree_host PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
+target_compile_options(blitz2_exprtree_host PRIVATE -Wall -Wextra -pedantic)
+own_warnings(blitz2_exprtree_host)
+target_include_directories(blitz2_exprtree_host PUBLIC ${BLITZ2_SRC})
+
+add_executable(test_exprtree test_exprtree.cpp)
+target_link_libraries(test_exprtree PRIVATE blitz2_exprtree_host snitch::snitch)
+target_compile_options(test_exprtree PRIVATE -Wall -Wextra)
+own_warnings(test_exprtree)
+set_target_properties(test_exprtree PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME blitz2_exprtree COMMAND test_exprtree)

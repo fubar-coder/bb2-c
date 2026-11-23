@@ -14,6 +14,7 @@
  */
 #include "blitz2.h"
 #include "exprtype.h"
+#include "exprtree.h"
 #include <proto/exec.h>
 #include <string.h>
 
@@ -127,19 +128,17 @@ WORD unknown = 0;           /* 8801 */
    sbtolong reads it, reached through convtable handlers that take no
    parameters; saved/restored by maineval2 like the asm) */
 static WORD thisstuse = 0;
-struct precent precstack[64];           /* 9173 ds 6*32 */
-struct precent *precsp = precstack;     /* 9171 */
 struct forthent forthstack[32];         /* 9715 ds.b 18*32 */
 struct forthent *forthsp = forthstack;  /* 9716 */
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
 /* Fixed (#978), no asm counterpart: pc after the code of the last byte
-   value varcont fetched (with its conversion), for eval5 */
+   value varcont fetched (with its conversion), for exprtree_pre and operate */
 static ULONG bytevalend = 0;
 /* Fixed (#1177), no asm counterpart: the last conversion varcont emitted
    (code at..end, the element's own type from, the wanted type to, the
    relocation list and lasta6 before it, the evaldepth of the element), for
-   the left operand of a comparison in eval5 */
+   the left operand of a comparison in exprtree_pre */
 static struct {
     ULONG at, end;
     struct offnode *off;
@@ -149,7 +148,7 @@ static struct {
 /* Fixed (#1178), no asm counterpart: D(regat) holds a raw Quick (16.16)
    while the type so far is Long.  varcont sets it instead of cutting the
    Quick to a whole number at fetch; every consumer of the value takes
-   the Quick with its fraction (eval5, mixedop) or rounds it down where
+   the Quick with its fraction (operate, mixedop) or rounds it down where
    the original's value stays (rawcut: shifts, logic operators, Mod, Not,
    the end of the expression) */
 static BOOL rawq = FALSE;
@@ -158,7 +157,7 @@ static BOOL rawq = FALSE;
    leaves it), or computed from one, in a type below the type so far.
    compareop's result sets it; getelement2 clears it; a bracket, Not and
    a minus keep the one of their operand; any other operator gives it to
-   its result if one of its operands has it (eval5), a nested evaluation
+   its result if one of its operands has it (operate), a nested evaluation
    (maineval2: a function argument, an array index) starts and ends
    without it */
 static BOOL cmpres = FALSE;
@@ -166,7 +165,7 @@ static BOOL cmpres = FALSE;
    array index (idxnext, set by arrevalchk), the current one does
    (laterindex, saved by maineval2: a nested evaluation, a function
    argument or the index of an index, starts without it), and the
-   operator doop runs has two Word values (wordop, eval5: both
+   operator doop runs has two Word values (wordop, operate: both
    forthent.wordval): dotimesl and dodivl compute it inline */
 static BOOL idxnext = FALSE;
 static BOOL laterindex = FALSE;
@@ -192,18 +191,16 @@ static void floattolong2(void);
 static void wordtoquick_(void);
 static void quicktob2(void);
 static UWORD eval3(UWORD *type);
-static UWORD eval4(UWORD *type);
-static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
+static UWORD eval4(UWORD *type, unsigned kind);
+static UWORD element(UWORD c, UWORD *type);
 static BOOL intrinsic_quick(UWORD type);
-static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
+static UWORD eval2(UWORD *type, UWORD *c, unsigned *op);
 static UWORD doop(struct opentry *op, UWORD type);
 static void mixedop(struct opentry *op, const struct exprtype_bin *d);
 static void doplus2(UWORD opcode);
 static ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend);
 static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
 static void divzerochk(const struct opentry *op, UWORD type);
-static void pushprec(struct opentry *op, UWORD prec);
-static struct opentry *popprec(UWORD *prec);
 static UWORD getelement(UWORD *type);
 static UWORD getelement2(UWORD *type);
 static void nocando(void);
@@ -879,35 +876,11 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     return c;
 }
 
-/* blitz2.s:8968 eval3 */
-static UWORD eval3(UWORD *type)
-{
-    UWORD c = eval4(type);
-    forthsp--;                      /* sub.l #18,forthsp */
-    return c;
-}
-
-/* blitz2.s:8972 eval4 */
-static UWORD eval4(UWORD *type)
-{
-    struct opentry *op;
-    UWORD c;
-
-    /* asm: a0 is whatever it was (garbage) for the sentinel */
-    pushprec(NULL, 1);
-    if (eval5(type, &c, &op))
-        syntaxerr();
-    precsp--;                       /* pop the prec set up */
-    return c;
-}
-
-/* blitz2.s:9017 the constant fold of eval5: the code of the last two
-   operands (both constants: forthsp[-2], forthsp[-1]) and their operator
-   is run and replaced by a move of the result (of type `type`) into
-   regat.  Not inlined: eval5 recurses once per nesting level, and the
-   register frame of the call would be part of every level's stack frame
-   (#1080). */
-static __attribute__((noinline)) void constfold(UWORD type)
+/* blitz2.s:9017 the constant fold of eval5 (exprtree_emit): the code of
+   the last two operands (both constants: forthsp[-2], forthsp[-1]) and
+   their operator is run and replaced by a move of the result (of type
+   `type`) into regat. */
+static void constfold(UWORD type)
 {
     struct forthent *fs = forthsp;
     struct m68kregs r;
@@ -996,39 +969,37 @@ static unsigned opindex(const struct opentry *op)
 }
 
 /* no asm counterpart; replaces blitz2.s:8995-9000 (eval5 after .higher's
-   right operand: convtypef, .skip's popprec, doop): the operator op on
-   the left operand of type left in D(regat) and the right one, whose
-   evaluation ended with the type so far right, in D(regat+1) (lstart,
-   rstart: where their code begins; lraw, lbyte, lconst: the facts of the
-   left one).  exprtype_binop decides, this emits what it returns.
-   Returns the type so far; *lcmp is set when the result is lowered by a
-   comparison (#1182).  Not inlined: the decision would be part of eval5's
-   frame on every level of the recursion (#1080). */
-static __attribute__((noinline))
-UWORD operate(struct opentry *op, UWORD *prec, UWORD left, UWORD right, ULONG lstart, ULONG rstart,
-              BOOL lraw, BOOL lbyte, BOOL lconst, BOOL *lcmp)
+   right operand: convtypef, .skip's popprec, doop): the operator n on its
+   left operand (n->left, of type n->tbefore) in D(regat) and the right
+   one, whose evaluation ended with the type so far right, in D(regat+1)
+   (n->left->start, n->start: where their code begins; the left one's
+   facts in its flags and n's).  exprtype_binop decides, this emits what
+   it returns.  Returns the type so far; the left operand is marked
+   EXF_CMP when the result is lowered by a comparison (#1182). */
+static UWORD operate(struct exprnode *n, UWORD right)
 {
+    struct exprnode *l = n->left;
+    struct opentry *op = &operators[n->op];
+    UWORD left = n->tbefore;
     struct exprtype_binfacts f;
     struct exprtype_bin d;
-    struct opentry *cur;
 
-    f.lraw = lraw;
+    f.lraw = (l->flags & EXF_RAW) != 0;
     f.rraw = rawq;
     rawq = FALSE;
     f.rcmp = cmpres;
-    f.lbyte = lbyte;
-    f.lconst = lconst;
-    f.rbyte = bytevalend == pc && bytevalend > rstart;
-    f.rconst = isbyteconst(rstart, pc);
+    f.lbyte = (n->flags & EXF_LBYTE) != 0;
+    f.lconst = (n->flags & EXF_LCONST) != 0;
+    f.rbyte = bytevalend == pc && bytevalend > n->start;
+    f.rconst = isbyteconst(n->start, pc);
     /* Fixed (#1179): a later index, both operands Word values */
     f.words = laterindex && forthsp[-2].wordval && forthsp[-1].wordval;
-    d = exprtype_binop(opindex(op), left, right, &f);
+    d = exprtype_binop(n->op, left, right, &f);
     /* Fixed (#978): the constant compared with a byte value */
     if (d.byteext == ETB_RIGHT)
-        byteconstext(rstart);
+        byteconstext(n->start);
     else if (d.byteext == ETB_LEFT)
-        byteconstext(lstart);
-    cur = popprec(prec);            /* .skip */
+        byteconstext(l->start);
     /* Fixed (#1182): a right operand that a comparison lowered below the
        left operand's type (the comparison's boolean, a Word, or a value
        computed from it) is converted up to the left one's type and the
@@ -1047,118 +1018,211 @@ UWORD operate(struct opentry *op, UWORD *prec, UWORD left, UWORD right, ULONG ls
     if (d.path == ETP_COMPARE || d.path == ETP_CMPLQ) {
         if (d.rcut)                 /* not reached: the right starts at 0 */
             rawcut(regat + 1);
-        compareop(cur, left, &d);
+        compareop(op, left, &d);
     } else if (d.path == ETP_MIXED)
-        mixedop(cur, &d);
+        mixedop(op, &d);
     else {
         if (d.lconv_from)
             convtypef(d.lconv_from, d.lconv_to); /* could possibly fuck regat+1 ! */
-        divzerochk(cur, d.handler);
+        divzerochk(op, d.handler);
         wordop = d.wordop;
-        doop(cur, d.handler);
+        doop(op, d.handler);
         wordop = FALSE;
     }
     if (d.cmpres)
-        *lcmp = TRUE;               /* Fixed (#1182) */
+        l->flags |= EXF_CMP;        /* Fixed (#1182) */
     return d.result;
 }
 
-/* blitz2.s:8983 eval5 - precedence climbing.  Returns the precedence of
-   the pending operator (asm d1, 0 = none), *op = that operator (a0),
-   *c = current char (d0). */
-static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
-{
-    ULONG lstart = pc;              /* the left operand: lstart..lend */
-    UWORD prec = eval2(type, c, op);
-    ULONG lend = pc;
-    BOOL lraw = rawq;               /* Fixed (#1178): the left operand raw */
-    BOOL lcmp = cmpres;             /* Fixed (#1182): the left one lowered */
+/* The hooks of the walk (exprtree.h, exprtree_climb: eval5's control),
+   blitz2.s:8983 eval5.  The context of one expression (eval4): the type
+   so far (asm d2), where the operand being read begins, the current char
+   (d0). */
+struct evalctx {
+    UWORD *type;
+    ULONG start;
+    UWORD c;
+};
 
+/* no asm counterpart; replaces blitz2.s:8983 eval5's bsr eval2 - the
+   operand and the operator after it */
+unsigned exprtree_operand(void *x, unsigned *op)
+{
+    struct evalctx *e = x;
+
+    e->start = pc;
+    return eval2(e->type, &e->c, op);
+}
+
+/* no asm counterpart; replaces blitz2.s:8983 eval5 after its bsr eval2 -
+   the operand read is the leaf l (its code e->start..pc) */
+void exprtree_left(void *x, struct exprnode *l, unsigned consumer)
+{
+    struct evalctx *e = x;
+
+    l->start = e->start;
+    l->end = pc;
+    l->tbefore = *e->type;
+    if (rawq)                       /* Fixed (#1178): the left operand raw */
+        l->flags |= EXF_RAW;
+    if (cmpres)                     /* Fixed (#1182): the left one lowered */
+        l->flags |= EXF_CMP;
     /* Fixed (#1178): a raw Quick whose consumer (the next operator if it
        binds tighter than the pending one, else the pending one) is a
        shift, a logic operator, Mod or a bit operator is rounded down here,
        where varcont cut it: today's value and code (exprtype_cutsraw) */
-    if (lraw && exprtype_cutsraw(opindex(prec > precsp[-1].prec ? *op : precsp[-1].op))) {
+    if ((l->flags & EXF_RAW) && exprtype_cutsraw(consumer)) {
         quicktolong();
-        lraw = FALSE;
-    }
-    for (;;) {
-        UWORD left, nprec;
-        struct opentry *nop;
-        struct forthent *fs;
-        struct exprtype_left pre;
-        BOOL lbyte, lconst;
-        ULONG rstart;
-
-        if (!(prec > precsp[-1].prec)) { /* cmp -(a1),d1 / bhi .higher */
-            rawq = lraw;
-            cmpres = lcmp;
-            return prec;
-        }
-        /* .higher */
-        /* Fixed (#1185): the right operand of an operator whose left
-           operand is in d7 would need a register beyond d7 (the 7th and
-           later arguments of a statement are evaluated in d6, so
-           Cmd a1,..,a6,x+y*z is enough, or eight nested levels).  The
-           original fetched it into d7 over the left operand and took the
-           operand from "d8", a register field that reads a0 or changes
-           the opcode: a wrong value, a crash of the program, or of the
-           compiler when constant folding ran that code.  The expression
-           stack's error instead, before any code of the operator
-           or its right operand. */
-        if (regat >= 7)
-            conmemerr();
-        /* Fixed (#1177): the operands of a comparison are compared with
-           their own values, not in the type the expression is wanted in
-           (the original handed that type to both, and varcont cut a Quick
-           under a Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one
-           element gets its own type back (cmpownleft), the right operand
-           starts at type 0, compareop compares the two (exprtype_leftop). */
-        pre = exprtype_leftop(opindex(*op), *type, lraw);
-        *type = pre.left;           /* Fixed (#1178): a raw left is a Quick */
-        lraw = pre.lraw;
-        if (pre.ownleft && lend)
-            lend = cmpownleft(type, lstart, lend);
-        /* Fixed (#978): an equality comparison (= or <>) of a byte value
-           with a constant from 128 to 255 (each operand one element)
-           takes the constant as the byte it stands for, sign-extended as
-           varcont extends the byte: "a.b=$90 : If a=$90" matches.  The
-           ordering comparisons stay mathematical (a<200 is true for every
-           byte).  The facts here, the rule in exprtype_binop. */
-        lbyte = lend && bytevalend == lend && bytevalend > lstart;
-        lconst = lend && isbyteconst(lstart, lend);
-        rstart = pc;
-        pushprec(*op, prec);
-        left = *type;
-        regat++;
-        if (pre.compare)
-            *type = 0;              /* Fixed (#1177) */
-        nprec = eval5(type, c, &nop);
-        regat--;
-        *type = operate(*op, &prec, left, *type, lstart, rstart, lraw, lbyte, lconst, &lcmp);
-        lstart = lend = 0;          /* the left operand is a result now */
-        lraw = FALSE;
-        forthsp[-2].wordval = 0;    /* Fixed (#1179): a result */
-        /* O.K., lets check the forth stack to see if last two operators
-           are constants!  if so, we can JSR the routine to optimize into a
-           constant! */
-        fs = forthsp;
-        fs[-2].constgot |= fs[-1].constgot;
-        if (!fs[-2].constgot && !nomemleft) {
-            /* YES! We can do it! */
-            constfold(*type);
-            fs = forthsp;
-        }
-        forthsp = fs - 1;                           /* .no */
-        prec = nprec;
-        *op = nop;
-        *c = reget();
+        l->flags &= ~EXF_RAW;
     }
 }
 
+/* no asm counterpart; replaces blitz2.s:8987 eval5 .more's rts - the
+   level ends with its left operand l */
+void exprtree_done(void *x, struct exprnode *l)
+{
+    (void)x;
+    rawq = (l->flags & EXF_RAW) != 0;
+    cmpres = (l->flags & EXF_CMP) != 0;
+}
+
+/* no asm counterpart; replaces blitz2.s:8989 eval5 .higher before its bsr
+   pushprec - the operator n on its left operand */
+void exprtree_pre(void *x, struct exprnode *n)
+{
+    struct evalctx *e = x;
+    struct exprnode *l = n->left;
+    struct exprtype_left pre;
+
+    /* Fixed (#1185): the right operand of an operator whose left operand
+       is in d7 would need a register beyond d7 (the 7th and later
+       arguments of a statement are evaluated in d6, so Cmd a1,..,a6,x+y*z
+       is enough, or eight nested levels).  The original fetched it into
+       d7 over the left operand and took the operand from "d8", a register
+       field that reads a0 or changes the opcode: a wrong value, a crash
+       of the program, or of the compiler when constant folding ran that
+       code.  The expression stack's error instead, before any code of the
+       operator or its right operand. */
+    if (regat >= 7)
+        conmemerr();
+    /* Fixed (#1177): the operands of a comparison are compared with their
+       own values, not in the type the expression is wanted in (the
+       original handed that type to both, and varcont cut a Quick under a
+       Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one element
+       gets its own type back (cmpownleft), the right operand starts at
+       type 0, compareop compares the two (exprtype_leftop). */
+    pre = exprtype_leftop(n->op, *e->type, (l->flags & EXF_RAW) != 0);
+    *e->type = pre.left;            /* Fixed (#1178): a raw left is a Quick */
+    if (pre.lraw)
+        l->flags |= EXF_RAW;
+    else
+        l->flags &= ~EXF_RAW;
+    if (pre.ownleft && l->end)
+        l->end = cmpownleft(e->type, l->start, l->end);
+    /* Fixed (#978): an equality comparison (= or <>) of a byte value with
+       a constant from 128 to 255 (each operand one element) takes the
+       constant as the byte it stands for, sign-extended as varcont
+       extends the byte: "a.b=$90 : If a=$90" matches.  The ordering
+       comparisons stay mathematical (a<200 is true for every byte).  The
+       facts here, the rule in exprtype_binop. */
+    if (l->end && bytevalend == l->end && bytevalend > l->start)
+        n->flags |= EXF_LBYTE;
+    if (l->end && isbyteconst(l->start, l->end))
+        n->flags |= EXF_LCONST;
+    if (pre.compare)
+        n->flags |= EXF_COMPARE;
+    n->start = pc;                  /* the right operand begins */
+}
+
+/* no asm counterpart; replaces blitz2.s:8990-8992 eval5 .higher after
+   pushprec (move d2,-(a7), addq #1,regat) - the right operand of n is read
+   next */
+void exprtree_enter(void *x, struct exprnode *n)
+{
+    struct evalctx *e = x;
+
+    n->tbefore = *e->type;
+    n->reg = (UBYTE)regat;
+    regat++;
+    if (n->flags & EXF_COMPARE)
+        *e->type = 0;               /* Fixed (#1177) */
+}
+
+/* no asm counterpart; replaces blitz2.s:8993-9083 eval5 after the right
+   operand (subq #1,regat, the operation: operate, the constant fold,
+   reget) - emit n */
+void exprtree_emit(void *x, struct exprnode *n)
+{
+    struct evalctx *e = x;
+    struct forthent *fs;
+
+    regat--;
+    *e->type = n->tafter = operate(n, *e->type);
+    forthsp[-2].wordval = 0;        /* Fixed (#1179): a result */
+    /* O.K., lets check the forth stack to see if last two operators are
+       constants!  if so, we can JSR the routine to optimize into a
+       constant! */
+    fs = forthsp;
+    fs[-2].constgot |= fs[-1].constgot;
+    if (!fs[-2].constgot && !nomemleft) {
+        /* YES! We can do it! */
+        constfold(*e->type);
+        fs = forthsp;
+    }
+    forthsp = fs - 1;                           /* .no */
+    e->c = reget();
+}
+
+/* no asm counterpart: the walk's errors (exprtree.h) */
+void exprtree_overflow(void)
+{
+    pserr();
+}
+
+void exprtree_full(void)
+{
+    conmemerr();                    /* not reached: EXPRTREE_NODES */
+}
+
+/* blitz2.s:8972 eval4 - an expression up to the first char that is no
+   operator: its node (kind: EXN_EXPR, EXN_BRACKET, EXN_NOT) counted as
+   the asm's pushprec of precedence 1, then the walk.  The node stays
+   pending: the caller releases it (eval4end) once it has emitted
+   what belongs to it (asm: subq.l #6,precsp here; nothing is counted in
+   between). */
+static UWORD eval4(UWORD *type, unsigned kind)
+{
+    struct evalctx e;
+    unsigned op;
+
+    e.type = type;
+    /* asm: a0 is whatever it was (garbage) for the sentinel */
+    exprtree_push(exprtree_new(kind), ETO_END, 1);
+    if (exprtree_climb(&e, &op))
+        syntaxerr();
+    return e.c;
+}
+
+/* no asm counterpart: eval4's node released */
+static void eval4end(void)
+{
+    exprtree_release(exprtree_top());
+}
+
+/* blitz2.s:8968 eval3 */
+static UWORD eval3(UWORD *type)
+{
+    UWORD c = eval4(type, EXN_EXPR);
+
+    eval4end();
+    forthsp--;                      /* sub.l #18,forthsp */
+    return c;
+}
+
 /* blitz2.s:9085 eval2 - get 1 element and operator.
-   Returns op prec (asm d1, 0 if .done), *op = operator address (a0). */
-static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op)
+   Returns op prec (asm d1, 0 if .done), *op = the operator (its index in
+   operators[]; asm a0: its address; ETO_END if .done). */
+static UWORD eval2(UWORD *type, UWORD *c, unsigned *op)
 {
     struct opentry *ent;
     UWORD ch;
@@ -1167,6 +1231,7 @@ static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op)
     for (ent = operators; ent->op; ent++)
         if (ent->op == ch)
             goto found;
+    *op = ETO_END;
     return 0;                       /* .done */
 found:
     if (ch == '<') {
@@ -1209,7 +1274,7 @@ found3:
     bakup();
 found2:
     /* We've found the operator. */
-    *op = ent;
+    *op = opindex(ent);
     return ent->prec;
 }
 
@@ -1357,11 +1422,8 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
    divisor 0 is "Division by Zero": the low word for Byte and Word (what
    DIVS.W divides by), the long for Long and Quick, a mantissa 0 for Float
    (FFP zero).  The two instructions poked for the run are overwritten by
-   doop: pc, bigpc and nomemleft are restored, no code changes.  Not
-   inlined: its register frame would be part of eval5's frame on every
-   level of the recursion (#1080). */
-static __attribute__((noinline))
-void divzerochk(const struct opentry *op, UWORD type)
+   doop: pc, bigpc and nomemleft are restored, no code changes. */
+static void divzerochk(const struct opentry *op, UWORD type)
 {
     struct forthent *fs = forthsp;
     struct m68kregs r;
@@ -1397,28 +1459,6 @@ void divzerochk(const struct opentry *op, UWORD type)
         divzero = value == 0;
     if (divzero)
         divzeroerr();
-}
-
-/* blitz2.s:9153 pushprec - push operator on stack */
-static void pushprec(struct opentry *op, UWORD prec)
-{
-    /* DIFF: the asm has no overflow check here (popprec checks later,
-       after the write past the end); C stops before writing */
-    if (precsp >= precstackf)
-        pserr();
-    precsp->op = op;
-    precsp->prec = prec;
-    precsp++;
-}
-
-/* blitz2.s:9161 popprec - pull precedence into d1 from stack */
-static struct opentry *popprec(UWORD *prec)
-{
-    if (precsp >= precstackf)
-        pserr();
-    precsp--;
-    *prec = precsp->prec;
-    return precsp->op;
 }
 
 /* ============================================ PLUS / compare operators */
@@ -1462,7 +1502,7 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    relocations, as constfold frees them, and lasta6 as before it) when it
    changes how the value is held - a whole number to Quick, a whole number
    or a Quick to Float.  Byte/Word to Long is exact and stays.  A Quick
-   under a Long is not cut any more (#1178): eval5 takes a raw left
+   under a Long is not cut any more (#1178): exprtree_pre takes a raw left
    operand as a Quick, also -q.  #1186 (port): a decimal literal with a
    point (also negated) that the wanted Byte made a whole number is a
    Float again (fraclitfloat): before the fix of #1188 rb.b=(1.5=1.5)
@@ -1548,7 +1588,7 @@ static UWORD cmplq(struct opentry *op, UWORD left)
    type left in D(regat) with a right one of its own type right in
    D(regat+1).  A Long and a Quick are compared exactly (cmplq); otherwise
    the lower of the two is converted up (the right one here, the left one by
-   convtypef as eval5 did) and the handler of the common type compares.
+   convtypef as operate does) and the handler of the common type compares.
    d: exprtype_binop's decision (ETP_CMPLQ or ETP_COMPARE). */
 static __attribute__((noinline))
 void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d)
@@ -1757,7 +1797,7 @@ UWORD dotimesq(UWORD t)
 /* blitz2.s:9413 dotimesl - falls through into domylib */
 UWORD dotimesl(UWORD t)
 {
-    /* Fixed (#1179): two Word values in a later index (wordop, eval5):
+    /* Fixed (#1179): two Word values in a later index (wordop, operate):
        muls.w D(regat+1),D(regat), the exact 32-bit product, instead of
        lmullib */
     if (wordop) {
@@ -1868,7 +1908,7 @@ UWORD dodivw(UWORD t)
 /* blitz2.s:9483 dodivl */
 UWORD dodivl(UWORD t)
 {
-    /* Fixed (#1179): two Word values in a later index (wordop, eval5):
+    /* Fixed (#1179): two Word values in a later index (wordop, operate):
        divs.w instead of ldivlib.  The quotient of two sign-extended Words
        fits in a Word except -32768 / -1 (V set, the dividend unchanged),
        whose Long quotient 32768 is the dividend negated:
@@ -2054,7 +2094,7 @@ void ritefromd0(void)
 /* ============================================================== elements */
 
 /* blitz2.s:9643 getelement - out of registers (regat >= 7): use d6 and
-   keep the old d6 on the stack.  Only regat 7 comes here: eval5 refuses an
+   keep the old d6 on the stack.  Only regat 7 comes here: exprtree_pre refuses an
    operand beyond d7 (Fixed (#1185)). */
 static UWORD getelement(UWORD *type)
 {
@@ -2079,40 +2119,66 @@ static UWORD getelement(UWORD *type)
    number of '-' in front of it); it hands a literal's sign on as litneg */
 static BOOL negnext;
 
-/* blitz2.s:9667 negate */
+/* no asm counterpart; replaces blitz2.s:9667 negate and its recursion
+   through getelement2 for each further minus sign - a run of minus signs
+   (the first one read by getelement2) and the element after it, then one
+   neg (or SPNeg) per minus sign, innermost first, as the original's
+   recursion emitted them.  The run is a node (EXN_NEG, op: how many) and
+   a loop: each further minus sign does what getelement2 did before its
+   '-' (Fixed (#1070): negnext flips with each one; the flags of #1177,
+   #1178 and #1182 are cleared; the intrinsics count it as an element),
+   so a run of any length needs no stack of its own. */
 static UWORD negate(UWORD *type)
 {
-    UWORD c = getelement2(type);
-    UWORD opcode = 0x4440;          /* neg.w */
+    struct exprnode *n = exprtree_new(EXN_NEG);
+    UWORD c, k;
 
-    if (*type >= 3) {
-        opcode = 0x4480;            /* neg.l */
-        if (*type >= 5) {
-            if (*type >= 6)
-                illoperr();
-            fdo2(-60);              /* SPNeg */
-            return c;
-        }
+    n->op = 1;
+    n->reg = (UBYTE)regat;
+    while ((c = getchar3()) == '-') {
+        negnext = !negnext;
+        rawq = FALSE;
+        cmpres = FALSE;
+        conv.end = 0;
+        elemcount++;
+        n->op++;
     }
-    pokewd(opcode | regat);         /* .doneg */
+    c = element(c, type);
+    n->tbefore = n->tafter = *type;
+    for (k = n->op; k; k--) {
+        UWORD opcode = 0x4440;      /* neg.w */
+
+        if (*type >= 3) {
+            opcode = 0x4480;        /* neg.l */
+            if (*type >= 5) {
+                if (*type >= 6)
+                    illoperr();
+                fdo2(-60);          /* SPNeg */
+                continue;
+            }
+        }
+        pokewd(opcode | regat);     /* .doneg */
+    }
+    exprtree_release(n);
     return c;
 }
 
 /* blitz2.s:9681 bracket */
 static UWORD bracket(UWORD *type)
 {
-    UWORD c = eval4(type);
+    UWORD c = eval4(type, EXN_BRACKET);
 
+    eval4end();
     if (c != ')' && c != '}')
         syntaxerr();
     return getchar3();
 }
 
 /* blitz2.s:9688 notit - do NOT. (applies to the whole rest of the
-   expression: eval4) */
+   expression: eval4, whose node is the NOT's) */
 static UWORD notit(UWORD *type)
 {
-    UWORD c = eval4(type);
+    UWORD c = eval4(type, EXN_NOT);
     UWORD opcode;
 
     if (rawq) {                     /* Fixed (#1178): Not of floor(q) */
@@ -2125,6 +2191,7 @@ static UWORD notit(UWORD *type)
     if (*type >= 3)
         opcode ^= 0xc0;             /* not.l */
     pokewd(opcode);
+    eval4end();
     return c;
 }
 
@@ -2151,7 +2218,13 @@ static UWORD qmark(UWORD *type);
 /* blitz2.s:9718 getelement2 - recursive stuff first..... */
 static UWORD getelement2(UWORD *type)
 {
-    UWORD c = getchar3();
+    return element(getchar3(), type);
+}
+
+/* blitz2.s:9719 getelement2 after its bsr getchar3 - the element that
+   begins with c (negate reads a run of minus signs itself) */
+static UWORD element(UWORD c, UWORD *type)
+{
     struct forthent *f;
     BOOL neg = negnext;             /* Fixed (#1070) */
 
@@ -3405,13 +3478,13 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
     struct exprtype_elem e = exprtype_element(oldtype, *type, NULL);
     BOOL byte = e.ext;
 
-    /* Fixed (#1179): a Byte or Word value (for eval5's inline Word * and
+    /* Fixed (#1179): a Byte or Word value (for operate's inline Word * and
        / of a later index) */
     forthsp[-1].wordval = e.wordval;
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with
-       "a=$90" never matched (only a=-112 did).  bytevalend tells eval5
+       "a=$90" never matched (only a=-112 did).  bytevalend tells exprtree_pre
        where a byte value ends, which then sign-extends the constant. */
     if (byte)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
@@ -3420,7 +3493,7 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
        whole number here (the original's goto conv2, blitz2.s:10491-10498:
        r.l=q*2 with q=1.5 gave 2).  It stays a raw 16.16 value, the type
        so far stays Long and rawq says so: the operator computes with the
-       fraction and rounds (eval5, mixedop: + - * down, / towards zero),
+       fraction and rounds (operate, mixedop: + - * down, / towards zero),
        a comparison takes it as a Quick (#1177), a shift, logic operator,
        Mod, Not and the end of the expression round it down as before. */
     if (e.raw)

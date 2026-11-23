@@ -532,7 +532,7 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
         /* Byte, Word, Long: the whole number (Fixed (#978): a constant
            from 128 to 255 becomes a positive word ($0090), here as in the
            original; compared with a byte value, which varcont
-           sign-extends ($FF90), eval5 makes it the sign-extended byte:
+           sign-extends ($FF90), operate makes it the sign-extended byte:
            isbyteconst, byteconstext; every other byte context (a.b=200)
            keeps it.  Data reads the '-' of a value itself (fetchdata), so
            "Data.q -32768" sizes the integer 32768 under a Quick and leaves

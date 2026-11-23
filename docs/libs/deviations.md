@@ -1082,7 +1082,7 @@ binary in acidlibs, followed on 2026-10-29.
   utillib CreateMsgPort), preserved a3 (linklistlib, medlib, seriallib,
   windowslib, blitzoslib), the title length not written into the tag list
   (windowslib WindowTags &TagList) and word coordinates
-  (blitzoslib), in the compiler some range checks (pushprec, savefile).
+  (blitzoslib), in the compiler some range checks (exprtree_push, savefile).
   Observable mostly only in error cases without debugger or with a
   returning trap; visible in a normal run are seriallib
   ReadSerial in string expressions and WindowTags &TagList (memory behind

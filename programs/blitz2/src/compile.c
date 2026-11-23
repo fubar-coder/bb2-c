@@ -9,6 +9,7 @@
  * (passjmp, dolineabort).
  */
 #include "blitz2.h"
+#include "exprtree.h"
 #include <string.h>
 #include <exec/tasks.h>
 #include <exec/ports.h>
@@ -1070,11 +1071,12 @@ UWORD createlab(void)
     return len;
 }
 
-/* blitz2.s:2824 prepstack */
+/* blitz2.s:2824 prepstack (the precedence stack: the nodes of an
+   expression, exprtree.h) */
 void prepstack(void)
 {
     forthsp = forthstack;
-    precsp = precstack;
+    exprtree_reset();
 }
 
 /* blitz2.s:2828 chkrealstop - return ne if really a stop! */

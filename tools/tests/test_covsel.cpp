@@ -59,6 +59,12 @@ static const char *const traces[][2] = {
     { "host/blitz2_exprtype", "TN:host_blitz2_exprtype\n"
       "SF:" ROOT "/programs/blitz2/src/exprtype.c\nFN:120,220,exprtype_binop\nFNDA:1,exprtype_binop\n"
       "end_of_record\n" },
+    /* the nodes of an expression (covsel: the nodes of an expression) */
+    { "blitz2_expr_limits__chain_1000", "TN:blitz2_expr_limits__chain_1000\n" EVAL("1", "0") },
+    { "blitz2_intrinsic_asc__calls", "TN:blitz2_intrinsic_asc__calls\n" EVAL("1", "0") },
+    { "host/blitz2_exprtree", "TN:host_blitz2_exprtree\n"
+      "SF:" ROOT "/programs/blitz2/src/exprtree.c\nFN:96,130,exprtree_climb\nFNDA:1,exprtree_climb\n"
+      "end_of_record\n" },
     /* the tests of the BASIC test model (covsel: the tests of the BASIC test model) */
     { "bug_orig_shape_a__c", "TN:bug_orig_shape_a__c\n" EVAL("1", "0") },
     { "bug_orig_shape_a__c_originals", "TN:bug_orig_shape_a__c_originals\n" EVAL("1", "0") },
@@ -143,6 +149,10 @@ static const char deps[] =
     "programs/blitz2/CMakeFiles/blitz2_core.dir/src/exprtype.c.obj: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/programs/blitz2/src/exprtype.c\n"
     "    " ROOT "/programs/blitz2/src/exprtype.h\n"
+    "\n"
+    "programs/blitz2/CMakeFiles/blitz2_core.dir/src/exprtree.c.obj: #deps 2, deps mtime 1 (VALID)\n"
+    "    " ROOT "/programs/blitz2/src/exprtree.c\n"
+    "    " ROOT "/programs/blitz2/src/exprtree.h\n"
     "\n"
     "programs/blitz2/CMakeFiles/blitz2_core.dir/src/glue.c.obj: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/programs/blitz2/src/glue.c\n"
@@ -417,6 +427,39 @@ TEST_CASE("covsel: the type decisions of an expression", "[covsel]")
     r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
                    0);
     CHECK(!strcmp(r, "corpus_exprmatrix_dl_A_agree_01 host"));
+    cur_tests = tests;
+    cur_host_tests = host_tests;
+}
+
+/* the nodes of an expression and the walk (programs/blitz2/src/exprtree.c,
+   change expr-tree-2-operators): its source and header select its host
+   test, the tests of the evaluator's limits, the expression matrix's
+   corpus and compiler_prev; its test source the host test */
+static const char exprtree_tests[] =
+    "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
+    TEST("blitz2_expr_limits__chain_1000", "\"emulator\"") ","
+    TEST("blitz2_intrinsic_asc__calls", "\"emulator\"") ","
+    TEST("compiler_prev", "\"emulator\"") ","
+    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
+    TEST("host", "") "]}";
+static const char exprtree_host_tests[] =
+    "{\"kind\": \"ctestInfo\", \"tests\": ["
+    TEST("blitz2_exprtree", "") ","
+    TEST("blitz2_exprtype", "") "]}";
+
+TEST_CASE("covsel: the nodes of an expression", "[covsel]")
+{
+    char *r;
+
+    cur_tests = exprtree_tests;
+    cur_host_tests = exprtree_host_tests;
+    r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    r = select_for(real_rules, diff1("programs/blitz2/tests/host/test_exprtree.cpp", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(!strcmp(r, "host"));
     cur_tests = tests;
     cur_host_tests = host_tests;
 }

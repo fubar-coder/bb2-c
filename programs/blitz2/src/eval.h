@@ -157,19 +157,14 @@ void arrszchk(void);            /* 8812  emit cmpi.l #$10000,Dn / bcs / jsr arre
 /* "don't convert" flag of the current maineval (asm: unknown dc 0) */
 extern WORD unknown;
 
-/* precedence stack (pushprec/popprec); reset by prepstack (chunk 02).
-   asm bound: precstackf = end label (64 entries) */
-extern struct precent precstack[64];
-#define precstackf (&precstack[64])
-extern struct precent *precsp;
-
 /* constant folding stack (one entry per element, see struct forthent);
    reset by prepstack.  asm bound: `cmp.l #forthsp,a1` = end of forthstack */
 extern struct forthent forthstack[32];
 extern struct forthent *forthsp;
 
-/* Constant folding (eval5, blitz2.s 9007-9083), DIFF/G: when both operands
-   are constants, eval5 appends `move.l Dn,d0 / rts` to the code generated
+/* Constant folding (eval5, blitz2.s 9007-9083; eval.c constfold, called by
+   exprtree_emit), DIFF/G: when both operands are constants, the fold
+   appends `move.l Dn,d0 / rts` to the code generated
    for the subexpression and RUNS it at compile time:
        struct m68kregs r;   (d2/a5 of the compiler need no saving in C)
        r.a[6] = (ULONG)MathBase;                         asm: maths
