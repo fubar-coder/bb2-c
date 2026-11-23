@@ -1,0 +1,6 @@
+# polylib-dither-plane-step.test.bas
+fixed-orig = 1035
+
+[deviations."libs=cd"]
+"check.dither_planes.plane_1" = "== fail"
+"check.dither_planes.plane_1.actual" = "== \"0000F0F0\""

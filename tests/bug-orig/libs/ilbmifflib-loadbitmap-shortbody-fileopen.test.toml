@@ -1,0 +1,13 @@
+# ilbmifflib-loadbitmap-shortbody-fileopen.test.bas: the handler of the
+# expected error ends the program, so the case has no end entry and the check
+# behind the LoadBitMap is not run; the original leaves the file open, so the
+# exclusive lock fails
+fixed-orig = 1065
+files = ["short.iff|@TESTDATA@/ilbmifflib-loadbitmap-shortbody-fileopen.ilbm"]
+
+[asserts]
+"end.case" = "not exists"
+"check.file_closed.loaded" = "== not-run"
+
+[deviations."libs=cd"]
+"check.file_closed.exclusive_lock" = "== fail"

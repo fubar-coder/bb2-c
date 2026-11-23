@@ -1,0 +1,9 @@
+# animlib-zero-dimensions.test.bas: the ANIM is staged as CORPUS:height0.anim
+fixed-orig = 402
+files = ["height0.anim|@TESTDATA@/animlib-zero-dimensions.anim"]
+
+[deviations."libs=cd"]
+"check.height_zero.body_length" = "== fail"
+"check.height_zero.body_length.actual" = "== 131072"
+"check.height_zero.row" = "== fail"
+"check.height_zero.row.actual" = "== \"0000FFFF\""

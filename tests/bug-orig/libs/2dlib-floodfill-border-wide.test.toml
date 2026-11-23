@@ -1,0 +1,18 @@
+# 2dlib-floodfill-border-wide.test.bas: three cases, the 320 pixel box is
+# the control
+fixed-orig = 986
+timeout = 60
+
+[deviations."libs=cd"]
+"check.wide_1280.x_100" = "== fail"
+"check.wide_1280.x_100.actual" = "== 0"
+"check.wide_1280.x_600" = "== fail"
+"check.wide_1280.x_600.actual" = "== 0"
+"check.wide_1280.x_1100" = "== fail"
+"check.wide_1280.x_1100.actual" = "== 0"
+"check.tall_1100.y_50" = "== fail"
+"check.tall_1100.y_50.actual" = "== 0"
+"check.tall_1100.y_500" = "== fail"
+"check.tall_1100.y_500.actual" = "== 0"
+"check.tall_1100.y_1050" = "== fail"
+"check.tall_1100.y_1050.actual" = "== 0"

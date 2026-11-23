@@ -1,0 +1,7 @@
+# bitmaplib-mulu-size.test.bas: the original allocates less than the planes
+# need (the plane pointers are right, the memory behind them is not the
+# bitmap's)
+fixed-orig = 76
+
+[deviations."libs=cd"]
+"check.planes_size.allocated" = "== fail"

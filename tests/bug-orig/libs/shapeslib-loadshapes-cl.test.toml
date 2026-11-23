@@ -1,0 +1,12 @@
+# shapeslib-loadshapes-cl.test.bas: the shapes files go to CORPUS:
+fixed-orig = 267
+
+[deviations."libs=cd"]
+"check.loadshapes_leak.loaded" = "== fail"
+"check.loadshapes_leak.loaded.actual" = "== \"0000634C\""
+"check.loadshapes_leak.leak" = "== fail"
+"check.loadshapes_leak.leak.actual" = "== 136"
+"check.loadshapes_leak.fast" = "== fail"
+"check.loadshapes_leak.fast.actual" = "== \"0000634C\""
+"check.loadshapes_leak.fast_leak" = "== fail"
+"check.loadshapes_leak.fast_leak.actual" = "== 136"

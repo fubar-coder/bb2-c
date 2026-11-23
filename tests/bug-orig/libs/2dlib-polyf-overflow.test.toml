@@ -1,0 +1,7 @@
+# 2dlib-polyf-overflow.test.bas: the polygon with 10 left edges is the
+# sanity case, the one with 14 overflows the edge list
+fixed-orig = 395
+
+[deviations."libs=cd"]
+"check.edges_14.differ" = "== fail"
+"check.edges_14.differ.actual" = "== 355"

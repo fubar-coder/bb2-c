@@ -1,0 +1,14 @@
+# animlib-zero-dimensions-load.test.bas: the ANIMs are staged as
+# CORPUS:depth0.anim and CORPUS:width0.anim
+fixed-orig = 402
+files = ["depth0.anim|@TESTDATA@/animlib-zero-dimensions-load-depth.anim", "width0.anim|@TESTDATA@/animlib-zero-dimensions-load-width.anim"]
+
+[deviations."libs=cd"]
+"check.depth_zero.body_length" = "== fail"
+"check.depth_zero.body_length.actual" = "== 3"
+"check.depth_zero.has_delta" = "== fail"
+"check.depth_zero.has_delta.actual" = "== -1"
+"check.width_zero.body_length" = "== fail"
+"check.width_zero.body_length.actual" = "== 3"
+"check.width_zero.has_delta" = "== fail"
+"check.width_zero.has_delta.actual" = "== -1"

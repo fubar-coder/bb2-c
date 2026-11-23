@@ -1,0 +1,13 @@
+# fadelib-colour-range-message.test.bas: with runtime error checking; the
+# requester with its text is the tested behaviour, the case ends in it
+# and the check behind the FadeIn does not run
+fixed-orig = 331
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Not enough colours in Slice\""
+"end.case" = "not exists"
+"check.colour_beyond.faded" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "contains \"Uninitialized Slice\""

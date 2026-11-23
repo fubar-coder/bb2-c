@@ -1,0 +1,12 @@
+# stencillib-stencil-blitsize.test.bas
+fixed-orig = 284
+
+[deviations."libs=cd"]
+"check.stencil_1280x4.last_row_first_byte" = "== fail"
+"check.stencil_1280x4.last_row_first_byte.actual" = "== 0"
+"check.stencil_1280x4.last_byte" = "== fail"
+"check.stencil_1280x4.last_byte.actual" = "== 0"
+"check.stencil_16x1100.last_row_first_byte" = "== fail"
+"check.stencil_16x1100.last_row_first_byte.actual" = "== 0"
+"check.stencil_16x1100.last_byte" = "== fail"
+"check.stencil_16x1100.last_byte.actual" = "== 0"

@@ -1,0 +1,9 @@
+# displaylib-spriteoff-custom-bank.test.bas: the original overwrites one of
+# the eight longs behind the normal bank and leaves the sprite on the
+# custom channel
+fixed-orig = 1051
+
+[deviations."libs=cd"]
+"check.spriteoff.moves_kept" = "== fail"
+"check.spriteoff.moves_kept.actual" = "== 7"
+"check.spriteoff.custom_blank" = "== fail"

@@ -1,0 +1,12 @@
+# iffmakelib-cmap-odd.test.bas: the original writes no pad byte behind the
+# CMAP of 9 bytes, so the BODY starts one byte earlier (the picture still
+# loads back)
+fixed-orig = 184
+
+[deviations."libs=cd"]
+"check.odd_cmap.body_offset" = "== fail"
+"check.odd_cmap.body_offset.actual" = "== 57"
+"check.odd_cmap.form_length" = "== fail"
+"check.odd_cmap.form_length.actual" = "== 61"
+"check.odd_cmap.file_size" = "== fail"
+"check.odd_cmap.file_size.actual" = "== 69"

@@ -1,0 +1,14 @@
+# iffmakelib-zero-colours.test.bas: with runtime error checking; the
+# requester with its text is the tested behaviour, the case ends in it and
+# the check behind the SaveBitmap does not run; the original stops at the
+# Open instead
+fixed-orig = 182
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Uninitialized Palette\""
+"end.case" = "not exists"
+"check.empty_palette.saved" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "contains \"Can't open File\""

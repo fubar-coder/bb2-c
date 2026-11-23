@@ -1,0 +1,9 @@
+# blitzcoplib-marker-customcop.test.bas: the original replaces the marker
+# long of the string by blwait and the next word by a wait
+fixed-orig = 405
+
+[deviations."libs=cd"]
+"check.marker_in_string.list_2" = "== fail"
+"check.marker_in_string.list_2.actual" = "== $FFE1FFFE"
+"check.marker_in_string.list_3" = "== fail"
+"check.marker_in_string.list_3.actual" = "== $80010F00"

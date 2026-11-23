@@ -1,0 +1,12 @@
+# shapeslib-loadshape-xplane-64k.test.bas: the handler of the expected error
+# ends the program, so the case has no end entry; the original loads the
+# shape (+24 = 992) and the case runs on to its end
+fixed-orig = 1055
+
+[asserts]
+"end.case" = "not exists"
+"check.xplane_64k.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.xplane_64k.not_refused" = "== fail"
+"end.case" = "exists"

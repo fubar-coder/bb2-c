@@ -1,0 +1,6 @@
+# 2dlib-box-origin-twice.test.bas
+fixed-orig = 391
+
+[deviations."libs=cd"]
+"check.box_origin.corner_50_50" = "== fail"
+"check.box_origin.nothing_at_100_100" = "== fail"

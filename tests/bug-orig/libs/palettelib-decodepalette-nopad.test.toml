@@ -1,0 +1,8 @@
+# palettelib-decodepalette-nopad.test.bas: the original does not find the
+# CRNG, so the palette has no cycle (its end mark is not written either)
+fixed-orig = 225
+files = ["pal.ilbm|@TESTDATA@/palettelib-decodepalette-nopad.ilbm"]
+
+[deviations."libs=cd"]
+"check.odd_name.cycle_0" = "== fail"
+"check.odd_name.cycle_0.actual" = "== \"-1 0 0\""
