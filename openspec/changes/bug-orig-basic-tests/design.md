@@ -188,3 +188,18 @@ whose form is already setup / act / verify; spike 2 moved two of them.
   fix-scope may be a tree before the move. A label named like a token
   (`.frames`) fails the compile; the form check names case names that are
   tokens, not labels.
+- **Task 1.7, the side originals of an open bug**: the verdict stays
+  `tj_verdict`'s (REPRODUCED when the cells show exactly the declared
+  deviations, FAILED when one does not); only the exit status of the side
+  is mapped, in `corpusrun case` (`tests/corpus/runner/caserun.c`,
+  `cr_side_status` and `cr_side_verdict_name`): on the side originals
+  REPRODUCED gives 0 and the verdict lines (per case and the summary of
+  all cases) say `REPRODUCED (as declared, side originals)`. The worst
+  verdict of all cases is taken first, then mapped, so a FAILED case
+  among REPRODUCED ones still fails the side. Host test `corpusrun_caserun`
+  (`test_side_status`); in the emulator the nine `*_originals` tests that
+  failed in the acceptance run of U1/U2 pass, and the port sides of the
+  eight open ones still fail in `bug-orig` (the ninth,
+  `seriallib_closeserial_abortio__abort_write_originals`, is a fixed test,
+  `fixed-orig = 258`, whose cell port,cd timed out there; it passes again
+  in three runs, unrelated to this task).

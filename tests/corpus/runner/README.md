@@ -196,11 +196,11 @@ cases, in Amiberry: the cells of one side compiled, run and judged
 OPTIONS:
   -h,     --help              Print this help message and exit
           --env FILE REQUIRED the environment file of the build (tests/model-env.toml)
-          --source FILE REQUIRED 
+          --source FILE REQUIRED
                               the test source ID.test.bas
           --case CASE         the case; without it every case of the source (not with
                               --print-config, --write-driver, --prev)
-          --side SIDE:{port,originals} 
+          --side SIDE:{port,originals}
                               the cells without original material (port, the default) or with
                               it (originals: the original compilers, the CD's libraries)
           --require-deviation a bug-orig test: a test that declares no deviation of the
@@ -229,8 +229,9 @@ driver of all of them, each judged from its own block; a case that asserts an
 observation of the whole program or announces a runtime error, the case open
 when a shared run did not end cleanly, and a case that did not pass in a shared
 run run on their own ("(alone)"), and a line per case and a summary line report
-them. Exit status: 0 passed, 1 reproduced (an open bug shows as declared), 2
-error (a configuration, source or result that cannot be judged; usage), 3
+them. Exit status: 0 passed, 1 reproduced (an open bug shows as declared; on the
+side originals 0, the report saying "REPRODUCED (as declared, side originals)"),
+2 error (a configuration, source or result that cannot be judged; usage), 3
 broken, 4 failed, 77 skipped (no emulator, or a file of the side is missing);
 without --case the worst verdict of the cases, in the order error, broken,
 failed, skipped, reproduced, passed. With --prev: 0 the same, 1 a difference
@@ -275,7 +276,11 @@ runs on its own. The report has a block per case (` (alone)` when judged
 on its own, a line when the verdict on its own differs from the shared
 one) and the line `ID.test.bas: N cases, side SIDE: VERDICT`; the exit
 status is the worst verdict (error, broken, failed, skipped, reproduced,
-passed). The runs are `shared-N`, `alone-CASE` and `isolated-CASE` in the
+passed). On the side originals an open bug that shows as declared passes:
+the verdict lines say `REPRODUCED (as declared, side originals)` and the
+exit status is 0, so the preset `originals` is green while the original
+shows the bug; the side port of the same case still fails with 1 (preset
+`bug-orig`). The runs are `shared-N`, `alone-CASE` and `isolated-CASE` in the
 run directory of `ID` (`ID_originals`).
 
 The comparison with the prev build of a test of the model (`tests/README.md`,
@@ -314,7 +319,8 @@ line, message, size, masked SHA-256, xtra, note
   observed, 2 the session failed.
 * `drop`: 0 removed or kept or nothing to remove, 1 a fixture could not be removed.
 * `case`: the verdict of the case: 0 passed, 1 reproduced (an open bug
-  shows as declared), 2 error, 3 broken, 4 failed, 77 skipped (no
+  shows as declared; on the side originals 0, reported as `REPRODUCED (as
+  declared, side originals)`), 2 error, 3 broken, 4 failed, 77 skipped (no
   emulator, or a file of the side is missing); without `--case` the worst
   verdict of the cases (SKIPPED between failed and reproduced). With `--prev` 0 the same, 1 a difference
   that is not intended or a stale entry, 2 error, 77 skipped; with

@@ -40,8 +40,11 @@
  * reproduced (an open bug shows as declared), 2 error (a configuration,
  * source or result that cannot be judged), 3 broken, 4 failed, 77 skipped
  * (no emulator, or a file of the side is missing: the CD, the build of
- * blitz2.s).  With require_deviation (a bug-orig test) a test without any
- * declared deviation is broken: it would not show its bug.
+ * blitz2.s).  On the side originals an open bug that shows as declared
+ * passes (cr_side_status): exit status 0, the report says "REPRODUCED (as
+ * declared, side originals)"; only the side port fails with it.  With
+ * require_deviation (a bug-orig test) a test without any declared deviation
+ * is broken: it would not show its bug.
  */
 #ifndef CASERUN_H
 #define CASERUN_H
@@ -163,9 +166,10 @@ int caserun(const struct caserun_opts *o, FILE *out);
  * judged on its own, a line "case NAME: VERDICT alone (VERDICT2 in the run
  * shared with ...)" when the two verdicts differ, and at the end the line
  * "ID.test.bas: N cases, side SIDE: VERDICT".  The exit status is the worst
- * verdict (cr_verdict_worse); a case whose run could not start after others
- * were judged is SKIPPED (CR_SKIPPED); 77 when the side is skipped before any
- * session.
+ * verdict (cr_verdict_worse) as cr_side_status gives it (on the side
+ * originals REPRODUCED passes); a case whose run could not start after
+ * others were judged is SKIPPED (CR_SKIPPED); 77 when the side is skipped
+ * before any session.
  */
 
 /** @brief The verdict of a case whose run could not start. */
@@ -179,6 +183,20 @@ int cr_verdict_worse(int a, int b);
 
 /** @brief The name of a verdict: PASSED, REPRODUCED, ERROR, BROKEN, FAILED, SKIPPED. */
 const char *cr_verdict_name(int v);
+
+/**
+ * @brief The exit status of verdict v on a side: the verdict, except that
+ *        on the side originals (originals != 0) REPRODUCED is 0 - the
+ *        original shows the open bug as declared.
+ */
+int cr_side_status(int v, int originals);
+
+/**
+ * @brief The name of verdict v in the report of a side: cr_verdict_name,
+ *        and on the side originals REPRODUCED is "REPRODUCED (as declared,
+ *        side originals)".
+ */
+const char *cr_side_verdict_name(int v, int originals);
 
 /**
  * @brief Whether a case runs on its own in the run of all cases: in a cell
