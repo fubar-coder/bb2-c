@@ -151,11 +151,16 @@ int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file
  *        cost, else the sum of its cells' session limits) together with the
  *        entries of order (NULL: none), the largest COST first, equal ones
  *        by name: the order the tests of the label bug-orig must be
- *        declared in (cmake/bug-orig-order.cmake).
+ *        declared in (cmake/bug-orig-order.cmake).  testenv (NULL: none):
+ *        a ctest script that defines basic_test_environment(NAME LABELS),
+ *        which gives a test its ENVIRONMENT (cmake/basic-test-model.cmake:
+ *        the rules of cmake/emulation-queue.cmake); the file includes it
+ *        first and calls it after the properties of each registered test
+ *        (an entry of order carries its own environment).
  * @return 0, -1 = a value that cannot be quoted or a write error
  */
 int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand,
-                       const struct treg_entries *order);
+                       const struct treg_entries *order, const char *testenv);
 
 /** @brief Write a depfile "TARGET: DEP..." (Makefile syntax, as ninja reads it). */
 int treg_write_depfile(FILE *f, const char *target, const struct treg_result *r);

@@ -25,7 +25,12 @@
 #   (basic_test_driver, cmake/prev.cmake prev_compile_model_test): ctest
 #   PREFIX + ID + "_prev".  ORDER: the order file of bug_orig_declare_tests
 #   (cmake/bug-orig-order.cmake): its tests are declared with the tests of
-#   the label bug-orig in one list, the largest COST first
+#   the label bug-orig in one list, the largest COST first.  The tests get
+#   the environment of the tests CMake declares (emulation_test_environment,
+#   cmake/emulation-queue.cmake: the snapshot owner, the coverage
+#   directory): testreg --test-env, the script PREFIX-model-env.cmake that
+#   the end of the top directory writes, which ctest reads with the include
+#   file and calls for each test with its labels
 # basic_test_driver(SOURCE OUT [CONFS...])
 #   the build writes the driver of all cases of SOURCE, tokenised, to OUT
 #   (NAME.bb2; corpusrun case --write-driver), a step of the target that
@@ -136,6 +141,13 @@ function(basic_test_register prefix dir)
 	endif()
 	string(REGEX REPLACE "_$" "" stem "${prefix}")
 	set(inc ${CMAKE_CURRENT_BINARY_DIR}/${stem}-model-tests.cmake)
+	set(tenv ${CMAKE_CURRENT_BINARY_DIR}/${stem}-model-env.cmake)
+	set_property(GLOBAL APPEND PROPERTY BASIC_TEST_ENV_SCRIPTS "${tenv}|${CMAKE_CURRENT_BINARY_DIR}")
+	get_property(deferred GLOBAL PROPERTY BASIC_TEST_ENV_DEFERRED)
+	if(NOT deferred)
+		set_property(GLOBAL PROPERTY BASIC_TEST_ENV_DEFERRED ON)
+		cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _basic_test_write_env)
+	endif()
 	set(cmd --command ${CORPUSRUN} --command case --command --env --command ${BASIC_TEST_ENV})
 	if(arg_REQUIRE_DEVIATION)
 		list(APPEND cmd --command --require-deviation)
@@ -155,7 +167,7 @@ function(basic_test_register prefix dir)
 	add_custom_command(OUTPUT ${inc}
 		COMMAND ${TESTREG} --prefix ${prefix} --output ${inc} --depfile ${inc}.d --env ${BASIC_TEST_ENV}
 			--tokens ${BASIC_TEST_TOKENS} --timeout-default ${BASIC_TEST_TIMEOUT} --timeout-extra ${extra}
-			--cell-fixture "compiler=orig195|originals_refbuild" ${order}
+			--cell-fixture "compiler=orig195|originals_refbuild" --test-env ${tenv} ${order}
 			${cmd} ${srcs}
 		DEPENDS ${srcs} ${confs} ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS} basic_test_tokens ${TESTREG} host_tools
 			${arg_ORDER} ${costs}
@@ -182,4 +194,34 @@ function(basic_test_register prefix dir)
 	endif()
 	add_custom_target(${stem}_model_tests ALL DEPENDS ${inc} ${drivers})
 	set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES ${inc})
+endfunction()
+
+# the scripts of the tests' environment (testreg --test-env), at the end of
+# the top directory: after emulation_snapshot_owner and emulation_coverage,
+# whose settings they hand to emulation_test_environment, the rules of the
+# tests CMake declares (cmake/emulation-queue.cmake), which ctest reads; a
+# script is written only when it changes (the build step does not read it)
+function(_basic_test_write_env)
+	get_property(scripts GLOBAL PROPERTY BASIC_TEST_ENV_SCRIPTS)
+	get_property(owner GLOBAL PROPERTY EMULATION_SNAPSHOT_OWNER)
+	get_property(cov GLOBAL PROPERTY EMULATION_COVERAGE)
+	set(queue ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/emulation-queue.cmake)
+	foreach(s IN LISTS scripts)
+		string(REPLACE "|" ";" s "${s}")
+		list(GET s 0 file)
+		list(GET s 1 bin)
+		string(CONCAT text
+			"# the environment of the tests of the model in this directory (cmake/basic-test-model.cmake):\n"
+			"# basic_test_environment(NAME LABELS), called by testreg's include file for each test\n"
+			"set_property(GLOBAL PROPERTY EMULATION_SNAPSHOT_OWNER [==[${owner}]==])\n"
+			"set_property(GLOBAL PROPERTY EMULATION_COVERAGE [==[${cov}]==])\n"
+			"include([==[${queue}]==])\n"
+			"function(basic_test_environment name labels)\n"
+			"\temulation_test_environment(env \${name} \"\${labels}\" [==[${bin}]==])\n"
+			"\tif(env)\n"
+			"\t\tset_tests_properties(\${name} PROPERTIES ENVIRONMENT \"\${env}\")\n"
+			"\tendif()\n"
+			"endfunction()\n")
+		file(CONFIGURE OUTPUT ${file} CONTENT "${text}" @ONLY)
+	endforeach()
 endfunction()

@@ -387,12 +387,28 @@ tests out of the check (the user's other option).
   `tests/bug-orig/libs/order-probe.test.bas` of an open bug, not committed:
   registered with COST 90 among the 22 old-form tests, `bug_orig_order`
   passed with 23 tests (`~/.local/share/bb2-c-work/accept-runner-ext/order-probe.log`).
-- **A gap found on the way:** the tests the registration declares (all
-  model tests) get no `AMIGA_EMULATION_OWNER` and no coverage directory:
-  `emulation_snapshot_owner` sets them on the tests CMake declared, and
-  the include files are not CMake's. The old-form bug-orig tests keep them
-  (written into the order file); the model tests are as before. Reported,
-  not changed here.
+- **A gap found on the way, closed:** the tests the registration declares
+  (all model tests) got no `AMIGA_EMULATION_OWNER` and no coverage
+  directory: `emulation_snapshot_owner` sets them on the tests CMake
+  declared, and the include files are not CMake's (the old-form bug-orig
+  tests kept them, written into the order file). The fix (user,
+  2026-11-23: "Fix right away", `rounds/tr/decisions.md`, "Model tests get
+  the emulator environment: fix right away"): the labels of a model test
+  are known only to the build step, so ctest applies the rules when it
+  reads the include file. `basic_test_register` hands testreg
+  `--test-env PREFIX-model-env.cmake`, a script the end of the top
+  directory writes (after `emulation_snapshot_owner` and
+  `emulation_coverage`, with their settings) that includes
+  `cmake/emulation-queue.cmake` and defines `basic_test_environment(NAME
+  LABELS)`, which sets the test's `ENVIRONMENT` from
+  `emulation_test_environment`; the include file includes the script and
+  calls it after each test's properties. The rules stay in one place;
+  `cmake/emulation-queue.cmake` must stay usable by ctest. Checked by
+  `emulation_owner` (a sample project with tests of the model: owner and
+  coverage directory) and `emulation_owner_model_broken` (the script sets
+  none); a scan of the build's `ctest --show-only=json-v1`: all 3172
+  tests, the 2955 of the labels emulator, originals or oracle with the
+  owner, the others without.
 
 ## Addendum: the measured COST (section 8)
 

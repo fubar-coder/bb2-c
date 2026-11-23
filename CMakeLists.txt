@@ -168,19 +168,26 @@ endforeach()
 set_tests_properties(ccache_embed_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "stale[ \n]+cache[ \n]+hit:[ \n]+the[ \n]+object[ \n]+did[ \n]+not[ \n]+change")  # CMake wraps long messages
 
-# every test that runs Amiberry gets its snapshot owner (cmake/emulation-queue.cmake);
-# the broken project calls no function, which must fail
-foreach(t emulation_owner emulation_owner_broken)
+# every test that runs Amiberry gets its snapshot owner and the emulator tests the
+# directory of their coverage (cmake/emulation-queue.cmake), also the tests of the
+# model that testreg declares; the broken project calls no function, in the broken
+# model the script of the environment of the tests of the model sets none: both must fail
+foreach(t emulation_owner emulation_owner_broken emulation_owner_model_broken)
 	set(broken)
-	if(t MATCHES "_broken$")
+	if(t STREQUAL "emulation_owner_broken")
 		set(broken -DBROKEN=ON -DWANT_FAIL=ON)
+	elseif(t STREQUAL "emulation_owner_model_broken")
+		set(broken -DBROKEN=model -DWANT_FAIL=ON)
 	endif()
 	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DQUEUE=${PROJECT_SOURCE_DIR}/cmake/emulation-queue.cmake
-		${broken} -DWORK=${CMAKE_BINARY_DIR}/${t}
+		-DMODEL=${PROJECT_SOURCE_DIR}/cmake/basic-test-model.cmake -DTESTREG=${TESTREG}
+		-DCMAKE_GENERATOR=${CMAKE_GENERATOR} ${broken} -DWORK=${CMAKE_BINARY_DIR}/${t}
 		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/emulation-owner-test.cmake -P ${WITH_WORKDIR})
 endforeach()
 set_tests_properties(emulation_owner_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "t_emulator[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
+set_tests_properties(emulation_owner_model_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "m_plain__c[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
 # the measured COST of the tests (cmake/test-cost.cmake): applied, a measurement winning over
 # the list of the long tests; a file whose entry names no test stops the configuration
 foreach(t test_cost test_cost_broken)

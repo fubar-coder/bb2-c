@@ -171,6 +171,34 @@ string(FIND "${dep}" "${WORK}/costs.txt" at)
 if(at LESS 0)
 	message(FATAL_ERROR "--costs: the depfile lacks the file:\n${dep}")
 endif()
+# --test-env: the script is included first and called after the properties
+# of each registered test (also of the label bug-orig), not for an entry of
+# --order (it carries its own environment); without it, no call
+if(inc MATCHES "basic_test_environment")
+	message(FATAL_ERROR "without --test-env: a call of basic_test_environment in\n${inc}")
+endif()
+run(0 --prefix bug_orig_ --output ${WORK}/env-tests.cmake ${env} --command run --order ${WORK}/order.cmake
+	--test-env /x/test-env.cmake ${s}/order/order-open.test.bas)
+file(READ ${WORK}/env-tests.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+set(last -1)
+foreach(want "include( /x/test-env.cmake)\n"
+		"SKIP_RETURN_CODE 77)\nbasic_test_environment( bug_orig_order_open__c_originals originals)\n"
+		"add_test(bug_orig_big run big)\nset_tests_properties(bug_orig_big PROPERTIES COST 240)\nadd_test("
+		"SKIP_RETURN_CODE 77 COST 60)\nbasic_test_environment( bug_orig_order_open__c bug-orig;emulator)\n"
+		"add_test(bug_orig_small run small)\n")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0 OR NOT at GREATER last)
+		message(FATAL_ERROR "--test-env: the include file lacks, or has out of order,\n  ${want}\nin\n${inc}")
+	endif()
+	set(last ${at})
+endforeach()
+string(REGEX MATCHALL "basic_test_environment\\(" calls "${inc}")
+list(LENGTH calls ncalls)
+if(NOT ncalls EQUAL 2)
+	message(FATAL_ERROR "--test-env: ${ncalls} calls, not 2 (one per registered test):\n${inc}")
+endif()
 # broken input: an entry of a test of the model of the prefix that is not
 # registered, a malformed file
 file(WRITE ${WORK}/costs-bad.txt "bug_orig_gone__c 5\n")
