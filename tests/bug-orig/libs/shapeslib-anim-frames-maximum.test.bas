@@ -77,7 +77,7 @@ End Statement
   !CheckEq{Peek.b(Peek.l(Addr Shape(99)+14)) AND 255,1,"shape_99_frame_0"}
 !EndTestCase
 
-!TestBatchEnd
+!TestBatchCleanup
   KillFile "CORPUS:bo265.anim"
   FreeMem m,1024
-!EndTestBatchEnd
+!EndTestBatchCleanup

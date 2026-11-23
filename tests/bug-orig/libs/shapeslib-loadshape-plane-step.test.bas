@@ -98,6 +98,6 @@ End Statement
   For i=1 To nb-1 : FreeMem_ blk(i),sz(i) : Next
 !EndTestCase
 
-!TestBatchEnd
+!TestBatchCleanup
   KillFile "CORPUS:bo263s.iff"
-!EndTestBatchEnd
+!EndTestBatchCleanup
