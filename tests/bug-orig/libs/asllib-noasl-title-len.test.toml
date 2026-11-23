@@ -1,0 +1,12 @@
+# asllib-noasl-title-len.test.bas: through inject, whose OpenLibrary of
+# asl.library fails; the CD's libraries return the address of the title as
+# the length
+fixed-orig = 62
+runwrap = "@INJECT@|openlibfail=asl.library"
+
+[asserts]
+inject = "contains \"openlibfail: 1 opens failed\""
+
+[deviations."libs=cd"]
+"check.results_without_asl.file_length" = "== fail"
+"check.results_without_asl.path_length" = "== fail"

@@ -1,0 +1,6 @@
+# asllib-pathreq-d2.test.bas: the CD's libraries overwrite the exception
+# vectors at $10 and $14
+fixed-orig = 61
+
+[deviations."libs=cd"]
+"check.path_request_vectors.vectors_kept" = "== fail"

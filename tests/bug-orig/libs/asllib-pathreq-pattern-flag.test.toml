@@ -1,0 +1,7 @@
+# asllib-pathreq-pattern-flag.test.bas: the CD's libraries leave the pattern
+# flag for the path requester
+fixed-orig = 64
+
+[deviations."libs=cd"]
+"check.pattern_flag.path_requester_flags" = "== fail"
+"check.pattern_flag.path_requester_flags.actual" = "== 1"
