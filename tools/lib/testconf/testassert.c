@@ -98,6 +98,20 @@ int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msgle
         q->rest[n] = 0;
         return 0;
     }
+    if (!strncmp(text, "compile.", 8)) {
+        /* compile.log.NAME, compile.NAME: a named compile job (checked
+           against the jobs of the test by check_entries) */
+        int log = !strncmp(text + 8, "log.", 4);
+        const char *name = text + 8 + (log ? 4 : 0);
+
+        if (!*name)
+            return tc_err(msg, msglen, "the query \"%s\": %s.NAME expected (NAME a compile job of the test)", text,
+                          log ? "compile.log" : "compile");
+        q->kind = log ? TC_Q_COMPILE_LOG_JOB : TC_Q_COMPILE_JOB;
+        if (!(q->rest = tc_strdup(name)))
+            return -2;
+        return 0;
+    }
     if (!strncmp(text, "data.", 5)) {
         if (!text[5])
             return tc_err(msg, msglen, "the query \"%s\": data.FILE expected (FILE a data file of ID.test/)", text);
@@ -138,8 +152,10 @@ static unsigned allowed_ops(int qkind)
     case TC_Q_RC: return CMP | EX;
     case TC_Q_REQUESTER: return B(TC_P_CONTAINS) | B(TC_P_NOT_CONTAINS) | B(TC_P_MATCHES) | EX | B(TC_P_COUNT);
     case TC_Q_COMPILE:
+    case TC_Q_COMPILE_JOB:
     case TC_Q_DATA: return TEXT;
     case TC_Q_COMPILE_LOG:
+    case TC_Q_COMPILE_LOG_JOB:
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
     case TC_Q_INJECT:
@@ -160,6 +176,7 @@ static const char *allowed_words(int qkind)
 {
     switch (qkind) {
     case TC_Q_COMPILE:
+    case TC_Q_COMPILE_JOB:
     case TC_Q_DATA: return "ok|none";
     case TC_Q_SESSION: return "done|timeout|halt";
     case TC_Q_CHECK: return "ok|fail|not-run";
@@ -379,6 +396,32 @@ static int check_entries(const struct tc_config *c, const struct tc_tabkey *v, s
             if (k == c->ndata) {
                 tc_err(err, errlen, "%s:%u: %s: the test has no data source %s (the action basic-compile in its "
                        "table data)", t->at.file, t->at.line, t->key, q.rest);
+                tc_query_free(&q);
+                return -1;
+            }
+        }
+        if (q.kind == TC_Q_COMPILE_LOG_JOB || q.kind == TC_Q_COMPILE_JOB) {
+            /* NAME a compile job of the test; compile.NAME only for a job= or
+               resident= job of jobline: one query per output */
+            int job = tc_job_of(c, q.rest);
+
+            r = 0;
+            if (job == TC_JOB_NONE)
+                r = tc_err(err, errlen, "%s:%u: %s: the test has no compile job %s (j000, r001 of a cell with "
+                           "editor-run = \"on\", an ID of jobline, a data source of basic-compile)", t->at.file,
+                           t->at.line, t->key, q.rest);
+            else if (q.kind == TC_Q_COMPILE_JOB && job == TC_JOB_DRIVER)
+                r = tc_err(err, errlen, "%s:%u: %s: the compile result of the driver's job is the query compile",
+                           t->at.file, t->at.line, t->key);
+            else if (q.kind == TC_Q_COMPILE_JOB && job == TC_JOB_DATA)
+                r = tc_err(err, errlen, "%s:%u: %s: the compile result of a data source is the query data.%s",
+                           t->at.file, t->at.line, t->key, q.rest);
+            else if (q.kind == TC_Q_COMPILE_JOB && job != TC_JOB_JOB && job != TC_JOB_RESIDENT)
+                r = tc_err(err, errlen, "%s:%u: %s: a %s step has no compile result; its log block is the query "
+                           "compile.log.%s", t->at.file, t->at.line, t->key,
+                           job == TC_JOB_MENU ? "menu=" : job == TC_JOB_RUN ? "run=" : "run from the editor",
+                           q.rest);
+            if (r) {
                 tc_query_free(&q);
                 return -1;
             }
@@ -735,7 +778,7 @@ int tc_query_same(const struct tc_query *a, const struct tc_query *b)
 {
     if (a->kind != b->kind)
         return 0;
-    if (a->kind == TC_Q_DATA)
+    if (a->kind == TC_Q_DATA || a->kind == TC_Q_COMPILE_LOG_JOB || a->kind == TC_Q_COMPILE_JOB)
         return a->rest && b->rest && !strcmp(a->rest, b->rest);
     if (a->kind != TC_Q_CHECK && a->kind != TC_Q_RUN && a->kind != TC_Q_RUN_RC && a->kind != TC_Q_RUN_OUTPUT)
         return 1;
