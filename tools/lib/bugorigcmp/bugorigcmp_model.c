@@ -113,13 +113,15 @@ int bugorigcmp_project_model(FILE *out, const char *id, const char *source, cons
 {
     struct tp_source src = { 0 };
     struct tp_params par = { 0 };
-    char file[600];
+    char file[600], testdir[300];
     int n;
 
     snprintf(file, sizeof file, "%s.test.bas", path);
+    snprintf(testdir, sizeof testdir, "CORPUS:%s.test", id);
     par.file = file;
     par.test_id = id;
     par.testdata = "CORPUS:data";
+    par.testdir = testdir;
     if ((n = tp_process(source, strlen(source), &par, &src)) != 0) {
         if (n < 0)
             snprintf(err, errlen, "out of memory");

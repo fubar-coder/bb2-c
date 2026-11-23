@@ -65,6 +65,9 @@ extern "C" {
 /** @brief What @TESTDATA@ stands for in a test source (the test data a
  *  configuration stages with files = ["data/NAME|@TESTDATA@/NAME"]). */
 #define CR_TESTDATA "CORPUS:data"
+/** @brief What @TESTDIR@ stands for (printf format, the test id): the
+ *  test's own data, the files of ID.test/ (change basic-test-local-data). */
+#define CR_TESTDIR "CORPUS:%s.test"
 
 /** @brief What to do. */
 struct caserun_opts {

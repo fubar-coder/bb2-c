@@ -285,6 +285,10 @@ foreach(want "${s}/other/data.test/in.txt" "${s}/other/data.test/sub/child.bas" 
 		message(FATAL_ERROR "data: the depfile lacks ${want}:\n${dep}")
 	endif()
 endforeach()
+# a check macro in a data source (basic-compile): its program has no result file
+file(WRITE ${s}/other/data.test/sub/child.bas "NPrint \"@TESTDIR@\"\n  !CheckEq{a,1}\n")
+refused("other/data\\.test/sub/child\\.bas:2: !CheckEq in a data source" ${s}/other/data.test.bas)
+file(WRITE ${s}/other/data.test/sub/child.bas "NPrint 1\n")
 file(WRITE ${s}/other/data.test/extra.bin "")
 refused("other/data\\.test/extra\\.bin: a file of data\\.test/ that [^ ]*other/data\\.test\\.toml does not declare"
 	${s}/other/data.test.bas)

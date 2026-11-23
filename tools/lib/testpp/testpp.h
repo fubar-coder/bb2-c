@@ -21,10 +21,16 @@
  *     the expressions (the message of `!ExpectError`) - none of that text
  *     reaches the program;
  *   - replaces the fixed placeholders @LINE@ (the source line), @CASE@
- *     (the case the line stands in), @TEST@ (the test id) and @TESTDATA@
- *     (the location of the test data, a parameter) in the code and the
- *     strings of the source, never in comments, and refuses any other
- *     @NAME@ (NAME [A-Z][A-Z0-9_]*).
+ *     (the case the line stands in), @TEST@ (the test id), @TESTDATA@
+ *     (the location of the test data, a parameter) and @TESTDIR@ (the
+ *     location of the test's own data ID.test/, a parameter) in the code
+ *     and the strings of the source, never in comments, and refuses any
+ *     other @NAME@ (NAME [A-Z][A-Z0-9_]*).
+ *
+ * A data source (tp_params.data: a Blitz source of the test's own data
+ * that the test builds, change basic-test-local-data) gets the same
+ * placeholders, but every check macro in it is refused: its program has
+ * no result file.
  *
  * It refuses a check inside a macro definition of the source (`Macro M`
  * ... `End Macro`; a check as an argument of a macro call is allowed), a
@@ -120,6 +126,11 @@ struct tp_params {
     const char *file;           /* the source's name in the messages */
     const char *test_id;        /* @TEST@ */
     const char *testdata;       /* @TESTDATA@; NULL: refused as unknown */
+    const char *testdir;        /* @TESTDIR@ (CORPUS:ID.test, the test's own
+                                   data); NULL: refused as unknown */
+    int data;                   /* a data source (an ID.test/NAME.bas of the
+                                   action basic-compile): every check macro is
+                                   refused, its program has no result file */
     const char *const *tokens;  /* the names of the tokens of every library
                                    set (the form check, tp_check_form) */
     size_t ntokens;

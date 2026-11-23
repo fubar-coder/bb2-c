@@ -1451,6 +1451,7 @@ struct ctx {
     struct tc_matrix m;
     struct tp_source src;
     const char *file;           /* the source's name in the report */
+    char *testdir;              /* @TESTDIR@: CORPUS:ID.test */
     char *mac;                  /* the macro text of the driver */
     size_t mlen;
     char *tokens;               /* the token list */
@@ -1892,6 +1893,10 @@ int caserun(const struct caserun_opts *o, FILE *log)
         fprintf(log, "corpusrun case: %s\n", err);
         goto out;
     }
+    if (!(x.testdir = str_printf(CR_TESTDIR, x.conf.id))) {
+        fprintf(log, "corpusrun case: out of memory\n");
+        goto out;
+    }
     if (o->print_config) {
         rc = cr_print_config(log, &x.conf, &x.m) ? 2 : 0;
         goto out;
@@ -1911,6 +1916,7 @@ int caserun(const struct caserun_opts *o, FILE *log)
         par.file = x.file;
         par.test_id = x.conf.id;
         par.testdata = CR_TESTDATA;
+        par.testdir = x.testdir;
         if ((n = tp_process(text, len, &par, &x.src)) != 0) {
             for (size_t i = 0; i < x.src.errors.n; i++)
                 fprintf(log, "%s\n", x.src.errors.v[i]);
@@ -2042,6 +2048,7 @@ out:
     free(text);
     free(workbase);
     free(x.mac);
+    free(x.testdir);
     free(x.tokens);
     free(x.side);
     tp_free(&x.src);

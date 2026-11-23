@@ -18,13 +18,16 @@ struct pp {
     tp_source s = {};
     int rc;
 
-    pp(const std::string &text, const char *testdata = "TEST:data")
+    pp(const std::string &text, const char *testdata = "TEST:data", const char *testdir = "CORPUS:x.test",
+       int data = 0, const char *file = "x.test.bas")
     {
         tp_params p = {};
 
-        p.file = "x.test.bas";
+        p.file = file;
         p.test_id = "x";
         p.testdata = testdata;
+        p.testdir = testdir;
+        p.data = data;
         rc = tp_process(text.data(), text.size(), &p, &s);
     }
     ~pp() { tp_free(&s); }
@@ -376,6 +379,14 @@ TEST_CASE("testpp: placeholders", "[testpp]")
         pp r("!TestCase{a}\nx$=\"@TESTDATA@\"\n!EndTestCase\n", nullptr);
         CHECK(r.errors() == "x.test.bas:2: unknown placeholder @TESTDATA@\n");
     }
+    {
+        pp r("!TestCase{a}\nx$=\"@TESTDIR@\"\n!EndTestCase\n", "TEST:data", nullptr);
+        CHECK(r.errors() == "x.test.bas:2: unknown placeholder @TESTDIR@\n");
+    }
+    // @TESTDIR@: the test's own data (change basic-test-local-data)
+    pp d("!TestCase{a}\n  c$=\"@TESTDIR@/child <NIL:\" ; @TESTDIR@\n!EndTestCase\n");
+    REQUIRE(d.rc == 0);
+    CHECK(d.text() == "!TestCase{a}\n  c$=\"CORPUS:x.test/child <NIL:\" ; @TESTDIR@\n!EndTestCase\n");
     // not placeholders: lower case, an @ alone, no closing @
     pp n("!TestCase{a}\nx$=\"a@b @ @x@ @X\"\n!EndTestCase\n");
     CHECK(n.rc == 0);
@@ -436,4 +447,29 @@ TEST_CASE("testpp: namespaces refused", "[testpp]")
     const char zs[] = "!TestCase{a}\nx\0y\n";
     pp zz(std::string(zs, sizeof zs - 1));
     CHECK(zz.errors() == "x.test.bas:2: a 0 byte in the source\n");
+}
+
+// a data source (an ID.test/NAME.bas of the action basic-compile, change
+// basic-test-local-data): the placeholders of a test source, no check macro
+TEST_CASE("testpp: a data source", "[testpp]")
+{
+    pp p("NPrint \"@TEST@ @TESTDIR@ @LINE@ @TESTDATA@\"\nEnd\n", "CORPUS:data", "CORPUS:x.test", 1,
+         "x.test/child.bas");
+    REQUIRE(p.rc == 0);
+    CHECK(p.text() == "NPrint \"x CORPUS:x.test 1 CORPUS:data\"\nEnd\n");
+    CHECK(p.s.nchecks == 0);
+    for (const char *call : { "!CheckEq{a,1}", "!Check{a}", "!CheckStrEq{a$,\"x\"}", "!Require{a}",
+                              "!ExpectError{\"x\"}", "!CheckQEq{q,1}", "!CheckFltNear{f,1,0.1}" }) {
+        pp r(std::string("a=1\n  ") + call + "\n", "CORPUS:data", "CORPUS:x.test", 1, "x.test/child.bas");
+        std::string kind(call + 1, strchr(call, '{') - call - 1);
+
+        INFO(call);
+        CHECK(r.rc == 1);
+        CHECK(r.errors() == "x.test/child.bas:2: !" + kind
+                                + " in a data source: a program the test builds has no result file (its "
+                                  "observations are its output, return code and requesters)\n");
+    }
+    // @CASE@: a data source has no case
+    pp c("x$=\"@CASE@\"\n", "CORPUS:data", "CORPUS:x.test", 1, "x.test/child.bas");
+    CHECK(c.errors() == "x.test/child.bas:1: @CASE@ outside a case\n");
 }

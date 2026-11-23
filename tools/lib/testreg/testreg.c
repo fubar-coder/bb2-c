@@ -476,11 +476,48 @@ static int check_data(const struct tc_config *c, struct treg_result *r)
                                dd, files.v[i], c->id, own))
             goto out;
     }
-    for (size_t k = 0; k < c->ndata; k++)
-        if (!has(&files, c->data[k].file)
-            && pushf(&r->errors, "%s:%u: data \"%s\": no file %s/%s", c->data[k].at.file, c->data[k].at.line,
-                     c->data[k].file, dd, c->data[k].file))
-            goto out;
+    for (size_t k = 0; k < c->ndata; k++) {
+        const struct tc_data *d = &c->data[k];
+
+        if (!has(&files, d->file)) {
+            if (pushf(&r->errors, "%s:%u: data \"%s\": no file %s/%s", d->at.file, d->at.line, d->file, dd,
+                      d->file))
+                goto out;
+            continue;
+        }
+        if (d->action == TC_DA_BASIC_COMPILE) {
+            /* a data source: the placeholders, and no check macro */
+            struct tp_params par = { 0 };
+            struct tp_source src = { 0 };
+            char *path = cat3(dd, "/", d->file), *text;
+            size_t len;
+            int n;
+
+            if (!path)
+                goto out;
+            if (!(text = slurp(path, &len))) {
+                n = pushf(&r->errors, "%s: cannot read: %s", path, strerror(errno));
+                free(path);
+                if (n)
+                    goto out;
+                continue;
+            }
+            par.file = path;
+            par.test_id = c->id;
+            par.testdata = "";
+            par.testdir = "";
+            par.data = 1;
+            n = tp_process(text, len, &par, &src);
+            for (size_t i = 0; n > 0 && i < src.errors.n; i++)
+                if (push(&r->errors, src.errors.v[i]))
+                    n = -1;
+            tp_free(&src);
+            free(text);
+            free(path);
+            if (n < 0)
+                goto out;
+        }
+    }
     rc = 0;
 out:
     free(dd);
@@ -527,6 +564,7 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
     par.file = base ? base + 1 : source;
     par.test_id = conf.id ? conf.id : "";
     par.testdata = "";
+    par.testdir = "";
     par.tokens = o->tokens;
     par.ntokens = o->ntokens;
     if (tp_process(text, len, &par, &src) < 0 || tp_check_form(text, len, &par, &src) < 0)
