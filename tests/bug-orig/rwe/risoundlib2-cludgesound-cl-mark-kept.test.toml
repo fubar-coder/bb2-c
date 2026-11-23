@@ -1,0 +1,10 @@
+# risoundlib2-cludgesound-cl-mark-kept.test.bas: the original keeps the cL
+# mark and leaks the copy (24 bytes)
+fixed-orig = 925
+rwe = ["risoundlib2"]
+
+[deviations."compiler=orig210"]
+"check.cl_mark_kept.mark" = "== fail"
+"check.cl_mark_kept.mark.actual" = "== 25420"
+"check.cl_mark_kept.leak" = "== fail"
+"check.cl_mark_kept.leak.actual" = "== 24"

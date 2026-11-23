@@ -13,8 +13,6 @@
 ; memory (sum of mh_Free of the CHIP MemHeaders) before CludgeSound and
 ; after Free Sound 0 shows the leak.
 ; Correct: +14 = 0 after CludgeSound, Free Sound returns the copy (leak 0).
-; @fixed #925
-; @rwe risoundlib2
 DEFTYPE .l
 Function.l chipfree{}
   h.l=Peek.l(Peek.l(4)+322) : f.l=0
@@ -24,21 +22,25 @@ Function.l chipfree{}
   Wend
   Function Return f
 End Function
-m=AllocMem_(64,$10002)
-If m=0 Then NPrint "no memory" : End
-Poke.l m,$464F524D : Poke.l m+4,56 : Poke.l m+8,$38535658
-Poke.l m+12,$56484452 : Poke.l m+16,20
-Poke.l m+20,16 : Poke.w m+32,8000 : Poke.b m+34,1 : Poke.l m+36,$10000
-Poke.l m+40,$424F4459 : Poke.l m+44,16
-For i=0 To 15 : Poke.b m+48+i,i*7 : Next
-Poke.w Addr Sound(0)+14,$634C
-f0=chipfree{}
-r=CludgeSound(0,m)
-Poke.w Addr Sound(1),0
-k=Peek.w(Addr Sound(0)+14) AND $FFFF
-Free Sound 0
-f1=chipfree{}
-NPrint "cludged ",r," ",Hex$(k)
-NPrint "leak ",f0-f1
-FreeMem_ m,64
-End
+
+!TestCase{cl_mark_kept}
+  m=AllocMem_(64,$10002)
+  !Require{m<>0,"memory"}
+  Poke.l m,$464F524D : Poke.l m+4,56 : Poke.l m+8,$38535658
+  Poke.l m+12,$56484452 : Poke.l m+16,20
+  Poke.l m+20,16 : Poke.w m+32,8000 : Poke.b m+34,1 : Poke.l m+36,$10000
+  Poke.l m+40,$424F4459 : Poke.l m+44,16
+  For i=0 To 15 : Poke.b m+48+i,i*7 : Next
+  Poke.w Addr Sound(0)+14,$634C
+  f0=chipfree{}
+  r=CludgeSound(0,m)
+  Poke.w Addr Sound(1),0
+  k=Peek.w(Addr Sound(0)+14) AND $FFFF
+  Free Sound 0
+  f1=chipfree{}
+  leak=f0-f1
+  FreeMem_ m,64
+  !CheckEq{r,-1,"cludged"}
+  !CheckEq{k,0,"mark"}
+  !CheckEq{leak,0,"leak"}
+!EndTestCase

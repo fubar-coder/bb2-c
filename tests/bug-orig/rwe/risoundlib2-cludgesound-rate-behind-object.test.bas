@@ -6,19 +6,19 @@
 ; The program clears sound 1's pointer again, so that audiolib does not
 ; free a bad pointer at the end.
 ; Correct: CludgeSound returns -1, sound 1's sample pointer stays 0.
-; @fixed #926
-; @rwe risoundlib2
 DEFTYPE .l
-m=AllocMem_(64,$10001)
-If m=0 Then NPrint "no memory" : End
-Poke.l m,$464F524D : Poke.l m+4,44 : Poke.l m+8,$38535658
-Poke.l m+12,$56484452 : Poke.l m+16,20
-Poke.w m+32,8363 : Poke.b m+34,1 : Poke.l m+36,$10000
-Poke.l m+40,$424F4459 : Poke.l m+44,4 : Poke.l m+48,$01020304
-r=CludgeSound(0,m)
-s=Peek.l(Addr Sound(1))
-Poke.l Addr Sound(1),0
-NPrint "cludged ",r
-NPrint "sound 1 ",Hex$(s)
-FreeMem_ m,64
-End
+
+!TestCase{rate_behind_object}
+  m=AllocMem_(64,$10001)
+  !Require{m<>0,"memory"}
+  Poke.l m,$464F524D : Poke.l m+4,44 : Poke.l m+8,$38535658
+  Poke.l m+12,$56484452 : Poke.l m+16,20
+  Poke.w m+32,8363 : Poke.b m+34,1 : Poke.l m+36,$10000
+  Poke.l m+40,$424F4459 : Poke.l m+44,4 : Poke.l m+48,$01020304
+  r=CludgeSound(0,m)
+  s=Peek.l(Addr Sound(1))
+  Poke.l Addr Sound(1),0
+  FreeMem_ m,64
+  !CheckEq{r,-1,"cludged"}
+  !CheckEq{s,0,"sound_1_pointer"}
+!EndTestCase

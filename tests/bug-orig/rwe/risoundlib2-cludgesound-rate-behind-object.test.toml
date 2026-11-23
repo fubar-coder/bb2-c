@@ -1,0 +1,8 @@
+# risoundlib2-cludgesound-rate-behind-object.test.bas: the original writes
+# the rate into the next object's sample pointer
+fixed-orig = 926
+rwe = ["risoundlib2"]
+
+[deviations."compiler=orig210"]
+"check.rate_behind_object.sound_1_pointer" = "== fail"
+"check.rate_behind_object.sound_1_pointer.actual" = "== 548077568"
