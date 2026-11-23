@@ -81,7 +81,7 @@ TEST_CASE("testassert: queries", "[testassert]")
     } all[] = { { "rc", TC_Q_RC }, { "requester", TC_Q_REQUESTER }, { "compile", TC_Q_COMPILE },
                 { "compile.log", TC_Q_COMPILE_LOG }, { "output", TC_Q_OUTPUT }, { "serial", TC_Q_SERIAL },
                 { "inject", TC_Q_INJECT }, { "session", TC_Q_SESSION }, { "end.case", TC_Q_END_CASE },
-                { "end.run", TC_Q_END_RUN } };
+                { "end.run", TC_Q_END_RUN }, { "compile.inject", TC_Q_COMPILE_INJECT } };
     for (const auto &q : all) {
         INFO(q.t);
         CHECK(query(q.t, &k) == 0);
@@ -152,6 +152,12 @@ TEST_CASE("testassert: predicates", "[testassert]")
     CHECK((p.op == TC_P_COUNT && p.cmp == TC_P_GE && p.num == 2));
     CHECK(pred("contains \"Shape too Big\"", TC_Q_REQUESTER).rc == 0);
     CHECK(!strcmp(tc_pop_name(TC_P_NOT_CONTAINS), "not contains"));
+    // compile.inject: as inject, a text
+    CHECK(pred("== \"inject: rc=0\n\"", TC_Q_COMPILE_INJECT).rc == 0);
+    CHECK(pred("contains \"caches flushed\"", TC_Q_COMPILE_INJECT).rc == 0);
+    CHECK(pred("not exists", TC_Q_COMPILE_INJECT).rc == 0);
+    pred_refused("count == 1", TC_Q_COMPILE_INJECT, "count is not allowed for this query");
+    pred_refused("== 0", TC_Q_COMPILE_INJECT, "the value does not fit ==");
 }
 
 TEST_CASE("testassert: refused predicates", "[testassert]")
@@ -315,11 +321,22 @@ TEST_CASE("testassert: defaults", "[testassert]")
     CHECK(!strcmp(d[0].query, "rc"));
     CHECK(!strcmp(d[0].pred, "== 0"));
 
+    CHECK((d[0].shell && d[1].shell && !d[2].shell && !d[3].shell));
+
     tree t;
     t.write("tests.toml", "root = true\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(b.asserts("default", "a") == "rc == 0; requester count == 0; end.case exists; end.run exists");
+    }
+    // a cell that runs from the editor: no defaults of the exit code and the
+    // requesters (a run from the editor captures neither)
+    t.write("tests.toml", "root = true\n[matrix]\neditor-run = [\"off\", \"on\"]\n");
     built b(t);
     REQUIRE(b.rc == 0);
-    CHECK(b.asserts("default", "a") == "rc == 0; requester count == 0; end.case exists; end.run exists");
+    CHECK(b.asserts("off", "a") == "rc == 0; requester count == 0; end.case exists; end.run exists");
+    CHECK(b.asserts("on", "a") == "end.case exists; end.run exists");
 }
 
 TEST_CASE("testassert: a more specific assertion replaces", "[testassert]")

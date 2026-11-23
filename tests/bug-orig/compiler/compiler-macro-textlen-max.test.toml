@@ -1,0 +1,26 @@
+# compiler-macro-textlen-max.test.bas: the compiler runs through inject with
+# track (the query compile.inject), the Macro Buffer of the defaults 100000
+# bytes.  The original's Macro Buffer keeps its 8192 bytes; with the
+# driver's own macros in the compile its compile ends in a way that depends
+# on the memory (#965), and any macrobuf other than 8192 hangs it at its
+# exit (#336, as compiler-macrobuff-size): the old "Macro too Big" is not a
+# stable observation.  So the original's cell declares only what holds
+# every time: the session ends at its limit, the compile does not end ok,
+# and inject (which reports at the compiler's end) reports nothing.  A
+# session of its own for the original compiler
+fixed-orig = 964
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=100000"]
+isolate = ["compiler=orig195"]
+timeout = 30
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+compile = "!= ok"
+session = "== timeout"
+"compile.inject" = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

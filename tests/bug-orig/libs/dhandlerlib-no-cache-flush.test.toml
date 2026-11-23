@@ -1,0 +1,16 @@
+# dhandlerlib-no-cache-flush.test.bas: the driver runs from the editor with
+# the debugger, the CD's debugger module in every cell (the cell with the C
+# libraries stays on the side port and is skipped without the CD), and the
+# compiler through inject, whose cacheflush= watches the CreateProc of the
+# debugger process
+fixed-orig = 409
+editor-run = "on"
+runtime-errors = "on"
+defaultdbug = "@CD_BLITZ2@/DEFAULTDBUG"
+wrap = "@INJECT@|cacheflush=Debug"
+
+[asserts]
+"compile.inject" = "contains \"inject: CreateProc Debug: caches flushed before\""
+
+[deviations."libs=cd"]
+"compile.inject" = "contains \"inject: CreateProc Debug: caches not flushed before\""
