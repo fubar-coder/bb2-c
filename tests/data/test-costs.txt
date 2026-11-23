@@ -2741,7 +2741,6 @@ regression_screenslib_wbtoscreen_own_screen__wbtoscreen_front_screen 2
 regression_selftest_machines_a1200 2
 regression_selftest_wrong 2
 regression_shapeslib_loadshape_xplane_boundary__plane_64480 3
-regression_wbstartuplib_without_wbstartup 17
 rwe_residents_cd 9
 site_examples_compile 8
 site_examples_compile_broken 2
