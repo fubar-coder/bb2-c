@@ -7,8 +7,10 @@ files = ["s.le|@TESTDATA@/rishapeslib-read-palette-colour-count.le"]
 runwrap = "@INJECT@|guard"
 isolate = ["compiler=orig210"]
 
-[deviations."compiler=orig210"]
-inject = "contains \"inject: guard: written behind an allocation\""
+[ends."compiler=orig210"]
+reason = "the 768 KB wild write lands in memory whose use differs with the layout (#820): the program usually survives it and inject reports the pattern behind the allocation, but the session can also end as a CPU halt"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "output contains \"inject: guard: written behind an allocation\""]
+halts = ["session == halt", "rc not exists", "end.case not exists", "end.run not exists"]
 
 [asserts]
-inject = "not contains \"inject: guard\""
+output = "not contains \"inject: guard\""
