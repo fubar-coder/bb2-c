@@ -1,11 +1,10 @@
 # shapeslib-decodeshapes-null.test.bas: the trap handler of the program
 # continues at the label rec; the checks behind the faulty statements
 # (no_error_1, no_error_2) are reached only if no error is raised.  The
-# original's branch lands behind the library: with this program's code
-# layout that is a crash ("Software Failure", the session runs into its
-# timeout); where it ends otherwise depends on the code behind the
-# library.  Every cell with the CD's libraries crashes in its own
-# session (a crash ends the session).
+# original's branch lands behind the library; where it ends depends on the
+# code behind the library, that is on the layout of the test program (the
+# two ends seen are the alternatives below).  Every cell with the CD's
+# libraries runs in its own session (a crash ends the session).
 fixed-orig = 270
 timeout = 60
 isolate = ["libs=cd"]
@@ -14,9 +13,7 @@ isolate = ["libs=cd"]
 "check.null_address.no_error_1" = "== not-run"
 "check.null_address.no_error_2" = "== not-run"
 
-[deviations."libs=cd"]
-session = "== timeout"
-requester = "contains \"Software Failure\""
-rc = "not exists"
-"end.case" = "not exists"
-"end.run" = "not exists"
+[ends."libs=cd"]
+reason = "the original's error branch lands behind the library (#270); what runs there depends on the code layout of the test program: a crash (Software Failure, the session runs into its timeout) or a return without the error, so that the checks behind the faulty statements run and fail"
+crashes = ["session == timeout", "requester contains \"Software Failure\"", "rc not exists", "end.case not exists", "end.run not exists"]
+returns = ["session == done", "rc == 0", "end.case exists", "check.null_address.no_error_1 == fail", "check.null_address.no_error_2 == fail"]
