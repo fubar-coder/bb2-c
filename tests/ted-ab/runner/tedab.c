@@ -253,7 +253,7 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
         memcpy(buf, p + 1, n);
         buf[n] = 0;
         key = buf;
-        for (p = buf; isalnum((unsigned char)*p) || *p == '_'; p++)
+        for (p = buf; isalnum((unsigned char)*p) || *p == '_' || *p == '-'; p++)
             ;
         if (p == buf)
             continue;
@@ -347,7 +347,7 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                 }
                 t->combos |= 1u << c;
             }
-        } else if (!strcmp(key, "fixed")) {
+        } else if (!strcmp(key, "fixed-orig") || !strcmp(key, "fixed")) {
             /* #NNN PAIR...: NNN > 0 without leading zeros; in a bug-orig
                script (bugorig) #NNN alone, no pair */
             unsigned long issue = 0;

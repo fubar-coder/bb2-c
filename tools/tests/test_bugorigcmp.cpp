@@ -130,7 +130,7 @@ static char *project(const char *id, const char *src, int ted, const char *expec
 }
 
 static const char blitz_src[] = "; a test\n; @pass timeout=60\nPrint 1\n";
-static const char fixed_src[] = "; a test\n; @fixed #7\nPrint 1\n";
+static const char fixed_src[] = "; a test\n; @fixed-orig #7\nPrint 1\n";
 static const char expect_txt[] = "[run]\n1\nrc=0\n";
 static const char orig_txt[] = "# the original\n[session]\ndone\n[run]\n0\nrc=0\n";
 
@@ -171,7 +171,7 @@ TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
     CHECK(r == 0 && t && !strcmp(t, "x|run||1\t\"\\x5C\\x0A\"\n"));
     free(t);
     /* TED: the script's @expect lines, the sections of its original */
-    t = project("ted-x", "; a script\n; @fixed #12\n; @source none\n; @expect stdout \"rc=0\"\nwait exit\n",
+    t = project("ted-x", "; a script\n; @fixed-orig #12\n; @source none\n; @expect stdout \"rc=0\"\nwait exit\n",
                 1, NULL, "# TED 1.1\n[state]\nOK\n[problems]\nstdout: rc=5\n", &r);
     CHECK(r == 0);
     CHECK(t && !strcmp(t, "ted-x|expect||1 [fixed #12]\t\"; @expect stdout \\x22rc=0\\x22\\x0A\"\n"
@@ -180,43 +180,67 @@ TEST_CASE("bugorigcmp: project", "[bugorigcmp]")
                           "ted-x|problems|orig|1 [orig]\t\"stdout: rc=5\\x0A\"\n"
                           "ted-x|problems|orig|1 [fixed #12]\tjudged by ID.expect\n"));
     free(t);
-    /* broken: no ID.expect, a bad @fixed, @fixed twice, a broken
+    /* broken: no ID.expect, a bad @fixed-orig, @fixed-orig twice, a broken
        expectation, a wildcard of ID.orig without a reason */
     free(project("x", blitz_src, 0, NULL, NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.bas has no x.expect"));
-    free(project("x", "; @fixed 7\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
-    /* a TED script fixed in the port's pair only ("; @fixed #N Cc"); only
+    free(project("x", "; @fixed-orig 7\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
+    /* a TED script fixed in the port's pair only ("; @fixed-orig #N Cc"); only
        Cc, and only in a TED script */
+    t = project("ted-x", "; @fixed-orig #12 Cc\n; @expect stdout \"rc=0\"\nwait exit\n", 1, NULL,
+                "# TED 1.1\n[state]\nOK\n[problems]\nstdout: rc=5\n", &r);
+    CHECK(r == 0);
+    CHECK(t && strstr(t, "ted-x|expect||1 [fixed #12]\t"));
+    free(t);
+    free(project("ted-x", "; @fixed-orig #12 C5\nwait exit\n", 1, NULL, "[state]\nOK\n", &r));
+    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed-orig #N\""));
+    free(project("x", "; @fixed-orig #7 Cc\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
+    /* the marker's old name "; @fixed #N" (the base of fix-scope may be a
+       tree before the rename): the same cases as "; @fixed-orig #N"; a
+       line with the new name gives nothing more */
+    t = project("x", "; a test\n; @fixed #7\nPrint 1\n", 0, expect_txt, orig_txt, &r);
+    CHECK(r == 0);
+    {
+        char *n = project("x", fixed_src, 0, expect_txt, orig_txt, &r);
+
+        CHECK(r == 0);
+        CHECK(t && n && !strcmp(t, n));
+        free(n);
+    }
+    free(t);
     t = project("ted-x", "; @fixed #12 Cc\n; @expect stdout \"rc=0\"\nwait exit\n", 1, NULL,
                 "# TED 1.1\n[state]\nOK\n[problems]\nstdout: rc=5\n", &r);
     CHECK(r == 0);
     CHECK(t && strstr(t, "ted-x|expect||1 [fixed #12]\t"));
     free(t);
-    free(project("ted-x", "; @fixed #12 C5\nwait exit\n", 1, NULL, "[state]\nOK\n", &r));
-    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
-    free(project("x", "; @fixed #7 Cc\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    free(project("x", "; @fixed #7\n; @fixed-orig #8\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:2: @fixed-orig twice"));
+    free(project("x", "; @fixed-origx #7\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     /* the marker of an extension of the old form ("; @fixed #N/port", a tree
        before the move of its only test to the model, extension = N): as
        "; @fixed #N"; only "/port", only right behind the number, only in a
-       Blitz source */
+       Blitz source, only with the old name */
+    free(project("x", "; @fixed-orig #7/port\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     t = project("x", "; a test\n; @fixed #7/port\nPrint 1\n", 0, expect_txt, orig_txt, &r);
     CHECK(r == 0);
     CHECK(t && strstr(t, "x|run||1 [fixed #7]\t") && strstr(t, "x|run|orig|1 [orig]\t"));
     free(t);
     free(project("x", "; @fixed #7/portx\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     free(project("x", "; @fixed #7/\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     free(project("x", "; @fixed #7 /port\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     free(project("x", "; @fixed #/port\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed #N\""));
+    CHECK(r == -2 && strstr(err, "area/x.bas:1: not \"; @fixed-orig #N\""));
     free(project("ted-x", "; @fixed #12/port\nwait exit\n", 1, NULL, "[state]\nOK\n", &r));
-    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed #N\""));
-    free(project("x", "; @fixed #7\n; @fixed #8\n", 0, expect_txt, NULL, &r));
-    CHECK(r == -2 && strstr(err, "area/x.bas:2: @fixed twice"));
+    CHECK(r == -2 && strstr(err, "area/x.drv:1: not \"; @fixed-orig #N\""));
+    free(project("x", "; @fixed-orig #7\n; @fixed-orig #8\n", 0, expect_txt, NULL, &r));
+    CHECK(r == -2 && strstr(err, "area/x.bas:2: @fixed-orig twice"));
     free(project("x", blitz_src, 0, "junk\n", NULL, &r));
     CHECK(r == -2 && strstr(err, "area/x.expect:1: text before"));
     free(project("x", blitz_src, 0, expect_txt, "[run]\nx*\n", &r));

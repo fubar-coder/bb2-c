@@ -119,10 +119,10 @@ int bugorigcmp_compare(const struct bugorigcmp_obs *orig, const struct bugorigcm
  *
  * A test is projected onto lines of a libscmp case file (libscmp.h), one
  * case per section, ROUTINE the test's ID, CHECK the section, OCC 1:
- *   open test (no "; @fixed #N")
+ *   open test (no "; @fixed-orig #N")
  *     ID|SECTION||1             a section of ID.expect
  *     ID|SECTION|orig|1         a section of ID.orig
- *   fixed test ("; @fixed #N" in ID.bas, or the directive in ID.drv)
+ *   fixed test ("; @fixed-orig #N" in ID.bas, or the directive in ID.drv)
  *     ID|SECTION||1 [fixed #N]  a section of ID.expect
  *     ID|SECTION|orig|1 [orig]  a section of ID.orig, paired with
  *     ID|SECTION|orig|1 [fixed #N]  the text "judged by ID.expect"

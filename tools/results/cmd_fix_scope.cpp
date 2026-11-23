@@ -72,7 +72,7 @@ void cmd_fix_scope(CLI::App &app, int &status)
                 "it is a \"[fixed #N]\" or \"[orig #N]\" case of a named issue, the \"[orig]\" case "
                 "paired with one, or an unqualified case that became one of them (\"[orig]\" and "
                 "\"[orig #N]\" with the same value are the same case). A bug-orig test's cases: one per "
-                "section of ID.expect and ID.orig, \"[fixed #N]\" with its header \"; @fixed #N\". "
+                "section of ID.expect and ID.orig, \"[fixed #N]\" with its header \"; @fixed-orig #N\". "
                 "A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig], "
                 "NAME.fixed-N.OBS [fixed #N]. "
                 "Exit status 0 nothing reported, 1 "
