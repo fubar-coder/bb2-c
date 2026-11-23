@@ -11,29 +11,28 @@
 ; (x beyond the width).  Counted: words written.  Control: the same with
 ; x = 5 (inside) writes 16 words.
 ; Correct: nothing is written for x = 100 (clipped away).
-; @fixed #987
-; @configs clib
-; @pass timeout=60
 DEFTYPE .l
-cs=CustomChunkySize(64,16)
-InitCopList 0,44,64,1,0,2,cs
-CustomChunky 0,0,8,64,16,1
-c=Addr CopList(0)
-ch=Peek.l(c+96) : cc=Peek.w(c+108)
-m=AllocMem(8000,$10000)
-Poke.l c+96,m : Poke.w c+108,2
-ChunkyVlin 100,0,15,$FFF,CLIP
-n=0
-For i=0 To 7998 Step 2
-  If Peek.w(m+i)<>0 Then n=n+1
-Next
-ChunkyVlin 5,0,15,$FFF,CLIP
-k=-n
-For i=0 To 7998 Step 2
-  If Peek.w(m+i)<>0 Then k=k+1
-Next
-Poke.l c+96,ch : Poke.w c+108,cc
-NPrint "x=100 (clipped): ",n," words"
-NPrint "x=5: ",k," words"
-FreeMem m,8000
-End
+
+!TestCase{clip_x}
+  cs=CustomChunkySize(64,16)
+  InitCopList 0,44,64,1,0,2,cs
+  CustomChunky 0,0,8,64,16,1
+  c=Addr CopList(0)
+  ch=Peek.l(c+96) : cc=Peek.w(c+108)
+  m=AllocMem(8000,$10000)
+  Poke.l c+96,m : Poke.w c+108,2
+  ChunkyVlin 100,0,15,$FFF,CLIP
+  n=0
+  For i=0 To 7998 Step 2
+    If Peek.w(m+i)<>0 Then n=n+1
+  Next
+  ChunkyVlin 5,0,15,$FFF,CLIP
+  k=-n
+  For i=0 To 7998 Step 2
+    If Peek.w(m+i)<>0 Then k=k+1
+  Next
+  Poke.l c+96,ch : Poke.w c+108,cc
+  FreeMem m,8000
+  !CheckEq{n,0,"x_100_clipped"}
+  !CheckEq{k,16,"x_5"}
+!EndTestCase

@@ -11,8 +11,6 @@
 ; of the point buffer).  The points run anticlockwise, so the count is
 ; negative (the reverse form).  Counted: bytes of plane 0 that differ.
 ; Correct: both polygons are drawn alike in both cases.
-; @fixed #395
-; @configs clib
 DEFTYPE .l
 Statement setp{m.l,a$}
   While a$<>""
@@ -36,18 +34,29 @@ Function.l nset{}
   Next
   Function Return n
 End Function
-BitMap 0,320,200,1
-BitMap 1,320,200,1
-Dim p.w(100)
-a=&p(0)
-setp{a,"55,2,10,10,10,130,100,140,100,10"}
-Use BitMap 1 : BitMapPoly -5,a,1
-NPrint "drawn ",nset{}>1000
-setp{a,"55,2,10,10,10,25,10,40,10,55,10,70,10,85,10,100,10,115,10,130,100,140,100,10"}
-Use BitMap 0 : BitMapPoly -12,a,1
-NPrint "10 edges differ ",diff{}
-Use BitMap 0 : Cls
-setp{a,"55,2,10,10,10,20,10,30,10,40,10,50,10,60,10,70,10,80,10,90,10,100,10,110,10,120,10,130,100,140,100,10"}
-BitMapPoly -16,a,1
-NPrint "14 edges differ ",diff{}
-End
+
+!TestCase{edges_10}
+  BitMap 0,320,200,1
+  BitMap 1,320,200,1
+  Dim p.w(100)
+  a=&p(0)
+  setp{a,"55,2,10,10,10,130,100,140,100,10"}
+  Use BitMap 1 : BitMapPoly -5,a,1
+  !Check{nset{}>1000,"drawn"}
+  setp{a,"55,2,10,10,10,25,10,40,10,55,10,70,10,85,10,100,10,115,10,130,100,140,100,10"}
+  Use BitMap 0 : BitMapPoly -12,a,1
+  !CheckEq{diff{},0,"differ"}
+!EndTestCase
+
+!TestCase{edges_14}
+  BitMap 0,320,200,1
+  BitMap 1,320,200,1
+  Dim p.w(100)
+  a=&p(0)
+  setp{a,"55,2,10,10,10,130,100,140,100,10"}
+  Use BitMap 1 : BitMapPoly -5,a,1
+  Use BitMap 0
+  setp{a,"55,2,10,10,10,20,10,30,10,40,10,50,10,60,10,70,10,80,10,90,10,100,10,110,10,120,10,130,100,140,100,10"}
+  BitMapPoly -16,a,1
+  !CheckEq{diff{},0,"differ"}
+!EndTestCase

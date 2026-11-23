@@ -14,29 +14,26 @@
 ; planes.
 ; Correct: each target plane gets the dither bitmap's plane: plane 0
 ; $AAAA, plane 1 $5555.
-; @fixed #1035
-; @configs clib
 DEFTYPE .l
-m=AllocMem(512,$10003)
-For i=0 To 63 : Poke.b m+i,$AA : Next
-For i=64 To 127 : Poke.b m+i,$55 : Next
-For i=128 To 511 : Poke.b m+i,$F0 : Next
-CludgeBitMap 1,64,8,2,m
-BitMap 0,64,16,2
-Use BitMap 0
-Dim p.w(8)
-Restore pts
-For i=0 To 7 : Read v : p(i)=v : Next
-VWait
-BLITZ
-BitMapPoly 4,&p(0),0,1
-VWait 2
-AMIGA
-o=Addr BitMap(0)
-NPrint "plane 0 ",Hex$(Peek.w(Peek.l(o+8)+34) AND $FFFF)
-NPrint "plane 1 ",Hex$(Peek.w(Peek.l(o+12)+34) AND $FFFF)
-Free BitMap 1
-FreeMem m,512
-End
-pts:
-Data.l 0,0,63,0,63,15,0,15
+
+!TestCase{dither_planes}
+  m=AllocMem(512,$10003)
+  For i=0 To 63 : Poke.b m+i,$AA : Next
+  For i=64 To 127 : Poke.b m+i,$55 : Next
+  For i=128 To 511 : Poke.b m+i,$F0 : Next
+  CludgeBitMap 1,64,8,2,m
+  BitMap 0,64,16,2
+  Use BitMap 0
+  Dim p.w(8)
+  p(0)=0 : p(1)=0 : p(2)=63 : p(3)=0 : p(4)=63 : p(5)=15 : p(6)=0 : p(7)=15
+  VWait
+  BLITZ
+  BitMapPoly 4,&p(0),0,1
+  VWait 2
+  AMIGA
+  o=Addr BitMap(0)
+  !CheckStrEq{Hex$(Peek.w(Peek.l(o+8)+34) AND $FFFF),"0000AAAA","plane_0"}
+  !CheckStrEq{Hex$(Peek.w(Peek.l(o+12)+34) AND $FFFF),"00005555","plane_1"}
+  Free BitMap 1
+  FreeMem m,512
+!EndTestCase

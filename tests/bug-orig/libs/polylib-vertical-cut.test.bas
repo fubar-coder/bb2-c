@@ -10,20 +10,19 @@
 ; x = -1, whose first edge is the vertical edge x = -1.  The original stops
 ; with "GURU! - Division by Zero".
 ; Correct: BitMapPoly returns ("before", "after").
-; @fixed #1033
 DEFTYPE .l
-BitMap 0,320,200,1
-Dim p.w(16)
-Restore pts
-For i=0 To 9 : Read v : p(i)=v : Next
-NPrint "before"
-Use BitMap 0
-VWait
-BLITZ
-BitMapPoly 5,&p(0),1
-VWait 2
-AMIGA
-NPrint "after"
-End
-pts:
-Data.l 320,-1,-1,-1,-1,151,320,135,320,200
+
+!TestCase{vertical_cut}
+  BitMap 0,320,200,1
+  Dim p.w(16)
+  p(0)=320 : p(1)=-1 : p(2)=-1 : p(3)=-1 : p(4)=-1 : p(5)=151
+  p(6)=320 : p(7)=135 : p(8)=320 : p(9)=200
+  Use BitMap 0
+  !Check{1,"before"}
+  VWait
+  BLITZ
+  BitMapPoly 5,&p(0),1
+  VWait 2
+  AMIGA
+  !Check{1,"after"}
+!EndTestCase

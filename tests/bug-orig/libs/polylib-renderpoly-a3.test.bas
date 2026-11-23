@@ -8,26 +8,26 @@
 ; RenderPoly with a triangle in a short BLITZ ... AMIGA section (as
 ; t156_bmpoly).  Counted: bytes set in the block's plane.
 ; Correct: without a RenderTo... RenderPoly draws nowhere through a3.
-; @fixed #420
-; @configs clib
 DEFTYPE .l
-Dim p.w(20)
-p(0)=10 : p(1)=10 : p(2)=60 : p(3)=15 : p(4)=40 : p(5)=50
-pl=AllocMem(8000,$10002)
-f=AllocMem(64,$10001)
-Poke.w f,40 : Poke.w f+2,200 : Poke.w f+4,1 : Poke.l f+8,pl
-Poke.w f+56,320 : Poke.w f+58,200
-a=&p(0)
-VWait
-BLITZ
-GetReg d0,f : MOVE.l d0,a3
-RenderPoly 3,a,1
-VWait 2
-AMIGA
-n=0
-For i=0 To 7999
-  If Peek.b(pl+i)<>0 Then n=n+1
-Next
-NPrint "drawn through a3 ",n
-FreeMem f,64 : FreeMem pl,8000
-End
+
+!TestCase{render_a3}
+  Dim p.w(20)
+  p(0)=10 : p(1)=10 : p(2)=60 : p(3)=15 : p(4)=40 : p(5)=50
+  pl=AllocMem(8000,$10002)
+  f=AllocMem(64,$10001)
+  Poke.w f,40 : Poke.w f+2,200 : Poke.w f+4,1 : Poke.l f+8,pl
+  Poke.w f+56,320 : Poke.w f+58,200
+  a=&p(0)
+  VWait
+  BLITZ
+  GetReg d0,f : MOVE.l d0,a3
+  RenderPoly 3,a,1
+  VWait 2
+  AMIGA
+  n=0
+  For i=0 To 7999
+    If Peek.b(pl+i)<>0 Then n=n+1
+  Next
+  FreeMem f,64 : FreeMem pl,8000
+  !CheckEq{n,0,"drawn_through_a3"}
+!EndTestCase
