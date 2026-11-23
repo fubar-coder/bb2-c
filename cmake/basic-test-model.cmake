@@ -142,8 +142,15 @@ function(basic_test_register prefix dir)
 	endif()
 	math(EXPR extra "60 + ${EMULATION_QUEUE_WAIT}")
 	set(order "")
+	set_property(GLOBAL APPEND PROPERTY BASIC_TEST_PREFIXES ${prefix})
+	get_property(costs GLOBAL PROPERTY TEST_COSTS_FILE)
+	if(costs AND EXISTS ${costs})
+		list(APPEND order --costs ${costs})
+	else()
+		set(costs "")
+	endif()
 	if(arg_ORDER)
-		set(order --order ${arg_ORDER})
+		list(APPEND order --order ${arg_ORDER})
 	endif()
 	add_custom_command(OUTPUT ${inc}
 		COMMAND ${TESTREG} --prefix ${prefix} --output ${inc} --depfile ${inc}.d --env ${BASIC_TEST_ENV}
@@ -151,7 +158,7 @@ function(basic_test_register prefix dir)
 			--cell-fixture "compiler=orig195|originals_refbuild" ${order}
 			${cmd} ${srcs}
 		DEPENDS ${srcs} ${confs} ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS} basic_test_tokens ${TESTREG} host_tools
-			${arg_ORDER}
+			${arg_ORDER} ${costs}
 		DEPFILE ${inc}.d
 		COMMENT "Registering the tests of the BASIC test model in ${dir} (${prefix}*)"
 		VERBATIM)

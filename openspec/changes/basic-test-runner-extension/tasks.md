@@ -44,3 +44,10 @@
 
 - [x] 7.1 The spec delta and design D9 (user, 2026-11-23, "Model tests of open bugs join the bug-orig order"); verify: `openspec validate basic-test-runner-extension --strict`
 - [x] 7.2 testreg gives a test of the label `bug-orig` without `cost` the sum of its cells' session limits and declares the tests of that label last, sorted with the entries of `--order FILE`; `bug_orig_declare_tests(FILE)` writes the old-form tests (with their environment) to that file, `basic_test_register(... ORDER FILE)` hands it on; verify: `testreg_tool` (the order, broken order files), `bug_orig_order` (host), `bug_orig_order_model_late` and `_nocost` (a model test out of order, without a COST), `emulation_owner`, and an open-bug probe in `tests/bug-orig/libs` (not committed) in the order
+
+## 8. The measured COST
+
+- [x] 8.1 The spec delta and design D10 (user, 2026-11-23, "Measured COST in the runner extension"); verify: `openspec validate basic-test-runner-extension --strict`
+- [x] 8.2 `testinfo costs` (`teststats_costs`, `testcosts.h`): warm sessions summed per run, a cold one as the median warm session, the median over the runs; the file sorted, `--update` keeps the other entries; verify: host test `teststats` (the costs, the file with broken input), `help_testinfo`, `readme_testinfo`
+- [x] 8.3 The build reads `tests/data/test-costs.txt`: `cmake/test-cost.cmake` (CMake tests, the list of the long tests as the fallback), `cmake/bug-orig-order.cmake` (old-form bug-orig tests), testreg `--costs` (model tests); an entry of a test that does not exist fails the build; the rules of the emulator environment in one place (`emulation_test_environment`); verify: `test_cost`, `test_cost_broken`, `testreg_tool`, `bug_orig_order`, `emulation_owner`
+- [x] 8.4 The file from this agent's runs and the docs (`tests/README.md` "The measured COST", `tools/testinfo/README.md`, `tools/testreg/README.md`); verify: the file has the entries of `junit-s8.xml`, the docs name the command

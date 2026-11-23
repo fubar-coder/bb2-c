@@ -5,6 +5,7 @@
 #include "testreg.h"
 #include "testjudge.h"
 #include "testpp.h"
+#include "testcosts.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -686,4 +687,36 @@ int treg_write_depfile(FILE *f, const char *target, const struct treg_result *r)
         if (fputs(" \\\n  ", f) < 0 || dep_path(f, r->deps.v[i]))
             return -1;
     return fputc('\n', f) == EOF ? -1 : 0;
+}
+
+int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file, const struct tcosts *c)
+{
+    size_t plen = strlen(prefix);
+    int bad = 0;
+
+    for (size_t i = 0; i < r->n; i++) {
+        const struct tcost *e = tcosts_find(c, r->t[i].name);
+
+        if (e) {
+            r->t[i].has_cost = 1;
+            r->t[i].cost = e->cost;
+        }
+    }
+    for (size_t k = 0; k < c->n; k++) {
+        const char *name = c->v[k].name;
+        size_t i;
+
+        if (strncmp(name, prefix, plen) || !strstr(name + plen, "__"))
+            continue;
+        for (i = 0; i < r->n && strcmp(r->t[i].name, name); i++)
+            ;
+        if (i == r->n) {
+            if (pushf(&r->errors, "%s:%u: %s: no such test (a test of the model of %s* that is not "
+                      "registered: refresh the file, tests/README.md \"The measured COST\")",
+                      file, c->v[k].line, name, prefix))
+                return -1;
+            bad = 1;
+        }
+    }
+    return bad;
 }

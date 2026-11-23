@@ -142,6 +142,41 @@ string(FIND "${dep}" "${WORK}/order.cmake" at)
 if(at LESS 0)
 	message(FATAL_ERROR "--order: the depfile lacks the order file:\n${dep}")
 endif()
+# --costs: a measured COST wins over the sum of the cells' session limits
+# and over the configuration's cost (shape-frames: cost = 3 in libs/); an
+# entry of another prefix or without "__" is not testreg's to check
+file(WRITE ${WORK}/costs.txt "# measured\nbug_orig_old 5\nbug_orig_order_open__c 7\n"
+	"bug_orig_shape_frames__behind 44\nregression_x__c 3\n")
+run(0 --prefix bug_orig_ --output ${WORK}/cost-tests.cmake ${env} --command run --order ${WORK}/order.cmake
+	--costs ${WORK}/costs.txt --depfile ${WORK}/cost-tests.d ${s}/order/order-open.test.bas
+	${s}/libs/shape-frames.test.bas)
+file(READ ${WORK}/cost-tests.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+set(last -1)
+foreach(want "add_test(bug_orig_a_mid run mid)\n"
+		"set_tests_properties( bug_orig_shape_frames__behind PROPERTIES LABELS bug-orig;emulator;libs TIMEOUT 60 SKIP_RETURN_CODE 77 COST 44"
+		"add_test(bug_orig_small run small)\n"
+		"set_tests_properties( bug_orig_order_open__c PROPERTIES LABELS bug-orig;emulator TIMEOUT 60 SKIP_RETURN_CODE 77 COST 7)")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0 OR NOT at GREATER last)
+		message(FATAL_ERROR "--costs: the include file lacks, or has out of order,\n  ${want}\nin\n${inc}")
+	endif()
+	set(last ${at})
+endforeach()
+file(READ ${WORK}/cost-tests.d dep)
+string(FIND "${dep}" "${WORK}/costs.txt" at)
+if(at LESS 0)
+	message(FATAL_ERROR "--costs: the depfile lacks the file:\n${dep}")
+endif()
+# broken input: an entry of a test of the model of the prefix that is not
+# registered, a malformed file
+file(WRITE ${WORK}/costs-bad.txt "bug_orig_gone__c 5\n")
+refused("costs-bad\\.txt:1: bug_orig_gone__c: no such test" --costs ${WORK}/costs-bad.txt
+	${s}/order/order-open.test.bas)
+file(WRITE ${WORK}/costs-bad.txt "bug_orig_b 5\nbug_orig_a 5\n")
+refused("costs-bad\\.txt:2: bug_orig_a after bug_orig_b: the file is sorted by name" --costs ${WORK}/costs-bad.txt
+	${s}/order/order-open.test.bas)
 # broken input: text before the first entry, a malformed entry, a test of
 # both forms, no such file
 file(WRITE ${WORK}/order-bad.cmake "add_test(x run)\n")

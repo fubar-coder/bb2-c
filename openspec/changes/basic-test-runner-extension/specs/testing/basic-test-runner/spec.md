@@ -214,3 +214,20 @@ first.
 #### Scenario: A test of an open bug between two of the old form
 - **WHEN** a test of an open bug with one cell of a session limit of 90 seconds is registered next to bug-orig tests of the old form with the costs 240 and 10
 - **THEN** its cost is 90 and it is declared after the one of 240 and before the one of 10
+
+### Requirement: A measured COST
+A checked-in file SHALL give the measured COST of tests, written by a tool
+from the JUnit files of test runs: per test the median over the runs of the
+sum of its emulator sessions' times without the wait for a slot, a session
+that did not start from a snapshot counted as the test's median warm
+session; a test without a warm session SHALL get no entry. The build SHALL
+give a test with an entry that COST, and a test without one its estimate;
+an entry that names no test SHALL fail the build.
+
+#### Scenario: A cold session does not make a test dear
+- **WHEN** a test's run has a warm session of 3 seconds and one that booted cold for 40 seconds, and the test's warm sessions have a median of 2 seconds
+- **THEN** that run counts 5 seconds
+
+#### Scenario: An entry of a removed test
+- **WHEN** the file names a test that the build no longer has
+- **THEN** the build fails naming the file's line

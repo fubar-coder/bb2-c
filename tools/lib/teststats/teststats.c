@@ -571,3 +571,73 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
            | print_table(&cost, o.tsv, out);
     return bad ? -1 : 0;
 }
+
+/* ------------------------------------------------------------- measured COST */
+
+static int by_name(const void *a, const void *b)
+{
+    return strcmp((*(const struct test *const *)a)->name, (*(const struct test *const *)b)->name);
+}
+
+/* the measured COST of a test, 0 = none (see teststats.h) */
+static unsigned measured_cost(const struct test *te, size_t nfiles, int *bad)
+{
+    double *warm = calloc(te->nsess + 1, sizeof *warm), *runs = calloc(nfiles + 1, sizeof *runs);
+    size_t nwarm = 0, nruns = 0;
+    double est;
+    unsigned c = 0;
+
+    if (!warm || !runs) {
+        *bad = 1;
+        goto out;
+    }
+    for (size_t k = 0; k < te->nsess; k++)
+        if (!strcmp(te->sess[k].st.snapshot, "restored"))
+            warm[nwarm++] = te->sess[k].st.session;
+    if (!nwarm)
+        goto out;               /* only cold sessions: no measurement */
+    est = median(warm, nwarm);
+    /* per run: its sessions, a session that did not start warm counted as
+       the median warm session of the test */
+    for (size_t f = 0; f < nfiles; f++) {
+        double sum = 0;
+        int any = 0;
+
+        for (size_t k = 0; k < te->nsess; k++)
+            if (te->sess[k].file == f) {
+                sum += !strcmp(te->sess[k].st.snapshot, "restored") ? te->sess[k].st.session : est;
+                any = 1;
+            }
+        if (any)
+            runs[nruns++] = sum;
+    }
+    if (nruns) {
+        double m = ceil(median(runs, nruns));
+
+        c = m < 1 ? 1 : (unsigned)m;
+    }
+out:
+    free(warm);
+    free(runs);
+    return c;
+}
+
+int teststats_costs(const struct teststats *t, FILE *out)
+{
+    const struct test **v = calloc(t->ntests + 1, sizeof *v);
+    int bad = 0;
+
+    if (!v)
+        return -1;
+    for (size_t i = 0; i < t->ntests; i++)
+        v[i] = &t->tests[i];
+    qsort(v, t->ntests, sizeof *v, by_name);
+    for (size_t i = 0; i < t->ntests && !bad; i++) {
+        unsigned c = measured_cost(v[i], t->nfiles, &bad);
+
+        if (c)
+            fprintf(out, "%s %u\n", v[i]->name, c);
+    }
+    free(v);
+    return bad ? -1 : 0;
+}

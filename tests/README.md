@@ -3289,6 +3289,36 @@ duration; a test's duration includes its waits for emulator slots). Broken input
 a bad `@stat` line) is reported on stderr (exit status 1), the rest
 still counts.
 
+### The measured COST
+
+`tests/data/test-costs.txt` gives the measured `COST` of the tests (a
+line `NAME COST` per test, sorted by name): the median over the runs of
+the sum of a test's emulator sessions' times without the slot wait, a
+session that did not start from a snapshot (a cold start, a first save:
+once per slot and run, not a property of the test) counted as the test's
+median warm session; a test without a warm session has no entry. The
+build reads it: `cmake/test-cost.cmake` (every CMake test with an entry,
+the list of the long tests for those without), `cmake/bug-orig-order.cmake`
+(the old-form bug-orig tests) and `tools/testreg --costs` (the tests of
+the model, also in the [order of the bug-orig tests](#order-of-the-bug-orig-tests));
+a measurement wins over a `cost` key and the estimates (a test without
+an entry keeps its `cost`, the sum of its cells' session limits, or its
+session limit times sessions). An entry whose test no longer exists
+fails the build (the configuration, or the registration step of the
+tests of the model), naming its line. After an acceptance run, refresh
+the file from its JUnit file(s) and commit it with the run's other
+results:
+
+```
+build/amiga/host/tools/testinfo/testinfo costs --update tests/data/test-costs.txt \
+    build/amiga/junit-all.xml [build/amiga/junit-originals.xml ...]
+```
+
+`--update` replaces the entries of the measured tests and keeps the
+others; remove the line of a removed test by hand (the build names it),
+or write the file anew from a full run without `--update`
+(`testinfo costs JUNIT... > tests/data/test-costs.txt`).
+
 ## Coverage
 
 Which code each test executes, as one lcov tracefile per test (openspec

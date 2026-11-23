@@ -8,6 +8,7 @@
 #include <snitch/snitch.hpp>
 extern "C" {
 #include "junit.h"
+#include "testcosts.h"
 #include "teststats.h"
 }
 
@@ -299,4 +300,111 @@ TEST_CASE("teststats: report", "[teststats]")
     CHECK(text && strstr(text, "0 runs (JUnit files), 0 tests") && strstr(text, "(none)"));
     free(text);
     teststats_free(t);
+}
+
+// the measured COST (teststats_costs): warm sessions summed per run, a cold
+// one counted as the median warm session of the test, the slot wait not
+// counted, the median over the runs; no entry for a test without a warm
+// session or without sessions
+#define CSTAT(t, snap, s) \
+    "@stat v=1 test=" t " config=c machine=a1200 snapshot=" snap " session=" s " wait=9.00 timed=" s \
+    " limit=90 end=done\n"
+static const char cost_a[] =
+    HEAD
+    "\t<testcase name=\"t2\" classname=\"t2\" time=\"60\" status=\"run\">\n"
+    "\t\t<system-out>" CSTAT("t2", "cold", "40.00") CSTAT("t2", "restored", "1.50") "</system-out>\n\t</testcase>\n"
+    "\t<testcase name=\"t1\" classname=\"t1\" time=\"9\" status=\"run\">\n"
+    "\t\t<system-out>" CSTAT("t1", "restored", "3.00") CSTAT("t1", "restored", "2.00") "</system-out>\n\t</testcase>\n"
+    "\t<testcase name=\"t3\" classname=\"t3\" time=\"35\" status=\"run\">\n"
+    "\t\t<system-out>" CSTAT("t3", "cold", "30.00") "</system-out>\n\t</testcase>\n"
+    "\t<testcase name=\"t4\" classname=\"t4\" time=\"1\" status=\"run\">\n"
+    "\t\t<system-out>no sessions</system-out>\n\t</testcase>\n"
+    TAIL;
+static const char cost_b[] =
+    HEAD
+    "\t<testcase name=\"t1\" classname=\"t1\" time=\"30\" status=\"run\">\n"
+    "\t\t<system-out>" CSTAT("t1", "restored", "4.00") CSTAT("t1", "first-save", "20.00") "</system-out>\n\t</testcase>\n"
+    "\t<testcase name=\"t2\" classname=\"t2\" time=\"5\" status=\"run\">\n"
+    "\t\t<system-out>" CSTAT("t2", "restored", "2.50") "</system-out>\n\t</testcase>\n"
+    TAIL;
+
+TEST_CASE("teststats: the measured COST", "[teststats]")
+{
+    struct teststats *t = teststats_new();
+    char *diag, *p = NULL;
+    size_t n = 0;
+    FILE *f;
+
+    REQUIRE(t != NULL);
+    CHECK(add(t, "a.xml", cost_a, &diag) == 0);
+    free(diag);
+    CHECK(add(t, "b.xml", cost_b, &diag) == 0);
+    free(diag);
+    f = open_memstream(&p, &n);
+    REQUIRE(f != NULL);
+    CHECK(teststats_costs(t, f) == 0);
+    fclose(f);
+    // t1: runs 3+2 = 5 and 4 + 3 (the cold one as the median warm session,
+    // 3) = 7, median 6; t2: 1.5 + 2.0 (the median of 1.5, 2.5) = 3.5 and
+    // 2.5, median 3; t3 cold only, t4 no sessions: none
+    CHECK(p && !strcmp(p, "t1 6\nt2 3\n"));
+    free(p);
+    teststats_free(t);
+}
+
+TEST_CASE("teststats: the file of the measured COST", "[teststats]")
+{
+    struct tcosts c = {}, d = {};
+    char err[300];
+    char *p = NULL;
+    size_t n = 0;
+    FILE *f;
+
+    CHECK(tcosts_parse("c.txt", "# a comment\n\nalpha 5\nbeta_1 12\ngamma.x-y 1\n", 1, &c, err, sizeof err) == 0);
+    REQUIRE(c.n == 3);
+    CHECK(tcosts_find(&c, "beta_1") && tcosts_find(&c, "beta_1")->cost == 12 && tcosts_find(&c, "beta_1")->line == 4);
+    CHECK(!tcosts_find(&c, "beta"));
+    // merged: a refreshed entry replaces, a new one is added in order, the others stay
+    CHECK(tcosts_parse("m", "delta 3\nalpha 9\n", 0, &d, err, sizeof err) == 0);
+    CHECK(tcosts_merge(&c, &d) == 0);
+    f = open_memstream(&p, &n);
+    REQUIRE(f != NULL);
+    CHECK(tcosts_write(f, &c) == 0);
+    fclose(f);
+    REQUIRE(p != NULL);
+    CHECK(strstr(p, "\nalpha 9\nbeta_1 12\ndelta 3\ngamma.x-y 1\n") != NULL);
+    {
+        // what it writes it reads
+        struct tcosts e = {};
+
+        CHECK(tcosts_parse("w", p, 1, &e, err, sizeof err) == 0);
+        CHECK(e.n == 4);
+        tcosts_free(&e);
+    }
+    free(p);
+    tcosts_free(&c);
+    tcosts_free(&d);
+    // broken input, each naming file and line
+    const struct {
+        const char *text, *want;
+    } bad[] = {
+        { "alpha\n", "c.txt:1: a line is \"NAME COST\"" },
+        { "alpha 0\n", "c.txt:1: a line is" },
+        { "alpha 1.5\n", "c.txt:1: a line is" },
+        { "# x\nal pha 3\n", "c.txt:2: a line is" },
+        { "alpha 3 \n", "c.txt:1: a line is" },
+        { "alpha 3\nalpha 4\n", "c.txt:2: alpha a second time (line 1)" },
+        { "beta 3\nalpha 4\n", "c.txt:2: alpha after beta: the file is sorted by name" },
+    };
+    for (const auto &b : bad) {
+        INFO(b.text);
+        CHECK(tcosts_parse("c.txt", b.text, 1, &c, err, sizeof err) == -1);
+        CHECK(strstr(err, b.want) != nullptr);
+        if (!strstr(err, b.want))
+            fprintf(stderr, "message: %s\n", err);
+    }
+    CHECK(tcosts_parse("m", "alpha 3\nalpha 4\n", 0, &c, err, sizeof err) == -1);
+    CHECK(strstr(err, "alpha twice") != nullptr);
+    CHECK(tcosts_load("/no/such/test-costs.txt", &c, err, sizeof err) == -1);
+    CHECK(strstr(err, "cannot read") != nullptr);
 }

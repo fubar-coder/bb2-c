@@ -127,6 +127,20 @@ void treg_entries_free(struct treg_entries *e);
 /** @brief The names of r that an entry also has; 0 = none, 1 = errors added, -1 = out of memory. */
 int treg_check_entries(struct treg_result *r, const struct treg_entries *e);
 
+struct tcosts;
+
+/**
+ * @brief The measured COST (testcosts.h, tests/data/test-costs.txt): a test
+ *        with an entry gets its COST, which wins over the configuration's
+ *        `cost` and the sum of the cells' session limits (a measurement
+ *        replaces the estimates); an entry of a test of the model of this
+ *        prefix (PREFIX...__CASE) that names no registered test is an error
+ *        (file:line), the entries of other tests are left to their checks
+ *        (cmake/test-cost.cmake).
+ * @return 0, 1 = errors added, -1 = out of memory
+ */
+int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file, const struct tcosts *c);
+
 /**
  * @brief Write the ctest include file (TEST_INCLUDE_FILES): an add_test()
  *        and a set_tests_properties() per test; the test runs COMMAND...

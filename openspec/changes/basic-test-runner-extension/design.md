@@ -393,3 +393,51 @@ tests out of the check (the user's other option).
   the include files are not CMake's. The old-form bug-orig tests keep them
   (written into the order file); the model tests are as before. Reported,
   not changed here.
+
+## Addendum: the measured COST (section 8)
+
+**D10 A COST measured from a test run** (user, 2026-11-23: "Am besten
+gleich mit berücksichtigen, dann haben wir das für neue Testfälle",
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, "Measured
+COST in the runner extension"). `testinfo costs [--update FILE]
+JUNIT.xml...` (`tools/lib/teststats` `teststats_costs`, the file format
+`testcosts.h`) reads the `@stat` lines of ctest's JUnit files and writes
+`tests/data/test-costs.txt`, a line `NAME COST` per test, sorted by name.
+The COST of a run of a test is the sum of its sessions' `session` times
+(the slot wait is not in them); the COST is the median over the runs,
+rounded up, at least 1. The design choices:
+- **Cold sessions.** A session that did not start warm (`cold`,
+  `first-save`, `fallback`: once per emulator slot and ctest run) counts
+  as the median of the test's warm (`restored`) sessions over all runs, so
+  a test that happened to take a slot first does not look dear; a test
+  that had no warm session in the runs gets no entry (it keeps its
+  estimate) rather than a COST from a boot.
+- **Measurement or `cost` key.** A measurement wins over every estimate:
+  a model test's `cost` key, the sum of its cells' session limits, an
+  old-form bug-orig test's session limit times sessions, and the list of
+  long tests in `cmake/test-cost.cmake`; the estimates stay for the tests
+  without an entry. Why: the keys and the list were guesses for lack of a
+  measurement (the list itself is "the rounded durations of one cost
+  file"). The list stays as the fallback until the file covers those
+  tests; then it can go (not here: the order of the long tests must stay
+  sensible, and the file of this change holds only what this agent ran).
+- **Where it is read.** CMake reads the file at the start of the top
+  directory (`test_costs_load`, a configure dependency):
+  `long_test_costs()` gives every CMake test with an entry its COST, the
+  writer of the bug-orig order file the old-form bug-orig tests; testreg
+  (`--costs`, a dependency of its step) the tests of the model, also in
+  the sorted declaration of the label `bug-orig`.
+- **The check.** An entry whose test does not exist fails the build:
+  `long_test_costs()` stops the configuration for an entry that is no
+  CMake test, no recorded bug-orig test and no `PREFIX...__CASE` of a
+  registered prefix; testreg fails its step for a `PREFIX...__CASE` entry
+  of its prefix that it did not register (each test with broken input:
+  `test_cost_broken`, `testreg_tool`). The two parts are needed because
+  CMake does not know the tests of the model.
+- **Mixed scales.** Until the file is refreshed from a full run, measured
+  tests (seconds) and estimated ones (limits) are ordered together, so
+  the estimated ones come first; the coordinator refreshes the file after
+  the acceptance run (`tests/README.md`, "The measured COST"). The file of
+  this change holds the 250 tests of the run of `tests/blitz2` and the
+  model tests of `tests/bug-orig`
+  (`~/.local/share/bb2-c-work/accept-runner-ext/junit-s8.xml`).
