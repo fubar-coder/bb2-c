@@ -7,20 +7,21 @@
 ; program counts the pixels set in the second line (x 0-7, y 8-15).
 ; Correct: the line feed moves to the start of the next line, "b" is
 ; drawn there.
-; @fixed #699
-; @rwe riintuilib
-BitMap 0,320,32,2
-Cls 0
-IPBitMap 0,0
-IPOutput 0
-NPrint "a"
-NPrint "b"
-DefaultOutput
-n=0
-For y=8 To 15
-  For x=0 To 7
-    If Point(x,y) Then n=n+1
+DEFTYPE .l
+
+!TestCase{line_feed}
+  BitMap 0,320,32,2
+  Cls 0
+  IPBitMap 0,0
+  IPOutput 0
+  NPrint "a"
+  NPrint "b"
+  DefaultOutput
+  n=0
+  For y=8 To 15
+    For x=0 To 7
+      If Point(x,y) Then n=n+1
+    Next
   Next
-Next
-NPrint "line 2 ",n>0
-End
+  !CheckEq{n>0,-1,"line_2"}
+!EndTestCase

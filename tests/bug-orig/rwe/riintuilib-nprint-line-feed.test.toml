@@ -1,0 +1,8 @@
+# riintuilib-nprint-line-feed.test.bas: the original draws nothing in the
+# second line
+fixed-orig = 699
+rwe = ["riintuilib"]
+
+[deviations."compiler=orig210"]
+"check.line_feed.line_2" = "== fail"
+"check.line_feed.line_2.actual" = "== 0"

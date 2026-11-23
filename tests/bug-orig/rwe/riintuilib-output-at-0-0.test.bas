@@ -8,28 +8,29 @@
 ; "C" right after it (x 116-123, y 10-17), and the corner (x 0-23,
 ; y 0-9).
 ; Correct: "AB" at 100,10, "C" after it, nothing at the corner.
-; @fixed #697
-; @rwe riintuilib
-BitMap 0,320,32,2
-Cls 0
-IPBitMap 0,0
-Use Rast 0
-IPOutput 0
-IPLocate 100,10
-Print "AB"
-Print "C"
-DefaultOutput
-a=0 : c=0 : z=0
-For y=0 To 17
-  For x=0 To 123
-    If Point(x,y)
-      If x>=100 AND x<=115 AND y>=10 Then a=a+1
-      If x>=116 AND y>=10 Then c=c+1
-      If x<=23 AND y<=9 Then z=z+1
-    EndIf
+DEFTYPE .l
+
+!TestCase{output_position}
+  BitMap 0,320,32,2
+  Cls 0
+  IPBitMap 0,0
+  Use Rast 0
+  IPOutput 0
+  IPLocate 100,10
+  Print "AB"
+  Print "C"
+  DefaultOutput
+  a=0 : c=0 : z=0
+  For y=0 To 17
+    For x=0 To 123
+      If Point(x,y)
+        If x>=100 AND x<=115 AND y>=10 Then a=a+1
+        If x>=116 AND y>=10 Then c=c+1
+        If x<=23 AND y<=9 Then z=z+1
+      EndIf
+    Next
   Next
-Next
-NPrint "AB ",a>0
-NPrint "C ",c>0
-NPrint "corner ",z>0
-End
+  !CheckEq{a>0,-1,"ab"}
+  !CheckEq{c>0,-1,"c"}
+  !CheckEq{z>0,0,"corner"}
+!EndTestCase
