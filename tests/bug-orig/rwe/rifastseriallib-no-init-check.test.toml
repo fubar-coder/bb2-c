@@ -1,0 +1,8 @@
+# rifastseriallib-no-init-check.test.bas: with the serial port of the
+# emulator; the original's DoSerialIO writes to address 0
+fixed-orig = 652
+rwe = ["rifastseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.do_without_init.address_0_kept" = "== fail"

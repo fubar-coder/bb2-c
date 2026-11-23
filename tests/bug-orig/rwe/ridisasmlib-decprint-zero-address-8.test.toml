@@ -1,0 +1,10 @@
+# ridisasmlib-decprint-zero-address-8.test.bas: the original gives the
+# bytes of the vector at address 8 (nothing here) instead of "0"
+fixed-orig = 614
+rwe = ["ridisasmlib"]
+
+[deviations."compiler=orig210"]
+"check.displacement_zero.displacement" = "== fail"
+"check.displacement_zero.displacement.actual" = "== \"\""
+"check.displacement_zero.line" = "== fail"
+"check.displacement_zero.line.actual" = "== \"move.l   (a0),d0                  \""

@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-argument 65636
-path 201 /
-argument 65602
-file 2 xy
-rc=0

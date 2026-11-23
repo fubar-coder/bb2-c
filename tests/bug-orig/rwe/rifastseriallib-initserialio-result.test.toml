@@ -1,0 +1,10 @@
+# rifastseriallib-initserialio-result.test.bas: the original returns the
+# baud argument
+fixed-orig = 650
+rwe = ["rifastseriallib"]
+
+[deviations."compiler=orig210"]
+"check.two_inits.first_result" = "== fail"
+"check.two_inits.first_result.actual" = "== 19200"
+"check.two_inits.second_result" = "== fail"
+"check.two_inits.second_result.actual" = "== 9600"

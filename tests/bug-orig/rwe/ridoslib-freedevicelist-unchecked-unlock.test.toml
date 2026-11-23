@@ -1,0 +1,13 @@
+# ridoslib-freedevicelist-unchecked-unlock.test.bas: through inject, whose
+# alertlog records the alerts; the original releases the DOS list's
+# semaphore and the Forbid once too often
+fixed-orig = 623
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|alertlog"
+
+[asserts]
+inject = "contains \"alertlog: 0 alerts\""
+
+[deviations."compiler=orig210"]
+"check.second_free.second_nest_count" = "== fail"
+inject = "contains \"alertlog: 1 alerts\ninject: alert 01000008\""

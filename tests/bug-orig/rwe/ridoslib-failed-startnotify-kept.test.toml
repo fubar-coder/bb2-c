@@ -1,0 +1,12 @@
+# ridoslib-failed-startnotify-kept.test.bas: through inject, which tracks the
+# allocations the process leaves; the original leaves the failed request and
+# its name copy
+fixed-orig = 621
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"track: 0 allocations left, 0 bytes\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"track: 2 allocations left, 66 bytes\""

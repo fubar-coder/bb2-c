@@ -1,0 +1,24 @@
+# rievallib-register-index-unchecked.test.bas: the original reads the long
+# at the unchecked register index; the cells with the CD's libraries get the
+# acidlibs of the library's variant (library 121 is the CD's polylib)
+fixed-orig = 642
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.register_index.d9_result" = "== fail"
+"check.register_index.d9_result.actual" = "== 9"
+"check.register_index.d9_error" = "== fail"
+"check.register_index.d9_error.actual" = "== 0"
+"check.register_index.dx_result" = "== fail"
+"check.register_index.dx_result.actual" = "== 72"
+"check.register_index.dx_error" = "== fail"
+"check.register_index.dx_error.actual" = "== 0"
+"check.register_index.d_at_end_result" = "== fail"
+"check.register_index.d_at_end_result.actual" = "== 213"
+"check.register_index.d_at_end_error" = "== fail"
+"check.register_index.d_at_end_error.actual" = "== 0"
+"check.register_index.d01_result" = "== fail"
+"check.register_index.d01_result.actual" = "== 1"
+"check.register_index.d01_error" = "== fail"
+"check.register_index.d01_error.actual" = "== 0"

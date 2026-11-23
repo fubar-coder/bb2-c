@@ -1,0 +1,17 @@
+# rifastseriallib-serper-zero.test.bas: with the serial port of the emulator;
+# the original gets no reply and divides by the baud 0 (a Software Failure,
+# its session of its own ends in the time limit)
+fixed-orig = 653
+rwe = ["rifastseriallib"]
+serial = "on"
+timeout = 60
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+"check.serper_zero.reply" = "== fail"
+"check.serper_zero.reply.actual" = "== \"\""
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software Failure\""
+"end.case" = "not exists"
+"end.run" = "not exists"
