@@ -7,7 +7,7 @@ labels select within them.
 |---|---|---|
 | `native` | the host tests of the native profile (for IDEs: `build/native`) | native compiler |
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
-| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
+| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed-orig #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. Judged against the recorded observation of the original (`ID.orig`), no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
@@ -1320,7 +1320,7 @@ cases:** the target `fix-scope` compares `libs/tests/expected` (and the
 expected data of the other machines, every `libs/tests/expected-NAME` of
 the base or the checkout) and the bug-orig tests (`tests/bug-orig`, each projected onto cases: one per
 section of `ID.expect` and `ID.orig`, `[fixed #N]` with the header
-`; @fixed #N`; `tools/lib/bugorigcmp`) of the checkout with its merge
+`; @fixed-orig #N`; `tools/lib/bugorigcmp`) of the checkout with its merge
 base with `main` (`-DFIX_SCOPE_BASE=BRANCH` for another base) and
 reports, with the key, every case added, changed or removed that is not
 a `[fixed #N]` or `[orig #N]` case of an issue named in a `Fixes #N`
@@ -1767,7 +1767,7 @@ the expected value) or **open-N** (the port still gives the original's);
   `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u|-c]-NN`, whose
   header names `BUG(orig) (#N)` and the cells, with `ID.orig` recorded
   from 1.95 ([Recorded originals](#recorded-originals)); they come out
-  REPRODUCED until the fix, whose commit adds `; @fixed #N`
+  REPRODUCED until the fix, whose commit adds `; @fixed-orig #N`
   ([Fixed tests](#fixed-tests)). A test of cells that need two fixes
   (`compiler-expr-1178-1189-...`) comes out **DIFFERS between the two
   fixes** - after the first the port neither reproduces 1.95 nor meets the
@@ -1916,7 +1916,7 @@ ends with exit status 2 and names `BB2C_TEST_RUN`
 `tedab info|text|cmp`):
 [`tests/ted-ab/runner/README.md`](ted-ab/runner/README.md).
 
-**A fixed TED bug** (`; @fixed #NNN PAIR...` in the script, NNN the
+**A fixed TED bug** (`; @fixed-orig #NNN PAIR...` in the script, NNN the
 issue of the bug): once TED-C no longer shows a bug of the original TED,
 the runs of the original and of TED-C differ. The commit that fixes the
 bug adds the line to the scripts that show it, naming the pairs that now
@@ -1939,7 +1939,7 @@ purpose):
 ; so the pairs R5-C5 and Rc-Cc must differ; R5-Rc and C5-Cc stay the same.
 ; @source T t08_tokquirk
 ; @roundtrip
-; @fixed #123 R5-C5 Rc-Cc
+; @fixed-orig #123 R5-C5 Rc-Cc
 timeout 10
 wait req "OKEE DOKEE"
 gad 1
@@ -2398,10 +2398,10 @@ the label `as-designed` (the original tests the input only with runtime
 error checking, BB2 style; the code note reads `By design (#N)`) may
 stay: it comes out REPRODUCED and documents the behaviour without the
 check. **A fix turns its test into a fixed
-test in the same commit** (header `; @fixed #N`, [Fixed tests](#fixed-tests)):
+test in the same commit** (header `; @fixed-orig #N`, [Fixed tests](#fixed-tests)):
 it then runs in `emulator` and `all` and must come out FIXED there.
 The TED scripts (`tests/bug-orig/ted/`) have their fixed form too
-(`; @fixed #N` without a pair, [bug-orig tests of TED](#bug-orig-tests-of-ted)).
+(`; @fixed-orig #N` without a pair, [bug-orig tests of TED](#bug-orig-tests-of-ted)).
 The snitch tests of `libs/tests/bugorig.c` have no fixed form yet
 (OpenSpec change `expected-results-testing`); a fix of such a bug names
 its test in the report. Naming: ctest `bug_orig_ID` (ID with `-` as `_`),
@@ -2635,7 +2635,7 @@ commit it with the test. Run
 REPRODUCED (not BROKEN: `ID.orig` shows the bug); check the
 expectation if possible with a temporary fix in the port (then FIXED);
 name the test in the issue. The commit that fixes the bug adds
-`; @fixed #N` to the header ([Fixed tests](#fixed-tests)); a header
+`; @fixed-orig #N` to the header ([Fixed tests](#fixed-tests)); a header
 line moves the program down one line, so a compile error line in the
 expectation grows by one.
 
@@ -2757,18 +2757,25 @@ acceptance with files (`bug_orig_accept`). When the original is wrong in
 a way that is not the bug, the test is not valid.
 
 A **fixed test keeps its `ID.orig`**: configuring stops with an error
-naming a test with the header `; @fixed #N` (`.bas`) or the directive
-`; @fixed #N` (`.drv`, TED) that has none
+naming a test with the header `; @fixed-orig #N` (`.bas`) or the directive
+`; @fixed-orig #N` (`.drv`, TED) that has none
 (`tests/bug-orig/check-fixed-orig.cmake`; ctest
 `bug_orig_fixed_orig_broken` checks the check on a fake tree,
-`tests/bug-orig/selftest/fixed-orig/`); its compare test
+`tests/bug-orig/selftest/fixed-orig/`). The marker's old name, the line
+`; @fixed #N`, is refused the same way, with the new name (read as a
+comment it would turn a fixed test into an open one; ctest
+`bug_orig_fixed_old_name_broken`, `tests/bug-orig/selftest/fixed-old-name/`;
+the directive `@fixed` of a TED script: `tedab` refuses it, ctests
+`ted_ab_lint_fixed_wrong` and `bug_orig_ted_fixed_wrong_lint`); `results
+fix-scope` still reads it, as the base of a run may be an older tree that
+has it. Its compare test
 `bug_orig_record_ID` runs in `originals` as an open test's does, and its
 validity check (BROKEN) in every run (`bug_orig_fixed_equal_broken`,
 `bug_orig_ted_fixed_equal_broken`).
 
 ### Fixed tests
 
-**Fixed tests** (`; @fixed #NNN` in the header of `ID.bas`, NNN the
+**Fixed tests** (`; @fixed-orig #NNN` in the header of `ID.bas`, NNN the
 issue of the bug; pass key `fixed=NNN`): the bug is fixed in the port.
 The commit that fixes the bug adds the line and keeps `ID.orig` (the
 `[orig]` side of the pair, compared with the original by
@@ -2814,7 +2821,7 @@ value"). The old form has no marker for an extension.
 
 The instructions for the rounds that move the bug-orig tests whose
 program runs from the old form (`ID.bas`, `ID.expect`, `ID.orig`, the
-header `; @fixed #N`) to the BASIC test model (change
+header `; @fixed-orig #N`) to the BASIC test model (change
 `bug-orig-basic-tests`, design D2); written from the pilot round, which
 moved six `libs/shapeslib-*` tests (`anim-frames-maximum`,
 `loadshape-plane-step`, `-plane-64k`, `-depth-zero`, `-height-zero`,
@@ -2839,7 +2846,7 @@ never in both forms (the registration would take the old one).
 | `ID.expect`, `[run]` | every printed observation that the expectation judged becomes a check (`!CheckEq`, `!CheckStrEq` ...) with the value of the expectation, named; a line that only marks progress ("before", "after") is dropped, or kept as `!Check{0,"after"}` that the configuration expects to be `not-run` |
 | `ID.expect`, `rc=N`, `[session]`, `REQUESTER:` | the assertions `rc`, `session`, `requester` (defaults: `rc == 0`, no requester, the case and the run end); an expected runtime error is announced with `!ExpectError` |
 | `ID.orig`, the lines that differ from `ID.expect` | declared deviations in `[deviations."libs=cd"]` (a library bug) or `compiler=orig195` (a compiler bug), see below |
-| `; @fixed #N` | `fixed-orig = N` (another bug than an original one: `fixed = N`; an extension of the port: `extension = N`) in `ID.test.toml`; the checks and the deviations stay as they are |
+| `; @fixed-orig #N` | `fixed-orig = N` (another bug than an original one: `fixed = N`; an extension of the port: `extension = N`) in `ID.test.toml`; the checks and the deviations stay as they are |
 | `; @configs clib` | the `tests.toml` of the directory: `exclude = ["compiler=orig195,libs=clib"]` and `[matrix]` with `compiler = ["port", "orig195"]`, `libs = ["cd", "clib"]` (`libs/tests.toml`): the cells `port,cd`, `port,clib` and `orig195,cd` |
 | `; @pass runwrap=@INJECT@\|pad` | `pad = "on"` |
 | `; @pass runwrap=@INJECT@\|OPTIONS` | `runwrap = "@INJECT@\|OPTIONS"` |
@@ -3143,7 +3150,7 @@ every `orig210` cell, `cmake/basic-test-model.cmake`).
 **Checklist for a move.**
 
 1. Read the old test (`.bas` header, `.expect`, `.orig`) and the issue:
-   what is the bug, which side shows it, is it fixed (`; @fixed #N`)?
+   what is the bug, which side shows it, is it fixed (`; @fixed-orig #N`)?
 2. Write `ID.test.bas`: header comment, procedures, batch init,
    case(s); one named check per judged value, with the value of the
    `.expect`; `!Require` for the setup; files to `CORPUS:`.
@@ -3433,7 +3440,7 @@ gate D that fails on purpose (`selftest/gates-broken/`) and needs exit status
 (`test_tedab`, "session script without the gates"). `ted_ab` keeps the gates
 in its sessions.
 
-**A fixed TED bug-orig test** (`; @fixed #N` in the header of
+**A fixed TED bug-orig test** (`; @fixed-orig #N` in the header of
 `ted/ID.drv`, N the issue, **no pair**; pass key `fixed=1`): the commit
 that fixes the bug in TED-C adds the line, keeps `ID.orig` (configuring
 stops if it is missing; `orig=` is only checked against the script,
@@ -3450,11 +3457,11 @@ runs Cc, TED-C under blitz2-c with the libraries of the build (pass key
 runs C5, TED-C under the CD's blitz2 2.10 with the CD's libraries.
 Its compare test `bug_orig_record_ID` (label `originals`) runs R5 as
 an open test's does. The directive with a pair
-(`@fixed #N R5-C5`, the `tests/ted-ab` form) is refused in
+(`@fixed-orig #N R5-C5`, the `tests/ted-ab` form) is refused in
 `tests/bug-orig/ted`, and the form without a pair outside it (`tedab`
 parses the scripts of a `bugorig=1` pass in the bug-orig form,
 `bug_orig_ted_lint` too); a `fixed=1` pass over a script without
-`@fixed`, and a pass without `fixed=1` over a fixed one, end with exit
+`@fixed-orig`, and a pass without `fixed=1` over a fixed one, end with exit
 status 2 before any session. Self tests: `bug_orig_ted_fixed_selftest_fixed`
 (an expectation that holds of TED-C: FIXED) and
 `bug_orig_ted_fixed_selftest_regressed` (one that does not: REGRESSED,
@@ -3463,13 +3470,14 @@ naming the bug; label `emulator`), the refusals
 `bug_orig_ted_fixed_with_record`, `bug_orig_ted_fixed_no_bugorig`,
 `bug_orig_ted_no_orig_no_fixed`, `bug_orig_ted_record_no_to`,
 `bug_orig_ted_record_bad` and `bug_orig_ted_fixed_wrong_lint`
-(scripts of `selftest/ted-fixed-wrong/`: a pair, twice, no `#`; host),
+(scripts of `selftest/ted-fixed-wrong/`: a pair, twice, no `#`, the old
+name `@fixed`; host),
 `bug_orig_ted_fixed_equal_broken` (a fixed test whose `ID.orig` says OK:
 BROKEN; host); the
 verdicts in the host test `tedab_bugorig_verdict` ("fixed bug-orig test"
 case of `tests/ted-ab/host/test_tedab.cpp`).
 
-**A TED bug-orig test fixed in the port's pair only** (`; @fixed #N Cc`:
+**A TED bug-orig test fixed in the port's pair only** (`; @fixed-orig #N Cc`:
 the word `Cc` after the number): for a bug whose fix is in blitz2-c, so
 that TED-C under the CD's blitz2 2.10 (C5) cannot have it and keeps the
 bug. The Cc test is the one above (`bug_orig_ID`, label `emulator`, pass
@@ -3488,7 +3496,7 @@ REPRODUCED, that of the first FIXED, so that the real test's check fails:
 `returned 0, expected 1`), `bug_orig_ted_fixed_port_c5` (before any
 session), the lint scripts `e-port-twice`, `f-port-c5`, `g-port-ok` of
 `selftest/ted-fixed-wrong/`, and the parse cases of the host test "fixed
-bug-orig test: @fixed #N without a pair" (`test_tedab`).
+bug-orig test: @fixed-orig #N without a pair" (`test_tedab`).
 
 ### Order of the bug-orig tests
 

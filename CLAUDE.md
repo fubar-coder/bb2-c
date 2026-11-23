@@ -75,7 +75,7 @@ and presets".
    `testing/bug-fix-workflow`): one issue per bug; one fix commit with the
    code change, the test of the expected behaviour (FIXED; in a test of the BASIC test
    model the key `fixed-orig = N` in its `ID.test.toml`, in a test of the
-   old form the header `; @fixed #N`)
+   old form the header `; @fixed-orig #N`)
    — for a library bug that no Blitz program can show (it needs a fake
    library or scripted messages), the `[orig]`/`[fixed #N]` pair in
    `libs_emulator` is that test (D-019) —, `Fixed (#N)`, the kind-F entry in `docs/*/deviations.md`, the changed

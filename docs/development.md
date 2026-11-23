@@ -138,7 +138,7 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
 1. one issue per bug;
 2. in the fix commit: the code change; the test of the expected
    behaviour - the bug-orig test gets `fixed-orig = NNN` in its `ID.test.toml`
-   (a test of the old form: the header `; @fixed #NNN`; another suite: its
+   (a test of the old form: the header `; @fixed-orig #NNN`; another suite: its
    equivalent; the test of an extension of the port: `extension = NNN`)
    and must come out FIXED in
    `ctest --preset all` (`tests/README.md`, "Fixed tests"); the comment
@@ -180,7 +180,7 @@ CD; two runs that must agree), and the file is committed with the test;
 the target writes nothing but the `.orig` files. The compare tests
 `bug_orig_record_ID` (`ctest --preset originals`) run the original
 compiler and TED, compare them with the `.orig` files and write nothing
-(`tests/README.md`, "Recorded originals"). A fixed test (`; @fixed #NNN`,
+(`tests/README.md`, "Recorded originals"). A fixed test (`; @fixed-orig #NNN`,
 also in a TED `tests/bug-orig/ted/ID.drv`: no pair there, TED-C under
 the CD's blitz2 is judged by the script's expectations alone, FIXED or
 REGRESSED, `tests/README.md` "bug-orig tests of TED") keeps its
@@ -356,7 +356,7 @@ again):
   without a library; `cmdref_check_broken`, `cmdref_complete_broken`:
   the checks with broken input.
 * a fixed bug-orig test keeps no recorded original (`ID.orig` next to a
-  `.bas` or a TED `.drv`, each with `; @fixed #N`):
+  `.bas` or a TED `.drv`, each with `; @fixed-orig #N`):
   configuring `tests/bug-orig` fails naming the file
   (`tests/bug-orig/check-fixed-orig.cmake`; ctest
   `bug_orig_fixed_orig_broken` with a fake tree).
