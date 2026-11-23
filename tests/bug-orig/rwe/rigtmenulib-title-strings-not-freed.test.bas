@@ -7,17 +7,17 @@
 ; after.
 ; Correct: the title strings are freed, the free memory stays about the
 ; same.
-; @fixed #695
-; @rwe rigtmenulib
 DEFTYPE .l
-t$=String$("x",1000)
-GTMenuTitle 0,0,t$
-GTFreeMenu 0,0
-a=AvailMem_(0)
-For k=1 To 200
+
+!TestCase{strings}
+  t$=String$("x",1000)
   GTMenuTitle 0,0,t$
   GTFreeMenu 0,0
-Next
-b=AvailMem_(0)
-If a-b>50000 Then NPrint "title strings lost" Else NPrint "title strings freed"
-End
+  a=AvailMem_(0)
+  For k=1 To 200
+    GTMenuTitle 0,0,t$
+    GTFreeMenu 0,0
+  Next
+  b=AvailMem_(0)
+  !CheckEq{a-b>50000,0,"lost"}
+!EndTestCase

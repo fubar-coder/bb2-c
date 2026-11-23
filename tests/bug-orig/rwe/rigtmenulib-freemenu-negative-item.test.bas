@@ -5,13 +5,12 @@
 ; has no error check.  Here with runtime error checking and the item -1.
 ; Correct: the error check refuses the item number: "Illegal Menu Item
 ; number".
-; @fixed #1089
-; @rwe rigtmenulib
-; @pass timeout=30
-; @pass runtime_errors=on
-GTMenuTitle 0,0,"Project"
-GTMenuItem 0,0,0,0,"A"
-NPrint "before"
-GTFreeMenu 0,0,-1
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{negative_item}
+  GTMenuTitle 0,0,"Project"
+  GTMenuItem 0,0,0,0,"A"
+  !ExpectError{"Illegal Menu Item number","refused"}
+  GTFreeMenu 0,0,-1
+  !Check{0,"not_refused"}
+!EndTestCase

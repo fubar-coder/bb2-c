@@ -1,0 +1,8 @@
+# rigtmenulib-menuitem-form4-mutex.test.bas: the original keeps the mask of
+# the item before
+fixed-orig = 692
+rwe = ["rigtmenulib"]
+
+[deviations."compiler=orig210"]
+"check.mutex.data_mask" = "== fail"
+"check.mutex.data_mask.actual" = "== 6"

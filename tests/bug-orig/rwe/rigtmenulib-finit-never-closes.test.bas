@@ -6,11 +6,12 @@
 ; closes of gadtools.library by the process (opencount=).
 ; Correct: gadtools.library is closed again (+0); the original leaves
 ; it +1.
-; @fixed #690
-; @rwe rigtmenulib
-; @pass runwrap=@INJECT@|opencount=gadtools.library
-WbToScreen 0
-GTMenuTitle 0,0,"Project"
-GTMenuItem 0,0,0,0,"Open","O"
-NPrint CreateMenuStrip(0)
-End
+DEFTYPE .l
+
+!TestCase{opencount}
+  WbToScreen 0
+  GTMenuTitle 0,0,"Project"
+  GTMenuItem 0,0,0,0,"Open","O"
+  r=CreateMenuStrip(0)
+  !CheckEq{r,-1,"strip"}
+!EndTestCase

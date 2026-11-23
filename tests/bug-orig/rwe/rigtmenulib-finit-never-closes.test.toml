@@ -1,0 +1,11 @@
+# rigtmenulib-finit-never-closes.test.bas: through inject, which counts the
+# opens minus the closes of gadtools.library
+fixed-orig = 690
+rwe = ["rigtmenulib"]
+runwrap = "@INJECT@|opencount=gadtools.library"
+
+[asserts]
+inject = "contains \"opencount: gadtools.library +0\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"opencount: gadtools.library +1\""
