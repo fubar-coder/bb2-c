@@ -1,0 +1,15 @@
+# 2dlib-poly-one-point.test.bas: with runtime error checking; the requester with its text
+# is the tested behaviour, the case ends in it and the check behind the
+# command does not run (no !ExpectError: the original raises no error)
+fixed-orig = 396
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Poly needs at least 2 Points\""
+"end.case" = "not exists"
+"check.one_point.after" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"end.case" = "exists"
+"check.one_point.after" = "== fail"
