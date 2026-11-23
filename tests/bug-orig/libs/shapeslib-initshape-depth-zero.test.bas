@@ -7,11 +7,12 @@
 ; the shape (+4).  Nothing is blitted.
 ; Correct: an error check refuses the depth: "Illegal Shape Depth", the
 ; command is not done.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{depth_zero}
+  !ExpectError{"Illegal Shape Depth","refused"}
   InitShape 0,16,8,0
   !Check{0,"after"}
 !EndTestCase
