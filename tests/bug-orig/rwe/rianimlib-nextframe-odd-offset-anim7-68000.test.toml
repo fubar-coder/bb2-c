@@ -1,0 +1,21 @@
+# rianimlib-nextframe-odd-offset-anim7-68000.test.bas: on the A600 (68000)
+# the port refuses the odd plane address with the announced error; the
+# original's odd access is an address error (a session of its own: the hang
+# check ends it)
+fixed-orig = 1122
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+machine = "a600"
+runtime-errors = "on"
+timeout = 30
+files = ["anim|@TESTDATA@/rianimlib-nextframe-odd-offset-anim7-68000.anim"]
+isolate = ["compiler=orig210"]
+
+[asserts]
+"check.odd_offset.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.odd_offset.refused" = "== fail"

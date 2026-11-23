@@ -1,0 +1,7 @@
+# riamosfunclib-reserve-all-used.test.bas: the original reserves bank -1 and
+# overwrites the length of bank 1
+fixed-orig = 498
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.reserve_all_used.bank_1_kept" = "== fail"

@@ -1,0 +1,8 @@
+# riamosfunclib-reserve-negative-length.test.bas: the original returns 0, the
+# number of the first bank, for the negative length
+fixed-orig = 500
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.reserve_negative_length.result" = "== fail"
+"check.reserve_negative_length.result.actual" = "== 0"

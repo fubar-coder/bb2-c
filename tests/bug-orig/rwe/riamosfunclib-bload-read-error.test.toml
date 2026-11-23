@@ -1,0 +1,12 @@
+# riamosfunclib-bload-read-error.test.bas: inject fails the first Read of the
+# file; the original answers -1 (success) for it
+fixed-orig = 488
+rwe = ["riamosfunclib"]
+runwrap = "@INJECT@|readfail=bug-orig-bload/1"
+
+[asserts]
+inject = "contains \"inject: readfail: 1 reads failed\""
+
+[deviations."compiler=orig210"]
+"check.bload_read_error.result" = "== fail"
+"check.bload_read_error.result.actual" = "== -1"

@@ -1,0 +1,15 @@
+# rianimlib-init-xy-offset.test.bas: with runtime error checking for the
+# announced error; the original has no error check area, the announcement
+# fails there and the case runs on
+fixed-orig = 514
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+runtime-errors = "on"
+files = ["anim|@TESTDATA@/rianimlib-init-xy-offset.anim"]
+
+[asserts]
+"check.init_xy_offset.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.init_xy_offset.refused" = "== fail"
+"check.init_xy_offset.not_refused" = "== fail"
+requester = "count == 0"

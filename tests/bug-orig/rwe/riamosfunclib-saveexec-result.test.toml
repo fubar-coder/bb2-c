@@ -1,0 +1,12 @@
+# riamosfunclib-saveexec-result.test.bas: the original returns the file
+# name's address for the file it cannot create, and -1 and a file of 28
+# bytes for the empty list
+fixed-orig = 501
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.saveexec_result.no_file" = "== fail"
+"check.saveexec_result.empty_list" = "== fail"
+"check.saveexec_result.empty_list.actual" = "== -1"
+"check.saveexec_result.file_size" = "== fail"
+"check.saveexec_result.file_size.actual" = "== 28"

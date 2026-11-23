@@ -1,0 +1,9 @@
+# rianimlib-nextframe-skip-chunk.test.bas: the original stops at the ANNO
+fixed-orig = 1116
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-nextframe-skip-chunk.anim"]
+
+[deviations."compiler=orig210"]
+"check.skip_chunk.frame_3" = "== fail"
+"check.skip_chunk.frame_3.actual" = "== 0"
+"check.skip_chunk.frame_3_row_1" = "== fail"

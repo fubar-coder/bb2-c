@@ -1,0 +1,10 @@
+# rianimlib-nextframe-anhd-length.test.bas: the original plays frame 3's
+# delta
+fixed-orig = 1117
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-nextframe-anhd-length.anim"]
+
+[deviations."compiler=orig210"]
+"check.anhd_length.result" = "== fail"
+"check.anhd_length.result.actual" = "== -1"
+"check.anhd_length.frame_3_delta" = "== fail"

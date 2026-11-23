@@ -1,0 +1,11 @@
+# riamosfunclib-saveexec-two-hunks.test.bas: LoadSeg of the original's file
+# crashes the session (a session of its own)
+fixed-orig = 503
+rwe = ["riamosfunclib"]
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

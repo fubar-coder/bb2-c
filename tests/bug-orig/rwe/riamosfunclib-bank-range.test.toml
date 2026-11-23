@@ -1,0 +1,10 @@
+# riamosfunclib-bank-range.test.bas: the original takes bank -1 for a bank
+# (the length of the last bank) and Reserve of bank 50 for valid
+fixed-orig = 484
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.bank_range.start_minus_1" = "== fail"
+"check.bank_range.start_minus_1.actual" = "== 100"
+"check.bank_range.reserve_50" = "== fail"
+"check.bank_range.reserve_50.actual" = "== -1"

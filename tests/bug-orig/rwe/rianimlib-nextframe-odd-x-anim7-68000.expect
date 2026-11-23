@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-init -1
-frame 2: -1 row 0 byte 1 000000AA
-REQUESTER: AutoRequest body "Animation position on an odd byte for ANIM7" *
-rc=0

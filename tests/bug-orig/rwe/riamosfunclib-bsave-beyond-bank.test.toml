@@ -1,0 +1,8 @@
+# riamosfunclib-bsave-beyond-bank.test.bas: the original writes the 20 bytes
+# asked for, 10 of them from behind the bank
+fixed-orig = 489
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.bsave_beyond_bank.file_size" = "== fail"
+"check.bsave_beyond_bank.file_size.actual" = "== 20"

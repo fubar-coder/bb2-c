@@ -1,0 +1,8 @@
+# rianimlib-anim7-long-columns-rest.test.bas: the original does not decode
+# column 1
+fixed-orig = 1115
+rwe = ["rianimlib", "ripacklib", "riamosfunclib"]
+files = ["anim|@TESTDATA@/rianimlib-anim7-long-columns-rest.anim"]
+
+[deviations."compiler=orig210"]
+"check.long_columns_rest.column_1" = "== fail"
