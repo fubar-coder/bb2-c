@@ -4,7 +4,8 @@
  * testing/basic-test-interface, "The preprocessed form").
  *
  * It finds the calls of the check macros (`!Check`, `!CheckEq`,
- * `!CheckStrEq`, `!CheckQEq`, `!CheckFltNear`, `!Require`, `!ExpectError`)
+ * `!CheckStrEq`, `!CheckQEq`, `!CheckFltNear`, `!Require`, `!ExpectError`,
+ * and `!RunProgram`, which starts a program: `*r.TLRun=!RunProgram{c$}`)
  * the way the compiler finds
  * macro calls (blitz2's expandmax: a `!` outside strings and comments,
  * the macro name, blanks, `{`), splits their arguments by the compiler's
@@ -66,7 +67,10 @@ enum tp_kind {
     TP_REQUIRE,                 /* !Require{COND} */
     TP_EXPECTERROR,             /* !ExpectError{"MESSAGE"} */
     TP_CHECKQEQ,                /* !CheckQEq{ACTUAL,EXPECTED} (quick values) */
-    TP_CHECKFLTNEAR             /* !CheckFltNear{ACTUAL,EXPECTED,DELTA} (floats) */
+    TP_CHECKFLTNEAR,            /* !CheckFltNear{ACTUAL,EXPECTED,DELTA} (floats) */
+    TP_RUNPROGRAM               /* !RunProgram{COMMAND$}: starts a program (change
+                                   basic-test-local-data); numbered like a
+                                   check, also inside an expression */
 };
 
 /** @brief The kinds of namespaces. */
@@ -86,8 +90,9 @@ struct tp_check {
     unsigned number;            /* the number in the namespace */
     char *name;                 /* the name, NULL: none */
     unsigned line;
-    char *expr;                 /* COND or ACTUAL as written (trimmed); NULL
-                                   for !ExpectError */
+    char *expr;                 /* COND or ACTUAL as written (trimmed), the
+                                   command of !RunProgram; NULL for
+                                   !ExpectError */
     char *expected;             /* EXPECTED (CheckEq, CheckStrEq, CheckQEq,
                                    CheckFltNear), else NULL */
     char *delta;                /* DELTA (CheckFltNear), else NULL */

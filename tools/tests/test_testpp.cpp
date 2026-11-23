@@ -473,3 +473,40 @@ TEST_CASE("testpp: a data source", "[testpp]")
     pp c("x$=\"@CASE@\"\n", "CORPUS:data", "CORPUS:x.test", 1, "x.test/child.bas");
     CHECK(c.errors() == "x.test/child.bas:1: @CASE@ outside a case\n");
 }
+
+// !RunProgram (change basic-test-local-data): numbered like a check, also
+// inside an expression, its command and name in the table
+TEST_CASE("testpp: !RunProgram", "[testpp]")
+{
+    pp p("!TestCase{runs}\n"
+         "  !RunProgram{\"Echo a\"}\n"
+         "  *r.TLRun=!RunProgram{\"@TESTDIR@/child <NIL:\",\"child\"}\n"
+         "  !CheckEq{*r\\rc,20,\"rc\"} : *s.TLRun=!RunProgram{c$+\" x\",\"second\"} ; two on a line\n"
+         "!EndTestCase\n");
+    REQUIRE(p.rc == 0);
+    CHECK(p.text()
+          == "!TestCase{runs}\n"
+             "  !RunProgram{0,\"Echo a\"}\n"
+             "  *r.TLRun=!RunProgram{1,\"CORPUS:x.test/child <NIL:\"}\n"
+             "  !CheckEq{2,*r\\rc,20} : *s.TLRun=!RunProgram{3,c$+\" x\"} ; two on a line\n"
+             "!EndTestCase\n");
+    REQUIRE(p.s.nchecks == 4);
+    CHECK(p.s.checks[1].kind == TP_RUNPROGRAM);
+    CHECK(!strcmp(p.s.checks[1].name, "child"));
+    CHECK(!strcmp(p.s.checks[1].expr, "\"@TESTDIR@/child <NIL:\""));
+    CHECK(!strcmp(p.s.checks[1].ns, "runs"));
+    CHECK(p.s.checks[3].k == 3);
+    CHECK(!strcmp(p.s.checks[3].name, "second"));
+    CHECK(!strcmp(tp_kind_name(TP_RUNPROGRAM), "RunProgram"));
+    CHECK(p.s.checks[0].name == nullptr);
+    // the refusals of a check
+    refused("!TestCase{a}\n  !RunProgram{}\n!EndTestCase\n", "x.test.bas:2: !RunProgram: argument 1 is empty");
+    refused("!TestCase{a}\n  !RunProgram{\"a\",\"b\",\"c\"}\n!EndTestCase\n",
+            "x.test.bas:2: !RunProgram takes 1 argument and an optional name, 3 given");
+    refused("!TestCase{a}\n  !RunProgram{\"a\",n$}\n!EndTestCase\n",
+            "x.test.bas:2: the name of !RunProgram must be a string literal");
+    refused("*r.TLRun=!RunProgram{\"a\"}\n!TestCase{a}\n!EndTestCase\n",
+            "x.test.bas:1: !RunProgram outside the blocks and procedures");
+    refused("!TestCase{a}\n  !RunProgram{\"a\",\"x\"}\n  !CheckEq{1,1,\"x\"}\n!EndTestCase\n",
+            "x.test.bas:3: the check name \"x\" is used twice in a (line 2)");
+}

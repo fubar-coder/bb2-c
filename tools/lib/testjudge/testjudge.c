@@ -662,7 +662,8 @@ static int judge_cell(const struct tj_test *t, size_t cell, int mode, const stru
         }
         {
             static const int want[] = { BASICTEST_CHECK, BASICTEST_CHECK, BASICTEST_CHECKSTR, BASICTEST_REQUIRE,
-                                        BASICTEST_EXPECT_ERROR, BASICTEST_CHECKQ, BASICTEST_CHECKFLT };
+                                        BASICTEST_EXPECT_ERROR, BASICTEST_CHECKQ, BASICTEST_CHECKFLT,
+                                        BASICTEST_RUN };
 
             if (want[c->kind] != en->e.kind) {
                 res = TJ_ERROR;

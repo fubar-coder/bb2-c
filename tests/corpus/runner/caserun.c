@@ -699,10 +699,18 @@ int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
 {
     static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
 
-    for (size_t i = 0; i < src->nchecks; i++)
-        if (src->checks[i].kind == TP_EXPECTERROR && src->checks[i].nskind == TP_NS_CASE
-            && !strcmp(src->checks[i].ns, case_name))
+    for (size_t i = 0; i < src->nchecks; i++) {
+        const struct tp_check *k = &src->checks[i];
+
+        if ((k->kind == TP_EXPECTERROR || k->kind == TP_RUNPROGRAM) && k->nskind == TP_NS_CASE
+            && !strcmp(k->ns, case_name))
             return 1;
+        /* a started program's observations are those of the case that
+           starts it: one in a procedure, the batch init or cleanup may be
+           any case's */
+        if (k->kind == TP_RUNPROGRAM && k->nskind != TP_NS_CASE)
+            return 1;
+    }
     for (size_t c = 0; c < ncells; c++)
         for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
             struct tc_assertions as;

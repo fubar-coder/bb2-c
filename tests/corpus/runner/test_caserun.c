@@ -694,6 +694,28 @@ static void test_case_alone(void)
     CHECK(alone_of(&t, &src, "b") == 0);
     CHECK(alone_of(&t, &src, "e") == 1);
     unload(&t);
+    tp_free(&src);
+    /* a case that starts a program runs on its own (basic-test-local-data);
+       one started in a procedure makes every case run on its own */
+    put("al/r.test.bas", "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
+                         "!TestCase{r}\n  *p.TLRun=!RunProgram{\"Echo x\",\"x\"}\n!EndTestCase\n");
+    put("al/p.test.bas", "Statement st{}\n  *p.TLRun=!RunProgram{\"Echo x\"}\nEnd Statement\n"
+                         "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n");
+    if (!process("al/r.test.bas", &src)) {
+        load(&t, "al/r.test.bas", ENV_RUNNER);
+        CHECK(alone_of(&t, &src, "a") == 0);
+        CHECK(alone_of(&t, &src, "r") == 1);
+        unload(&t);
+        tp_free(&src);
+    }
+    if (!process("al/p.test.bas", &src)) {
+        load(&t, "al/p.test.bas", ENV_RUNNER);
+        CHECK(alone_of(&t, &src, "a") == 1);
+        unload(&t);
+        tp_free(&src);
+    }
+    if (process("al/s.test.bas", &src))
+        return;
     for (size_t q = 0; q < sizeof whole / sizeof whole[0]; q++) {
         char *toml = str_printf("[asserts.\"case=b\"]\n%s = \"%s\"\n", whole[q][0], whole[q][1]);
 

@@ -198,15 +198,15 @@ int tp_block_macro(const char *l, size_t s, size_t e, size_t len, const char **n
 /* ------------------------------------------------------------ the preprocessor */
 
 static const char *const kind_names[] = { "Check", "CheckEq", "CheckStrEq", "Require", "ExpectError",
-                                          "CheckQEq", "CheckFltNear" };
+                                          "CheckQEq", "CheckFltNear", "RunProgram" };
 
 const char *tp_kind_name(int kind)
 {
-    return kind >= 0 && kind <= TP_CHECKFLTNEAR ? kind_names[kind] : "?";
+    return kind >= 0 && kind <= TP_RUNPROGRAM ? kind_names[kind] : "?";
 }
 
 /* the number of arguments of a kind without the name */
-static const int nargs[] = { 1, 2, 2, 1, 1, 2, 3 };
+static const int nargs[] = { 1, 2, 2, 1, 1, 2, 3, 1 };
 
 struct buf {
     char *p;
@@ -268,7 +268,7 @@ static int err(struct ctx *c, const char *fmt, ...)
 /* the check kind of the name l[s..e), -1 none */
 static int check_kind(const char *l, size_t s, size_t e)
 {
-    for (int i = 0; i <= TP_CHECKFLTNEAR; i++)
+    for (int i = 0; i <= TP_RUNPROGRAM; i++)
         if (strlen(kind_names[i]) == e - s && !memcmp(l + s, kind_names[i], e - s))
             return i;
     return -1;

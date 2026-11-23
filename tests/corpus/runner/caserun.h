@@ -234,7 +234,9 @@ const char *cr_side_verdict_name(int v, int originals);
  *        assertion other than a default names an observation of the whole
  *        program (rc, requester, compile, compile.log, output, serial,
  *        inject, session, end.run), or the case's namespace holds an
- *        !ExpectError (the table of the preprocessor).  A conflict of
+ *        !ExpectError or a !RunProgram (the table of the preprocessor), or
+ *        a !RunProgram stands outside every case (a procedure, the batch
+ *        init or cleanup).  A conflict of
  *        assertions counts as such (the run of the case reports it).
  * @return 1 on its own, 0 shared, -1 out of memory
  */
