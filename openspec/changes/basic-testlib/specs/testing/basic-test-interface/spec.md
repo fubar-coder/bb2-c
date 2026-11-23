@@ -103,15 +103,15 @@ belong to the block of the last `block` entry before it.
 
 ### Requirement: A condition is evaluated as a long
 The condition of `!Check` and `!Require` SHALL be evaluated in a Long
-context: a Quick variable or function value in it that is fetched while
-the type so far is Long (the Long parameter, or a Long left operand) is
-cut to a Long at once; Floats and literals with a fraction are not cut. A
-quick value SHALL be checked with `!CheckQEq`, a float value with
-`!CheckFltNear`.
+context: with the original compilers a Quick operand fetched while the
+type so far is Long is cut to a Long at once (Floats and literals with a
+fraction are not), with the port since the fix of #1177 only a compound
+left operand (#1183). A quick value SHALL be checked with `!CheckQEq`, a
+float value with `!CheckFltNear`.
 
 #### Scenario: A quick condition in a plain check
 - **WHEN** a source with `q.q=1.5` holds `!Check{q>1}`
-- **THEN** the check fails, since `q` is cut to the long 1 before the comparison; `!CheckQEq{q,1.5}` passes
+- **THEN** with the original compilers (1.95, 2.10) the check fails, since `q` is cut to the long 1 before the comparison, and with the port it passes; `!CheckQEq{q,1.5}` passes with all of them
 
 ### Requirement: Preconditions and failed checks of the batch init
 A failed precondition SHALL write its `require` entry and `blockend`: the

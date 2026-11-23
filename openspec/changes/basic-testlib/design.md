@@ -332,3 +332,13 @@ task 3.1, not in parallel with it.
   `crc32` (`$CBF43926`, `$9AE0DAAF`, `$6ECB3F72`, `$19CC0FE4`) and the
   400-byte values cut to 200 bytes. How the runner uses them:
   `basic-test-runner` design.md, "String values by length and CRC32".
+
+- **The condition in a Long context since #1177** (step 1 of the test
+  rework measured it): `!Check{q>1}` with `q.q=1.5` fails with blitz2 1.95
+  and the CD's 2.10 and passes with the port, which compares a single
+  Quick operand with its own value since the fix of #1177; a compound left
+  operand is still computed in the type of the context (#1183). The
+  scenario of the requirement "A condition is evaluated as a long" says
+  so (reworded to the measured state, 2026-11-23); the advice to check a
+  quick value with `!CheckQEq` stands, since a test runs with the
+  original compilers too.
