@@ -71,6 +71,8 @@ struct chk {
     size_t nent;                /* entries */
     const struct ent *first, *first_fail;
     int named;                  /* an assertion names it */
+    int ran, ended, rcknown;    /* !RunProgram: its run and runend entries */
+    long long rc;
 };
 
 struct run {
@@ -514,6 +516,47 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             snprintf(got, sizeof got, "\"%.200s\"", v);
         break;
     }
+    case TC_Q_RUN:
+    case TC_Q_RUN_RC:
+    case TC_Q_RUN_OUTPUT: {
+        const struct tp_check *c = tp_find(t->src, a->q.ns, a->q.rest);
+        struct chk *k;
+
+        if (!c || c->kind != TP_RUNPROGRAM)
+            return msg(msgs, "%s:%u: %s: the source has no !RunProgram %s in %s", a->at.file, a->at.line, a->query,
+                       a->q.rest, a->q.ns) ? -1 : TJ_ERROR;
+        k = &r->chk[c - t->src->checks];
+        k->named = 1;
+        if (a->q.kind == TC_Q_RUN) {
+            const char *v = k->ended ? "done" : k->ran ? "open" : "not-run";
+
+            ok = (p->op == TC_P_EQ) == !strcmp(v, p->str);
+            snprintf(got, sizeof got, "%s", v);
+        } else if (a->q.kind == TC_Q_RUN_RC) {
+            if (k->ended && !k->rcknown && p->op != TC_P_NOT_EXISTS && p->op != TC_P_EXISTS)
+                return msg(msgs, "%s:%u: %s %s: the system gave no return code (runend %u -), it cannot be judged",
+                           a->at.file, a->at.line, a->query, a->pred, c->k) ? -1 : TJ_ERROR;
+            if (!k->ended || !k->rcknown) {
+                ok = p->op == TC_P_NOT_EXISTS;
+                snprintf(got, sizeof got, k->ended ? "no return code" : "the program did not return");
+            } else {
+                ok = p->op == TC_P_EXISTS || (p->op != TC_P_NOT_EXISTS && cmp_int(p->op, k->rc, p->num));
+                snprintf(got, sizeof got, "%lld", k->rc);
+            }
+        } else {
+            const char *v = NULL;
+
+            for (size_t i = 0; i < obs->nruns; i++)
+                if (obs->runs[i].k == c->k)
+                    v = obs->runs[i].text;
+            ok = text_pred(p, v);
+            if (!v)
+                snprintf(got, sizeof got, "no output file");
+            else
+                snprintf(got, sizeof got, "\"%.200s\"%s", v, strlen(v) > 200 ? "..." : "");
+        }
+        break;
+    }
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: {
         int present = a->q.kind == TC_Q_END_CASE ? (r->case_ended || r->case_ended_at_error) : r->has_end;
@@ -644,6 +687,27 @@ static int judge_cell(const struct tj_test *t, size_t cell, int mode, const stru
             broken = 1;
             if (msg(msgs, "the test library reports its state broken (line %u): %s", en->line, reason))
                 goto oom;
+            continue;
+        }
+        if (en->e.kind == BASICTEST_RUN || en->e.kind == BASICTEST_RUNEND) {
+            /* a started program, in the blocks of the run */
+            if (en->block < 0 || (en->block == BASICTEST_BLOCK_CASE && !en->in_case))
+                continue;
+            if (!(c = tp_by_k(t->src, en->e.k)) || c->kind != TP_RUNPROGRAM) {
+                res = TJ_ERROR;
+                if (msg(msgs, "the result file: line %u names the run %u, which is no !RunProgram of the source",
+                        en->line, (unsigned)en->e.k))
+                    goto oom;
+                continue;
+            }
+            k = &r.chk[c - t->src->checks];
+            if (en->e.kind == BASICTEST_RUN)
+                k->ran = 1;
+            else {
+                k->ended = 1;
+                k->rcknown = en->e.ok;
+                k->rc = (int32_t)en->e.actual;
+            }
             continue;
         }
         if (en->e.kind != BASICTEST_CHECK && en->e.kind != BASICTEST_CHECKSTR && en->e.kind != BASICTEST_CHECKQ
@@ -854,6 +918,31 @@ static int judge_cell(const struct tj_test *t, size_t cell, int mode, const stru
             }
         }
         tj_msgs_free(&why);
+    }
+    /* the default of the started programs: every one that ran returned */
+    for (size_t i = 0; i < t->src->nchecks; i++) {
+        const struct chk *k = &r.chk[i];
+        int named = 0;
+
+        if (k->c->kind != TP_RUNPROGRAM || !k->ran || k->ended)
+            continue;
+        for (size_t j = 0; j < as.n && !named; j++)
+            named = as.a[j].q.kind == TC_Q_RUN && !strcmp(as.a[j].q.ns, k->c->ns) && k->c->name
+                    && !strcmp(as.a[j].q.rest, k->c->name);
+        for (size_t e = 0; e < ends.n && !named && k->c->name; e++)
+            for (size_t a = 0; a < ends.e[e].nalt && !named; a++)
+                for (size_t j = 0; j < ends.e[e].alt[a].as.n && !named; j++) {
+                    const struct tc_query *q = &ends.e[e].alt[a].as.a[j].q;
+
+                    named = q->kind == TC_Q_RUN && !strcmp(q->ns, k->c->ns) && !strcmp(q->rest, k->c->name);
+                }
+        if (named)
+            continue;
+        if (msg(msgs, "the program !RunProgram %s%s%s (%s:%u) did not return (no runend %u)", k->c->name ? "\"" : "",
+                k->c->name ? k->c->name : "", k->c->name ? "\"" : "", t->file, k->c->line, k->c->k))
+            goto oom;
+        if (res == TJ_PASS)
+            res = TJ_FAIL;
     }
     /* the default of the checks: every check with entries passed */
     for (size_t i = 0; i < t->src->nchecks; i++) {

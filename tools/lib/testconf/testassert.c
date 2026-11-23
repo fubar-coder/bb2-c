@@ -68,6 +68,35 @@ int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msgle
         q->ns[p - ns] = 0;
         return 0;
     }
+    if (!strncmp(text, "run.", 4)) {
+        const char *ns = text + 4, *p = ns;
+        size_t n;
+
+        while (ident_char((unsigned char)*p, p == ns))
+            p++;
+        if (p == ns || *p != '.' || !p[1])
+            return tc_err(msg, msglen,
+                          "the query \"%s\": run.NAMESPACE.NAME[.rc|.output] expected (NAMESPACE the case or "
+                          "procedure of the !RunProgram NAME)", text);
+        n = strlen(p + 1);
+        q->kind = TC_Q_RUN;
+        if (n > 3 && !strcmp(p + 1 + n - 3, ".rc")) {
+            q->kind = TC_Q_RUN_RC;
+            n -= 3;
+        } else if (n > 7 && !strcmp(p + 1 + n - 7, ".output")) {
+            q->kind = TC_Q_RUN_OUTPUT;
+            n -= 7;
+        }
+        if (!(q->ns = malloc((size_t)(p - ns) + 1)) || !(q->rest = malloc(n + 1))) {
+            tc_query_free(q);
+            return -2;
+        }
+        memcpy(q->ns, ns, (size_t)(p - ns));
+        q->ns[p - ns] = 0;
+        memcpy(q->rest, p + 1, n);
+        q->rest[n] = 0;
+        return 0;
+    }
     if (!strncmp(text, "data.", 5)) {
         if (!text[5])
             return tc_err(msg, msglen, "the query \"%s\": data.FILE expected (FILE a data file of ID.test/)", text);
@@ -117,6 +146,9 @@ static unsigned allowed_ops(int qkind)
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: return EX;
     case TC_Q_CHECK: return CMP | B(TC_P_CONTAINS) | B(TC_P_NOT_CONTAINS) | B(TC_P_MATCHES);
+    case TC_Q_RUN: return B(TC_P_EQ) | B(TC_P_NE);
+    case TC_Q_RUN_RC: return CMP | EX;
+    case TC_Q_RUN_OUTPUT: return TEXT | EX;
     }
     return 0;
 }
@@ -129,6 +161,7 @@ static const char *allowed_words(int qkind)
     case TC_Q_DATA: return "ok|none";
     case TC_Q_SESSION: return "done|timeout|halt";
     case TC_Q_CHECK: return "ok|fail|not-run";
+    case TC_Q_RUN: return "done|open|not-run";
     }
     return NULL;
 }
@@ -289,8 +322,9 @@ int tc_pred_parse(const char *text, int qkind, struct tc_pred *pr, char *msg, si
         else if (op == TC_P_EXISTS || op == TC_P_NOT_EXISTS)
             ok = 1;
         else if (op == TC_P_EQ || op == TC_P_NE)
-            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK))
-                 || (pr->vtype == TC_PV_STR && qkind != TC_Q_RC && qkind != TC_Q_SESSION)
+            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK || qkind == TC_Q_RUN_RC))
+                 || (pr->vtype == TC_PV_STR && qkind != TC_Q_RC && qkind != TC_Q_SESSION && qkind != TC_Q_RUN
+                     && qkind != TC_Q_RUN_RC)
                  || (pr->vtype == TC_PV_WORD && word_in(allowed_words(qkind), pr->str));
         else
             ok = pr->vtype == TC_PV_INT;
@@ -390,6 +424,9 @@ static int end_query(int kind)
     case TC_Q_END_RUN:
     case TC_Q_OUTPUT:
     case TC_Q_CHECK:
+    case TC_Q_RUN:
+    case TC_Q_RUN_RC:
+    case TC_Q_RUN_OUTPUT:
         return 1;
     }
     return 0;
@@ -427,7 +464,8 @@ static int check_ends(const struct tc_config *c, char *err, size_t errlen)
             if (r == 0 && !end_query(q.kind)) {
                 tc_query_free(&q);
                 tc_err(err, errlen, "%s:%u: the alternative end %s: the query %s does not vary with the end "
-                       "(an alternative names session, rc, requester, end.case, end.run, output or check.*)",
+                       "(an alternative names session, rc, requester, end.case, end.run, output, check.* or "
+                       "run.*)",
                        t->at.file, t->at.line, t->key, qt);
                 free(qt);
                 free(pt);
@@ -694,7 +732,7 @@ int tc_query_same(const struct tc_query *a, const struct tc_query *b)
         return 0;
     if (a->kind == TC_Q_DATA)
         return a->rest && b->rest && !strcmp(a->rest, b->rest);
-    if (a->kind != TC_Q_CHECK)
+    if (a->kind != TC_Q_CHECK && a->kind != TC_Q_RUN && a->kind != TC_Q_RUN_RC && a->kind != TC_Q_RUN_OUTPUT)
         return 1;
     return a->ns && b->ns && a->rest && b->rest && !strcmp(a->ns, b->ns) && !strcmp(a->rest, b->rest);
 }

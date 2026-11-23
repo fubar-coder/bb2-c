@@ -516,6 +516,42 @@ TEST_CASE("testconf: test-local data", "[testconf]")
         tc_free(&cd);
     }
 
+    // the queries of a started program (run.NS.NAME, .rc, .output): their predicates
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== open\"\n\"run.a.b.rc\" = \"== 20\"\n"
+                           "\"run.a.b.output\" = \"contains \\\"x\\\"\"\n");
+    {
+        tc_config cr;
+
+        REQUIRE(resolve(t, "x.test.bas", &cr, &e) == 0);
+        tc_free(&cr);
+    }
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== 20\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a.b\" = \"== timeout\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a.b.rc\" = \"contains \\\"x\\\"\"\n");
+    refused(t, "x.test.bas", { own + ":2: run.a.b.rc: " });
+    t.write("x.test.toml", "[asserts]\n\"run.a\" = \"== done\"\n");
+    refused(t, "x.test.bas", { own + ":2: the query \"run.a\": run.NAMESPACE.NAME[.rc|.output] expected" });
+    {
+        tc_query q;
+        char m[300];
+
+        REQUIRE(tc_query_parse("run.case_1.child.output", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN_OUTPUT);
+        CHECK(!strcmp(q.ns, "case_1"));
+        CHECK(!strcmp(q.rest, "child"));
+        tc_query_free(&q);
+        REQUIRE(tc_query_parse("run.a.x.y.rc", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN_RC);
+        CHECK(!strcmp(q.rest, "x.y"));
+        tc_query_free(&q);
+        REQUIRE(tc_query_parse("run.a.rc", &q, m, sizeof m) == 0);
+        CHECK(q.kind == TC_Q_RUN);
+        CHECK(!strcmp(q.rest, "rc"));
+        tc_query_free(&q);
+    }
+
     // D4: a fixed option that needs original material, in a test with a
     // cell of the side port (the matrix of the test)
     auto matrix = [&](const std::string &toml, int want, std::initializer_list<std::string> what) {

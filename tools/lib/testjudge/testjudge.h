@@ -34,6 +34,14 @@
  * one that does not give what its assertion (or the default) asks makes
  * the cell broken: the setup failed, the tested behaviour was not reached.
  *
+ * A program a case started (!RunProgram, change basic-test-local-data) is
+ * the query run.NS.NAME: done (its runend entry is there), open (its run
+ * entry only: it did not return), not-run; run.NS.NAME.rc its return code
+ * (a query of it cannot be judged where the system gave none, `-`) and
+ * run.NS.NAME.output what it wrote (tj_obs.runs).  Every program that ran
+ * must have returned unless an assertion names its query run.NS.NAME; its
+ * return code has no default.
+ *
  * Where the deviations apply, the alternative ends of the cell (testconf.h
  * tc_ends_for) judge the queries their alternatives name instead of the
  * assertions and the defaults: one alternative must hold wholly; the report
@@ -73,6 +81,12 @@ struct tj_requester {
                                    all of them */
 };
 
+/** @brief What a started program wrote: the file CORPUS:out/run-K.out. */
+struct tj_runout {
+    unsigned long k;            /* the number of its !RunProgram */
+    const char *text;           /* the file, 0-terminated */
+};
+
 /** @brief The compile of a data source of ID.test/ (basic-compile). */
 struct tj_data {
     const char *file;           /* its path relative to ID.test/ */
@@ -99,6 +113,8 @@ struct tj_obs {
     size_t result_len;
     const struct tj_data *data; /* the compiles of the data sources of the cell */
     size_t ndata;
+    const struct tj_runout *runs;       /* the output files of the started programs */
+    size_t nruns;
 };
 
 /** @brief The result of a cell. */

@@ -178,6 +178,14 @@ static int check_query(const char *text, const struct tc_tabkey *t, const struct
 
     if (tc_query_parse(text, &q, m, sizeof m))
         return 0;
+    if (q.kind == TC_Q_RUN || q.kind == TC_Q_RUN_RC || q.kind == TC_Q_RUN_OUTPUT) {
+        const struct tp_check *c = tp_find(src, q.ns, q.rest);
+
+        if ((!c || c->kind != TP_RUNPROGRAM)
+            && pushf(errs, "%s:%u: %s: the source has no !RunProgram named %s in %s", t->at.file, t->at.line, text,
+                     q.rest, q.ns))
+            r = -1;
+    }
     if (q.kind == TC_Q_CHECK) {
         size_t len = strlen(q.rest);
         int found = tp_find(src, q.ns, q.rest) != NULL;

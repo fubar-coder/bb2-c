@@ -246,6 +246,9 @@ file(WRITE ${s}/other/conf.test.toml "timout = 60\n")
 refused("other/conf.test.toml:1: unknown key timout" ${s}/other/conf.test.bas)
 file(WRITE ${s}/other/conf.test.toml "[asserts]\n\"check.a.width\" = \"== ok\"\n")
 refused("other/conf.test.toml:2: check.a.width: the source has no check named width in a" ${s}/other/conf.test.bas)
+file(WRITE ${s}/other/conf.test.toml "[asserts]\n\"run.a.child.rc\" = \"== 20\"\n")
+refused("other/conf.test.toml:2: run.a.child.rc: the source has no !RunProgram named child in a"
+	${s}/other/conf.test.bas)
 file(WRITE ${s}/other/conf.test.toml
 	"[ends.\"libs=cd\"]\nreason = \"r\"\nhangs = [\"session == timeout\", \"check.a.width == not-run\"]\n")
 refused("other/conf.test.toml:3: check.a.width: the source has no check named width in a" ${s}/other/conf.test.bas)

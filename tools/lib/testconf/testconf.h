@@ -402,17 +402,22 @@ enum tc_qkind {
     TC_Q_END_CASE,              /* end.case: the end entry of the case */
     TC_Q_END_RUN,               /* end.run: the end entry of the run */
     TC_Q_CHECK,                 /* check.NS.NAME[.expected|.actual] */
-    TC_Q_DATA                   /* data.FILE: the compile of a data source of
+    TC_Q_DATA,                  /* data.FILE: the compile of a data source of
                                    ID.test/ (ok, error LINE MESSAGE, none) */
+    TC_Q_RUN,                   /* run.NS.NAME: the program !RunProgram NAME
+                                   started (done, open, not-run) */
+    TC_Q_RUN_RC,                /* run.NS.NAME.rc: its return code */
+    TC_Q_RUN_OUTPUT             /* run.NS.NAME.output: what it wrote */
 };
 
 /** @brief A parsed query. */
 struct tc_query {
     int kind;                   /* enum tc_qkind */
-    char *ns;                   /* TC_Q_CHECK: the namespace */
+    char *ns;                   /* TC_Q_CHECK, TC_Q_RUN*: the namespace */
     char *rest;                 /* TC_Q_CHECK: NAME, NAME.expected or
                                    NAME.actual (the judge splits it against
-                                   the names of the checks); TC_Q_DATA: FILE */
+                                   the names of the checks); TC_Q_DATA: FILE;
+                                   TC_Q_RUN*: NAME */
 };
 
 /** @brief The operators of a predicate. */

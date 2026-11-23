@@ -1118,6 +1118,9 @@ struct obs {
     struct tj_data *data;       /* the compiles of the data sources */
     char **dres;
     size_t ndata;
+    struct tj_runout *runs;     /* the output files of the started programs */
+    char **rtext;
+    size_t nruns;
 };
 
 static void obs_free(struct obs *ob)
@@ -1137,6 +1140,10 @@ static void obs_free(struct obs *ob)
         free(ob->dres[i]);
     free(ob->dres);
     free(ob->data);
+    for (size_t i = 0; i < ob->nruns; i++)
+        free(ob->rtext[i]);
+    free(ob->rtext);
+    free(ob->runs);
     memset(ob, 0, sizeof *ob);
 }
 
@@ -1184,8 +1191,42 @@ static int observe_data(const struct cell *c, const struct tc_config *conf, stru
     return 0;
 }
 
-static int observe_cell(const struct cell *c, const struct tc_config *conf, const struct tp_driver *d,
-                        const char *file, struct obs *ob)
+/* the output files of the started programs of a cell, CORPUS:out/run-K.out
+   (also of one that did not return) */
+static int observe_runs(const struct cell *c, const struct tp_source *src, struct obs *ob)
+{
+    size_t n = 0;
+
+    for (size_t i = 0; i < src->nchecks; i++)
+        n += src->checks[i].kind == TP_RUNPROGRAM;
+    if (!n)
+        return 0;
+    if (!(ob->runs = calloc(n, sizeof *ob->runs)) || !(ob->rtext = calloc(n, sizeof *ob->rtext)))
+        return -1;
+    for (size_t i = 0; i < src->nchecks; i++) {
+        const struct tp_check *k = &src->checks[i];
+        char *path;
+        size_t len;
+
+        if (k->kind != TP_RUNPROGRAM)
+            continue;
+        if (!(path = str_printf("%s/%s/vol/out/run-%u.out", c->p.work, c->tag, k->k)))
+            return -1;
+        ob->rtext[ob->nruns] = (char *)read_file(path, &len);
+        free(path);
+        if (!ob->rtext[ob->nruns])
+            continue;           /* not started */
+        ob->runs[ob->nruns].k = k->k;
+        ob->runs[ob->nruns].text = ob->rtext[ob->nruns];
+        ob->nruns++;
+    }
+    ob->o.runs = ob->runs;
+    ob->o.nruns = ob->nruns;
+    return 0;
+}
+
+static int observe_cell(const struct cell *c, const struct tc_config *conf, const struct tp_source *src,
+                        const struct tp_driver *d, const char *file, struct obs *ob)
 {
     char *dir = str_printf("%s/%s/vol/out", c->p.work, c->tag), *path;
     size_t len;
@@ -1259,7 +1300,7 @@ static int observe_cell(const struct cell *c, const struct tc_config *conf, cons
     ob->o.rc = ob->run.rc;
     ob->o.req = ob->req;
     ob->o.nreq = ob->run.nreq;
-    if (observe_data(c, conf, ob))
+    if (observe_data(c, conf, ob) || observe_runs(c, src, ob))
         goto out;
     r = 0;
 out:
@@ -2046,7 +2087,7 @@ static int run_set(struct ctx *x, struct set *s)
     }
     /* the observations */
     for (size_t k = 0; k < s->ncells; k++)
-        if (observe_cell(&s->c[k], &x->conf, &s->drv, x->file, &s->ob[k])) {
+        if (observe_cell(&s->c[k], &x->conf, &x->src, &s->drv, x->file, &s->ob[k])) {
             fprintf(x->log, "corpusrun case: out of memory\n");
             goto out;
         }

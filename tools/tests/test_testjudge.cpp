@@ -992,3 +992,88 @@ TEST_CASE("testjudge: the compile of a data source", "[testjudge]")
         CHECK(has(m, "assertion data.child.bas contains \"Syntax Error\""));
     }
 }
+
+// the queries of a started program (change basic-test-local-data):
+// run.NS.NAME, .rc, .output; the default: every program that ran returned
+TEST_CASE("testjudge: a started program", "[testjudge]")
+{
+    static const char runsrc[] = "!TestCase{ctrlc}\n"                                      // 1
+                                 "  *r.TLRun=!RunProgram{\"CORPUS:x.test/child\",\"edit\"}\n"   // 2  K0
+                                 "  !CheckEq{*r\\rc,20,\"rc\"}\n"                          // 3  K1
+                                 "  !RunProgram{\"Echo x\"}\n"                              // 4  K2
+                                 "!EndTestCase\n";
+    const std::string hd = "begin|1\nblock|case|ctrlc\n";
+    const std::string done = hd + "run|0\nrunend|0|$00000014\ncheck|1|ok|$00000014|$00000014\nrun|2\nrunend|2|$00000000\n"
+                             "blockend\nend\n";
+    std::string m;
+    tj_runout outs[] = { { 0, "***Break\n" }, { 2, "x\n" } };
+
+    {
+        fixture f("", "", "ctrlc", runsrc);
+        obs o(done);
+
+        o.o.runs = outs;
+        o.o.nruns = 2;
+        // returned: passes by the defaults, the return code has none
+        CHECK(judge(f, o, m) == TJ_PASS);
+        CHECK(m == "");
+        // open: the run without its runend, the session ended
+        obs open(hd + "run|0\n", -1);
+        open.o.has_rc = 0;
+        open.o.session = "timeout";
+        open.o.runs = outs;
+        open.o.nruns = 1;
+        CHECK(judge(f, open, m) == TJ_FAIL);
+        CHECK(has(m, "the program !RunProgram \"edit\" (x.test.bas:2) did not return (no runend 0)"));
+    }
+    {
+        // the queries: open with its output kept, declared
+        fixture f("", "[asserts]\n\"run.ctrlc.edit\" = \"== open\"\n\"run.ctrlc.edit.output\" = \"contains \\\"Break\\\"\"\n"
+                  "session = \"== timeout\"\n\"end.case\" = \"not exists\"\n\"end.run\" = \"not exists\"\n"
+                  "rc = \"not exists\"\n",
+                  "ctrlc", runsrc);
+        obs open(hd + "run|0\n");
+        open.o.has_rc = 0;
+        open.o.session = "timeout";
+        open.o.runs = outs;
+        open.o.nruns = 1;
+        CHECK(judge(f, open, m) == TJ_PASS);
+        CHECK(m == "");
+        // the same declared on a run that returned: fails, naming it
+        obs o(done);
+        o.o.runs = outs;
+        o.o.nruns = 2;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion run.ctrlc.edit == open"));
+        CHECK(has(m, "does not hold: done"));
+    }
+    {
+        // rc 20 asserted in the toml
+        fixture f("", "[asserts]\n\"run.ctrlc.edit.rc\" = \"== 20\"\n", "ctrlc", runsrc);
+        obs o(done);
+
+        CHECK(judge(f, o, m) == TJ_PASS);
+        obs o2(hd + "run|0\nrunend|0|$00000000\ncheck|1|ok|$00000014|$00000014\nblockend\nend\n");
+        CHECK(judge(f, o2, m) == TJ_FAIL);
+        CHECK(has(m, "assertion run.ctrlc.edit.rc == 20"));
+        // the system gave no return code: cannot be judged
+        obs o3(hd + "run|0\nrunend|0|-\ncheck|1|ok|$00000014|$00000014\nblockend\nend\n");
+        CHECK(judge(f, o3, m) == TJ_ERROR);
+        CHECK(has(m, "the system gave no return code (runend 0 -), it cannot be judged"));
+    }
+    {
+        // not-run: the case did not reach it
+        fixture f("", "[asserts]\n\"run.ctrlc.edit\" = \"== not-run\"\n", "ctrlc", runsrc);
+        obs o(hd + "blockend\nend\n");
+
+        CHECK(judge(f, o, m) == TJ_PASS);
+    }
+    {
+        // a run entry of a number that is no !RunProgram
+        fixture f("", "", "ctrlc", runsrc);
+        obs o(hd + "run|1\nblockend\nend\n");
+
+        CHECK(judge(f, o, m) == TJ_ERROR);
+        CHECK(has(m, "line 3 names the run 1, which is no !RunProgram of the source"));
+    }
+}
