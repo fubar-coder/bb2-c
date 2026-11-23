@@ -1,0 +1,17 @@
+# expr-limits.test.bas: the data sources one step beyond each limit;
+# each compile ends with the error at the line of the expression
+[data]
+"brackets64.bas" = "basic-compile"
+"pending65.bas" = "basic-compile"
+"calls32.bas" = "basic-compile"
+"operand-d8.bas" = "basic-compile"
+"right30.bas" = "basic-compile"
+"minus64.bas" = "basic-compile"
+
+[asserts]
+"data.brackets64.bas" = "== \"error 10 Precedence Stack Overflow\""
+"data.pending65.bas" = "== \"error 10 Precedence Stack Overflow\""
+"data.calls32.bas" = "== \"error 10 Expression too Complex\""
+"data.operand-d8.bas" = "== \"error 4 Expression too Complex\""
+"data.right30.bas" = "== \"error 11 Expression too Complex\""
+"data.minus64.bas" = "== \"error 10 Precedence Stack Overflow\""
