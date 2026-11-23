@@ -7,9 +7,6 @@
 ; original then also hangs at its exit, compiler-macrobuff-freemem-large).
 ; Correct: the buffer has the size of the option, the program compiles
 ; and prints the length of a$.
-; @fixed #336
-; @pass jobline=macrobuf=16384
-; @hang-after 0
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -132,6 +129,8 @@ a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 End Macro
-!big
-NPrint Len(a$)
-End
+
+!TestCase{macro_buffer}
+  !big
+  !CheckEq{Len(a$),70,"length"}
+!EndTestCase

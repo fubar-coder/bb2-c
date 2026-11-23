@@ -1,0 +1,10 @@
+# compiler-macro-end-line-include.test.bas: the original compiles the glued
+# copy as a statement and fails with a Syntax Error at the Include line
+fixed-orig = 968
+files = ["src/inc.bb2|@TESTDATA@/compiler-macro-end-line-include.inc"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

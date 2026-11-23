@@ -5,15 +5,18 @@
 ; collector goes on behind the line's terminator.  The stored 0 ends the
 ; expanded line: the End If is lost and the call fails with "If Without End
 ; If" (the include case is compiler-macro-end-line-include).
-; Correct (AmiBlitz3): the macro body is complete, the program prints
-; after and done.
-; @fixed #968
+; Correct (AmiBlitz3): the macro body is complete, the program runs on
+; behind the macro (the old test printed after and done).
+DEFTYPE .l
 Macro m
   If `1
     End
   End If
-  NPrint "after"
+  reached=1
 End Macro
-!m{0}
-NPrint "done"
-End
+
+!TestCase{macro_end_line}
+  reached=0
+  !m{0}
+  !CheckEq{reached,1,"after_macro"}
+!EndTestCase

@@ -9,14 +9,12 @@
 ; its macrobuff always has 8192 bytes (#336), so it cannot make the
 ; resident ("Macro too Big").
 ; Correct: the program finds the constant and expands the whole macro; it
-; prints 7 and 5.
-; @fixed #995
-; @pass file=r.bb2|@TESTDATA@/compiler-resmacs-textlen-max.res
-; @pass jobline=macrobuf=100000
-; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res|defaults
-; @pass timeout=60
-b.l=0
-!big
-NPrint b
-NPrint #c
-End
+; sets b to 7 and #c is 5.
+DEFTYPE .l
+
+!TestCase{macro_text_max}
+  b=0
+  !big
+  !CheckEq{b,7,"macro_expanded"}
+  !CheckEq{#c,5,"constant"}
+!EndTestCase

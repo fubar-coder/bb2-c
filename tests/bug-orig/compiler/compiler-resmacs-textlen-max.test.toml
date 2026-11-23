@@ -1,0 +1,18 @@
+# compiler-resmacs-textlen-max.test.bas: the original's macro buffer keeps
+# its 8192 bytes whatever the option says (#336), so it cannot make the
+# resident ("Macro too Big", in the log of the job r) and the compile of the
+# driver fails at !big; the original also hangs at its exit (the buffer is
+# freed with the option's size), which ends the session at its limit: a
+# session of its own for the original compiler
+fixed-orig = 995
+files = ["r.bb2|@TESTDATA@/compiler-resmacs-textlen-max.res"]
+jobline = ["macrobuf=100000", "resident=r|CORPUS:r.bb2|CORPUS:out/r.res|defaults"]
+timeout = 60
+isolate = ["compiler=orig195"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Macro not Found\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
