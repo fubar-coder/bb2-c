@@ -1,0 +1,2 @@
+# the folded divisions run ldivlib's divchk inside the compiler
+runtime-errors = "on"

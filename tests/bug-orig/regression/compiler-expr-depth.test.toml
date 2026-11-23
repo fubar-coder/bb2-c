@@ -1,0 +1,3 @@
+# the shell's default stack, on Kickstart 1.3
+machine = "a500"
+stack = 4000
