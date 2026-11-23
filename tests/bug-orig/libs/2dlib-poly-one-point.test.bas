@@ -10,9 +10,8 @@
 ; (sanity: one short line, no error) and for 1 point.
 ; Correct: the error check refuses the count: "Poly needs at least 2
 ; Points".  The original draws the 65536 lines.
-; @fixed #396
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
 Function.l nset{}
   pl.l=Peek.l(Addr BitMap(0)+8) : n.l=0
@@ -21,14 +20,15 @@ Function.l nset{}
   Next
   Function Return n
 End Function
-BitMap 0,320,200,1
-p=AllocMem(262400,$10000)
-Poke.w p,40 : Poke.w p+2,30 : Poke.w p+4,47 : Poke.w p+6,30
-Poly 2,p,1
-NPrint "2 points, at most 2 bytes set ",nset{}<=2
-Cls
-Poke.w p+4,0
-Poly 1,p,1
-NPrint "1 point, bytes set ",nset{}
-FreeMem p,262400
-End
+
+!TestCase{one_point}
+  BitMap 0,320,200,1
+  p=AllocMem(262400,$10000)
+  Poke.w p,40 : Poke.w p+2,30 : Poke.w p+4,47 : Poke.w p+6,30
+  Poly 2,p,1
+  !Check{nset{}<=2,"two_points"}
+  Cls
+  Poke.w p+4,0
+  Poly 1,p,1
+  !Check{0,"after"}
+!EndTestCase

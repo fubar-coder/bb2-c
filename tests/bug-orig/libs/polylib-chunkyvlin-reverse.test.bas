@@ -12,9 +12,8 @@
 ; error), then ChunkyVlin 0,50,40.  Counted: words written.
 ; Correct: the error check refuses the second line: "ChunkyVlin y1 MUST
 ; NOT be greater than y2".  The original writes about 65536 words.
-; @fixed #417
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
 Function.l nset{m.l}
   n.l=0
@@ -23,17 +22,17 @@ Function.l nset{m.l}
   Next
   Function Return n
 End Function
-cs=CustomChunkySize(64,16)
-InitCopList 0,44,64,1,0,2,cs
-CustomChunky 0,0,8,64,16,1
-c=Addr CopList(0)
-ch=Peek.l(c+96) : cc=Peek.w(c+108)
-m=AllocMem(140000,$10000)
-Poke.l c+96,m : Poke.w c+108,2
-ChunkyVlin 0,40,50,$FFF
-NPrint "40 to 50: ",nset{m}
-ChunkyVlin 0,50,40,$FFF
-Poke.l c+96,ch : Poke.w c+108,cc
-NPrint "50 to 40, at most 22 words ",nset{m}<=22
-FreeMem m,140000
-End
+
+!TestCase{reverse_range}
+  cs=CustomChunkySize(64,16)
+  InitCopList 0,44,64,1,0,2,cs
+  CustomChunky 0,0,8,64,16,1
+  c=Addr CopList(0)
+  ch=Peek.l(c+96) : cc=Peek.w(c+108)
+  m=AllocMem(140000,$10000)
+  Poke.l c+96,m : Poke.w c+108,2
+  ChunkyVlin 0,40,50,$FFF
+  !CheckEq{nset{m},11,"forty_to_fifty"}
+  ChunkyVlin 0,50,40,$FFF
+  !Check{0,"after"}
+!EndTestCase

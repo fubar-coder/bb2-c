@@ -1,5 +1,0 @@
-[compile]
-ok
-[run]
-REQUESTER: AutoRequest body "Sprite channels must be of different pairs" pos "OKAY!" neg "OKAY!" -> answered FALSE
-rc=0

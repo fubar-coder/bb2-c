@@ -1,0 +1,15 @@
+# collslib-scoll-same-pair.test.bas: with runtime error checking; the requester with its text
+# is the tested behaviour, the case ends in it and the check behind the
+# command does not run (no !ExpectError: the original raises no error)
+fixed-orig = 110
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Sprite channels must be of different pairs\""
+"end.case" = "not exists"
+"check.same_pair.after" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"end.case" = "exists"
+"check.same_pair.after" = "== fail"

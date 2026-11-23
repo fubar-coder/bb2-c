@@ -9,14 +9,15 @@
 ; Correct: the error check stops SColl(0,1) with "Sprite channels must
 ; be of different pairs".  The original has no check and returns a
 ; value.
-; @fixed #110
-; @configs clib
-; @pass runtime_errors=on
+; The error is the tested behaviour; the message is judged by the requester
+; (see the configuration), so it is not announced with !ExpectError.
 DEFTYPE .l
-BLITZ
-Slice 0,44,320,200,$fff8,2,8,8,320,320
-DoColl
-a=SColl(0,1)
-AMIGA
-NPrint "returned"
-End
+
+!TestCase{same_pair}
+  BLITZ
+  Slice 0,44,320,200,$fff8,2,8,8,320,320
+  DoColl
+  a=SColl(0,1)
+  AMIGA
+  !Check{0,"after"}
+!EndTestCase
