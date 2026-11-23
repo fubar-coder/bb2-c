@@ -10,11 +10,11 @@
 ; for the line (2 longs) comes first.
 ; Correct: 2 x 4 + 8 = 16 bytes into the custom area.  The original:
 ; 2 x 64 + 8 = 136.
-; @fixed #324
-; @configs clib
 DEFTYPE .l
-InitCopList 0,44,32,$10004,8,32,80
-c=Addr CopList(0)
-CustomSprites 0,2,14,2
-NPrint "custom sprite moves at ",Peek.l(c+92)-Peek.l(c+28)
-End
+
+!TestCase{ccoffset}
+  InitCopList 0,44,32,$10004,8,32,80
+  c=Addr CopList(0)
+  CustomSprites 0,2,14,2
+  !CheckEq{Peek.l(c+92)-Peek.l(c+28),16,"sprite_moves_offset"}
+!EndTestCase

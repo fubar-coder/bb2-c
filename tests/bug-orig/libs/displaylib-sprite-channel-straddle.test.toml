@@ -1,0 +1,16 @@
+# displaylib-sprite-channel-straddle.test.bas: the handler of the expected
+# error ends the program, so the case has no end entry and the checks behind
+# the faulty statement are not run; the original raises no error and
+# overwrites four of the eight longs behind the normal bank
+fixed-orig = 414
+
+[asserts]
+"end.case" = "not exists"
+"check.straddle.not_refused" = "== not-run"
+"check.straddle.kept_no_error" = "== not-run"
+
+[deviations."libs=cd"]
+"end.case" = "exists"
+"check.straddle.not_refused" = "== fail"
+"check.straddle.kept_no_error" = "== fail"
+"check.straddle.kept_no_error.actual" = "== 4"

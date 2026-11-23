@@ -7,14 +7,16 @@
 ; CopList: 16 bytes per channel, POS, CTL, PTH, PTL).
 ; Correct: the sprite pointer of an unused channel is the blank sprite
 ; (not 0), its position and control words are 0.
-; @fixed #413
-; @configs clib
 DEFTYPE .l
-InitCopList 0,44,32,$10004,8,32,80
-p=Peek.l(Addr CopList(0)+12)
-Print "regs ",Right$(Hex$(Peek.w(p)),4)," ",Right$(Hex$(Peek.w(p+4)),4)
-NPrint " ",Right$(Hex$(Peek.w(p+8)),4)," ",Right$(Hex$(Peek.w(p+12)),4)
-v=((Peek.w(p+10) AND $FFFF) LSL 16) | (Peek.w(p+14) AND $FFFF)
-NPrint "pointer set ",v<>0
-NPrint "pos and ctl 0 ",(Peek.w(p+2)=0) AND (Peek.w(p+6)=0)
-End
+
+!TestCase{channel_0}
+  InitCopList 0,44,32,$10004,8,32,80
+  p=Peek.l(Addr CopList(0)+12)
+  !CheckEq{Peek.w(p),$140,"reg_pos"}
+  !CheckEq{Peek.w(p+4),$142,"reg_ctl"}
+  !CheckEq{Peek.w(p+8),$120,"reg_pth"}
+  !CheckEq{Peek.w(p+12),$122,"reg_ptl"}
+  v=((Peek.w(p+10) AND $FFFF) LSL 16) | (Peek.w(p+14) AND $FFFF)
+  !Check{v<>0,"pointer_set"}
+  !Check{(Peek.w(p+2)=0) AND (Peek.w(p+6)=0),"pos_ctl_zero"}
+!EndTestCase

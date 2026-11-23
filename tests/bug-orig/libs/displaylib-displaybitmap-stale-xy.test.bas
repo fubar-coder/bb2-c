@@ -6,14 +6,15 @@
 ; known values by inline assembler right before the call.
 ; Correct: the form without x,y starts at 0,0 (as the double form
 ; without coordinates and the smooth scrolling resolutions do).
-; @fixed #411
-; @configs clib
 DEFTYPE .l
-BitMap 0,320,32,4
-InitCopList 1,44,20,$10003,8,16,-8
-c=Addr CopList(1)
-MOVE.l #$12345678,d2
-MOVE.l #$9ABCDEF0,d3
-DisplayBitMap 1,0
-NPrint "x0 ",Hex$(Peek.l(c+62))," x1 ",Hex$(Peek.l(c+66))
-End
+
+!TestCase{stale_xy}
+  BitMap 0,320,32,4
+  InitCopList 1,44,20,$10003,8,16,-8
+  c=Addr CopList(1)
+  MOVE.l #$12345678,d2
+  MOVE.l #$9ABCDEF0,d3
+  DisplayBitMap 1,0
+  !CheckEq{Peek.l(c+62),0,"x0"}
+  !CheckEq{Peek.l(c+66),0,"x1"}
+!EndTestCase

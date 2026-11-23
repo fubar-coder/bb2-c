@@ -1,0 +1,7 @@
+# displaylib-customcolors-flag-ignored.test.bas: the original acts as if
+# the flag were 1, so the second command gets no wait for line 255
+fixed-orig = 951
+
+[deviations."libs=cd"]
+"check.flag_zero.second" = "== fail"
+"check.flag_zero.second.actual" = "== $01FE0000"

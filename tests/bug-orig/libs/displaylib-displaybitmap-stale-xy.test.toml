@@ -1,0 +1,9 @@
+# displaylib-displaybitmap-stale-xy.test.bas: the original stores the stale
+# registers d2 and d3 as the start positions
+fixed-orig = 411
+
+[deviations."libs=cd"]
+"check.stale_xy.x0" = "== fail"
+"check.stale_xy.x0.actual" = "== $12345678"
+"check.stale_xy.x1" = "== fail"
+"check.stale_xy.x1.actual" = "== $9ABCDEF0"

@@ -9,14 +9,18 @@
 ; description.
 ; Correct: spri stays 1; the second description is the first one's,
 ; split.
-; @fixed #949
-; @configs clib
 DEFTYPE .l
-InitCopList 2,44,40,$10801,0,0,200
-c=Addr CopList(2)
-NPrint "spri before ",Peek.w(c+126)
-CustomChunky 2,60,20,8,4,2,2
-NPrint "spri after ",Peek.w(c+126)
-Print "chunky2 ",Peek.l(c+112)-Peek.l(c+4)," ",Peek.w(c+116)," ",Peek.w(c+118)
-NPrint " ",Peek.w(c+120)," ",Peek.w(c+122)," ",Peek.w(c+124)
-End
+
+!TestCase{split_spri}
+  InitCopList 2,44,40,$10801,0,0,200
+  c=Addr CopList(2)
+  !CheckEq{Peek.w(c+126),1,"spri_before"}
+  CustomChunky 2,60,20,8,4,2,2
+  !CheckEq{Peek.w(c+126),1,"spri_after"}
+  !CheckEq{Peek.l(c+112)-Peek.l(c+4),418,"chunky2_offset"}
+  !CheckEq{Peek.w(c+116),20,"chunky2_w116"}
+  !CheckEq{Peek.w(c+118),8,"chunky2_w118"}
+  !CheckEq{Peek.w(c+120),2,"chunky2_w120"}
+  !CheckEq{Peek.w(c+122),2,"chunky2_w122"}
+  !CheckEq{Peek.w(c+124),44,"chunky2_w124"}
+!EndTestCase
