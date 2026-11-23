@@ -254,6 +254,26 @@ add_test(NAME ${name} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source
 math(EXPR limit "30 * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
 set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
 	PASS_REGULAR_EXPRESSION "model-local-data/child\\.bas compiles; prev: RESULT DIFFERS [^\n]*, NO EXE\n.*model-local-data/child\\.bas-runerrs compiles; prev: RESULT DIFFERS [^\n]*, NO EXE\n.*model-local-data: the comparison with the prev build: DIFFERS\n")
+# a case starts a program (selftest/model-run-program.test.bas, change basic-test-local-data):
+# its return code, output (cut at 1024 bytes) and the one result of two runs checked in BASIC, a
+# child's requester and a child that hangs judged by the configuration; every case runs on its own,
+# with the three compilers (port,clib on the side port, the CD's libraries on the side originals)
+math(EXPR limit "8 * 60 + 60 + ${EMULATION_QUEUE_WAIT}")
+foreach(side port originals)
+	set(name blitz2_selftest_model_run_program)
+	set(label emulator)
+	set(fixture "")
+	if(side STREQUAL "originals")
+		string(APPEND name _originals)
+		set(label originals)
+		set(fixture FIXTURES_REQUIRED originals_refbuild)
+	endif()
+	add_test(NAME ${name} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+		--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-run-program.test.bas --side ${side})
+	set_tests_properties(${name} PROPERTIES LABELS ${label} SKIP_RETURN_CODE 77 TIMEOUT ${limit} ${fixture}
+		PASS_REGULAR_EXPRESSION
+		"model-run-program\\.test\\.bas: case returns: PASSED \\(alone\\)\n.*case long: PASSED \\(alone\\)\n.*case twice: PASSED \\(alone\\)\n.*case req: PASSED \\(alone\\)\n.*case hang: PASSED \\(alone\\)\nmodel-run-program\\.test\\.bas: 5 cases, side ${side}: PASSED\n")
+endforeach()
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md

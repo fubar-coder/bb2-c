@@ -1,0 +1,32 @@
+# model-run-program.test.bas: the cells of the three compilers (port,clib
+# on the side port; port, 1.95 and 2.10 with the CD's libraries on the side
+# originals); the children of model-run-program.test/
+timeout = 60
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+libs = ["cd", "clib"]
+
+[data]
+"two.bas" = "basic-compile"
+"many.bas" = "basic-compile"
+"hang.bas" = "basic-compile"
+
+[data."req.bas"]
+action = "basic-compile"
+runtime-errors = "on"
+
+# the child's runtime error: its requester is the case's
+[asserts."case=req"]
+requester = "contains \"Array Subscript out of Range\""
+
+# the child hangs: its run is open, what it printed is kept, the hang check
+# ends the session, and the case never reaches its check
+[asserts."case=hang"]
+"run.hang.child" = "== open"
+"run.hang.child.output" = "contains \"before the hang\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
