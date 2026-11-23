@@ -22,7 +22,7 @@ A test is a source file `ID.test.bas`. `ID` is the test's name, in lower
 case with `-` between words, for example `stringfunclib-mid-overflow`.
 The source holds one or more *cases*: blocks of code with checks in them.
 
-```blitzbasic
+```basic
 !TestCase{sizes}
   w.l=16
   !CheckEq{w,16,"width"}
@@ -526,7 +526,7 @@ libs = ["cd", "clib"]
 The source, `stringfunclib-mid-overflow.test.bas`, checks the correct
 result, the four characters of `"ello"`:
 
-```blitzbasic
+```basic
 ; stringfunclib-mid-overflow: Mid$(s$,start,len) with a len whose sum
 ; with start-1 overflows. Correct: the length is cut to the rest of the
 ; string.
@@ -660,7 +660,7 @@ a Blitz Basic command or function (`count` or `add` are not allowed).
 This example runs in the repository as a test of its own. It has a
 batch init, two cases and a procedure with a check:
 
-```blitzbasic
+```basic
 ; readme-example: a batch init, two cases and a procedure that checks
 Statement check_width{w.l}
   !CheckEq{w,16,"width"}
