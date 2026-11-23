@@ -23,7 +23,7 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | Category | Tests | Technical reason | Missing to move |
 |---|---|---|---|
 | [1. TED tests](#1-ted-tests) | 41 | the test is a keystroke script played against the editor TED and judged on TED's screen, files and log; the model's program is a compiled Blitz driver | an editor-driving step with its judging (large) |
-| [2. Compile-only tests](#2-compile-only-tests) | 71 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; a few single gaps (medium in all) |
+| [2. Compile-only tests](#2-compile-only-tests) | 63 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; one single gap (section 5) (medium in all) |
 | [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator writes the old form; the cost of the model form is not measured | a generator change and a measurement (medium) |
 | [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
 | [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 2 | a cell has one run step; a compile log of two jobs has one query | two small features |
@@ -103,24 +103,24 @@ Funktionen haben, die die ".drv"-Funktionalität nachbildet und in einer
 **What.** Tests whose correct result is a compile result: an error with a
 line and a message (the compiler refuses the input), or a compile that ends
 without a program to run, judged by the compiler's own output (`[compile]`,
-`[blitz2]`, `[log]`, `[session]`). 71 are hand-written:
+`[blitz2]`, `[log]`, `[session]`). 63 are hand-written (the probe of the
+round that moved eight tests of this section is described below):
 
 | Area | Judged by | Tests | Example |
 |---|---|---|---|
-| `compiler/` | `[compile]` | 50 | `compiler-newtype-self-field` |
+| `compiler/` | `[compile]` | 45 | `compiler-compare-right-operand-refused` |
 | `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 9 | `compiler-incbin-leaks` |
 | `compiler/` | `[blitz2]` | 4 | `compiler-flushlibs-leak` |
-| `compiler/` | `[log]` (tedstub log) | 3 | `compiler-createproc-fail` |
 | `compiler/` | `[session]` and `[blitz2]` | 1 | `compiler-wbexit-returncode` |
 | `regression/` | `[compile]` | 3 | `compiler-data-quick-over` |
 | `regression/` | `[compile]`, `[blitz2]`, `[log]` | 1 | `compiler-macrobuff-nomem-limit` |
 
 (The grouping is by the sections of the `.expect` files; the example is one
-file of the group, to be checked there.) Three of the `[log]` and `[blitz2]`
-tests drive the compiler through the editor (`run=` or `menu=` of tedstub):
-`compiler-createproc-fail`, `compiler-data-pad-byte`,
-`compiler-loaddmod-pointer`. The generated compile-only tests (159) are in
-section 3.
+file of the group, to be checked there.) The three `[log]` tests that drove
+the compiler through the editor (`run=` or `menu=` of tedstub),
+`compiler-createproc-fail`, `compiler-data-pad-byte` and
+`compiler-loaddmod-pointer`, have moved (see "The probe" below). The
+generated compile-only tests (159) are in section 3.
 
 **Technical reason.** A model cell compiles the driver (the test source
 plus generated call code; the lines of the source stay, `tools/lib/testpp/testpp.h`)
@@ -158,22 +158,74 @@ code:
     (`[blitz2]`, `[log]`) is a cell whose driver runs with no case
     checks; `compile.inject` and `compile.log` exist for it
     (`tests/blitz2/selftest/model-compile-inject`);
-  - the three editor tests need an editor action (`menu=`, item 9 of the
-    compiler menu): the model's `editor-run = "on"` runs the driver from
-    COMPILE/RUN, it does not play menu items.
+  - an editor action (`menu=`, item 9 of the compiler menu; `run=` of a
+    second program) is a line of `jobline`: tedstub plays it in the cell's
+    session (see "The probe" below).
 - For the prev comparison a model test compares the driver's executable or
   compile result with the previous commit's (`cmake/prev.cmake`,
   `prev_compile_model_test`), so a refused source is compared as a compile
   result.
 
-**Missing to move.** For the 50 plain `[compile]` tests and, as far as
+**The probe.** Eight tests of `tests/bug-orig/compiler` moved without a
+new feature or a runner change; each verdict holds on both sides (the port
+and `compiler=orig195`, run by `ctest --preset all` and `--preset
+originals`), and a deliberately broken assertion or deviation fails:
+
+| Test | Kind | What the model form uses | Effort |
+|---|---|---|---|
+| `compiler-for-global-string` | refused compile | `compile = "== \"error LINE MESSAGE\""`, `end.case`, `end.run`, `rc` `not exists`; the original compiles and the case runs: `compile = "== ok"`, `end.case`/`end.run` `exists`, `rc == 0` | 10 minutes |
+| `compiler-const-emptyname` | refused compile | the same | 10 minutes |
+| `compiler-constdiv-byte` | refused compile; the original runs into the division trap | the same, `timeout = 30`; the original: `compile == none`, `session == timeout`, `end.case`, `end.run`, `rc` `not exists` | 15 minutes (the 30 s limit of the original's cell is the run time) |
+| `compiler-newtype-self-field` | refused compile through inject | `wrap = "@INJECT@\|fill=01"`; the case holds the old program's printed values as checks (`!CheckEq` of 262, 258, 5), which only the original's cell reaches | 20 minutes |
+| `compiler-macrobuff-size-small` | refused compile with an option of the job list | `jobline = ["macrobuf=1024"]` | 10 minutes |
+| `compiler-createproc-fail` | editor run, judged by tedstub's log | `wrap = "@INJECT@\|createprocfail"`, `jobline = ["run=r001\|@DRIVER@\|RAM:con"]`, `compile.log` `contains "REQUESTERS\tr001\t0\n"` (the original: `\t1`) | 20 minutes |
+| `compiler-data-pad-byte` | two editor runs in one session, judged by the console lines of the log | `dirs`, `files` (the filler), `jobline` with `run=r001` (filler) and `run=r002\|@DRIVER@`, `compile.log` `contains` the two `OUTPUT\tr002\t...` lines; the original's `$02` and `$45` as the deviation | 60 minutes (see below) |
+| `compiler-loaddmod-pointer` | editor menu item, judged by the log | `remove`, `files`, `jobline = ["menu=j001\|9\|blitz2:dbgmod"]`, `compile.log` `contains` the `MENU` and `POINTER` lines | 20 minutes |
+
+What the probe found:
+- **Works as it is:** the query `compile` with a whole string
+  (`== "error LINE MESSAGE"`: the line is that of `ID.test.bas`, so the
+  assertion states the line of the new file), the three `not exists`
+  assertions, deviations of `compiler=orig195` for a compile that succeeds
+  (the case then runs) or hangs, `wrap`, `jobline` (also `run=` and
+  `menu=` with `@DRIVER@`), `dirs`, `files`, `remove`, `timeout`, and
+  `compile.log` as the observation of tedstub's log. The editor tests
+  needed no `editor-run`.
+- **Line numbers move.** The header of the old test and its `; @pass` lines
+  went away, the `!TestCase` line was added; the error line of the old
+  `.expect` is mostly not that of the new file (`error 13` became 11,
+  23 became 21, 6 became 5). Each test's line was read from the first
+  failing run.
+- **An executable statement or a label outside the blocks is refused**
+  (`data-pad-byte`: the label `a:` of a `Data$` line): it moves into the
+  case behind a `Goto`.
+- **The driver replaces the old program, so a layout-dependent observation
+  can change.** `compiler-data-pad-byte` found the first pad byte (data1)
+  zero in the original, because the driver's own literals lie in front of
+  the test's literal and the filler's 16 bytes no longer reached it. The
+  filler is now eight literals of 120 bytes; the original shows `$02` and
+  `$45` again. Another test whose observation depends on offsets in the
+  buffer needs the same check.
+- **A wildcard of the old expectation has no counterpart.** The old
+  `compiler-loaddmod-pointer.expect` had `MENU j001 9 *`; `contains` takes
+  the value both sides print (`-1`), which fixes it in the assertion.
+  Lines with a size (`RESULT ID ok SIZE`) cannot be inside a `contains`,
+  as the table in "Moving a bug-orig test to the model" says.
+- **A case that never runs on the port** (the compile is refused) needs at
+  least one check for the original's cell to pass something; a check that
+  is not reached is "not-run", not a failure.
+- **No new feature or runner change was needed;** nothing is missing for
+  these eight. The other old-form compile-only tests of the same shape need
+  the same rewrite (10 to 20 minutes each, an estimate from the eight; the
+  generated tests of section 3 are not included).
+
+**Missing to move.** For the 45 plain `[compile]` tests and, as far as
 checked, the `[blitz2]` ones, no model feature: the move of each (the
 source into `Case` blocks, a toml with the assertions and the original's
 deviations, a check that the verdict stays on both sides). Missing for the
-rest: a menu action in the cell (the three editor tests) and one query per
-compiler job (section 5). Size: the number of tests (71 and the 159 of
-section 3) times a small rewrite each, plus the two features (estimate:
-medium).
+rest: one query per compiler job (section 5). Size: the number of tests
+(63 and the 159 of section 3) times a small rewrite each, plus the one
+feature (estimate: medium).
 
 **Proposal (the user's idea, not decided).** "Die Test-Funktion könnte ja
 den Compiler aufrufen und die Compiler-Ausgabe prüfen (hoffentlich,
