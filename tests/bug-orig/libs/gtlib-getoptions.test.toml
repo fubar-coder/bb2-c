@@ -1,0 +1,22 @@
+# gtlib-getoptions.test.bas: through inject with guard; the CD's libraries
+# write behind their blocks, cut the label array short and lose memory
+fixed-orig = 174
+runwrap = "@INJECT@|guard"
+
+# the cells with the C libraries write nothing behind a block (the cells
+# with the CD's libraries are judged by their end below)
+[asserts."libs=clib"]
+inject = "not contains \"inject: guard\""
+
+[deviations."libs=cd"]
+"check.option_labels.labels" = "== fail"
+"check.option_labels.labels.actual" = "== 86"
+"check.option_labels.lost_under_8000" = "== fail"
+
+# the end of the CD's libraries depends on the compiler's memory layout:
+# with the port's compiler the program returns and inject reports the
+# write, with the original compiler (1.95) it hangs after its end entry
+[ends."libs=cd"]
+reason = "the writes behind the blocks corrupt the memory the exit uses: the program returns (port,cd) or hangs at its exit (orig195,cd)"
+returns = ["session == done", "rc == 0", "output contains \"written behind an allocation of 365 bytes\""]
+hangs = ["session == timeout", "rc not exists"]

@@ -1,0 +1,15 @@
+# gtlib-freegadget-current.test.bas: the CD's libraries link the new gadget
+# behind the freed one: it is not in the chain and not the last gadget
+fixed-orig = 962
+timeout = 60
+
+[deviations."libs=cd"]
+"check.free_last_gadget.in_chain" = "== fail"
+"check.free_last_gadget.is_last" = "== fail"
+
+# the write into freed memory corrupts what the exit uses (observed from
+# run to run and between the cells)
+[ends."libs=cd"]
+reason = "the write into freed memory corrupts the memory the exit uses: the program returns or hangs at its exit"
+returns = ["session == done", "rc == 0"]
+hangs = ["session == timeout", "rc not exists"]
