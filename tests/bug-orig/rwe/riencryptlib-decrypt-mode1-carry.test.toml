@@ -1,0 +1,10 @@
+# riencryptlib-decrypt-mode1-carry.test.bas: the original loses the carry
+# between the wheels, every byte comes out wrong
+fixed-orig = 629
+rwe = ["riencryptlib"]
+
+[deviations."compiler=orig210"]
+"check.mode_1_restores.first_byte" = "== fail"
+"check.mode_1_restores.first_byte.actual" = "== 2"
+"check.mode_1_restores.bytes_wrong" = "== fail"
+"check.mode_1_restores.bytes_wrong.actual" = "== 300"
