@@ -1,0 +1,13 @@
+# ritooltypeslib-puticonobject-leaks-icon.test.bas: through inject (track:
+# what the process leaves allocated); the port's program environment is 34
+# allocations of 45012 bytes (the CD's compiler's has none), the original's
+# leak is the seven allocations of the icon
+fixed-orig = 850
+rwe = ["ritooltypeslib"]
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"inject: track: 34 allocations left, 45012 bytes\n\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: track: 7 allocations left, 1250 bytes\ninject:   20 bytes, flags $10001\ninject:   20 bytes, flags $10001\ninject:   96 bytes, flags $10001\ninject:   98 bytes, flags $10001\ninject:   272 bytes, flags $10003\ninject:   272 bytes, flags $10003\ninject:   472 bytes, flags $10001\n\""

@@ -1,0 +1,8 @@
+# rizonejoylib-freezonetable-entry-stays.test.bas: the original's list entry
+# keeps the freed table
+fixed-orig = 868
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.freed_entry.entry_cleared" = "== fail"
+"check.freed_entry.entry_cleared.actual" = "== -1"

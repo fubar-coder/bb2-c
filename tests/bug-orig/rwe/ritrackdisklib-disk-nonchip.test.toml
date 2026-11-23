@@ -1,0 +1,46 @@
+# ritrackdisklib-disk-nonchip.test.bas: a blank image in DF1 on the three
+# machines; the original crashes on the a500 (#941); on the other two machines
+# it writes and reads only the first two sectors of the 13, and FormatTrack
+# and BootProg send TD_FORMAT with a length trackdisk.device refuses (#858)
+fixed-orig = 1163
+rwe = ["ritrackdisklib"]
+floppy = ["1|@TESTDATA@/ritrackdisklib-blank.adf"]
+timeout = 60
+# the cells share a session per machine and trackdisk.device keeps the tracks
+# the port's cell wrote in its buffer: the original's cells have their own
+isolate = ["compiler=orig210"]
+
+[matrix]
+machine = ["a500", "a500-204", "a1200"]
+
+[deviations."compiler=orig210,machine=a500-204"]
+"check.non_chip_buffers.chip_data" = "== fail"
+"check.non_chip_buffers.chip_data.actual" = "== \"A B  \""
+"check.non_chip_buffers.fast_data" = "== fail"
+"check.non_chip_buffers.fast_data.actual" = "== \"A B  \""
+"check.non_chip_buffers.formattrack" = "== fail"
+"check.non_chip_buffers.formattrack.actual" = "== 252"
+"check.non_chip_buffers.format_data" = "== fail"
+"check.non_chip_buffers.format_data.actual" = "== \" \""
+"check.non_chip_buffers.boot_id" = "== fail"
+"check.non_chip_buffers.boot_id.actual" = "== \"SECTOR 0000\""
+
+[deviations."compiler=orig210,machine=a1200"]
+"check.non_chip_buffers.chip_data" = "== fail"
+"check.non_chip_buffers.chip_data.actual" = "== \"A B  \""
+"check.non_chip_buffers.fast_data" = "== fail"
+"check.non_chip_buffers.fast_data.actual" = "== \"A B  \""
+"check.non_chip_buffers.formattrack" = "== fail"
+"check.non_chip_buffers.formattrack.actual" = "== 252"
+"check.non_chip_buffers.format_data" = "== fail"
+"check.non_chip_buffers.format_data.actual" = "== \" \""
+"check.non_chip_buffers.boot_id" = "== fail"
+"check.non_chip_buffers.boot_id.actual" = "== \"SECTOR 0000\""
+
+# on Kickstart 1.3 the original crashes at the start (#941)
+[deviations."compiler=orig210,machine=a500"]
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software error - task held\""
+"end.case" = "not exists"
+"end.run" = "not exists"

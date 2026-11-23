@@ -1,0 +1,8 @@
+# rizonejoylib-negative-zone-number.test.bas: the original sets the count of
+# table 0 to -1
+fixed-orig = 873
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.negative_zone.zones_kept" = "== fail"
+"check.negative_zone.zones_kept.actual" = "== -1"

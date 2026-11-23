@@ -1,0 +1,16 @@
+# rizonejoylib-no-table-results.test.bas: through inject the first allocation
+# of 2052 bytes (init's table 0) fails; the original returns -1 for SetZone
+# and ZoneTable without a table
+fixed-orig = 876
+rwe = ["rizonejoylib"]
+hang-after = 30
+runwrap = "@INJECT@|allocfail=2052-2052/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.no_table.set_refused" = "== fail"
+"check.no_table.set_refused.actual" = "== -1"
+"check.no_table.table_pointer" = "== fail"
+"check.no_table.table_pointer.actual" = "== -1"

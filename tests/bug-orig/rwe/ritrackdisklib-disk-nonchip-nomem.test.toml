@@ -1,0 +1,16 @@
+# ritrackdisklib-disk-nonchip-nomem.test.bas: a blank image in DF1 on the a500;
+# the original crashes at the start (#941)
+fixed-orig = 1163
+rwe = ["ritrackdisklib"]
+machine = "a500"
+floppy = ["1|@TESTDATA@/ritrackdisklib-blank.adf"]
+timeout = 60
+# the crash ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software error - task held\""
+"end.case" = "not exists"
+"end.run" = "not exists"

@@ -1,0 +1,8 @@
+# rizonejoylib-zonetest000-bmi.test.bas: the original's 68000 mode does not
+# find the point
+fixed-orig = 879
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.word_difference.found" = "== fail"
+"check.word_difference.found.actual" = "== -1"

@@ -1,0 +1,10 @@
+# rizonejoylib-newzonetable-inits-current.test.bas: the original clears the
+# current table and leaves the new one as AllocMem's block held it
+fixed-orig = 875
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.inits_new_table.table_0" = "== fail"
+"check.inits_new_table.table_0.actual" = "== -1"
+"check.inits_new_table.table_3" = "== fail"
+"check.inits_new_table.table_3.actual" = "== 1"

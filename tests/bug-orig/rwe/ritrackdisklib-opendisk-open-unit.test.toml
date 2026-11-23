@@ -1,0 +1,8 @@
+# ritrackdisklib-opendisk-open-unit.test.bas: the original opens an open unit
+# again
+fixed-orig = 862
+rwe = ["ritrackdisklib"]
+
+[deviations."compiler=orig210"]
+"check.open_twice.second_open" = "== fail"
+"check.open_twice.second_open.actual" = "== -1"

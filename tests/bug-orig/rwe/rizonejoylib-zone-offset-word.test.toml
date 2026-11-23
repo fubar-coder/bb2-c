@@ -1,0 +1,8 @@
+# rizonejoylib-zone-offset-word.test.bas: the original writes zone 0 for zone
+# 8192
+fixed-orig = 878
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.zone_8192.found_in" = "== fail"
+"check.zone_8192.found_in.actual" = "== 0"

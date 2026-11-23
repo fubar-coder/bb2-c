@@ -1,0 +1,8 @@
+# rizonejoylib-newzonetable-size-one.test.bas: the original refuses the table
+# of one zone
+fixed-orig = 1136
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.one_zone.made" = "== fail"
+"check.one_zone.made.actual" = "== 0"

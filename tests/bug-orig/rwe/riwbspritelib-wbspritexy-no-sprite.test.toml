@@ -1,0 +1,14 @@
+# riwbspritelib-wbspritexy-no-sprite.test.bas: with runtime error checking for
+# the announced error; the original raises none and returns the word at
+# address 6
+fixed-orig = 922
+rwe = ["riwbspritelib"]
+runtime-errors = "on"
+
+[asserts]
+"check.no_sprite.no_value" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.no_sprite.refused" = "== fail"
+"check.no_sprite.no_value" = "== fail"
+requester = "count == 0"

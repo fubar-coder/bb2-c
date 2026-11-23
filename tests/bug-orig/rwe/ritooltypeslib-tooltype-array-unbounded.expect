@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-100 added
-<T99=1> <T100=1> <>
-<T001=1> <T101=1> 1
-inject: rc=0
-inject: track: 34 allocations left, 45012 bytes
-...

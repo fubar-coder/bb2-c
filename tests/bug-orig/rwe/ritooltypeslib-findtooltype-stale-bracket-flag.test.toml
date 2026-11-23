@@ -1,0 +1,8 @@
+# ritooltypeslib-findtooltype-stale-bracket-flag.test.bas: the original finds
+# "(BRACK)" with the first call behind the bracket search
+fixed-orig = 843
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.stale_flag.brack_first" = "== fail"
+"check.stale_flag.brack_first.actual" = "== 1"

@@ -1,0 +1,10 @@
+# rizonejoylib-circle-radius-word.test.bas: the original stores the radius
+# squared as a word
+fixed-orig = 867
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.radius_256.refused" = "== fail"
+"check.radius_256.refused.actual" = "== -1"
+"check.radius_256.no_zone" = "== fail"
+"check.radius_256.no_zone.actual" = "== 1"

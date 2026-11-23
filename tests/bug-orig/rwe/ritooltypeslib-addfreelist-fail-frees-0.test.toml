@@ -1,0 +1,11 @@
+# ritooltypeslib-addfreelist-fail-frees-0.test.bas: through inject the second
+# allocation of 96 bytes fails (track: what is left at the end)
+fixed-orig = 840
+rwe = ["ritooltypeslib"]
+runwrap = "@INJECT@|allocfail=96-96/1+1 track"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\ninject: rc=0\ninject: track: 34 allocations left, 45012 bytes\n\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: track: 1 allocations left\""

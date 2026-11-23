@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-table 0: 0
-table 3: -1
-rc=0

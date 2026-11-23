@@ -1,0 +1,8 @@
+# rizonejoylib-zonetest020-circle-word.test.bas: the original's 68020 mode
+# finds the point in the circle
+fixed-orig = 880
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.word_compare.outside" = "== fail"
+"check.word_compare.outside.actual" = "== 1"

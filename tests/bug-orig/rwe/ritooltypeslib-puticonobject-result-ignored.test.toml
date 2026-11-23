@@ -1,0 +1,10 @@
+# ritooltypeslib-puticonobject-result-ignored.test.bas: the original reports
+# the failed write as success and closes the icon
+fixed-orig = 851
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.write_fails.put_fails" = "== fail"
+"check.write_fails.put_fails.actual" = "== -1"
+"check.write_fails.icon_still_open" = "== fail"
+"check.write_fails.icon_still_open.actual" = "== 0"

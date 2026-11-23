@@ -1,0 +1,8 @@
+# rizonejoylib-negative-table-number.test.bas: the original selects the entry
+# in front of the list
+fixed-orig = 872
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.negative_number.refused" = "== fail"
+"check.negative_number.refused.actual" = "== -1"

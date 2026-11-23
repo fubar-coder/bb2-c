@@ -1,0 +1,10 @@
+# ritooltypeslib-settoolvalue-prefix-match.test.bas: the original replaces
+# FLAG instead of FL=1
+fixed-orig = 853
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.prefix.first_entry" = "== fail"
+"check.prefix.first_entry.actual" = "== \"FL=x\""
+"check.prefix.second_entry" = "== fail"
+"check.prefix.second_entry.actual" = "== \"FL=1\""

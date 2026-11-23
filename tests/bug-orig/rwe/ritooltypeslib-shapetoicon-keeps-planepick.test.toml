@@ -1,0 +1,13 @@
+# ritooltypeslib-shapetoicon-keeps-planepick.test.bas: the original keeps the
+# PlanePick the icon was loaded with
+fixed-orig = 1083
+rwe = ["ritooltypeslib"]
+files = ["one.info|@TESTDATA@/ritooltypeslib-tooltypes-9.info", "two.info|@TESTDATA@/ritooltypeslib-shapetoicon-keeps-planepick-2.info"]
+
+[deviations."compiler=orig210"]
+"check.keeps_planepick.a_pick" = "== fail"
+"check.keeps_planepick.a_pick.actual" = "== 1"
+"check.keeps_planepick.b_pick" = "== fail"
+"check.keeps_planepick.b_pick.actual" = "== 3"
+"check.keeps_planepick.c_pick" = "== fail"
+"check.keeps_planepick.c_pick.actual" = "== 1"

@@ -1,0 +1,10 @@
+# ritooltypeslib-icontoshape-extra-word.test.bas: through inject (guard)
+fixed-orig = 847
+rwe = ["ritooltypeslib"]
+runwrap = "@INJECT@|guard"
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: guard: written behind an allocation of 24 bytes\""

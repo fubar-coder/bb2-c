@@ -1,0 +1,10 @@
+# ritrackdisklib-opendisk-kept-name.test.bas: the original's OpenDisk 0 fails
+# after the failed open with another device name
+fixed-orig = 859
+rwe = ["ritrackdisklib"]
+
+[deviations."compiler=orig210"]
+"check.kept_name.opens_trackdisk" = "== fail"
+"check.kept_name.opens_trackdisk.actual" = "== 0"
+"check.kept_name.closed" = "== fail"
+"check.kept_name.closed.actual" = "== 0"

@@ -1,0 +1,8 @@
+# ritooltypeslib-seticontype-noicon-returns-arg.test.bas: the original returns
+# its argument
+fixed-orig = 852
+rwe = ["ritooltypeslib"]
+
+[deviations."compiler=orig210"]
+"check.no_icon.result" = "== fail"
+"check.no_icon.result.actual" = "== 3"

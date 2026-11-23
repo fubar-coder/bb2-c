@@ -1,0 +1,19 @@
+# ritooltypeslib-tooltype-array-nomem.test.bas: through inject the allocation
+# of 88 bytes fails (track: what is left at the end); the original needs no
+# allocation and adds the entry at once
+fixed-orig = 855
+rwe = ["ritooltypeslib"]
+runwrap = "@INJECT@|allocfail=88-88/1 track"
+files = ["few.info|@TESTDATA@/ritooltypeslib-tooltypes-9.info"]
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\ninject: rc=0\ninject: track: 34 allocations left, 45012 bytes\n\""
+
+[deviations."compiler=orig210"]
+inject = "contains \"inject: allocfail: 0 allocations failed\""
+"check.no_memory.first_fails" = "== fail"
+"check.no_memory.first_fails.actual" = "== -1"
+"check.no_memory.first_unchanged" = "== fail"
+"check.no_memory.first_unchanged.actual" = "== \"NEW=1\""
+"check.no_memory.end_entry" = "== fail"
+"check.no_memory.end_entry.actual" = "== \"NEW=1\""

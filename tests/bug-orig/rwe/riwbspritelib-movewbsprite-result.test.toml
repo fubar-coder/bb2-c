@@ -1,0 +1,8 @@
+# riwbspritelib-movewbsprite-result.test.bas: the original returns the d0
+# MoveSprite leaves
+fixed-orig = 921
+rwe = ["riwbspritelib"]
+
+[deviations."compiler=orig210"]
+"check.move_result.moved" = "== fail"
+"check.move_result.moved.actual" = "== 8"
