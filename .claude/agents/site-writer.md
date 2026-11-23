@@ -9,7 +9,7 @@ touch only `site/` and `.github/workflows/pages.yml` unless the brief
 names other files. Work in a git worktree if the brief says so (then
 start with `git merge --ff-only main`).
 
-Read first: `CLAUDE.md`, `site/README.md` (preview, conventions), the
+Read first: `site/README.md` (preview, conventions), the
 GitHub issue the brief names (the chapter plan is issue #975), and the
 pages next to the one you write.
 
@@ -96,8 +96,6 @@ Every change is built and looked at before you commit it:
 
 ## Rules
 
-* The Bash tool runs zsh (the login shell is fish): put loops, word
-  splitting and heredocs in `bash -c '…'`.
 * No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
   `pgrep -f NAME` also finds the shell that runs it, so such a loop never
   ends). Run commands in the foreground with a timeout. For longer work,

@@ -9,20 +9,16 @@ git worktree if the brief says so (then start with
 `git merge --ff-only main`), otherwise only in the files the brief
 names.
 
-Project rules (CLAUDE.md and README.md of the repository are binding –
-read them first):
+Project rules (CLAUDE.md is binding and already in your context; read
+README.md only where the brief or your task needs it):
 
 * All texts in the repository and on GitHub are English; facts only,
   with file:line or commit references; no claims you have not checked.
-* TODO.md: task lists (`- [ ] **Title** …`, `- [x] **Title** done
-  (date): …`), no strikethrough.
 * References to other repositories in code spans
   (`AmiBlitz/AmiBlitz3@hash`), never bare `#N`.
 * Comments in code: match the surrounding density and style; a
   comment-only change must leave every build result byte-identical
   (check it).
-* The Bash tool runs zsh (the login shell is fish): put loops, word
-  splitting and heredocs in `bash -c '…'`.
 * No wait loops of your own (`until`/`while` + `sleep`, `pgrep` loops:
   `pgrep -f NAME` also finds the shell that runs it, so such a loop never
   ends). Run commands in the foreground with a timeout (up to 10 min).
