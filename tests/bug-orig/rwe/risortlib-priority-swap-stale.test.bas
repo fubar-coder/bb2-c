@@ -8,18 +8,21 @@
 ; equal), so no string comparison is reached and the result does not
 ; depend on the stale string.
 ; Correct: sorted by the priority, the larger first: "3 b", "2 c", "1 a".
-; @fixed #826
-; @rwe risortlib
+DEFTYPE .l
 NEWTYPE .item
   pri.l
   nm$
 End NEWTYPE
-Dim List a.item(5)
-If AddLast(a()) Then a()\pri=1,"a"
-If AddLast(a()) Then a()\pri=3,"b"
-If AddLast(a()) Then a()\pri=2,"c"
-SortPriorityOffset 0
-r.l=StringSort(a(),SizeOf .item,4)
-ResetList a()
-While NextItem(a()) : NPrint a()\pri," ",a()\nm : Wend
-End
+
+!TestCase{swap_stale}
+  Dim List a.item(5)
+  If AddLast(a()) Then a()\pri=1,"a"
+  If AddLast(a()) Then a()\pri=3,"b"
+  If AddLast(a()) Then a()\pri=2,"c"
+  SortPriorityOffset 0
+  r.l=StringSort(a(),SizeOf .item,4)
+  ResetList a()
+  s$=""
+  While NextItem(a()) : s$+Str$(a()\pri)+" "+a()\nm+"," : Wend
+  !CheckStrEq{s$,"3 b,2 c,1 a,","order"}
+!EndTestCase

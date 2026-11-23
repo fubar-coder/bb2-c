@@ -6,19 +6,21 @@
 ; bytes behind the first item shows the overwrite.
 ; Correct: a size of 0 swaps nothing, the marker stays, and StringSort
 ; returns 0.
-; @fixed #827
-; @rwe risortlib
+DEFTYPE .l
 NEWTYPE .item
   nm$
   d.l[40]
 End NEWTYPE
-Dim List a.item(1000)
-If AddLast(a()) Then a()\nm="b"
-If AddLast(a()) Then a()\nm="a"
-f.l=Peek.l(ListBase(a())-28)
-m.l=f+40000
-Poke.l m,$12345678
-r.l=StringSort(a(),0)
-If Peek.l(m)=$12345678 Then NPrint "marker kept" Else NPrint "marker overwritten"
-NPrint "result ",r
-End
+
+!TestCase{size0}
+  Dim List a.item(1000)
+  If AddLast(a()) Then a()\nm="b"
+  If AddLast(a()) Then a()\nm="a"
+  f.l=Peek.l(ListBase(a())-28)
+  m.l=f+40000
+  Poke.l m,$12345678
+  r.l=StringSort(a(),0)
+  k=(Peek.l(m)=$12345678)
+  !CheckEq{k,-1,"marker_kept"}
+  !CheckEq{r,0,"result"}
+!EndTestCase

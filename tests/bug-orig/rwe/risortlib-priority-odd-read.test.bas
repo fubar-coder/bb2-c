@@ -4,20 +4,18 @@
 ; -1 that is data - 1, an odd address: on a 68000 an address error (the
 ; session ends in a timeout).  The machine is the A600 (68000).
 ; Correct: StringSort without SortPriorityOffset sorts the list ("a b").
-; @fixed #825
-; @rwe risortlib
-; @machine a600
-; @pass timeout=30
+DEFTYPE .l
 NEWTYPE .item
   nm$
 End NEWTYPE
-Dim List a.item(5)
-If AddLast(a()) Then a()\nm="b"
-If AddLast(a()) Then a()\nm="a"
-NPrint "before"
-r.l=StringSort(a(),SizeOf .item)
-ResetList a()
-s$=""
-While NextItem(a()) : s$+a()\nm+" " : Wend
-NPrint s$
-End
+
+!TestCase{odd_read}
+  Dim List a.item(5)
+  If AddLast(a()) Then a()\nm="b"
+  If AddLast(a()) Then a()\nm="a"
+  r.l=StringSort(a(),SizeOf .item)
+  ResetList a()
+  s$=""
+  While NextItem(a()) : s$+a()\nm+" " : Wend
+  !CheckStrEq{s$,"a b ","sorted"}
+!EndTestCase

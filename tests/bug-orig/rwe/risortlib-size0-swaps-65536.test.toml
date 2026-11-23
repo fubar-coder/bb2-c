@@ -1,0 +1,7 @@
+# risortlib-size0-swaps-65536.test.bas: the original swaps 65536 bytes
+fixed-orig = 827
+rwe = ["risortlib"]
+
+[deviations."compiler=orig210"]
+"check.size0.marker_kept" = "== fail"
+"check.size0.marker_kept.actual" = "== 0"
