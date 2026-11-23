@@ -1244,8 +1244,10 @@ static void test_data_pass(void)
         CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "orig195,cd"), &t.env, "c0", "/w/run", "/w/run/test.bb2", &cp,
                            err, sizeof err) == 0);
         all = str_printf("%s%s", cp ? cp : "", p ? p : "");
-        CHECK(all && corpus_parse(all, &cpass, perr, sizeof perr) == 0);
-        if (all && !corpus_parse(all, &cpass, perr, sizeof perr)) {
+        int parsed = all && corpus_parse(all, &cpass, perr, sizeof perr) == 0;
+
+        CHECK(parsed);
+        if (parsed) {
             CHECK(cpass.nbuilds == 2 && cpass.nbjobs == 4 && !cpass.bjobs[0].part
                   && !strcmp(cpass.bjobs[1].part, "x.test/.build-1"));
             corpus_free(&cpass);

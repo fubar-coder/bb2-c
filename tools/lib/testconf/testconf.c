@@ -995,7 +995,8 @@ static int collect_data(struct tc_config *c, const struct cfile *f, char *err, s
                 return tc_err(err, errlen, "out of memory");
         }
     }
-    qsort(c->data, c->ndata, sizeof *c->data, by_line);
+    if (c->ndata)
+        qsort(c->data, c->ndata, sizeof *c->data, by_line);
     return 0;
 }
 
