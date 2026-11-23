@@ -331,7 +331,7 @@ escapes) is refused with file and line.
 | `serial`, `rtg`, `pad` | `off`, `on` | the serial peer, the RTG emulator, inject's `pad` (default `off`) |
 | `wrap`, `runwrap` | `PATH[\|ARGS]` | the compiler, the program started through PATH |
 | `runargs`, `launcherargs` | string | arguments of the program, options of the launcher |
-| `files` | list of `DEST\|SRC[\|TAG]` | files staged as `CORPUS:DEST` |
+| `files` | list of `DEST\|SRC[\|SELECTOR]` | files staged as `CORPUS:DEST`; with a cell selector as the third field only in the cells it matches |
 | `dirs`, `remove` | list | empty directories, files removed after staging |
 | `mount`, `floppy` | list of `NAME\|DIR`, `N\|SRC` | read-only volumes, disk images |
 | `uae`, `jobline` | list | changes of the emulator configuration, lines of tedstub's job list |
@@ -362,7 +362,7 @@ original material if its compiler is not `port` or its libraries are the
 CD's; such cells are the side `originals` of a case.
 
 ```toml
-# tests/bug-orig/libs/tests.toml
+# an example of a directory's tests.toml (not a file of the tree)
 root = true
 timeout = 90
 exclude = ["compiler=orig195,libs=clib"]
@@ -444,7 +444,8 @@ further deviations of the same table (the actual value of the failing
 check) are its validators.
 
 ```toml
-# tests/bug-orig/libs/shapeslib-frames-maximum.test.toml
+# an example, not a file of the tree: libs/shapeslib-frames-maximum.test.toml
+# (a real one with deviations: libs/shapeslib-loadshape-anim-interleave.test.toml)
 fixed-orig = 265
 
 [deviations."libs=cd"]
