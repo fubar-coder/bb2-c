@@ -1,0 +1,13 @@
+# printlib-format-carry-lost.test.bas: what NPrint prints is the observation
+# of the output
+fixed-orig = 235
+
+[asserts]
+output = "== \"a <1000.0>\nb <10.00>\nc <-1000.0>\n\""
+
+[deviations."libs=cd"]
+"check.carry_lost.a" = "== fail"
+"check.carry_lost.a.actual" = "== \" 000.0\""
+"check.carry_lost.b" = "== fail"
+"check.carry_lost.c" = "== fail"
+output = "== \"a < 000.0>\nb < 0.00>\nc <- 000.0>\n\""

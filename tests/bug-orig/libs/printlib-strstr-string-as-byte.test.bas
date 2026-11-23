@@ -5,11 +5,12 @@
 ; address; the program only compares, so that its output does not).
 ; Correct: Str$ and UStr$ of a string give the string itself, also as a
 ; part of a longer string expression.
-; @fixed #242
-; @configs clib
-a$="Hallo"
-If Str$(a$)=a$ Then NPrint "a same" Else NPrint "a differs"
-If UStr$(a$)=a$ Then NPrint "b same" Else NPrint "b differs"
-b$="<"+Str$(a$+"!")+">"
-If b$="<Hallo!>" Then NPrint "c same" Else NPrint "c differs"
-End
+DEFTYPE .l
+
+!TestCase{string_argument}
+  a$="Hallo"
+  b$=Str$(a$) : c$=UStr$(a$) : d$="<"+Str$(a$+"!")+">"
+  !CheckStrEq{b$,"Hallo","str"}
+  !CheckStrEq{c$,"Hallo","ustr"}
+  !CheckStrEq{d$,"<Hallo!>","part"}
+!EndTestCase

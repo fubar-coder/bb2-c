@@ -1,0 +1,14 @@
+# printlib-format-overflow-padding.test.bas: what NPrint prints is the
+# observation of the output
+fixed-orig = 238
+
+[asserts]
+output = "== \"a <?35> <?34>\nb <?2.3>\n\""
+
+[deviations."libs=cd"]
+"check.padding.float" = "== fail"
+"check.padding.float.actual" = "== \"?  \""
+"check.padding.long" = "== fail"
+"check.padding.fraction" = "== fail"
+"check.padding.fraction.actual" = "== \"? .2\""
+output = "== \"a <?  > <?  >\nb <? .2>\n\""

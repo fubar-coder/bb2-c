@@ -7,12 +7,19 @@
 ; the normal form.
 ; Correct: the tiny numbers in full and the large ones as without them
 ; (9E+18 is the literal 9.223371E+18, the largest FFP number).
-; @fixed #241
-; @configs clib
-f.f=0
-FloatMode -1
-Poke.l &f,$80000080 : NPrint "a <",f,">"
-Poke.l &f,$C0000002 : NPrint "b <",f,">"
-FloatMode 0
-NPrint "c <",1E+18,"> <",5E+18,"> <",9E+18,">"
-End
+DEFTYPE .l
+
+!TestCase{tiny_overflow}
+  f.f=0
+  FloatMode -1
+  Poke.l &f,$80000080 : a$=Str$(f) : NPrint "a <",f,">"
+  Poke.l &f,$C0000002 : b$=Str$(f) : NPrint "b <",f,">"
+  FloatMode 0
+  c$=Str$(1E+18) : d$=Str$(5E+18) : e$=Str$(9E+18)
+  NPrint "c <",1E+18,"> <",5E+18,"> <",9E+18,">"
+  !CheckStrEq{a$,"-.00000000000000000002710505","tiny_negative"}
+  !CheckStrEq{b$,".0000000000000000001626303","tiny"}
+  !CheckStrEq{c$,"1E+18","e18"}
+  !CheckStrEq{d$,"5E+18","five_e18"}
+  !CheckStrEq{e$,"9.223371E+18","largest"}
+!EndTestCase

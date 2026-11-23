@@ -1,0 +1,8 @@
+# printlib-strstr-string-as-byte.test.bas: the original gives a number
+# that depends on the address of the string, so only the verdict is declared
+fixed-orig = 242
+
+[deviations."libs=cd"]
+"check.string_argument.str" = "== fail"
+"check.string_argument.ustr" = "== fail"
+"check.string_argument.part" = "== fail"

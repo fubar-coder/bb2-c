@@ -1,0 +1,17 @@
+# printlib-quick-trailing-point.test.bas: what NPrint prints (Print of the
+# quick and Str$ of it) is the observation of the output
+fixed-orig = 234
+
+[asserts]
+output = "== \"quick 00010001 <1> <1>\nquick 00000001 <0> <0>\nquick FFFFFFFF <0> <0>\nquick 00050001 <5> <5>\n\""
+
+[deviations."libs=cd"]
+"check.lone_point.one" = "== fail"
+"check.lone_point.one.actual" = "== \"1.\""
+"check.lone_point.tiny" = "== fail"
+"check.lone_point.tiny.actual" = "== \".\""
+"check.lone_point.tiny_negative" = "== fail"
+"check.lone_point.tiny_negative.actual" = "== \"-.\""
+"check.lone_point.five" = "== fail"
+"check.lone_point.five.actual" = "== \"5.\""
+output = "== \"quick 00010001 <1.> <1.>\nquick 00000001 <.> <.>\nquick FFFFFFFF <-.> <-.>\nquick 00050001 <5.> <5.>\n\""

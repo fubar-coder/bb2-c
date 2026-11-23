@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-quick 00010001 <1> <1>
-quick 00000001 <0> <0>
-quick FFFFFFFF <0> <0>
-quick 00050001 <5> <5>
-rc=0

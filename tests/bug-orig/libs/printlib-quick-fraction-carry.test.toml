@@ -1,0 +1,17 @@
+# printlib-quick-fraction-carry.test.bas: what NPrint prints (Print of the
+# quick and Str$ of it) is the observation of the output
+fixed-orig = 233
+
+[asserts]
+output = "== \"quick 0002FFFF <3> <3>\nquick 0000FFFF <1> <1>\nquick 7FFFFFFF <32768> <32768>\nquick FFFD0001 <-3> <-3>\n\""
+
+[deviations."libs=cd"]
+"check.fraction_carry.x2_99998" = "== fail"
+"check.fraction_carry.x2_99998.actual" = "== \"2.\""
+"check.fraction_carry.x0_99998" = "== fail"
+"check.fraction_carry.x0_99998.actual" = "== \".\""
+"check.fraction_carry.max" = "== fail"
+"check.fraction_carry.max.actual" = "== \"32767.\""
+"check.fraction_carry.negative" = "== fail"
+"check.fraction_carry.negative.actual" = "== \"-2.\""
+output = "== \"quick 0002FFFF <2.> <2.>\nquick 0000FFFF <.> <.>\nquick 7FFFFFFF <32767.> <32767.>\nquick FFFD0001 <-2.> <-2.>\n\""
