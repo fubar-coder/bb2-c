@@ -1,0 +1,6 @@
+# shapeslib-word-arithmetic.test.bas: the files go to CORPUS:
+fixed-orig = 263
+
+[deviations."libs=cd"]
+"check.plane_80000.file_size" = "== fail"
+"check.plane_80000.file_size.actual" = "== 14496"

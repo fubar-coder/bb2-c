@@ -1,0 +1,12 @@
+# shapeslib-loadshape-anim-fileopen.test.bas: the handler of the expected error holds the check and ends
+# the program, so the case has no end entry; the file is staged as
+# CORPUS:anim.iff
+fixed-orig = 1072
+files = ["anim.iff|@TESTDATA@/shapeslib-loadshape-anim-fileopen.ilbm"]
+
+[asserts]
+"end.case" = "not exists"
+"check.anim_fileopen.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.anim_fileopen.exclusive_lock" = "== fail"

@@ -1,0 +1,12 @@
+# shapeslib-loadshape-blitsize-width.test.bas: the handler of the expected error ends the program, so
+# the case has no end entry; the original loads the shape and the case runs
+# on to its end
+fixed-orig = 1046
+
+[asserts]
+"end.case" = "not exists"
+"check.blitsize_width.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.blitsize_width.not_refused" = "== fail"
+"end.case" = "exists"

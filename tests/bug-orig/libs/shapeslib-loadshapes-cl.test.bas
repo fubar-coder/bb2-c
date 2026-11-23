@@ -12,8 +12,6 @@
 ; after the Free shows the leak.
 ; Correct: the shapes own their data (+30 = 0) and Free Shape returns it
 ; (leak 0).
-; @fixed #267
-; @configs clib
 DEFTYPE .l
 Function.l chipfree{}
   h.l=Peek.l(Peek.l(4)+322) : f.l=0
@@ -23,31 +21,33 @@ Function.l chipfree{}
   Wend
   Function Return f
 End Function
-InitShape 0,32,16,2
-SaveShapes 0,0,"RAM:bo267.shp"
-If ReadFile(0,"RAM:bo267.shp")
+
+!TestCase{loadshapes_leak}
+  InitShape 0,32,16,2
+  SaveShapes 0,0,"CORPUS:bo267.shp"
+  ok=ReadFile(0,"CORPUS:bo267.shp")
+  !Require{ok,"file_read"}
   l=Lof(0) : m=AllocMem(l+64,$10002) : ReadMem 0,m,l : CloseFile 0
   DecodeShapes 1,1,m
-  NPrint "decoded ",Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF)
-  SaveShapes 1,1,"RAM:bo267b.shp"
+  !CheckStrEq{Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF),"0000634C","decoded"}
+  SaveShapes 1,1,"CORPUS:bo267b.shp"
   f0=chipfree{}
-  LoadShapes 2,2,"RAM:bo267b.shp"
+  LoadShapes 2,2,"CORPUS:bo267b.shp"
   k=Peek.w(Addr Shape(2)+30) AND $FFFF
   Free Shape 2
   f1=chipfree{}
-  NPrint "loaded ",Hex$(k)
-  NPrint "leak ",f0-f1
-  If ReadFile(0,"RAM:bo267b.shp")
-    l=Lof(0) : n=AllocMem(l+64,$10004) : ReadMem 0,n,l : CloseFile 0
-    f0=chipfree{}
-    DecodeShapes 3,3,n
-    k=Peek.w(Addr Shape(3)+30) AND $FFFF
-    Free Shape 3
-    f1=chipfree{}
-    NPrint "fast ",Hex$(k)
-    NPrint "fast leak ",f0-f1
-  EndIf
-EndIf
-KillFile "RAM:bo267.shp"
-KillFile "RAM:bo267b.shp"
-End
+  !CheckStrEq{Hex$(k),"00000000","loaded"}
+  !CheckEq{f0-f1,0,"leak"}
+  ok=ReadFile(0,"CORPUS:bo267b.shp")
+  !Require{ok,"file_read_2"}
+  l=Lof(0) : n=AllocMem(l+64,$10004) : ReadMem 0,n,l : CloseFile 0
+  f0=chipfree{}
+  DecodeShapes 3,3,n
+  k=Peek.w(Addr Shape(3)+30) AND $FFFF
+  Free Shape 3
+  f1=chipfree{}
+  !CheckStrEq{Hex$(k),"00000000","fast"}
+  !CheckEq{f0-f1,0,"fast_leak"}
+  KillFile "CORPUS:bo267.shp"
+  KillFile "CORPUS:bo267b.shp"
+!EndTestCase

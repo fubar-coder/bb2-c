@@ -1,0 +1,12 @@
+# shapeslib-loadshape-shortbody-fileopen.test.bas: the handler of the expected error holds the check and ends
+# the program, so the case has no end entry; the file is staged as
+# CORPUS:short.iff
+fixed-orig = 1065
+files = ["short.iff|@TESTDATA@/shapeslib-loadshape-shortbody-fileopen.ilbm"]
+
+[asserts]
+"end.case" = "not exists"
+"check.shortbody_fileopen.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.shortbody_fileopen.exclusive_lock" = "== fail"

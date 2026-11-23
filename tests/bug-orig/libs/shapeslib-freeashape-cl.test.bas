@@ -8,8 +8,6 @@
 ; leak.
 ; Correct: the mark goes with the freed shape (+30 = 0) and Free Shape
 ; returns the data of the new shape (leak 0).
-; @fixed #269
-; @configs clib
 DEFTYPE .l
 Function.l chipfree{}
   h.l=Peek.l(Peek.l(4)+322) : f.l=0
@@ -19,19 +17,21 @@ Function.l chipfree{}
   Wend
   Function Return f
 End Function
-InitShape 0,32,16,2
-SaveShapes 0,0,"RAM:bo269.shp"
-If ReadFile(0,"RAM:bo269.shp")
+
+!TestCase{free_leak}
+  InitShape 0,32,16,2
+  SaveShapes 0,0,"CORPUS:bo269.shp"
+  ok=ReadFile(0,"CORPUS:bo269.shp")
+  !Require{ok,"file_read"}
   l=Lof(0) : m=AllocMem(l+64,$10002) : ReadMem 0,m,l : CloseFile 0
   DecodeShapes 1,1,m
-  NPrint "decoded ",Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF)
+  !CheckStrEq{Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF),"0000634C","decoded"}
   Free Shape 1
-  NPrint "freed ",Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF)
+  !CheckStrEq{Hex$(Peek.w(Addr Shape(1)+30) AND $FFFF),"00000000","freed"}
   f0=chipfree{}
   InitShape 1,32,16,2
   Free Shape 1
   f1=chipfree{}
-  NPrint "leak ",f0-f1
-EndIf
-KillFile "RAM:bo269.shp"
-End
+  !CheckEq{f0-f1,0,"leak"}
+  KillFile "CORPUS:bo269.shp"
+!EndTestCase

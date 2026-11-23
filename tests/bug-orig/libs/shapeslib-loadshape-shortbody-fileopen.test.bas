@@ -8,17 +8,14 @@
 ; catches the error; then the program asks for an exclusive lock on the
 ; file, which fails while it is open (object in use).
 ; Correct: after the error the file is closed - the exclusive lock works.
-; @fixed #1065
-; @configs clib
-; @pass file=short.iff|@TESTDATA@/shapeslib-loadshape-shortbody-fileopen.ilbm
-DEFTYPE .l
-SetErr
-  NPrint "error"
-  l=Lock_("CORPUS:short.iff",-1)
-  NPrint "exclusive lock ",l<>0
-  If l Then UnLock_ l
-  End
-End SetErr
-LoadShape 0,"CORPUS:short.iff"
-NPrint "loaded"
-End
+!TestCase{shortbody_fileopen}
+  SetErr
+    l=Lock_("CORPUS:short.iff",-1)
+    ok=(l<>0)
+    If l Then UnLock_ l
+    !Check{ok,"exclusive_lock"}
+    End
+  End SetErr
+  LoadShape 0,"CORPUS:short.iff"
+  !Check{0,"not_refused"}
+!EndTestCase

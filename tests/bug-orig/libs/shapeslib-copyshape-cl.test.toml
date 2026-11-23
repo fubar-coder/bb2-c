@@ -1,0 +1,6 @@
+# shapeslib-copyshape-cl.test.bas: the shapes file goes to CORPUS:
+fixed-orig = 268
+
+[deviations."libs=cd"]
+"check.copy_leak.leak" = "== fail"
+"check.copy_leak.leak.actual" = "== 136"
