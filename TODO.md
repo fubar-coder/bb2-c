@@ -1067,6 +1067,21 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   them); a CMake option that points the build at the main checkout's data
   (`-DBB2C_DATA_ROOT=...`, with tests); or a fixed list of single commands
   in the agent definitions.
+- [ ] **The requester query sees the whole requester text** (user
+  decision 2026-11-23, Q-A21 in `rounds/tr/decisions.md`: "Requester-Tests
+  sollten schon alles vom Requester sehen können. Als Limit dokumentieren
+  (b), aber in TODO.md hinterlegen, da (a) das Ziel sein sollte."): the
+  query `requester` of the test model takes only the line `REQUESTER: ...`
+  of the output, so a requester text with a line break (an EasyRequest
+  with several lines) is cut there and its further lines, the gadgets
+  and the answer end up in `output` (documented as a limit in
+  `tests/README.md`, "What `requester` sees"). The goal: the query sees
+  the whole requester. Where to look: what records the requester,
+  `reqtrap` (`tests/corpus/amiga/reqtrap.c`, `auto_c`/`easy_c` write the
+  texts as they are; test `tests/corpus/amiga/reqtraptest.c`), and the
+  runner's split of the output (`cr_parse_run`,
+  `tests/corpus/runner/caserun.c`): e.g. reqtrap escapes the line breaks
+  of a text or ends a record with a marker the runner reads to.
 - [ ] **TED and ab3cli as libraries (idea of the user, 2026-11-22; an idea
   only, not planned)**: two readings.
   - On the Amiga: TED (and ab3cli) as a `.library` with a jump table, so

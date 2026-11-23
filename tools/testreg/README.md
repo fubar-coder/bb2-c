@@ -27,7 +27,8 @@ The include file (for the directory property `TEST_INCLUDE_FILES`, as
 `set_tests_properties()`: the labels (`originals` for the side with
 original material, else `bug-orig` and `emulator` for a case with a
 declared deviation of an open bug, `emulator` for the others, then the
-configuration's `labels`), `TIMEOUT` (the sum of the cells' `timeout`,
+configuration's `labels`, then `flaky` on both sides of a test with
+the key `flaky`), `TIMEOUT` (the sum of the cells' `timeout`,
 else `--timeout-default`, plus `--timeout-extra`), `SKIP_RETURN_CODE 77`,
 `COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures` (a test of the
 label `bug-orig` without `cost`: the sum of its cells' session limits,
