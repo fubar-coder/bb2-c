@@ -17,6 +17,10 @@
  *                              block's TLInit/TLCase/TLFinal call returns
  *                              a second time, with 0
  *   TLExpectError K            announces an expected runtime error
+ *   r=TLRunProgram(K,command$) starts a command line, its output to
+ *                              CORPUS:out/run-K.out, waits for its end and
+ *                              gives the address of the result (the
+ *                              NewType TLRun of the macro text)
  *   finit                      `incomplete` if a block is open, `end`
  *
  * The entries and their order are tlcore.c's; this file is the Amiga
@@ -27,8 +31,10 @@
  *
  * What the library keeps for the tested program: between TLBegin and the
  * finit it allocates and frees nothing (static state, the file opened in
- * TLBegin), and every routine keeps d2-d7 and a2-a6 besides the
- * registers of the register rule (the C routines by the calling
+ * TLBegin) but in TLRunProgram, where the system and the started program
+ * take what they need and the library opens and closes the program's
+ * output file and NIL: around the start; and every routine keeps d2-d7
+ * and a2-a6 besides the registers of the register rule (the C routines by the calling
  * convention; TLInit, TLCase and TLFinal are assembler entries that save
  * the caller's registers for the second return, which restores them).
  * dos.library and mathffp.library are opened by TLBegin and closed by the
@@ -38,6 +44,8 @@
 #include "blitzexec.h"
 #include <exec/execbase.h>
 #include <dos/dos.h>
+#include <dos/dostags.h>
+#include <utility/tagitem.h>
 #define __NOLIBBASE__
 #define DOS_BASE_NAME tl_dosbase
 #include <proto/dos.h>
@@ -46,7 +54,7 @@
 
 void TLBegin(void), TLInit(void), TLFinal(void), TLCase(void), TLBlockEnd(void);
 void TLCheck(void), TLCheckStr(void), TLRequire(void), TLExpectError(void);
-void TLCheckQ(void), TLCheckFlt(void);
+void TLCheckQ(void), TLCheckFlt(void), TLRunProgram(void);
 static void BLITZ_ROUTINE codefinit(void);
 BLITZ_ENTRY_DECL(finit);
 
@@ -117,6 +125,14 @@ BLITZ_ARGS(BL_LONG, BL_FLOAT, BL_FLOAT, BL_FLOAT);
 BLITZ_LIBS0();
 BLITZ_SUBS(TLCheckFlt, 0, 0);
 BLITZ_NAME("TLCheckFlt", "K,expected.f,actual.f,delta.f: ok if |actual-expected|<=delta");
+
+BLITZ_AFUNCTION(BL_LONG);
+BLITZ_ARGS(BL_LONG, BL_STRING);
+BLITZ_LIBS0();
+BLITZ_SUBS(TLRunProgram, 0, 0);
+BLITZ_NAME("TLRunProgram", "*r.TLRun=TLRunProgram(K,command$): start a command line, its output to "
+           "CORPUS:out/run-K.out; the result (rc, rcknown, cut, size, printed) is the library's, read only, "
+           "overwritten by the next run");
 
 BLITZ_NULLSUB_AT(finit, codefinit, 0, 0);
 
@@ -276,6 +292,96 @@ static void BLITZ_ROUTINE tlexpecterror_c(ULONG k BL_REG(d0))
     tl_expect_error(&tl_st, k);
 }
 BLITZ_ALIAS(TLExpectError, tlexpecterror_c);
+
+/* the result of the last started program: the NewType TLRun of the macro
+   text (rc at 0, rcknown at 4, cut at 6, size at 8, printed at 12) and the
+   Blitz string printed points at */
+static struct tl_run tl_run;
+static struct tl_run_text tl_run_text;
+_Static_assert(sizeof(struct tl_run) == 16, "the NewType TLRun is 16 bytes");
+_Static_assert(__builtin_offsetof(struct tl_run, printed) == 12, "printed.s is at 12 in the NewType TLRun");
+_Static_assert(__builtin_offsetof(struct tl_run_text, chars) == 4, "the length of a Blitz string is at -4");
+
+#define TL_CMD 512              /* the longest command line, its 0 behind */
+static UBYTE tl_cmd[TL_CMD + 1];
+static UBYTE tl_outname[32];
+
+/**
+ * @brief r=TLRunProgram(K,command$): runs the command line (dos
+ *   SystemTagList from Kickstart 2.0 with the input NIL: and the output
+ *   CORPUS:out/run-K.out, its return code; on 1.x Execute, which gives
+ *   none) and gives the address of the result.  run K before the start,
+ *   runend K after it (tlcore.c); refused outside a block and in Blitz
+ *   mode (no start, the result empty).
+ * @param k     d0: the number of the run
+ * @param cmd   d1: the command line's characters
+ * @param lens  a2: -4(a2) = its length
+ */
+static ULONG BLITZ_ROUTINE tlrunprogram_c(ULONG k BL_REG(d0), const UBYTE *cmd BL_REG(d1),
+                                          const ULONG *lens BL_REG(a2))
+{
+    ULONG n = lens[-1], i, size = 0, got = 0;
+    LONG rc = 0;
+    int known = 0;
+    BPTR out, nil;
+    UBYTE digits[10];
+
+    if (!tl_run_start(&tl_st, k, &tl_run, &tl_run_text))
+        return (ULONG)&tl_run;
+    if (n > TL_CMD)
+        n = TL_CMD;
+    for (i = 0; i < n; i++)
+        tl_cmd[i] = cmd[i];
+    tl_cmd[n] = 0;
+    {
+        static const char head[] = "CORPUS:out/run-", tail[] = ".out";
+        ULONG d = basictest_decimal(k, digits), o = 0;
+
+        for (i = 0; head[i]; i++)
+            tl_outname[o++] = (UBYTE)head[i];
+        for (i = 0; i < d; i++)
+            tl_outname[o++] = digits[i];
+        for (i = 0; tail[i]; i++)
+            tl_outname[o++] = (UBYTE)tail[i];
+        tl_outname[o] = 0;
+    }
+    out = tl_dosbase ? Open((CONST_STRPTR)tl_outname, MODE_NEWFILE) : 0;
+    nil = tl_dosbase ? Open((CONST_STRPTR)"NIL:", MODE_OLDFILE) : 0;
+    if (out && nil) {
+        if (SysBase->LibNode.lib_Version >= 36) {
+            struct TagItem tags[3];
+
+            tags[0].ti_Tag = SYS_Input;
+            tags[0].ti_Data = (ULONG)nil;
+            tags[1].ti_Tag = SYS_Output;
+            tags[1].ti_Data = (ULONG)out;
+            tags[2].ti_Tag = TAG_END;
+            tags[2].ti_Data = 0;
+            rc = SystemTagList((CONST_STRPTR)tl_cmd, tags);
+            known = 1;
+        } else {
+            Execute((CONST_STRPTR)tl_cmd, nil, out);
+        }
+    }
+    if (nil)
+        Close(nil);
+    if (out)
+        Close(out);
+    /* what the program wrote: its first TL_RUN_TEXT bytes, its length */
+    out = tl_dosbase ? Open((CONST_STRPTR)tl_outname, MODE_OLDFILE) : 0;
+    if (out) {
+        LONG r = Read(out, tl_run_text.chars, TL_RUN_TEXT);
+
+        got = r > 0 ? (ULONG)r : 0;
+        Seek(out, 0, OFFSET_END);
+        r = Seek(out, 0, OFFSET_BEGINNING);
+        size = r > 0 ? (ULONG)r : got;
+        Close(out);
+    }
+    tl_run_end(&tl_st, k, &tl_run, &tl_run_text, known, rc, got, size);
+    return (ULONG)&tl_run;
+}
+BLITZ_ALIAS(TLRunProgram, tlrunprogram_c);
 
 /* TLInit, TLFinal, TLCase: save the caller's context for the second
    return, then the C part (which keeps d2-d7/a2-a6) */

@@ -369,3 +369,59 @@ void tl_finit(struct tl_state *st)
     st->begun = 0;
     st->open = TL_NONE;
 }
+
+/* the result of a run: nothing printed, the return code unknown */
+static void run_clear(struct tl_run *r, struct tl_run_text *t)
+{
+    r->rc = 0;
+    r->rcknown = 0;
+    r->cut = 0;
+    r->size = 0;
+    t->length = 0;
+    t->chars[0] = 0;
+    r->printed = t->chars;
+}
+
+int tl_run_start(struct tl_state *st, uint32_t k, struct tl_run *r, struct tl_run_text *t)
+{
+    struct basictest_entry e = entry(BASICTEST_RUN);
+
+    run_clear(r, t);
+    if (!alive(st))
+        return 0;
+    if (st->open == TL_NONE) {
+        broken(st, "run outside a block");
+        return 0;
+    }
+    if (!tl_os_can_write()) {
+        broken(st, "run in Blitz mode");
+        return 0;
+    }
+    e.k = k;
+    emit(st, &e, 0);
+    return 1;
+}
+
+void tl_run_end(struct tl_state *st, uint32_t k, struct tl_run *r, struct tl_run_text *t, int known, int32_t rc,
+                size_t n, uint32_t size)
+{
+    struct basictest_entry e = entry(BASICTEST_RUNEND);
+
+    if (n > TL_RUN_TEXT)
+        n = TL_RUN_TEXT;
+    if (size < n)
+        size = (uint32_t)n;
+    t->length = (uint32_t)n;
+    t->chars[n] = 0;
+    r->printed = t->chars;
+    r->size = size;
+    r->cut = size > n ? -1 : 0;
+    r->rcknown = known ? -1 : 0;
+    r->rc = known ? rc : 0;
+    if (!alive(st))
+        return;
+    e.k = k;
+    e.ok = known != 0;
+    e.actual = (uint32_t)r->rc;
+    emit(st, &e, 0);
+}

@@ -39,6 +39,11 @@
  *   tl_require        require K broken and blockend, if the condition is 0
  *   tl_expect_error   expect-error K
  *   tl_finit          incomplete (a block is open), end
+ *   tl_run_start      run K, if a program may start now (inside a block, in
+ *                     Amiga mode); else `broken run outside a block` or
+ *                     `broken run in Blitz mode` and it does not start
+ *   tl_run_end        runend K with the return code, or - where the system
+ *                     gave none; fills the result of the run (struct tl_run)
  *
  * A call out of order (a block inside a block, a check outside one, the
  * batch init after a case, a case after the batch cleanup, a block end
@@ -95,6 +100,29 @@ struct tl_state {
     uint32_t guard_hi;
 };
 
+/*
+ * The result of a started program (change basic-test-local-data, D6): the
+ * NewType TLRun of shared/basictest/macros.bas - on the Amiga the layout
+ * rc at 0, rcknown at 4, cut at 6, size at 8, printed at 12 (testlib.c
+ * checks it) - and the Blitz string its field printed points at: the
+ * characters, their length as a long before them and a 0 behind them.
+ * One static block of the library; a later run overwrites it.
+ */
+#define TL_RUN_TEXT 1024        /* the bytes of the output printed holds */
+
+struct tl_run {
+    int32_t rc;                 /* the return code, 0 if unknown */
+    int16_t rcknown;            /* -1: the system gave it; 0: it gave none */
+    int16_t cut;                /* -1: printed holds only the first TL_RUN_TEXT bytes */
+    uint32_t size;              /* the bytes the program wrote */
+    const uint8_t *printed;     /* the characters of the output (text.chars) */
+};
+
+struct tl_run_text {
+    uint32_t length;            /* the Blitz string: its length ... */
+    uint8_t chars[TL_RUN_TEXT + 2];     /* ... its characters and a 0 (even size) */
+};
+
 /* defined by the user of the functions (testlib.c, the host tests) */
 void tl_os_write(const uint8_t *data, size_t length);
 int tl_os_can_write(void);
@@ -140,6 +168,25 @@ void tl_expect_error(struct tl_state *st, uint32_t k);
 
 /** @brief The end of the run: kept entries, `incomplete` if a block is open, `end`. */
 void tl_finit(struct tl_state *st);
+
+/**
+ * @brief A program is to start (TLRunProgram): the result r and its text t
+ *   cleared (rc 0, unknown, nothing printed: printed the empty string), and
+ *   `run K` written if it may start.
+ * @return 1 if it may start; 0 if not: no tl_begin, a damaged state, or
+ *   refused with `broken` (outside a block, or while entries cannot be
+ *   written: Blitz mode, Forbid, Disable).
+ */
+int tl_run_start(struct tl_state *st, uint32_t k, struct tl_run *r, struct tl_run_text *t);
+
+/**
+ * @brief The program ended (after tl_run_start gave 1): its output's first
+ *   n bytes are in t->chars (n <= TL_RUN_TEXT), size the whole output; the
+ *   result filled (printed of n bytes and a 0 behind, cut if size > n) and
+ *   `runend K` written with rc if known, else `-`.
+ */
+void tl_run_end(struct tl_state *st, uint32_t k, struct tl_run *r, struct tl_run_text *t, int known, int32_t rc,
+                size_t n, uint32_t size);
 
 #ifdef __cplusplus
 }

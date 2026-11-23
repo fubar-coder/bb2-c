@@ -351,3 +351,23 @@ no refusal of a long id.
 - The corpus pass gets `source=PATH|NAME` (a source with a name of its
   own); its files in the volume are `nNNN` (a name `ID/FILE` would meet
   the driver's executable `out/ID`).
+
+### Task 3.3: TLRunProgram (2026-11-23)
+
+- **Registers.** The method of basic-testlib's register test (`m8`): a
+  program takes `TLRunProgram`'s address from the `JSR` of a call that
+  never runs and calls it from assembler with markers in `d2`-`d7`,
+  `a3`, `a6`, the command's length stack in `a2` and the program's
+  `a4`/`a5`: `d2`-`d7` and `a2`-`a6` are unchanged after the call, and
+  the result it gives holds the command's output, with 1.95, 2.10 and
+  the port, both library sets, on `a1200` and `a500`
+  (`~/.local/share/bb2-c-work/accept-local-data/scratch/rp/rpregs.test.bas`,
+  outside the tree as `m8` is).
+- **A direct call** (`*r.TLRun=TLRunProgram(7,"Echo hello"+Chr$(10)+"C:Quit 20")`)
+  gives on Kickstart 3.1 `rc` 20, `rcknown` -1, `size` 34 and `printed`
+  `hello` LF `C:Quit failed returncode 20` LF; on 1.3 the same output
+  with `rc` 0 and `rcknown` 0; a second call overwrites the block.
+- The command line is cut to 512 characters; the output file is
+  `CORPUS:out/run-K.out` (written new, then read back: the first 1024
+  bytes into the block, its length by `Seek`); the input is `NIL:`
+  unless the line redirects it.
