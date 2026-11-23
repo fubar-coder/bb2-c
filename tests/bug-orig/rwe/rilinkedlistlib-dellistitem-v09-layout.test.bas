@@ -7,22 +7,22 @@
 ; the first node of A B, whose copy has 10004 bytes, and compares the
 ; free memory before and after.
 ; Correct: no error, DelListItem returns -1 and frees the copy.
-; @fixed #729
-; @rwe rilinkedlistlib riamosfunclib
-; @pass runtime_errors=on
 NEWTYPE .t
   a.l
   b.b[10000]
 End NEWTYPE
 DEFTYPE .t v
-v\a=1
 DEFTYPE .l
-r=InitList(0,v)
-r=AddLastListItem(0)
-r=FirstListItem(0)
-a=AvailMem_(0)
-r=DelListItem(0)
-b=AvailMem_(0)
-NPrint r
-If b-a>10000 Then NPrint "copy freed" Else NPrint "copy kept"
-End
+
+!TestCase{delete_with_copy}
+  v\a=1
+  r=InitList(0,v)
+  r=AddLastListItem(0)
+  r=FirstListItem(0)
+  m0=AvailMem_(0)
+  r=DelListItem(0)
+  m1=AvailMem_(0)
+  d=m1-m0
+  !CheckEq{r,-1,"result"}
+  !Check{d>10000,"copy_freed"}
+!EndTestCase

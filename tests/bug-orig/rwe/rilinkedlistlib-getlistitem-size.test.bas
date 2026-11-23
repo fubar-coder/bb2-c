@@ -4,8 +4,6 @@
 ; keeps a copy of a 4 byte variable and reads it into a 12 byte one.
 ; Correct: the first 4 bytes are copied, the rest of the variable keeps
 ; its contents.
-; @fixed #730
-; @rwe rilinkedlistlib riamosfunclib
 NEWTYPE .small
   a.l
 End NEWTYPE
@@ -16,15 +14,19 @@ NEWTYPE .big
 End NEWTYPE
 DEFTYPE .small s
 DEFTYPE .big b
-s\a=1
-b\b=$12345678
-b\c=$9ABCDEF0
-r.l=InitList(0,s)
-r=GetListItem(0,b)
-NPrint b\a
-k.l=0
-If b\b=$12345678
-  If b\c=$9ABCDEF0 Then k=1
-EndIf
-If k Then NPrint "rest kept" Else NPrint "rest overwritten"
-End
+DEFTYPE .l
+
+!TestCase{larger_variable}
+  s\a=1
+  b\b=$12345678
+  b\c=$9ABCDEF0
+  r=InitList(0,s)
+  r=GetListItem(0,b)
+  fa=b\a
+  k=0
+  If b\b=$12345678
+    If b\c=$9ABCDEF0 Then k=1
+  EndIf
+  !CheckEq{fa,1,"first_field"}
+  !CheckEq{k,1,"rest_kept"}
+!EndTestCase

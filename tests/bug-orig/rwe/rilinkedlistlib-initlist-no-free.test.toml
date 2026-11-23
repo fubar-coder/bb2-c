@@ -1,0 +1,6 @@
+# rilinkedlistlib-initlist-no-free.test.bas: the original loses the old lists
+fixed-orig = 731
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.init_21_times.old_lists_freed" = "== fail"

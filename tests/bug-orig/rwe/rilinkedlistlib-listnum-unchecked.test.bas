@@ -7,19 +7,20 @@
 ; LastListItem 0 still finds list 0's own node.
 ; Correct: the error check refuses the list number: "List number must be
 ; 0 to 4".
-; @fixed #732
-; @rwe rilinkedlistlib riamosfunclib
-; @pass runtime_errors=on
 NEWTYPE .t
   a.l
 End NEWTYPE
 DEFTYPE .t v
-v\a=1
-r.l=InitList(0,v)
-a0.l=AddrListItem(0)
-NPrint "before"
-r=InitList(5,v)
-NPrint r
-r=LastListItem(0)
-If AddrListItem(0)=a0 Then NPrint "list 0 kept" Else NPrint "list 0 changed"
-End
+DEFTYPE .l
+
+!TestCase{list_5}
+  v\a=1
+  r=InitList(0,v)
+  a0=AddrListItem(0)
+  !ExpectError{"List number must be 0 to 4","refused"}
+  r=InitList(5,v)
+  !Check{0,"not_refused"}
+  r=LastListItem(0)
+  x=AddrListItem(0)
+  !CheckEq{x,a0,"list_0_kept"}
+!EndTestCase

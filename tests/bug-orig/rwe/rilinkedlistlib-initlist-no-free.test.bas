@@ -4,20 +4,21 @@
 ; initialises list 0 21 times with a 1004 byte variable and compares the
 ; free memory after the first and after the last call.
 ; Correct: the old list is freed, the free memory stays about the same.
-; @fixed #731
-; @rwe rilinkedlistlib riamosfunclib
 NEWTYPE .t
   a.l
   b.b[1000]
 End NEWTYPE
 DEFTYPE .t v
-v\a=1
 DEFTYPE .l
-r=InitList(0,v)
-a=AvailMem_(0)
-For i=1 To 20
+
+!TestCase{init_21_times}
+  v\a=1
   r=InitList(0,v)
-Next
-b=AvailMem_(0)
-If a-b>10000 Then NPrint "old lists lost" Else NPrint "old lists freed"
-End
+  m0=AvailMem_(0)
+  For i=1 To 20
+    r=InitList(0,v)
+  Next
+  m1=AvailMem_(0)
+  d=m0-m1
+  !Check{d<=10000,"old_lists_freed"}
+!EndTestCase

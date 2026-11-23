@@ -6,20 +6,22 @@
 ; cleared first (the copy stays allocated until the end), so that the
 ; DelListItem bug of #729 frees nothing.
 ; Correct: NextListItem from B reaches C.
-; @fixed #728
-; @rwe rilinkedlistlib riamosfunclib
 NEWTYPE .t
   a.l
 End NEWTYPE
 DEFTYPE .t v
-v\a=1
-r.l=InitList(0,v)
-r=AddLastListItem(0)
-r=AddLastListItem(0)
-c.l=AddrListItem(0)
-r=FirstListItem(0)
-Poke.l AddrListItem(0)+10,0
-r=DelListItem(0)
-r=NextListItem(0)
-If AddrListItem(0)=c Then NPrint "C reached" Else NPrint "list cut"
-End
+DEFTYPE .l
+
+!TestCase{delete_first}
+  v\a=1
+  r=InitList(0,v)
+  r=AddLastListItem(0)
+  r=AddLastListItem(0)
+  c=AddrListItem(0)
+  r=FirstListItem(0)
+  Poke.l AddrListItem(0)+10,0
+  r=DelListItem(0)
+  r=NextListItem(0)
+  x=AddrListItem(0)
+  !CheckEq{x,c,"c_reached"}
+!EndTestCase

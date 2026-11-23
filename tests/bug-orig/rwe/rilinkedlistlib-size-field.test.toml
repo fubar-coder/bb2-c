@@ -1,0 +1,10 @@
+# rilinkedlistlib-size-field.test.bas: the original keeps the size of the last
+# variable it looked at
+fixed-orig = 735
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.node_size.without_data" = "== fail"
+"check.node_size.without_data.actual" = "== 12"
+"check.node_size.after_set" = "== fail"
+"check.node_size.after_set.actual" = "== 12"

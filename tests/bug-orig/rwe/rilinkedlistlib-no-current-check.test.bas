@@ -7,19 +7,20 @@
 ; and restored at once.
 ; Correct: SetListItem without a current node returns 0 and writes
 ; nothing.
-; @fixed #733
-; @rwe rilinkedlistlib riamosfunclib
 NEWTYPE .t
   a.l
 End NEWTYPE
 DEFTYPE .t v
-v\a=1
-Disable_
-o.l=Peek.l(10)
-r.l=SetListItem(1,v)
-n.l=Peek.l(10)
-Poke.l 10,o
-Enable_
-If n=o Then NPrint "address 10 kept" Else NPrint "address 10 written"
-NPrint r
-End
+DEFTYPE .l
+
+!TestCase{no_node}
+  v\a=1
+  Disable_
+  o=Peek.l(10)
+  r=SetListItem(1,v)
+  n=Peek.l(10)
+  Poke.l 10,o
+  Enable_
+  !CheckEq{n,o,"address_10_kept"}
+  !CheckEq{r,0,"result"}
+!EndTestCase

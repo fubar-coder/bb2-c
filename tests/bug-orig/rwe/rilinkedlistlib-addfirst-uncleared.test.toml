@@ -1,0 +1,8 @@
+# rilinkedlistlib-addfirst-uncleared.test.bas: the original's new node keeps
+# what the memory held
+fixed-orig = 726
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.new_node.fields_cleared" = "== fail"
+"check.new_node.fields_cleared.actual" = "== 1"

@@ -1,0 +1,9 @@
+# rilinkedlistlib-no-current-check.test.bas: the original writes the copy's
+# pointer to address 10
+fixed-orig = 733
+rwe = ["rilinkedlistlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.no_node.address_10_kept" = "== fail"
+"check.no_node.result" = "== fail"
+"check.no_node.result.actual" = "== -1"
