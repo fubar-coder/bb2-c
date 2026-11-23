@@ -1,0 +1,10 @@
+# arrayslib-newlist-overrun.test.bas: through inject with guard; the original
+# writes 8 bytes behind the 40-byte block of an empty list
+fixed-orig = 59
+runwrap = "@INJECT@|guard"
+
+[asserts]
+inject = "not contains \"inject: guard\""
+
+[deviations."libs=cd"]
+inject = "contains \"written behind an allocation of 40 bytes\""

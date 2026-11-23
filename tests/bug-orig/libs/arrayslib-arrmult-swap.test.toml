@@ -1,0 +1,13 @@
+# arrayslib-arrmult-swap.test.bas: only with runtime error checking; the check
+# behind the Dim must not run.  The original's Dim succeeds (an array of
+# 1 byte): no requester, the case goes on
+fixed-orig = 58
+runtime-errors = "on"
+
+[asserts]
+"check.size_4gb.dimmed" = "== not-run"
+
+[deviations."libs=cd"]
+"check.size_4gb.refused" = "== fail"
+"check.size_4gb.dimmed" = "== fail"
+requester = "count == 0"

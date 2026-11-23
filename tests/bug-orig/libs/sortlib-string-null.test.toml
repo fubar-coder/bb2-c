@@ -1,0 +1,24 @@
+# sortlib-string-null.test.bas: the emulator runs with 24 bit addressing, so
+# address -4 is the last long of the Kickstart ROM; the original sorts the
+# never assigned elements as strings beginning with "z" (ascending: behind
+# "a" and "b", SortDown: in front of them)
+fixed-orig = 276
+uae = ["cpu_24bit_addressing=true", "z3mem_size=0"]
+
+[deviations."libs=cd"]
+"check.unassigned_elements.up0" = "== fail"
+"check.unassigned_elements.up0.actual" = "== \"a\""
+"check.unassigned_elements.up1" = "== fail"
+"check.unassigned_elements.up1.actual" = "== \"b\""
+"check.unassigned_elements.up2" = "== fail"
+"check.unassigned_elements.up2.actual" = "== \"\""
+"check.unassigned_elements.up3" = "== fail"
+"check.unassigned_elements.up3.actual" = "== \"\""
+"check.unassigned_elements.down0" = "== fail"
+"check.unassigned_elements.down0.actual" = "== \"\""
+"check.unassigned_elements.down1" = "== fail"
+"check.unassigned_elements.down1.actual" = "== \"\""
+"check.unassigned_elements.down2" = "== fail"
+"check.unassigned_elements.down2.actual" = "== \"b\""
+"check.unassigned_elements.down3" = "== fail"
+"check.unassigned_elements.down3.actual" = "== \"a\""

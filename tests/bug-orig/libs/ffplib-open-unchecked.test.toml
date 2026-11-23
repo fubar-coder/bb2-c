@@ -1,0 +1,14 @@
+# ffplib-open-unchecked.test.bas: an open bug (#137); through inject with the
+# open of mathffp.library failing.  The first multiplication jumps through
+# base 0: the CPU halts, in the original and in the port (every cell has a
+# session of its own)
+runwrap = "@INJECT@|openlibfail=mathffp.library"
+timeout = 30
+isolate = "on"
+
+[deviations."libs=cd"]
+session = "== halt"
+rc = "not exists"
+inject = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

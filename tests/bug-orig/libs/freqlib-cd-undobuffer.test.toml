@@ -1,0 +1,10 @@
+# freqlib-cd-undobuffer.test.bas: through inject, which clicks CD, then
+# CANCEL, and compares the UndoBuffer pointers of the string gadgets
+fixed-orig = 345
+runwrap = "@INJECT@|undobuf click=FQ/CD click=FQ/CANCEL"
+
+[asserts]
+inject = "contains \"UndoBuffer of the string gadgets kept\""
+
+[deviations."libs=cd"]
+inject = "contains \"UndoBuffer of the string gadgets changed\""

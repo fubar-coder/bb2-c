@@ -1,0 +1,16 @@
+# mathtranslib-init-endless.test.bas: through inject with the open of
+# mathtrans.library failing; the original hangs in the init, before the
+# first statement (the session ends by the hang check)
+fixed-orig = 202
+runwrap = "@INJECT@|openlibfail=mathtrans.library"
+timeout = 30
+
+[asserts]
+inject = "contains \"openlibfail: 1 opens failed\""
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+inject = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

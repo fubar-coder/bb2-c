@@ -1,0 +1,14 @@
+# ldivlib-div0-check-long.test.bas: only with runtime error checking; the
+# check behind the error must not run.  The original's longdiv has no error
+# check: no requester, the case goes on
+fixed-orig = 200
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.divisor_zero.after" = "== not-run"
+
+[deviations."libs=cd"]
+"check.divisor_zero.refused" = "== fail"
+"check.divisor_zero.after" = "== fail"
+requester = "count == 0"

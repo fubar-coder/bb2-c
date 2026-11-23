@@ -1,0 +1,11 @@
+# linklistlib-sortlist-sign.test.bas: the original orders the keys by the sign
+# of their difference, which overflows for keys more than 2^31 apart
+fixed-orig = 201
+
+[deviations."libs=cd"]
+"check.key_order.item0" = "== fail"
+"check.key_order.item0.actual" = "== 2000000000"
+"check.key_order.item3" = "== fail"
+"check.key_order.item3.actual" = "== 2147483647"
+"check.key_order.item4" = "== fail"
+"check.key_order.item4.actual" = "== -2147483648"

@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-a -32768 800000D0
-b -32767 FFFE00CF
-rc=0

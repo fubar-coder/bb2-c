@@ -1,0 +1,13 @@
+# freqlib-lengths.test.bas: through inject in CORPUS:a, which clicks PARENT,
+# then OK; the original leaves the lengths of Pathname$ and Filename$
+fixed-orig = 153
+dirs = ["a"]
+runwrap = "@INJECT@|cd=CORPUS:a click=FQ/PARENT click=FQ/OK"
+
+[asserts]
+inject = "contains \"click FQ/OK: answered\""
+
+[deviations."libs=cd"]
+"check.lengths.path_is_root" = "== fail"
+"check.lengths.file_len" = "== fail"
+"check.lengths.file_len.actual" = "== 4"
