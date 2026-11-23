@@ -1,0 +1,9 @@
+# windowslib-closewindow-events.test.bas: the CD's libraries drop the event
+# of the other window
+fixed-orig = 322
+
+[deviations."libs=cd"]
+"check.other_window_event.event_class" = "== fail"
+"check.other_window_event.event_class.actual" = "== 0"
+"check.other_window_event.event_code" = "== fail"
+"check.other_window_event.event_code.actual" = "== 0"

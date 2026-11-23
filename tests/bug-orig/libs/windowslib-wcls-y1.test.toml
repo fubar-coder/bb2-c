@@ -1,0 +1,6 @@
+# windowslib-wcls-y1.test.bas: the CD's libraries leave the top pixel line
+fixed-orig = 314
+
+[deviations."libs=cd"]
+"check.top_line.after_y0" = "== fail"
+"check.top_line.after_y0.actual" = "== 0"

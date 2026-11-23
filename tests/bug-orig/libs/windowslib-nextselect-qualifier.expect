@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-events 00000100 00000100 items 0 1
-qualifiers 00008001 00008001
-inject: rc=0
-rc=0

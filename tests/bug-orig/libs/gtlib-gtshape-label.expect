@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-gadgets -1 -1
-button label -1
-shape label 0 same 0
-rc=0

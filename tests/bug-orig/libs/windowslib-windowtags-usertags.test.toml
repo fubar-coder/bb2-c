@@ -1,0 +1,6 @@
+# windowslib-windowtags-usertags.test.bas: the CD's libraries take over the
+# tags of the window before
+fixed-orig = 316
+
+[deviations."libs=cd"]
+"check.plain_after_tags.same_as_first" = "== fail"

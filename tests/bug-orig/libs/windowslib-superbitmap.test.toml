@@ -1,0 +1,6 @@
+# windowslib-superbitmap.test.bas: the CD's libraries give window 1 the
+# bitmap of window 0
+fixed-orig = 319
+
+[deviations."libs=cd"]
+"check.super_bitmap.window_1_other_bitmap" = "== fail"

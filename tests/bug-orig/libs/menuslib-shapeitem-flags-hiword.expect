@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-item 0 00000059 00000000
-item 2 00000059 FFFFFFFB
-sub 0 00000159
-rc=0

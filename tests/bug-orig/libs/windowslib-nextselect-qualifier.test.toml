@@ -1,0 +1,8 @@
+# windowslib-nextselect-qualifier.test.bas: through inject with fill=a5, so
+# that the fresh memory of the event node is known
+fixed-orig = 312
+runwrap = "@INJECT@|fill=a5"
+
+[deviations."libs=cd"]
+"check.two_picks.qualifier_2" = "== fail"
+"check.two_picks.qualifier_2.actual" = "== $A5A5"

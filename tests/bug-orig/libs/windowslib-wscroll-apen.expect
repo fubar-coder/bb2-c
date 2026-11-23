@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before 3
-wscroll 3
-wprintscroll 3
-rc=0

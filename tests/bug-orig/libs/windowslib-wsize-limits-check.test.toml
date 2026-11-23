@@ -1,0 +1,17 @@
+# windowslib-wsize-limits-check.test.bas: with runtime error checking; the
+# port refuses the size beyond the limits, the CD's libraries wait forever
+# in WSize (the run is ended as a hang)
+fixed-orig = 320
+runtime-errors = "on"
+timeout = 60
+
+[asserts]
+"check.size_beyond_limits.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.size_beyond_limits.refused" = "== fail"
+requester = "count == 0"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

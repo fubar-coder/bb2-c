@@ -1,0 +1,8 @@
+# windowslib-title-leak.test.bas: the CD's libraries lose the copies of the
+# titles in all three parts
+fixed-orig = 318
+
+[deviations."libs=cd"]
+"check.lost_memory.wtitle_under_limit" = "== fail"
+"check.lost_memory.window_under_limit" = "== fail"
+"check.lost_memory.windowtags_under_limit" = "== fail"

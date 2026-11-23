@@ -1,0 +1,6 @@
+# windowslib-menus-16byte.test.bas: the CD's libraries never reach window 4
+fixed-orig = 310
+
+[deviations."libs=cd"]
+"check.menus_off_windows.rmbtrap_window_4" = "== fail"
+"check.menus_off_windows.rmbtrap_window_4.actual" = "== 0"

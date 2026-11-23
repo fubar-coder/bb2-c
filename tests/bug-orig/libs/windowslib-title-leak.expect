@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-lost under 50000 -1
-window lost under 50000 -1
-windowtags lost under 50000 -1
-rc=0
