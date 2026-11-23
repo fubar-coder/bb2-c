@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-messages sent 2
-result: the item
-rc=0

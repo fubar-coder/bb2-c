@@ -1,0 +1,9 @@
+# ciatrklib-init-length-vs-address.test.bas: the original leaves the first
+# long of the sample
+fixed-orig = 438
+rwe = ["ciatrklib"]
+files = ["i.mod|@TESTDATA@/ciatrklib-init-length-vs-address.mod"]
+
+[deviations."compiler=orig210"]
+"check.first_long.first_long" = "== fail"
+"check.first_long.first_long.actual" = "== $11223344"

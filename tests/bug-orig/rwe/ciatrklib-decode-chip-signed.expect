@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-allocated -1
-copied -1
-chip -1
-bytes -1
-size 2111
-rc=0

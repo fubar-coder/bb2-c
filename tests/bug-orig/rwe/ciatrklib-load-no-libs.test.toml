@@ -1,0 +1,14 @@
+# ciatrklib-load-no-libs.test.bas: the original jumps through a6 = 1, an
+# address error halts the CPU
+fixed-orig = 443
+rwe = ["ciatrklib"]
+timeout = 30
+files = ["n.mod|@TESTDATA@/ciatrklib-free-while-playing.mod"]
+# the crash ends the session: the original's cell has one of its own
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

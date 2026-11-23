@@ -1,0 +1,10 @@
+# ciatrklib-setciaint-icr-bit.test.bas: in the original nothing plays in CIA
+# mode (the event stays 0)
+fixed-orig = 450
+rwe = ["ciatrklib"]
+timeout = 30
+files = ["c.mod|@TESTDATA@/ciatrklib-waitevent-no-libs.mod"]
+
+[deviations."compiler=orig210"]
+"check.cia_event.event" = "== fail"
+"check.cia_event.event.actual" = "== 0"

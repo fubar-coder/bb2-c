@@ -1,0 +1,12 @@
+# ciatrklib-decode-size-word-add.test.bas: the original's size lacks the
+# carry, the copy is 64 KB short
+fixed-orig = 434
+rwe = ["ciatrklib"]
+# the module is copied into a chip block that an earlier cell used: the old
+# bytes at its end must not be there
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+"check.size_carry.size" = "== fail"
+"check.size_carry.size.actual" = "== 65537"
+"check.size_carry.end" = "== fail"
