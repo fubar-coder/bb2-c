@@ -1,0 +1,7 @@
+# risnowlib-initsnowdrop-size-aslw.test.bas: the original allocates a block
+# of 40 bytes
+fixed-orig = 912
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.size_aslw.block_large_enough" = "== fail"

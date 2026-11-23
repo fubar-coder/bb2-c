@@ -1,0 +1,7 @@
+# risnowlib-lists-unbounded.test.bas: the original overwrites the kill list
+# header
+fixed-orig = 914
+rwe = ["risnowlib"]
+
+[deviations."compiler=orig210"]
+"check.lists_unbounded.kill_list_intact" = "== fail"

@@ -5,14 +5,15 @@
 ; program calls it three times and compares the free memory after the
 ; first and after the third call.
 ; Correct: the old block is freed, the free memory stays about the same.
-; @fixed #911
-; @rwe risnowlib
 DEFTYPE .l
-BitMap 0,320,256,3
-lt=InitSnowDrop(0,500,0,10240)
-a=AvailMem_(0)
-lt=InitSnowDrop(0,500,0,10240)
-lt=InitSnowDrop(0,500,0,10240)
-b=AvailMem_(0)
-If a-b>32000 Then NPrint "old blocks lost" Else NPrint "old blocks freed"
-End
+
+!TestCase{no_free}
+  BitMap 0,320,256,3
+  lt=InitSnowDrop(0,500,0,10240)
+  a=AvailMem_(0)
+  lt=InitSnowDrop(0,500,0,10240)
+  lt=InitSnowDrop(0,500,0,10240)
+  b=AvailMem_(0)
+  lost=a-b
+  !Check{lost<=32000,"old_blocks_freed"}
+!EndTestCase

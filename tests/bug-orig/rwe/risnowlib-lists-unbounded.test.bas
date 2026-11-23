@@ -7,15 +7,16 @@
 ; list behind it (inside the block).  (The 42nd would overwrite the
 ; header of the second drop list, which the 43rd reads: a crash.)
 ; Correct: a full list takes no more entries, the kill list stays.
-; @fixed #914
-; @rwe risnowlib
 DEFTYPE .l
-BitMap 0,320,256,3
-t=AllocMem_(1030,$10001)
-If t=0 Then NPrint "no memory" : End
-lt=InitSnowDrop(0,10,0,10240)
-For i=1 To 41 : LDoSnow 0,t : Next
-k=Peek.l(lt+8)
-If Peek.l(k)=k+4 Then NPrint "kill list intact" Else NPrint "kill list overwritten"
-FreeMem_ t,1030
-End
+
+!TestCase{lists_unbounded}
+  BitMap 0,320,256,3
+  t=AllocMem_(1030,$10001)
+  !Require{t<>0,"memory"}
+  lt=InitSnowDrop(0,10,0,10240)
+  For i=1 To 41 : LDoSnow 0,t : Next
+  k=Peek.l(lt+8)
+  v=Peek.l(k) : e=k+4
+  FreeMem_ t,1030
+  !CheckEq{v,e,"kill_list_intact"}
+!EndTestCase

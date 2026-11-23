@@ -7,19 +7,19 @@
 ; the pixel to its left (x 86), the right-first row moves it right to
 ; x 88.  Higher bits read the code behind the tables.
 ; Correct: the bit is taken modulo 8, the flake moves left to x 86.
-; @fixed #910
-; @rwe risnowlib
 DEFTYPE .l
-BitMap 0,320,256,3
-t=AllocMem_(1030,$10001)
-If t=0 Then NPrint "no memory" : End
-Poke.b t+2,10 : Poke.b t+3,8
-Plot 87,1,1
-lt=InitSnowDrop(0,100,0,10240)
-LDoSnow 0,t
-LDoSnow 0,t
-If Point(86,0)=1 Then NPrint "moved left"
-If Point(88,0)=1 Then NPrint "moved right"
-If Point(87,0)=1 Then NPrint "stayed"
-FreeMem_ t,1030
-End
+
+!TestCase{bit_above_7}
+  BitMap 0,320,256,3
+  t=AllocMem_(1030,$10001)
+  !Require{t<>0,"memory"}
+  Poke.b t+2,10 : Poke.b t+3,8
+  Plot 87,1,1
+  lt=InitSnowDrop(0,100,0,10240)
+  LDoSnow 0,t
+  LDoSnow 0,t
+  pl=Point(86,0) : pr=Point(88,0)
+  FreeMem_ t,1030
+  !CheckEq{pl,1,"moved_left"}
+  !CheckEq{pr,0,"not_moved_right"}
+!EndTestCase

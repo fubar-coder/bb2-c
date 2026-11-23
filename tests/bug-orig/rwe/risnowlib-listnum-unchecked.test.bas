@@ -10,23 +10,22 @@
 ; error checking.
 ; Correct: the error check refuses listnum 4: "Snow list number must be
 ; 0 to 3", nothing is written behind the table.
-; @fixed #913
-; @rwe risnowlib
-; @pass runtime_errors=on
 DEFTYPE .l
-BitMap 0,320,256,3
-s=AllocMem_(32,$10001)
-If s=0 Then NPrint "no memory" : End
-lt=InitSnowDrop(0,10,0,10240)
-CopyMem_ lt+64,s,16
-NPrint "before"
-x=InitSnowDrop(4,10,0,10240)
-CopyMem_ lt+64,s+16,16
-CopyMem_ s,lt+64,16
-k=0
-For i=0 To 12 Step 4
-  If Peek.l(s+i)<>Peek.l(s+16+i) Then k+1
-Next
-FreeMem_ s,32
-If k=0 Then NPrint "behind the table kept" Else NPrint "behind the table overwritten"
-End
+
+!TestCase{listnum_unchecked}
+  BitMap 0,320,256,3
+  s=AllocMem_(32,$10001)
+  !Require{s<>0,"memory"}
+  lt=InitSnowDrop(0,10,0,10240)
+  CopyMem_ lt+64,s,16
+  !ExpectError{"Snow list number must be 0 to 3","refused"}
+  x=InitSnowDrop(4,10,0,10240)
+  CopyMem_ lt+64,s+16,16
+  CopyMem_ s,lt+64,16
+  k=0
+  For i=0 To 12 Step 4
+    If Peek.l(s+i)<>Peek.l(s+16+i) Then k+1
+  Next
+  FreeMem_ s,32
+  !CheckEq{k,0,"behind_table_kept"}
+!EndTestCase
