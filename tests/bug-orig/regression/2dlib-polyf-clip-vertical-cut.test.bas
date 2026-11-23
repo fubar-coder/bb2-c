@@ -9,15 +9,18 @@
 ; wild", k = 96 of the exact products of #199) on a 320x200 bitmap; clippoly
 ; turns it into (320,200) (320,200) (320,-1) (-1,-1) (-1,151) (320,135), whose
 ; right side starts on the vertical edge x = -1.
-; Expected (what the original does): Polyf returns ("before", "after").
+; Correct (what the original does): Polyf returns.
+
 DEFTYPE .l
-BitMap 0,320,200,3
-Dim p.w(16)
-Restore pts
-For i=0 To 13 : Read v : p(i)=v : Next
-NPrint "before"
-Polyf 7,&p(0),1,2
-NPrint "after"
-End
-pts:
+
+.pts
 Data.l 19371,-833,-4669,388,-19881,14092,-3847,-19682,4167,-18785,-1452,9618,8817,-4491
+
+!TestCase{polyf_returns}
+  BitMap 0,320,200,3
+  Dim p.w(16)
+  Restore pts
+  For i=0 To 13 : Read v : p(i)=v : Next
+  Polyf 7,&p(0),1,2
+  !Check{-1,"polyf_returned"}
+!EndTestCase

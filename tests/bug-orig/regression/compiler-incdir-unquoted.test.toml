@@ -1,0 +1,2 @@
+# the file the program includes, staged as CORPUS:src/zz.bb2
+files = ["src/zz.bb2|@TESTDATA@/compiler-incdir-quote-next.inc"]

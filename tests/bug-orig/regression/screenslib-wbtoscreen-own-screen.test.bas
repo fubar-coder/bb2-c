@@ -5,10 +5,13 @@
 ; so when the closed screen was the front one it walked the freed screen
 ; (a crash). The original reads the list after it.
 ; Screen 0 (in front), then WbToScreen 0 on the same object.
-; Expected (what the original does): the Workbench is found ("wb -1").
+; Correct (what the original does): the Workbench is found.
+
 DEFTYPE .l
-Screen 0,0,0,320,200,2,0,"Own",1,2
-WbToScreen 0
-s=Peek.l(Addr Screen(0))
-NPrint "wb ",(Peek.w(s+20)&15)=1
-End
+
+!TestCase{wbtoscreen_front_screen}
+  Screen 0,0,0,320,200,2,0,"Own",1,2
+  WbToScreen 0
+  s=Peek.l(Addr Screen(0))
+  !Check{(Peek.w(s+20)&15)=1,"workbench_found"}
+!EndTestCase
