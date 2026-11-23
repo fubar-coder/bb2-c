@@ -1,0 +1,7 @@
+# fontlib-lochar-127.test.bas: the CD's libraries drop the character 196
+fixed-orig = 148
+
+[deviations."libs=cd"]
+"check.umlaut_drawn.cursor_after_196" = "== fail"
+"check.umlaut_drawn.cursor_after_196.actual" = "== 1"
+"check.umlaut_drawn.cell_drawn" = "== fail"

@@ -1,0 +1,19 @@
+# fontlib-messages-errarea.test.bas: runtime error checking off; the trap
+# handler leads through the three errors and the program ends in the
+# last one, so the case has no end entry and the checks of the paths
+# without an error do not run; the CD's libraries pass pointers behind the
+# library, the texts are garbage that varies (the checks fail, no value
+# is declared)
+fixed-orig = 955
+timeout = 60
+
+[asserts]
+"end.case" = "not exists"
+"check.three_errors.error_1_raised" = "== not-run"
+"check.three_errors.error_2_raised" = "== not-run"
+"check.three_errors.error_3_raised" = "== not-run"
+
+[deviations."libs=cd"]
+"check.three_errors.message_1" = "== fail"
+"check.three_errors.message_2" = "== fail"
+"check.three_errors.message_3" = "== fail"
