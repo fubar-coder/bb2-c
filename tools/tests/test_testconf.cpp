@@ -424,6 +424,101 @@ TEST_CASE("testconf: the driver's source in a job line", "[testconf]")
     tc_env_free(&e);
 }
 
+TEST_CASE("testconf: the IDs of the jobline jobs", "[testconf]")
+{
+    tree t;
+    tc_env e = env_of(t);
+    tc_config c;
+    std::string top = t.path("tests.toml");
+
+    t.write("x.test.bas", "");
+    // every job kind with a good ID; elements without a job are not checked
+    t.write("tests.toml", "root = true\njobline = [\"bitmap=4000|49152\", \"job=j001|@DRIVER@|CORPUS:out/a\", "
+                          "\"run=r001|CORPUS:a.bb2|RAM:con\", \"menu=dbg_9|9\", "
+                          "\"resident=abcdefghijklmno|CORPUS:r.bb2|CORPUS:out/r.res\"]\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(tc_job_of(&c, "j001") == TC_JOB_JOB);
+    CHECK(tc_job_of(&c, "r001") == TC_JOB_RUN);
+    CHECK(tc_job_of(&c, "dbg_9") == TC_JOB_MENU);
+    CHECK(tc_job_of(&c, "abcdefghijklmno") == TC_JOB_RESIDENT);
+    CHECK(tc_job_of(&c, "j000") == TC_JOB_DRIVER);
+    CHECK(tc_job_of(&c, "j002") == TC_JOB_NONE);
+    CHECK(tc_job_of(&c, "bitmap") == TC_JOB_NONE);
+    tc_free(&c);
+    {
+        const char *id;
+        size_t n;
+
+        CHECK(tc_jobline_job("menu=j001|9", &id, &n) == TC_JOB_MENU);
+        CHECK(std::string(id, n) == "j001");
+        CHECK(tc_jobline_job("resident=r", &id, &n) == TC_JOB_RESIDENT);
+        CHECK(std::string(id, n) == "r");
+        CHECK(tc_jobline_job("progress=on", &id, &n) == TC_JOB_NONE);
+    }
+
+    // the refusals, each naming file, line and ID
+    t.write("tests.toml", "root = true\njobline = [\"job=j000|@DRIVER@|CORPUS:out/again\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID j000 is the runner's" });
+    t.write("tests.toml", "root = true\njobline = [\"run=b001|CORPUS:a.bb2|RAM:con\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID b001 is the runner's" });
+    t.write("tests.toml", "root = true\njobline = [\"job=j001|@DRIVER@|CORPUS:out/a\", \"menu=j001|9\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID j001 twice" });
+    t.write("tests.toml", "root = true\njobline = [\"menu=log|9\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID log is a query" });
+    t.write("tests.toml", "root = true\njobline = [\"job=inject|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID inject is a query" });
+    t.write("tests.toml", "root = true\njobline = [\"job=J001|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"J001\"", "[a-z][a-z0-9_]*, at most 15" });
+    t.write("tests.toml", "root = true\njobline = [\"job=1a|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"1a\"" });
+    t.write("tests.toml", "root = true\njobline = [\"job=a.b|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"a.b\"" });
+    t.write("tests.toml", "root = true\njobline = [\"resident=abcdefghijklmnop|CORPUS:r.bb2|CORPUS:out/r.res\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"abcdefghijklmnop\"" });
+    t.write("tests.toml", "root = true\njobline = [\"job=|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"\"" });
+    tc_env_free(&e);
+}
+
+TEST_CASE("testconf: a data source's staged source in a job line", "[testconf]")
+{
+    tree t;
+    tc_env e = env_of(t, "TESTDATA = \"/td\"\n");
+    tc_config c;
+    std::string own = t.path("x.test.toml");
+
+    t.write("x.test.bas", "");
+    t.write("tests.toml", "root = true\n");
+    // kept in jobline for a data source of basic-compile, also behind another one
+    t.write("x.test.toml", "jobline = [\"run=r001|@DATA:victim.bas@|RAM:con|100\"]\n[data]\n\"a.bas\" = "
+                           "\"basic-compile\"\n\"victim.bas\" = \"basic-compile\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(!strcmp(tc_get(&c, "jobline")->value.list[0], "run=r001|@DATA:victim.bas@|RAM:con|100"));
+    CHECK(tc_job_of(&c, "victim.bas") == TC_JOB_DATA);
+    CHECK(tc_job_of(&c, "a.bas") == TC_JOB_DATA);
+    tc_free(&c);
+    // beside @DRIVER@ and an environment placeholder
+    t.write("x.test.toml", "jobline = [\"job=j001|@DATA:sub/v.bas@|@TESTDATA@/@DRIVER@\"]\n[data]\n\"sub/v.bas\" = "
+                           "\"basic-compile\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(!strcmp(tc_get(&c, "jobline")->value.list[0], "job=j001|@DATA:sub/v.bas@|/td/" TC_DRIVER));
+    tc_free(&c);
+    // a file that is not a data source of basic-compile
+    t.write("x.test.toml", "jobline = [\"run=r001|@DATA:other.bas@|RAM:con\"]\n[data]\n\"victim.bas\" = "
+                           "\"basic-compile\"\n");
+    refused(t, "x.test.bas", { own + ":1: jobline: the placeholder @DATA:other.bas@ names no data source" });
+    t.write("x.test.toml", "jobline = [\"run=r001|@DATA:in.txt@|RAM:con\"]\n[data]\n\"in.txt\" = \"copy\"\n");
+    refused(t, "x.test.bas", { own + ":1: jobline: the placeholder @DATA:in.txt@ names no data source" });
+    t.write("x.test.toml", "jobline = [\"run=r001|@DATA:victim.bas@|RAM:con\"]\n");
+    refused(t, "x.test.bas", { own + ":1: jobline: the placeholder @DATA:victim.bas@ names no data source" });
+    // outside a job line
+    t.write("x.test.toml", "files = [\"x.bb2|@DATA:victim.bas@\"]\n[data]\n\"victim.bas\" = \"basic-compile\"\n");
+    refused(t, "x.test.bas", { own + ":1: the placeholder @DATA:victim.bas@ stands only in jobline" });
+    t.write("x.test.toml", "runargs = \"@DATA:victim.bas@\"\n[data]\n\"victim.bas\" = \"basic-compile\"\n");
+    refused(t, "x.test.bas", { own + ":1: the placeholder @DATA:victim.bas@ stands only in jobline" });
+    tc_env_free(&e);
+}
+
 TEST_CASE("testconf: the settings of a run from the editor", "[testconf]")
 {
     tree t;

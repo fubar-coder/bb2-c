@@ -8,9 +8,9 @@ programs touched); emulator tests as named.
 
 ## 1. Configuration (host)
 
-- [ ] 1.1 `tools/lib/testconf`: the IDs of the `jobline` elements (`job=`, `run=`, `menu=`, `resident=`) read per cell; the checks of the spec (form, length 15, unique, not `j000`, `bNNN`, `log`, `inject`, not `r001` with `editor-run = "on"`), each naming file, line and ID; verify: `test_testconf` with broken input for each refusal, and every test of the tree still registers (`ctest --preset host`, the registration tests)
+- [x] 1.1 `tools/lib/testconf`: the IDs of the `jobline` elements (`job=`, `run=`, `menu=`, `resident=`) read per cell; the checks of the spec (form, length 15, unique, not `j000`, `bNNN`, `log`, `inject`, not `r001` with `editor-run = "on"`), each naming file, line and ID; verify: `test_testconf` with broken input for each refusal, and every test of the tree still registers (`ctest --preset host`, the registration tests)
 - [ ] 1.2 The queries `compile.log.NAME` and `compile.NAME` in `testassert.c` (parse after the fixed queries; `NAME` a job of the test: j000, r001 of an editor-run cell, a jobline ID, a `basic-compile` file), the refusals of `compile.j000` (naming `compile`), `compile.FILE` (naming `data.FILE`), `compile.ID` of a `run=`/`menu=` step (naming `compile.log.ID`), an unknown `NAME`; predicates as `compile.log` and `compile`; verify: `test_testconf`/testassert host tests, one broken input per refusal
-- [ ] 1.3 `@DATA:FILE@`: recognised in `resolve_string` before the environment placeholders, kept in `jobline` for a `basic-compile` data source, refused elsewhere and for another file (file, line, placeholder); `--print-config` shows it unreplaced; verify: `test_testconf` (kept in `jobline`, refused in `files`, refused for an undeclared file)
+- [x] 1.3 `@DATA:FILE@`: recognised in `resolve_string` before the environment placeholders, kept in `jobline` for a `basic-compile` data source, refused elsewhere and for another file (file, line, placeholder); `--print-config` shows it unreplaced; verify: `test_testconf` (kept in `jobline`, refused in `files`, refused for an undeclared file)
 
 ## 2. Observation and judging (runner, host)
 

@@ -299,7 +299,9 @@ int tc_env_load(const char *file, struct tc_env *env, char *err, size_t errlen)
     return r;
 }
 
-/* tc_placeholders; keep (NULL: none) a placeholder left as it is */
+/* tc_placeholders; keep (NULL: none) a placeholder left as it is, and with
+   keep (a jobline element) every @DATA:FILE@ too (checked against the data
+   sources by check_jobline); without keep @DATA:FILE@ is refused */
 static int placeholders(const struct tc_env *env, const char *text, const char *keep, char **out, char *err,
                         size_t errlen)
 {
@@ -312,6 +314,28 @@ static int placeholders(const struct tc_env *env, const char *text, const char *
     while (*p) {
         const char *q;
 
+        if (!strncmp(p, TC_DATA_PH, sizeof TC_DATA_PH - 1) && (q = strchr(p + sizeof TC_DATA_PH - 1, '@'))
+            && q > p + sizeof TC_DATA_PH - 1) {
+            if (!keep) {
+                snprintf(err, errlen, "%.*s", (int)(q - p + 1), p);
+                free(buf);
+                return -1;
+            }
+            /* kept as it is */
+            if (n + (size_t)(q - p + 1) + 1 > cap) {
+                char *b = realloc(buf, cap = n + strlen(p) + 1);
+
+                if (!b) {
+                    free(buf);
+                    return -2;
+                }
+                buf = b;
+            }
+            memcpy(buf + n, p, (size_t)(q - p + 1));
+            n += (size_t)(q - p + 1);
+            p = q + 1;
+            continue;
+        }
         if (*p == '@' && (q = strchr(p + 1, '@')) && ph_name_ok(p + 1, (size_t)(q - p - 1))) {
             const char *v = NULL;
             size_t vl;
@@ -699,6 +723,9 @@ static int resolve_string(const struct tc_env *env, const char *file, unsigned l
     if (r == -1 && !strcmp(ph, TC_DRIVER))
         return tc_err(err, errlen, "%s:%u: the placeholder %s stands only in jobline (the driver's source)", file,
                       line, ph);
+    if (r == -1 && !strncmp(ph, TC_DATA_PH, sizeof TC_DATA_PH - 1))
+        return tc_err(err, errlen, "%s:%u: the placeholder %s stands only in jobline (the staged source of a data "
+                      "source)", file, line, ph);
     if (r == -1)
         return tc_err(err, errlen, "%s:%u: unknown placeholder %s", file, line, ph);
     if (r)
@@ -1021,6 +1048,132 @@ static int collect_data(struct tc_config *c, const struct cfile *f, char *err, s
     return 0;
 }
 
+/* ------------------------------------------------------------ the compile jobs */
+
+int tc_jobline_job(const char *elem, const char **id, size_t *idlen)
+{
+    static const struct {
+        const char *prefix;
+        int kind;
+    } kinds[] = {
+        { "job=", TC_JOB_JOB }, { "run=", TC_JOB_RUN }, { "menu=", TC_JOB_MENU }, { "resident=", TC_JOB_RESIDENT },
+    };
+
+    for (size_t k = 0; k < sizeof kinds / sizeof kinds[0]; k++) {
+        size_t n = strlen(kinds[k].prefix);
+
+        if (!strncmp(elem, kinds[k].prefix, n)) {
+            *id = elem + n;
+            *idlen = strcspn(*id, "|");
+            return kinds[k].kind;
+        }
+    }
+    *id = NULL;
+    *idlen = 0;
+    return TC_JOB_NONE;
+}
+
+/* a data source of basic-compile named name (len characters) */
+static int is_data_source(const struct tc_config *c, const char *name, size_t len)
+{
+    for (size_t i = 0; i < c->ndata; i++)
+        if (c->data[i].action == TC_DA_BASIC_COMPILE && strlen(c->data[i].file) == len
+            && !memcmp(c->data[i].file, name, len))
+            return 1;
+    return 0;
+}
+
+/* a cell of the test may run from the editor */
+static int editor_run_possible(const struct tc_config *c)
+{
+    const struct tc_setting *s = tc_get(c, "editor-run");
+
+    for (size_t i = 0; i < c->nmatrix; i++)
+        if (!strcmp(c->matrix[i].key, "editor-run") && c->matrix[i].value.type == TT_LIST)
+            for (size_t k = 0; k < c->matrix[i].value.nlist; k++)
+                if (!strcmp(c->matrix[i].value.list[k], "on"))
+                    return 1;
+    return s && s->value.type == TT_STRING && !strcmp(s->value.str, "on");
+}
+
+int tc_job_of(const struct tc_config *c, const char *name)
+{
+    const struct tc_setting *jl = tc_get(c, "jobline");
+
+    for (size_t i = 0; jl && jl->value.type == TT_LIST && i < jl->value.nlist; i++) {
+        const char *id;
+        size_t n;
+        int kind = tc_jobline_job(jl->value.list[i], &id, &n);
+
+        if (kind != TC_JOB_NONE && strlen(name) == n && !memcmp(name, id, n))
+            return kind;
+    }
+    if (!strcmp(name, "j000"))
+        return TC_JOB_DRIVER;
+    if (is_data_source(c, name, strlen(name)))
+        return TC_JOB_DATA;
+    if (!strcmp(name, "r001") && editor_run_possible(c))
+        return TC_JOB_EDITOR_RUN;
+    return TC_JOB_NONE;
+}
+
+/* the IDs of the jobline jobs and the data sources the placeholders
+   @DATA:FILE@ name */
+static int check_jobline(const struct tc_config *c, char *err, size_t errlen)
+{
+    const struct tc_setting *jl = tc_get(c, "jobline");
+
+    if (!jl || jl->value.type != TT_LIST)
+        return 0;
+    for (size_t i = 0; i < jl->value.nlist; i++) {
+        const char *e = jl->value.list[i], *id, *p;
+        size_t n, k;
+        int bad = 0;
+
+        if (tc_jobline_job(e, &id, &n) != TC_JOB_NONE) {
+            if (!n || n > TC_JOBID_MAX || !(id[0] >= 'a' && id[0] <= 'z'))
+                bad = 1;
+            for (k = 1; k < n && !bad; k++)
+                if (!((id[k] >= 'a' && id[k] <= 'z') || (id[k] >= '0' && id[k] <= '9') || id[k] == '_'))
+                    bad = 1;
+            if (bad)
+                return tc_err(err, errlen, "%s:%u: jobline: the job ID \"%.*s\" of \"%s\": [a-z][a-z0-9_]*, at most "
+                              "%d characters", jl->at.file, jl->at.line, (int)n, id, e, TC_JOBID_MAX);
+            if ((n == 4 && !memcmp(id, "j000", 4))
+                || (n == 4 && id[0] == 'b' && id[1] >= '0' && id[1] <= '9' && id[2] >= '0' && id[2] <= '9'
+                    && id[3] >= '0' && id[3] <= '9'))
+                return tc_err(err, errlen, "%s:%u: jobline: the job ID %.*s is the runner's (j000 the driver, bNNN "
+                              "a data source)", jl->at.file, jl->at.line, (int)n, id);
+            if ((n == 3 && !memcmp(id, "log", 3)) || (n == 6 && !memcmp(id, "inject", 6)))
+                return tc_err(err, errlen, "%s:%u: jobline: the job ID %.*s is a query (compile.%.*s)", jl->at.file,
+                              jl->at.line, (int)n, id, (int)n, id);
+            for (k = 0; k < i; k++) {
+                const char *id2;
+                size_t n2;
+
+                if (tc_jobline_job(jl->value.list[k], &id2, &n2) != TC_JOB_NONE && n2 == n && !memcmp(id, id2, n))
+                    return tc_err(err, errlen, "%s:%u: jobline: the job ID %.*s twice", jl->at.file, jl->at.line,
+                                  (int)n, id);
+            }
+        }
+        /* the data sources of the placeholders */
+        for (p = e; (p = strstr(p, TC_DATA_PH));) {
+            const char *f = p + sizeof TC_DATA_PH - 1, *q = strchr(f, '@');
+
+            if (!q || q == f) {
+                p = f;
+                continue;
+            }
+            if (!is_data_source(c, f, (size_t)(q - f)))
+                return tc_err(err, errlen, "%s:%u: jobline: the placeholder %.*s names no data source of the test "
+                              "(the action basic-compile in its table data)", jl->at.file, jl->at.line,
+                              (int)(q - p + 1), p);
+            p = q + 1;
+        }
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------ the hierarchy */
 
 static int load(struct cfile *f, const char *path, unsigned depth, int own, char *err, size_t errlen)
@@ -1154,6 +1307,8 @@ int tc_resolve(const char *source, const struct tc_env *env, struct tc_config *c
     if (merge(c, files, nfiles, env, err, errlen) || tc_matrix_merge(c, err, errlen))
         goto out;
     if (c->has_own && collect_data(c, &files[0], err, errlen))
+        goto out;
+    if (check_jobline(c, err, errlen))
         goto out;
     {
         /* at most one of the keys of the fixed issue */

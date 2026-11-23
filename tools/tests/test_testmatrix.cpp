@@ -374,4 +374,14 @@ TEST_CASE("testmatrix: a run from the editor", "[testmatrix]")
                                       "module is used only by a run from the editor");
     t.write("tests.toml", "root = true\ndefaultdbug = \"/m\"\n[matrix]\neditor-run = [\"on\", \"off\"]\n");
     refused(t, ":2: defaultdbug without editor-run = \"on\" (cell off)");
+    // the job ID r001 is the run from the editor: free in a cell from the shell
+    t.write("tests.toml", "root = true\njobline = [\"run=r001|CORPUS:a.bb2|RAM:con\"]\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    t.write("tests.toml", "root = true\n\njobline = [\"run=r001|CORPUS:a.bb2|RAM:con\"]\n[matrix]\n"
+                          "editor-run = [\"off\", \"on\"]\n");
+    refused(t, t.path("tests.toml") + ":3: jobline: the job ID r001 is the run from the editor in the cell on with "
+                                      "editor-run = \"on\" (" + t.path("tests.toml") + ":5)");
 }
