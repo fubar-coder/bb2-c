@@ -1,0 +1,16 @@
+# rundebuglib-printerr-numeric-code.test.bas: with runtime error checking;
+# the original's requester shows an empty text
+fixed-orig = 6
+runtime-errors = "on"
+
+[asserts]
+"check.used_object.not_stopped" = "== not-run"
+"check.offset_range.not_stopped" = "== not-run"
+"check.end_of_program.not_stopped" = "== not-run"
+
+[deviations."libs=cd"]
+"check.used_object.message" = "== fail"
+"check.offset_range.message" = "== fail"
+"check.end_of_program.message" = "== fail"
+requester = "count == 1"
+"end.case" = "not exists"

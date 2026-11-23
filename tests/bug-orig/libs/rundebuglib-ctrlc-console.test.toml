@@ -1,0 +1,17 @@
+# rundebuglib-ctrlc-console.test.bas: with runtime error checking; the
+# program is stopped by the break signal: "***Break", return code 20, the
+# case does not reach its end
+fixed-orig = 43
+runtime-errors = "on"
+
+[asserts]
+rc = "== 20"
+output = "contains \"***Break\""
+"end.case" = "not exists"
+"check.ctrl_c.not_stopped" = "== not-run"
+
+[deviations."libs=cd"]
+rc = "== 0"
+output = "not contains \"***Break\""
+"end.case" = "exists"
+"check.ctrl_c.not_stopped" = "== fail"
