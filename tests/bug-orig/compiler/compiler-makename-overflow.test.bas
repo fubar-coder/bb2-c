@@ -5,11 +5,12 @@
 ; (`1`1`2: 60+60+7 = 127 characters, then 60+60+8 = 128).
 ; Correct: a name of up to 127 characters is accepted, a longer one is a
 ; compile error.
-; @fixed-orig #29
 Macro s
 `1`1`2=1
-NPrint `1`1`2
 End Macro
-!s{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,aaaaaaa}
-!s{bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,bbbbbbbb}
-End
+
+!TestCase{makename_overflow}
+  !s{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,aaaaaaa}
+  !s{bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,bbbbbbbb}
+  !CheckEq{1,1,"compiled"}
+!EndTestCase

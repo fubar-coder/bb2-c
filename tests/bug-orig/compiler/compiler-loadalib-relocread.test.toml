@@ -1,0 +1,18 @@
+# compiler-loadalib-relocread.test.bas: inject makes the fourth Read of the
+# library fail; the correct result is a failed compile (the library is left
+# out, so BugOrigUserLib is unknown) and nothing runs; the original relocates
+# with the stale table and writes an executable that cannot be started (the
+# shell's return code 10)
+fixed-orig = 993
+wrap = "@INJECT@|readfail=bugorig.obj/4"
+files = ["blitz2/userlibs/bugorig/bugorig.obj|@USERLIB@", "blitz2/bugorig/bugorig.obj|@USERLIB@"]
+
+[asserts]
+compile = "matches \"error 15 Token Not Found*\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+rc = "== 10"

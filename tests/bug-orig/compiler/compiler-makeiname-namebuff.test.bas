@@ -7,8 +7,8 @@
 ; into namebuff2 and reports "Can't open Include" (no such file).
 ; Correct: a name that does not fit into namebuff is refused, with "Path
 ; too Long" at the Include line.
-; @fixed-orig #325
-IncDir "CORPUS:pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/"
-Include "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.bb2"
-NPrint 1
-End
+!TestCase{namebuff}
+  IncDir "CORPUS:pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp/"
+  Include "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn.bb2"
+  !CheckEq{1,1,"after"}
+!EndTestCase
