@@ -1966,6 +1966,11 @@ ULONG directdo_c(struct m68kregs *r)
     pokel(ret15add);                    /* jmp to done */
     if (nomemleft)
         nodirmem();
+    /* Fixed (#1204): not in blitz2.s.  The line is compiled; a macro
+       expansion buffer (myline, myoline) of it is no longer used - the
+       original left it allocated until the next expansion or the next
+       compile's first nextline, and for good if blitz2 ended first */
+    freemlines();
     errjmp = olderr;
     /* direxit */
     dirmode = 0;
