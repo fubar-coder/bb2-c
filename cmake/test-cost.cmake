@@ -9,10 +9,11 @@
 # a line "NAME COST" per test, the median of the sum of its emulator
 # sessions started warm.  A test with an entry gets that COST: a CMake test
 # here, a bug-orig test of the old form in cmake/bug-orig-order.cmake, a
-# test of the model in tools/testreg (--costs); a measurement wins over the
+# test of the model in tools/testreg (--costs); a measurement replaces the
 # estimates (the list below, a bug-orig test's session limit times its
-# sessions, a model test's `cost` key or the sum of its cells' session
-# limits), which stay for the tests without an entry.
+# sessions, the sum of a model test's cells' session limits), which stay
+# for the tests without an entry; a model test's `cost` key wins over its
+# entry.
 #
 # test_costs_load(FILE)
 #   reads FILE (at the start of the top-level CMakeLists.txt; a change of it

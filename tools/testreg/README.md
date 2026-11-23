@@ -39,10 +39,17 @@ to that file (`cmake/bug-orig-order.cmake`, a line `# @test NAME COST`
 before each declaration; `tests/README.md`, "Order of the bug-orig
 tests"), so that all of them are declared in one sorted list. With
 `--costs FILE` (`tests/data/test-costs.txt`, `tests/README.md`, "The
-measured COST") a test with an entry gets the measured COST, which wins
-over `cost` and the sum of the session limits; an entry
+measured COST") a test with an entry gets the measured COST in place of
+the sum of the session limits; the configuration's `cost` wins over the
+entry. An entry
 `PREFIX...__CASE` of the prefix that names no registered test fails the
-step. The depfile
+step. With `--test-env FILE` the include file includes `FILE` first and
+calls `basic_test_environment(NAME LABELS)` after the properties of each
+test it registers: the script `basic_test_register()` writes gives the
+test the environment of the tests CMake declares (the snapshot owner, the
+coverage directory; `emulation_test_environment`,
+`cmake/emulation-queue.cmake`), which needs the labels only this step
+knows. The depfile
 names every file the tool read (the sources, the configuration files, the
 environment file, the token lists), so the build step reruns when one of
 them changes. A depfile cannot name a file that does not exist yet: a
@@ -85,8 +92,12 @@ OPTIONS:
                               declared with the tests of the label bug-orig, the largest COST
                               first
           --costs FILE        the measured COST of the tests (tests/data/test-costs.txt): an
-                              entry wins over the configuration's cost; an entry of a test of
-                              the model of the prefix that is not registered is an error
+                              entry replaces the sum of the cells' session limits, the
+                              configuration's cost wins over it; an entry of a test of the
+                              model of the prefix that is not registered is an error
+          --test-env FILE     a ctest script that defines basic_test_environment(NAME LABELS),
+                              the environment of a test (cmake/basic-test-model.cmake):
+                              included by the include file, called for each test
 
 The include file is written only when every source and configuration passed the
 checks; the depfile is written in any case. Exit status 0 ok, 1 a check failed

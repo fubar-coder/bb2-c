@@ -5,7 +5,7 @@
  *   testreg --prefix P --output FILE [--env FILE] [--depfile FILE]
  *           [--tokens FILE]... [--cell-fixture SELECTOR|FIXTURE]...
  *           [--timeout-default SEC] [--timeout-extra SEC] [--order FILE] [--costs FILE]
- *           --command WORD [--command WORD]... SOURCE...
+ *           [--test-env FILE] --command WORD [--command WORD]... SOURCE...
  *
  * Reads every source and its configuration, checks them, and writes the
  * ctest include file (only when nothing failed) and the depfile.
@@ -26,7 +26,7 @@ namespace fs = std::filesystem;
 
 static int run(const std::string &prefix, const std::string &output, const std::string &envfile,
                const std::string &depfile, const std::string &orderfile, const std::string &costfile,
-               const std::vector<std::string> &tokfiles,
+               const std::string &testenv, const std::vector<std::string> &tokfiles,
                long long tdef, long long textra,
                const std::vector<std::string> &command, const std::vector<std::string> &cellfix,
                const std::vector<std::string> &sources)
@@ -136,7 +136,8 @@ static int run(const std::string &prefix, const std::string &output, const std::
 
         for (const std::string &c : command)
             cmd.push_back(c.c_str());
-        if (!f || treg_write_include(f, &r, cmd.data(), cmd.size(), &order) || fclose(f)) {
+        if (!f || treg_write_include(f, &r, cmd.data(), cmd.size(), &order,
+                                      testenv.empty() ? nullptr : testenv.c_str()) || fclose(f)) {
             fprintf(stderr, "testreg: cannot write %s (or a value cannot be quoted)\n", output.c_str());
             rc = 1;
         } else {
@@ -164,7 +165,7 @@ int main(int argc, char **argv)
     CLI::App app{"The ctest tests of the Blitz test sources of the model (ID.test.bas), one per case and side, "
                  "from the sources and their run configurations.",
                  "testreg"};
-    std::string prefix, output, envfile, depfile, orderfile, costfile;
+    std::string prefix, output, envfile, depfile, orderfile, costfile, testenv;
     std::vector<std::string> tokfiles, command, cellfix, sources;
     long long tdef = 90, textra = 0;
     int status = 0;
@@ -208,15 +209,19 @@ int main(int argc, char **argv)
                    "the label bug-orig, the largest COST first")
         ->type_name("FILE");
     app.add_option("--costs", costfile,
-                   "the measured COST of the tests (tests/data/test-costs.txt): an entry wins over the "
-                   "configuration's cost; an entry of a test of the model of the prefix that is not registered "
-                   "is an error")
+                   "the measured COST of the tests (tests/data/test-costs.txt): an entry replaces the sum of "
+                   "the cells' session limits, the configuration's cost wins over it; an entry of a test of the "
+                   "model of the prefix that is not registered is an error")
+        ->type_name("FILE");
+    app.add_option("--test-env", testenv,
+                   "a ctest script that defines basic_test_environment(NAME LABELS), the environment of a test "
+                   "(cmake/basic-test-model.cmake): included by the include file, called for each test")
         ->type_name("FILE");
     app.footer("The include file is written only when every source and configuration passed the checks; "
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
                "or written, 2 usage error.");
     app.callback([&] {
-        status = run(prefix, output, envfile, depfile, orderfile, costfile, tokfiles, tdef, textra, command, cellfix,
+        status = run(prefix, output, envfile, depfile, orderfile, costfile, testenv, tokfiles, tdef, textra, command, cellfix,
                      sources);
     });
     return cli::run(app, argc, argv, status);
