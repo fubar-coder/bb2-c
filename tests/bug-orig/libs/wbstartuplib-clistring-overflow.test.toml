@@ -1,8 +1,13 @@
 # wbstartuplib-clistring-overflow.test.bas: the program is started with an
-# argument of 306 characters (abc, 300 x, xyz); the original keeps 288
-# characters of it when the old test started itself as a child; started with
-# the argument directly (the bug of the issue) the original overwrites what
-# is behind cliString and crashes at its start, before the first check
+# argument of 306 characters (abc, 300 x, xyz); the original copies it into
+# cliString without a limit and the excess bytes overwrite what is behind
+# it: cliString is the last thing of the library before its error check
+# area, which is not linked without runtime error checking, so they land in
+# the head of the library linked after wbstartuplib. What happens then
+# follows the link layout of the test program: here the original crashes at
+# its start, before the first check; with another neighbour (the old test's
+# child) it kept 288 characters. A change of the link layout of the model
+# program (testlib, driver) needs the deviations declared again.
 fixed-orig = 308
 timeout = 60
 runargs = "abcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyz"
