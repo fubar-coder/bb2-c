@@ -8,33 +8,40 @@
 ; of an OpenFile (Loc/Lof).
 ; Correct: positions count from 0, at the end Loc = Lof = the length, 3.
 ; The original gives 4.
-; @fixed #144
-; @configs clib
-f$="RAM:fileiolib-eof-loc-lof.dat"
-KillFile f$
-If WriteFile(0,f$)
+DEFTYPE .l
+
+!TestCase{loc_lof}
+  f$="CORPUS:fileiolib-eof-loc-lof.dat"
+  KillFile f$
+  r=WriteFile(0,f$)
+  !Require{r,"written"}
   e=Eof(0)
-  NPrint "new eof ",e
+  !CheckEq{e,-1,"new_eof"}
   FileOutput 0 : Print "abc" : DefaultOutput
-  l1.l=Loc(0) : l2.l=Lof(0)
-  NPrint "written loc ",l1," lof ",l2
+  l1=Loc(0) : l2=Lof(0)
+  !CheckEq{l1,3,"written_loc"}
+  !CheckEq{l2,3,"written_lof"}
   CloseFile 0
-EndIf
-NPrint "exists ",Exists(f$)
-If ReadFile(1,f$)
+  !CheckEq{Exists(f$),3,"exists_after_write"}
+  r=ReadFile(1,f$)
+  !Require{r,"read_open"}
   FileInput 1 : a$=Inkey$(3) : DefaultInput
   e=Eof(1)
-  l1.l=Loc(1) : l2.l=Lof(1)
-  NPrint "read [",a$,"] eof ",e," loc ",l1," lof ",l2
+  l1=Loc(1) : l2=Lof(1)
+  !CheckStrEq{a$,"abc","read_text"}
+  !CheckEq{e,-1,"read_eof"}
+  !CheckEq{l1,3,"read_loc"}
+  !CheckEq{l2,3,"read_lof"}
   CloseFile 1
-EndIf
-If OpenFile(2,f$)
+  r=OpenFile(2,f$)
+  !Require{r,"open_open"}
   FileSeek 2,3
   e=Eof(2)
-  l1.l=Loc(2) : l2.l=Lof(2)
-  NPrint "open seek 3 eof ",e," loc ",l1," lof ",l2
+  l1=Loc(2) : l2=Lof(2)
+  !CheckEq{e,-1,"open_eof"}
+  !CheckEq{l1,3,"open_loc"}
+  !CheckEq{l2,3,"open_lof"}
   CloseFile 2
-EndIf
-NPrint "exists ",Exists(f$)
-KillFile f$
-End
+  !CheckEq{Exists(f$),3,"exists_after_read"}
+  KillFile f$
+!EndTestCase

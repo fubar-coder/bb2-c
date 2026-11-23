@@ -1,0 +1,17 @@
+# fileiolib-eof-loc-lof.test.bas: the original's Loc and Lof are 1 too high
+# after an Eof at the end
+fixed-orig = 144
+
+[deviations."libs=cd"]
+"check.loc_lof.written_loc" = "== fail"
+"check.loc_lof.written_loc.actual" = "== 4"
+"check.loc_lof.written_lof" = "== fail"
+"check.loc_lof.written_lof.actual" = "== 4"
+"check.loc_lof.read_loc" = "== fail"
+"check.loc_lof.read_loc.actual" = "== 4"
+"check.loc_lof.read_lof" = "== fail"
+"check.loc_lof.read_lof.actual" = "== 4"
+"check.loc_lof.open_loc" = "== fail"
+"check.loc_lof.open_loc.actual" = "== 4"
+"check.loc_lof.open_lof" = "== fail"
+"check.loc_lof.open_lof.actual" = "== 4"

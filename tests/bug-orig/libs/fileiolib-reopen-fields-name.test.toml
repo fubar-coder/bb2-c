@@ -1,0 +1,6 @@
+# fileiolib-reopen-fields-name.test.bas: the original cuts the name at the
+# second open and does not find the file
+fixed-orig = 138
+
+[deviations."libs=cd"]
+"check.reopen.reopened" = "== fail"

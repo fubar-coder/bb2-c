@@ -1,0 +1,11 @@
+# fileiolib-exists-root-examine.test.bas: runs through inject, which fails
+# the Examine of the file named .bad
+fixed-orig = 1026
+runwrap = "@INJECT@|examinefail=exists-root-examine.bad"
+
+[asserts]
+inject = "contains \"examinefail: 1 examines failed\""
+
+[deviations."libs=cd"]
+"check.examine.examine_failed" = "== fail"
+"check.examine.examine_failed.actual" = "== 100"

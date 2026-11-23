@@ -7,17 +7,16 @@
 ; given Fields, then opened again with ReadFile without CloseFile.
 ; Correct: the second open finds the file, the name stays whole.  The
 ; original cuts the name and does not find the file.
-; @fixed #138
-; @configs clib
-f$="RAM:fileiolib-reopen-fields-name-1.dat"
-NPrint "name length ",Len(f$)
-If OpenFile(0,f$)
-  NPrint "opened"
+DEFTYPE .l
+
+!TestCase{reopen}
+  f$="CORPUS:fields-name-reopen-12345678.dat"
+  !CheckEq{Len(f$),38,"name_length"}
+  r=OpenFile(0,f$)
+  !Require{r,"opened"}
   Fields 0,a.l
-  If ReadFile(0,f$) Then NPrint "reopened" Else NPrint "reopen failed"
+  r=ReadFile(0,f$)
+  !Check{r<>0,"reopened"}
   CloseFile 0
-Else
-  NPrint "open failed"
-EndIf
-KillFile f$
-End
+  KillFile f$
+!EndTestCase

@@ -8,13 +8,20 @@
 ; missing file.
 ; Correct: the empty file is told apart from the missing one.  The
 ; original (and the port) give 0 for both.
-; @configs clib
-e$="RAM:fileiolib-exists-empty-file.dat"
-m$="RAM:fileiolib-exists-empty-file.none"
-KillFile m$
-If WriteFile(0,e$) Then CloseFile 0
-If Exists(e$) Then NPrint "empty file there" Else NPrint "empty file missing"
-If Exists(m$) Then NPrint "missing file there" Else NPrint "missing file missing"
-If ReadFile(0,e$) Then NPrint "readfile of the empty file ok" : CloseFile 0
-KillFile e$
-End
+DEFTYPE .l
+
+!TestCase{empty_file}
+  e$="CORPUS:fileiolib-exists-empty-file.dat"
+  m$="CORPUS:fileiolib-exists-empty-file.none"
+  KillFile m$
+  r=WriteFile(0,e$)
+  !Require{r,"written"}
+  CloseFile 0
+  ex=Exists(e$) : mi=Exists(m$)
+  !Check{ex<>0,"empty_there"}
+  !Check{mi=0,"missing_missing"}
+  r=ReadFile(0,e$)
+  !Check{r<>0,"readfile_ok"}
+  If r Then CloseFile 0
+  KillFile e$
+!EndTestCase

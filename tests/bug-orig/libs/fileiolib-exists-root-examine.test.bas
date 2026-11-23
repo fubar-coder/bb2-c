@@ -11,18 +11,22 @@
 ; failed Examine.  (The roots of the FFS and RAM: volumes of the emulator
 ; report type 2, so they show -1 in the original too; other handlers
 ; report type 1.)
-; @fixed #1026
-; @configs clib
-; @pass runwrap=@INJECT@|examinefail=exists-root-examine.bad
-f$="RAM:exists-root-examine.dat"
-g$="RAM:exists-root-examine.bad"
-Dim m.b(99)
-If WriteFile(0,f$) Then WriteMem 0,&m(0),100 : CloseFile 0
-If WriteFile(0,g$) Then WriteMem 0,&m(0),50 : CloseFile 0
-NPrint "drawer ",Exists("SYS:C")
-NPrint "root SYS: ",Exists("SYS:")
-NPrint "root RAM: ",Exists("RAM:")
-NPrint "file ",Exists(f$)
-NPrint "examine failed ",Exists(g$)
-KillFile f$ : KillFile g$
-End
+DEFTYPE .l
+
+!TestCase{examine}
+  f$="CORPUS:exists-root-examine.dat"
+  g$="CORPUS:exists-root-examine.bad"
+  Dim m.b(99)
+  r=WriteFile(0,f$)
+  !Require{r,"file_written"}
+  WriteMem 0,&m(0),100 : CloseFile 0
+  r=WriteFile(0,g$)
+  !Require{r,"bad_written"}
+  WriteMem 0,&m(0),50 : CloseFile 0
+  !CheckEq{Exists("SYS:C"),-1,"drawer"}
+  !CheckEq{Exists("SYS:"),-1,"root_sys"}
+  !CheckEq{Exists("RAM:"),-1,"root_ram"}
+  !CheckEq{Exists(f$),100,"file"}
+  !CheckEq{Exists(g$),0,"examine_failed"}
+  KillFile f$ : KillFile g$
+!EndTestCase

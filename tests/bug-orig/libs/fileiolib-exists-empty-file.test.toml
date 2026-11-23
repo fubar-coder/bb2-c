@@ -1,0 +1,4 @@
+# fileiolib-exists-empty-file.test.bas: an open bug (won't fix, #143): the
+# original and the port tell the empty file from the missing one by neither
+[deviations."libs=cd"]
+"check.empty_file.empty_there" = "== fail"
