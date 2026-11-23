@@ -53,7 +53,7 @@ step writes.
 
 #### Scenario: The driver of all cases printed
 - **WHEN** the driver is printed for a source with the cases a and b and no case is named
-- **THEN** stdout holds the driver that calls the batch init, a, b and the batch end, the same text as the build step's driver of that source
+- **THEN** stdout holds the driver that calls the batch init, a, b and the batch cleanup, the same text as the build step's driver of that source
 
 ### Requirement: The driver takes no parameters
 The name of the result file and the selected cases SHALL be compiled into
@@ -68,7 +68,7 @@ cases.
 When no case is named, the runner SHALL run all cases of the source on one
 side: the driver of all cases in each cell of the side, the cells grouped
 into sessions as for one case, and SHALL judge each case on its own from
-its block of the result file, the batch init and the batch end, with the
+its block of the result file, the batch init and the batch cleanup, with the
 assertions and deviations of the run of that case alone. The registered
 tests SHALL stay one per case and side.
 
