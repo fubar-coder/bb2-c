@@ -513,6 +513,24 @@ int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
                     return 1;
                 }
             tc_assertions_free(&as);
+            /* the alternative ends are deviations too */
+            {
+                struct tc_ends e;
+                int any = 0;
+
+                r = tc_ends_for(conf, m, cells[c], case_name, modes[k], &e, err, sizeof err);
+                if (r == -2)
+                    return -1;
+                if (r)
+                    return 1;
+                for (size_t i = 0; i < e.n; i++)
+                    for (size_t j = 0; j < e.e[i].nalt; j++)
+                        for (size_t a = 0; a < e.e[i].alt[j].as.n; a++)
+                            any |= whole_program(e.e[i].alt[j].as.a[a].q.kind);
+                tc_ends_free(&e);
+                if (any)
+                    return 1;
+            }
         }
     return 0;
 }
@@ -767,6 +785,10 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
     if (conf->ndeviations) {
         fprintf(out, "deviations:\n");
         print_tab(out, "deviations", conf->deviations, conf->ndeviations);
+    }
+    if (conf->nends) {
+        fprintf(out, "alternative ends:\n");
+        print_tab(out, "ends", conf->ends, conf->nends);
     }
     {
         size_t nd;

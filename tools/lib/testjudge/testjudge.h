@@ -29,6 +29,12 @@
  * `not-run` and fails no default: the checks behind a declared crash count
  * as not run.
  *
+ * Where the deviations apply, the alternative ends of the cell (testconf.h
+ * tc_ends_for) judge the queries their alternatives name instead of the
+ * assertions and the defaults: one alternative must hold wholly; the report
+ * names the alternative that held (also for a cell that passed), or each
+ * alternative with its failed assertions.
+ *
  * The verdict of a case over the cells of a side (tj_verdict):
  *   - no deviation declared for the case: every cell must pass (PASSED);
  *   - deviations and fixed-orig (or extension, the test of an extension of

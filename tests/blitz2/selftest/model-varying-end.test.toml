@@ -1,0 +1,12 @@
+# model-varying-end.test.bas: two cells, one returns, one hangs (the hang
+# check ends its session after 3 s of silence); the end of both is declared
+# as two alternatives
+hang-after = 3
+
+[matrix]
+runargs = ["return", "hang"]
+
+[ends."compiler=port"]
+reason = "the cell's argument decides whether the program returns or hangs"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "check.varies.after == ok"]
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "check.varies.after == not-run"]

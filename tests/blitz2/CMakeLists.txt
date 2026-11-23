@@ -175,6 +175,21 @@ add_test(NAME blitz2_selftest_model_isolate COMMAND ${CORPUSRUN} case --env ${BA
 set_tests_properties(blitz2_selftest_model_isolate PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
 	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
 	"emulator session 0: c0\n@stat [^\n]* config=s0 [^\n]*\ncorpusrun case: emulator session 1: c1\n@stat [^\n]* config=s1 [^\n]*\n== model-isolate\\.test\\.bas, case own, side port: off \\(c0\\) on \\(c1\\)\nmodel-isolate\\.test\\.bas: case own: PASSED\n")
+# a cell whose end varies (selftest/model-varying-end.test.bas): one cell returns, one hangs, and
+# with both ends declared as alternatives each cell passes by its own; with one alternative
+# removed (model-varying-end-one) the hanging cell fails, naming it
+math(EXPR limit "${BASIC_TEST_TIMEOUT} + 60 + ${EMULATION_QUEUE_WAIT}")
+foreach(variant "" -one)
+	string(REPLACE "-" "_" v "${variant}")
+	add_test(NAME blitz2_selftest_model_varying_end${v} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV}
+		--source ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-varying-end${variant}.test.bas --case varies)
+endforeach()
+set_tests_properties(blitz2_selftest_model_varying_end PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"cell return [^\n]*\n  the end of \\[ends\\.\"compiler=port\"\\] [^\n]*: the alternative returns holds\ncase varies, cell hang [^\n]*\n  the end of \\[ends\\.\"compiler=port\"\\] [^\n]*: the alternative hangs holds\nmodel-varying-end\\.test\\.bas: case varies: REPRODUCED\n")
+set_tests_properties(blitz2_selftest_model_varying_end_one PROPERTIES LABELS emulator SKIP_RETURN_CODE 77
+	TIMEOUT ${limit} PASS_REGULAR_EXPRESSION
+	"cell hang [^\n]*\n  no alternative end of \\[ends\\.\"compiler=port\"\\] [^\n]* holds:\n    the alternative returns:\n      assertion session == done [^\n]* does not hold: \"timeout\"\n.*model-varying-end-one\\.test\\.bas: case varies: FAILED\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md

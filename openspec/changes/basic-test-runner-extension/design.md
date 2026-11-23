@@ -279,3 +279,20 @@ here.
   shared runs in `orig195,clib`, a run of each of the four cases the second
   one judged clean in the two isolated cells (8), and four runs on their
   own in the three cells (12).
+- **Alternative ends (tasks 3.1-3.3).** The table's own checks need its
+  header: a missing `reason` and a table without an alternative are
+  reported at the line of `[ends."SELECTOR"]`, the other refusals at the
+  line of the key. Two tables whose selectors both match a cell are judged
+  each on its own (each must have an alternative that holds), and a query
+  any of them names leaves the assertions; the more specific selector does
+  not replace the other, as no recorded case needs two. An alternative
+  replaces the defaults only for the queries it names, so an alternative
+  for a hang names `rc not exists` besides `session == timeout` and the
+  missing end entries (the default `rc == 0` would fail otherwise); the
+  report names the alternative that held also for a cell that passed (a
+  line under the cell's heading). The emulator check
+  (`selftest/model-varying-end.test.bas`) has the form of an open bug, as
+  a selftest has no issue for `fixed-orig`: both cells are judged with the
+  alternatives and the case comes out REPRODUCED, the ctest test checks
+  the report; `model-varying-end-one` (the same source, only `returns`)
+  is its check with broken input and fails in the cell that hangs.

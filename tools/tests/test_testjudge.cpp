@@ -805,3 +805,70 @@ TEST_CASE("testjudge: the blocks of the other cases the driver called", "[testju
     CHECK(judge(fa, twice, m) == TJ_FAIL);
     CHECK(has(m, "the result file holds the case a twice"));
 }
+
+// an original that returns or hangs depending on the memory: the two
+// alternative ends of the cells with the CD's libraries
+static const std::string ends_cd = "[ends.\"libs=cd\"]\n"
+                                   "reason = \"the memory behind the table\"\n"
+                                   "returns = [\"session == done\", \"rc == 0\", \"end.case exists\", "
+                                   "\"end.run exists\"]\n"
+                                   "hangs = [\"session == timeout\", \"rc not exists\", \"end.case not exists\", "
+                                   "\"end.run not exists\", \"check.frames_maximum.width == fail\"]\n";
+
+// a run that hangs after a failed check of width: no end entries, no exit code
+static obs hang_obs(const char *session = "timeout")
+{
+    obs o(head + "check|3|fail|$00000010|$00000000\n");
+
+    o.o.has_rc = 0;
+    o.o.session = session;
+    return o;
+}
+
+TEST_CASE("testjudge: alternative ends", "[testjudge]")
+{
+    std::string m;
+
+    {
+        // an open bug: both cells hang, the alternative hangs holds (and names
+        // the failed check, which leaves the default of the checks)
+        fixture f(matrix, ends_cd);
+        CHECK(tj_case_has_deviation(&f.t));
+        CHECK(verdict(f, hang_obs(), hang_obs(), m) == TJ_V_REPRODUCED);
+        CHECK(has(m, "case frames_maximum, cell cd (an open bug: its declared deviations):\n  the end of "
+                     "[ends.\"libs=cd\"] (" + (f.root / "x.test.toml").string() + ":2): the alternative hangs holds"));
+        // a cell where the original returns: the other alternative
+        CHECK(verdict(f, obs(good), hang_obs(), m) == TJ_V_REPRODUCED);
+        CHECK(has(m, "cell cd (an open bug: its declared deviations):\n  the end of [ends.\"libs=cd\"] ("
+                     + (f.root / "x.test.toml").string() + ":2): the alternative returns holds"));
+        // the session halts: no alternative holds, each is named with its
+        // failed assertion
+        CHECK(verdict(f, hang_obs("halt"), hang_obs(), m) == TJ_V_FAILED);
+        CHECK(has(m, "no alternative end of [ends.\"libs=cd\"] (" + (f.root / "x.test.toml").string()
+                         + ":2) holds:\n    the alternative returns:\n      assertion session == done ("));
+        CHECK(has(m, "    the alternative hangs:\n      assertion session == timeout ("));
+        // a bug-orig test with only alternative ends declares its deviation
+        f.t.require_deviation = 1;
+        CHECK(verdict(f, hang_obs(), hang_obs(), m) == TJ_V_REPRODUCED);
+    }
+    {
+        // a fixed bug: the original returns in the cell with the faulty part,
+        // the port's cell is judged plain
+        fixture f(matrix, "fixed-orig = 82\n" + ends_cd);
+        CHECK(verdict(f, obs(good), obs(good), m) == TJ_V_PASSED);
+        CHECK(has(m, "the alternative returns holds"));
+        CHECK(verdict(f, hang_obs(), obs(good), m) == TJ_V_PASSED);
+        CHECK(has(m, "the alternative hangs holds"));
+        // the port hangs: no alternative there, the defaults fail
+        CHECK(verdict(f, obs(good), hang_obs(), m) == TJ_V_FAILED);
+        CHECK(has(m, "case frames_maximum, cell clib:\n"));
+        CHECK(has(m, "assertion end.run exists ((default):0) does not hold: absent"));
+        CHECK(m.find("alternative", m.find("cell clib:")) == std::string::npos);
+    }
+    {
+        // the queries the alternatives name leave the other assertions: an
+        // assertion of rc in the directory's file does not apply in cd
+        fixture f(std::string(matrix) + "[asserts]\nrc = \"== 7\"\n", "fixed-orig = 82\n" + ends_cd);
+        CHECK(verdict(f, hang_obs(), obs(good, 7), m) == TJ_V_PASSED);
+    }
+}

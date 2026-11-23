@@ -1,0 +1,10 @@
+# model-varying-end-one.test.bas: the alternative ends of model-varying-end
+# without hangs, which the cell runargs=hang needs: the case fails there
+hang-after = 3
+
+[matrix]
+runargs = ["return", "hang"]
+
+[ends."compiler=port"]
+reason = "the cell's argument decides whether the program returns or hangs"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "check.varies.after == ok"]

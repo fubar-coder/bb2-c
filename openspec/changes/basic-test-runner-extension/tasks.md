@@ -20,9 +20,9 @@
 
 ## 3. Alternative ends
 
-- [ ] 3.1 The table `ends."SELECTOR"` in `testconf` (own file only, `reason` required, alternatives non-empty lists of `QUERY PREDICATE`, allowed queries, refused with `fixed`), counted as a declared deviation; verify: host tests with broken input for each refusal (no reason, empty alternative, in a `tests.toml`, with `fixed`, a refused query) naming file and line
-- [ ] 3.2 Judging (D6): in the cells where the deviations apply, the named queries leave the assertions and defaults, one alternative must hold, the report names it or each failed one; verify: host tests in `testjudge` (open bug reproduced with "hangs", fixed with "returns", none holds -> failed, a cell without the faulty part of a fixed test judged plain)
-- [ ] 3.3 An emulator check of a varying end: a selftest source whose case returns or hangs by a value the cell sets (two cells), with both alternatives declared; verify: the ctest test passes in both cells and fails when one alternative is removed
+- [x] 3.1 The table `ends."SELECTOR"` in `testconf` (own file only, `reason` required, alternatives non-empty lists of `QUERY PREDICATE`, allowed queries, refused with `fixed`), counted as a declared deviation; verify: host tests with broken input for each refusal (no reason, empty alternative, in a `tests.toml`, with `fixed`, a refused query) naming file and line
+- [x] 3.2 Judging (D6): in the cells where the deviations apply, the named queries leave the assertions and defaults, one alternative must hold, the report names it or each failed one; verify: host tests in `testjudge` (open bug reproduced with "hangs", fixed with "returns", none holds -> failed, a cell without the faulty part of a fixed test judged plain)
+- [x] 3.3 An emulator check of a varying end: a selftest source whose case returns or hangs by a value the cell sets (two cells), with both alternatives declared; verify: the ctest test passes in both cells and fails when one alternative is removed
 
 ## 4. The query `inject`
 

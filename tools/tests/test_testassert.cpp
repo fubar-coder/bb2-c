@@ -402,3 +402,101 @@ TEST_CASE("testassert: deviations", "[testassert]")
     CHECK(b.asserts("clib", "a", TC_DEVIATED_ANY).find("rc == 3 [D]") != std::string::npos);
     CHECK(b.asserts("clib", "b", TC_DEVIATED_ANY).find("rc == 4 [D]") != std::string::npos);
 }
+
+// the alternative ends of a cell as "SEL: NAME=Q P,Q P; NAME=..." per table
+static std::string ends_of(const built &b, const char *cellname, const char *case_name, int mode)
+{
+    tc_ends e;
+    std::string r;
+
+    if (tc_ends_for(&b.c, &b.m, b.cell(cellname), case_name, mode, &e, err, sizeof err))
+        return std::string("error: ") + err;
+    for (size_t i = 0; i < e.n; i++) {
+        r += std::string(r.empty() ? "" : " | ") + e.e[i].sel + " (" + e.e[i].reason + "):";
+        for (size_t k = 0; k < e.e[i].nalt; k++) {
+            r += std::string(" ") + e.e[i].alt[k].name + "=";
+            for (size_t j = 0; j < e.e[i].alt[k].as.n; j++)
+                r += std::string(j ? "," : "") + e.e[i].alt[k].as.a[j].query + " " + e.e[i].alt[k].as.a[j].pred
+                     + (e.e[i].alt[k].as.a[j].deviation ? "" : "?");
+        }
+    }
+    tc_ends_free(&e);
+    return r;
+}
+
+TEST_CASE("testassert: alternative ends", "[testassert]")
+{
+    tree t;
+    const std::string own = "[ends.\"libs=cd\"]\nreason = \"the memory behind the table\"\n";
+
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    // valid: two alternatives; they count as the declared deviation of fixed-orig
+    // and of an extension
+    t.write("x.test.toml", "fixed-orig = 82\n" + own
+                               + "returns = [\"session == done\", \"rc == 0\", \"check.a.range == ok\"]\n"
+                                 "hangs = [\"session == timeout\", \"end.run not exists\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(b.c.nends == 3);
+        CHECK(tc_cell_faulty(&b.c, &b.m, b.cell("cd"), "a"));
+        CHECK(!tc_cell_faulty(&b.c, &b.m, b.cell("clib"), "a"));
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED)
+              == "libs=cd (the memory behind the table): returns=session == done,rc == 0,check.a.range == ok "
+                 "hangs=session == timeout,end.run not exists");
+        // not in the cells without the faulty part, nor judged plain; as if
+        // its axis terms matched for an open bug's other cells
+        CHECK(ends_of(b, "clib", "a", TC_DEVIATED) == "");
+        CHECK(ends_of(b, "cd", "a", TC_PLAIN) == "");
+        CHECK(ends_of(b, "clib", "a", TC_DEVIATED_ANY).find("hangs=") != std::string::npos);
+    }
+    t.write("x.test.toml", "extension = 5\n" + own + "one = [\"output contains \\\"x\\\"\"]\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    // a case term restricts it
+    t.write("x.test.toml", "[ends.\"libs=cd,case=b\"]\nreason = \"r\"\none = [\"rc == 0\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED) == "");
+        CHECK(ends_of(b, "cd", "b", TC_DEVIATED) == "libs=cd,case=b (r): one=rc == 0");
+    }
+    // broken input, each naming file and line: no reason, an empty reason, no
+    // alternative, an empty alternative, a string alternative, no selector, in
+    // a tests.toml, with fixed, a refused query, an element without a
+    // predicate, a malformed predicate, a malformed selector
+    t.write("x.test.toml", "[ends.\"libs=cd\"]\nreturns = [\"rc == 0\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":1: [ends.\"libs=cd\"] has no reason");
+    t.write("x.test.toml", "[ends.\"libs=cd\"]\nreason = \"\"\nreturns = [\"rc == 0\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":2: the reason of [ends.\"libs=cd\"] must be a non-empty string");
+    t.write("x.test.toml", own);
+    resolve_refused(t, t.path("x.test.toml") + ":1: [ends.\"libs=cd\"] declares no alternative end");
+    t.write("x.test.toml", own + "returns = []\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end returns must be a non-empty list of "
+                                               "\"QUERY PREDICATE\"");
+    t.write("x.test.toml", own + "returns = \"rc == 0\"\n");
+    resolve_refused(t, ":3: the alternative end returns must be a non-empty list");
+    t.write("x.test.toml", "[ends]\nreason = \"r\"\n");
+    resolve_refused(t, t.path("x.test.toml") + ":1: alternative ends need the cell selector");
+    t.write("x.test.toml", "");
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n" + own + "one = [\"rc == 0\"]\n");
+    resolve_refused(t, t.path("tests.toml") + ":4: ends is a key of a single test, valid only in its ID.test.toml");
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    t.write("x.test.toml", "fixed = 3\n" + own + "one = [\"rc == 0\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":1: test x: fixed with declared alternative ends");
+    for (const char *q : { "compile == ok", "compile.log contains \\\"x\\\"", "serial contains \\\"x\\\"",
+                           "inject contains \\\"x\\\"" }) {
+        INFO(q);
+        t.write("x.test.toml", own + "one = [\"rc == 0\", \"" + q + "\"]\n");
+        resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end one: the query ");
+        resolve_refused(t, "does not vary with the end");
+    }
+    t.write("x.test.toml", own + "one = [\"session\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end one: \"session\": QUERY PREDICATE expected");
+    t.write("x.test.toml", own + "one = [\"session == maybe\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end one: \"session == maybe\": ");
+    t.write("x.test.toml", "[ends.\"libs=cdd\"]\nreason = \"r\"\none = [\"rc == 0\"]\n");
+    resolve_refused(t, ":2: [ends.\"libs=cdd\"]: the cell selector \"libs=cdd\": libs must be one of");
+}

@@ -159,6 +159,10 @@ struct tc_config {
     size_t nasserts;
     struct tc_tabkey *deviations;   /* the test's own file only */
     size_t ndeviations;
+    struct tc_tabkey *ends;     /* the alternative ends: per selector its
+                                   reason (a string) and the alternatives
+                                   (lists); the test's own file only */
+    size_t nends;
 };
 
 /**
@@ -442,10 +446,73 @@ void tc_assertions_free(struct tc_assertions *a);
 
 /**
  * @brief Whether cell holds the original's faulty part for case_name: a
- *        selector of the table deviations matches it.
+ *        selector of the table deviations or ends matches it.
  */
 int tc_cell_faulty(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
                    const char *case_name);
+
+/* ------------------------------------------------------------ alternative ends
+ *
+ * A test's own file may declare, for the cells with the original's faulty
+ * part, the ends the original's run takes depending on things the test
+ * cannot fix (the memory behind a table): the table ends."SELECTOR" with
+ * `reason` (a non-empty string, required) and under every other key an
+ * alternative, a non-empty list of "QUERY PREDICATE" (the grammar of the
+ * assertions, a blank between the two; the queries session, rc, requester,
+ * end.case, end.run, output and check.*).  The table is a declared
+ * deviation: it applies where the deviations apply (judged with
+ * TC_DEVIATED where its selector matches, with TC_DEVIATED_ANY as if its
+ * axis terms matched), counts for fixed-orig and extension and is refused
+ * with fixed and in a tests.toml.  Where it applies, the queries its
+ * alternatives name leave the other assertions and the defaults (a check
+ * an alternative names is out of the default "every check passed"), and the
+ * cell passes that point if every assertion of one alternative holds.
+ */
+
+/** @brief An alternative end. */
+struct tc_end_alt {
+    const char *name;           /* its key */
+    struct tc_assertions as;    /* its assertions (deviations, at its key) */
+    char **texts;               /* the queries and predicates they point to */
+    size_t ntexts;
+};
+
+/** @brief The alternative ends of one selector. */
+struct tc_end {
+    const char *sel;
+    const char *reason;
+    struct tc_origin at;        /* of the reason */
+    struct tc_end_alt *alt;
+    size_t nalt;
+};
+
+/** @brief The alternative ends that apply to a cell (tc_ends_free). */
+struct tc_ends {
+    struct tc_end *e;
+    size_t n;
+};
+
+/**
+ * @brief Split "QUERY PREDICATE" at the first blank.
+ * @return 0 = ok (*query, *pred malloc'd), -1 = no blank or no predicate,
+ *         -2 = out of memory
+ */
+int tc_end_split(const char *text, char **query, char **pred);
+
+/**
+ * @brief The alternative ends that apply to cell of m for case_name in the
+ *        judging mode (none with TC_PLAIN).
+ * @return 0 = ok, -1 = a malformed alternative (err), -2 = out of memory
+ */
+int tc_ends_for(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *case_name,
+                int mode, struct tc_ends *out, char *err, size_t errlen);
+void tc_ends_free(struct tc_ends *e);
+
+/** @brief Whether an alternative of e names the query q. */
+int tc_ends_name(const struct tc_ends *e, const struct tc_query *q);
+
+/** @brief Whether two parsed queries are the same query. */
+int tc_query_same(const struct tc_query *a, const struct tc_query *b);
 
 #ifdef __cplusplus
 }

@@ -164,12 +164,46 @@ static int id_ok(const char *id)
     return 1;
 }
 
-/* the check queries and case selectors of a table against the table of the source */
+/* the query text of t (its key, or a query of an alternative end): the
+   source must have the check it names */
+static int check_query(const char *text, const struct tc_tabkey *t, const struct tp_source *src,
+                       struct treg_strs *errs)
+{
+    struct tc_query q;
+    char m[300];
+    int r = 0;
+
+    if (tc_query_parse(text, &q, m, sizeof m))
+        return 0;
+    if (q.kind == TC_Q_CHECK) {
+        size_t len = strlen(q.rest);
+        int found = tp_find(src, q.ns, q.rest) != NULL;
+
+        for (size_t s = 0; !found && s < 2; s++) {
+            const char *suffix = s ? ".actual" : ".expected";
+            size_t sl = strlen(suffix);
+
+            if (len > sl && !strcmp(q.rest + len - sl, suffix)) {
+                char *name = strndup(q.rest, len - sl);
+
+                found = name && tp_find(src, q.ns, name) != NULL;
+                free(name);
+            }
+        }
+        if (!found && pushf(errs, "%s:%u: %s: the source has no check named %s in %s", t->at.file, t->at.line,
+                            text, q.rest, q.ns))
+            r = -1;
+    }
+    tc_query_free(&q);
+    return r;
+}
+
+/* the check queries and case selectors of a table against the table of the
+   source (for the alternative ends the queries of each alternative) */
 static int check_queries(const struct tc_tabkey *v, size_t n, const struct tp_source *src, struct treg_strs *errs)
 {
     for (size_t i = 0; i < n; i++) {
         const struct tc_tabkey *t = &v[i];
-        struct tc_query q;
         char m[300];
 
         if (t->sel) {
@@ -192,30 +226,21 @@ static int check_queries(const struct tc_tabkey *v, size_t n, const struct tp_so
                 tc_selector_free(&sel);
             }
         }
-        if (tc_query_parse(t->key, &q, m, sizeof m))
-            continue;
-        if (q.kind == TC_Q_CHECK) {
-            size_t len = strlen(q.rest);
-            int found = tp_find(src, q.ns, q.rest) != NULL;
+        if (t->value.type == TT_LIST) {
+            for (size_t k = 0; k < t->value.nlist; k++) {
+                char *qt, *pt;
+                int r;
 
-            for (size_t s = 0; !found && s < 2; s++) {
-                const char *suffix = s ? ".actual" : ".expected";
-                size_t sl = strlen(suffix);
-
-                if (len > sl && !strcmp(q.rest + len - sl, suffix)) {
-                    char *name = strndup(q.rest, len - sl);
-
-                    found = name && tp_find(src, q.ns, name) != NULL;
-                    free(name);
-                }
+                if (tc_end_split(t->value.list[k], &qt, &pt))
+                    continue;
+                r = check_query(qt, t, src, errs);
+                free(qt);
+                free(pt);
+                if (r)
+                    return -1;
             }
-            if (!found && pushf(errs, "%s:%u: %s: the source has no check named %s in %s", t->at.file, t->at.line,
-                                t->key, q.rest, q.ns)) {
-                tc_query_free(&q);
-                return -1;
-            }
-        }
-        tc_query_free(&q);
+        } else if (t->value.type == TT_STRING && strcmp(t->key, "reason") && check_query(t->key, t, src, errs))
+            return -1;
     }
     return 0;
 }
@@ -390,7 +415,8 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         goto out;
     }
     if (check_queries(conf.asserts, conf.nasserts, &src, &r->errors)
-        || check_queries(conf.deviations, conf.ndeviations, &src, &r->errors))
+        || check_queries(conf.deviations, conf.ndeviations, &src, &r->errors)
+        || check_queries(conf.ends, conf.nends, &src, &r->errors))
         goto out;
     if (tc_matrix_build(&conf, &m, err, sizeof err)) {
         rc = pushf(&r->errors, "%s", err) ? -1 : 1;

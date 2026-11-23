@@ -44,6 +44,15 @@ static int msg(struct tj_msgs *m, const char *fmt, ...)
     return 0;
 }
 
+/* the messages of from appended to to, each behind prefix; 0, -1 out of memory */
+static int append_indented(struct tj_msgs *to, const struct tj_msgs *from, const char *prefix)
+{
+    for (size_t i = 0; i < from->n; i++)
+        if (msg(to, "%s%s", prefix, from->v[i]))
+            return -1;
+    return 0;
+}
+
 /* ------------------------------------------------------------ the result file */
 
 /* an entry of the result file with its line */
@@ -579,10 +588,12 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
 
 /* ------------------------------------------------------------ a cell */
 
-int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct tj_obs *obs, struct tj_msgs *msgs)
+static int judge_cell(const struct tj_test *t, size_t cell, int mode, const struct tj_obs *obs, struct tj_msgs *msgs,
+                      struct tj_msgs *notes)
 {
     struct run r;
     struct tc_assertions as = { 0 };
+    struct tc_ends ends = { 0 };
     char errbuf[600];
     int res = TJ_PASS, broken = 0, rc;
     unsigned char *used = NULL;
@@ -690,8 +701,16 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
     if (obs->has_result && !r.case_started && msg(msgs, "the case %s did not start", t->case_name))
         goto oom;
 
-    /* the assertions */
+    /* the assertions, but the queries an alternative end names */
     rc = tc_assertions_for(t->conf, t->m, cell, t->case_name, mode, &as, errbuf, sizeof errbuf);
+    if (rc == -2)
+        goto oom;
+    if (rc) {
+        res = TJ_ERROR;
+        if (msg(msgs, "%s", errbuf))
+            goto oom;
+    }
+    rc = tc_ends_for(t->conf, t->m, cell, t->case_name, mode, &ends, errbuf, sizeof errbuf);
     if (rc == -2)
         goto oom;
     if (rc) {
@@ -703,6 +722,8 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
         const struct tc_assertion *a = &as.a[i];
         int field, e;
 
+        if (tc_ends_name(&ends, &a->q))
+            continue;           /* judged by the alternative ends */
         if (a->q.kind == TC_Q_CHECK) {
             struct chk *k;
 
@@ -721,6 +742,65 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
         else if (e == 0 && res == TJ_PASS)
             res = TJ_FAIL;
     }
+    /* the alternative ends: one alternative of each holds wholly */
+    for (size_t i = 0; i < ends.n; i++) {
+        const struct tc_end *en = &ends.e[i];
+        struct tj_msgs why = { 0 };
+        long held = -1;
+
+        for (size_t k = 0; k < en->nalt; k++) {
+            struct tj_msgs am = { 0 };
+            int all = 1;
+
+            for (size_t j = 0; j < en->alt[k].as.n; j++) {
+                const struct tc_assertion *a = &en->alt[k].as.a[j];
+                int field, e;
+
+                if (a->q.kind == TC_Q_CHECK) {
+                    struct chk *c;
+
+                    if (is_case(t->src, a->q.ns) && strcmp(a->q.ns, t->case_name))
+                        continue;       /* a check of another case */
+                    if ((c = query_check(t, &r, &a->q, &field)))
+                        c->named = 1;
+                }
+                e = eval(t, &r, obs, a, &am);
+                if (e < 0) {
+                    tj_msgs_free(&am);
+                    tj_msgs_free(&why);
+                    goto oom;
+                }
+                if (e == TJ_ERROR)
+                    res = TJ_ERROR;
+                if (e != 1)
+                    all = 0;
+            }
+            if (all && held < 0)
+                held = (long)k;
+            if (!all && (msg(&why, "  the alternative %s:", en->alt[k].name) || append_indented(&why, &am, "    "))) {
+                tj_msgs_free(&am);
+                tj_msgs_free(&why);
+                goto oom;
+            }
+            tj_msgs_free(&am);
+        }
+        if (held >= 0) {
+            if (notes && msg(notes, "the end of [ends.\"%s\"] (%s:%u): the alternative %s holds", en->sel,
+                             en->at.file, en->at.line, en->alt[held].name)) {
+                tj_msgs_free(&why);
+                goto oom;
+            }
+        } else {
+            if (res == TJ_PASS)
+                res = TJ_FAIL;
+            if (msg(msgs, "no alternative end of [ends.\"%s\"] (%s:%u) holds:", en->sel, en->at.file, en->at.line)
+                || append_indented(msgs, &why, "")) {
+                tj_msgs_free(&why);
+                goto oom;
+            }
+        }
+        tj_msgs_free(&why);
+    }
     /* the default of the checks: every check with entries passed */
     for (size_t i = 0; i < t->src->nchecks; i++) {
         const struct chk *k = &r.chk[i];
@@ -737,14 +817,21 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
     if (broken && res != TJ_ERROR)
         res = TJ_BROKEN;
     tc_assertions_free(&as);
+    tc_ends_free(&ends);
     free(used);
     run_free(&r);
     return res;
 oom:
     tc_assertions_free(&as);
+    tc_ends_free(&ends);
     free(used);
     run_free(&r);
     return -1;
+}
+
+int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct tj_obs *obs, struct tj_msgs *msgs)
+{
+    return judge_cell(t, cell, mode, obs, msgs, NULL);
 }
 
 /* ------------------------------------------------------------ the verdict */
@@ -775,6 +862,21 @@ int tj_case_has_deviation(const struct tj_test *t)
         if (applies)
             return 1;
     }
+    /* the alternative ends whose selector names no other case */
+    for (size_t i = 0; i < t->conf->nends; i++) {
+        struct tc_selector sel;
+        char m[300];
+        int applies = 1;
+
+        if (tc_selector_parse(t->conf->ends[i].sel, 1, &sel, m, sizeof m))
+            continue;
+        for (size_t j = 0; j < sel.n; j++)
+            if (!sel.t[j].def && strcmp(sel.t[j].value, t->case_name))
+                applies = 0;
+        tc_selector_free(&sel);
+        if (applies)
+            return 1;
+    }
     return 0;
 }
 
@@ -802,18 +904,18 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
         size_t cell = cells[i];
         const char *name = t->m->cells[cell].name;
         int faulty = dev && tc_cell_faulty(t->conf, t->m, cell, t->case_name);
-        struct tj_msgs m = { 0 };
+        struct tj_msgs m = { 0 }, nt = { 0 };
         int r;
 
         if (!dev) {
-            r = tj_judge_cell(t, cell, TC_PLAIN, &obs[i], &m);
+            r = judge_cell(t, cell, TC_PLAIN, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s:", t->case_name, name);
         } else if (fixed) {
-            r = tj_judge_cell(t, cell, faulty ? TC_DEVIATED : TC_PLAIN, &obs[i], &m);
+            r = judge_cell(t, cell, faulty ? TC_DEVIATED : TC_PLAIN, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s%s:", t->case_name, name,
                      faulty ? " (the original's faulty part, its declared deviations)" : "");
         } else {
-            r = tj_judge_cell(t, cell, faulty ? TC_DEVIATED : TC_DEVIATED_ANY, &obs[i], &m);
+            r = judge_cell(t, cell, faulty ? TC_DEVIATED : TC_DEVIATED_ANY, &obs[i], &m, &nt);
             snprintf(head, sizeof head, "case %s, cell %s (an open bug: its declared deviations):", t->case_name,
                      name);
             if (r == TJ_FAIL && !faulty) {
@@ -823,30 +925,40 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
                 tj_msgs_free(&plain);
                 if (p < 0) {
                     tj_msgs_free(&m);
+                    tj_msgs_free(&nt);
                     return -1;
                 }
                 if (p == TJ_PASS) {
                     tj_msgs_free(&m);
                     if (msg(&m, "the case passes without the declared deviations, but the test has no fixed "
                                 "issue (fixed-orig, or extension)"))
-                        return -1;
+                        return tj_msgs_free(&nt), -1;
                 }
             }
         }
         if (r < 0) {
             tj_msgs_free(&m);
+            tj_msgs_free(&nt);
             return -1;
         }
-        if (r != TJ_PASS && append(msgs, &m, head))
+        if (r != TJ_PASS && append(msgs, &m, head)) {
+            tj_msgs_free(&nt);
             return -1;
+        }
         tj_msgs_free(&m);
+        /* the alternative ends that held, also in a cell that passed */
+        if (nt.n && ((r == TJ_PASS && msg(msgs, "%s", head)) || append_indented(msgs, &nt, "  "))) {
+            tj_msgs_free(&nt);
+            return -1;
+        }
+        tj_msgs_free(&nt);
         any_error |= r == TJ_ERROR;
         any_broken |= r == TJ_BROKEN;
         any_fail |= r == TJ_FAIL;
     }
     if (any_error)
         return TJ_V_ERROR;
-    if (t->require_deviation && !t->conf->ndeviations) {
+    if (t->require_deviation && !t->conf->ndeviations && !t->conf->nends) {
         if (msg(msgs, "%s: the test declares no deviation of the original, so it does not show its bug "
                       "(a bug-orig test needs [deviations.\"SELECTOR\"] in %s.test.toml)",
                 t->file, t->conf->id))

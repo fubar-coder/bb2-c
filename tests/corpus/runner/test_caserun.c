@@ -611,6 +611,19 @@ static void test_case_alone(void)
     load(&t, "al/s.test.bas", ENV_RUNNER);
     CHECK(alone_of(&t, &src, "b") == 0);
     unload(&t);
+    /* an alternative end is a deviation too: one naming the session sets the
+       case apart, one naming only the end of the case and a check does not */
+    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                          "one = [\"session == timeout\", \"check.b.two == not-run\"]\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 1 && alone_of(&t, &src, "a") == 0);
+    unload(&t);
+    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                          "one = [\"end.case not exists\", \"check.b.two == not-run\"]\n"
+                          "two = [\"end.case exists\"]\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 0);
+    unload(&t);
     /* an assertion of all cases sets every case apart */
     put("al/s.test.toml", "[asserts]\nrc = \"== 20\"\n");
     load(&t, "al/s.test.bas", ENV_RUNNER);
