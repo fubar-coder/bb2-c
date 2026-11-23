@@ -383,7 +383,24 @@ and placeholder. `@DRIVER@` is the runner's: in an element of `jobline` it
 stands for the driver's tokenised source on the cell's volume (a job that
 compiles the test's own source again:
 `jobline = ["job=j001|@DRIVER@|CORPUS:out/again"]`), elsewhere it is an
-error naming file, line and placeholder.
+error naming file, line and placeholder. So is `@DATA:FILE@`: in an
+element of `jobline` it stands for the tokenised source of the data
+source `FILE` of the test (`basic-compile`, [Test-local
+data](#the-run-configuration)) as it is staged on the cell's volume,
+whatever its position among the data sources (a run of the data source
+from the editor: `jobline = ["run=r001|@DATA:victim.bas@|RAM:con|100"]`);
+elsewhere, or for a `FILE` that is no data source of `basic-compile`, it
+is an error naming file, line and placeholder.
+
+The jobs of `jobline` (`job=`, `run=`, `menu=`, `resident=`) are named by
+their ID, the first field behind `=`: it matches `[a-z][a-z0-9_]*`, has
+at most 15 characters, is unique among the elements of `jobline`, and is
+none of the runner's names (`j000` the driver's job, `b` and three
+digits a data source's job, `r001` the run from the editor in a cell
+with `editor-run = "on"`) nor `log` or `inject`; otherwise the
+configuration is refused naming file, line and ID. The names are those
+of the queries `compile.log.NAME` and `compile.NAME`
+([Assertions](#assertions)).
 
 The files are a strict subset of TOML (valid TOML, line by line): one
 `KEY = VALUE` per line (a bare key `[A-Za-z0-9_-]+` or a quoted one, no
@@ -527,6 +544,7 @@ query      = "rc" | "requester" | "compile" | "compile.log" | "compile.inject"
            | "output" | "serial" | "inject" | "session" | "end.case" | "end.run"
            | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
            | "data." FILE | "run." NAMESPACE "." NAME [ ".rc" | ".output" ]
+           | "compile.log." JOB | "compile." JOB
 predicate  = CMP value | ["not "] "contains" string | "matches" string
            | ["not "] "exists" | "count" CMP integer
 CMP        = "==" | "!=" | "<" | "<=" | ">" | ">="
@@ -538,7 +556,11 @@ word       = "ok" | "fail" | "not-run" | "done" | "open" | "timeout" | "halt" | 
 
 Blanks may stand around the operator and the value. `NAMESPACE` is the
 case, the procedure, `init` or `cleanup` a check stands in, `NAME` the check's
-name (a check that a configuration names must have one).
+name (a check that a configuration names must have one). `JOB` is the
+name of a compile job of the cell: `j000` the driver's job, `r001` the
+run from the editor (a cell with `editor-run = "on"`), a jobline ID, the
+file of a data source of `basic-compile` (`compile.log.victim.bas`); a
+name that is no job of the test is refused naming file, line and query.
 
 | Query | What | Predicates |
 |---|---|---|
@@ -547,6 +569,8 @@ name (a check that a configuration names must have one).
 | `compile` | `ok`, `error LINE MESSAGE` or `none` | `==`/`!=` with `ok`, `none` or a string, `contains`, `matches` |
 | `compile.log`, `output`, `serial`, `inject` | the compiler's log (its output, then tedstub's log), the printed output (of a run from the editor: its console), the serial data, inject's report (the output's lines that start with `inject:`, of a cell whose program runs through inject: `pad`, or a `runwrap` of `@INJECT@`; of any other cell not captured) | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
 | `compile.inject` | inject's report of the compiler: the lines of the compiler's output that start with `inject:`, of a cell whose compiler runs through inject (a `wrap` of `@INJECT@`); of any other cell not captured (`compile.log` keeps the lines) | as `inject` |
+| `compile.log.JOB` | the block of the job `JOB` in tedstub's log (below), with the size of `RESULT ID ok SIZE` removed as in `compile.log`; in the block of a data source its job ID is written as its file and its staged source as `@DATA:FILE@`; a job that logged nothing: not captured | as `compile.log` |
+| `compile.JOB` | the compile result of the `jobline` job `JOB` (`job=` or `resident=`): `ok`, `error LINE MESSAGE` (the line of the compiled source; for a job of `@DRIVER@` the driver's line), another result of its `RESULT` line, or `none`; no default. Refused for `j000` (the query is `compile`), for a data source (`data.FILE`) and for a `run=` or `menu=` step and `r001` (their outcome is in their block, `compile.log.JOB`) | as `compile` |
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
@@ -559,6 +583,30 @@ name (a check that a configuration names must have one).
 `contains` holds if the text (a requester, for `requester`) holds the
 string; `matches` if a line of it matches the pattern of `outmatch` (`*`
 any characters, `#` a decimal number, `\c` the character `c`).
+
+**The compile jobs and their queries.** `compile` is the driver's result
+(default `== ok`), `data.FILE` a data source's (default `== ok`),
+`compile.JOB` a `jobline` job's (no default): one query per result.
+`compile.log` is the whole log (the compiler's output, then tedstub's
+log), `compile.log.JOB` the block of one job in it, so that a test that
+judges several jobs (`compiler-racing-stripe-wide`: j000 and j001) has
+one assertion per block. tedstub's log is cut into steps: a line
+`KEYWORD<TAB>ID...` (`JOB`, `XTRA`, `XTRAERR`, `RESULT`, `MENU`,
+`POINTER`, `OPENIO`, `PANIC`, `CLOSEIO`, `CONSOLE`, `OUTPUT`,
+`REQUESTERS`, `PROGRESS`, `STRIPE`, `GUARD`) belongs to the job `ID`; a
+requester line without an ID to the job of the next ID line, but before
+a `JOB` line to that of the previous one (a job begins with its `JOB`
+line, a menu item's requesters come before its `MENU` line); `BATCH`
+lines and the version requester's lines before `BATCH start` belong to
+no job. The block of a job is its lines in log order up to its last line
+that carries its ID; a job that runs again in a later session (after an
+abort) adds its lines to its block. The block of a data source comes from the log of
+the session that compiled it (its compile part's own, where it has one).
+A job that did not run has no block: `not exists` holds; "ran and logged
+nothing of a kind" is `not contains` on a line of the block or
+`compile.JOB`. inject's report of the compiler (`compile.inject`) is one
+for the whole compiler process, written when it ends after all jobs: it
+has no query per job.
 
 **What `requester` sees** (a limit, see `TODO.md`): reqtrap
 (`tests/corpus/amiga/reqtrap.c`) writes each requester as a line
@@ -2893,7 +2941,8 @@ never in both forms (the registration would take the old one).
 | `; @pass defaultdbug=PATH` | `defaultdbug = "PATH"` (with `editor-run = "on"`) |
 | `; @pass jobline=job=j001\|CORPUS:src/ID.bb2\|...` (the test's own source again) | `jobline = ["job=j001\|@DRIVER@\|..."]` |
 | `[blitz2]`, the `inject:` lines of a compiler run through inject (`wrap=@INJECT@\|...`) | `"compile.inject" = "== \"inject: rc=0\ninject: ...\n\""` (or `contains`); the deviation the `.orig`'s lines |
-| `[log]`, lines of tedstub's log | `"compile.log" = "contains \"LINE\nLINE\n\""`: one `contains` over the consecutive lines (TOML `\n` and `\t`); lines that hold a size or an address (`RESULT ID ok SIZE`) cannot be inside it |
+| `[log]`, lines of tedstub's log | `"compile.log" = "contains \"LINE\nLINE\n\""`: one `contains` over the consecutive lines (TOML `\n` and `\t`); `RESULT ID ok SIZE` is `RESULT ID ok` there (the size removed), a line that holds an address cannot be inside it; the lines of several jobs: one `"compile.log.JOB" = "contains ..."` per job |
+| `CORPUS:src/bNNN.bb2` in a `jobline` element (a data source's staged source) | `@DATA:FILE@` (`FILE` the data source in `[data]`) |
 
 **What the cells are.** The old test judged the port with the C libraries
 (`clib`: against the expectation) and, in the compare test, the original

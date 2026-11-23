@@ -20,7 +20,7 @@ programs touched); emulator tests as named.
 
 ## 3. Docs
 
-- [ ] 3.1 `tests/README.md`: "The run configuration" (`@DATA:FILE@` beside `@DRIVER@`; the jobline IDs and their rules), "Assertions" (the grammar and table rows of `compile.log.NAME` and `compile.NAME`; how `compile`, `compile.log`, `compile.inject` relate; no per-job inject), "Moving a bug-orig test to the model" (the `[log]` row: the size of `RESULT ID ok` is removed, a block per job with `compile.log.NAME`; `CORPUS:src/bNNN.bb2` becomes `@DATA:FILE@`); `tests/corpus/runner/README.md`; verify: `basictest_readme` and the other README host tests pass
+- [x] 3.1 `tests/README.md`: "The run configuration" (`@DATA:FILE@` beside `@DRIVER@`; the jobline IDs and their rules), "Assertions" (the grammar and table rows of `compile.log.NAME` and `compile.NAME`; how `compile`, `compile.log`, `compile.inject` relate; no per-job inject), "Moving a bug-orig test to the model" (the `[log]` row: the size of `RESULT ID ok` is removed, a block per job with `compile.log.NAME`; `CORPUS:src/bNNN.bb2` becomes `@DATA:FILE@`); `tests/corpus/runner/README.md`; verify: `basictest_readme` and the other README host tests pass
 
 ## 4. The users
 
