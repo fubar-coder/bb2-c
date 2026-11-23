@@ -1,5 +1,0 @@
-[run]
-child
-REQUESTER: AutoRequest body "Uninitialized Shape" pos "OKAY!" neg "OKAY!" -> answered FALSE
-message 0
-rc=0

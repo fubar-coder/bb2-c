@@ -1,0 +1,15 @@
+# rundebuglib-supertrap-d0-lost.test.bas: with runtime error checking; the
+# child's requester; the original's child shows none and goes on
+fixed-orig = 246
+runtime-errors = "on"
+
+[data]
+"child.bas" = "basic-compile"
+
+[asserts]
+requester = "contains \"Uninitialized Shape\""
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"check.setint_error.printed" = "== fail"
+"check.setint_error.printed.actual" = "== \"child\nchild back\n\""

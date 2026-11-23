@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-edit$ 0
-edit$dflt 0
-edit 0
-end
-rc=0

@@ -1,0 +1,15 @@
+# rundebuglib-two-programs.test.bas: with runtime error checking; b's
+# requester; in the original the parent never returns from b
+fixed-orig = 1069
+runtime-errors = "on"
+
+[data]
+"a.bas" = "basic-compile"
+"b.bas" = "basic-compile"
+
+[asserts]
+requester = "contains \"Array Subscript out of Range\""
+
+[deviations."libs=cd"]
+"end.case" = "not exists"
+"run.two.b" = "== open"
