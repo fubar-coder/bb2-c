@@ -267,6 +267,33 @@ run(1 --prefix Bug --output ${WORK}/bad.cmake --command run ${s}/other/conf.test
 if(NOT err MATCHES "the prefix \"Bug\" holds other characters")
 	message(FATAL_ERROR "a bad prefix: ${err}")
 endif()
+# test-local data (change basic-test-local-data): the files of ID.test/ are
+# dependencies (and its directories, which an added file changes); an
+# undeclared file and a declared one that is missing are errors
+file(WRITE ${s}/other/data.test.bas "!TestCase{a}\n!EndTestCase\n")
+file(WRITE ${s}/other/data.test.toml
+	"[data]\n\"in.txt\" = \"copy\"\n[data.\"sub/child.bas\"]\naction = \"basic-compile\"\n")
+file(WRITE ${s}/other/data.test/in.txt "x\n")
+file(WRITE ${s}/other/data.test/sub/child.bas "NPrint 1\n")
+run(0 --prefix p_ --output ${WORK}/data.cmake --depfile ${WORK}/data.d ${env} --command run
+	${s}/other/data.test.bas)
+file(READ ${WORK}/data.d dep)
+foreach(want "${s}/other/data.test/in.txt" "${s}/other/data.test/sub/child.bas" "${s}/other/data.test/sub "
+		"${s}/other/data.test ")
+	string(FIND "${dep}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "data: the depfile lacks ${want}:\n${dep}")
+	endif()
+endforeach()
+file(WRITE ${s}/other/data.test/extra.bin "")
+refused("other/data\\.test/extra\\.bin: a file of data\\.test/ that [^ ]*other/data\\.test\\.toml does not declare"
+	${s}/other/data.test.bas)
+file(REMOVE ${s}/other/data.test/extra.bin ${s}/other/data.test/in.txt)
+refused("other/data\\.test\\.toml:2: data \"in\\.txt\": no file [^ ]*other/data\\.test/in\\.txt"
+	${s}/other/data.test.bas)
+file(REMOVE ${s}/other/data.test.toml)
+refused("other/data\\.test/sub/child\\.bas: a file of data\\.test/ that [^ ]*other/data\\.test\\.toml does not declare"
+	${s}/other/data.test.bas)
 file(REMOVE_RECURSE ${s}/twice ${s}/other)
 # usage errors
 run(2 --output ${WORK}/x.cmake --command run ${s}/libs/sub/fixed-one.test.bas)
@@ -315,5 +342,17 @@ endforeach()
 build_and_list(0 -L sample)
 file(WRITE ${s}/libs/tests.toml "labels = [\"libs\", \"sample\"]\ncost = 3\n")
 build_and_list(7 -L sample)
+# a file added to a test's ID.test/ registers again (here: an undeclared
+# one, so the step fails)
+file(WRITE ${s}/libs/sub/fixed-one.test.toml
+	"fixed-orig = 12\ncompiler = \"port\"\nlibs = \"clib\"\ntimeout = 20\n"
+	"[deviations.\"libs=cd\"]\n\"end.case\" = \"not exists\"\n[data]\n\"in.txt\" = \"copy\"\n")
+file(WRITE ${s}/libs/sub/fixed-one.test/in.txt "x\n")
+build_and_list(7 -L sample)
+file(WRITE ${s}/libs/sub/fixed-one.test/extra.bin "")
+execute_process(COMMAND ${CMAKE_COMMAND} --build ${p}/build RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
+if(rc EQUAL 0 OR NOT out MATCHES "fixed-one\\.test/extra\\.bin: a file of fixed-one\\.test/")
+	message(FATAL_ERROR "a file added to ID.test/ does not register again (exit ${rc}):\n${out}")
+endif()
 file(REMOVE_RECURSE ${WORK})
 message("testreg_tool: all cases as expected")

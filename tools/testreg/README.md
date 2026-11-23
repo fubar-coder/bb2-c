@@ -13,6 +13,9 @@ result file") at build time, without the emulator. For every source it
   files up to `root = true` and its own `ID.test.toml`, the matrix and its
   cells) and checks the check queries and case selectors of its
   assertions and deviations against the source;
+- checks the test's own files (change `basic-test-local-data`): every
+  file of the directory `ID.test/` beside the source is declared in the
+  table `data` of `ID.test.toml`, and every declared one is there;
 - registers one ctest test per case and side: `PREFIX_ID__CASE` for the
   cells without original material, `PREFIX_ID__CASE_originals` for those
   with it (a compiler other than the port, or the CD's libraries); a side
@@ -51,8 +54,9 @@ coverage directory; `emulation_test_environment`,
 `cmake/emulation-queue.cmake`), which needs the labels only this step
 knows. The depfile
 names every file the tool read (the sources, the configuration files, the
-environment file, the token lists), so the build step reruns when one of
-them changes. A depfile cannot name a file that does not exist yet: a
+files of each `ID.test/` and its directories, which a file added or
+removed changes, the environment file, the token lists), so the build
+step reruns when one of them changes. A depfile cannot name a file that does not exist yet: a
 new `tests.toml` or `ID.test.toml` reaches the registration only through
 a glob of the configuration files with `CONFIGURE_DEPENDS` next to the
 one of the sources. The logic is `tools/lib/testreg`,

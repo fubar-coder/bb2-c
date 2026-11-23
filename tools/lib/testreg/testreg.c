@@ -7,11 +7,13 @@
 #include "testpp.h"
 #include "testcosts.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 void treg_strs_free(struct treg_strs *s)
 {
@@ -372,6 +374,122 @@ int treg_cell_fixture_ok(const char *spec, char *err, size_t errlen)
     return 0;
 }
 
+static int by_str(const void *a, const void *b)
+{
+    return strcmp(*(char *const *)a, *(char *const *)b);
+}
+
+/* a + b + c (malloc'd), NULL = out of memory */
+static char *cat3(const char *a, const char *b, const char *c)
+{
+    size_t na = strlen(a), nb = strlen(b), nc = strlen(c);
+    char *r = malloc(na + nb + nc + 1);
+
+    if (r) {
+        memcpy(r, a, na);
+        memcpy(r + na, b, nb);
+        memcpy(r + na + nb, c, nc + 1);
+    }
+    return r;
+}
+
+/* the files below dir (their paths relative to the top, prefix rel: "" or
+   "sub/"), and dir and its directories into dirs */
+static int list_files(const char *dir, const char *rel, struct treg_strs *files, struct treg_strs *dirs)
+{
+    DIR *d = opendir(dir);
+    struct dirent *e;
+    int r = 0;
+
+    if (!d)
+        return 0;               /* named by the missing files */
+    if (push(dirs, dir)) {
+        closedir(d);
+        return -1;
+    }
+    while (r == 0 && (e = readdir(d))) {
+        char *path, *sub;
+        struct stat st;
+
+        if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, ".."))
+            continue;
+        path = cat3(dir, "/", e->d_name);
+        sub = cat3(rel, "", e->d_name);
+        if (!path || !sub) {
+            free(path);
+            free(sub);
+            closedir(d);
+            return -1;
+        }
+        if (stat(path, &st) == 0 && S_ISDIR(st.st_mode)) {
+            char *subrel;
+
+            if (!(subrel = cat3(sub, "/", "")))
+                r = -1;
+            else {
+                r = list_files(path, subrel, files, dirs);
+                free(subrel);
+            }
+        } else
+            r = push(files, sub);
+        free(path);
+        free(sub);
+    }
+    closedir(d);
+    return r;
+}
+
+/* the test-local data (basic-test-local-data, task 1.2): every file of
+   ID.test/ declared in the table data and every declared one there; the
+   directory, its subdirectories (a file added or removed changes them) and
+   the files are dependencies of the registration */
+static int check_data(const struct tc_config *c, struct treg_result *r)
+{
+    struct treg_strs files = { 0 }, dirs = { 0 };
+    char *dd = NULL, *own = NULL;
+    int rc = -1;
+
+    if (!(own = cat3(c->dir, "/", c->id)) || !(dd = cat3(own, ".test", "")))
+        goto out;
+    {
+        char *t = cat3(dd, ".toml", "");
+
+        free(own);
+        if (!(own = t))
+            goto out;
+    }
+    if (list_files(dd, "", &files, &dirs))
+        goto out;
+    if (files.n)
+        qsort(files.v, files.n, sizeof *files.v, by_str);
+    for (size_t i = 0; i < dirs.n; i++)
+        if (!has(&r->deps, dirs.v[i]) && push(&r->deps, dirs.v[i]))
+            goto out;
+    for (size_t i = 0; i < files.n; i++) {
+        int declared = 0;
+
+        for (size_t k = 0; k < c->ndata && !declared; k++)
+            declared = !strcmp(c->data[k].file, files.v[i]);
+        if (pushf(&r->deps, "%s/%s", dd, files.v[i]))
+            goto out;
+        if (!declared && pushf(&r->errors, "%s/%s: a file of %s.test/ that %s does not declare in the table data",
+                               dd, files.v[i], c->id, own))
+            goto out;
+    }
+    for (size_t k = 0; k < c->ndata; k++)
+        if (!has(&files, c->data[k].file)
+            && pushf(&r->errors, "%s:%u: data \"%s\": no file %s/%s", c->data[k].at.file, c->data[k].at.line,
+                     c->data[k].file, dd, c->data[k].file))
+            goto out;
+    rc = 0;
+out:
+    free(dd);
+    free(own);
+    treg_strs_free(&files);
+    treg_strs_free(&dirs);
+    return rc;
+}
+
 int treg_add_source(const char *source, const struct treg_opts *o, struct treg_result *r)
 {
     size_t len, before = r->errors.n;
@@ -402,6 +520,8 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
             goto out;
     if (conf.id && !id_ok(conf.id) && pushf(&r->errors, "%s: the test id %s is not lower-case kebab-case "
                                             "([a-z0-9]+, \"-\" between)", source, conf.id))
+        goto out;
+    if (conf.id && conf.dir && check_data(&conf, r))
         goto out;
 
     par.file = base ? base + 1 : source;
