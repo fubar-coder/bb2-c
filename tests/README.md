@@ -448,7 +448,7 @@ naming file, line and key, and so is a key of a single test (`fixed-orig`,
 **A run from the editor.** With `editor-run = "on"` the driver is
 compiled as in any cell (job `j000`, the query `compile`) and then run
 once with the editor's COMPILE/RUN (tedstub's `run=`: the program in
-blitz2's own process, with runtime error checking also with the debugger
+a process of its own created by blitz2, with runtime error checking also with the debugger
 and dhandlerlib) instead of from the shell; its result file is judged as
 that of a shell run. The printed output (`output`) is what the program
 wrote to the editor's console; the exit code and the requesters are not
@@ -2713,7 +2713,7 @@ prints is lost), `userlib.c` is a library for
 `userlib.tokens`). tedstub also runs menu items
 (`menu=ID|ITEM|ANSWER`) and logs the busy pointer after them;
 `run=ID|SOURCE|CONSOLE|PANIC` runs a source with COMPILE/RUN as from
-the editor (the program in blitz2's own process, the stop requester
+the editor (the program in a process of its own created by blitz2, the stop requester
 open; its console is the file CONSOLE, the output goes into the log),
 optionally with !PANIC! hit PANIC ticks after the program started, and
 logs the requesters left open;
