@@ -514,6 +514,16 @@ const char *cr_verdict_name(int v)
     return v >= 0 && v <= 4 ? n[v] : "?";
 }
 
+int cr_side_status(int v, int originals)
+{
+    return originals && v == TJ_V_REPRODUCED ? 0 : v;
+}
+
+const char *cr_side_verdict_name(int v, int originals)
+{
+    return originals && v == TJ_V_REPRODUCED ? "REPRODUCED (as declared, side originals)" : cr_verdict_name(v);
+}
+
 /* a query of the whole program: one per cell's run, not per case */
 static int whole_program(int kind)
 {
@@ -1625,7 +1635,7 @@ static int judge_case(struct ctx *x, const char *name, const struct set *const *
         fprintf(out, "%s\n", msgs.v[i]);
     tj_msgs_free(&msgs);
     if (v >= 0)
-        fprintf(out, "%s: case %s: %s%s\n", x->file, name, cr_verdict_name(v), mark);
+        fprintf(out, "%s: case %s: %s%s\n", x->file, name, cr_side_verdict_name(v, x->o->originals), mark);
 out:
     free(idx);
     free(to);
@@ -1817,7 +1827,8 @@ static int run_all(struct ctx *x, const char *rundir)
             fputs(block[i], x->log);
     rc = cr_plan_worst(&p);
     fprintf(x->log, "%s: %zu case%s, side %s: %s\n", x->file, n, n == 1 ? "" : "s",
-            x->o->originals ? "originals" : "port", cr_verdict_name(rc));
+            x->o->originals ? "originals" : "port", cr_side_verdict_name(rc, x->o->originals));
+    rc = cr_side_status(rc, x->o->originals);
     goto out;
 oom:
     fprintf(x->log, "corpusrun case: out of memory\n");
@@ -2006,7 +2017,7 @@ int caserun(const struct caserun_opts *o, FILE *log)
             rc = 2;
             goto out;
         }
-        rc = v;
+        rc = cr_side_status(v, o->originals);
     }
 out:
     if (rw.fd >= 0)

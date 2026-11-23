@@ -13,7 +13,10 @@
  * compile without the settings of a run, with the configuration prev and
  * the entries of its name; cr_prev_unknown: an entry naming no compile of
  * the test) with broken input (a cell pass without a configuration, with
- * two, an entry of another test, of another name, ON).
+ * two, an entry of another test, of another name, ON) - and the exit
+ * status of a side (cr_side_status: an open bug shown as declared passes
+ * on the side originals, fails on the side port; a cell without its
+ * declared deviation fails either side).
  *   test_caserun WORKDIR
  */
 #define _XOPEN_SOURCE 700
@@ -1067,6 +1070,65 @@ static void test_verdict_order(void)
     }
 }
 
+/* the exit status of a side (cr_side_status): an open bug that shows as
+   declared passes on the side originals and fails on the side port; a cell
+   of the side originals without the declared deviation still fails it */
+static void test_side_status(void)
+{
+    static const char shows[] = "begin|1\nblock|case|a\ncheck|0|fail|$00000001|$00000000\nblockend\nend\n";
+    static const char gone[] = "begin|1\nblock|case|a\ncheck|0|ok|$00000001|$00000001\nblockend\nend\n";
+    char buf[200];
+    struct tp_source src;
+    struct t t;
+
+    put("os/tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    put("os/s.test.bas", "!TestCase{a}\n  !CheckEq{x,1,\"v\"}\n!EndTestCase\n");
+    put("os/s.test.toml", "[deviations.\"libs=cd\"]\n\"check.a.v\" = \"== fail\"\n");
+    if (process("os/s.test.bas", &src))
+        return;
+    load(&t, "os/s.test.bas", ENV_RUNNER);
+    {
+        struct tj_test jt = { "s.test.bas", &src, &t.conf, &t.m, "a", 1, NULL, 0 };
+        size_t cd = cell(&t, "cd"), clib = cell(&t, "clib");
+        struct tj_obs o;
+        struct tj_msgs msgs = { 0 };
+        int v;
+
+        CHECK(t.m.cells[cd].originals && !t.m.cells[clib].originals);
+        /* the side originals: the deviation holds - REPRODUCED, exit 0 */
+        o = clean_obs(buf, shows);
+        v = tj_verdict(&jt, &cd, &o, 1, &msgs);
+        CHECK(v == TJ_V_REPRODUCED);
+        CHECK(cr_side_status(v, 1) == 0);
+        CHECK(!strcmp(cr_side_verdict_name(v, 1), "REPRODUCED (as declared, side originals)"));
+        /* it does not hold - FAILED, exit 4 */
+        o = clean_obs(buf, gone);
+        v = tj_verdict(&jt, &cd, &o, 1, &msgs);
+        CHECK(v == TJ_V_FAILED);
+        CHECK(cr_side_status(v, 1) == TJ_V_FAILED && !strcmp(cr_side_verdict_name(v, 1), "FAILED"));
+        /* the side port: the open bug shows - REPRODUCED, exit 1, as before */
+        o = clean_obs(buf, shows);
+        v = tj_verdict(&jt, &clib, &o, 1, &msgs);
+        CHECK(v == TJ_V_REPRODUCED);
+        CHECK(cr_side_status(v, 0) == 1 && !strcmp(cr_side_verdict_name(v, 0), "REPRODUCED"));
+        /* the bug gone in the port without a fixed issue - FAILED */
+        o = clean_obs(buf, gone);
+        v = tj_verdict(&jt, &clib, &o, 1, &msgs);
+        CHECK(v == TJ_V_FAILED && cr_side_status(v, 0) == TJ_V_FAILED);
+        tj_msgs_free(&msgs);
+    }
+    /* every other verdict keeps its exit status on both sides */
+    {
+        static const int other[] = { TJ_V_PASSED, TJ_V_ERROR, TJ_V_BROKEN, TJ_V_FAILED, CR_SKIPPED };
+
+        for (size_t i = 0; i < sizeof other / sizeof other[0]; i++)
+            CHECK(cr_side_status(other[i], 1) == other[i] && cr_side_status(other[i], 0) == other[i]
+                  && !strcmp(cr_side_verdict_name(other[i], 1), cr_verdict_name(other[i])));
+    }
+    unload(&t);
+    tp_free(&src);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1095,6 +1157,7 @@ int main(int argc, char **argv)
     test_plan_isolated();
     test_isolate_keys();
     test_verdict_order();
+    test_side_status();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

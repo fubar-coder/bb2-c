@@ -51,7 +51,9 @@ For a test without a fixed issue, the cells without the original's faulty
 part SHALL be judged like the cells with it: REPRODUCED when they show
 exactly the declared deviations. A case with a declared deviation of an
 open test SHALL carry the label `bug-orig`; its other cases SHALL carry
-`emulator`.
+`emulator`. On the side `originals` a REPRODUCED case SHALL pass (exit
+status 0, reported as REPRODUCED as declared); a cell there without its
+declared deviations SHALL fail it.
 
 #### Scenario: Open bug still there
 - **WHEN** the C libraries' cell of an open test fails exactly the declared check
@@ -60,6 +62,14 @@ open test SHALL carry the label `bug-orig`; its other cases SHALL carry
 #### Scenario: Open bug fixed by accident
 - **WHEN** the C libraries' cell of an open test passes all its checks
 - **THEN** the case fails naming the test as passing without a fixed issue
+
+#### Scenario: The original shows the open bug
+- **WHEN** the cells of the side `originals` of an open test show exactly the declared deviations
+- **THEN** the case passes on that side with exit status 0 and the report says "REPRODUCED (as declared, side originals)", while the side `port` of the same case still fails as REPRODUCED
+
+#### Scenario: The original does not show the declared deviation
+- **WHEN** a cell of the side `originals` of an open test passes the check its declared deviation says fails
+- **THEN** the case fails on that side naming the deviation that does not hold
 
 ### Requirement: The fixed issue is one key of three kinds
 A fix of an original bug SHALL set `fixed-orig = N` in the test's own

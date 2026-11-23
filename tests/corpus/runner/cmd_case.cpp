@@ -8,7 +8,8 @@
  *   corpusrun case --env FILE --source ID.test.bas --prev --driver NAME.bb2 --test TEST
  *                  --prev-blitz2 FILE --prev-libs DIR [--intended ENTRY]...
  *
- * Exit status the verdict: 0 passed, 1 reproduced, 2 error, 3 broken, 4
+ * Exit status the verdict: 0 passed, 1 reproduced (on the side originals
+ * 0: the original shows the open bug as declared), 2 error, 3 broken, 4
  * failed, 77 skipped; without --case the worst verdict of the cases; with
  * --prev 0 the same, 1 differs, 2 error, 77 skipped.
  */
@@ -77,7 +78,8 @@ void cmd_case(CLI::App &app, int &status)
                 "announces a runtime error, the case open when a shared run did not end cleanly, and a case "
                 "that did not pass in a shared run run on their own (\"(alone)\"), and a line per case and a "
                 "summary line report them. Exit status: 0 passed, 1 reproduced (an open bug shows as "
-                "declared), 2 error (a configuration, source or result that cannot be judged; usage), 3 broken, "
+                "declared; on the side originals 0, the report saying \"REPRODUCED (as declared, side "
+                "originals)\"), 2 error (a configuration, source or result that cannot be judged; usage), 3 broken, "
                 "4 failed, 77 skipped (no emulator, or a file of the side is missing); without --case the worst "
                 "verdict of the cases, in the order error, broken, failed, skipped, reproduced, passed. With "
                 "--prev: 0 the same, 1 a difference that is not intended or a stale entry, 2 error, 77 "

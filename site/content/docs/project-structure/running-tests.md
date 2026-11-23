@@ -141,7 +141,7 @@ gives the verdict, and the exit status says the same:
 | Exit status | Verdict | Meaning |
 |---|---|---|
 | 0 | passed | every cell shows what it must |
-| 1 | reproduced | a test of an open original bug: every cell shows the declared deviation |
+| 1 | reproduced | a test of an open original bug: every cell shows the declared deviation (on the side originals the status is 0, see below) |
 | 2 | error | a configuration, source or result that cannot be judged, or a wrong command line |
 | 3 | broken | a precondition (`!Require`) failed, or a test of an original bug declares no deviation: the tested behaviour was not reached |
 | 4 | failed | a check or an assertion does not hold |
@@ -184,7 +184,8 @@ The report gives each case as for a single case, marked ` (alone)` when
 it was judged on its own, and ends with a summary line such as
 `model-numbering.test.bas: 2 cases, side port: PASSED`. The exit code is
 that of the worst verdict, in the order error, broken, failed, skipped,
-reproduced, passed. The runs live in `build/amiga/tests/model-runs/ID/`
+reproduced, passed (on the side originals a reproduced verdict gives 0).
+The runs live in `build/amiga/tests/model-runs/ID/`
 (`ID_originals`), one directory per run: `shared-0`, `alone-CASE`, and
 `isolated-CASE` for the cells with a session of their own. CTest still
 runs one case per test.
@@ -384,7 +385,12 @@ ctest --test-dir build/amiga -LE originals -R 'blitz2_model_numbering__'
 CTest counts exit status 77 as skipped, and every other status but 0 as
 failed. A test of an open original bug that comes out *reproduced* is
 therefore a failure in CTest: that is what the preset `bug-orig` expects
-of it.
+of it. This holds for the side port only. On the side originals
+(the tests ending in `_originals`) the original showing its own bug is
+the expected result: the verdict line says `REPRODUCED (as declared,
+side originals)` and the exit status is 0, so the test passes in the
+preset `originals`. If the original does not show the declared
+deviation, that side fails as well.
 
 A test whose cells use the compiler 1.95 needs that compiler first;
 CTest builds it by itself with the test `originals_refbuild`, which it

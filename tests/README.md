@@ -660,7 +660,9 @@ not pass, each failed check with its case, name, `ID.test.bas:LINE`,
 expression and the expected and actual value, every assertion that does
 not hold with the file and line it comes from, a compile error at its
 line of `ID.test.bas`, and the verdict (exit status 0 passed, 1
-reproduced, 2 error, 3 broken, 4 failed, 77 skipped). The run's files
+reproduced, 2 error, 3 broken, 4 failed, 77 skipped; on the side
+originals an open bug shown as declared is 0, reported as `REPRODUCED (as
+declared, side originals)`). The run's files
 (the driver, each cell's `CORPUS:` with the compiler's log and the
 result file `out/test.res`) stay in `build/amiga/tests/model-runs/` when
 the case did not pass. Two diagnostics run nothing:
@@ -2660,9 +2662,13 @@ like the cells with it, they must show exactly the declared deviations
 a cell that passes all its checks fails the test ("passes without a fixed
 issue"). So an open bug's move is checked by running `ctest --preset
 bug-orig -R bug_orig_ID` and `ctest --preset originals -R
-bug_orig_ID`: both REPRODUCED (exit status 1 of `corpusrun case`),
-never BROKEN, and the deviations of `libs=cd` are the lines of the old
-`.orig`. The test has no `fixed-orig`; the fix commit adds that one key
+bug_orig_ID`: both REPRODUCED, never BROKEN, and the deviations of
+`libs=cd` are the lines of the old `.orig`. The side port fails with it
+on purpose (exit status 1 of `corpusrun case`, preset `bug-orig`); the
+side originals passes (exit status 0, `REPRODUCED (as declared, side
+originals)`), since the original showing its bug is what it must do. A
+cell of the side originals that does not show its declared deviations
+fails that side too. The test has no `fixed-orig`; the fix commit adds that one key
 ([Fixed tests](#fixed-tests)). A bug-orig test without any deviation is
 BROKEN. (The pilot moved fixed bugs only; the open-bug path is the
 runner's `testjudge` rule, host test `testjudge`, "an open original
