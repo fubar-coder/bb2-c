@@ -425,3 +425,22 @@ The comments `Fixed (#1178)` and `Fixed (#1179)` in
 `Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) and
 `Fixed (#1189)` in `programs/blitz2/src/eval.c` (`dopow`) and
 `libs/acidlibs/mathtranslib.c` point here.
+
+## Where the rules are in the code
+
+Every type decision described on this page is taken in one place,
+`programs/blitz2/src/exprtype.c` (issue #1180, step 1 of the expression
+tree): `exprtype_binop` for a binary operator (the conversions of its
+operands, the type whose handler computes it, the type so far after it;
+the rules of #978, #1177, #1178, #1179 and #1182 included),
+`exprtype_element` for a variable, a function value or a constant (the
+type so far after it; `varcont` and `consttype2`'s sizing, #1188
+included), and `exprtype_optype` for the type each operator handler
+gives. The evaluator (`eval5`, `doop`, `compareop`, `mixedop`,
+`cmpownleft`, `varcont`, `consttype2`) asks them and emits what they
+return. Their decisions are pinned by the host test `blitz2_exprtype`
+(`programs/blitz2/tests/host/test_exprtype.cpp`) against the committed
+table `programs/blitz2/tests/host/exprtype.tsv`, which lists every
+operator, type so far, operand type and operand fact, and against the
+expression matrix's model for its two-operand cells. Which routine of the
+original each rule comes from: [expression-tree.md](expression-tree.md).

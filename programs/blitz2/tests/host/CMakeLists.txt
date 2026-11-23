@@ -17,3 +17,26 @@ target_compile_options(test_ab3date PRIVATE -Wall -Wextra)
 own_warnings(test_ab3date)
 set_target_properties(test_ab3date PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME blitz2_ab3date COMMAND test_ab3date)
+
+#   exprtype the type decisions of an expression (src/exprtype.c, issue
+#            #1180, change expr-tree-1-typing): every decision against the
+#            committed table exprtype.tsv, a changed row of it, and the
+#            two-operand cells of the expression matrix against its model
+#            (tools/lib/exprmatrix).  EXPRTYPE_TSV_WRITE=FILE writes the
+#            table instead of reading it (the generator mode).
+add_library(blitz2_exprtype_host STATIC ${BLITZ2_SRC}/exprtype.c)
+set_target_properties(blitz2_exprtype_host PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
+target_compile_options(blitz2_exprtype_host PRIVATE -Wall -Wextra -pedantic)
+own_warnings(blitz2_exprtype_host)
+target_include_directories(blitz2_exprtype_host PUBLIC ${BLITZ2_SRC})
+
+get_filename_component(exprtype_repo ${CMAKE_CURRENT_SOURCE_DIR}/../../../.. ABSOLUTE)
+add_executable(test_exprtype test_exprtype.cpp)
+target_link_libraries(test_exprtype PRIVATE blitz2_exprtype_host lib_exprmatrix snitch::snitch)
+target_compile_definitions(test_exprtype PRIVATE
+	EXPRTYPE_TSV="${CMAKE_CURRENT_SOURCE_DIR}/exprtype.tsv"
+	EXPRMATRIX_TXT="${exprtype_repo}/tests/corpus/tests-exprmatrix/matrix.txt")
+target_compile_options(test_exprtype PRIVATE -Wall -Wextra)
+own_warnings(test_exprtype)
+set_target_properties(test_exprtype PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME blitz2_exprtype COMMAND test_exprtype)

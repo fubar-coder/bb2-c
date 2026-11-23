@@ -53,6 +53,12 @@ static const char *const traces[][2] = {
     { "corpus_exprmatrix_dl_A_agree_01", "TN:corpus_exprmatrix_dl_A_agree_01\n" EVAL("1", "0") },
     { "bug_orig_compiler_expr_1178_dl_A_01", "TN:bug_orig_compiler_expr_1178_dl_A_01\n" EVAL("1", "0") },
     { "regression_compiler_expr_refused_and_F_I", "TN:regression_compiler_expr_refused_and_F_I\n" EVAL("1", "0") },
+    /* the type decisions of an expression (covsel: the type decisions of an
+       expression) */
+    { "compiler_prev", "TN:compiler_prev\n" EVAL("1", "0") },
+    { "host/blitz2_exprtype", "TN:host_blitz2_exprtype\n"
+      "SF:" ROOT "/programs/blitz2/src/exprtype.c\nFN:120,220,exprtype_binop\nFNDA:1,exprtype_binop\n"
+      "end_of_record\n" },
     /* the tests of the BASIC test model (covsel: the tests of the BASIC test model) */
     { "bug_orig_shape_a__c", "TN:bug_orig_shape_a__c\n" EVAL("1", "0") },
     { "bug_orig_shape_a__c_originals", "TN:bug_orig_shape_a__c_originals\n" EVAL("1", "0") },
@@ -133,6 +139,10 @@ static const char deps[] =
     "programs/blitz2/CMakeFiles/blitz2_core.dir/src/parse.c.obj: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/programs/blitz2/src/parse.c\n"
     "    " ROOT "/programs/blitz2/src/parse.h\n"
+    "\n"
+    "programs/blitz2/CMakeFiles/blitz2_core.dir/src/exprtype.c.obj: #deps 2, deps mtime 1 (VALID)\n"
+    "    " ROOT "/programs/blitz2/src/exprtype.c\n"
+    "    " ROOT "/programs/blitz2/src/exprtype.h\n"
     "\n"
     "programs/blitz2/CMakeFiles/blitz2_core.dir/src/glue.c.obj: #deps 2, deps mtime 1 (VALID)\n"
     "    " ROOT "/programs/blitz2/src/glue.c\n"
@@ -371,6 +381,44 @@ TEST_CASE("covsel: real rules", "[covsel]")
     r = select_for(real_rules, diff1("tools/lib/amiga_emulation/CMakeLists.txt", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, ALL));
+}
+
+/* the type decisions of an expression (programs/blitz2/src/exprtype.c,
+   change expr-tree-1-typing): its source and header select its host test,
+   the expression matrix's corpus and compiler_prev; its table and its test
+   source the host test */
+static const char exprtype_tests[] =
+    "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
+    TEST("compiler_prev", "\"emulator\"") ","
+    TEST("corpus", "\"emulator\"") ","
+    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
+    TEST("host", "") "]}";
+static const char exprtype_host_tests[] =
+    "{\"kind\": \"ctestInfo\", \"tests\": ["
+    TEST("blitz2_exprtype", "") ","
+    TEST("ted_core_tokit", "\"ted\"") "]}";
+
+TEST_CASE("covsel: the type decisions of an expression", "[covsel]")
+{
+    char *r;
+
+    cur_tests = exprtype_tests;
+    cur_host_tests = exprtype_host_tests;
+    r = select_for(real_rules, diff1("programs/blitz2/src/exprtype.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    r = select_for(real_rules, diff1("programs/blitz2/src/exprtype.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
+    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    r = select_for(real_rules, diff1("programs/blitz2/tests/host/exprtype.tsv", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(!strcmp(r, "host"));
+    r = select_for(real_rules, diff1("programs/blitz2/tests/host/test_exprtype.cpp", "@@ -3 +3 @@", "-a\n+b\n"),
+                   NULL, 0);
+    CHECK(!strcmp(r, "host"));
+    r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
+                   0);
+    CHECK(!strcmp(r, "corpus_exprmatrix_dl_A_agree_01 host"));
+    cur_tests = tests;
+    cur_host_tests = host_tests;
 }
 
 /* the tests of the BASIC test model (openspec change basic-test-runner,

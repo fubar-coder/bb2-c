@@ -13,8 +13,15 @@
  *   regat                   -> global (D register of the result)
  */
 #include "blitz2.h"
+#include "exprtype.h"
 #include <proto/exec.h>
 #include <string.h>
+
+/* exprtype.c's types are those of structs.h */
+_Static_assert((int)ET_BYTE == (int)T_BYTE && (int)ET_WORD == (int)T_WORD && (int)ET_LONG == (int)T_LONG
+               && (int)ET_QUICK == (int)T_QUICK && (int)ET_FLOAT == (int)T_FLOAT
+               && (int)ET_ADDR == (int)T_ADDR && (int)ET_STRING == (int)T_STRING,
+               "exprtype.h: the types of structs.h");
 
 /* ======================================================= local templates */
 /* Code copied into the generated program; bytes from build/blitz2.lst
@@ -190,10 +197,10 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op);
 static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, struct opentry **op);
 static UWORD doop(struct opentry *op, UWORD type);
-static UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type);
+static void mixedop(struct opentry *op, const struct exprtype_bin *d);
 static void doplus2(UWORD opcode);
 static ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend);
-static UWORD compareop(struct opentry *op, UWORD left, UWORD right);
+static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
 static void divzerochk(const struct opentry *op, UWORD type);
 static void pushprec(struct opentry *op, UWORD prec);
 static struct opentry *popprec(UWORD *prec);
@@ -981,16 +988,79 @@ static void rawcut(UWORD reg)
     regat = s;
 }
 
-/* Fixed (#1178), no asm counterpart: op takes a raw Quick rounded down,
-   as the original's cut gave it, whatever its other operand: a shift,
-   AND, OR, EOR, a bit operator (not + - * / ^ Mod, not a comparison, not
-   the end; Mod takes the fraction when its right operand is a Float) */
-static BOOL rawcutop(const struct opentry *op)
+/* no asm counterpart: the operator op as exprtype.h numbers it (its index
+   in operators[]; NULL, the end or the sentinel: ETO_END) */
+static unsigned opindex(const struct opentry *op)
 {
-    if (!op || (op >= opeq && op <= opge))
-        return FALSE;
-    return op->op != '+' && op->op != '-' && op->op != '*' && op->op != '/' && op->op != '^'
-           && op->op != TOK_MOD;
+    return op ? (unsigned)(op - operators) : ETO_END;
+}
+
+/* no asm counterpart; replaces blitz2.s:8995-9000 (eval5 after .higher's
+   right operand: convtypef, .skip's popprec, doop): the operator op on
+   the left operand of type left in D(regat) and the right one, whose
+   evaluation ended with the type so far right, in D(regat+1) (lstart,
+   rstart: where their code begins; lraw, lbyte, lconst: the facts of the
+   left one).  exprtype_binop decides, this emits what it returns.
+   Returns the type so far; *lcmp is set when the result is lowered by a
+   comparison (#1182).  Not inlined: the decision would be part of eval5's
+   frame on every level of the recursion (#1080). */
+static __attribute__((noinline))
+UWORD operate(struct opentry *op, UWORD *prec, UWORD left, UWORD right, ULONG lstart, ULONG rstart,
+              BOOL lraw, BOOL lbyte, BOOL lconst, BOOL *lcmp)
+{
+    struct exprtype_binfacts f;
+    struct exprtype_bin d;
+    struct opentry *cur;
+
+    f.lraw = lraw;
+    f.rraw = rawq;
+    rawq = FALSE;
+    f.rcmp = cmpres;
+    f.lbyte = lbyte;
+    f.lconst = lconst;
+    f.rbyte = bytevalend == pc && bytevalend > rstart;
+    f.rconst = isbyteconst(rstart, pc);
+    /* Fixed (#1179): a later index, both operands Word values */
+    f.words = laterindex && forthsp[-2].wordval && forthsp[-1].wordval;
+    d = exprtype_binop(opindex(op), left, right, &f);
+    /* Fixed (#978): the constant compared with a byte value */
+    if (d.byteext == ETB_RIGHT)
+        byteconstext(rstart);
+    else if (d.byteext == ETB_LEFT)
+        byteconstext(lstart);
+    cur = popprec(prec);            /* .skip */
+    /* Fixed (#1182): a right operand that a comparison lowered below the
+       left operand's type (the comparison's boolean, a Word, or a value
+       computed from it) is converted up to the left one's type and the
+       operation done in that type.  The original converted the left
+       operand down (convtypef below, blitz2.s:8998): with lw=65537
+       rl.l=lw AND (l1=l1) gave 1, with fh=0.5 rf.f=fh+(l1=l1) -1.  A
+       Float left of AND, OR, EOR or a shift is refused now, as any Float
+       there.  Not a Long under a Quick left (the late cut of #1178
+       stays): a Long may lie beyond the Quick range.  (A comparison
+       converts its right operand up in compareop.) */
+    if (d.path != ETP_COMPARE && d.rup_from) {
+        regat++;
+        convtype(d.rup_from, d.rup_to);
+        regat--;
+    }
+    if (d.path == ETP_COMPARE || d.path == ETP_CMPLQ) {
+        if (d.rcut)                 /* not reached: the right starts at 0 */
+            rawcut(regat + 1);
+        compareop(cur, left, &d);
+    } else if (d.path == ETP_MIXED)
+        mixedop(cur, &d);
+    else {
+        if (d.lconv_from)
+            convtypef(d.lconv_from, d.lconv_to); /* could possibly fuck regat+1 ! */
+        divzerochk(cur, d.handler);
+        wordop = d.wordop;
+        doop(cur, d.handler);
+        wordop = FALSE;
+    }
+    if (d.cmpres)
+        *lcmp = TRUE;               /* Fixed (#1182) */
+    return d.result;
 }
 
 /* blitz2.s:8983 eval5 - precedence climbing.  Returns the precedence of
@@ -1007,16 +1077,17 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
     /* Fixed (#1178): a raw Quick whose consumer (the next operator if it
        binds tighter than the pending one, else the pending one) is a
        shift, a logic operator, Mod or a bit operator is rounded down here,
-       where varcont cut it: today's value and code */
-    if (lraw && rawcutop(prec > precsp[-1].prec ? *op : precsp[-1].op)) {
+       where varcont cut it: today's value and code (exprtype_cutsraw) */
+    if (lraw && exprtype_cutsraw(opindex(prec > precsp[-1].prec ? *op : precsp[-1].op))) {
         quicktolong();
         lraw = FALSE;
     }
     for (;;) {
         UWORD left, nprec;
-        struct opentry *nop, *cur;
+        struct opentry *nop;
         struct forthent *fs;
-        BOOL cmp, cmpop, lbyte, lconst, rraw, rcmp;
+        struct exprtype_left pre;
+        BOOL lbyte, lconst;
         ULONG rstart;
 
         if (!(prec > precsp[-1].prec)) { /* cmp -(a1),d1 / bhi .higher */
@@ -1042,75 +1113,31 @@ static UWORD eval5(UWORD *type, UWORD *c, struct opentry **op)
            (the original handed that type to both, and varcont cut a Quick
            under a Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one
            element gets its own type back (cmpownleft), the right operand
-           starts at type 0, compareop compares the two. */
-        cmpop = *op >= opeq && *op <= opge;
-        if (cmpop && lraw) {
-            *type = T_QUICK;        /* Fixed (#1178): the left is a Quick */
-            lraw = FALSE;
-        } else if (cmpop && lend)
+           starts at type 0, compareop compares the two (exprtype_leftop). */
+        pre = exprtype_leftop(opindex(*op), *type, lraw);
+        *type = pre.left;           /* Fixed (#1178): a raw left is a Quick */
+        lraw = pre.lraw;
+        if (pre.ownleft && lend)
             lend = cmpownleft(type, lstart, lend);
         /* Fixed (#978): an equality comparison (= or <>) of a byte value
            with a constant from 128 to 255 (each operand one element)
            takes the constant as the byte it stands for, sign-extended as
            varcont extends the byte: "a.b=$90 : If a=$90" matches.  The
            ordering comparisons stay mathematical (a<200 is true for every
-           byte). */
-        cmp = *op == opeq || *op == opne;
+           byte).  The facts here, the rule in exprtype_binop. */
         lbyte = lend && bytevalend == lend && bytevalend > lstart;
         lconst = lend && isbyteconst(lstart, lend);
         rstart = pc;
         pushprec(*op, prec);
         left = *type;
         regat++;
-        if (cmpop)
+        if (pre.compare)
             *type = 0;              /* Fixed (#1177) */
         nprec = eval5(type, c, &nop);
-        rraw = rawq;
-        rawq = FALSE;
-        rcmp = cmpres;
         regat--;
-        if (cmp && lbyte && isbyteconst(rstart, pc))
-            byteconstext(rstart);
-        else if (cmp && lconst && bytevalend == pc && bytevalend > rstart)
-            byteconstext(lstart);
+        *type = operate(*op, &prec, left, *type, lstart, rstart, lraw, lbyte, lconst, &lcmp);
         lstart = lend = 0;          /* the left operand is a result now */
-        cur = popprec(&prec);       /* .skip */
-        /* Fixed (#1182): a right operand that a comparison lowered below
-           the left operand's type (the comparison's boolean, a Word, or a
-           value computed from it) is converted up to the left one's type
-           and the operation done in that type.  The original converted
-           the left operand down (convtypef below, blitz2.s:8998): with
-           lw=65537 rl.l=lw AND (l1=l1) gave 1, with fh=0.5
-           rf.f=fh+(l1=l1) -1.  A Float left of AND, OR, EOR or a shift
-           is refused now, as any Float there.  Not a Long under a Quick
-           left (the late cut of #1178 stays): a Long may lie beyond the
-           Quick range. */
-        if (!cmpop && rcmp && left >= T_LONG && left <= T_ADDR && *type
-            && *type < left && !(left == T_QUICK && *type >= T_LONG)) {
-            regat++;
-            convtype(*type, left);
-            regat--;
-            *type = left;
-            rcmp = FALSE;
-        }
-        if (cmpop) {
-            if (rraw)               /* not reached: the right starts at 0 */
-                rawcut(regat + 1);
-            *type = compareop(cur, left, *type);
-        } else if (lraw || rraw
-                   || (left == T_QUICK && *type == T_LONG
-                       && (cur->op == '*' || cur->op == '/')))
-            *type = mixedop(cur, lraw || left == T_QUICK, rraw, left, *type);
-        else {
-            if (left)
-                convtypef(left, *type); /* could possibly fuck regat+1 ! */
-            divzerochk(cur, *type);
-            wordop = laterindex && forthsp[-2].wordval && forthsp[-1].wordval;
-            *type = doop(cur, *type);
-            wordop = FALSE;
-        }
         lraw = FALSE;
-        lcmp = cmpop || lcmp || rcmp;   /* Fixed (#1182) */
         forthsp[-2].wordval = 0;    /* Fixed (#1179): a result */
         /* O.K., lets check the forth stack to see if last two operators
            are constants!  if so, we can JSR the routine to optimize into a
@@ -1186,17 +1213,22 @@ found2:
     return ent->prec;
 }
 
-/* blitz2.s:9142 doop - a0=operator,d2=type */
+/* blitz2.s:9142 doop - a0=operator,d2=type.  Whether op has a handler
+   for type, and the type it gives, is exprtype_optype's (exprtype.c);
+   operators[] has a handler wherever that table has a type.  Returns the
+   type. */
 static UWORD doop(struct opentry *op, UWORD type)
 {
     ophandler *h;
+    UWORD t = exprtype_optype(opindex(op), type);
 
-    if ((WORD)(type - 1) < 0)
+    if (!t)
         illoperr();
     h = op->h[type - 1];
     if (!h)
-        illoperr();
-    return h(type);                 /* jmp (a0) */
+        illoperr();                 /* not reached: the table agrees */
+    h(type);                        /* jmp (a0) */
+    return t;
 }
 
 /* Fixed (#1178), no asm counterpart: the operator op on D(regat) (left)
@@ -1211,31 +1243,34 @@ static UWORD doop(struct opentry *op, UWORD type)
    as BB2's divisions.  A Float type so far (the right side made it one)
    takes the Quick with its fraction (quicktofloat), ^ both operands with
    theirs; the other operators take the Quick rounded down, as before.
-   type: the type so far after the right operand.  Returns the result's
-   type. */
+   d: exprtype_binop's decision (ETP_MIXED); the operation computes in
+   d->result. */
 static __attribute__((noinline))
-UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
+void mixedop(struct opentry *op, const struct exprtype_bin *d)
 {
     UWORD r = regat;
+    BOOL lq = d->lq, rq = d->rq;
 
-    if (type != T_LONG) {
-        /* a Float (or another) type so far set by the right side: the
-           right operand is of that type already */
-        if (rq)
+    if (d->handler) {
+        /* a Float (or another) type so far set by the right side (the
+           right operand is of that type already: the Quick converted
+           with its fraction), ^ (both to Float with their fractions),
+           or an operator that takes the Quick rounded down: the
+           conversions, then the handler */
+        if (d->lcut)
+            rawcut(r);
+        if (d->rcut)
             rawcut(r + 1);
-        if (lq)
-            convtypef(T_QUICK, type);
-        else if (left)
-            convtypef(left, type);
-        divzerochk(op, type);
-        return doop(op, type);
-    }
-    if (op->op == '^') {
-        convtypef(lq ? T_QUICK : T_LONG, T_FLOAT);
-        regat++;
-        convtype(rq ? T_QUICK : T_LONG, T_FLOAT);
-        regat--;
-        return dopow(T_FLOAT);
+        if (d->lconv_from)
+            convtypef(d->lconv_from, d->lconv_to);
+        if (d->rconv_from) {
+            regat++;
+            convtype(d->rconv_from, d->rconv_to);
+            regat--;
+        }
+        divzerochk(op, d->handler);
+        doop(op, d->handler);
+        return;
     }
     switch (op->op) {
     case '+':
@@ -1248,12 +1283,12 @@ UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
             pokewd(0x48c0 | r);                 /* ext.l Dq */
             pokewd(0x48c0 | (r + 1));           /* ext.l Dp */
             doplus2(0xd180);                    /* addx.l Dp,Dq */
-            return T_LONG;
+            return;
         }
         /* l+q, q+l: floor(l+q) = l + floor(q) */
         rawcut(lq ? r : r + 1);
         doplus2(0xd080);                        /* add.l */
-        return T_LONG;
+        return;
     case '-':
         if (lq && rq) {
             /* floor(q-p) = floor(q) - floor(p) - the borrow of the
@@ -1264,7 +1299,7 @@ UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
             pokewd(0x48c0 | r);
             pokewd(0x48c0 | (r + 1));
             doplus2(0x9180);                    /* subx.l Dp,Dq */
-            return T_LONG;
+            return;
         }
         if (rq) {
             /* l-q: floor(l-q) = l - ceil(q) = l - floor(q) - (frac <> 0),
@@ -1273,22 +1308,22 @@ UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
             pokewd(0x4840 | (r + 1));           /* swap Dq */
             pokewd(0x48c0 | (r + 1));           /* ext.l Dq: floor(q) */
             doplus2(0x9180);                    /* subx.l Dq,Dl */
-            return T_LONG;
+            return;
         }
         rawcut(r);                              /* q-l: floor(q) - l */
         doplus2(0x9080);                        /* sub.l */
-        return T_LONG;
+        return;
     case '*':
         /* floor(l*q): bits 16..47 of the 64 bit product; floor(q*p): bits
            32..63 (lmullib, the port's entries) */
         nocando();
         domylib(lq && rq ? qqmult : mixmult);
-        return T_LONG;
+        return;
     case '/':
         nocando();
         if (rq && !lq) {
             domylib(lqdiv);                     /* trunc((l<<16)/q) */
-            return T_LONG;
+            return;
         }
         domylib(longdiv);       /* q/h: trunc(qraw/hraw); q/l: qraw/l */
         if (!rq) {
@@ -1301,18 +1336,12 @@ UWORD mixedop(struct opentry *op, BOOL lq, BOOL rq, UWORD left, UWORD type)
             pokewd(0x4840 | r);                 /* swap Dn */
             pokewd(0x48c0 | r);                 /* ext.l Dn */
         }
-        return T_LONG;
-    default:
-        /* Mod with a whole-number divisor (a Float one took the Float
-           path above), a shift or a logic operator (rawcutop cut a left
-           operand at fetch already): the Quick rounded down, as before */
-        if (lq)
-            rawcut(r);
-        if (rq)
-            rawcut(r + 1);
-        divzerochk(op, T_LONG);
-        return doop(op, T_LONG);
+        return;
     }
+    /* not reached: exprtype_binop gives every other operator a handler
+       (Mod with a whole-number divisor, a shift or a logic operator: the
+       Quick rounded down, as before; exprtype_cutsraw cut a left operand
+       at fetch already) */
 }
 
 /* Fixed (#1044): not in blitz2.s - a division or Mod by a constant 0.
@@ -1452,8 +1481,7 @@ ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
         return lend;
     if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth)
         return lend;
-    if (!((from >= T_BYTE && from <= T_LONG && to == T_QUICK)
-          || (from >= T_BYTE && from <= T_QUICK && to == T_FLOAT)))
+    if (!exprtype_ownleft(from, to))
         return lend;
     while ((node = *link) != conv.off && node) {
         if (node->offset >= conv.at - pcat) {
@@ -1520,22 +1548,23 @@ static UWORD cmplq(struct opentry *op, UWORD left)
    type left in D(regat) with a right one of its own type right in
    D(regat+1).  A Long and a Quick are compared exactly (cmplq); otherwise
    the lower of the two is converted up (the right one here, the left one by
-   convtypef as eval5 did) and the handler of the common type compares. */
+   convtypef as eval5 did) and the handler of the common type compares.
+   d: exprtype_binop's decision (ETP_CMPLQ or ETP_COMPARE). */
 static __attribute__((noinline))
-UWORD compareop(struct opentry *op, UWORD left, UWORD right)
+void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d)
 {
-    if ((left == T_LONG && right == T_QUICK)
-        || (left == T_QUICK && right == T_LONG))
-        return cmplq(op, left);
-    if (left && right < left) {
-        regat++;
-        convtype(right, left);
-        regat--;
-        right = left;
+    if (d->path == ETP_CMPLQ) {
+        cmplq(op, left);
+        return;
     }
-    if (left)
-        convtypef(left, right);     /* could possibly fuck regat+1 ! */
-    return doop(op, right);
+    if (d->rup_from) {
+        regat++;
+        convtype(d->rup_from, d->rup_to);
+        regat--;
+    }
+    if (d->lconv_from)
+        convtypef(d->lconv_from, d->lconv_to);  /* could possibly fuck regat+1 ! */
+    doop(op, d->handler);
 }
 
 /* blitz2.s:9189-9226 byte/word/long compares */
@@ -1994,6 +2023,10 @@ struct opentry operators[] = {
     { TOK_BITCHG, { bitchg, bitchg, bitchg, bitchg, 0, 0, 0 }, 8000 },
     { 0, { 0 }, 0 },
 };
+/* exprtype.h numbers the entries (enum exprtype_op) */
+_Static_assert(sizeof operators / sizeof operators[0] == ETO_COUNT + 1, "exprtype.h: the entries of operators[]");
+_Static_assert(ETO_DIV == 3 && ETO_MOD == 13 && ETO_EQ == 15 && ETO_NE == 16 && ETO_LT == 17 && ETO_LE == 18
+               && ETO_GT == 19 && ETO_GE == 20, "exprtype.h: the entries eval.h names");
 
 /* ========================================================= register moves */
 
@@ -3365,14 +3398,16 @@ static UWORD variable(UWORD c, UWORD *type)
 }
 
 /* blitz2.s:10479 varcont - common tail after a variable / function
-   value: ext byte to word, bump the type up to the old one */
+   value: ext byte to word, bump the type up to the old one.  The type
+   so far after the value is exprtype_element's (exprtype.c). */
 static UWORD varcont(UWORD oldtype, UWORD *type)
 {
-    BOOL byte = *type == T_BYTE;
+    struct exprtype_elem e = exprtype_element(oldtype, *type, NULL);
+    BOOL byte = e.ext;
 
     /* Fixed (#1179): a Byte or Word value (for eval5's inline Word * and
        / of a later index) */
-    forthsp[-1].wordval = byte || *type == T_WORD;
+    forthsp[-1].wordval = e.wordval;
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with
@@ -3381,8 +3416,6 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
     if (byte)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
     /* .notabyte */
-    if (!oldtype)                   /* type not set yet... it is now! */
-        goto done;
     /* Fixed (#1178): a Quick under a Long type so far is not cut to a
        whole number here (the original's goto conv2, blitz2.s:10491-10498:
        r.l=q*2 with q=1.5 gave 2).  It stays a raw 16.16 value, the type
@@ -3390,23 +3423,19 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
        fraction and rounds (eval5, mixedop: + - * down, / towards zero),
        a comparison takes it as a Quick (#1177), a shift, logic operator,
        Mod, Not and the end of the expression round it down as before. */
-    if (oldtype == T_LONG && *type == T_QUICK) {
-        *type = T_LONG;
+    if (e.raw)
         rawq = TRUE;
-        goto done;
+    else if (e.conv_from) {
+        conv.at = pc;
+        conv.off = firstoff;
+        conv.a6 = lasta6;
+        conv.from = e.conv_from;
+        conv.depth = evaldepth;
+        convtype(e.conv_from, e.conv_to);   /* bump up new type to old.... */
+        conv.end = pc;
+        conv.to = e.conv_to;
     }
-    if (oldtype <= *type)           /* .nob */
-        goto done;
-    conv.at = pc;
-    conv.off = firstoff;
-    conv.a6 = lasta6;
-    conv.from = *type;
-    conv.depth = evaldepth;
-    convtype(*type, oldtype);       /* bump up new type to old.... */
-    conv.end = pc;
-    conv.to = oldtype;
-    *type = oldtype;
-done:
+    *type = e.result;
     if (byte)
         bytevalend = pc;
     return reget();                 /* .done */

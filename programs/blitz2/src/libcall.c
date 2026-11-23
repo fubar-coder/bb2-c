@@ -5,6 +5,7 @@
  * CNIF/CSIF compare helpers.  See notes/survey-07.md and libcall.h.
  */
 #include "blitz2.h"
+#include "exprtype.h"
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <string.h>
@@ -413,91 +414,25 @@ ULONG constotype(UWORD *type)
     return consttype2(type, c, FALSE);
 }
 
-/* blitz2.s:10913 consttype2 - size the constant numval (int if numfloat == 0,
-   else FFP) to *type (0 = decide).  Returns the value (asm d0); *type =
-   final type.  `val` = the asm d0 on entry (normally the current char);
-   every path that uses it loads it with makeint first (#12).  data: the
-   constant is a Data value (fetchdata; asm dfetch), for the Byte sizing
-   (#1188). */
-static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
+/* no asm counterpart: the size of a whole number (exprtype_constfacts) */
+static UBYTE constsize(ULONG v)
 {
-    UWORD newtype = *type;
+    if ((LONG)v <= 127 && (LONG)v >= -128)
+        return T_BYTE;
+    if ((LONG)v <= 32767 && (LONG)v >= -32768)
+        return T_WORD;
+    return T_LONG;
+}
+
+/* blitz2.s:10913 consttype2 .quick2 - the decimal literal numval (FFP)
+   with the whole part val (makeint) as a Quick in *q; FALSE when it does
+   not fit (numdofloat).  neg: the literal is negated (#1070).  (a6 = maths
+   assumed, as the asm) */
+static BOOL quickconst(ULONG val, BOOL neg, ULONG *q)
+{
     UWORD whole;
     ULONG t, frac;
-    BOOL neg = litneg;
 
-    litneg = FALSE;
-    litcut = FALSE;                 /* #1186 */
-
-    if (newtype == 0) {
-        /* Let's set type */
-        /* #12: a float literal is a float constant.  The asm set type q
-           and jumped to .quick2 without makeint (blitz2.s:10920); its
-           range check then always failed (the upper word of d0 was that
-           of the last FFP result, negative), so 1.95 always ended in
-           numdofloat.  The port passed the character with an upper word
-           of 0 and made some literals a Quick by chance (a port
-           regression); it goes to numdofloat directly now. */
-        if (numfloat)
-            goto numdofloat;
-        newtype = T_BYTE;
-        goto byte;
-    }
-    /* .something */
-    switch (newtype) {
-    case T_BYTE:  goto byte;
-    case T_WORD:  goto word;
-    case T_LONG:  goto long_;
-    case T_QUICK: goto quick;
-    case T_FLOAT: goto float_;
-    default:      mismatcherr();
-    }
-
-byte:
-    if (!makeint(&val))
-        goto numdofloat;
-    /* Fixed (#1188): a literal with a non-zero fraction is a Float
-       constant, as under .word, so the operation is computed in Float and
-       its result converted to the Byte at the end (towards zero):
-       rb.b=(1.5+1.5) is 3 and rb.b=(0.5*4) 2, as under a Word.  The
-       original cut it to a whole number here (makeint) before the
-       operation (2 and 0).  A whole-valued literal with a point or an
-       exponent (2.0, 1e2) stays the whole number, unlike .word: the value
-       is the same without Float code (rb.b=vb AND 2.0 compiles).  A Data
-       value keeps the cut (Data.b 1.5 is 1; under .word "Bad Data"). */
-    if (numfloat && !data
-        && ffpcall(SPSub, numval, ffpcall(SPFlt, val, 0, NULL), NULL))
-        goto numdofloat;
-    litcut = numfloat != 0;         /* #1186: a whole-valued literal */
-    if ((LONG)val <= 127 && (LONG)val >= -128)
-        goto done;                  /* .dobword */
-over1:
-    /* Fixed (#978): a constant from 128 to 255 becomes a positive word
-       ($0090), here as in the original; compared with a byte value, which
-       varcont sign-extends ($FF90), eval5 makes it the sign-extended byte
-       (isbyteconst, byteconstext).  Every other byte context (a.b=200)
-       keeps it. */
-    newtype = T_WORD;
-    if ((LONG)val <= 32767 && (LONG)val >= -32768)
-        goto done;
-byte2:
-    newtype = T_LONG;
-    goto done;
-
-word:
-    if (numfloat)
-        goto numdofloat;    /* #12: as type 0 above (asm: bne .quick2) */
-    if (!makeint(&val))
-        goto numdofloat;
-    goto over1;
-
-quick:
-    if (!makeint(&val))
-        goto numdofloat;
-    if (numfloat == 0)
-        goto qint;
-    /* .quick2: val = int part (from makeint).  (a6 = maths assumed, as
-       the asm) */
     t = ffpcall(SPFlt, val, 0, NULL);                   /* back to ffp */
     frac = ffpcall(SPSub, numval, t, NULL);             /* d0=fraction! */
     /* Fixed (#1070): a decimal literal is read as an FFP value
@@ -513,8 +448,8 @@ quick:
        brackets the literal is not negated itself: "-(32767.9999)" is the
        negation of 32767.99998, -32767.99998 ($80000001). */
     if (val == 32768 && frac == 0) {
-        val = neg ? 0x80000000 : 0x7fffffff;
-        goto done;
+        *q = neg ? 0x80000000 : 0x7fffffff;
+        return TRUE;
     }
     /* Fixed (#13): the integer part is rounded down (floor), so that the
        fraction is 0..65535 for a negative value too, and the range check
@@ -527,46 +462,87 @@ quick:
         frac = ffpcall(SPAdd, frac, 0x80000041, NULL);  /* + 1.0 */
     }
     if ((LONG)val > 32767 || (LONG)val < -32768)
-        goto numdofloat;
+        return FALSE;
     whole = (UWORD)val;                                 /* save whole part */
     frac = ffpcall(SPMul, frac, 0x80000051, NULL);      /* *65536 */
     frac = ffpcall(SPFix, frac, 0, NULL);               /* back to int */
-    if (frac == 0)
-        goto qint;
+    if (frac == 0) {
+        *q = (val << 16) | (val >> 16);                 /* .qint: swap d0 */
+        return TRUE;
+    }
     if ((LONG)frac < 0 || (LONG)frac >= 65536)
-        goto numdofloat;                                /* .knob */
-    val = ((ULONG)whole << 16) | (UWORD)frac;
-    goto done;
+        return FALSE;                                   /* .knob */
+    *q = ((ULONG)whole << 16) | (UWORD)frac;
+    return TRUE;
+}
 
-qint:
-    /* Data reads the '-' of a value itself (fetchdata), so "Data.q -32768"
-       sizes the integer 32768 here and leaves as a long; dodata takes it
-       as the Quick -32768 (Fixed (#1074), tokens1.c).  Not changed here:
-       this also sizes the literals of expressions, where -32768 is the
-       long 32768 negated and converted afterwards. */
-    if ((LONG)val > 32767 || (LONG)val < -32768)
-        goto byte2;     /* quick int out of range -> long (sic) */
-    val = (val << 16) | (val >> 16);                    /* swap d0 */
-    goto done;
+/* blitz2.s:10913 consttype2 - size the constant numval (int if numfloat == 0,
+   else FFP) to *type (0 = decide).  Returns the value (asm d0); *type =
+   final type.  `val` = the asm d0 on entry (normally the current char);
+   every path that uses it loads it with makeint first (#12), so it is not
+   read.  data: the constant is a Data value (fetchdata; asm dfetch), for
+   the Byte sizing (#1188).  The type is exprtype_element's (exprtype.c)
+   from the constant's facts; the facts of a literal with a point are
+   computed where the rule of the type so far reads them (under a Byte and
+   a Quick: makeint, the fraction), with the FFP calls of the original's
+   paths. */
+static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
+{
+    UWORD tsf = *type;
+    struct exprtype_constfacts k = { 0 };
+    struct exprtype_elem e;
+    ULONG whole = numval, q = 0;
+    BOOL neg = litneg;
 
-long_:
-    if (numfloat)
-        goto numdofloat;
-    val = numval;
-    goto done;
+    (void)val;
+    litneg = FALSE;
+    litcut = FALSE;                 /* #1186 */
 
-float_:
-    if (numfloat)
-        goto numdofloat;
-    numval = ffpcall(SPFlt, numval, 0, NULL);             /* int to float */
-    goto numdofloat;
-
-numdofloat:
-    /* blitz2.s:11011 numdofloat */
-    newtype = T_FLOAT;
-    val = numval;
-done:
-    *type = newtype;
+    k.point = numfloat != 0;
+    k.data = data;
+    if (!k.point)
+        k.size = constsize(numval);
+    else if (tsf == T_BYTE || tsf == T_QUICK) {
+        k.fix = makeint(&whole);
+        if (k.fix && tsf == T_BYTE) {
+            k.size = constsize(whole);
+            /* Fixed (#1188): whether the literal is the whole number (a
+               Data value keeps the cut: not asked) */
+            k.whole = !data
+                      && !ffpcall(SPSub, numval, ffpcall(SPFlt, whole, 0, NULL), NULL);
+        } else if (k.fix)
+            k.qfit = quickconst(whole, neg, &q);
+    }
+    e = exprtype_element(tsf, 0, &k);
+    switch (e.result) {
+    case 0:
+        mismatcherr();
+    case T_FLOAT:
+        /* blitz2.s:11011 numdofloat; under a Float the whole number to
+           FFP first (float_) */
+        if (!k.point)
+            numval = ffpcall(SPFlt, numval, 0, NULL);   /* int to float */
+        val = numval;
+        break;
+    case T_QUICK:
+        /* .quick2, or .qint: swap d0 */
+        val = k.point ? q : (numval << 16) | (numval >> 16);
+        break;
+    default:
+        /* Byte, Word, Long: the whole number (Fixed (#978): a constant
+           from 128 to 255 becomes a positive word ($0090), here as in the
+           original; compared with a byte value, which varcont
+           sign-extends ($FF90), eval5 makes it the sign-extended byte:
+           isbyteconst, byteconstext; every other byte context (a.b=200)
+           keeps it.  Data reads the '-' of a value itself (fetchdata), so
+           "Data.q -32768" sizes the integer 32768 under a Quick and leaves
+           as a long; dodata takes it as the Quick -32768 (Fixed (#1074),
+           tokens1.c).) */
+        val = k.point ? whole : numval;
+        break;
+    }
+    litcut = e.litcut;              /* #1186: a whole-valued literal */
+    *type = e.result;
     return val;
 }
 

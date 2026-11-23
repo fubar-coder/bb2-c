@@ -26,11 +26,19 @@ cmake/**                        all
 # the compilers, measured by the coverage configuration; glue is not
 # instrumented
 programs/blitz2/src/glue*.c     all
+# the type decisions of an expression (exprtype.c, change
+# expr-tree-1-typing): beside the tests of its functions its host test, the
+# expression matrix's corpus and the compile-only comparison of the
+# compiler tests with the prev build
+programs/blitz2/src/exprtype.c  coverage name:host/blitz2_exprtype name:corpus_exprmatrix* name:compiler_prev
+programs/blitz2/src/exprtype.h  header name:host/blitz2_exprtype name:corpus_exprmatrix* name:compiler_prev
 programs/blitz2/src/*.c         coverage
 programs/blitz2/src/*.h         header
 
 # host test sources: the host tests
 programs/ted/tests/host/**      name:host/*
+programs/blitz2/tests/host/exprtype.tsv       name:host/blitz2_exprtype
+programs/blitz2/tests/host/test_exprtype.cpp  name:host/blitz2_exprtype
 programs/blitz2/tests/host/**   name:host/*
 tools/tests/**                  name:host/*
 tests/ted-ab/host/**            name:host/*
@@ -91,7 +99,7 @@ tests/bug-orig/**/*.orig        label:bug-orig name:bug_orig_* name:inject_* nam
 # the generated sources and expected files are read by their tests and by
 # the check; the AmiBlitz3 cases (tests/ab3/cli/exprmatrix) by the blocks
 # ab3_cli_N and ab3_cli_ref_N
-tests/corpus/tests-exprmatrix/matrix.txt    name:host/exprmatrix_committed* name:corpus_exprmatrix* name:bug_orig_compiler_expr_* name:bug_orig_record_compiler_expr_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_cli*
+tests/corpus/tests-exprmatrix/matrix.txt    name:host/exprmatrix_committed* name:host/blitz2_exprtype name:corpus_exprmatrix* name:bug_orig_compiler_expr_* name:bug_orig_record_compiler_expr_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_cli*
 tests/corpus/tests-exprmatrix/measured.tsv  name:host/exprmatrix_committed* name:corpus_exprmatrix* name:bug_orig_compiler_expr_* name:bug_orig_record_compiler_expr_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_cli*
 tests/corpus/tests-exprmatrix/**            name:host/exprmatrix_committed* name:corpus_exprmatrix* name:ab3_bb2_equivalence*
 tests/corpus/expect/corpus_exprmatrix*/**   name:host/exprmatrix_committed* name:corpus_exprmatrix*
