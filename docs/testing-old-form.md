@@ -26,7 +26,7 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | [2. Compile-only tests](#2-compile-only-tests) | 71 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves; a few single gaps (medium in all) |
 | [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator writes the old form; the cost of the model form is not measured | a generator change and a measurement (medium) |
 | [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
-| [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 2 | a cell has one run step; a compile log of two jobs has one query | two small features |
+| [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 1 | a compile log of two jobs has one query | one small feature |
 | [6. Other suites with `.expect`](#6-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
 
 `compiler/` has 151 old-form tests and `regression/` 127 (278 in all; the
@@ -288,20 +288,6 @@ file and have no model counterpart.
 
 ## 5. Single tests the model does not express
 
-- **`compiler/compiler-panic-remtask`** (#24, by design, open on purpose).
-  Technical reason: the test needs two runs in order in one session: an
-  editor run (COMPILE/RUN) that PANIC hits, then a shell run
-  (`runargs=check`) that tests whether an exclusive lock was left behind.
-  A model cell has one run step after the driver's compile: the shell run
-  of the driver, or, with `editor-run = "on"`, the editor run in its
-  place (`tests/README.md`, "A run from the editor"); the result file
-  and the assertions belong to that one run. The checking program of the
-  second run cannot be the driver's `!RunProgram`, because the driver is
-  the process PANIC hits. Missing: a second run step in the cell script
-  (`tests/corpus/runner/caserun.c`, `corpus_script_run`), a second
-  observation (return code, output) and a way for assertions to name the
-  run. Medium (estimate). Tasks 3.4 of `basic-test-editor-run` and 3.5 of
-  `bug-orig-basic-tests` stay open for this test.
 - **`compiler/compiler-racing-stripe-wide`** (#980). Compiles its own
   source a second time (a `jobline` job with `@DRIVER@`); the compiler log
   holds one block per job, each after a line `RESULT j000 ok 10204`, and
