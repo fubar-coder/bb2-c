@@ -1020,6 +1020,10 @@ Each point says first what the original did, then what the port does.
 * A macro text of 65536 bytes or more was cut and part of its memory lost
   until a reboot; it gives "Macro too Big"
   ([#964](https://github.com/fubar-coder/bb2-c/issues/964)).
+* A compile error on a line that came from a macro kept the memory of the
+  expanded line, in a nested macro also that of the outer one, until the
+  next compile or for good; it is freed with the error
+  ([#1203](https://github.com/fubar-coder/bb2-c/issues/1203)).
 
 ### Residents
 

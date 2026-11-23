@@ -8094,3 +8094,11 @@ rows:
     text: "A negative base with a whole odd exponent gives a negative power (`(-2)^3` -8, `(-2.5)^3` -15.62499); the original dropped the sign (8, 15.62499). With a fraction in the exponent a negative base gives the power of its absolute value, as in the original."
     page: libraries
     anchor: power-negative-base
+  - issue: 1203
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A compile error on a line that came from a macro frees the memory of the expanded line; the original kept it until the next compile, in a nested macro the outer line's for good."
+    page: compiler
+    anchor: macros
