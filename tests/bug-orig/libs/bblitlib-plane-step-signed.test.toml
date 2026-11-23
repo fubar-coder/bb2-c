@@ -1,0 +1,6 @@
+# bblitlib-plane-step-signed.test.bas
+fixed-orig = 1045
+
+[deviations."libs=cd"]
+"check.plane_step.write_position" = "== fail"
+"check.plane_step.write_position.actual" = "== -31916"

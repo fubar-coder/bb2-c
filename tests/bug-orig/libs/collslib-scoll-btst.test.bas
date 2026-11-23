@@ -8,27 +8,27 @@
 ; and 4.
 ; Correct: SColl(4,0) = SColl(0,4) = -1 (true), SColl(0,2) = SColl(2,0)
 ; = 0.
-; @fixed #110
-; @configs clib
 DEFTYPE .l
-BitMap 0,320,200,2
-BitMap 1,16,16,2
-Use BitMap 1 : Boxf 0,0,15,15,3
-GetaShape 0,0,0,16,16
-GetaSprite 0,0
-BLITZ
-Slice 0,44,320,200,$fff8,2,8,8,320,320
-Show 0
-ShowSprite 0,50,50,0
-ShowSprite 0,54,52,4
-VWait 2
-DoColl
-VWait 2
-DoColl
-a=SColl(0,4) : b=SColl(4,0) : c=SColl(0,2) : d=SColl(2,0)
-AMIGA
-NPrint "0,4 ",a
-NPrint "4,0 ",b
-NPrint "0,2 ",c
-NPrint "2,0 ",d
-End
+
+!TestCase{channels_0_4}
+  BitMap 0,320,200,2
+  BitMap 1,16,16,2
+  Use BitMap 1 : Boxf 0,0,15,15,3
+  GetaShape 0,0,0,16,16
+  GetaSprite 0,0
+  BLITZ
+  Slice 0,44,320,200,$fff8,2,8,8,320,320
+  Show 0
+  ShowSprite 0,50,50,0
+  ShowSprite 0,54,52,4
+  VWait 2
+  DoColl
+  VWait 2
+  DoColl
+  a=SColl(0,4) : b=SColl(4,0) : c=SColl(0,2) : d=SColl(2,0)
+  AMIGA
+  !CheckEq{a,-1,"scoll_0_4"}
+  !CheckEq{b,-1,"scoll_4_0"}
+  !CheckEq{c,0,"scoll_0_2"}
+  !CheckEq{d,0,"scoll_2_0"}
+!EndTestCase

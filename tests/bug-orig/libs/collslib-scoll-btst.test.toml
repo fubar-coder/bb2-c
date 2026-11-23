@@ -1,0 +1,9 @@
+# collslib-scoll-btst.test.bas: the collisions need the emulator's
+# collision level (set in the emulator configuration of the runner)
+fixed-orig = 110
+
+[deviations."libs=cd"]
+"check.channels_0_4.scoll_4_0" = "== fail"
+"check.channels_0_4.scoll_4_0.actual" = "== 0"
+"check.channels_0_4.scoll_2_0" = "== fail"
+"check.channels_0_4.scoll_2_0.actual" = "== -1"
