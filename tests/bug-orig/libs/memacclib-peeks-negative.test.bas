@@ -3,11 +3,15 @@
 ; 4 GB into the string buffer and overwrites the memory behind it (the
 ; program crashes).
 ; Correct: a negative length gives the empty string, as 0 does.
-; @fixed #214
-; @configs clib
-; @pass timeout=30
 DEFTYPE .l
-n=-1
-NPrint "[",Peeks$(0,n),"] ",Len(Peeks$(0,-5))
-NPrint "[",Peeks$(0,0),"]"
-End
+
+!TestCase{negative_length}
+  n=-1
+  a$=Peeks$(0,n)
+  !CheckStrEq{a$,"","minus_one"}
+  m=-5
+  l=Len(Peeks$(0,m))
+  !CheckEq{l,0,"minus_five"}
+  a$=Peeks$(0,0)
+  !CheckStrEq{a$,"","zero"}
+!EndTestCase

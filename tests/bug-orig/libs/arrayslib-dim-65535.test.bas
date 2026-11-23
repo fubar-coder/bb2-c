@@ -7,13 +7,13 @@
 ; Here runtime error checking is on: Dim with the highest index 65534
 ; (65535 elements, the largest array), then 65535.
 ; Correct: the error check refuses the dimension 65535.
-; @fixed #1037
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
-Dim a.b(65534)
-a(65534)=7
-NPrint "65534 ",a(65534)
-Dim b.b(65535)
-NPrint "65535 dimmed"
-End
+DEFTYPE .l
+
+!TestCase{highest_index}
+  Dim a.b(65534)
+  a(65534)=7
+  !CheckEq{a(65534),7,"largest"}
+  !ExpectError{"Array Dimension out of Range","refused"}
+  Dim b.b(65535)
+  !Check{0,"dimmed"}
+!EndTestCase

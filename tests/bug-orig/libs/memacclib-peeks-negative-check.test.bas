@@ -8,13 +8,11 @@
 ; original copies ~4 GB (the session does not come back).
 ; Correct: the error check refuses the negative length: "Can't Peeks$ a
 ; negative number of Characters!".
-; @fixed #214
-; @configs clib
-; @pass runtime_errors=on
-; @pass timeout=30
 DEFTYPE .l
-n=-1
-NPrint "before"
-a$=Peeks$(0,n)
-NPrint "after ",Len(a$)
-End
+
+!TestCase{negative_length}
+  n=-1
+  !ExpectError{"Can't Peeks$ a negative number of Characters!","refused"}
+  a$=Peeks$(0,n)
+  !Check{0,"after"}
+!EndTestCase

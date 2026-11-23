@@ -1,0 +1,14 @@
+# arrayslib-dim-65535.test.bas: only with runtime error checking; the check
+# behind the second Dim must not run.  The original's Dim succeeds: no
+# requester, the case goes on
+fixed-orig = 1037
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.highest_index.dimmed" = "== not-run"
+
+[deviations."libs=cd"]
+"check.highest_index.refused" = "== fail"
+"check.highest_index.dimmed" = "== fail"
+requester = "count == 0"

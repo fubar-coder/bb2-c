@@ -7,11 +7,11 @@
 ; of the program gets a pattern behind it, checked at FreeMem and at the
 ; end.  The block of the list is memlib's: 8 bytes of memlib + 32 = 40.
 ; Correct: nothing is written behind an allocation.  The original writes
-; behind the block of 40 bytes.
-; @fixed #59
-; @configs clib
-; @pass runwrap=@INJECT@|guard
-n=-1
-Dim List a.w(n)
-NPrint "dimmed"
-End
+; behind the block of 40 bytes (inject's report, asserted on `inject`).
+DEFTYPE .l
+
+!TestCase{empty_list}
+  n=-1
+  Dim List a.w(n)
+  !Check{-1,"dimmed"}
+!EndTestCase

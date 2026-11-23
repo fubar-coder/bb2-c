@@ -10,9 +10,10 @@
 ; program does not go on.  (Without it the allocation fails, memlib's
 ; "Out of Memory!"; only fixing the SWAP is not enough: the size modulo
 ; 2^32 is 0, and that Dim succeeds as well.)
-; @fixed #58
-; @configs clib
-; @pass runtime_errors=on
-Dim a.l(32767,32767)
-NPrint "dimmed"
-End
+DEFTYPE .l
+
+!TestCase{size_4gb}
+  !ExpectError{"Array Size out of Range","refused"}
+  Dim a.l(32767,32767)
+  !Check{0,"dimmed"}
+!EndTestCase
