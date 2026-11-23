@@ -1,0 +1,12 @@
+# compiler-dcb-zero.test.bas: the original's compiler runs 2^32 copies (the
+# hang check ends the session): no program, no check; the cell has a session
+# of its own so that the hang does not end the session of the port's cell
+fixed-orig = 37
+timeout = 30
+isolate = ["compiler=orig195"]
+
+[deviations."compiler=orig195"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

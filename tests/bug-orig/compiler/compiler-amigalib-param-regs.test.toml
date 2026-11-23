@@ -1,0 +1,10 @@
+# compiler-amigalib-param-regs.test.bas: the original's parameter registers
+# overwrite intermediate values; the wrong values depend on where the
+# strings are, so only the failed checks are declared
+fixed-orig = 344
+
+[deviations."compiler=orig195"]
+"check.param_regs.write_nested" = "== fail"
+"check.param_regs.bltbitmap_nested" = "== fail"
+"check.param_regs.write_bltbitmap" = "== fail"
+"check.param_regs.rawdofmt" = "== fail"

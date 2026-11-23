@@ -1,0 +1,14 @@
+# compiler-fixtypes-nofields.test.bas: the compiler runs through inject, whose
+# pad zeroes the memory behind an allocation; the resident is compiled
+# first (Create Resident) and entered in the resident list. The original
+# does not find the constant and refuses the program: no check
+fixed-orig = 35
+wrap = "@INJECT@|pad"
+files = ["r.bb2|@TESTDATA@/compiler-fixtypes-nofields.res"]
+jobline = ["resident=r|CORPUS:r.bb2|CORPUS:out/r.res"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Constant Not Found\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

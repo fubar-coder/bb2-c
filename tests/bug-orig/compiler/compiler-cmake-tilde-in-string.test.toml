@@ -1,0 +1,9 @@
+# compiler-cmake-tilde-in-string.test.bas: the original takes the '~' inside
+# the string for a constant maker and refuses the program: no check
+fixed-orig = 966
+
+[deviations."compiler=orig195"]
+compile = "contains \"Illegal Constant Expression\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

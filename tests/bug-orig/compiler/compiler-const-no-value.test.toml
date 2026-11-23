@@ -1,0 +1,11 @@
+# compiler-const-no-value.test.bas: the compiler runs through inject, which
+# fills the memory of an allocation with $a5; the original's constant holds
+# that memory
+fixed-orig = 972
+wrap = "@INJECT@|fill=a5"
+
+[deviations."compiler=orig195"]
+"check.const_no_value.value" = "== fail"
+"check.const_no_value.value.actual" = "== -1515870811"
+"check.const_no_value.cnif" = "== fail"
+"check.const_no_value.cnif.actual" = "== -1"

@@ -1,0 +1,10 @@
+# compiler-incdir-rest-of-line.test.bas: the original takes the rest of the
+# line into the path and does not find the include file: no check
+fixed-orig = 17
+files = ["src/inc.bb2|@TESTDATA@/compiler-incdir-rest-of-line.inc"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Can't open Include\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
