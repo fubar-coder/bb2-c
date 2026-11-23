@@ -427,6 +427,14 @@ char *amiga_emulation_snapshot_config(const struct amiga_emulation_params *p,
    file is an identity of its own. */
 unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *slot_dir,
                                                 const char *machine, const char *amiberry);
+/* the key of the snapshot a session of p would boot, without a session:
+   amiga_emulation_snapshot_key of the snapshot mode's configuration of p
+   (the emulation directory as amiga_emulation_start finds it, the slot's
+   paths normalised away), so it changes with the ROM, the hardfiles and
+   Amiberry; 0 if that configuration cannot be made (e.g. a mount named
+   SNAP).  For a cache of results that must not outlive the emulator's
+   inputs (the verdicts of the bundles, tests/corpus/runner/verdicts.h). */
+unsigned long long amiga_emulation_inputs_key(const struct amiga_emulation_params *p);
 /* what the snapshot is a state of, as the session asks for it: the
    machine, the changes and the mounts' volumes and access (not their
    directories).  Of one owner, a slot keeps one snapshot per id: a save

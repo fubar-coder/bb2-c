@@ -1415,6 +1415,23 @@ unsigned long long amiga_emulation_snapshot_key(const char *cfg, const char *slo
     return h;
 }
 
+unsigned long long amiga_emulation_inputs_key(const struct amiga_emulation_params *p)
+{
+    /* any slot: its paths are normalised away */
+    static const char slot[] = "/inputs-key-slot";
+    const char *dir = p->emulation_dir ? p->emulation_dir : getenv("AMIGA_EMULATION_DIR");
+    char err[400], *cfg;
+    unsigned long long k;
+
+    if (!dir || !*dir)
+        dir = AMIGA_EMULATION_DIR_DEFAULT;
+    if (!(cfg = amiga_emulation_snapshot_config(p, dir, slot, err, sizeof err)))
+        return 0;
+    k = amiga_emulation_snapshot_key(cfg, slot, p->machine, p->amiberry);
+    free(cfg);
+    return k;
+}
+
 unsigned long long amiga_emulation_snapshot_config_id(const struct amiga_emulation_params *p)
 {
     unsigned long long h = 0xcbf29ce484222325ULL;

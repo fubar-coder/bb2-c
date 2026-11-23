@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <fcntl.h>
 #include <ftw.h>
 #include <snitch/snitch.hpp>
@@ -308,6 +309,31 @@ static void snapshot_key(void)
     CHECK((k = key_of(&p, dir, "/slots/slot-3", prog)) != k0);
     k0 = k;
     CHECK(key_of(&p, dir, "/slots/slot-3", prog) == k0);
+    /* without a session: the same key, from the emulation directory of p
+       (or $AMIGA_EMULATION_DIR), and a key of 0 for a configuration that
+       cannot be made */
+    {
+        struct amiga_emulation_params q = p;
+        struct amiga_emulation_mount snap[] = { { "SNAP", "/data/s", 0 } };
+
+        q.emulation_dir = dir;
+        q.amiberry = prog;
+        CHECK(amiga_emulation_inputs_key(&q) == k0);
+        q.emulation_dir = nullptr;
+        const char *had = getenv("AMIGA_EMULATION_DIR");
+        std::string saved = had ? had : "";
+
+        setenv("AMIGA_EMULATION_DIR", dir, 1);
+        CHECK(amiga_emulation_inputs_key(&q) == k0);
+        if (had)
+            setenv("AMIGA_EMULATION_DIR", saved.c_str(), 1);
+        else
+            unsetenv("AMIGA_EMULATION_DIR");
+        q.mounts = snap;
+        q.nmounts = 1;
+        q.emulation_dir = dir;
+        CHECK(amiga_emulation_inputs_key(&q) == 0);
+    }
 
     /* broken: files missing, a configuration without media */
     remove(path[2]);
