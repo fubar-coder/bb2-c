@@ -261,7 +261,10 @@ value and the file and line it comes from, the axes, the cells and their
 side), `--print-driver` the driver (without `--case` the driver of all
 cases, the text `--write-driver` writes); neither starts a session. A cell
 that the run setting `isolate` names (`"on"`, or a list of cell selectors)
-gets a session of its own (`tc_session_key`). A cell whose program runs
+gets a session of its own (`tc_session_key`). The session settings are
+the cell's after the environment's: a cell without `timeout` has the
+environment's `[runner] timeout`, so it shares a session with a cell that
+sets `timeout` to that value. A cell whose program runs
 through inject (`pad`, or a `runwrap` of inject) has inject's report, the
 output's `inject:` lines, as its query `inject`; a cell whose compiler
 runs through inject (a `wrap` of inject) has the `inject:` lines of the
@@ -320,7 +323,7 @@ Without `--case` it runs every case of the source on the side (`caserun.h`,
 "The run of all cases"): the cases share a run of the driver of all of them
 and each is judged from its own block; a case that asserts an observation
 of the whole program or announces a runtime error runs on its own from the
-start, a shared run that does not end cleanly runs the case open at its
+start (`tj_case_alone` of `tools/lib/testjudge`), a shared run that does not end cleanly runs the case open at its
 end on its own and the others again, and a case that does not pass in a
 shared run is confirmed on its own. In the cells `isolate` names every case
 runs on its own. The report has a block per case (` (alone)` when judged

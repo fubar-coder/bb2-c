@@ -443,9 +443,8 @@ int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, si
  *
  * The key holds the settings the session takes from its first cell: the
  * cell's values of `machine`, `rtg`, `timeout` and `hang-after` (an unset
- * one as "", so a time limit left to the environment differs from one
- * set to the same value), and the elements of the list settings `uae`,
- * `floppy` and `mount`, each in the order of the list (the order a
+ * one as ""), and the elements of the list settings `uae`, `floppy` and
+ * `mount`, each in the order of the list (the order a
  * configuration gives is the order the emulator gets; the paths are
  * absolute, tc_resolve).  A cell with `serial = "on"` (the remote end of
  * the serial port belongs to one program) and a cell `isolate` names
@@ -454,9 +453,16 @@ int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, si
  * volume and script (compiler, libraries, files, jobs, wrappers, ...) are
  * not in it.  Every string is written with its length, so no value can
  * end a line of the key early.
+ *
+ * An unset `timeout` is written as the value `timeout` of the table runner
+ * of env (the time limit the runner gives such a cell), so a cell that
+ * leaves the time limit to the environment shares a session with one that
+ * sets it to the same value; with env NULL or without that value it stays
+ * "".  An unset `hang-after` stays "" (a test that sets it is not bundled,
+ * tj_bundle_case).
  * @return the key (malloc'd), NULL = out of memory
  */
-char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
+char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env);
 
 /* ------------------------------------------------------------ assertions
  *

@@ -4,8 +4,10 @@
 // of the case and the run, announced runtime errors against the requesters,
 // the default assertions and their replacement, the queries of the other
 // observations, declared deviations with validators, the checks behind a
-// declared crash, and the verdict of a case over its cells - each rule
-// with broken input (a malformed result file among them).
+// declared crash, the verdict of a case over its cells, the cases that
+// run on their own in the run of all cases and the cases that may be
+// bundled - each rule with broken input (a malformed result file among
+// them).
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -53,8 +55,9 @@ struct fixture {
     tc_matrix m = {};
     tj_test t = {};
 
+    // envx: more lines of the environment (its table runner)
     fixture(const std::string &dir_toml, const std::string &own_toml = "", const char *case_name = "frames_maximum",
-            const char *text = source)
+            const char *text = source, const std::string &envx = "")
     {
         std::string tmp = (fs::temp_directory_path() / "testjudge-XXXXXX").string();
 
@@ -69,7 +72,7 @@ struct fixture {
         p.test_id = "x";
         REQUIRE(tp_process(text, strlen(text), &p, &src) == 0);
         REQUIRE((text != source || src.nchecks == 10));
-        std::string e = "top = \"" + root.string() + "\"\n";
+        std::string e = "top = \"" + root.string() + "\"\n" + envx;
         REQUIRE(tc_env_parse("env.toml", e.c_str(), &env, err, sizeof err) == 0);
         if (tc_resolve((root / "x.test.bas").c_str(), &env, &conf, err, sizeof err))
             FAIL(err);
@@ -1193,4 +1196,242 @@ TEST_CASE("testjudge: a started program", "[testjudge]")
         CHECK(judge(f, o, m) == TJ_ERROR);
         CHECK(has(m, "line 3 names the run 1, which is no !RunProgram of the source"));
     }
+}
+
+// the source of the tests of the run of all cases: two plain cases and one
+// that announces a runtime error
+static const char sharedsrc[] = "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
+                                "!TestCase{b}\n  !CheckEq{2,2,\"two\"}\n!EndTestCase\n"
+                                "!TestCase{e}\n  !ExpectError{\"Array\"}\n!EndTestCase\n";
+
+// whether case c of the test runs on its own over all its cells
+static int alone_of(const fixture &f, const char *c)
+{
+    std::vector<size_t> cells;
+
+    for (size_t i = 0; i < f.m.ncells; i++)
+        cells.push_back(i);
+    return tj_case_alone(&f.conf, &f.m, cells.data(), cells.size(), &f.src, c);
+}
+
+TEST_CASE("testjudge: the cases that run on their own", "[testjudge]")
+{
+    // every query of the whole program, asserted for case b only
+    static const char *const whole[][2] = {
+        { "rc", "== 0" }, { "requester", "count == 0" }, { "compile", "== ok" },
+        { "\"compile.log\"", "contains \\\"x\\\"" }, { "output", "contains \\\"ok\\\"" },
+        { "serial", "contains \\\"x\\\"" }, { "inject", "contains \\\"x\\\"" }, { "session", "== done" },
+        { "\"end.run\"", "exists" }, { "\"compile.inject\"", "contains \\\"x\\\"" },
+        { "\"compile.log.j000\"", "contains \\\"x\\\"" },
+    };
+
+    // without assertions only the case with !ExpectError runs on its own
+    {
+        fixture f("", "", "a", sharedsrc);
+
+        CHECK(alone_of(f, "a") == 0);
+        CHECK(alone_of(f, "b") == 0);
+        CHECK(alone_of(f, "e") == 1);
+    }
+    // a case that starts a program runs on its own; one started in a
+    // procedure makes every case run on its own
+    {
+        fixture f("", "", "a",
+                  "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
+                  "!TestCase{r}\n  *p.TLRun=!RunProgram{\"Echo x\",\"x\"}\n!EndTestCase\n");
+
+        CHECK(alone_of(f, "a") == 0);
+        CHECK(alone_of(f, "r") == 1);
+    }
+    {
+        fixture f("", "", "a",
+                  "Statement st{}\n  *p.TLRun=!RunProgram{\"Echo x\"}\nEnd Statement\n"
+                  "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n");
+
+        CHECK(alone_of(f, "a") == 1);
+    }
+    for (const auto &q : whole) {
+        fixture f("", std::string("[asserts.\"case=b\"]\n") + q[0] + " = \"" + q[1] + "\"\n", "a", sharedsrc);
+
+        INFO(q[0]);
+        CHECK(alone_of(f, "b") == 1);
+        CHECK(alone_of(f, "a") == 0);
+    }
+    // the compile result of a jobline job
+    {
+        fixture f("", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n[asserts.\"case=b\"]\n\"compile.j001\" = \"== ok\"\n",
+                  "a", sharedsrc);
+
+        CHECK(alone_of(f, "b") == 1);
+        CHECK(alone_of(f, "a") == 0);
+    }
+    // the queries of a case share: its end entry, its checks
+    {
+        fixture f("", "[asserts.\"case=b\"]\n\"end.case\" = \"not exists\"\n\"check.b.two\" = \"== fail\"\n", "a",
+                  sharedsrc);
+
+        CHECK(alone_of(f, "b") == 0);
+    }
+    // an alternative end is a deviation too: one naming the session sets the
+    // case apart, one naming only the end of the case and a check does not
+    {
+        fixture f("", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                      "one = [\"session == timeout\", \"check.b.two == not-run\"]\n",
+                  "a", sharedsrc);
+
+        CHECK(alone_of(f, "b") == 1);
+        CHECK(alone_of(f, "a") == 0);
+    }
+    {
+        fixture f("", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                      "one = [\"end.case not exists\", \"check.b.two == not-run\"]\ntwo = [\"end.case exists\"]\n",
+                  "a", sharedsrc);
+
+        CHECK(alone_of(f, "b") == 0);
+    }
+    // an assertion of all cases sets every case apart
+    {
+        fixture f("", "[asserts]\nrc = \"== 20\"\n", "a", sharedsrc);
+
+        CHECK(alone_of(f, "a") == 1);
+        CHECK(alone_of(f, "b") == 1);
+    }
+    // a deviation of an open bug in a cell of another side: judged as if its
+    // axis term matched, so it sets the case apart on this side too
+    {
+        fixture f("", "[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\nsession = \"== timeout\"\n",
+                  "a", sharedsrc);
+        size_t clib = f.cell("clib");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 1);
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "a") == 0);
+    }
+    // any judging mode counts, also for a fixed bug: its deviation of the
+    // other side's cells sets the case apart on both sides; case a not
+    {
+        fixture f("",
+                  "fixed-orig = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
+                  "session = \"== timeout\"\n",
+                  "a", sharedsrc);
+        size_t clib = f.cell("clib"), cd = f.cell("cd");
+
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "b") == 1);
+        CHECK(tj_case_alone(&f.conf, &f.m, &clib, 1, &f.src, "a") == 0);
+        CHECK(tj_case_alone(&f.conf, &f.m, &cd, 1, &f.src, "b") == 1);
+    }
+}
+
+// the environment's time limit of the tests of tj_bundle_case
+static const std::string env90 = "[runner]\ntimeout = \"90\"\nrun-hang-after = \"8\"\n";
+
+// tj_bundle_case for case c of a test with the files dir_toml and
+// own_toml; *cell its cell
+static int bundled(const std::string &dir_toml, const std::string &own_toml, const char *c = "a",
+                   const char *text = sharedsrc, size_t *cell = nullptr, const std::string &envx = env90)
+{
+    fixture f(dir_toml, own_toml, c, text, envx);
+    size_t at = (size_t)-1;
+    int r = tj_bundle_case(&f.conf, &f.m, &f.src, &f.env, c, &at);
+
+    if (cell)
+        *cell = at;
+    if (r != 1)
+        CHECK(at == (size_t)-1);
+    return r;
+}
+
+TEST_CASE("testjudge: the cases that may be bundled", "[testjudge]")
+{
+    size_t cell = 99;
+
+    // a plain case: its cell, the only one
+    CHECK(bundled("", "", "a", sharedsrc, &cell) == 1);
+    CHECK(cell == 0);
+    CHECK(bundled("", "", "b") == 1);
+    // a case that asserts the output, an !ExpectError case: alone in the run
+    // of all cases, so not bundled; the other case of the source is
+    CHECK(bundled("", "[asserts.\"case=b\"]\noutput = \"contains \\\"two\\\"\"\n", "b") == 0);
+    CHECK(bundled("", "[asserts.\"case=b\"]\noutput = \"contains \\\"two\\\"\"\n", "a") == 1);
+    CHECK(bundled("", "", "e") == 0);
+    // two cells on the side port
+    CHECK(bundled("", "[matrix]\nruntime-errors = [\"off\", \"on\"]\n") == 0);
+    // one cell on the side port beside a cell of the side originals: the
+    // port cell
+    CHECK(bundled("", "[matrix]\nlibs = [\"cd\", \"clib\"]\n", "a", sharedsrc, &cell) == 1);
+    {
+        fixture f("", "[matrix]\nlibs = [\"cd\", \"clib\"]\n", "a", sharedsrc, env90);
+
+        CHECK(cell == f.cell("clib"));
+    }
+    // the side originals only: no cell on the side port
+    CHECK(bundled("", "libs = \"cd\"\n") == 0);
+    CHECK(bundled("", "compiler = \"orig195\"\n") == 0);
+    // a session of its own
+    CHECK(bundled("", "isolate = \"on\"\n") == 0);
+    CHECK(bundled("", "serial = \"on\"\n") == 0);
+    // the time limits of the plain keys: the environment's, 30, 60
+    CHECK(bundled("", "timeout = 90\n") == 1);
+    CHECK(bundled("", "timeout = 30\n") == 1);
+    CHECK(bundled("", "timeout = 60\n") == 1);
+    CHECK(bundled("", "timeout = 45\n") == 0);
+    CHECK(bundled("timeout = 30\n", "") == 1);
+    // the environment's time limit is resolved: 60 in an environment of 60
+    // is the plain key, 90 is not
+    CHECK(bundled("", "timeout = 90\n", "a", sharedsrc, nullptr, "[runner]\ntimeout = \"60\"\n") == 0);
+    CHECK(bundled("", "", "a", sharedsrc, nullptr, "[runner]\ntimeout = \"60\"\n") == 1);
+    // hang-after set by the test or by its directory, also to the
+    // environment's value
+    CHECK(bundled("", "hang-after = 20\n") == 0);
+    CHECK(bundled("", "hang-after = 8\n") == 0);
+    CHECK(bundled("hang-after = 20\n", "") == 0);
+    // another session setting
+    CHECK(bundled("", "uae = [\"cpu_speed=max\"]\n") == 0);
+    CHECK(bundled("", "machine = \"a600\"\n") == 0);
+    CHECK(bundled("", "rtg = \"on\"\n") == 0);
+    CHECK(bundled("", "mount = [\"BB2|/cd\"]\n") == 0);
+    CHECK(bundled("", "floppy = [\"0|/img/a.adf\"]\n") == 0);
+    // the settings of the cell's own volume and script do not count
+    CHECK(bundled("", "libs = \"clib\"\nruntime-errors = \"on\"\nstack = 9000\n") == 1);
+    // the machine set to its default is the plain key
+    CHECK(bundled("", "machine = \"a1200\"\n") == 1);
+    // a run from the editor
+    CHECK(bundled("", "editor-run = \"on\"\n") == 0);
+}
+
+TEST_CASE("testjudge: a case with test-local data is not bundled", "[testjudge]")
+{
+    std::string tmp = (fs::temp_directory_path() / "testjudge-XXXXXX").string();
+
+    REQUIRE(mkdtemp(tmp.data()) != nullptr);
+    fs::path root = tmp;
+    std::ofstream(root / "tests.toml") << "root = true\n";
+    std::ofstream(root / "x.test.toml") << "[data]\n\"cmap.spec\" = \"mktestdata\"\n";
+    std::ofstream(root / "x.test.bas") << sharedsrc;
+    fs::create_directories(root / "x.test");
+    std::ofstream(root / "x.test" / "cmap.spec") << "";
+    {
+        tp_source src = {};
+        tc_env env = {};
+        tc_config conf = {};
+        tc_matrix m = {};
+        tp_params p = {};
+        size_t cell = (size_t)-1;
+        std::string e = "top = \"" + root.string() + "\"\n" + env90;
+
+        p.file = "x.test.bas";
+        p.test_id = "x";
+        REQUIRE(tp_process(sharedsrc, strlen(sharedsrc), &p, &src) == 0);
+        REQUIRE(tc_env_parse("env.toml", e.c_str(), &env, err, sizeof err) == 0);
+        if (tc_resolve((root / "x.test.bas").c_str(), &env, &conf, err, sizeof err))
+            FAIL(err);
+        REQUIRE(tc_matrix_build(&conf, &m, err, sizeof err) == 0);
+        REQUIRE(conf.ndata == 1);
+        CHECK(tj_bundle_case(&conf, &m, &src, &env, "a", &cell) == 0);
+        CHECK(cell == (size_t)-1);
+        tc_matrix_free(&m);
+        tc_free(&conf);
+        tc_env_free(&env);
+        tp_free(&src);
+    }
+    fs::remove_all(root);
 }

@@ -995,6 +995,148 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
     return judge_cell(t, cell, mode, obs, msgs, NULL);
 }
 
+/* ------------------------------------------------------------ shared runs */
+
+/* a query of the whole program: one per cell's run, not per case */
+static int whole_program(int kind)
+{
+    switch (kind) {
+    case TC_Q_RC:
+    case TC_Q_REQUESTER:
+    case TC_Q_COMPILE:
+    case TC_Q_COMPILE_LOG:
+    case TC_Q_OUTPUT:
+    case TC_Q_SERIAL:
+    case TC_Q_INJECT:
+    case TC_Q_COMPILE_INJECT:
+    case TC_Q_COMPILE_LOG_JOB:
+    case TC_Q_COMPILE_JOB:
+    case TC_Q_SESSION:
+    case TC_Q_END_RUN:
+        return 1;
+    }
+    return 0;
+}
+
+int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
+                  const struct tp_source *src, const char *case_name)
+{
+    static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
+
+    for (size_t i = 0; i < src->nchecks; i++) {
+        const struct tp_check *k = &src->checks[i];
+
+        if ((k->kind == TP_EXPECTERROR || k->kind == TP_RUNPROGRAM) && k->nskind == TP_NS_CASE
+            && !strcmp(k->ns, case_name))
+            return 1;
+        /* a started program's observations are those of the case that
+           starts it: one in a procedure, the batch init or cleanup may be
+           any case's */
+        if (k->kind == TP_RUNPROGRAM && k->nskind != TP_NS_CASE)
+            return 1;
+    }
+    for (size_t c = 0; c < ncells; c++)
+        for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
+            struct tc_assertions as;
+            char err[600];
+            int r = tc_assertions_for(conf, m, cells[c], case_name, modes[k], &as, err, sizeof err);
+
+            if (r == -2)
+                return -1;
+            if (r)
+                return 1;
+            for (size_t a = 0; a < as.n; a++)
+                if (whole_program(as.a[a].q.kind) && strcmp(as.a[a].at.file, "(default)")) {
+                    tc_assertions_free(&as);
+                    return 1;
+                }
+            tc_assertions_free(&as);
+            /* the alternative ends are deviations too */
+            {
+                struct tc_ends e;
+                int any = 0;
+
+                r = tc_ends_for(conf, m, cells[c], case_name, modes[k], &e, err, sizeof err);
+                if (r == -2)
+                    return -1;
+                if (r)
+                    return 1;
+                for (size_t i = 0; i < e.n; i++)
+                    for (size_t j = 0; j < e.e[i].nalt; j++)
+                        for (size_t a = 0; a < e.e[i].alt[j].as.n; a++)
+                            any |= whole_program(e.e[i].alt[j].as.a[a].q.kind);
+                tc_ends_free(&e);
+                if (any)
+                    return 1;
+            }
+        }
+    return 0;
+}
+
+/* the session key of a configuration with no setting but timeout (0: none,
+   the environment's) */
+static char *plain_key(const struct tc_env *env, long long timeout)
+{
+    struct tc_setting set = { 0 };
+    struct tc_config conf = { 0 };
+    struct tc_cell cell = { 0 };
+    struct tc_matrix m = { 0 };
+    char name[] = "default";
+
+    if (timeout) {
+        set.def = tc_key("timeout");
+        set.value.type = TT_INTEGER;
+        set.value.integer = timeout;
+        conf.set = &set;
+        conf.nset = 1;
+    }
+    cell.name = name;
+    m.cells = &cell;
+    m.ncells = 1;
+    return tc_session_key(&conf, &m, 0, env);
+}
+
+int tj_bundle_case(const struct tc_config *conf, const struct tc_matrix *m, const struct tp_source *src,
+                   const struct tc_env *env, const char *case_name, size_t *cell)
+{
+    static const long long plain[] = { 0, 30, 60 };
+    size_t c = 0, n = 0;
+    char buf[24], *key;
+    int r = 0;
+
+    for (size_t i = 0; i < m->ncells; i++)
+        if (!m->cells[i].originals) {
+            c = i;
+            n++;
+        }
+    if (n != 1 || tc_cell_isolated(conf, m, c) || !strcmp(tc_cell_value(conf, m, c, tc_key("serial"), buf), "on")
+        || !strcmp(tc_cell_value(conf, m, c, tc_key("editor-run"), buf), "on") || conf->ndata
+        || *tc_cell_value(conf, m, c, tc_key("hang-after"), buf))
+        return 0;
+    if (!(key = tc_session_key(conf, m, c, env)))
+        return -1;
+    for (size_t i = 0; !r && i < sizeof plain / sizeof plain[0]; i++) {
+        char *k = plain_key(env, plain[i]);
+
+        if (!k) {
+            free(key);
+            return -1;
+        }
+        r = !strcmp(k, key);
+        free(k);
+    }
+    free(key);
+    if (!r)
+        return 0;
+    r = tj_case_alone(conf, m, &c, 1, src, case_name);
+    if (r < 0)
+        return -1;
+    if (r)
+        return 0;
+    *cell = c;
+    return 1;
+}
+
 /* ------------------------------------------------------------ the verdict */
 
 int tj_editor_run_refused(const char *file, const struct tp_source *src, const struct tc_config *conf,

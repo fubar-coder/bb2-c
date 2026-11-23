@@ -199,6 +199,40 @@ int tj_judge_cell(const struct tj_test *t, size_t cell, int mode, const struct t
 int tj_editor_run_refused(const char *file, const struct tp_source *src, const struct tc_config *conf,
                           const struct tc_matrix *m, char *err, size_t errlen);
 
+/**
+ * @brief Whether a case runs on its own in the run of all cases: in a cell
+ *        of cells[0..ncells) and a judging mode (plain, with the
+ *        deviations, with them as if their axis terms matched) an
+ *        assertion other than a default names an observation of the whole
+ *        program (rc, requester, compile, compile.log, compile.inject,
+ *        output, serial, inject, session, end.run), or the case's namespace
+ *        holds an
+ *        !ExpectError or a !RunProgram (the table of the preprocessor), or
+ *        a !RunProgram stands outside every case (a procedure, the batch
+ *        init or cleanup).  A conflict of
+ *        assertions counts as such (the run of the case reports it).
+ * @return 1 on its own, 0 shared, -1 out of memory
+ */
+int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
+                  const struct tp_source *src, const char *case_name);
+
+/**
+ * @brief Whether a case may be a member of a run shared with other sources
+ *        (a bundle), and the cell it would run in: the source has exactly
+ *        one cell on the side port (none needs original material), that
+ *        cell is not isolated (tc_cell_isolated), its `serial` is not "on",
+ *        it does not run from the editor (`editor-run`), the test has no
+ *        test-local data (`data`) and sets no `hang-after`, the cell's
+ *        session key (tc_session_key with env) is the key of a
+ *        configuration with only `timeout` set to the environment's value,
+ *        to 30 or to 60, and the case would not run on its own in the run
+ *        of all cases (tj_case_alone).
+ * @param cell  the cell (set when 1 is returned)
+ * @return 1 may be bundled, 0 not, -1 out of memory
+ */
+int tj_bundle_case(const struct tc_config *conf, const struct tc_matrix *m, const struct tp_source *src,
+                   const struct tc_env *env, const char *case_name, size_t *cell);
+
 /** @brief Whether a deviation is declared that applies to the case. */
 int tj_case_has_deviation(const struct tj_test *t);
 

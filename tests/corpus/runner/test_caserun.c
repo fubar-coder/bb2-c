@@ -298,7 +298,7 @@ static void test_sessions(void)
     load(&t, "e/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 4);
     for (size_t i = 0; i < 4; i++)
-        k[i] = tc_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i, &t.env);
     /* the libraries and runtime error checking do not decide the session */
     CHECK(k[0] && k[1] && k[2] && k[3] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]) && !strcmp(k[0], k[3]));
     for (size_t i = 0; i < 4; i++)
@@ -309,7 +309,7 @@ static void test_sessions(void)
     load(&t, "e/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 4);
     for (size_t i = 0; i < 4; i++)
-        k[i] = tc_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i, &t.env);
     for (size_t i = 0; i < 4; i++)
         for (size_t j = 0; j < i; j++)
             CHECK(strcmp(k[i], k[j]));
@@ -318,8 +318,8 @@ static void test_sessions(void)
     unload(&t);
     put("e/s.test.toml", "serial = \"on\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
     load(&t, "e/s.test.bas", ENV_RUNNER);
-    k[0] = tc_session_key(&t.conf, &t.m, 0);
-    k[1] = tc_session_key(&t.conf, &t.m, 1);
+    k[0] = tc_session_key(&t.conf, &t.m, 0, &t.env);
+    k[1] = tc_session_key(&t.conf, &t.m, 1, &t.env);
     CHECK(k[0] && k[1] && strcmp(k[0], k[1]));
     free(k[0]);
     free(k[1]);
@@ -666,134 +666,6 @@ static int process(const char *rel, struct tp_source *src)
     return r;
 }
 
-/* whether case c of the test runs on its own over all its cells */
-static int alone_of(const struct t *t, const struct tp_source *src, const char *c)
-{
-    size_t cells[16];
-
-    for (size_t i = 0; i < t->m.ncells && i < 16; i++)
-        cells[i] = i;
-    return cr_case_alone(&t->conf, &t->m, cells, t->m.ncells, src, c);
-}
-
-static void test_case_alone(void)
-{
-    /* every query of the whole program, asserted for case b only */
-    static const char *const whole[][2] = {
-        { "rc", "== 0" }, { "requester", "count == 0" }, { "compile", "== ok" },
-        { "\"compile.log\"", "contains \\\"x\\\"" }, { "output", "contains \\\"ok\\\"" },
-        { "serial", "contains \\\"x\\\"" }, { "inject", "contains \\\"x\\\"" }, { "session", "== done" },
-        { "\"end.run\"", "exists" }, { "\"compile.inject\"", "contains \\\"x\\\"" },
-        { "\"compile.log.j000\"", "contains \\\"x\\\"" },
-    };
-    struct tp_source src;
-    struct t t;
-
-    put("al/tests.toml", "root = true\n");
-    put("al/s.test.bas", "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
-                         "!TestCase{b}\n  !CheckEq{2,2,\"two\"}\n!EndTestCase\n"
-                         "!TestCase{e}\n  !ExpectError{\"Array\"}\n!EndTestCase\n");
-    if (process("al/s.test.bas", &src))
-        return;
-    /* without assertions only the case with !ExpectError runs on its own */
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "a") == 0);
-    CHECK(alone_of(&t, &src, "b") == 0);
-    CHECK(alone_of(&t, &src, "e") == 1);
-    unload(&t);
-    tp_free(&src);
-    /* a case that starts a program runs on its own (basic-test-local-data);
-       one started in a procedure makes every case run on its own */
-    put("al/r.test.bas", "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
-                         "!TestCase{r}\n  *p.TLRun=!RunProgram{\"Echo x\",\"x\"}\n!EndTestCase\n");
-    put("al/p.test.bas", "Statement st{}\n  *p.TLRun=!RunProgram{\"Echo x\"}\nEnd Statement\n"
-                         "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n");
-    if (!process("al/r.test.bas", &src)) {
-        load(&t, "al/r.test.bas", ENV_RUNNER);
-        CHECK(alone_of(&t, &src, "a") == 0);
-        CHECK(alone_of(&t, &src, "r") == 1);
-        unload(&t);
-        tp_free(&src);
-    }
-    if (!process("al/p.test.bas", &src)) {
-        load(&t, "al/p.test.bas", ENV_RUNNER);
-        CHECK(alone_of(&t, &src, "a") == 1);
-        unload(&t);
-        tp_free(&src);
-    }
-    if (process("al/s.test.bas", &src))
-        return;
-    for (size_t q = 0; q < sizeof whole / sizeof whole[0]; q++) {
-        char *toml = str_printf("[asserts.\"case=b\"]\n%s = \"%s\"\n", whole[q][0], whole[q][1]);
-
-        put("al/s.test.toml", toml);
-        free(toml);
-        load(&t, "al/s.test.bas", ENV_RUNNER);
-        if (alone_of(&t, &src, "b") != 1)
-            fprintf(stderr, "the query %s does not set b apart\n", whole[q][0]);
-        CHECK(alone_of(&t, &src, "b") == 1);
-        CHECK(alone_of(&t, &src, "a") == 0);
-        unload(&t);
-    }
-    /* the compile result of a jobline job */
-    put("al/s.test.toml", "jobline = [\"job=j001|@DRIVER@|CORPUS:out/a\"]\n[asserts.\"case=b\"]\n"
-                          "\"compile.j001\" = \"== ok\"\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "b") == 1);
-    CHECK(alone_of(&t, &src, "a") == 0);
-    unload(&t);
-    /* the queries of a case share: its end entry, its checks */
-    put("al/s.test.toml", "[asserts.\"case=b\"]\n\"end.case\" = \"not exists\"\n\"check.b.two\" = \"== fail\"\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "b") == 0);
-    unload(&t);
-    /* an alternative end is a deviation too: one naming the session sets the
-       case apart, one naming only the end of the case and a check does not */
-    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
-                          "one = [\"session == timeout\", \"check.b.two == not-run\"]\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "b") == 1 && alone_of(&t, &src, "a") == 0);
-    unload(&t);
-    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
-                          "one = [\"end.case not exists\", \"check.b.two == not-run\"]\n"
-                          "two = [\"end.case exists\"]\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "b") == 0);
-    unload(&t);
-    /* an assertion of all cases sets every case apart */
-    put("al/s.test.toml", "[asserts]\nrc = \"== 20\"\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    CHECK(alone_of(&t, &src, "a") == 1 && alone_of(&t, &src, "b") == 1);
-    unload(&t);
-    /* a deviation of an open bug in a cell of another side: judged as if its
-       axis term matched, so it sets the case apart on this side too */
-    put("al/s.test.toml", "[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
-                          "session = \"== timeout\"\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    {
-        size_t clib = cell(&t, "clib");
-
-        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "b") == 1);
-        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "a") == 0);
-    }
-    unload(&t);
-    /* any judging mode counts (D2), also for a fixed bug: its deviation of
-       the other side's cells sets the case apart on both sides; case a not */
-    put("al/s.test.toml", "fixed-orig = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
-                          "session = \"== timeout\"\n");
-    load(&t, "al/s.test.bas", ENV_RUNNER);
-    {
-        size_t clib = cell(&t, "clib"), cd = cell(&t, "cd");
-
-        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "b") == 1);
-        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "a") == 0);
-        CHECK(cr_case_alone(&t.conf, &t.m, &cd, 1, &src, "b") == 1);
-    }
-    unload(&t);
-    put("al/s.test.toml", "");
-    tp_free(&src);
-}
-
 /* the observations of a cell that ended cleanly; result with "|" for TAB */
 static struct tj_obs clean_obs(char *buf, const char *result)
 {
@@ -1060,7 +932,7 @@ static void test_isolate_keys(void)
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 3);
     for (size_t i = 0; i < 3; i++)
-        k[i] = tc_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i, &t.env);
     CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
     for (size_t i = 0; i < 3; i++)
         free(k[i]);
@@ -1069,7 +941,7 @@ static void test_isolate_keys(void)
     put("iso/s.test.toml", "isolate = \"on\"\n");
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     for (size_t i = 0; i < 3; i++) {
-        k[i] = tc_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i, &t.env);
         CHECK(tc_cell_isolated(&t.conf, &t.m, i));
     }
     CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
@@ -1080,7 +952,7 @@ static void test_isolate_keys(void)
     put("iso/s.test.toml", "isolate = \"off\"\n");
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     for (size_t i = 0; i < 3; i++)
-        k[i] = tc_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i, &t.env);
     CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
     for (size_t i = 0; i < 3; i++)
         free(k[i]);
@@ -1093,9 +965,9 @@ static void test_isolate_keys(void)
         size_t pcd = cell(&t, "port,cd"), pclib = cell(&t, "port,clib"), ocd = cell(&t, "orig195,cd");
         char *plain;
 
-        k[0] = tc_session_key(&t.conf, &t.m, pcd);
-        k[1] = tc_session_key(&t.conf, &t.m, ocd);
-        k[2] = tc_session_key(&t.conf, &t.m, pclib);
+        k[0] = tc_session_key(&t.conf, &t.m, pcd, &t.env);
+        k[1] = tc_session_key(&t.conf, &t.m, ocd, &t.env);
+        k[2] = tc_session_key(&t.conf, &t.m, pclib, &t.env);
         CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
         CHECK(tc_cell_isolated(&t.conf, &t.m, pcd) && tc_cell_isolated(&t.conf, &t.m, ocd)
               && !tc_cell_isolated(&t.conf, &t.m, pclib));
@@ -1104,11 +976,11 @@ static void test_isolate_keys(void)
         unload(&t);
         put("iso/s.test.toml", "");
         load(&t, "iso/s.test.bas", ENV_RUNNER);
-        plain = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        plain = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"), &t.env);
         unload(&t);
         put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
         load(&t, "iso/s.test.bas", ENV_RUNNER);
-        k[2] = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        k[2] = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"), &t.env);
         CHECK(plain && k[2] && !strcmp(plain, k[2]));
         free(plain);
         free(k[2]);
@@ -1600,7 +1472,6 @@ int main(int argc, char **argv)
     test_compile_mapped();
     test_print_config();
     test_prev_pass();
-    test_case_alone();
     test_clean();
     test_open_case();
     test_plan();

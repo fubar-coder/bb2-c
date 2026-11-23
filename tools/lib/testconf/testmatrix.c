@@ -312,25 +312,39 @@ int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, si
 
 /* ------------------------------------------------------------ the session key */
 
-/* NAME=LEN:TEXT and a newline */
+/* NAME=LEN:TEXT and a newline; no text as an unset value (gcc's
+   -Wformat-overflow sees a null text on the inlined paths of a sanitizer
+   build) */
 static void key_add(FILE *f, const char *name, const char *text)
 {
+    if (!text)
+        text = "";
     fprintf(f, "%s=%zu:%s\n", name, strlen(text), text);
 }
 
-char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env)
 {
     static const char *const values[] = { "machine", "rtg", "timeout", "hang-after" };
     static const char *const lists[] = { "uae", "floppy", "mount" };
     char *text = NULL, buf[24];
+    const char *dflt = NULL;
     size_t len = 0;
     FILE *f = open_memstream(&text, &len);
     int own;
 
     if (!f)
         return NULL;
-    for (size_t i = 0; i < sizeof values / sizeof values[0]; i++)
-        key_add(f, values[i], tc_cell_value(conf, m, cell, tc_key(values[i]), buf));
+    if (env)
+        dflt = tc_env_runner(env, "timeout");
+    for (size_t i = 0; i < sizeof values / sizeof values[0]; i++) {
+        const char *v = tc_cell_value(conf, m, cell, tc_key(values[i]), buf);
+
+        /* a time limit left to the environment is the environment's */
+        if (dflt && !*v && !strcmp(values[i], "timeout"))
+            key_add(f, values[i], dflt);
+        else
+            key_add(f, values[i], v);
+    }
     /* the lists are the same in every cell of a test (no list is an axis) */
     for (size_t k = 0; k < sizeof lists / sizeof lists[0]; k++) {
         const struct tc_setting *s = tc_get(conf, lists[k]);

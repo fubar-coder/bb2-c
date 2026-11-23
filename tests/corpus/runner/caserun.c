@@ -790,82 +790,6 @@ const char *cr_side_verdict_name(int v, int originals)
     return originals && v == TJ_V_REPRODUCED ? "REPRODUCED (as declared, side originals)" : cr_verdict_name(v);
 }
 
-/* a query of the whole program: one per cell's run, not per case */
-static int whole_program(int kind)
-{
-    switch (kind) {
-    case TC_Q_RC:
-    case TC_Q_REQUESTER:
-    case TC_Q_COMPILE:
-    case TC_Q_COMPILE_LOG:
-    case TC_Q_OUTPUT:
-    case TC_Q_SERIAL:
-    case TC_Q_INJECT:
-    case TC_Q_COMPILE_INJECT:
-    case TC_Q_COMPILE_LOG_JOB:
-    case TC_Q_COMPILE_JOB:
-    case TC_Q_SESSION:
-    case TC_Q_END_RUN:
-        return 1;
-    }
-    return 0;
-}
-
-int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
-                  const struct tp_source *src, const char *case_name)
-{
-    static const int modes[] = { TC_PLAIN, TC_DEVIATED, TC_DEVIATED_ANY };
-
-    for (size_t i = 0; i < src->nchecks; i++) {
-        const struct tp_check *k = &src->checks[i];
-
-        if ((k->kind == TP_EXPECTERROR || k->kind == TP_RUNPROGRAM) && k->nskind == TP_NS_CASE
-            && !strcmp(k->ns, case_name))
-            return 1;
-        /* a started program's observations are those of the case that
-           starts it: one in a procedure, the batch init or cleanup may be
-           any case's */
-        if (k->kind == TP_RUNPROGRAM && k->nskind != TP_NS_CASE)
-            return 1;
-    }
-    for (size_t c = 0; c < ncells; c++)
-        for (size_t k = 0; k < sizeof modes / sizeof modes[0]; k++) {
-            struct tc_assertions as;
-            char err[600];
-            int r = tc_assertions_for(conf, m, cells[c], case_name, modes[k], &as, err, sizeof err);
-
-            if (r == -2)
-                return -1;
-            if (r)
-                return 1;
-            for (size_t a = 0; a < as.n; a++)
-                if (whole_program(as.a[a].q.kind) && strcmp(as.a[a].at.file, "(default)")) {
-                    tc_assertions_free(&as);
-                    return 1;
-                }
-            tc_assertions_free(&as);
-            /* the alternative ends are deviations too */
-            {
-                struct tc_ends e;
-                int any = 0;
-
-                r = tc_ends_for(conf, m, cells[c], case_name, modes[k], &e, err, sizeof err);
-                if (r == -2)
-                    return -1;
-                if (r)
-                    return 1;
-                for (size_t i = 0; i < e.n; i++)
-                    for (size_t j = 0; j < e.e[i].nalt; j++)
-                        for (size_t a = 0; a < e.e[i].alt[j].as.n; a++)
-                            any |= whole_program(e.e[i].alt[j].as.a[a].q.kind);
-                tc_ends_free(&e);
-                if (any)
-                    return 1;
-            }
-        }
-    return 0;
-}
-
 int cr_cell_clean(const struct tj_obs *o)
 {
     const char *l, *end;
@@ -2282,7 +2206,7 @@ static int run_set(struct ctx *x, struct set *s)
             rc = 77;
             goto out;
         }
-        if (!(c->key = tc_session_key(&x->conf, &x->m, c->idx))) {
+        if (!(c->key = tc_session_key(&x->conf, &x->m, c->idx, &x->env))) {
             fprintf(x->log, "corpusrun case: out of memory\n");
             goto out;
         }
@@ -2417,7 +2341,7 @@ static int run_all(struct ctx *x, const char *rundir)
         else
             sh[nsh++] = x->side[i];
     for (size_t i = 0; i < n; i++) {
-        int a = nsh ? cr_case_alone(&x->conf, &x->m, x->side, x->nside, &x->src, x->src.cases[i].name) : 1;
+        int a = nsh ? tj_case_alone(&x->conf, &x->m, x->side, x->nside, &x->src, x->src.cases[i].name) : 1;
 
         if (a < 0)
             goto oom;

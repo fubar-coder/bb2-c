@@ -181,7 +181,8 @@ int caserun(const struct caserun_opts *o, FILE *out);
  * of the driver are theirs).  The work directory is ID (ID_originals), each
  * run of a set a directory of its own in it: shared-N, alone-CASE.
  *
- *   - The cases that run on their own from the start (cr_case_alone): those
+ *   - The cases that run on their own from the start (tj_case_alone,
+ *     testjudge.h): those
  *     whose assertions or deviations name an observation of the whole
  *     program other than by the defaults, and those that announce a runtime
  *     error; the others share the run.
@@ -229,23 +230,6 @@ int cr_side_status(int v, int originals);
  *        side originals)".
  */
 const char *cr_side_verdict_name(int v, int originals);
-
-/**
- * @brief Whether a case runs on its own in the run of all cases: in a cell
- *        of cells[0..ncells) and a judging mode (plain, with the
- *        deviations, with them as if their axis terms matched) an
- *        assertion other than a default names an observation of the whole
- *        program (rc, requester, compile, compile.log, compile.inject,
- *        output, serial, inject, session, end.run), or the case's namespace
- *        holds an
- *        !ExpectError or a !RunProgram (the table of the preprocessor), or
- *        a !RunProgram stands outside every case (a procedure, the batch
- *        init or cleanup).  A conflict of
- *        assertions counts as such (the run of the case reports it).
- * @return 1 on its own, 0 shared, -1 out of memory
- */
-int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const size_t *cells, size_t ncells,
-                  const struct tp_source *src, const char *case_name);
 
 /**
  * @brief Whether a cell's program in a shared run ended cleanly: its session

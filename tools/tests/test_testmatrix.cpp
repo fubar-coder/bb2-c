@@ -52,9 +52,10 @@ struct built {
     tc_matrix m = {};
     int rc = 0;
 
-    built(const tree &t, const std::string &src = "x.test.bas")
+    // envx: more lines of the environment (its table runner)
+    built(const tree &t, const std::string &src = "x.test.bas", const std::string &envx = "")
     {
-        std::string text = "top = \"" + t.root.string() + "\"\n";
+        std::string text = "top = \"" + t.root.string() + "\"\n" + envx;
 
         REQUIRE(tc_env_parse("env.toml", text.c_str(), &env, err, sizeof err) == 0);
         err[0] = 0;
@@ -387,15 +388,16 @@ TEST_CASE("testmatrix: a run from the editor", "[testmatrix]")
                                       "editor-run = \"on\" (" + t.path("tests.toml") + ":5)");
 }
 
-// the session key of a cell of the test src
-static std::string session_key(const tree &t, const std::string &src, size_t cell = 0)
+// the session key of a cell of the test src, in the environment with the
+// lines envx
+static std::string session_key(const tree &t, const std::string &src, size_t cell = 0, const std::string &envx = "")
 {
-    built b(t, src);
+    built b(t, src, envx);
     std::string k;
 
     REQUIRE(b.rc == 0);
     REQUIRE(cell < b.m.ncells);
-    char *s = tc_session_key(&b.c, &b.m, cell);
+    char *s = tc_session_key(&b.c, &b.m, cell, &b.env);
     REQUIRE(s != nullptr);
     k = s;
     free(s);
@@ -412,9 +414,9 @@ static void two(const tree &t, const std::string &ta, const std::string &tb)
     t.write("b/y.test.toml", tb);
 }
 
-static bool same_session(const tree &t)
+static bool same_session(const tree &t, const std::string &envx = "")
 {
-    return session_key(t, "a/x.test.bas") == session_key(t, "b/y.test.bas");
+    return session_key(t, "a/x.test.bas", 0, envx) == session_key(t, "b/y.test.bas", 0, envx);
 }
 
 TEST_CASE("testmatrix: the session key across tests", "[testmatrix]")
@@ -463,7 +465,8 @@ TEST_CASE("testmatrix: the session key across tests", "[testmatrix]")
     // a value cannot end its line early and pass for two elements
     two(t, "uae = [\"a=1\", \"b=2\"]\n", "uae = [\"a=1\\nuae=3:b=2\"]\n");
     CHECK(!same_session(t));
-    // a time limit left to the environment is not one set to a value
+    // a time limit left to an environment without one is not one set to a
+    // value
     two(t, "", "timeout = 120\n");
     CHECK(!same_session(t));
     // serial and isolate: a key of its own, also against the same cell of
@@ -476,6 +479,30 @@ TEST_CASE("testmatrix: the session key across tests", "[testmatrix]")
         two(t, "", s);
         CHECK(!same_session(t));
     }
+}
+
+TEST_CASE("testmatrix: the session key with the environment's time limit", "[testmatrix]")
+{
+    tree t;
+    const std::string env90 = "[runner]\ntimeout = \"90\"\n";
+
+    // left to the environment: the environment's value
+    two(t, "", "timeout = 90\n");
+    CHECK(same_session(t, env90));
+    two(t, "", "timeout = 30\n");
+    CHECK(!same_session(t, env90));
+    two(t, "timeout = 30\n", "timeout = 30\n");
+    CHECK(same_session(t, env90));
+    two(t, "", "");
+    CHECK(same_session(t, env90));
+    // an environment without a time limit: the unset key, which is no value
+    two(t, "", "timeout = 90\n");
+    CHECK(!same_session(t));
+    CHECK(session_key(t, "a/x.test.bas") != session_key(t, "a/x.test.bas", 0, env90));
+    CHECK(session_key(t, "b/y.test.bas") == session_key(t, "b/y.test.bas", 0, env90));
+    // hang-after is no part of the resolution: unset stays unset
+    two(t, "", "hang-after = 8\n");
+    CHECK(!same_session(t, env90 + "run-hang-after = \"8\"\n"));
 }
 
 TEST_CASE("testmatrix: the session key in one test", "[testmatrix]")
@@ -493,7 +520,7 @@ TEST_CASE("testmatrix: the session key in one test", "[testmatrix]")
         REQUIRE(b.rc == 0);
         REQUIRE(b.m.ncells == 4);
         for (size_t i = 0; i < 4; i++) {
-            char *s = tc_session_key(&b.c, &b.m, i);
+            char *s = tc_session_key(&b.c, &b.m, i, &b.env);
 
             REQUIRE(s != nullptr);
             k.push_back(s);

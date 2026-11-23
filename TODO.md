@@ -792,6 +792,19 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   generated tests (generator `tools/lib/exprmatrix`) move to the new form
   once several tests can run in one session and the start of the tests
   through CMake/ctest can be bundled, i.e. without a performance loss.
+- [ ] **Bundles with test-local data and runs from the editor** (user
+  decision, `~/.local/share/bb2-c-work/decisions/rounds/tb/decisions.md`,
+  "K2, R1, Q17" and "K1, K2 follow-up, G1": left out of the first set for
+  now, a follow-up change after it): the bundled runs of the BASIC test
+  model (OpenSpec changes `basic-test-bundle-*`) leave out the cases of a
+  test with a `[data]` table and of a cell with `editor-run = "on"`
+  (`tj_bundle_case`, `tools/lib/testjudge`). Open: the data of a member
+  staged in its cell's directory of the bundle; the hang check of a run
+  from the editor, which a session arms once from its first cell's run
+  (`hang_after` with `hang_from=run` in `caserun.c`, `corpus_session_start`
+  in `corpus.c`; `editrun` is per cell), so a member behind the first
+  needs an arm of its own; one volume for the bundle (design decision 5 of
+  `basic-test-bundle-key`) does not change that.
 - [ ] **libs_emulator misses the restore grace under load**: in both
   `ctest --preset all` runs of 2026-11-21 the session of `libs_emulator`
   did not start from its snapshot within the 15 s grace

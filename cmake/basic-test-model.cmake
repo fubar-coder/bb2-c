@@ -92,6 +92,7 @@ tokens = \"${BASIC_TEST_TOKENS}\"
 work = \"${BASIC_TEST_WORK}\"
 timeout = \"${BASIC_TEST_TIMEOUT}\"
 run-hang-after = \"${BASIC_TEST_RUN_HANG_AFTER}\"
+run-dir = \"${CMAKE_BINARY_DIR}/Testing/runs/default\"
 ${rwe}")
 	# the names the driver is tokenised with: blitz2-c's, the default library
 	# sets', the test library's and the bug-orig user library's

@@ -9,19 +9,19 @@ answered (`rounds/tb/decisions.md`, "K2, R1, Q17"; "K1, K2 follow-up, G1").
 
 ## 1. Tests first
 
-- [ ] 1.1 `tools/tests/test_testmatrix.cpp`: a cell without `timeout` and one with the environment's value give the same key; with 30 another key; an environment without `timeout` gives the unset key; the existing cases with the environment passed. Verify: fails to build on main (signature).
-- [ ] 1.2 Tests of `tj_bundle_case` (in the tests of `tools/lib/testjudge`): a plain case (1), a case that asserts the output (0), an `!ExpectError` case (0), two port cells (0), `isolate` (0), `serial` (0), `timeout = 30` (1), `timeout = 45` (0), `hang-after` set by the test (0), `uae` set (0), a `[data]` entry (0), a run from the editor (0), the side originals (0). Verify: fails on main.
+- [x] 1.1 `tools/tests/test_testmatrix.cpp`: a cell without `timeout` and one with the environment's value give the same key; with 30 another key; an environment without `timeout` gives the unset key; the existing cases with the environment passed. Verify: fails to build on main (signature).
+- [x] 1.2 Tests of `tj_bundle_case` (in the tests of `tools/lib/testjudge`): a plain case (1), a case that asserts the output (0), an `!ExpectError` case (0), two port cells (0), `isolate` (0), `serial` (0), `timeout = 30` (1), `timeout = 45` (0), `hang-after` set by the test (0), `uae` set (0), a `[data]` entry (0), a run from the editor (0), the side originals (0). Verify: fails on main.
 
 ## 2. Implementation
 
-- [ ] 2.1 `tc_session_key` with the environment (design decision 1); the callers in `caserun.c`, `test_caserun.c`, `test_testmatrix.cpp`; the comment. Verify: 1.1 passes; `test_caserun` passes.
-- [ ] 2.2 `cr_case_alone` moved to `tools/lib/testjudge` as `tj_case_alone` with its tests (decision 2). Verify: `git diff --stat` shows the move; `test_caserun` and the testjudge tests pass.
-- [ ] 2.3 `tj_bundle_case` (decision 3). Verify: 1.2 passes.
-- [ ] 2.4 `[runner] run-dir` in the environment file (decision 4); `tc_env_runner(env, "run-dir")` read by nothing yet. Verify: the build writes it; `corpusrun case --print-config` of a test unchanged.
+- [x] 2.1 `tc_session_key` with the environment (design decision 1); the callers in `caserun.c`, `test_caserun.c`, `test_testmatrix.cpp`; the comment. Verify: 1.1 passes; `test_caserun` passes.
+- [x] 2.2 `cr_case_alone` moved to `tools/lib/testjudge` as `tj_case_alone` with its tests (decision 2). Verify: `git diff --stat` shows the move; `test_caserun` and the testjudge tests pass.
+- [x] 2.3 `tj_bundle_case` (decision 3). Verify: 1.2 passes.
+- [x] 2.4 `[runner] run-dir` in the environment file (decision 4); `tc_env_runner(env, "run-dir")` read by nothing yet. Verify: the build writes it; `corpusrun case --print-config` of a test unchanged.
 
 ## 3. Checks
 
-- [ ] 3.1 `ctest --preset host`, also in a `-DHOST_SANITIZE=ON` build of the host tools. Verify: pass.
+- [x] 3.1 `ctest --preset host`, also in a `-DHOST_SANITIZE=ON` build of the host tools. Verify: pass.
 - [ ] 3.2 `ctest --preset all -R '^(blitz2_|regression_)'` and the prev comparison: no result changes (rule 3). Verify: pass, no `PREV_INTENDED`.
 
 ## 4. Documents
