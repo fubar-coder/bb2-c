@@ -1,0 +1,8 @@
+# riamosfunclib-changedir-currentdir-0.test.bas: the original returns 0 for
+# a ChangeDir that succeeded
+fixed-orig = 490
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.changedir_currentdir_0.result" = "== fail"
+"check.changedir_currentdir_0.result.actual" = "== 0"

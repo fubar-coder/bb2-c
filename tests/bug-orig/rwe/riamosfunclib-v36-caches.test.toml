@@ -1,0 +1,15 @@
+# riamosfunclib-v36-caches.test.bas: on the a500 (Kickstart 1.3) the original
+# crashes at CachesOn; on the a500-204 (exec V37) it works
+fixed-orig = 1145
+rwe = ["riamosfunclib"]
+timeout = 30
+
+[matrix]
+machine = ["a500", "a500-204"]
+
+[deviations."compiler=orig210,machine=a500"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software error - task held\""

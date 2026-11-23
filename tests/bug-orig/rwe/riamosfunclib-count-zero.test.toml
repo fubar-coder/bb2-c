@@ -1,0 +1,15 @@
+# riamosfunclib-count-zero.test.bas: the original's CopyByte with the count 0
+# copies 2^32 bytes; the CPU runs at real speed so that the copy cannot
+# reach the end of the address space within the limit, and the original
+# never comes back (a session of its own: the hang ends it)
+fixed-orig = 492
+rwe = ["riamosfunclib"]
+uae = ["cpu_speed=real", "cachesize=0"]
+timeout = 120
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

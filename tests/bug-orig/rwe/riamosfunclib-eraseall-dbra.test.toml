@@ -1,0 +1,6 @@
+# riamosfunclib-eraseall-dbra.test.bas: the original leaves bank 0 allocated
+fixed-orig = 495
+rwe = ["riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.eraseall_dbra.bank_0_freed" = "== fail"
