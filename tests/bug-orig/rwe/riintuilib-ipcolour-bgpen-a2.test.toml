@@ -1,0 +1,8 @@
+# riintuilib-ipcolour-bgpen-a2.test.bas: the original leaves the Rast's
+# BgPen 0
+fixed-orig = 696
+rwe = ["riintuilib"]
+
+[deviations."compiler=orig210"]
+"check.bgpen.bgpen" = "== fail"
+"check.bgpen.bgpen.actual" = "== 0"

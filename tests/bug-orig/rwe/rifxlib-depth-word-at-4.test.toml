@@ -1,0 +1,9 @@
+# rifxlib-depth-word-at-4.test.bas: the original clears 257 planes
+fixed-orig = 670
+rwe = ["rifxlib"]
+
+[deviations."compiler=orig210"]
+"check.depth_byte.a_cleared" = "== fail"
+"check.depth_byte.a_cleared.actual" = "== 0"
+"check.depth_byte.b_cleared_longs" = "== fail"
+"check.depth_byte.b_cleared_longs.actual" = "== 21"

@@ -1,0 +1,14 @@
+# rifnslib-settab-zero.test.bas: with runtime error checking for the
+# announced error; the original divides by zero in FNSPrint
+fixed-orig = 666
+rwe = ["rifnslib", "riamosfunclib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.tab_zero.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.tab_zero.refused" = "== fail"
+requester = "contains \"Division by Zero\""
+"end.case" = "not exists"

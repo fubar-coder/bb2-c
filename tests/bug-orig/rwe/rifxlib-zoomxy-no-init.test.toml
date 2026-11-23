@@ -1,0 +1,19 @@
+# rifxlib-zoomxy-no-init.test.bas: with runtime error checking for the
+# announced error; the original works on the bitmap at address 0 and crashes
+fixed-orig = 1131
+rwe = ["rifxlib"]
+runtime-errors = "on"
+timeout = 30
+# the original crashes: a session of its own for its cell
+isolate = ["compiler=orig210"]
+
+[asserts]
+"check.no_init.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.no_init.refused" = "== fail"
+
+[ends."compiler=orig210"]
+reason = "the original reads a struct BitMap at address 0 and writes through its plane pointers (#1131); how that ends (the CPU halts, or the session times out) depends on what it hits and differs between runs"
+halts = ["session == halt", "rc not exists", "end.case not exists", "end.run not exists"]
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]

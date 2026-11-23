@@ -1,0 +1,13 @@
+# rigfxlib-colour-index-signed.test.bas: with runtime error checking for the
+# announced error; the original raises none, the case goes on
+fixed-orig = 677
+rwe = ["rigfxlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.colour_index.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.colour_index.refused" = "== fail"
+"check.colour_index.not_refused" = "== fail"
+requester = "count == 0"

@@ -1,0 +1,13 @@
+# rifnslib-print-no-bitmap-crash.test.bas: the original crashes
+fixed-orig = 665
+rwe = ["rifnslib", "riamosfunclib"]
+timeout = 30
+# the original crashes: a session of its own for its cell
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+requester = "contains \"Software Failure\""

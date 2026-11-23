@@ -1,0 +1,17 @@
+# rifnslib-codes-160-end-text.test.bas: the original draws and counts a
+# character the font has no glyph for as something else than a space
+fixed-orig = 657
+rwe = ["rifnslib", "riamosfunclib"]
+timeout = 60
+
+[deviations."compiler=orig210"]
+"check.codes_160.print" = "== fail"
+"check.codes_160.print.actual" = "== 0"
+"check.codes_160.shadow" = "== fail"
+"check.codes_160.shadow.actual" = "== 0"
+"check.codes_160.length" = "== fail"
+"check.codes_160.length.actual" = "== 0"
+"check.codes_160.code_123" = "== fail"
+"check.codes_160.code_123.actual" = "== 0"
+"check.codes_160.load" = "== fail"
+"check.codes_160.load.actual" = "== 0"

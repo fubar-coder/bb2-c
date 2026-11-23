@@ -1,9 +1,0 @@
-[compile]
-ok
-[run]
-print: same
-shadow: same
-length: same
-123: same
-load: same
-rc=0

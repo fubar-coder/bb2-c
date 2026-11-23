@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
--1
-inject: rc=0
-inject: opencount: gadtools.library +0
-rc=0

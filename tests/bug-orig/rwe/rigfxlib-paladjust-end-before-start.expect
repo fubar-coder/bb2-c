@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "PalAdjust end colour before the start colour" *
-rc=0

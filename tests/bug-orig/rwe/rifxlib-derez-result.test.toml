@@ -1,0 +1,13 @@
+# rifxlib-derez-result.test.bas: the original returns what d0 holds
+fixed-orig = 672
+rwe = ["rifxlib"]
+
+[deviations."compiler=orig210"]
+"check.derez_value.value_0" = "== fail"
+"check.derez_value.value_0.actual" = "== 64"
+"check.derez_value.value_1" = "== fail"
+"check.derez_value.value_1.actual" = "== 65535"
+"check.derez_value.value_2" = "== fail"
+"check.derez_value.value_2.actual" = "== 0"
+"check.derez_value.value_3" = "== fail"
+"check.derez_value.value_3.actual" = "== 0"

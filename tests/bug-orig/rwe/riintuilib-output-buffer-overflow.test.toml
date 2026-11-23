@@ -1,0 +1,8 @@
+# riintuilib-output-buffer-overflow.test.bas: the original's next text is
+# drawn in the pen the overflow wrote (120)
+fixed-orig = 698
+rwe = ["riintuilib"]
+
+[deviations."compiler=orig210"]
+"check.overflow.next" = "== fail"
+"check.overflow.next.actual" = "== 120"

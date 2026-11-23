@@ -1,0 +1,15 @@
+# rifxlib-plane-arrays-unchecked.test.bas: with runtime error checking for
+# the announced error; the original raises none and copies plane 8 instead
+# of plane 0, the case goes on
+fixed-orig = 674
+rwe = ["rifxlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.nine_planes.incomplete_rows" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.nine_planes.refused" = "== fail"
+"check.nine_planes.incomplete_rows" = "== fail"
+"check.nine_planes.incomplete_rows.actual" = "== 8"
+requester = "count == 0"
