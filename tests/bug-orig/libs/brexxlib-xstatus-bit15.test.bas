@@ -4,12 +4,13 @@
 ; (32768) right after an executed simple event, until the input handler
 ; runs the next time.
 ; Correct: 1 while recording, 0 with nothing recorded or played.  The
-; original prints 32769 and 32768.
-; @fixed #103
-; @configs clib
-Record 0
-NPrint "record ",XStatus
-Record
-AbsMouse 40,30
-NPrint "event ",XStatus
-End
+; original returns 32769 and 32768.
+DEFTYPE .l
+
+!TestCase{status_bit_15}
+  Record 0
+  !CheckEq{XStatus,1,"status_recording"}
+  Record
+  AbsMouse 40,30
+  !CheckEq{XStatus,0,"status_after_event"}
+!EndTestCase

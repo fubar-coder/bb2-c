@@ -1,0 +1,7 @@
+# brexxlib-relmouse-class.test.bas: the CD's libraries make a POINTERPOS
+# event (class 4)
+fixed-orig = 98
+
+[deviations."libs=cd"]
+"check.rel_mouse_event.event_class" = "== fail"
+"check.rel_mouse_event.event_class.actual" = "== 4"

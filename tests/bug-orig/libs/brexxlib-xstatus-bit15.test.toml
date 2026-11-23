@@ -1,0 +1,9 @@
+# brexxlib-xstatus-bit15.test.bas: the CD's libraries return the mode word
+# with bit 15
+fixed-orig = 103
+
+[deviations."libs=cd"]
+"check.status_bit_15.status_recording" = "== fail"
+"check.status_bit_15.status_recording.actual" = "== 32769"
+"check.status_bit_15.status_after_event" = "== fail"
+"check.status_bit_15.status_after_event.actual" = "== 32768"

@@ -5,13 +5,14 @@
 ; Record or PlayBack.
 ; Here: Record 0, then an executed AbsMouse while it records.
 ; Correct: XStatus stays 1 (recording).  The original prints 0.
-; @fixed #96
-; @configs clib
-Record 0
-VWait 10
-AbsMouse 40,30
-VWait 10
-NPrint "status ",XStatus
-Record
-NPrint "stopped ",XStatus
-End
+DEFTYPE .l
+
+!TestCase{record_abs_mouse}
+  Record 0
+  VWait 10
+  AbsMouse 40,30
+  VWait 10
+  !CheckEq{XStatus,1,"status_recording"}
+  Record
+  !CheckEq{XStatus,0,"status_stopped"}
+!EndTestCase

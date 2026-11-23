@@ -4,15 +4,17 @@
 ; QuietTrap value 1, so ClickButton 0 records "left down, RIGHT up".
 ; Correct: the tape holds RAWMOUSE $68 (left down) and $E8 (left up).
 ; The original records $68 and $E9.
-; @fixed #97
-; @configs clib
 DEFTYPE .l
-QuietTrap On
-TapeTrap 0
-ClickButton 0
-e=Peek.l(Addr Tape(0))
-While e<>0
-  NPrint "class ",Peek.b(e+4)," code ",Right$(Hex$(Peek.w(e+6)),4)
+
+!TestCase{tape_events}
+  QuietTrap On
+  TapeTrap 0
+  ClickButton 0
+  e=Peek.l(Addr Tape(0))
+  !CheckEq{Peek.b(e+4),2,"event_1_class"}
+  !CheckEq{Peek.w(e+6) AND $FFFF,$68,"event_1_code"}
   e=Peek.l(e)
-Wend
-End
+  !CheckEq{Peek.b(e+4),2,"event_2_class"}
+  !CheckEq{Peek.w(e+6) AND $FFFF,$E8,"event_2_code"}
+  !CheckEq{Peek.l(e),0,"event_3"}
+!EndTestCase

@@ -1,0 +1,8 @@
+# brexxlib-tapetrap-a3.test.bas: the CD's libraries keep the redirection to
+# the tape
+fixed-orig = 95
+
+[deviations."libs=cd"]
+"check.trap_ends.tape_events" = "== fail"
+"check.trap_ends.tape_events.actual" = "== 2"
+"check.trap_ends.pointer_moved" = "== fail"
