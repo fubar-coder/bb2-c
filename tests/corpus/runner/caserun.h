@@ -115,7 +115,8 @@ struct caserun_opts {
  *        launcher, rcput, the hang check, serial, runwrap, runargs,
  *        launcherargs, the debugger module, the floppies), with run=off,
  *        test=TEST, the configuration prev|exe:TAG after the cell's, the
- *        source, the work directory and its report WORK.txt, mask_traps=on
+ *        source (NULL: none, a pass of data sources alone), the work
+ *        directory and its report WORK.txt, mask_traps=on
  *        for a job line run=, and the entries of TEST:NAME (or ON) as
  *        intended= lines.
  * @return 0 = ok, -1 = refused (err: a cell pass without a configuration),
@@ -124,6 +125,22 @@ struct caserun_opts {
 int cr_prev_pass(const char *cell_pass, const char *test, const char *name, const char *work, const char *source,
                  const char *prev_blitz2, const char *prev_libs, const char *const *entries, size_t nentries,
                  char **text, char *err, size_t errlen);
+
+/**
+ * @brief The data sources of a test in a pass of the comparison (change
+ *        basic-test-local-data): per source source=SOURCES[i]|NAMES[i] and
+ *        the entries TEST:NAMES[i] (not ON, which cr_prev_pass adds) as
+ *        intended= lines.  A data source (the action basic-compile) is
+ *        compiled where the driver is, in the pass of its setting of runtime
+ *        error checking (the cell's, or the one its option fixes; a pass of
+ *        its own with the settings of the first cell of the side port if no
+ *        cell has it), named ID/FILE, with runtime error checking
+ *        ID/FILE-runerrs.
+ * @param text  the lines (malloc'd)
+ * @return 0, -2 = out of memory
+ */
+int cr_prev_data(const char *test, const char *const *sources, const char *const *names, size_t n,
+                 const char *const *entries, size_t nentries, char **text);
 
 /**
  * @brief The next entry of test that names none of the compiles names[]

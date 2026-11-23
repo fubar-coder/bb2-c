@@ -2141,7 +2141,15 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     `model-prev-runerrs`: fail, STALE); `blitz2_model_driver_all_cases`
     (the driver calls every case) and `blitz2_selftest_model_driver_broken`
     (the command of the build step fails on a source whose driver cannot
-    be written).
+    be written). The data sources of the test's own data (`ID.test/FILE` of
+    the action `basic-compile`, change `basic-test-local-data`) are compiled
+    in the pass of their setting of `runtime-errors` (the cell's, or the
+    one their option fixes; a pass of their own when no cell of the side
+    has it), named `ID/FILE` and, with runtime error checking,
+    `ID/FILE-runerrs` (`selftest/model-local-data.test.bas`:
+    `blitz2_selftest_model_local_data_prev`, and with `hangstub` and the
+    driver's compiles named `_differs_prev`: fails naming the data
+    sources).
   * `ab3_cli_prev_N`: the cases of the block `ab3_cli_N` compiled by the
     previous commit's `blitz2-ab3` (`tests/ab3/cli-prev.cmake`, `cli.cmake`
     with `COMPILE_ONLY`; two emulator sessions at the same time): the
@@ -2169,6 +2177,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
 | `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
 | `blitz2_ID_prev:ID`, `blitz2_ID_prev:ID-runerrs` (and `bug_orig_`, `regression_`) for a test of the BASIC test model | its driver of all cases compiled without, with runtime error checking: the executable or the compile result of `prev` may differ from `clib`'s |
+| `blitz2_ID_prev:ID/FILE`, `blitz2_ID_prev:ID/FILE-runerrs` (and `bug_orig_`, `regression_`) | a data source `ID.test/FILE` of the test compiled without, with runtime error checking: the same |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
 | `corpus_exprmatrix_NAME:SOURCE`, `corpus_exprmatrix_runerr_NAME:SOURCE` | the source of a corpus pass of the expression matrix (one pass per source, e.g. `corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01`): its `prev` configuration may differ from `clib` |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |

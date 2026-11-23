@@ -101,6 +101,14 @@ TEST_CASE("previntended: malformed", "[previntended]")
     CHECK(add_err("corpus_cd_prev:A/B:x", "only ted_ab"));
     CHECK(add_err("prev:alpha", "unknown test"));
     CHECK(add_err("_prev:alpha", "unknown test"));
+    CHECK(add_err("bug_orig_x_prev:x/a b", "name is empty"));
+    CHECK(add_err("ab3_cli_prev:x/case", "name is empty"));
+    /* the data source of a test of the model: ID/FILE (basic-test-local-data) */
+    CHECK(add(&pi, "blitz2_x_prev:x/child.bas") == 0);
+    CHECK(add(&pi, "bug_orig_x_prev:x/child.bas-runerrs") == 0);
+    CHECK(add(&pi, "regression_x_prev:x/sub/b.bas") == 0);
+    CHECK(prevint_judge(&pi, "blitz2_x_prev", "x/child.bas", NULL, 1) == PREVINT_INTENDED);
+    prevint_free(&pi);
     CHECK(add(&pi, "corpus_cd_prev:BB2/DIR/X.BB2") == 0);
     CHECK(add(&pi, "corpus_cd_ab3_prev:BB2/DIR/X.BB2") == 0);
     CHECK(add(&pi, "compiler_prev:compiler-x") == 0);

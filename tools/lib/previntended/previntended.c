@@ -23,6 +23,17 @@ int prevint_known_test(const char *test)
     return n > 5 && !strcmp(test + n - 5, "_prev");
 }
 
+/* the comparison of a test of the BASIC test model (blitz2_ID_prev,
+   bug_orig_ID_prev, regression_ID_prev): its data sources are named
+   ID/FILE (change basic-test-local-data) */
+static int model_prev(const char *test)
+{
+    size_t n = strlen(test);
+
+    return n > 5 && !strcmp(test + n - 5, "_prev")
+           && (!strncmp(test, "blitz2_", 7) || !strncmp(test, "bug_orig_", 9) || !strncmp(test, "regression_", 11));
+}
+
 static int bad(char *err, size_t errlen, const char *entry, const char *why)
 {
     snprintf(err, errlen, "PREV_INTENDED entry \"%s\": %s", entry, why);
@@ -63,7 +74,7 @@ int prevint_add(struct prevint *pi, const char *entry, char *err, size_t errlen)
     else if (!prevint_known_test(x.test))
         why = "unknown test (corpus, corpus_runerr, corpus_req, corpus_serial, "
               "corpus_serial_runerr, ted_ab, site_examples_*, corpus_exprmatrix_* or one ending in _prev)";
-    else if (!name_ok(x.name, !strncmp(x.test, "corpus_cd", 9)))
+    else if (!name_ok(x.name, !strncmp(x.test, "corpus_cd", 9) || model_prev(x.test)))
         why = "the source or case name is empty or has a character of : ; | / \\ = or a blank";
     else if (x.pair && strcmp(x.test, "ted_ab"))
         why = "only ted_ab entries have a pair";

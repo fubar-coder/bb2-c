@@ -104,7 +104,14 @@
  *                     file is an error before any session (exit status 2).
  *                     Not with run=off or expect=.  corpus_update writes the
  *                     files instead (corpusrun pass --update-expect)
- *   source=PATH       a tokenised source (NAME.bb2), any number
+ *   source=PATH[|NAME]
+ *                     a tokenised source (NAME.bb2), any number; with NAME
+ *                     (a path inside the volume, e.g. ID/child.bas: the
+ *                     data source of a test of the BASIC test model in the
+ *                     comparison with the prev build) its name in the report
+ *                     and the PREV_INTENDED entries (its files in the volume
+ *                     are src/nNNN.bb2 and out/nNNN, NNN its number among
+ *                     the sources)
  *   test=NAME         the ctest name of the pass (the TEST of PREV_INTENDED
  *                     entries, lib/previntended)
  *   intended=ENTRY    a PREV_INTENDED entry (TEST:NAME, or ON; any number;
@@ -314,6 +321,7 @@ struct corpus_pass {
     struct corpus_config *configs;
     size_t nconfigs;
     char **sources;
+    char **source_names;                /* source=PATH|NAME: NAME, NULL: corpus_name */
     size_t nsources;
     char **mount_name, **mount_dir;
     size_t nmounts;
@@ -445,6 +453,15 @@ int corpus_expect_diff(const uint8_t *want, size_t wlen, const uint8_t *got, siz
 
 /* the name of a source without directory and .bb2 (malloc'd) */
 char *corpus_name(const char *source);
+
+/* the name of source i of p: the NAME of source=PATH|NAME, else
+   corpus_name (malloc'd) */
+char *corpus_source_name(const struct corpus_pass *p, size_t i);
+
+/* the name of the files of source i in the volume: corpus_name, or nNNN
+   (NNN = i) for a source=PATH|NAME (src/nNNN.bb2, out/nNNN: a NAME with a
+   directory would meet the file of another source); malloc'd */
+char *corpus_source_file(const struct corpus_pass *p, size_t i);
 
 /* zero the 8 bytes behind every trap #1 ($4E41) and trap #4 ($4E44) */
 void corpus_mask_traps(uint8_t *data, size_t len);

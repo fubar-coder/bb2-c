@@ -235,6 +235,25 @@ set_tests_properties(blitz2_selftest_model_local_data PROPERTIES PASS_REGULAR_EX
 	"model-local-data\\.test\\.bas: case files: PASSED\n.*model-local-data\\.test\\.bas: case children: PASSED\nmodel-local-data\\.test\\.bas: 2 cases, side port: PASSED\n")
 set_tests_properties(blitz2_selftest_model_local_data_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"the data source model-local-data-broken\\.test/child\\.bas does not compile \\([^\n]*model-local-data-broken\\.test\\.toml:3\\): model-local-data-broken\\.test/child\\.bas:3: No Terminating Quote\nmodel-local-data-broken\\.test\\.bas: case child: BROKEN\n")
+# its comparison with the prev build: the driver and the data sources (model-local-data/child.bas,
+# model-local-data/child.bas-runerrs, model-local-data/errs.bas-runerrs) where the driver is compiled
+set(model_ld_src ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-local-data.test.bas)
+set(model_ld_drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/model-local-data.bb2)
+file(GLOB_RECURSE model_ld_data CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-local-data.test/*)
+basic_test_driver(${model_ld_src} ${model_ld_drv} ${CMAKE_CURRENT_SOURCE_DIR}/selftest/model-local-data.test.toml
+	${model_ld_data})
+add_custom_target(blitz2_selftest_model_local_data_driver ALL DEPENDS ${model_ld_drv})
+prev_compile_model_test(blitz2_selftest_model_local_data_prev ${model_ld_src} ${model_ld_drv})
+# and with broken input: hangstub as the prev compiler (every compile differs) and the driver's
+# compiles and errs.bas named in PREV_INTENDED: the test fails naming the data source child.bas
+set(name blitz2_selftest_model_local_data_differs_prev)
+add_test(NAME ${name} COMMAND ${CORPUSRUN} case --env ${BASIC_TEST_ENV} --source ${model_ld_src} --prev
+	--driver ${model_ld_drv} --test ${name} --prev-blitz2 $<TARGET_FILE:hangstub> --prev-libs ${BLITZ2_DIR}
+	--intended ${name}:model-local-data --intended ${name}:model-local-data-runerrs
+	--intended ${name}:model-local-data/errs.bas-runerrs)
+math(EXPR limit "30 * 2 + 120 + 2 * ${EMULATION_QUEUE_WAIT}")
+set_tests_properties(${name} PROPERTIES LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT ${limit}
+	PASS_REGULAR_EXPRESSION "model-local-data/child\\.bas compiles; prev: RESULT DIFFERS [^\n]*, NO EXE\n.*model-local-data/child\\.bas-runerrs compiles; prev: RESULT DIFFERS [^\n]*, NO EXE\n.*model-local-data: the comparison with the prev build: DIFFERS\n")
 # the example of tests/README.md, "Tests that judge themselves": its source and configuration
 # run as a test of the model, every case on the port side (readme-model-example.cmake)
 add_test(NAME blitz2_model_readme_example COMMAND ${CMAKE_COMMAND} -DREADME=${PROJECT_SOURCE_DIR}/tests/README.md

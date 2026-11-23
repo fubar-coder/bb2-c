@@ -334,3 +334,20 @@ and ran it from there with the file as its argument (`Execute`): both
 cells passed. The cell volume is a host directory of the UAE filesystem,
 which takes the long name on both Kickstarts, so the registration needs
 no refusal of a long id.
+
+### Task 2.3: the prev comparison of data sources (2026-11-23)
+
+- A data source is compiled where the driver is: in the pass of its
+  setting of runtime error checking (the cell's, or the one its option
+  fixes; a pass of the data alone with the settings of the first cell of
+  the side port when no cell has that setting). The name of the compile
+  is `ID/FILE`, with runtime error checking `ID/FILE-runerrs` (as the
+  driver's `ID-runerrs`): the spec's `ID/FILE` names the compile without
+  it.
+- The PREV_INTENDED grammar (`tools/lib/previntended`) refused a `/` in
+  the name of every test but `corpus_cd*`; it takes one now for the
+  tests of the model (`blitz2_*_prev`, `bug_orig_*_prev`,
+  `regression_*_prev`), so `TEST:ID/child.bas` is an entry.
+- The corpus pass gets `source=PATH|NAME` (a source with a name of its
+  own); its files in the volume are `nNNN` (a name `ID/FILE` would meet
+  the driver's executable `out/ID`).

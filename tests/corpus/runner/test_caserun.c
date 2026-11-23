@@ -593,6 +593,48 @@ static void test_prev_pass(void)
     stale = cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur);
     CHECK(stale && !strcmp(stale, "blitz2_x_prev:x-runerrs"));
     CHECK(!cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur));
+    /* the data sources of a test (change basic-test-local-data): source=SRC|ID/FILE and their
+       entries; a pass of the data alone has no driver source */
+    {
+        static const char *const dsrc[] = { "/w/d/b002.bb2", "/w/d/b003.bb2" };
+        static const char *const dname[] = { "x/child.bas", "x/errs.bas-runerrs" };
+        static const char *const dent[] = { "blitz2_x_prev:x/child.bas", "other_prev:x/errs.bas-runerrs", "ON" };
+
+        CHECK(cr_prev_data("blitz2_x_prev", dsrc, dname, 2, dent, 3, &p) == 0);
+        CHECK(p && !strcmp(p, "source=/w/d/b002.bb2|x/child.bas\nintended=blitz2_x_prev:x/child.bas\n"
+                              "source=/w/d/b003.bb2|x/errs.bas-runerrs\n"));
+        free(p);
+        CHECK(cr_prev_data("blitz2_x_prev", dsrc, dname, 0, dent, 3, &p) == 0 && p && !*p);
+        free(p);
+        CHECK(cr_prev_pass("config=c0|ref|/b|/d|/a\nsource=/s.bb2\n", "t_prev", "", "/w", NULL, "/p/b", "/p", NULL,
+                           0, &p, err, sizeof err) == 0);
+        CHECK(p && !strstr(p, "source="));
+        free(p);
+        /* a source with its name parses (corpus.h source=PATH|NAME) */
+        {
+            struct corpus_pass cp2;
+            char perr[400];
+
+            CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nrun=off\nconfig=clib|ref|/b|/d|/a\nconfig=prev|exe:clib|/p|/q|/r\n"
+                               "source=/w/d/b002.bb2|x/child.bas\nsource=/w/x.bb2\n", &cp2, perr, sizeof perr) == 0);
+            {
+                char *n0 = corpus_source_name(&cp2, 0), *n1 = corpus_source_name(&cp2, 1);
+
+                CHECK(n0 && !strcmp(n0, "x/child.bas") && n1 && !strcmp(n1, "x"));
+                free(n0);
+                free(n1);
+                n0 = corpus_source_file(&cp2, 0);
+                n1 = corpus_source_file(&cp2, 1);
+                CHECK(n0 && !strcmp(n0, "n000") && n1 && !strcmp(n1, "x"));
+                free(n0);
+                free(n1);
+            }
+            corpus_free(&cp2);
+            CHECK(corpus_parse("work=/w\nreport=/r\nted=/t\nrun=off\nconfig=clib|ref|/b|/d|/a\nconfig=prev|exe:clib|/p|/q|/r\n"
+                               "source=/w/d/b002.bb2|../child\n", &cp2, perr, sizeof perr) == -1
+                  && strstr(perr, "source=PATH[|NAME]"));
+        }
+    }
 }
 
 /* ------------------------------------------------- the run of all cases */
