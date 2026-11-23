@@ -1,0 +1,7 @@
+# polylib-rendertobitmap-swapped.test.bas
+fixed-orig = 421
+
+[deviations."libs=cd"]
+"check.swapped.target_drawn" = "== fail"
+"check.swapped.dither_changed" = "== fail"
+"check.swapped.dither_changed.actual" = "== 32"

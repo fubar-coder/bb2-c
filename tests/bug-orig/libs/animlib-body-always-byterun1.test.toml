@@ -1,0 +1,12 @@
+# animlib-body-always-byterun1.test.bas: the two ANIMs are staged as
+# CORPUS:raw.anim and CORPUS:run.anim
+fixed-orig = 397
+files = ["raw.anim|@TESTDATA@/animlib-body-always-byterun1-raw.anim", "run.anim|@TESTDATA@/animlib-body-always-byterun1-run.anim"]
+
+[deviations."libs=cd"]
+"check.raw_body.row_0" = "== fail"
+"check.raw_body.row_0.actual" = "== \"AAAAAAAA\""
+"check.raw_body.row_1" = "== fail"
+"check.raw_body.row_1.actual" = "== \"BBBBBBBB\""
+"check.run_past_row.row_0" = "== fail"
+"check.run_past_row.row_0.actual" = "== \"11111111\""

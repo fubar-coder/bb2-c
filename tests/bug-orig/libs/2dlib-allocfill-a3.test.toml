@@ -1,0 +1,6 @@
+# 2dlib-allocfill-a3.test.bas: a3 is set to a zeroed block right before the
+# command, as in the old form
+fixed-orig = 390
+
+[deviations."libs=cd"]
+"check.alloc_fill.buffer_at_least_8000" = "== fail"

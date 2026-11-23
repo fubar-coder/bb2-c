@@ -1,0 +1,8 @@
+# shapeslib-freeashape-cl.test.bas: the shapes file goes to CORPUS:
+fixed-orig = 269
+
+[deviations."libs=cd"]
+"check.free_leak.freed" = "== fail"
+"check.free_leak.freed.actual" = "== \"0000634C\""
+"check.free_leak.leak" = "== fail"
+"check.free_leak.leak.actual" = "== 136"

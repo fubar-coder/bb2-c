@@ -1,0 +1,7 @@
+# shapeslib-anim-xor.test.bas: the ANIM is built by the batch init and
+# written to CORPUS:
+fixed-orig = 266
+
+[deviations."libs=cd"]
+"check.xor_per_frame.frame_2" = "== fail"
+"check.xor_per_frame.frame_2.actual" = "== \"C2\""

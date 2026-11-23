@@ -1,0 +1,10 @@
+# spriteslib-getasprite-width-limits.test.bas: runtime error checking on
+# (the check "Sprite too Wide" is in the error check area); the original
+# refuses the width with its requester and the case ends there
+fixed-orig = 988
+runtime-errors = "on"
+
+[deviations."libs=cd"]
+requester = "contains \"Sprite too Wide\""
+"check.width_128_4col.accepted" = "== not-run"
+"end.case" = "not exists"

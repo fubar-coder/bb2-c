@@ -1,0 +1,8 @@
+# spriteslib-showsprite-topclip.test.bas
+fixed-orig = 283
+
+[deviations."libs=cd"]
+"check.topclip.offset_word_y" = "== fail"
+"check.topclip.offset_word_y.actual" = "== 20"
+"check.topclip.offset_long_y" = "== fail"
+"check.topclip.offset_long_y.actual" = "== 65556"

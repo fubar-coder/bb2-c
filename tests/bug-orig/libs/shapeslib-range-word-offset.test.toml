@@ -1,0 +1,10 @@
+# shapeslib-range-word-offset.test.bas: the shape maximum is raised to
+# 1100 by the job line (the Compile/Run options of the old form)
+fixed-orig = 999
+jobline = ["max=154|1100"]
+
+[deviations."libs=cd"]
+"check.range_word.loadshapes" = "== fail"
+"check.range_word.loadshapes.actual" = "== \"8 0 0 \""
+"check.range_word.decodeshapes" = "== fail"
+"check.range_word.decodeshapes.actual" = "== \"8 0 0 \""

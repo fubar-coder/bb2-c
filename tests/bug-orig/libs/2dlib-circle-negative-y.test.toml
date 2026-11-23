@@ -1,0 +1,10 @@
+# 2dlib-circle-negative-y.test.bas: the plane of the first case and the
+# fill buffer of the second are blocks of their own; the original writes
+# behind them
+fixed-orig = 392
+
+[deviations."libs=cd"]
+"check.circle_above_top.behind" = "== fail"
+"check.circle_above_top.behind.actual" = "== 4"
+"check.circlef_above_top.fill_behind" = "== fail"
+"check.circlef_above_top.fill_behind.actual" = "== 2"

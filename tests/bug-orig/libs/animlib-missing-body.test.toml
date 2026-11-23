@@ -1,0 +1,7 @@
+# animlib-missing-body.test.bas: the ANIM is staged as CORPUS:nobody.anim
+fixed-orig = 400
+files = ["nobody.anim|@TESTDATA@/animlib-missing-body.anim"]
+
+[deviations."libs=cd"]
+"check.no_body.body_length_is_minus_1" = "== fail"
+"check.no_body.body_length_is_minus_1.actual" = "== -1"

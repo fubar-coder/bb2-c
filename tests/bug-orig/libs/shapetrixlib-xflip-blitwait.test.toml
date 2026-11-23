@@ -1,0 +1,10 @@
+# shapetrixlib-xflip-blitwait.test.bas: what the original gets wrong
+# depends on the timing, so the deviation only says that rows are wrong
+# (a number above 0)
+fixed-orig = 271
+
+[deviations."libs=cd"]
+"check.amiga_mode.wrong_rows" = "== fail"
+"check.amiga_mode.wrong_rows.actual" = "> 0"
+"check.blitz_mode.wrong_rows" = "== fail"
+"check.blitz_mode.wrong_rows.actual" = "> 0"

@@ -1,0 +1,7 @@
+# polylib-renderpoly-a3.test.bas: a3 is set to the bitmap object right
+# before the command, as in the old form
+fixed-orig = 420
+
+[deviations."libs=cd"]
+"check.render_a3.drawn_through_a3" = "== fail"
+"check.render_a3.drawn_through_a3.actual" = "== 157"

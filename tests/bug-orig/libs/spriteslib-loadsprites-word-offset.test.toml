@@ -1,0 +1,8 @@
+# spriteslib-loadsprites-word-offset.test.bas: the sprite maximum is raised
+# to 2100 by the job line
+fixed-orig = 999
+jobline = ["max=112|2100"]
+
+[deviations."libs=cd"]
+"check.loadsprites_word.loadsprites" = "== fail"
+"check.loadsprites_word.loadsprites.actual" = "== \"9 - - \""
