@@ -1,0 +1,16 @@
+# screenslib-screentags-pairs-limit.test.bas: with runtime error checking;
+# the requester with its text is the tested behaviour, the case ends in it
+# and the check behind the command does not run; the original has no check
+# and opens the screen
+fixed-orig = 1039
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Too Many Tags\""
+"end.case" = "not exists"
+"check.sixteen_pairs.opened" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"end.case" = "exists"
+"check.sixteen_pairs.opened" = "== ok"

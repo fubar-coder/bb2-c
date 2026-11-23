@@ -1,0 +1,18 @@
+# bitmaplib-cludgebitmap-depth-zero.test.bas: with runtime error checking
+# and the bitmap maximum raised to 4200 (the original stores 65536 plane
+# pointers); the requester with its text is the tested behaviour, the case
+# ends in it, and the check behind the command does not run; the original
+# raises no error and runs on
+fixed-orig = 393
+runtime-errors = "on"
+jobline = ["max=160|4200"]
+
+[asserts]
+requester = "contains \"Illegal BitMap Depth\""
+"end.case" = "not exists"
+"check.depth_zero.after" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "count == 0"
+"end.case" = "exists"
+"check.depth_zero.after" = "== fail"

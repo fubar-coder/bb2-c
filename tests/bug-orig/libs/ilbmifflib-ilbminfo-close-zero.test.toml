@@ -1,0 +1,7 @@
+# ilbmifflib-ilbminfo-close-zero.test.bas: the original calls Close with the
+# handle 0 once
+fixed-orig = 186
+
+[deviations."libs=cd"]
+"check.close_zero.close_zero_calls" = "== fail"
+"check.close_zero.close_zero_calls.actual" = "== 1"

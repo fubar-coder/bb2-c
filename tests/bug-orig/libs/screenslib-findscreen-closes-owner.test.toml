@@ -1,0 +1,9 @@
+# screenslib-findscreen-closes-owner.test.bas: the original closes the
+# opening object's screen
+fixed-orig = 248
+
+[deviations."libs=cd"]
+"check.owner_kept.after_wbtoscreen" = "== fail"
+"check.owner_kept.after_wbtoscreen.actual" = "== 0"
+"check.owner_kept.after_closescreen" = "== fail"
+"check.owner_kept.after_closescreen.actual" = "== 0"

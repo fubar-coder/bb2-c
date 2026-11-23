@@ -1,0 +1,7 @@
+# fadelib-calcfade-palette-bits.test.bas: the original's red fraction runs
+# ahead (the last step is right again)
+fixed-orig = 134
+
+[deviations."libs=cd"]
+"check.fade_steps.colour_0_steps" = "== fail"
+"check.fade_steps.colour_0_steps.actual" = "== \"100 311 522 733 944 B55 D66 F77 188 399 5AA 7BB 9CC BDD DEE FFF\""

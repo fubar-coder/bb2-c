@@ -1,0 +1,9 @@
+# ilbmifflib-plane-word.test.bas: the original also stores plane 1 of the
+# ILBM into buffer B
+fixed-orig = 188
+timeout = 60
+files = ["p.iff|@TESTDATA@/ilbmifflib-plane-word.ilbm"]
+
+[deviations."libs=cd"]
+"check.second_plane.plane_b" = "== fail"
+"check.second_plane.plane_b.actual" = "== $C33C"

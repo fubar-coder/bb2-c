@@ -1,0 +1,14 @@
+# ilbmifflib-bitmap-ignores-init.test.bas: with runtime error checking; the
+# requester with its text is the tested behaviour, the case ends in it and
+# the check behind the LoadBitMap does not run; the original searches the
+# empty buffer instead
+fixed-orig = 187
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Can't Open File\""
+"end.case" = "not exists"
+"check.missing_file.loaded" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "contains \"Can't Find IFF 'BODY'\""

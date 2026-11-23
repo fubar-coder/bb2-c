@@ -1,0 +1,8 @@
+# displaylib-init-sprite-pointer.test.bas: the original writes the blank
+# sprite's address into the data of the POS/CTL moves, so the pointer moves
+# hold 0 and POS/CTL are not 0
+fixed-orig = 413
+
+[deviations."libs=cd"]
+"check.channel_0.pointer_set" = "== fail"
+"check.channel_0.pos_ctl_zero" = "== fail"

@@ -1,0 +1,9 @@
+# ilbmifflib-decode-all-planes.test.bas: the original stores the third plane
+# behind the bitmap's depth and the rows past the bitmap's height
+fixed-orig = 190
+
+[deviations."libs=cd"]
+"check.extra_plane.buffer_behind_depth" = "== fail"
+"check.extra_plane.buffer_behind_depth.actual" = "== \"3333\""
+"check.row_overrun.buffer_d" = "== fail"
+"check.row_overrun.buffer_d.actual" = "== \"0102 1112 2122 2324\""

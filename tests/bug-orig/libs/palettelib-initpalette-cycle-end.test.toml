@@ -1,0 +1,12 @@
+# palettelib-initpalette-cycle-end.test.bas: the original writes no end
+# mark, so CyclePalette runs into palette 2's cycle and rotates colours 1
+# and 2
+fixed-orig = 229
+
+[deviations."libs=cd"]
+"check.cycle_end.end_mark" = "== fail"
+"check.cycle_end.end_mark.actual" = "== 0"
+"check.cycle_end.colour_1" = "== fail"
+"check.cycle_end.colour_1.actual" = "== \"00 FF 00\""
+"check.cycle_end.colour_2" = "== fail"
+"check.cycle_end.colour_2.actual" = "== \"FF 00 00\""

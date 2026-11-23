@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-found -1
-after wbtoscreen -1
-after closescreen -1
-rc=0

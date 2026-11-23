@@ -1,0 +1,7 @@
+# displaylib-customchunky-split-spri.test.bas: the original overwrites spri
+# with the pad word (0)
+fixed-orig = 949
+
+[deviations."libs=cd"]
+"check.split_spri.spri_after" = "== fail"
+"check.split_spri.spri_after.actual" = "== 0"

@@ -1,0 +1,7 @@
+# blitzcoplib-unused-pointers.test.bas: the original's BPLCON1 pointer is
+# into the copper list, not the slice's own copy, so the case does not
+# call Show and the two checks behind it are not run
+fixed-orig = 407
+
+[deviations."libs=cd"]
+"check.bplcon1_pointer.bplcon1_at_copy" = "== fail"

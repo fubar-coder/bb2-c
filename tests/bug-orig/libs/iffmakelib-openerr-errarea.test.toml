@@ -1,0 +1,15 @@
+# iffmakelib-openerr-errarea.test.bas: the trap handler of the program
+# continues at the label rec, which ends the program, so the case has no end
+# entry and the check behind the SaveBitmap is not run; the original passes a
+# pointer behind the library (a garbage text, so the deviation only says it
+# is not the message)
+fixed-orig = 185
+timeout = 60
+
+[asserts]
+"end.case" = "not exists"
+"check.trap_message.no_trap" = "== not-run"
+
+[deviations."libs=cd"]
+"check.trap_message.message" = "== fail"
+"check.trap_message.message.actual" = "!= \"Can't open File\""

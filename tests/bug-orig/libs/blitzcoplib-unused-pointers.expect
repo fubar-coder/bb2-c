@@ -1,5 +1,0 @@
-[run]
-bitplanes -1 sprites -1 colours -1 bplcon2 -1
-bplcon1 pointer at the copy -1
-show con1 000000BB other longs changed 0
-rc=0

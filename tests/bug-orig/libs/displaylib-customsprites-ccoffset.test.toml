@@ -1,0 +1,7 @@
+# displaylib-customsprites-ccoffset.test.bas: the original scales CCOffset
+# by 64 instead of 4
+fixed-orig = 324
+
+[deviations."libs=cd"]
+"check.ccoffset.sprite_moves_offset" = "== fail"
+"check.ccoffset.sprite_moves_offset.actual" = "== 136"
