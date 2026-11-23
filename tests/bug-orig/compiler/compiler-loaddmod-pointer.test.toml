@@ -1,0 +1,14 @@
+# compiler-loaddmod-pointer.test.bas: without blitz2:defaultdbug, tedstub
+# calls the editor's menu item 9 (Load Debug Module) with a file that is
+# any load file, and logs the pointer state behind it. The original leaves
+# the pointer busy
+fixed-orig = 23
+remove = ["blitz2/defaultdbug"]
+files = ["blitz2/dbgmod|@WBRUN@"]
+jobline = ["menu=j001|9|blitz2:dbgmod"]
+
+[asserts]
+"compile.log" = "contains \"ezfreq \\\"Debug module to load\\\" -> blitz2:dbgmod\nMENU\tj001\t9\t-1\nPOINTER\tj001\tnormal\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"MENU\tj001\t9\t-1\nPOINTER\tj001\tbusy\n\""
