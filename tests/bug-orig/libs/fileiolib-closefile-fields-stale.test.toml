@@ -1,0 +1,10 @@
+# fileiolib-closefile-fields-stale.test.bas: the original keeps the record
+# length and the field pointer of the closed file
+fixed-orig = 140
+
+[deviations."libs=cd"]
+"check.fields_stale.closed_reclen" = "== fail"
+"check.fields_stale.closed_reclen.actual" = "== 6"
+"check.fields_stale.closed_fields" = "== fail"
+"check.fields_stale.again_reclen" = "== fail"
+"check.fields_stale.again_reclen.actual" = "== 7"

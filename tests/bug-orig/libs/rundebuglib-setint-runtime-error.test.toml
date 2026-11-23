@@ -1,0 +1,14 @@
+# rundebuglib-setint-runtime-error.test.bas: with runtime error checking;
+# the original's machine stops (the session times out)
+fixed-orig = 1073
+runtime-errors = "on"
+
+[asserts]
+"check.setint_error.not_stopped" = "== not-run"
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.setint_error.message" = "== fail"

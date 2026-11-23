@@ -1,5 +1,0 @@
-[run]
-b1 2
-c3 3
-REQUESTER: AutoRequest body "Instr Startpos MUST be greater than zero" *
-rc=0

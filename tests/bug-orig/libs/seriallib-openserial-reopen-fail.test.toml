@@ -1,0 +1,11 @@
+# seriallib-openserial-reopen-fail.test.bas: the original never closes the
+# device, so the cells with the CD's libraries each get a session of their
+# own
+fixed-orig = 260
+isolate = ["libs=cd"]
+
+[deviations."libs=cd"]
+"check.reopen_fail.read_half_open" = "== fail"
+"check.reopen_fail.read_signal_kept" = "== fail"
+"check.reopen_fail.closed_users" = "== fail"
+"check.reopen_fail.closed_users.actual" = "== 1"

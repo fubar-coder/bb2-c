@@ -1,0 +1,9 @@
+# rawkeylib-qconvertkey-index.test.bas: the original reads the shifted table
+# and its own code
+fixed-orig = 245
+
+[deviations."libs=cd"]
+"check.raw_code_range.raw_78" = "== fail"
+"check.raw_code_range.raw_78.actual" = "== 48"
+"check.raw_code_range.raw_69_shift" = "== fail"
+"check.raw_code_range.raw_69_shift.actual" = "== 72"

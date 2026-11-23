@@ -1,0 +1,12 @@
+# blitzoslib-addbox-list-range.test.bas: with runtime error checking; the
+# original's SetBox raises "Value Out of Range", the case ends in the
+# requester before the check of the value
+fixed-orig = 989
+runtime-errors = "on"
+
+[deviations."libs=cd"]
+"check.list_range.range" = "== fail"
+"check.list_range.range.actual" = "== 0"
+"check.list_range.value" = "== not-run"
+requester = "contains \"Value Out of Range\""
+"end.case" = "not exists"

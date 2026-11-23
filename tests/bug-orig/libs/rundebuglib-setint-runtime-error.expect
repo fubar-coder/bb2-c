@@ -1,4 +1,0 @@
-[run]
-start
-REQUESTER: AutoRequest body "Array Subscript out of Range" pos "OKAY!" neg "OKAY!" -> answered FALSE
-rc=0

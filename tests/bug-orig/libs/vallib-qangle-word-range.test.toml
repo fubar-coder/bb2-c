@@ -1,0 +1,20 @@
+# vallib-qangle-word-range.test.bas: the original wraps the differences
+fixed-orig = 1003
+
+[deviations."libs=cd"]
+"check.word_range.left_min" = "== fail"
+"check.word_range.left_min.actual" = "== $0000C001"
+"check.word_range.from_left_min" = "== fail"
+"check.word_range.from_left_min.actual" = "== $0000C001"
+"check.word_range.up_min" = "== fail"
+"check.word_range.up_min.actual" = "== $00004001"
+"check.word_range.diagonal_min" = "== fail"
+"check.word_range.diagonal_min.actual" = "== $00002000"
+"check.word_range.wide_x" = "== fail"
+"check.word_range.wide_x.actual" = "== 0"
+"check.word_range.wide_x_back" = "== fail"
+"check.word_range.wide_x_back.actual" = "== $00008001"
+"check.word_range.wide_y" = "== fail"
+"check.word_range.wide_y.actual" = "== $00004001"
+"check.word_range.wide_diagonal" = "== fail"
+"check.word_range.wide_diagonal.actual" = "== $00002000"

@@ -1,0 +1,9 @@
+# deflibs-cachedma-flags-d1.test.bas: the original passes the flags in d1
+fixed-orig = 959
+timeout = 60
+
+[deviations."libs=cd"]
+"check.flags_in_d0.pre_flags" = "== fail"
+"check.flags_in_d0.pre_flags.actual" = "== 7"
+"check.flags_in_d0.post_flags" = "== fail"
+"check.flags_in_d0.post_flags.actual" = "== 7"

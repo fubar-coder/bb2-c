@@ -1,0 +1,15 @@
+# datelib-numdays-month-range.test.bas: the original counts from the words it
+# reads before and behind its table
+fixed-orig = 124
+
+[deviations."libs=cd"]
+"check.month_range.month_0" = "== fail"
+"check.month_range.month_0.actual" = "== 4383"
+"check.month_range.month_13" = "== fail"
+"check.month_range.month_13.actual" = "== 5382"
+"check.month_range.month_14" = "== fail"
+"check.month_range.month_14.actual" = "== 33054"
+"check.month_range.month_15" = "== fail"
+"check.month_range.month_15.actual" = "== 24467"
+"check.month_range.format_1_month_13" = "== fail"
+"check.month_range.format_1_month_13.actual" = "== 8669"

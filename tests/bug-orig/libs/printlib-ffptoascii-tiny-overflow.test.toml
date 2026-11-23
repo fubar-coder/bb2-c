@@ -1,0 +1,13 @@
+# printlib-ffptoascii-tiny-overflow.test.bas: what NPrint prints is the
+# observation of the output
+fixed-orig = 241
+
+[asserts]
+output = "== \"a <-.00000000000000000002710505>\nb <.0000000000000000001626303>\nc <1E+18> <5E+18> <9.223371E+18>\n\""
+
+[deviations."libs=cd"]
+"check.tiny_overflow.five_e18" = "== fail"
+"check.tiny_overflow.five_e18.actual" = "== \"9.5E+19\""
+"check.tiny_overflow.largest" = "== fail"
+"check.tiny_overflow.largest.actual" = "== \"9.922337E+19\""
+output = "== \"a <-.00000000000000000002710505>\nb <.0000000000000000001626303>\nc <1E+18> <9.5E+19> <9.922337E+19>\n\""

@@ -1,0 +1,10 @@
+# stringfunclib-instr-end-overflow.test.bas: the original hangs in the
+# first search; the checks behind it do not run
+fixed-orig = 1030
+timeout = 30
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

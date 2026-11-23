@@ -1,0 +1,13 @@
+# stringfunclib-cvl-length-check.test.bas: with runtime error checking; the
+# original raises no error ($61626300, the 0 behind the string, is the
+# fourth byte) and goes on to the check behind the statement
+fixed-orig = 288
+runtime-errors = "on"
+
+[asserts]
+"check.short_cvl.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.short_cvl.refused" = "== fail"
+"check.short_cvl.not_refused" = "== fail"
+requester = "count == 0"

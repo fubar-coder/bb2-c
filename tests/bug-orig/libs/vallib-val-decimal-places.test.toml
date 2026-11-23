@@ -1,0 +1,5 @@
+# vallib-val-decimal-places.test.bas: the original drops the fraction (1)
+fixed-orig = 304
+
+[deviations."libs=cd"]
+"check.decimal_places.value" = "== fail"

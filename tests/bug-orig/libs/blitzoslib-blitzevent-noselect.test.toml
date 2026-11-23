@@ -1,0 +1,6 @@
+# blitzoslib-blitzevent-noselect.test.bas: the original moves the value at
+# address 12
+fixed-orig = 90
+
+[deviations."libs=cd"]
+"check.no_box_selected.address_12_unchanged" = "== fail"

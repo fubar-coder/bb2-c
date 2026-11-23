@@ -1,0 +1,8 @@
+# utillib-createmsgport-no-signal.test.bas: the original makes a port with
+# the signal bit 255 and raises no error
+fixed-orig = 298
+
+[deviations."libs=cd"]
+"check.no_signal.error" = "== fail"
+"check.no_signal.error.actual" = "== \"\""
+"check.no_signal.port" = "== fail"

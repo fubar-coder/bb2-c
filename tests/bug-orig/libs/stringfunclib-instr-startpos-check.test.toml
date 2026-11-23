@@ -1,0 +1,13 @@
+# stringfunclib-instr-startpos-check.test.bas: with runtime error checking;
+# the original raises no error and finds the empty string at the byte
+# before the string (0)
+fixed-orig = 287
+runtime-errors = "on"
+
+[asserts]
+"check.start_zero.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.start_zero.refused" = "== fail"
+"check.start_zero.not_refused" = "== fail"
+requester = "count == 0"

@@ -1,0 +1,10 @@
+# datelib-century-leap-years.test.bas: the original's dates are off by the
+# missing century rules; the check of a row is repeated for every row, its
+# actual value is the first row that fails
+fixed-orig = 1001
+
+[deviations."libs=cd"]
+"check.date_rows.row" = "== fail"
+"check.date_rows.row.actual" = "== \"-64954 02/03/1800 2 3 1800 -64954\""
+"check.numdays_rows.row" = "== fail"
+"check.numdays_rows.row.actual" = "== \"[1/1/1900] -28490\""

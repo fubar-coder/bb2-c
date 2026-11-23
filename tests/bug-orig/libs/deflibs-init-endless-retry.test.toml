@@ -1,0 +1,12 @@
+# deflibs-init-endless-retry.test.bas: on the A500 (Kickstart 1.3, no
+# gadtools.library); the original hangs at its start, before the first
+# statement
+fixed-orig = 44
+machine = "a500"
+timeout = 30
+
+[deviations."libs=cd"]
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

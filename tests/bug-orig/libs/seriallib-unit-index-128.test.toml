@@ -1,0 +1,8 @@
+# seriallib-unit-index-128.test.bas: the original closes the device through
+# the write half of unit 0
+fixed-orig = 252
+
+[deviations."libs=cd"]
+"check.unit_one.write_half_open" = "== fail"
+"check.unit_one.users" = "== fail"
+"check.unit_one.users.actual" = "== 0"

@@ -1,0 +1,14 @@
+# utillib-deletemsgport-foreign.test.bas: with runtime error checking; the
+# original has no check of its own, memlib reports "Unable to Free Memory"
+# after the damage and the case ends in that requester
+fixed-orig = 1041
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.foreign_port.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.foreign_port.refused" = "== fail"
+requester = "contains \"Unable to Free Memory\""
+"end.case" = "not exists"

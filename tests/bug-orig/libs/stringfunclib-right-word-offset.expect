@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-right -1 3
-unright -1
-rc=0

@@ -1,0 +1,8 @@
+# datelib-numdays-word-carry.test.bas: no carry into the high word
+fixed-orig = 122
+
+[deviations."libs=cd"]
+"check.word_carry.boundary" = "== fail"
+"check.word_carry.boundary.actual" = "== 65535"
+"check.word_carry.round_65535" = "== fail"
+"check.word_carry.round_65535.actual" = "== 131071"

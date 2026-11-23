@@ -1,4 +1,0 @@
-[run]
-before
-REQUESTER: AutoRequest body "UnInitialised Page" *
-rc=0

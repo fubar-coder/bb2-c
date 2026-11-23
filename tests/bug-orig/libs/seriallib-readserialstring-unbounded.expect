@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-waiting 1000
-fits
-guard intact
-rc=0

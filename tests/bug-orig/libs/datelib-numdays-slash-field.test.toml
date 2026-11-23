@@ -1,0 +1,11 @@
+# datelib-numdays-slash-field.test.bas: the original counts 47 for an empty
+# field
+fixed-orig = 123
+
+[deviations."libs=cd"]
+"check.empty_field.day" = "== fail"
+"check.empty_field.day.actual" = "== 4549"
+"check.empty_field.format_1_day" = "== fail"
+"check.empty_field.format_1_day.actual" = "== 4549"
+"check.empty_field.format_1_year" = "== fail"
+"check.empty_field.format_1_year.actual" = "== 77"

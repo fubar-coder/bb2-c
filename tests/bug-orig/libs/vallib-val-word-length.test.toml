@@ -1,0 +1,7 @@
+# vallib-val-word-length.test.bas: a string buffer of 70000 bytes; the
+# original gives 0
+fixed-orig = 303
+jobline = ["strbuf=70000"]
+
+[deviations."libs=cd"]
+"check.word_length.value" = "== fail"

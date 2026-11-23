@@ -1,4 +1,0 @@
-[run]
-CachePreDMA flags 2
-CachePostDMA flags 8
-rc=0

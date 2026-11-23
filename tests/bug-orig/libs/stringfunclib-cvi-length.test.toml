@@ -1,0 +1,13 @@
+# stringfunclib-cvi-length.test.bas: the original reads the bytes behind the
+# short string (its terminating 0 and what Len left in the string buffer)
+fixed-orig = 288
+
+[deviations."libs=cd"]
+"check.short_strings.cvl_a" = "== fail"
+"check.short_strings.cvl_a.actual" = "== $6100595A"
+"check.short_strings.cvl_ab" = "== fail"
+"check.short_strings.cvl_ab.actual" = "== $6162005A"
+"check.short_strings.cvl_empty" = "== fail"
+"check.short_strings.cvl_empty.actual" = "== $0058595A"
+"check.short_strings.cvi_empty" = "== fail"
+"check.short_strings.cvi_empty.actual" = "== 88"

@@ -1,0 +1,7 @@
+# blitzoslib-deselectbox-selected.test.bas: the original keeps the selected
+# box
+fixed-orig = 94
+
+[deviations."libs=cd"]
+"check.deselect.after_deselect" = "== fail"
+"check.deselect.after_deselect.actual" = "== 0"

@@ -1,0 +1,6 @@
+# blitzoslib-addbox-old-text.test.bas: the original keeps the pointer to the
+# freed text
+fixed-orig = 89
+
+[deviations."libs=cd"]
+"check.old_text.text_pointer" = "== fail"

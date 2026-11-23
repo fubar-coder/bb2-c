@@ -1,0 +1,15 @@
+# wbstartuplib-clistring-overflow.test.bas: the program is started with an
+# argument of 306 characters (abc, 300 x, xyz); the original keeps 288
+# characters of it when the old test started itself as a child; started with
+# the argument directly (the bug of the issue) the original overwrites what
+# is behind cliString and crashes at its start, before the first check
+fixed-orig = 308
+timeout = 60
+runargs = "abcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyz"
+
+[deviations."libs=cd"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

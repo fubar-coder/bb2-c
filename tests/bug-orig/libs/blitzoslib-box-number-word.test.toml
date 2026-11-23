@@ -1,0 +1,12 @@
+# blitzoslib-box-number-word.test.bas: the original's box 2050 is box 2
+fixed-orig = 81
+
+[deviations."libs=cd"]
+"check.box_2050.x_2050" = "== fail"
+"check.box_2050.x_2050.actual" = "== 0"
+"check.box_2050.range_2050" = "== fail"
+"check.box_2050.range_2050.actual" = "== 0"
+"check.box_2050.x_2" = "== fail"
+"check.box_2050.x_2.actual" = "== 5"
+"check.box_2050.selected" = "== fail"
+"check.box_2050.selected.actual" = "== 2"

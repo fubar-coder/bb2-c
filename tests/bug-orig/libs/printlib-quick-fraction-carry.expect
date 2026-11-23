@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-quick 0002FFFF <3> <3>
-quick 0000FFFF <1> <1>
-quick 7FFFFFFF <32768> <32768>
-quick FFFD0001 <-3> <-3>
-rc=0

@@ -1,0 +1,14 @@
+# blitzoslib-initpage-numboxes.test.bas: with runtime error checking; the
+# original has no check, the allocation fails with "Out of Memory!" and the
+# case ends in that requester
+fixed-orig = 1043
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.numboxes.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.numboxes.refused" = "== fail"
+requester = "contains \"Out of Memory!\""
+"end.case" = "not exists"

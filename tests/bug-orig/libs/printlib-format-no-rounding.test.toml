@@ -1,0 +1,14 @@
+# printlib-format-no-rounding.test.bas: what NPrint prints is the
+# observation of the output
+fixed-orig = 236
+
+[asserts]
+output = "== \"a <.57>\nb <   .57>\nc <0.6>\nd <-   .6>\n\""
+
+[deviations."libs=cd"]
+"check.no_rounding.a" = "== fail"
+"check.no_rounding.a.actual" = "== \".56\""
+"check.no_rounding.b" = "== fail"
+"check.no_rounding.c" = "== fail"
+"check.no_rounding.d" = "== fail"
+output = "== \"a <.56>\nb <   .56>\nc <0.5>\nd <-   .5>\n\""

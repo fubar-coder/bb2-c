@@ -1,0 +1,12 @@
+# stringfunclib-cvq-length-check.test.bas: with runtime error checking; the
+# original raises no error and goes on to the check behind the statement
+fixed-orig = 288
+runtime-errors = "on"
+
+[asserts]
+"check.short_cvq.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"check.short_cvq.refused" = "== fail"
+"check.short_cvq.not_refused" = "== fail"
+requester = "count == 0"
