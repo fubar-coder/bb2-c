@@ -8102,3 +8102,11 @@ rows:
     text: "A compile error on a line that came from a macro frees the memory of the expanded line; the original kept it until the next compile, in a nested macro the outer line's for good."
     page: compiler
     anchor: macros
+  - issue: 1204
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "A line in the debugger's direct mode that used a macro frees the memory of the expanded line once it is compiled; the original kept it until the next macro or compile, for good if blitz2 ended first."
+    page: compiler
+    anchor: macros

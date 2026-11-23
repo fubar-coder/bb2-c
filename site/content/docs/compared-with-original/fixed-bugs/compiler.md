@@ -1024,6 +1024,10 @@ Each point says first what the original did, then what the port does.
   expanded line, in a nested macro also that of the outer one, until the
   next compile or for good; it is freed with the error
   ([#1203](https://github.com/fubar-coder/bb2-c/issues/1203)).
+* A line typed in the debugger's direct mode that used a macro kept the
+  memory of the expanded line until the next macro or compile, and for good
+  if blitz2 ended first; it is freed once the line is compiled
+  ([#1204](https://github.com/fubar-coder/bb2-c/issues/1204)).
 
 ### Residents
 
