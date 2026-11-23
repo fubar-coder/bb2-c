@@ -1,0 +1,8 @@
+# banklib-loadbank-drawer.test.bas: the original reallocates the bank with
+# the size of the drawer, -1
+fixed-orig = 72
+
+[deviations."libs=cd"]
+"check.drawer.size" = "== fail"
+"check.drawer.size.actual" = "== -1"
+"check.drawer.same_address" = "== fail"

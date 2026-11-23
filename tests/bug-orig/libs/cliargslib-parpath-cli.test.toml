@@ -1,0 +1,9 @@
+# cliargslib-parpath-cli.test.bas: an open bug; ParPath$ of a CLI argument
+# gives the name of the boot volume
+runargs = "datei.txt"
+
+[deviations."libs=cd"]
+"check.parpath.parpath_0" = "== fail"
+"check.parpath.parpath_0.actual" = "== \"SYS:\""
+"check.parpath.parpath_1" = "== fail"
+"check.parpath.parpath_1.actual" = "== \"SYS:datei.txt\""
