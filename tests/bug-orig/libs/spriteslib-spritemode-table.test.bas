@@ -9,14 +9,15 @@
 ; command itself is unchanged. Runtime error checking on (the debugger).
 ; Correct: the error check stops SpriteMode 3 with "Illegal SpriteMode".
 ; The original has no check and makes rows of 32 bytes.
-; The error is the tested behaviour; the message is judged by the requester
-; (see the configuration), so it is not announced with !ExpectError.
+; The error is announced with !ExpectError; the original raises none (see
+; the configuration).
 DEFTYPE .l
 
 !TestCase{spritemode_3}
   BitMap 0,16,8,2
   Use BitMap 0
   GetaShape 0,0,0,16,8
+  !ExpectError{"Illegal SpriteMode","refused"}
   SpriteMode 3
   GetaSprite 0,0
   SpriteMode 0
