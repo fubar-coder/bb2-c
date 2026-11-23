@@ -1,0 +1,16 @@
+# compiler-constdiv-long.test.bas: the correct result is a failed compile
+# (Division by Zero at the line of d.l=7/0) and nothing runs; the original
+# compiles and the case runs with the quotient 2147483647
+fixed-orig = 1044
+
+[asserts]
+compile = "== \"error 12 Division by Zero\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"
