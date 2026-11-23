@@ -9,7 +9,9 @@ presets are ([Tests]({{< relref "tests" >}})).
 
 {{< callout type="info" >}}
 To run one test or one of its cases, directly or with CTest, see
-[Running a single test]({{< relref "running-tests" >}}).
+[Running a single test]({{< relref "running-tests" >}}). Every macro a
+test source can use is described in
+[The test library]({{< relref "test-library" >}}).
 {{< /callout >}}
 
 Most emulator tests compare what a program prints with a file of
@@ -645,22 +647,12 @@ declarations are allowed: constants, `Macro`, `Statement` and
 `CNIF` ... `CEND`, labels and data statements. A helper is a procedure,
 or a subroutine inside a case.
 
-Inside a block the checks are:
-
-| Macro | Checks |
-|---|---|
-| `!Check{COND,"name"}` | that a long condition is true |
-| `!CheckEq{ACTUAL,EXPECTED,"name"}` | two long values |
-| `!CheckQEq{ACTUAL,EXPECTED,"name"}` | two quick values, exactly |
-| `!CheckFltNear{ACTUAL,EXPECTED,DELTA,"name"}` | two float values, within DELTA |
-| `!CheckStrEq{ACTUAL,EXPECTED,"name"}` | two strings |
-| `!Require{COND,"name"}` | a precondition: if it fails, the block ends and the case is *broken*, because the tested behaviour was not reached |
-| `!ExpectError{"MESSAGE"}` | announces that the next statement raises a runtime error whose requester holds MESSAGE; needs `runtime-errors = "on"` |
-
-The name is optional, but a check that a configuration names needs one,
-and a name is unique in its case or procedure. A case name is lower
-case, letters, digits and `_`, without `__`, and must not be the name of
-a Blitz Basic command or function (`count` or `add` are not allowed).
+Inside a block, the checks of the test library compare long, quick,
+float and string values, `!Require` checks a precondition and
+`!ExpectError` announces a runtime error. A check may have a name, its
+last argument; a check that a configuration names needs one. Every
+macro, with its arguments, what it records and the rules for case names,
+is described in [The test library]({{< relref "test-library" >}}).
 
 This example runs in the repository as a test of its own. It has a
 batch init, two cases and a procedure with a check:
@@ -701,10 +693,8 @@ runtime-errors = "on"
 libs = ["cd", "clib"]
 ```
 
-The repository's
-[description of the tests](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md#tests-that-judge-themselves)
-has the full rules for sources, including the limits of the compiler a
-test can meet.
+[The test library]({{< relref "test-library" >}}) has the full rules
+for sources, including the limits of the compiler a test can meet.
 
 ## Extending the tests
 

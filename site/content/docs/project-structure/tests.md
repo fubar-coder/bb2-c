@@ -90,7 +90,8 @@ correctly.
   configuration:
   [Tests that judge themselves]({{< relref "self-judging-tests" >}});
   how to run one of them, or a single case, directly or with CTest:
-  [Running a single test]({{< relref "running-tests" >}}).
+  [Running a single test]({{< relref "running-tests" >}}); the macros
+  they check with: [The test library]({{< relref "test-library" >}}).
 
 ## The expected data of the library tests
 
