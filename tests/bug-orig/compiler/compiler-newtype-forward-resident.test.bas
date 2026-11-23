@@ -4,13 +4,15 @@
 ; out again.
 ; Correct: the program that loads the resident sees .tb with 16 bytes (z at
 ; 14) and .ta with 20 (q at 16).
-; @fixed #974
-; @pass file=r.bb2|@TESTDATA@/compiler-newtype-forward-resident.res
-; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res
 DEFTYPE .ta v
-v\m\x\t=7
-v\q=9
-NPrint "b ",SizeOf .tb," z ",SizeOf .tb\z
-NPrint "a ",SizeOf .ta," q ",SizeOf .ta\q
-NPrint v\m\x\t," ",v\q
-End
+
+!TestCase{forward_resident}
+  v\m\x\t=7
+  v\q=9
+  !CheckEq{SizeOf .tb,16,"size_tb"}
+  !CheckEq{SizeOf .tb\z,14,"offset_z"}
+  !CheckEq{SizeOf .ta,20,"size_ta"}
+  !CheckEq{SizeOf .ta\q,16,"offset_q"}
+  !CheckEq{v\m\x\t,7,"x_t"}
+  !CheckEq{v\q,9,"q"}
+!EndTestCase

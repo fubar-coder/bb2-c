@@ -3,10 +3,9 @@
 ; with the line number of that field as its size.  A later field of that
 ; type by value (x.fwd in .dd) takes the line number as its size; the
 ; NEWTYPE .fwd defined afterwards does not correct the layout of .dd: the
-; field y and SizeOf .dd depend on the line of *p.fwd (here 11).
+; field y and SizeOf .dd depend on the line of *p.fwd.
 ; Correct: the layout of .dd follows the size of .fwd (8 bytes): y at 8,
 ; SizeOf .dd 12, and the fields of v do not overlap.
-; @fixed #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE
@@ -19,10 +18,12 @@ NEWTYPE .fwd
   b.l
 End NEWTYPE
 DEFTYPE .dd v
-v\x\b=7
-v\y=9
-o.l=SizeOf .dd\y
-NPrint "y at ",o
-NPrint "size ",SizeOf .dd
-NPrint v\x\b," ",v\y
-End
+
+!TestCase{forward_field}
+  v\x\b=7
+  v\y=9
+  !CheckEq{SizeOf .dd\y,8,"y_offset"}
+  !CheckEq{SizeOf .dd,12,"size_dd"}
+  !CheckEq{v\x\b,7,"x_b"}
+  !CheckEq{v\y,9,"y"}
+!EndTestCase

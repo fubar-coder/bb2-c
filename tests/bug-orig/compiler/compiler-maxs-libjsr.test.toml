@@ -1,0 +1,9 @@
+# compiler-maxs-libjsr.test.bas: the original program hangs at End (it frees
+# 100 shapes from address 0); the check before it ran
+fixed-orig = 335
+timeout = 30
+hang-after = 10
+
+[deviations."compiler=orig195"]
+session = "== timeout"
+rc = "not exists"

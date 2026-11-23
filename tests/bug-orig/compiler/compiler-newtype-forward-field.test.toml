@@ -1,0 +1,10 @@
+# compiler-newtype-forward-field.test.bas: the original lays .dd out with the
+# line number of *p.fwd as the size of .fwd; that line is a line of the
+# test's driver, so the deviations declare "not the correct value"
+fixed-orig = 974
+
+[deviations."compiler=orig195"]
+"check.forward_field.y_offset" = "== fail"
+"check.forward_field.y_offset.actual" = "!= 8"
+"check.forward_field.size_dd" = "== fail"
+"check.forward_field.size_dd.actual" = "!= 12"

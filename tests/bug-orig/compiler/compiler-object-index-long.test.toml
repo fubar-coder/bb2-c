@@ -1,0 +1,17 @@
+# compiler-object-index-long.test.bas: the original addresses BitMap 512 with
+# a word offset, 32768 bytes before BitMap 0; BitMap 512, Use and Plot work
+# on other memory
+fixed-orig = 939
+jobline = ["max=160|513"]
+
+[deviations."compiler=orig195"]
+"check.object_index_long.addr_difference" = "== fail"
+"check.object_index_long.addr_difference.actual" = "== -32768"
+"check.object_index_long.addr_second_register" = "== fail"
+"check.object_index_long.addr_second_register.actual" = "== -65532"
+"check.object_index_long.bytes_per_row" = "== fail"
+"check.object_index_long.bytes_per_row.actual" = "== 0"
+"check.object_index_long.own_memory" = "== fail"
+"check.object_index_long.own_memory.actual" = "== 0"
+"check.object_index_long.plotted_byte" = "== fail"
+"check.object_index_long.plotted_byte.actual" = "== 0"

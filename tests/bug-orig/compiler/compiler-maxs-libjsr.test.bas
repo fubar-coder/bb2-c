@@ -3,12 +3,13 @@
 ; calls inside the linked library code (fixjsrs): an object library only
 ; reached from another library gets no array, its base stays 0, but End
 ; still frees all its objects.  blitzoslib calls Blit and so links
-; shapeslib; this program has no shapes command (InitPage behind End is
-; never run, linking blitzoslib is enough).  At End 100 "shapes" from
+; shapeslib; this program has no shapes command (InitPage behind the jump
+; is never run, linking blitzoslib is enough).  At End 100 "shapes" from
 ; address 0 are freed: the system hangs.
 ; Correct: the program ends normally.
-; @fixed #335
-; @pass timeout=30
-NPrint "x"
-End
-InitPage 0,0,2
+!TestCase{ends_normally}
+  !CheckEq{1,1,"ran"}
+  Goto skip_initpage
+  InitPage 0,0,2
+.skip_initpage
+!EndTestCase

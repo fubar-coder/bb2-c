@@ -8,15 +8,19 @@
 ; second data register (b+Used BitMap) and for a small number (BitMap 1).
 ; Correct: after Use BitMap 1025, Used BitMap is 1025 and b+Used BitMap
 ; 1026; after Use BitMap 1, Used BitMap is 1.
-; @fixed #998
-; @pass jobline=max=160|1100
-BitMap 1025,16,8,1
-BitMap 1,16,8,1
-BitMap 0,16,8,1
-Use BitMap 1025
-NPrint Used BitMap
-b.w=1
-NPrint b+Used BitMap
-Use BitMap 1
-NPrint Used BitMap
-End
+DEFTYPE .l
+
+!TestCase{object_used_word}
+  BitMap 1025,16,8,1
+  BitMap 1,16,8,1
+  BitMap 0,16,8,1
+  Use BitMap 1025
+  r=Used BitMap
+  !CheckEq{r,1025,"used_1025"}
+  b.w=1
+  r=b+Used BitMap
+  !CheckEq{r,1026,"used_second_register"}
+  Use BitMap 1
+  r=Used BitMap
+  !CheckEq{r,1,"used_1"}
+!EndTestCase

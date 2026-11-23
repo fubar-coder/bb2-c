@@ -10,18 +10,25 @@
 ; bytes per row of that object (2); Use BitMap 512 makes Plot draw into
 ; its plane ($80 in the first byte); Free BitMap 512 clears its "own
 ; memory" field (+62).
-; @fixed #939
-; @pass jobline=max=160|513
 DEFTYPE .l
-o=Addr BitMap(0)+32768
-NPrint Addr BitMap(512)-Addr BitMap(0)
-NPrint 4+Addr BitMap(512)-o
-BitMap 512,16,8,1
-NPrint Peek.w(o)," ",Peek.w(o+62)
-BitMap 0,16,8,1
-Use BitMap 512
-Plot 0,0,1
-NPrint Peek.b(Peek.l(o+8)) AND 255
-Free BitMap 512
-NPrint Peek.w(o+62)
-End
+
+!TestCase{object_index_long}
+  o=Addr BitMap(0)+32768
+  r=Addr BitMap(512)-Addr BitMap(0)
+  !CheckEq{r,32768,"addr_difference"}
+  r=4+Addr BitMap(512)-o
+  !CheckEq{r,4,"addr_second_register"}
+  BitMap 512,16,8,1
+  r=Peek.w(o)
+  !CheckEq{r,2,"bytes_per_row"}
+  r=Peek.w(o+62)
+  !CheckEq{r,-1,"own_memory"}
+  BitMap 0,16,8,1
+  Use BitMap 512
+  Plot 0,0,1
+  r=Peek.b(Peek.l(o+8)) AND 255
+  !CheckEq{r,128,"plotted_byte"}
+  Free BitMap 512
+  r=Peek.w(o+62)
+  !CheckEq{r,0,"own_memory_freed"}
+!EndTestCase

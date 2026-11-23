@@ -1,0 +1,8 @@
+# compiler-object-index-word.test.bas: the original adds the offset of
+# Shape 1025 as a negative word
+fixed-orig = 939
+jobline = ["max=154|1100"]
+
+[deviations."compiler=orig195"]
+"check.object_index_word.addr_difference" = "== fail"
+"check.object_index_word.addr_difference.actual" = "== -32736"
