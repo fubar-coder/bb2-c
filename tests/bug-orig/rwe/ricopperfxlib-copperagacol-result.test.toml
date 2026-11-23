@@ -1,0 +1,10 @@
+# ricopperfxlib-copperagacol-result.test.bas: the original returns the constant
+# 1234 without a custom space and, with one, a value that depends on the
+# program's memory
+fixed-orig = 590
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.results.no_space" = "== fail"
+"check.results.no_space.actual" = "== 1234"
+"check.results.space" = "== fail"

@@ -1,0 +1,10 @@
+# ricopperfxlib-redocolsplit-ccoffset-word.test.bas: the original writes the
+# colour word at +10 of the space and not at $1000A
+fixed-orig = 594
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.offset_4000.at_10" = "== fail"
+"check.offset_4000.at_10.actual" = "== 309"
+"check.offset_4000.at_1000A" = "== fail"
+"check.offset_4000.at_1000A.actual" = "== 0"

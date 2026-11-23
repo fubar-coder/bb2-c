@@ -4,15 +4,15 @@
 ; program's own memory (CopperResetAdr).
 ; Correct (decision W6 Q3): -1 when the command worked, 0 when not (no
 ; custom space).
-; @fixed #590
-; @rwe ricopperfxlib
 DEFTYPE .l
-m=AllocMem_(256,$10000)
-If m=0 Then NPrint "no memory" : End
-r=CopperAGACol(37,2,4,6)
-NPrint "no space: ",r
-CopperResetAdr m,0
-r=CopperAGACol(37,2,4,6)
-NPrint "space: ",r
-FreeMem_ m,256
-End
+
+!TestCase{results}
+  m=AllocMem_(256,$10000)
+  !Require{m<>0,"memory"}
+  r0=CopperAGACol(37,2,4,6)
+  !CheckEq{r0,0,"no_space"}
+  CopperResetAdr m,0
+  r1=CopperAGACol(37,2,4,6)
+  !CheckEq{r1,-1,"space"}
+  FreeMem_ m,256
+!EndTestCase

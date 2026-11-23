@@ -1,0 +1,8 @@
+# ricopperfxlib-copperwait-x-carry.test.bas: the original's WAIT for x 500
+# carries into the line
+fixed-orig = 591
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.lines.x500" = "== fail"
+"check.lines.x500.actual" = "== 65"

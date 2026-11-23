@@ -1,0 +1,8 @@
+# ricopperfxlib-getccoffset-resetadr.test.bas: the original's GetCCOffset
+# returns -1 after CopperResetAdr
+fixed-orig = 593
+rwe = ["ricopperfxlib"]
+
+[deviations."compiler=orig210"]
+"check.offset.offset" = "== fail"
+"check.offset.offset.actual" = "== -1"

@@ -4,14 +4,14 @@
 ; address and coplistaddr to 0: the commands write their instructions
 ; and advance the offset, but GetCCOffset returns -1.
 ; Correct: GetCCOffset returns the offset (1 after one CopperMove).
-; @fixed #593
-; @rwe ricopperfxlib
 DEFTYPE .l
-m=AllocMem_(4096,$10000)
-If m=0 Then NPrint "no memory" : End
-CopperResetAdr m,44
-CopperMove $180,$fff
-o=GetCCOffset
-NPrint "offset ",o
-FreeMem_ m,4096
-End
+
+!TestCase{offset}
+  m=AllocMem_(4096,$10000)
+  !Require{m<>0,"memory"}
+  CopperResetAdr m,44
+  CopperMove $180,$fff
+  o=GetCCOffset
+  !CheckEq{o,1,"offset"}
+  FreeMem_ m,4096
+!EndTestCase

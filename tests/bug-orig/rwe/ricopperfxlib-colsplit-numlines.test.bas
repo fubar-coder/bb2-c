@@ -11,22 +11,21 @@
 ; check area.  Here with runtime error checking.
 ; Correct: the error check refuses numlines -1: "Colour split needs at
 ; least one line", nothing is written.
-; @fixed #589
-; @rwe ricopperfxlib
-; @pass timeout=30
-; @pass runtime_errors=on
 DEFTYPE .l
-Dim c.l(5)
-For i=0 To 5 : c(i)=i*40 : Next
-s=1400000
-m=AllocMem_(s,$10000)
-If m=0 Then NPrint "no memory" : End
-Poke.l m+1000000,$12345678
-CopperResetAdr m,0
-DoColSplit &c(0),-1,1
-If Peek.l(m+1000000)=$12345678 Then NPrint "marker kept" Else NPrint "marker overwritten"
-CopperResetAdr m,0
-DoColSplit &c(0),0,1
-NPrint "after"
-FreeMem_ m,s
-End
+
+!TestCase{numlines}
+  Dim c.l(5)
+  For i=0 To 5 : c(i)=i*40 : Next
+  s=1400000
+  m=AllocMem_(s,$10000)
+  !Require{m<>0,"memory"}
+  Poke.l m+1000000,$12345678
+  CopperResetAdr m,0
+  !ExpectError{"Colour split needs at least one line","refused_minus1"}
+  DoColSplit &c(0),-1,1
+  !CheckEq{Peek.l(m+1000000),$12345678,"marker_kept"}
+  CopperResetAdr m,0
+  !ExpectError{"Colour split needs at least one line","refused_zero"}
+  DoColSplit &c(0),0,1
+  FreeMem_ m,s
+!EndTestCase
