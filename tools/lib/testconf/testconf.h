@@ -613,6 +613,14 @@ int tc_cell_faulty(const struct tc_config *conf, const struct tc_matrix *m, size
  * alternatives name leave the other assertions and the defaults (a check
  * an alternative names is out of the default "every check passed"), and the
  * cell passes that point if every assertion of one alternative holds.
+ *
+ * The general abnormal end of an original that corrupts memory is built
+ * in: abnormal = ["any", EXTRA...] stands for the four alternatives
+ * abnormal, abnormal_after_case, abnormal_after_run and abnormal_run_only,
+ * each "session != done", "rc not exists", "requester count >= 0", its
+ * end.case and end.run assertions and then the EXTRA elements (not on
+ * session, rc, requester, end.case, end.run).  "any" elsewhere, another
+ * bare word in its place and those three keys next to it are refused.
  */
 
 /** @brief An alternative end. */

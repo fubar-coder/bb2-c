@@ -653,7 +653,8 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
             }
             if (e->value.type != TT_LIST || !e->value.nlist)
                 return tc_err(err, errlen, "%s:%u: the alternative end %s must be a non-empty list of \"QUERY "
-                              "PREDICATE\"", d->file, e->line, e->key);
+                              "PREDICATE\"%s", d->file, e->line, e->key,
+                              !strcmp(e->key, "abnormal") ? " (the general abnormal end: abnormal = [\"any\"])" : "");
             continue;
         }
         if (e->value.type != TT_STRING)

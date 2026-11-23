@@ -601,3 +601,98 @@ TEST_CASE("testassert: alternative ends", "[testassert]")
     t.write("x.test.toml", "[ends.\"libs=cdd\"]\nreason = \"r\"\none = [\"rc == 0\"]\n");
     resolve_refused(t, ":2: [ends.\"libs=cdd\"]: the cell selector \"libs=cdd\": libs must be one of");
 }
+
+TEST_CASE("testassert: the general abnormal end", "[testassert]")
+{
+    tree t;
+    const std::string own = "[ends.\"libs=cd\"]\nreason = \"memory corruption\"\n";
+    const std::string four
+        = "libs=cd (memory corruption):"
+          " abnormal=session != done,rc not exists,requester count >= 0,end.case not exists,end.run not exists%"
+          " abnormal_after_case=session != done,rc not exists,requester count >= 0,end.case exists,"
+          "end.run not exists%"
+          " abnormal_after_run=session != done,rc not exists,requester count >= 0,end.case exists,end.run exists%"
+          " abnormal_run_only=session != done,rc not exists,requester count >= 0,end.case not exists,"
+          "end.run exists%";
+    // the four alternatives with the extra elements in place of each %
+    auto with = [&](const std::string &extra) {
+        std::string r = four;
+
+        for (size_t p; (p = r.find('%')) != std::string::npos;)
+            r.replace(p, 1, extra);
+        return r;
+    };
+
+    t.write("tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    // the short form: the four alternatives with their names
+    t.write("x.test.toml", "fixed-orig = 7\n" + own + "abnormal = [\"any\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED) == with(""));
+        CHECK(ends_of(b, "clib", "a", TC_DEVIATED) == "");
+    }
+    // extra elements go into each of the four, after their own; other
+    // alternatives of the table stay as they are
+    t.write("x.test.toml", own + "abnormal = [\"any\", \"check.a.x != ok\", \"output contains \\\"y\\\"\"]\n"
+                                 "returns = [\"session == done\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED)
+              == with(",check.a.x != ok,output contains \"y\"") + " returns=session == done");
+    }
+    // the written-out form gives the same alternatives
+    t.write("x.test.toml",
+            own
+                + "abnormal = [\"session != done\", \"rc not exists\", \"requester count >= 0\", \"end.case not "
+                  "exists\", \"end.run not exists\"]\n"
+                  "abnormal_after_case = [\"session != done\", \"rc not exists\", \"requester count >= 0\", "
+                  "\"end.case exists\", \"end.run not exists\"]\n"
+                  "abnormal_after_run = [\"session != done\", \"rc not exists\", \"requester count >= 0\", "
+                  "\"end.case exists\", \"end.run exists\"]\n"
+                  "abnormal_run_only = [\"session != done\", \"rc not exists\", \"requester count >= 0\", "
+                  "\"end.case not exists\", \"end.run exists\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED) == with(""));
+    }
+    // a list without "any" under the key abnormal is an ordinary alternative
+    t.write("x.test.toml", own + "abnormal = [\"session == timeout\", \"rc not exists\"]\n");
+    {
+        built b(t);
+        REQUIRE(b.rc == 0);
+        CHECK(ends_of(b, "cd", "a", TC_DEVIATED)
+              == "libs=cd (memory corruption): abnormal=session == timeout,rc not exists");
+    }
+    // broken input, each naming file and line: an unknown word, the string
+    // form, "any" not first or under another key, an extra on a query the
+    // built-in sets, a key of the four next to it
+    t.write("x.test.toml", own + "abnormal = [\"all\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end abnormal: \"all\": unknown; the general "
+                                               "abnormal end is abnormal = [\"any\", ...]");
+    t.write("x.test.toml", own + "abnormal = \"any\"\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end abnormal must be a non-empty list of "
+                                               "\"QUERY PREDICATE\" (the general abnormal end: abnormal = [\"any\"])");
+    t.write("x.test.toml", own + "abnormal = [\"check.a.x != ok\", \"any\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end abnormal: \"any\" (the general abnormal "
+                                               "end) is valid only as the first element of abnormal");
+    t.write("x.test.toml", own + "crash = [\"any\"]\n");
+    resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end crash: \"any\" (the general abnormal end) "
+                                               "is valid only as the first element of abnormal");
+    for (const char *q : { "rc == 0", "session == timeout", "requester count == 1", "end.case exists",
+                           "end.run not exists" }) {
+        INFO(q);
+        t.write("x.test.toml", own + "abnormal = [\"any\", \"" + q + "\"]\n");
+        resolve_refused(t, t.path("x.test.toml") + ":3: the alternative end abnormal: \"" + q
+                               + "\": the general abnormal end sets session, rc, requester, end.case and end.run "
+                                 "itself");
+    }
+    for (const char *k : { "abnormal_after_case", "abnormal_after_run", "abnormal_run_only" }) {
+        INFO(k);
+        t.write("x.test.toml", own + "abnormal = [\"any\"]\n" + k + " = [\"rc == 0\"]\n");
+        resolve_refused(t, t.path("x.test.toml") + ":4: [ends.\"libs=cd\"]: the alternative end " + k
+                               + " is one of the general abnormal end");
+    }
+}

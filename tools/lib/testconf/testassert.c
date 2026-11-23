@@ -477,6 +477,66 @@ static int end_query(int kind)
     return 0;
 }
 
+/*
+ * The general abnormal end, abnormal = ["any", EXTRA...]: the four
+ * alternatives it stands for, their names and their own assertions, each
+ * followed by the extra elements of the list.
+ */
+#define ABN_KEY "abnormal"
+#define ABN_WORD "any"
+#define ABN_N 4
+#define ABN_OWN 5
+
+static const char *const abn_alt[ABN_N][1 + ABN_OWN] = {
+    { "abnormal", "session != done", "rc not exists", "requester count >= 0", "end.case not exists",
+      "end.run not exists" },
+    { "abnormal_after_case", "session != done", "rc not exists", "requester count >= 0", "end.case exists",
+      "end.run not exists" },
+    { "abnormal_after_run", "session != done", "rc not exists", "requester count >= 0", "end.case exists",
+      "end.run exists" },
+    { "abnormal_run_only", "session != done", "rc not exists", "requester count >= 0", "end.case not exists",
+      "end.run exists" },
+};
+
+/* whether t (a key of an ends table) declares the general abnormal end */
+static int abn_builtin(const struct tc_tabkey *t)
+{
+    return !strcmp(t->key, ABN_KEY) && t->value.type == TT_LIST && t->value.nlist
+           && !strcmp(t->value.list[0], ABN_WORD);
+}
+
+/* the form of the general abnormal end in the table of t */
+static int check_abnormal(const struct tc_config *c, const struct tc_tabkey *t, char *err, size_t errlen)
+{
+    for (size_t k = 0; k < t->value.nlist; k++) {
+        const char *a = t->value.list[k];
+
+        if (!strcmp(a, ABN_WORD) && (k || strcmp(t->key, ABN_KEY)))
+            return tc_err(err, errlen, "%s:%u: the alternative end %s: \"" ABN_WORD "\" (the general abnormal "
+                          "end) is valid only as the first element of " ABN_KEY " (" ABN_KEY " = [\"" ABN_WORD
+                          "\", ...])", t->at.file, t->at.line, t->key);
+    }
+    if (!strcmp(t->key, ABN_KEY) && t->value.nlist && !strchr(t->value.list[0], ' '))
+        if (strcmp(t->value.list[0], ABN_WORD))
+            return tc_err(err, errlen, "%s:%u: the alternative end " ABN_KEY ": \"%s\": unknown; the general "
+                          "abnormal end is " ABN_KEY " = [\"" ABN_WORD "\", ...], an alternative's element "
+                          "QUERY PREDICATE", t->at.file, t->at.line, t->value.list[0]);
+    if (!abn_builtin(t))
+        return 0;
+    for (size_t i = 0; i < c->nends; i++) {
+        const struct tc_tabkey *o = &c->ends[i];
+
+        if (strcmp(o->sel, t->sel))
+            continue;
+        for (size_t n = 1; n < ABN_N; n++)
+            if (!strcmp(o->key, abn_alt[n][0]))
+                return tc_err(err, errlen, "%s:%u: [ends.\"%s\"]: the alternative end %s is one of the general "
+                              "abnormal end (" ABN_KEY " = [\"" ABN_WORD "\"]) of the same table", o->at.file,
+                              o->at.line, o->sel, o->key);
+    }
+    return 0;
+}
+
 /* the selectors, queries and predicates of the alternative ends */
 static int check_ends(const struct tc_config *c, char *err, size_t errlen)
 {
@@ -493,7 +553,9 @@ static int check_ends(const struct tc_config *c, char *err, size_t errlen)
         tc_selector_free(&sel);
         if (!strcmp(t->key, "reason"))
             continue;
-        for (size_t k = 0; k < t->value.nlist; k++) {
+        if (check_abnormal(c, t, err, errlen))
+            return -1;
+        for (size_t k = abn_builtin(t); k < t->value.nlist; k++) {
             const char *a = t->value.list[k];
             char *qt, *pt;
             struct tc_query q;
@@ -512,6 +574,15 @@ static int check_ends(const struct tc_config *c, char *err, size_t errlen)
                        "(an alternative names session, rc, requester, end.case, end.run, output, check.* or "
                        "run.*)",
                        t->at.file, t->at.line, t->key, qt);
+                free(qt);
+                free(pt);
+                return -1;
+            }
+            if (r == 0 && abn_builtin(t) && q.kind != TC_Q_OUTPUT && q.kind != TC_Q_CHECK && q.kind != TC_Q_RUN
+                && q.kind != TC_Q_RUN_RC && q.kind != TC_Q_RUN_OUTPUT) {
+                tc_query_free(&q);
+                tc_err(err, errlen, "%s:%u: the alternative end " ABN_KEY ": \"%s\": the general abnormal end "
+                       "sets session, rc, requester, end.case and end.run itself", t->at.file, t->at.line, a);
                 free(qt);
                 free(pt);
                 return -1;
@@ -812,28 +883,34 @@ int tc_ends_name(const struct tc_ends *e, const struct tc_query *q)
     return 0;
 }
 
-/* the alternative t (a key of the table of end) added to end */
-static int add_alt(struct tc_end *end, const struct tc_tabkey *t, char *err, size_t errlen)
+/*
+ * The alternative name, from the key t of the table of end, added to end:
+ * the elements own (nown of them) and then the elements of t from first.
+ */
+static int add_alt_of(struct tc_end *end, const char *name, const char *const *own, size_t nown,
+                      const struct tc_tabkey *t, size_t first, char *err, size_t errlen)
 {
     struct tc_end_alt *v = realloc(end->alt, (end->nalt + 1) * sizeof *v), *a;
+    size_t n = nown + t->value.nlist - first;
 
     if (!v)
         return -2;
     end->alt = v;
     a = &v[end->nalt++];
     memset(a, 0, sizeof *a);
-    a->name = t->key;
-    if (!(a->texts = calloc(2 * t->value.nlist + 1, sizeof *a->texts)))
+    a->name = name;
+    if (!(a->texts = calloc(2 * n + 1, sizeof *a->texts)))
         return -2;
-    for (size_t k = 0; k < t->value.nlist; k++) {
+    for (size_t k = 0; k < n; k++) {
+        const char *text = k < nown ? own[k] : t->value.list[first + k - nown];
         char *q, *p;
-        int r = tc_end_split(t->value.list[k], &q, &p);
+        int r = tc_end_split(text, &q, &p);
 
         if (r == -2)
             return -2;
         if (r)
             return tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\": QUERY PREDICATE expected", t->at.file,
-                          t->at.line, t->key, t->value.list[k]);
+                          t->at.line, t->key, text);
         a->texts[a->ntexts++] = q;
         a->texts[a->ntexts++] = p;
         r = push(&a->as, q, p, end->sel, &t->at, 1);
@@ -841,9 +918,22 @@ static int add_alt(struct tc_end *end, const struct tc_tabkey *t, char *err, siz
             return -2;
         if (r)
             return tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\" is malformed", t->at.file, t->at.line,
-                          t->key, t->value.list[k]);
+                          t->key, text);
     }
     return 0;
+}
+
+/* the alternative t (a key of the table of end) added to end; the general
+   abnormal end as its four alternatives */
+static int add_alt(struct tc_end *end, const struct tc_tabkey *t, char *err, size_t errlen)
+{
+    int r = 0;
+
+    if (!abn_builtin(t))
+        return add_alt_of(end, t->key, NULL, 0, t, 0, err, errlen);
+    for (size_t n = 0; n < ABN_N && r == 0; n++)
+        r = add_alt_of(end, abn_alt[n][0], &abn_alt[n][1], ABN_OWN, t, 1, err, errlen);
+    return r;
 }
 
 int tc_ends_for(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *case_name,
