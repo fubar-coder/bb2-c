@@ -1,14 +1,14 @@
 # menuslib-menuchecked-sub-loops.test.bas: the CD's libraries do not find
-# the checked subitem; the walk for (0,1,1) runs on from the item into
-# the memory behind the lists and does not return in the layout of this
-# program (the run is ended as a hang, the check behind it does not run)
+# the checked subitem; for (0,1,1) the item loop and the subitem loop both
+# jump back with the counter at -1, so the walk makes 65536 passes of the
+# item loop, about 2^32 register steps without a memory access of its own;
+# on the original's libraries it returns after about 26 s (measured, JIT,
+# cpu_speed=max), so the silence limit is well above that
 fixed-orig = 217
+# two cells share a session: about 26 s each on the originals side
+timeout = 240
+hang-after = 90
 
 [deviations."libs=cd"]
 "check.checked_subitems.item_1_sub_0" = "== fail"
 "check.checked_subitems.item_1_sub_0.actual" = "== 0"
-"check.checked_subitems.item_1_sub_1" = "== not-run"
-session = "== timeout"
-"end.case" = "not exists"
-"end.run" = "not exists"
-rc = "not exists"

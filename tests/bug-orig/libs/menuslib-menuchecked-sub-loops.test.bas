@@ -2,7 +2,8 @@
 ; Subitem) walks to the subitem with three DBF loops, but the item and the
 ; subitem loop both jump back to the menu loop: only (menu,0,0) ends at the
 ; right entry; any other item or subitem walks the lists again with a
-; counter of -1 (up to 65536 next pointers, from an item into whatever
+; counter of -1 (up to 65536 next pointers when only the item or only the
+; subitem is not 0, about 2^32 steps with both not 0; from an item into whatever
 ; follows).  Item 1 of menu 0 has a checked subitem 0 (flags 3) and an
 ; unchecked subitem 1.
 ; Correct: (0,1,0) is checked (-1), (0,1,1) is not (0), (0,0,0) is not.
