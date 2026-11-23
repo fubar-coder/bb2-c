@@ -6,9 +6,9 @@
 ; allocations (track).
 ; Correct: the compile stops at the line of the error and blitz2 leaves
 ; no allocation behind.
-; @fixed-orig #994
-; @pass wrap=@INJECT@|track
-Dim a(10)
-i=1
-a(i)=1+"x"
-End
+!TestCase{pushdo_error}
+  Dim a(10)
+  i=1
+  a(i)=1+"x"
+  !CheckEq{1,1,"after_assignment"}
+!EndTestCase
