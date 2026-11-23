@@ -182,7 +182,7 @@ observation — L1 Unlikely / I2 Medium / E2 Reasoned → Monitor (`cut`,
 with its length as a long at -4 and a 0 behind them (the library side:
 `-4(a2)`, docs/libs/deviations.md, stringfunclib Cvi); the field holds the
 address of the characters in the library's static block. Reading it
-(`x$=r\printed`, `!CheckStrEq{r\printed,...}`) copies the string;
+(`x$=*r\printed`, `!CheckStrEq{*r\printed,...}`) copies the string;
 assigning to it would make the program free library memory, so the
 fields are read-only (the help text and tests/README.md say so). Point:
 1.95 or 2.10 read a string field of a NewType otherwise than by that
@@ -192,8 +192,8 @@ is a field `printed.l` (the address) and a function `TLRunText$(*r)`.
 
 **A second call** overwrites the one block: the address of an earlier run
 then shows the later one (Plan choice: one static block, no ring of
-results; a case that needs both copies the first, `a$=r\printed`,
-`c=r\rc`). Point: an author keeps two pointers and is surprised — L2
+results; a case that needs both copies the first, `a$=*r\printed`,
+`c=*r\rc`). Point: an author keeps two pointers and is surprised — L2
 Possible / I1 Low / E2 Reasoned → Monitor (the help text and a test).
 
 **The file and the queries stay.** The runner reads `run-K.out` from the
@@ -283,3 +283,43 @@ Asked by the planning agent with options; answered by the user on
 Additive: no key, entry or query of an existing test changes; the old
 form of the users is removed in the commit that adds the model files
 (as in the rounds).
+
+## Findings
+
+### Task 3.1: the spike (2026-11-23)
+
+A model test outside the tree (the compilers `port`, `orig195`,
+`orig210`; the libraries `cd` and `clib`, the originals only with `cd`;
+the machines `a1200` and `a500-68010`: eight cells), run with
+`corpusrun case` on both sides:
+
+- **The string field.** A static block in the program's `Dc` data with
+  the layout of D6 (the field `printed.s` holding the address of the
+  characters, their length as a long at -4, a 0 behind them) is read
+  alike by the three compilers with both library sets on both machines:
+  `x$=*r\printed`, `!CheckStrEq{*r\printed,...}`, `Len(*r\printed)`,
+  `Left$(*r\printed,3)` and `*r\printed+*r\printed` give the characters
+  and the length; a field holding 0 reads as the empty string. The
+  fallback (`printed.l` and `TLRunText$`) is not needed.
+- **The syntax of a field of a pointer.** BB2 reads a field through a
+  pointer variable as `*r\printed`: `*r.TLRun=p` followed by `r\size`
+  is "Garbage at End of Line" (`r` alone is another variable). The texts
+  of this change (D6, the tasks, the scenarios of the deltas) say
+  `*r\FIELD`.
+- **The names.** `TLRun`, `rc`, `rcknown`, `cut`, `size`, `printed`,
+  `RunProgram` and `TLRunText` are no token of the build's seven token
+  lists (blitz2 with the default sets and every variant) nor of
+  AmiBlitz3 v3.14.0's list (`shared/basictest/check-macros.cmake` run on
+  them as macro names), and the NewType compiles with the CD's libraries
+  under 1.95 and 2.10.
+- **The return code.** Kickstart 3.1 (exec 40): `SystemTagList` with
+  `SYS_Input` `NIL:` and `SYS_Output` the file gives the return code of
+  the command line (`Echo hello` LF `C:Quit 20`: 20). Kickstart 1.3
+  (exec 34): `Execute(cmd,nil,file)` returns -1 and leaves the caller's
+  `cli_ReturnCode` as it was (12345 before and after): the system gives
+  no return code, so the `-` rule of D6 holds (`runend K -`, `rcknown`
+  0, `rc` 0).
+- **The output.** On both Kickstarts the file holds what the command
+  line wrote and the shell's own line for a return code at or above the
+  fail limit: `hello` LF `C:Quit failed returncode 20` LF (34 bytes). A
+  child that fails thus leaves that line in `printed` too.

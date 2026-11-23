@@ -37,9 +37,9 @@ A case SHALL be able to start a program with `!RunProgram`, under Kickstart 1.3 
 The `TLRun` that `TLRunProgram` gives and the string of its field `printed` SHALL be one static block of the library; a later `!RunProgram` SHALL overwrite it, so the address of an earlier run then shows the later run. The string of `printed` SHALL be a Blitz string in the library's static memory (its length as a long before the characters, a 0 behind them); the case SHALL only read the fields, and the library's reference SHALL say so.
 
 #### Scenario: Two runs in one case
-- **WHEN** a case keeps `*a.TLRun` of a first run, copies `x$=a\printed`, and starts a second program
-- **THEN** `x$` keeps the first output and `a\printed` shows the second
+- **WHEN** a case keeps `*a.TLRun` of a first run, copies `x$=*a\printed`, and starts a second program
+- **THEN** `x$` keeps the first output and `*a\printed` shows the second
 
 #### Scenario: Checks on a run in BASIC
 - **WHEN** a case runs `*r.TLRun=!RunProgram{"@TESTDIR@/child"}` and the child prints `edit$ 0` and returns 20
-- **THEN** `!CheckEq{r\rc,20}` and `!CheckStrEq{r\printed,"edit$ 0"+Chr$(10)}` pass
+- **THEN** `!CheckEq{*r\rc,20}` and `!CheckStrEq{*r\printed,"edit$ 0"+Chr$(10)}` pass
