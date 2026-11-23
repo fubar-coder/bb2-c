@@ -1,0 +1,8 @@
+# through inject with track: what the process leaves allocated; the SetErr
+# handler ends the program, so the case has no end entry (the run has)
+runwrap = "@INJECT@|track"
+
+[asserts]
+inject = "contains \"inject: track: 0 allocations left, 0 bytes\""
+"end.case" = "not exists"
+"check.runtime_error_caught_by_seterr.after_deep" = "== not-run"

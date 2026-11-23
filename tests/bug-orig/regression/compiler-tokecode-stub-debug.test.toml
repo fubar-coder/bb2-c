@@ -1,0 +1,2 @@
+# runtime error checking: the stub of the error check is built only with it
+runtime-errors = "on"
