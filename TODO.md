@@ -1082,6 +1082,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   runner's split of the output (`cr_parse_run`,
   `tests/corpus/runner/caserun.c`): e.g. reqtrap escapes the line breaks
   of a text or ends a record with a marker the runner reads to.
+- [ ] **A stand-alone test runner for Blitz tests** (user decision
+  2026-11-23, deferred): running a test of the BASIC test model by hand,
+  from the command line or from TED, with readable results, waits until
+  everything a real test runner needs can be done: auto-registration of
+  the cases, stringify (see "Stringify of macro parameters"), program
+  options for the output format, the output file and filtering, progress
+  on the console, and what else one would expect of such a runner. Today a
+  hand-run needs the runner's preprocessor and driver (`corpusrun case
+  --print-driver`) and gives only the raw entries of the result file; the
+  options weighed (a second macro file, `TLBegin ""` to the console, a
+  hand driver with a formatter) are not taken.
 - [ ] **TED and ab3cli as libraries (idea of the user, 2026-11-22; an idea
   only, not planned)**: two readings.
   - On the Amiga: TED (and ab3cli) as a `.library` with a jump table, so
