@@ -1,0 +1,7 @@
+# ilbmifflib-byterun-unclipped.test.bas: the original writes the rest of the
+# run into row 2
+fixed-orig = 191
+
+[deviations."libs=cd"]
+"check.run_past_row.row_2" = "== fail"
+"check.run_past_row.row_2.actual" = "== $AAAA"

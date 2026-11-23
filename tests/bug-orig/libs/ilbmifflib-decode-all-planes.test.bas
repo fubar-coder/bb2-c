@@ -5,7 +5,7 @@
 ; end of the planes.
 ; Here two ILBMs built in memory, each decoded into a bitmap whose plane
 ; pointers the program points at buffers of its own, filled with $EE (the
-; pointers are put back before the end):
+; pointers are put back before the case ends):
 ; a) 16x1, 3 planes, uncompressed ($1111, $2222, $3333) into a 16x1 bitmap
 ;    of 2 planes, its plane pointer 2 (behind the depth) at buffer c;
 ; b) 32x3, 1 plane, ByteRun1 (rows 01-04, 11-14, 21-24) into a 16x2 bitmap,
@@ -13,8 +13,6 @@
 ;    bytes behind them).
 ; Correct: only what the bitmap has is stored - c stays EEEE, d is
 ; 0102 1112 EEEE EEEE.
-; @fixed #190
-; @configs clib
 DEFTYPE .l
 Statement pb{v.l}
   SHARED m,p
@@ -40,30 +38,43 @@ Function$ hx{a.l,n.l}
   Next
   Function Return s$
 End Function
-m=AllocMem(256,65536)
-c=AllocMem(8,65536) : d=AllocMem(8,65536)
-For i=0 To 7 : Poke.b c+i,$EE : Poke.b d+i,$EE : Next
-p=0 : bmhd{16,1,3,0}
-pl{$424F4459} : pl{6} : pw{$1111} : pw{$2222} : pw{$3333}
-Poke.l m+4,p-8
-BitMap 0,16,1,2
-a=Addr BitMap(0)
-o=Peek.l(a+16) : Poke.l a+16,c
-DecodeILBM 0,m
-Poke.l a+16,o
-NPrint "a) planes ",hx{Peek.l(a+8),2}," ",hx{Peek.l(a+12),2}," c ",hx{c,2}
-p=0 : bmhd{32,3,1,1}
-pl{$424F4459} : pl{15}
-For r=0 To 2
-  pb{3} : For i=1 To 4 : pb{r*16+i} : Next
-Next
-pb{0}
-Poke.l m+4,p-8
-BitMap 1,16,2,1
-a=Addr BitMap(1)
-o=Peek.l(a+8) : Poke.l a+8,d
-DecodeILBM 1,m
-Poke.l a+8,o
-NPrint "b) d ",hx{d,8}
-FreeMem d,8 : FreeMem c,8 : FreeMem m,256
-End
+
+!TestCase{extra_plane}
+  m=AllocMem(256,65536)
+  c=AllocMem(8,65536)
+  !Require{m<>0 AND c<>0,"memory"}
+  For i=0 To 7 : Poke.b c+i,$EE : Next
+  p=0 : bmhd{16,1,3,0}
+  pl{$424F4459} : pl{6} : pw{$1111} : pw{$2222} : pw{$3333}
+  Poke.l m+4,p-8
+  BitMap 0,16,1,2
+  a=Addr BitMap(0)
+  o=Peek.l(a+16) : Poke.l a+16,c
+  DecodeILBM 0,m
+  Poke.l a+16,o
+  !CheckStrEq{hx{Peek.l(a+8),2},"1111","plane_0"}
+  !CheckStrEq{hx{Peek.l(a+12),2},"2222","plane_1"}
+  !CheckStrEq{hx{c,2},"EEEE","buffer_behind_depth"}
+  FreeMem c,8 : FreeMem m,256
+!EndTestCase
+
+!TestCase{row_overrun}
+  m=AllocMem(256,65536)
+  d=AllocMem(8,65536)
+  !Require{m<>0 AND d<>0,"memory"}
+  For i=0 To 7 : Poke.b d+i,$EE : Next
+  p=0 : bmhd{32,3,1,1}
+  pl{$424F4459} : pl{15}
+  For r=0 To 2
+    pb{3} : For i=1 To 4 : pb{r*16+i} : Next
+  Next
+  pb{0}
+  Poke.l m+4,p-8
+  BitMap 1,16,2,1
+  a=Addr BitMap(1)
+  o=Peek.l(a+8) : Poke.l a+8,d
+  DecodeILBM 1,m
+  Poke.l a+8,o
+  !CheckStrEq{hx{d,8},"0102 1112 EEEE EEEE","buffer_d"}
+  FreeMem d,8 : FreeMem m,256
+!EndTestCase

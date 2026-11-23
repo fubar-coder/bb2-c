@@ -6,20 +6,19 @@
 ; the FORM: runtime error "Can't find BODY" (caught with SetErr).
 ; Correct: the pad byte is skipped, the BODY is found - the row of the
 ; picture ($A55A) is in the plane of the BitMap.
-; @fixed #189
-; @configs clib
-; @pass file=pic.ilbm|@TESTDATA@/ilbmifflib-decodeilbm-oddchunk.ilbm
 DEFTYPE .l
-SetErr
-  NPrint "error"
-  End
-End SetErr
-Dim m.l(64)
-If ReadFile(0,"CORPUS:pic.ilbm")
+
+!TestCase{odd_anno}
+  Dim m.l(64)
+  ok=ReadFile(0,"CORPUS:pic.ilbm")
+  !Require{ok,"file_read"}
   ReadMem 0,&m(0),256
   CloseFile 0
-EndIf
-BitMap 0,16,1,1
-DecodeILBM 0,&m(0)
-NPrint "row ",Hex$(Peek.w(Peek.l(Addr BitMap(0)+8)) AND $FFFF)
-End
+  BitMap 0,16,1,1
+  SetErr
+    !Check{0,"body_found"}
+    End
+  End SetErr
+  DecodeILBM 0,&m(0)
+  !CheckEq{Peek.w(Peek.l(Addr BitMap(0)+8)) AND $FFFF,$A55A,"row"}
+!EndTestCase

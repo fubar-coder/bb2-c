@@ -11,37 +11,34 @@
 ; planes: A5 5A, C3 3C) is loaded into it.
 ; Correct: only plane 0 is stored (A A55A), B stays 0.  The original also
 ; writes plane 1 into B.
-; @fixed #188
-; @configs clib
-; @pass file=p.iff|@TESTDATA@/ilbmifflib-plane-word.ilbm
-; @pass timeout=60
 DEFTYPE .l
-Dim h(15)
-BitMap 0,16,1,1
-v=0 : a=&v
-ob=Addr BitMap(0)+1                 ; +1: not found by the scan below
-buf=AllocMem_(64,$10001)
-sa=AllocMem_(64,$10001)
-sb=AllocMem_(64,$10001)
-If buf=0 OR sa=0 OR sb=0 Then NPrint "no memory" : End
-Poke.l buf+8,sa
-Poke.l buf+12,sb
-nh=0
-For i=-256 To 256
-  p=a+i*4
-  If Peek.l(p)=ob-1 AND nh<16 Then h(nh)=p : nh=nh+1 : Poke.l p,buf
-Next
-If Addr BitMap(0)<>buf
-  NPrint "object not redirected"
+
+!TestCase{second_plane}
+  Dim h(15)
+  BitMap 0,16,1,1
+  v=0 : a=&v
+  ob=Addr BitMap(0)+1                 ; +1: not found by the scan below
+  buf=AllocMem_(64,$10001)
+  sa=AllocMem_(64,$10001)
+  sb=AllocMem_(64,$10001)
+  !Require{buf<>0 AND sa<>0 AND sb<>0,"memory"}
+  Poke.l buf+8,sa
+  Poke.l buf+12,sb
+  nh=0
+  For i=-256 To 256
+    p=a+i*4
+    If Peek.l(p)=ob-1 AND nh<16 Then h(nh)=p : nh=nh+1 : Poke.l p,buf
+  Next
+  If Addr BitMap(0)<>buf
+    For j=0 To nh-1 : Poke.l h(j),ob-1 : Next
+  EndIf
+  !Require{Addr BitMap(0)=buf,"redirected"}
+  Poke.w buf,2 : Poke.w buf+2,1 : Poke.b buf+4,1 : Poke.b buf+5,1 : Poke.w buf+6,0
+  LoadBitMap 0,"CORPUS:p.iff"
   For j=0 To nh-1 : Poke.l h(j),ob-1 : Next
-  End
-EndIf
-Poke.w buf,2 : Poke.w buf+2,1 : Poke.b buf+4,1 : Poke.b buf+5,1 : Poke.w buf+6,0
-LoadBitMap 0,"CORPUS:p.iff"
-For j=0 To nh-1 : Poke.l h(j),ob-1 : Next
-NPrint "A ",Right$(Hex$(Peek.w(sa) AND $FFFF),4)
-NPrint "B ",Right$(Hex$(Peek.w(sb) AND $FFFF),4)
-FreeMem_ buf,64
-FreeMem_ sa,64
-FreeMem_ sb,64
-End
+  !CheckEq{Peek.w(sa) AND $FFFF,$A55A,"plane_a"}
+  !CheckEq{Peek.w(sb) AND $FFFF,0,"plane_b"}
+  FreeMem_ buf,64
+  FreeMem_ sa,64
+  FreeMem_ sb,64
+!EndTestCase

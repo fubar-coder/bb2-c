@@ -7,18 +7,16 @@
 ; catches the error; then the program asks for an exclusive lock on the
 ; file, which fails while it is open (object in use).
 ; Correct: after the error the file is closed - the exclusive lock works.
-; @fixed #1065
-; @configs clib
-; @pass file=short.iff|@TESTDATA@/ilbmifflib-loadbitmap-shortbody-fileopen.ilbm
 DEFTYPE .l
-BitMap 0,16,4,1
-SetErr
-  NPrint "error"
-  l=Lock_("CORPUS:short.iff",-1)
-  NPrint "exclusive lock ",l<>0
-  If l Then UnLock_ l
-  End
-End SetErr
-LoadBitMap 0,"CORPUS:short.iff"
-NPrint "loaded"
-End
+
+!TestCase{file_closed}
+  BitMap 0,16,4,1
+  SetErr
+    l=Lock_("CORPUS:short.iff",-1)
+    !Check{l<>0,"exclusive_lock"}
+    If l Then UnLock_ l
+    End
+  End SetErr
+  LoadBitMap 0,"CORPUS:short.iff"
+  !Check{0,"loaded"}
+!EndTestCase

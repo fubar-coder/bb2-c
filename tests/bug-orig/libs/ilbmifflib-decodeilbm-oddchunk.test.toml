@@ -1,0 +1,9 @@
+# ilbmifflib-decodeilbm-oddchunk.test.bas: the original does not find the
+# BODY (the runtime error is caught by SetErr, whose check fails and whose
+# End leaves the case without its end entry)
+fixed-orig = 189
+files = ["pic.ilbm|@TESTDATA@/ilbmifflib-decodeilbm-oddchunk.ilbm"]
+
+[deviations."libs=cd"]
+"check.odd_anno.body_found" = "== fail"
+"end.case" = "not exists"

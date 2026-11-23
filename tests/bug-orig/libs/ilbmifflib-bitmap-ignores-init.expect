@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-load
-REQUESTER: AutoRequest body "Can't Open File" *
-rc=*
