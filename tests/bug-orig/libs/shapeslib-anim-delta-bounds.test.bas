@@ -10,11 +10,11 @@
 ; one row and sets the byte there: that is plane 1's first byte, inside
 ; the shape's own data (nothing else is overwritten).
 ; Correct: the delta stays inside its plane, plane 1 of frame 1 is $0304.
-; @configs clib
-; @pass file=anim.iff|@TESTDATA@/shapeslib-anim-delta-bounds.anim
 DEFTYPE .l
-LoadShape 0,"CORPUS:anim.iff"
-d=Peek.l(Addr Shape(1)+14)
-NPrint "plane 0 ",Right$(Hex$(Peek.w(d) AND $FFFF),4)
-NPrint "plane 1 ",Right$(Hex$(Peek.w(d+2) AND $FFFF),4)
-End
+
+!TestCase{delta_bounds}
+  LoadShape 0,"CORPUS:anim.iff"
+  d=Peek.l(Addr Shape(1)+14)
+  !CheckEq{Peek.w(d) AND $FFFF,$0102,"plane0"}
+  !CheckEq{Peek.w(d+2) AND $FFFF,$0304,"plane1"}
+!EndTestCase
