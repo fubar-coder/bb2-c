@@ -1,0 +1,13 @@
+# gadgetslib-stringgadget-noborder.test.bas: the CD's libraries write the
+# border offsets to the addresses 0, 2, 36 and 38
+fixed-orig = 164
+
+[deviations."libs=cd"]
+"check.no_borders.word_0" = "== fail"
+"check.no_borders.word_0.actual" = "== 0"
+"check.no_borders.word_2" = "== fail"
+"check.no_borders.word_2.actual" = "== 0"
+"check.no_borders.word_36" = "== fail"
+"check.no_borders.word_36.actual" = "== 0"
+"check.no_borders.word_38" = "== fail"
+"check.no_borders.word_38.actual" = "== 0"

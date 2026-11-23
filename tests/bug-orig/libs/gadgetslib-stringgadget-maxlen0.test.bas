@@ -6,10 +6,10 @@
 ; checking does not catch it either.  With runtime error checking.
 ; Correct: the runtime error "Maxlen MUST be greater than zero", and the
 ; gadget is not made.
-; @fixed #165
-; @configs clib
-; @pass runtime_errors=on
-NPrint "before"
-StringGadget 0,10,20,0,1,0,100
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{maxlen_zero}
+  !ExpectError{"Maxlen MUST be greater than zero","refused"}
+  StringGadget 0,10,20,0,1,0,100
+  !Check{0,"not_refused"}
+!EndTestCase

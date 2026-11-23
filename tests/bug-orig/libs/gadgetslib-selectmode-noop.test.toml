@@ -1,0 +1,6 @@
+# gadgetslib-selectmode-noop.test.bas: the CD's libraries ignore SelectMode
+fixed-orig = 952
+
+[deviations."libs=cd"]
+"check.select_modes.highlight_box" = "== fail"
+"check.select_modes.highlight_box.actual" = "== 0"

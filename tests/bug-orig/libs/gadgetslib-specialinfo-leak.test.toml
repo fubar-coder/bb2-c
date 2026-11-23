@@ -1,0 +1,6 @@
+# gadgetslib-specialinfo-leak.test.bas: the CD's libraries never free the
+# SpecialInfo
+fixed-orig = 163
+
+[deviations."libs=cd"]
+"check.free_special_info.lost_under_2000" = "== fail"
