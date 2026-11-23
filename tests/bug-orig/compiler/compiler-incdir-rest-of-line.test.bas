@@ -4,12 +4,12 @@
 ; compiled, and Include "inc.bb2" opens "CORPUS:src/:a=2inc.bb2" (Can't
 ; open Include).
 ; Correct: the quoted string is the path, ':' starts the next statement;
-; the program prints 2 and 7.
-; @fixed #17
-; @pass file=src/inc.bb2|@TESTDATA@/compiler-incdir-rest-of-line.inc
-a=1
-IncDir "CORPUS:src/" : a=2
-Include "inc.bb2"
-NPrint a
-NPrint #k
-End
+; a is 2 and #k is 7.
+!TestCase{rest_of_line}
+  a.l=1
+  IncDir "CORPUS:src/" : a=2
+  Include "inc.bb2"
+  v.l=#k
+  !CheckEq{a,2,"statement_after_incdir"}
+  !CheckEq{v,7,"constant"}
+!EndTestCase

@@ -5,10 +5,10 @@
 ; its name byte at +14 ("emp0": '0') is taken as a field length and the
 ; type is linked 48 bytes too far on, behind the hunk (inject pad: zeros
 ; there), and the macros and constants behind it are not found either.
-; Correct: the resident's constant #c is found, the program prints 7.
-; @fixed #35
-; @pass wrap=@INJECT@|pad
-; @pass file=r.bb2|@TESTDATA@/compiler-fixtypes-nofields.res
-; @pass jobline=resident=r|CORPUS:r.bb2|CORPUS:out/r.res
-NPrint #c
-End
+; Correct: the resident's constant #c is found, the program reads 7.
+; (The resident is compiled before the test program: the file of the
+; configuration.)
+!TestCase{constant_after_empty_type}
+  v.l=#c
+  !CheckEq{v,7,"constant"}
+!EndTestCase

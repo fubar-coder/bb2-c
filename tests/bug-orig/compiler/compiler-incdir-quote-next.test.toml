@@ -1,0 +1,10 @@
+# compiler-incdir-quote-next.test.bas: the original takes the rest of the
+# line into the path and refuses the program: no check
+fixed-orig = 17
+files = ["src/inc.bb2|@TESTDATA@/compiler-incdir-quote-next.inc", "src/dat.bin|@TESTDATA@/compiler-incdir-quote-next.bin"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Can't open Include\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
