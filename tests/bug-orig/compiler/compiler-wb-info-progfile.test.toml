@@ -1,0 +1,20 @@
+# compiler-wb-info-progfile.test.bas: blitz2.info is replaced by the
+# generated short file and blitz2 is started through wbrun without a
+# project icon; the correct result is that the editor loads nothing and no
+# job runs (no compile result); the original loads the job list as the
+# program name, compiles and the case runs
+fixed-orig = 20
+wrap = "@WBRUN@|noprojects"
+files = ["blitz2/blitz2.info|@TESTDATA@/compiler-wb-info-progfile.info"]
+
+[asserts]
+compile = "== none"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

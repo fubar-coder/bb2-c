@@ -5,7 +5,6 @@
 ; returns 0.  inject (no faults) runs blitz2 and shows the value it
 ; returns as is (the shell would show -1 as 10).
 ; Correct: blitz2 returns -1 (and compiles nothing).
-; @fixed-orig #22
-; @pass remove=blitz2/ted
-; @pass wrap=@INJECT@
-End
+!TestCase{wbexit_returncode}
+  !CheckEq{1,1,"hello"}
+!EndTestCase

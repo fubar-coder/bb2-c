@@ -1,0 +1,13 @@
+# compiler-wb-info-shortread.test.bas: blitz2.info is replaced by the
+# generated 5 bytes and blitz2 is started through wbrun, which checks
+# afterwards whether the file is in use (a line of the compiler's output).
+# The original leaves it open
+fixed-orig = 19
+wrap = "@WBRUN@|inuse=blitz2:blitz2.info"
+files = ["blitz2/blitz2.info|@TESTDATA@/compiler-wb-info-shortread.info"]
+
+[asserts]
+"compile.log" = "contains \"wbrun: not in use: blitz2:blitz2.info\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"wbrun: in use: blitz2:blitz2.info\n\""

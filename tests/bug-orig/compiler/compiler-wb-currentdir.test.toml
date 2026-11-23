@@ -1,0 +1,11 @@
+# compiler-wb-currentdir.test.bas: the compiler is started through wbrun
+# with the check "cd"; its report is a line of the compiler's output
+# (compile.log). The original ends in the project directory
+fixed-orig = 21
+wrap = "@WBRUN@|cd"
+
+[asserts]
+"compile.log" = "contains \"wbrun: current dir at end: start\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"wbrun: current dir at end: project dir 1\n\""
