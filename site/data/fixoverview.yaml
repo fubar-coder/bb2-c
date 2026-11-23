@@ -8110,3 +8110,11 @@ rows:
     text: "A line in the debugger's direct mode that used a macro frees the memory of the expanded line once it is compiled; the original kept it until the next macro or compile, for good if blitz2 ended first."
     page: compiler
     anchor: macros
+  - issue: 1202
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "PutReg"
+    text: "`PutReg` into a local variable of a procedure stores the register into the local; the original left the local unchanged and overwrote 1 to 4 bytes next to the global variables. A program that reads the local afterwards takes another way, for example GMODPLAY on the CD reports a failed module init, which the original always reported as success."
+    page: compiler
+    anchor: inline-assembler

@@ -1101,6 +1101,13 @@ Each point says first what the original did, then what the port does.
   include was cut by the destination operand, and longer ones overwrote
   the compiler's data; it gives "Operand too Long"
   ([#997](https://github.com/fubar-coder/bb2-c/issues/997)).
+* `PutReg` into a local variable of a `Statement` or `Function` stored the
+  register next to the global variables, overwriting 1 to 4 bytes there,
+  and the local kept its old value; it is stored into the local. A program
+  that reads the local afterwards now sees the register's value, for
+  example GMODPLAY's `GMInitMusic` on the CD, which reports a failed init
+  of a module; with the original it always reported success
+  ([#1202](https://github.com/fubar-coder/bb2-c/issues/1202)).
 
 ### The progress bar while compiling
 
