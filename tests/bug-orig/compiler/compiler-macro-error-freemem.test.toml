@@ -1,0 +1,18 @@
+# compiler-macro-error-freemem.test.bas: the compiler runs through inject
+# with track (the query compile.inject), the job line sets the Macro Buffer
+# to 128 bytes.  The compile fails, nothing runs.  The original leaves the
+# expansion buffer of 128 bytes, and frees its macrobuff of 8192 bytes with
+# the 128 bytes (#336, fixed in the port).
+fixed-orig = 1203
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=128"]
+
+[asserts]
+compile = "== \"error 12 Macro Buffer Overflow\""
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 1 allocations left, 128 bytes\ninject:   128 bytes, flags $1\ninject: track: FreeMem of 128 bytes for an allocation of 8192 bytes\n\""

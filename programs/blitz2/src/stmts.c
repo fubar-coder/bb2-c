@@ -1939,6 +1939,7 @@ ULONG directdo_c(struct m68kregs *r)
         /* dircont: direct mode error! - d0=error text */
         L_(ret15add - 6) = (ULONG)errmsg;
         errjmp = olderr;        /* DIFF: asm never restored errcont */
+        freemlines();           /* Fixed (#1203): not in blitz2.s */
         dirmode = 0;            /* direxit */
         flushc();
         return 0;

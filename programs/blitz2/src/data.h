@@ -117,6 +117,8 @@ extern WORD  numarg;                    /* 14930 # macro arguments */
 extern UBYTE *myoline;                  /* 14931 macro done yet? (old myline) */
 extern UBYTE *myline;                   /* 14932 line build buffer */
 extern UBYTE *mylinef;                  /* 14934 */
+extern ULONG myolinesize;               /* bytes allocated at myoline (#1203) */
+extern ULONG mylinesize;                /* bytes allocated at myline (#1203) */
 extern WORD  concomstack[32];           /* 14935 CNIF stack */
 extern WORD  *concomsp;                 /* 14936 = concomstack */
 extern WORD  oldqflag;                  /* 14937 */

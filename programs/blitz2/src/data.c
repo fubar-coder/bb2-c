@@ -110,6 +110,8 @@ WORD  numarg = 0;                       /* 14930 number of macro arguements */
 UBYTE *myoline = NULL;                  /* 14931 macro done yet? */
 UBYTE *myline = NULL;                   /* 14932 memory to create line in */
 UBYTE *mylinef = NULL;                  /* 14934 */
+ULONG myolinesize = 0;                  /* bytes allocated at myoline (#1203) */
+ULONG mylinesize = 0;                   /* bytes allocated at myline (#1203) */
 WORD  concomstack[32];                  /* 14935 32 deep conditional compilation */
 WORD  *concomsp = concomstack;          /* 14936 stack pointer */
 WORD  oldqflag = 0;                     /* 14937 */

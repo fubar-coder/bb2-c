@@ -183,6 +183,7 @@ void compile(void)
            compile */
         errjmp = olderr;        /* DIFF: asm never restored errstack */
         passjmp = NULL;
+        freemlines();           /* Fixed (#1203): not in blitz2.s */
         freeemup();
         return;
     }
@@ -477,7 +478,9 @@ void expandmax(void)
             UBYTE *buf = doallocerr(macrolen, MEMF_PUBLIC);     /* #369 */
 
             myoline = myline;
+            myolinesize = mylinesize;
             myline = buf;
+            mylinesize = macrolen;      /* Fixed (#1203) */
         }
         out = myline;
         end = out + macrolen;   /* end of macro buffer (asm a6) */
@@ -597,8 +600,12 @@ void expandmax(void)
         } while ((*out++ = *srcptr++) != 0);
 
         srcptr = myline;
-        if (myoline)
-            FreeMem(myoline, macrolen);
+        if (myoline) {
+            /* Fixed (#1203): the size allocated; myoline cleared, so an
+               error later in the line does not free it again */
+            FreeMem(myoline, myolinesize);
+            myoline = NULL;
+        }
         /* bra .loop0 */
         continue;
 
@@ -608,15 +615,34 @@ void expandmax(void)
     }
 }
 
-/* blitz2.s:2342 freembuff */
+/* blitz2.s:2342 freembuff.  Fixed (#1203): freed with the size it was
+   allocated with; the original takes the current macrolen, which the
+   Macro Buffer option may have changed since (a myline left by a direct
+   mode line, by a failed compile in the original) */
 void freembuff(void)
 {
     UBYTE *buf = myline;
 
     if (buf) {
         myline = NULL;
-        FreeMem(buf, macrolen);
+        FreeMem(buf, mylinesize);
     }
+}
+
+/* Fixed (#1203): not in blitz2.s.  A compile error on a line that came
+   from a macro expansion (Macro Buffer Overflow, or any error in the
+   expanded text) left the expansion buffer myline allocated until the
+   next compile's first nextline, and in a nested expansion the outer
+   buffer myoline for good: the error path (err -> freeemup) frees
+   neither.  Called on the error paths of compile and of direct mode. */
+void freemlines(void)
+{
+    UBYTE *old = myoline;
+
+    myoline = NULL;
+    if (old && old != myline)
+        FreeMem(old, myolinesize);
+    freembuff();
 }
 
 /* blitz2.s:2351 findit - find the end of a parameter */

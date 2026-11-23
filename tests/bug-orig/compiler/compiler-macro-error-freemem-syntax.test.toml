@@ -1,0 +1,16 @@
+# compiler-macro-error-freemem-syntax.test.bas: the compiler runs through
+# inject with track (the query compile.inject), with the default Macro
+# Buffer.  The compile fails, nothing runs.  The original leaves the
+# expansion buffer of 8192 bytes.
+fixed-orig = 1203
+wrap = "@INJECT@|track"
+
+[asserts]
+compile = "== \"error 11 Syntax Error\""
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 1 allocations left, 8192 bytes\ninject:   8192 bytes, flags $1\n\""

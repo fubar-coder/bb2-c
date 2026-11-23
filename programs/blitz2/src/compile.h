@@ -136,7 +136,8 @@ void hexascii(UWORD val, UBYTE *buf);
 /* --- macros */
 void expandmax(void);       /* 2121 expand `!name{..}` macros in the statement
                                at srcptr; srcptr may move to myline buffer */
-void freembuff(void);       /* 2342 free myline (macrolen bytes) */
+void freembuff(void);       /* 2342 free myline (the size allocated, #1203) */
+void freemlines(void);      /* free myoline and myline after an error (#1203) */
 /* 2351: scan a macro parameter at *pp (in/out, past the terminator);
  * returns the terminator ',' or '}' found at nesting 0; toggles quoteflag;
  * NUL -> syntaxerr */
