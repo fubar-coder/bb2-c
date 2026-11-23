@@ -1,0 +1,7 @@
+# rimisclib-progpath-empty-dir.test.bas: the reference library looks at the
+# byte before the result and appends "/" behind the "x"
+fixed-orig = 758
+rwe = ["rimisclib"]
+
+[deviations."compiler=orig210"]
+"check.long_path.name_alone" = "== fail"

@@ -1,7 +1,0 @@
-[compile]
-ok
-[run]
-before
-[][x]
-cba
-rc=0

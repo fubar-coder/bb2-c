@@ -1,0 +1,15 @@
+# rimisclib-ezrequest-args-unbounded.test.bas: with runtime error checking; the
+# reference library raises no error, shows the requester, and WorkbenchHere
+# runs the overwritten code (ILLEGAL: a Guru)
+fixed-orig = 748
+rwe = ["rimisclib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.eighteen_arguments.workbench_here" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.eighteen_arguments.refused" = "== fail"
+requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"

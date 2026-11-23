@@ -1,0 +1,11 @@
+# rimisclib-flip-short-string.test.bas: the reference library reverses 128 KB
+# around the string; what the crash then is depends on the memory layout
+fixed-orig = 751
+rwe = ["rimisclib"]
+timeout = 30
+# a crash or a hang: the original's cell has a session of its own
+isolate = ["compiler=orig210"]
+
+[ends."compiler=orig210"]
+reason = "the original swaps 65536 byte pairs around the string and reverses the program's memory (#751); whether the Software Failure requester shows and whether the session then hangs or halts the CPU depends on the memory layout"
+hangs_requester = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists", "requester contains \"Software Failure\""]

@@ -1,0 +1,9 @@
+# rimisclib-fontprefs-search-behind-file.test.bas: the reference library finds
+# type 3 in the old memory behind the file
+fixed-orig = 745
+rwe = ["rimisclib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.type_3.height" = "== fail"
+"check.type_3.height.actual" = "== 3"

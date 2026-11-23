@@ -1,0 +1,16 @@
+# rimisclib-v36-ezrequest-gadgets.test.bas: Kickstart 1.3 with runtime error
+# checking; the reference library raises no error and its call of
+# EasyRequestArgs ends in a Guru
+fixed-orig = 1150
+rwe = ["rimisclib"]
+machine = "a500"
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.three_gadgets.after" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.three_gadgets.refused" = "== fail"
+requester = "contains \"GURU! - ILLEGAL Instruction\""
+"end.case" = "not exists"

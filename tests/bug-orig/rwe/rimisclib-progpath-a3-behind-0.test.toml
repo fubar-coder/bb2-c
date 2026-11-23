@@ -1,0 +1,22 @@
+# rimisclib-progpath-a3-behind-0.test.bas: the reference library's results
+# end in the 0 and lose the last character of "/data"
+fixed-orig = 743
+rwe = ["rimisclib"]
+
+[deviations."compiler=orig210"]
+"check.results_plus_data.progpath_last" = "== fail"
+"check.results_plus_data.progpath_last.actual" = "== 116"
+"check.results_plus_data.progpath_zeros" = "== fail"
+"check.results_plus_data.progpath_zeros.actual" = "== 1"
+"check.results_plus_data.progdir_last" = "== fail"
+"check.results_plus_data.progdir_last.actual" = "== 116"
+"check.results_plus_data.progdir_zeros" = "== fail"
+"check.results_plus_data.progdir_zeros.actual" = "== 1"
+"check.results_plus_data.progname_last" = "== fail"
+"check.results_plus_data.progname_last.actual" = "== 116"
+"check.results_plus_data.progname_zeros" = "== fail"
+"check.results_plus_data.progname_zeros.actual" = "== 1"
+"check.results_plus_data.fontname_last" = "== fail"
+"check.results_plus_data.fontname_last.actual" = "== 116"
+"check.results_plus_data.fontname_zeros" = "== fail"
+"check.results_plus_data.fontname_zeros.actual" = "== 1"
