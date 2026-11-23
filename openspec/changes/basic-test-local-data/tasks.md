@@ -18,7 +18,7 @@
 - [x] 2.2 `caserun.c`: the data of the test per cell (D3), the query `data.FILE` from the job results (D5), BROKEN on an unexpected result, the report naming `FILE:LINE`; verify: host tests in `test_caserun.c` and `testjudge` (ok, an error without assertion -> BROKEN, a declared error -> the cases run)
 - [x] 2.3 The prev comparison of `basic-compile` data where the driver is compared (`ID/FILE`, `PREV_INTENDED` entries); verify: host test of `cr_prev_pass` with a data source; the `_prev` test of the selftest of 2.4 passes
 - [x] 2.4 Emulator selftest `tests/blitz2/selftest/model-local-data.test.bas` with `ID.test/` (a `basic-compile` child the case starts with `Execute_`, a `copy` file and a `mktestdata` file the case reads, two cells with `compiler = "same"`); verify: its ctest tests pass, and with the child's source broken the cases are BROKEN naming the line
-- [ ] 2.5 Docs: `tests/corpus/runner/README.md` (`build=`, the data in a cell's session), `caserun.h`'s comment; verify: the texts name the build parts and `data.FILE`
+- [x] 2.5 Docs: `tests/corpus/runner/README.md` (`build=`, the data in a cell's session), `caserun.h`'s comment; verify: the texts name the build parts and `data.FILE`
 
 ## 3. `!RunProgram` (user: "!RunProgram (Recommended)"; no timeout: "None (Recommended)")
 

@@ -36,6 +36,15 @@
  * does not end normally, the first cell whose compile or run did not end
  * gets the session's end; the cells behind it run again in a new session.
  *
+ * The test-local data (ID.test/, the table data; change
+ * basic-test-local-data) are prepared once per run in its directory
+ * data/ (a data source preprocessed and tokenised, a .spec made by
+ * mktestdata, a copy as it is) and given to each cell by cr_data_pass: the
+ * files, the data sources of the cell's build configuration as jobs bNNN of
+ * its job list, every other build configuration as a compile part of its
+ * own (corpus.h build=, build_job=) before the cell's compile.  The results
+ * of the jobs are the query data.FILE of the judge.
+ *
  * The verdict (testjudge.h tj_verdict) is the exit status: 0 passed, 1
  * reproduced (an open bug shows as declared), 2 error (a configuration,
  * source or result that cannot be judged), 3 broken, 4 failed, 77 skipped
