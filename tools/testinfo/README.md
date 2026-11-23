@@ -49,9 +49,10 @@ OPTIONS:
 
 Statistics of ctest runs (one JUnit file per run) and the @stat lines of the
 emulator sessions in them: durations, sessions, flaky results, suggested time
-limits (max timed x factor, at least the floor) and COST. Exit status 0, 1
-problems in a file (reported on stderr), 2 usage error or a file that cannot be
-read.
+limits (max timed x factor, at least the floor) and COST; runs served from a
+bundle (@served) are counted, not in the durations and the COST. Exit status 0,
+1 problems in a file (reported on stderr), 2 usage error or a file that cannot
+be read.
 ```
 
 Every JUnit file is one run (`ctest --preset P` writes
@@ -59,7 +60,11 @@ Every JUnit file is one run (`ctest --preset P` writes
 Reports per test the runs, their results and durations, the emulator
 sessions of the `@stat` lines, flaky results, a suggested time limit (the
 largest timed duration times the factor, at least the floor) and the COST
-value.
+value. A run of a case test served from its bundle (a line `@served v=1
+test=T bundle=B` in its output, `tools/lib/teststats/teststats.h`) is
+counted in the column `served` and left out of the durations and the
+COST; a broken `@served` line is reported as a broken `@stat` line is
+(exit status 1) and the run counts as not served.
 
 * `--tsv`: tab-separated values instead of text tables;
 * `--factor X`: the factor of the time limits (default 3);
@@ -77,15 +82,21 @@ POSITIONALS:
 
 OPTIONS:
   -h,     --help              Print this help message and exit
-          --update FILE       put the measured entries into FILE, replacing those of the same
+          --update FILE Excludes: --previous
+                              put the measured entries into FILE, replacing those of the same
                               tests (the others stay)
+          --previous FILE Excludes: --update
+                              the previous entries: a test whose every run was served from its
+                              bundle keeps its entry of FILE
 
 The COST of a test is the median over the runs of the sum of its emulator
 sessions' times without the slot wait, a session that did not start from a
 snapshot (cold, first-save, fallback, single) counted as the median of the
-test's sessions that did; a test without such a session gets no entry. Exit
-status 0, 1 problems in a JUnit file (reported on stderr), 2 usage error, a file
-that cannot be read or written, a malformed FILE.
+test's sessions that did; a test without such a session gets no entry. A run
+served from its bundle (@served) is no run; a test whose every run was served
+keeps its entry of the previous file (--previous FILE, with --update its FILE)
+or gets none. Exit status 0, 1 problems in a JUnit file (reported on stderr), 2
+usage error, a file that cannot be read or written, a malformed FILE.
 ```
 
 Writes the measured COST of the tests (`tools/lib/teststats/testcosts.h`,
@@ -101,6 +112,15 @@ With `--update FILE` the entries replace those of the same tests in
 `FILE`, the checked-in `tests/data/test-costs.txt`, whose other entries
 stay; the build reads that file (`cmake/test-cost.cmake`,
 `tools/testreg --costs`; `tests/README.md`, "The measured COST").
+
+A run of a case test served from its bundle (an `@served` line, see
+`stats`) is no run here: it started no session. A test whose every run
+was served keeps its entry of the previous file: `--previous FILE` (for a
+full refresh to stdout), with `--update FILE` that `FILE`; a test that has
+no entry there, and every such test without either option, gets none, and
+stderr names how many were left out. `--previous` and `--update` exclude
+each other. A bundle test gets its entry from its own `@stat` lines, as
+any test.
 
 ### map
 

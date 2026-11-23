@@ -1,7 +1,8 @@
 // test_teststats - the JUnit reader (lib/teststats/junit.h) and the
 // statistics (teststats.h) with JUnit files and @stat lines in memory,
 // also malformed files, testcases without name or time and broken @stat
-// lines (reported, not counted).
+// lines (reported, not counted); served runs (@served) and broken @served
+// lines.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -245,10 +246,10 @@ TEST_CASE("teststats: report", "[teststats]")
     {
         // the report is shown when one of its checks fails
         INFO(static_cast<const char *>(text));
-        /* tests: runs, results, durations */
-        CHECK(has_line(text, "bug_a ", " 3 2 1 0 20.5 / 22.5 / 130.0"));
-        CHECK(has_line(text, "unit ", " 2 1 1 0 0.5 / 0.6 / 0.7"));
-        CHECK(has_line(text, "skip ", " 1 0 0 1 -"));
+        /* tests: runs, results (passed, failed, skipped, served), durations */
+        CHECK(has_line(text, "bug_a ", " 3 2 1 0 0 20.5 / 22.5 / 130.0"));
+        CHECK(has_line(text, "unit ", " 2 1 1 0 0 0.5 / 0.6 / 0.7"));
+        CHECK(has_line(text, "skip ", " 1 0 0 1 0 -"));
         /* sessions; a line of another pass (run 2): every config of the test
            with its pass */
         CHECK(has_line(text, "bug_a ", " bug_a:port 3 restored x2, fallback 120.0 120.0 1.5 1 120 "
@@ -348,6 +349,166 @@ TEST_CASE("teststats: the measured COST", "[teststats]")
     // 3) = 7, median 6; t2: 1.5 + 2.0 (the median of 1.5, 2.5) = 3.5 and
     // 2.5, median 3; t3 cold only, t4 no sessions: none
     CHECK(p && !strcmp(p, "t1 6\nt2 3\n"));
+    free(p);
+    teststats_free(t);
+}
+
+// served runs (a case test served from its bundle: an @served line, no
+// @stat line; basic-test-bundle-key I7) are no runs of the measured COST and
+// of the durations; the bundle's @stat lines carry its own name (I8).
+// c1 is served in every run, c2 served once and alone twice (2 s, 4 s), the
+// bundle has a warm session of 3 s in two runs.
+#define SERVED(t) \
+    "corpusrun case: verdict from the bundle p_bundle_1\n@served v=1 test=" t " bundle=p_bundle_1\n"
+#define CASE(name, time, out) \
+    "\t<testcase name=\"" name "\" classname=\"" name "\" time=\"" time "\" status=\"run\">\n" \
+    "\t\t<system-out>" out "</system-out>\n\t</testcase>\n"
+static const char served_a[] =
+    HEAD
+    CASE("p_bundle_1", "40", "bundle cell c1: c1\n" CSTAT("p_bundle_1", "restored", "3.00"))
+    CASE("c1", "0.05", SERVED("c1"))
+    CASE("c2", "0.05", SERVED("c2"))
+    TAIL;
+static const char served_b[] =
+    HEAD
+    CASE("p_bundle_1", "41", CSTAT("p_bundle_1", "restored", "3.00"))
+    CASE("c1", "0.04", SERVED("c1"))
+    CASE("c2", "12", CSTAT("c2", "restored", "2.00"))
+    TAIL;
+static const char served_c[] =
+    HEAD
+    CASE("c1", "0.06", "@served v=1 test=c1 bundle=p_bundle_1 later=key\n")
+    CASE("c2", "14", CSTAT("c2", "restored", "4.00"))
+    TAIL;
+
+static char *costs_of(struct teststats *t, const struct tcosts *previous, size_t *left_out)
+{
+    char *p = NULL;
+    size_t n = 0;
+    FILE *f = open_memstream(&p, &n);
+
+    REQUIRE(f != NULL);
+    CHECK(teststats_costs_previous(t, previous, f, left_out) == 0);
+    fclose(f);
+    return p;
+}
+
+TEST_CASE("teststats: served runs", "[teststats]")
+{
+    struct teststats *t = teststats_new();
+    struct tcosts prev = {};
+    char err[300], *diag, *p;
+    size_t left = 99;
+
+    REQUIRE(t != NULL);
+    CHECK(add(t, "a.xml", served_a, &diag) == 0);
+    CHECK(diag && !*diag);
+    free(diag);
+    CHECK(add(t, "b.xml", served_b, &diag) == 0);
+    free(diag);
+    CHECK(add(t, "c.xml", served_c, &diag) == 0);
+    CHECK(diag && !*diag);
+    free(diag);
+
+    // without the previous file c1 gets no line and is counted as left out;
+    // c2 the median of its two runs alone, the bundle its own entry
+    p = costs_of(t, NULL, &left);
+    CHECK(p && !strcmp(p, "c2 3\np_bundle_1 3\n"));
+    CHECK(left == 1);
+    free(p);
+    p = NULL;
+    {
+        size_t n = 0;
+        FILE *f = open_memstream(&p, &n);
+
+        REQUIRE(f != NULL);
+        CHECK(teststats_costs(t, f) == 0);
+        fclose(f);
+        CHECK(p && !strcmp(p, "c2 3\np_bundle_1 3\n"));
+        free(p);
+    }
+
+    // with it c1 keeps its entry; c2's measurement wins over its old one,
+    // an entry of a test not in the runs is not written
+    REQUIRE(tcosts_parse("prev", "c1 2\nc2 9\nzz 5\n", 1, &prev, err, sizeof err) == 0);
+    p = costs_of(t, &prev, &left);
+    CHECK(p && !strcmp(p, "c1 2\nc2 3\np_bundle_1 3\n"));
+    CHECK(left == 0);
+    free(p);
+    tcosts_free(&prev);
+
+    // a previous file without c1: no line, left out
+    REQUIRE(tcosts_parse("prev", "c2 9\n", 1, &prev, err, sizeof err) == 0);
+    p = costs_of(t, &prev, &left);
+    CHECK(p && !strcmp(p, "c2 3\np_bundle_1 3\n"));
+    CHECK(left == 1);
+    free(p);
+    tcosts_free(&prev);
+
+    // the statistics: served runs counted, not in the durations nor the COST
+    p = report(t, 3, 30, 1);
+    CHECK(p != NULL);
+    if (p) {
+        INFO(static_cast<const char *>(p));
+        CHECK(has_line(p, "#tests\ttest\truns\tpassed\tfailed\tskipped\tserved\tmin/median/max", ""));
+        CHECK(has_line(p, "tests\tc1\t3\t3\t0\t0\t3\t-", ""));
+        CHECK(has_line(p, "tests\tc2\t3\t3\t0\t0\t1\t12.0 / 13.0 / 14.0", ""));
+        CHECK(has_line(p, "tests\tp_bundle_1\t2\t2\t0\t0\t0\t40.0 / 40.5 / 41.0", ""));
+        CHECK(has_line(p, "cost\tc2\t3\t13.0\t13", ""));
+        CHECK(has_line(p, "cost\tp_bundle_1\t2\t40.5\t41", ""));
+        CHECK(!strstr(p, "cost\tc1\t"));
+    }
+    free(p);
+    p = report(t, 3, 30, 0);
+    CHECK(p && strstr(p, "== Tests: runs and durations (seconds; served runs not counted)"));
+    CHECK(p && has_line(p, "c2 ", " 3 3 0 0 1 12.0 / 13.0 / 14.0"));
+    free(p);
+    teststats_free(t);
+}
+
+// a broken @served line is reported and left out (the run counts as not
+// served), the rest of the file counts; a line that only starts with the
+// tag is no @served line
+static const char served_bad[] =
+    HEAD
+    CASE("m", "9",
+         "@served v=1 test=m\n"
+         "@served v=2 test=m bundle=b\n"
+         "@served v=1 test=m bundle=b bundle=c\n"
+         "@served v=1 test=m bundle=\n"
+         "@served v=1 test=m bundle=a&lt;b\n"
+         "@served v=1  test=m bundle=b\n"
+         "@served\n"
+         "@servedx v=1 test=m bundle=b\n"
+         CSTAT("m", "restored", "5.00"))
+    TAIL;
+
+TEST_CASE("teststats: a broken @served line", "[teststats]")
+{
+    struct teststats *t = teststats_new();
+    char *diag, *p;
+    size_t left = 99;
+
+    REQUIRE(t != NULL);
+    CHECK(add(t, "bad.xml", served_bad, &diag) == 7);
+    REQUIRE(diag != NULL);
+    INFO(static_cast<const char *>(diag));
+    CHECK(strstr(diag, "bad.xml: testcase m, output line 1: bad @served line (the key bundle is missing): "
+                       "@served v=1 test=m\n"));
+    CHECK(strstr(diag, "output line 2: bad @served line (version 2, not 1)"));
+    CHECK(strstr(diag, "output line 3: bad @served line (the key bundle twice)"));
+    CHECK(strstr(diag, "output line 4: bad @served line (an empty value of bundle)"));
+    CHECK(strstr(diag, "output line 5: bad @served line (a character that is not allowed in the value of bundle)"));
+    CHECK(strstr(diag, "output line 6: bad @served line (a field is KEY=VALUE: \"\")"));
+    CHECK(strstr(diag, "output line 7: bad @served line (the key v is missing)"));
+    CHECK(!strstr(diag, "output line 8"));
+    free(diag);
+    p = costs_of(t, NULL, &left);
+    CHECK(p && !strcmp(p, "m 5\n"));
+    CHECK(left == 0);
+    free(p);
+    p = report(t, 3, 30, 1);
+    CHECK(p && has_line(p, "tests\tm\t1\t1\t0\t0\t0\t9.0 / 9.0 / 9.0", ""));
     free(p);
     teststats_free(t);
 }

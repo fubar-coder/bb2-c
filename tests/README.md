@@ -3822,8 +3822,11 @@ result, verdict or end differs between runs), suggested time limits (max
 timed × factor, default 3, at least the floor, default 30 s; a config
 that ended by timeout in every session of every run is listed as hanging,
 without a number) and a suggested ctest `COST` per test (the median
-duration; a test's duration includes its waits for emulator slots). Broken input (malformed XML, a testcase without name or time,
-a bad `@stat` line) is reported on stderr (exit status 1), the rest
+duration; a test's duration includes its waits for emulator slots). A run
+of a case test served from its bundle (a line `@served v=1 test=T
+bundle=B` in its output) is counted as served and left out of the
+durations and the `COST`. Broken input (malformed XML, a testcase without name or time,
+a bad `@stat` or `@served` line) is reported on stderr (exit status 1), the rest
 still counts.
 
 ### The measured COST
@@ -3858,8 +3861,20 @@ build/amiga/host/tools/testinfo/testinfo costs --update tests/data/test-costs.tx
 
 `--update` replaces the entries of the measured tests and keeps the
 others, also those of removed tests; they go away with the next full
-refresh, which writes the file anew from a full run without `--update`
-(`testinfo costs JUNIT... > tests/data/test-costs.txt`).
+refresh, which writes the file anew from a full run without `--update`:
+
+```
+build/amiga/host/tools/testinfo/testinfo costs --previous tests/data/test-costs.txt \
+    build/amiga/junit-all.xml [...] > test-costs.new && mv test-costs.new tests/data/test-costs.txt
+```
+
+A case test served from its bundle (its output names the bundle in an
+`@served` line) ran no session of its own; such a run does not count, and
+a test whose every run was served keeps its entry of the previous file
+(`--previous FILE`, with `--update` the updated file), so it keeps the
+COST of its run alone. Without `--previous` a full refresh leaves such a
+test out (stderr names how many) and its estimate orders it again. A
+bundle test has its own entry from its sessions.
 
 ## Coverage
 

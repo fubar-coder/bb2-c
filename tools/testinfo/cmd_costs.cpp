@@ -1,12 +1,15 @@
 /*
  * testinfo costs - the measured COST of the tests from ctest's JUnit files
- * (lib/teststats teststats_costs, the file format testcosts.h):
+ * (lib/teststats teststats_costs_previous, the file format testcosts.h):
  *
- *   testinfo costs [--update FILE] JUNIT.xml...
+ *   testinfo costs [--update FILE | --previous FILE] JUNIT.xml...
  *
  * Without --update the entries go to stdout; with it they replace the
  * entries of the same tests in FILE (tests/data/test-costs.txt), the others
- * stay, and FILE is written sorted.  Exit status 0, 1 = problems in a JUnit
+ * stay, and FILE is written sorted.  A test whose every run was served from
+ * its bundle (@served) keeps its entry of the previous file: --previous
+ * FILE, with --update its FILE; without either it gets none, and stderr
+ * names how many were left out.  Exit status 0, 1 = problems in a JUnit
  * file (reported, the rest counts), 2 = usage, a file that cannot be read
  * or written, a malformed FILE.
  */
@@ -44,12 +47,14 @@ static char *read_file(const char *path, size_t *len)
     return s;
 }
 
-static int run(const char *me, const std::string &update, const std::vector<std::string> &files)
+static int run(const char *me, const std::string &update, const std::string &previous,
+               const std::vector<std::string> &files)
 {
     struct teststats *t = teststats_new();
     struct tcosts measured = {}, old = {};
+    struct tcosts prev = {};
     char *buf = NULL, err[400];
-    size_t blen = 0;
+    size_t blen = 0, left_out = 0;
     int problems = 0, rc = 2;
     FILE *mf;
 
@@ -68,7 +73,19 @@ static int run(const char *me, const std::string &update, const std::vector<std:
         problems += teststats_add(t, file.c_str(), text, len, stderr) ? 1 : 0;
         free(text);
     }
-    if (!(mf = open_memstream(&buf, &blen)) || teststats_costs(t, mf) || fclose(mf)) {
+    if (!update.empty() && std::filesystem::exists(update)
+        && tcosts_load(update.c_str(), &old, err, sizeof err)) {
+        fprintf(stderr, "%s: %s\n", me, err);
+        goto out;
+    }
+    if (!previous.empty() && tcosts_load(previous.c_str(), &prev, err, sizeof err)) {
+        fprintf(stderr, "%s: %s\n", me, err);
+        goto out;
+    }
+    if (!(mf = open_memstream(&buf, &blen))
+        || teststats_costs_previous(t, !update.empty() ? &old : !previous.empty() ? &prev : NULL, mf,
+                                    &left_out)
+        || fclose(mf)) {
         fprintf(stderr, "%s: out of memory\n", me);
         goto out;
     }
@@ -76,11 +93,10 @@ static int run(const char *me, const std::string &update, const std::vector<std:
         fprintf(stderr, "%s: %s\n", me, err);
         goto out;
     }
+    if (left_out)
+        fprintf(stderr, "%s: tests left out: %zu (every run served from a bundle, no previous entry%s)\n",
+                me, left_out, update.empty() && previous.empty() ? "; --previous FILE keeps their entries" : "");
     if (!update.empty()) {
-        if (std::filesystem::exists(update) && tcosts_load(update.c_str(), &old, err, sizeof err)) {
-            fprintf(stderr, "%s: %s\n", me, err);
-            goto out;
-        }
         if (tcosts_merge(&old, &measured)) {
             fprintf(stderr, "%s: out of memory\n", me);
             goto out;
@@ -111,6 +127,7 @@ out:
     free(buf);
     tcosts_free(&measured);
     tcosts_free(&old);
+    tcosts_free(&prev);
     teststats_free(t);
     return rc;
 }
@@ -118,23 +135,30 @@ out:
 void cmd_costs(CLI::App &app, int &status)
 {
     struct options {
-        std::string update;
+        std::string update, previous;
         std::vector<std::string> files;
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("costs", "the measured COST of the tests (tests/data/test-costs.txt)");
-    sub->add_option("--update", o->update,
-                    "put the measured entries into FILE, replacing those of the same tests (the others stay)")
-        ->type_name("FILE");
+    CLI::Option *update =
+        sub->add_option("--update", o->update,
+                        "put the measured entries into FILE, replacing those of the same tests (the others stay)")
+            ->type_name("FILE");
+    sub->add_option("--previous", o->previous,
+                    "the previous entries: a test whose every run was served from its bundle keeps its entry of FILE")
+        ->type_name("FILE")
+        ->excludes(update);
     sub->add_option("JUNIT.xml", o->files, "ctest's JUnit files, one per run")->required();
     sub->footer("The COST of a test is the median over the runs of the sum of its emulator sessions' times "
                 "without the slot wait, a session that did not start from a snapshot (cold, first-save, "
                 "fallback, single) counted as the median of the test's sessions that did; a test without such a "
-                "session gets no entry. Exit status 0, 1 problems in a JUnit file (reported on stderr), 2 "
+                "session gets no entry. A run served from its bundle (@served) is no run; a test whose every run "
+                "was served keeps its entry of the previous file (--previous FILE, with --update its FILE) or "
+                "gets none. Exit status 0, 1 problems in a JUnit file (reported on stderr), 2 "
                 "usage error, a file that cannot be read or written, a malformed FILE.");
     sub->callback([sub, o, &status] {
         const std::string name = cli::name(*sub);
 
-        status = run(name.c_str(), o->update, o->files);
+        status = run(name.c_str(), o->update, o->previous, o->files);
     });
 }

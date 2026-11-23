@@ -9,8 +9,9 @@
  * report (plain text tables, or TSV: a line "#SECTION<TAB>COLUMN..." per
  * section, then "SECTION<TAB>VALUE..." per row):
  *
- *   tests     per test: runs (passed, failed, skipped), min / median /
- *             max duration of the runs that were not skipped
+ *   tests     per test: runs (passed, failed, skipped, served), min /
+ *             median / max duration of the runs that were neither skipped
+ *             nor served
  *   sessions  per test and config: sessions, how the snapshot mode
  *             started them, max session time (without the slot wait),
  *             max of the time counted against the limit, max slot wait,
@@ -25,13 +26,26 @@
  *             lines do not tell when the last output came); per test
  *             the largest suggestion of its configs
  *   cost      per test: a COST for ctest, the median duration (seconds,
- *             rounded up, at least 1)
+ *             rounded up, at least 1) of the same runs
+ *
+ * A served run is a testcase whose output holds an @served line: a case
+ * test served from its bundle (it started no session, its bundle ran the
+ * sessions):
+ *
+ *   @served v=1 test=T bundle=B
+ *
+ * the fields separated by one blank, in any order; a key it does not know
+ * is ignored; a line with a key twice, without one of the three, with
+ * another version, an empty value or a value of other characters than
+ * [A-Za-z0-9._,:/+-] is reported as a broken @served line and left out
+ * (the run counts as not served).
  */
 #ifndef TESTSTATS_H
 #define TESTSTATS_H
 
 #include <stddef.h>
 #include <stdio.h>
+#include "testcosts.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -96,10 +110,25 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
  *        sessions, rounded up, at least 1.  A test without a warm session
  *        (and a test without sessions, and one whose configuration only it
  *        uses: single) gets no line: it keeps the COST the build gives it
- *        without a measurement.
+ *        without a measurement.  A served run (see the top) is no run
+ *        here: its sessions, if any, do not count; a test whose every run
+ *        was served gets no line either.
  * @return 0 = ok, -1 if memory ran out
  */
 int teststats_costs(const struct teststats *t, FILE *out);
+
+/**
+ * @brief teststats_costs, a test whose every run was served keeping its
+ *        entry of the previous file of measured COSTs.
+ * @param t         the statistics
+ * @param previous  the previous entries (NULL: none)
+ * @param out       the lines
+ * @param left_out  out (may be NULL): the tests whose every run was served
+ *                  and that previous has no entry of (they get no line)
+ * @return 0 = ok, -1 if memory ran out
+ */
+int teststats_costs_previous(const struct teststats *t, const struct tcosts *previous, FILE *out,
+                             size_t *left_out);
 
 
 #ifdef __cplusplus

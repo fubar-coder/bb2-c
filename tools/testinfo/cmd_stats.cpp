@@ -2,7 +2,8 @@
  * testinfo stats - statistics of test runs from ctest's JUnit files and the
  * runners' @stat lines in them (lib/teststats/teststats.h): durations,
  * emulator sessions, flaky results, suggested time limits and COST
- * values.
+ * values; runs served from a bundle (@served) counted, not in the
+ * durations.
  *
  *   testinfo stats [--tsv] [--factor X] [--floor SEC] JUNIT.xml...
  *
@@ -104,7 +105,8 @@ void cmd_stats(CLI::App &app, int &status)
     sub->add_option("JUNIT.xml", o->files, "ctest's JUnit files, one per run")->required();
     sub->footer("Statistics of ctest runs (one JUnit file per run) and the @stat lines of the "
                 "emulator sessions in them: durations, sessions, flaky results, suggested time "
-                "limits (max timed x factor, at least the floor) and COST. Exit status 0, 1 "
+                "limits (max timed x factor, at least the floor) and COST; runs served from a "
+                "bundle (@served) are counted, not in the durations and the COST. Exit status 0, 1 "
                 "problems in a file (reported on stderr), 2 usage error or a file that cannot be "
                 "read.");
     sub->callback([sub, o, &status] {

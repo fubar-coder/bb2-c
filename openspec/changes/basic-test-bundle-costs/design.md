@@ -41,3 +41,28 @@
 
 After `basic-test-bundle-key` (only I7/I8 are needed); parallel with the
 runner and the registration.
+
+## Findings (implementation)
+
+- The `@served` line is parsed in `teststats.c` (`served_parse`), with the
+  rules of the `@stat` reader: fields in any order, an unknown key ignored;
+  refused (reported, the run counts as not served): a key twice, one of `v`,
+  `test`, `bundle` missing, `v` other than 1, an empty value, a character
+  outside `[A-Za-z0-9._,:/+-]`, an empty field (two blanks). A line that
+  only starts with `@served` (`@servedx`) is no `@served` line.
+- `test=` of the line is not compared with the testcase's name: the run
+  that holds the line is the served one.
+- A served run's `@stat` lines (none by I7) would not count either: the
+  measured COST leaves out every session of a served run.
+- `teststats_costs_previous` (lib_teststats now links lib_testcosts) takes
+  the previous entries; `teststats_costs` is it without them, so its output
+  on JUnit files without `@served` is unchanged (checked against the
+  `testinfo` of main on two acceptance JUnit files: stdout, stderr and an
+  `--update` of `tests/data/test-costs.txt` byte-identical; also with
+  `--previous`).
+- `--previous` and `--update` exclude each other (CLI11 `excludes`, usage
+  error, exit 2): with `--update` its FILE is the previous file.
+- `testinfo stats`: a column `served` in the section `tests` (also in the
+  TSV, after `skipped`); the durations and the suggested COST leave served
+  runs out; the section titles say so. A test with only served runs shows
+  `-` and gets no COST row.

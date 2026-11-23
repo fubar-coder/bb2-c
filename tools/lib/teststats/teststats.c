@@ -9,11 +9,13 @@
 #include <string.h>
 #include "junit.h"
 #include "statline.h"
+#include "testcosts.h"
 
 struct run {
     double time;
     enum junit_status status;
     size_t file;
+    int served;                 /* an @served line: served from a bundle */
 };
 
 struct sess {
@@ -81,6 +83,76 @@ static struct test *find_test(struct teststats *t, const char *name)
     return &v[t->ntests++];
 }
 
+/* ------------------------------------------------------- the @served line */
+
+#define SERVED_TAG "@served"
+
+static int served_value_char(int c)
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+           || (c && strchr("._,:/+-", c));
+}
+
+/* one line: 1 = a valid @served line, 0 = not one (it does not start with
+   "@served" and a blank or its end), -1 = a broken one (err).  The fields:
+   v=1 test=T bundle=B, separated by one blank, in any order; a key it does
+   not know is ignored, a key twice, a missing key, an empty value or a
+   value of other characters than [A-Za-z0-9._,:/+-] is refused. */
+static int served_parse(const char *line, size_t len, char *err, size_t errlen)
+{
+    static const char *const keys[] = { "v", "test", "bundle" };
+    int seen[3] = { 0, 0, 0 };
+    size_t tl = strlen(SERVED_TAG), i = 0;
+    const char *e = line + len;
+
+    if (len < tl || memcmp(line, SERVED_TAG, tl) || (len > tl && line[tl] != ' '))
+        return 0;
+    line += tl;
+    while (line < e) {
+        const char *f = ++line, *eq, *fe;
+        size_t k, kn;
+
+        for (fe = f; fe < e && *fe != ' '; fe++)
+            ;
+        for (eq = f; eq < fe && *eq != '='; eq++)
+            ;
+        if (eq == f || eq == fe) {
+            snprintf(err, errlen, "a field is KEY=VALUE: \"%.*s\"", (int)(fe - f), f);
+            return -1;
+        }
+        if (eq + 1 == fe) {
+            snprintf(err, errlen, "an empty value of %.*s", (int)(eq - f), f);
+            return -1;
+        }
+        for (const char *c = eq + 1; c < fe; c++)
+            if (!served_value_char((unsigned char)*c)) {
+                snprintf(err, errlen, "a character that is not allowed in the value of %.*s",
+                         (int)(eq - f), f);
+                return -1;
+            }
+        kn = (size_t)(eq - f);
+        for (k = 0; k < 3 && (strlen(keys[k]) != kn || memcmp(keys[k], f, kn)); k++)
+            ;
+        if (k < 3) {
+            if (seen[k]++) {
+                snprintf(err, errlen, "the key %s twice", keys[k]);
+                return -1;
+            }
+            if (k == 0 && (fe - eq != 2 || eq[1] != '1')) {
+                snprintf(err, errlen, "version %.*s, not 1", (int)(fe - eq - 1), eq + 1);
+                return -1;
+            }
+        }
+        line = fe;
+    }
+    for (i = 0; i < 3; i++)
+        if (!seen[i]) {
+            snprintf(err, errlen, "the key %s is missing", keys[i]);
+            return -1;
+        }
+    return 1;
+}
+
 static char *str_printf(const char *fmt, ...)
 {
     va_list ap;
@@ -123,15 +195,23 @@ int teststats_add(struct teststats *t, const char *source, const char *text, siz
         if (!te || !(rv = realloc(te->runs, (te->nruns + 1) * sizeof *rv)))
             goto nomem;
         te->runs = rv;
-        rv[te->nruns++] = (struct run){ c->time, c->status, t->nfiles };
+        rv[te->nruns++] = (struct run){ c->time, c->status, t->nfiles, 0 };
         first = te->nsess;
         while (*l) {
             size_t n = strcspn(l, "\n");
             struct statline st;
             int r = statline_parse(l, n, &st, err, sizeof err);
 
+            int served = r ? 0 : served_parse(l, n, err, sizeof err);
+
             lineno++;
-            if (r < 0) {
+            if (served > 0) {
+                te->runs[te->nruns - 1].served = 1;
+            } else if (served < 0) {
+                fprintf(diag, "%s: testcase %s, output line %u: bad @served line (%s): %.*s\n",
+                        source, c->name, lineno, err, (int)(n > 120 ? 120 : n), l);
+                problems++;
+            } else if (r < 0) {
                 fprintf(diag, "%s: testcase %s, output line %u: bad @stat line (%s): %.*s\n",
                         source, c->name, lineno, err, (int)(n > 120 ? 120 : n), l);
                 problems++;
@@ -434,14 +514,15 @@ static unsigned suggest(double timed, const struct teststats_options *o)
 int teststats_report(const struct teststats *t, const struct teststats_options *opt, FILE *out)
 {
     struct teststats_options o = opt ? *opt : (struct teststats_options){ 0 };
-    struct table tests = { "tests", "Tests: runs and durations (seconds)", 6, 0, 0, 0 };
+    struct table tests = { "tests", "Tests: runs and durations (seconds; served runs not counted)", 7,
+                          0, 0, 0 };
     struct table sess = { "sessions", "Emulator sessions per test and config (seconds; "
                           "session without the slot wait, timed: counted against the limit)",
                           10, 0, 0, 0 };
     struct table flaky = { "flaky", "Flaky: results that differ between runs", 4, 0, 0, 0 };
     struct table lim = { "limits", NULL, 6, 0, 0, 0 };
-    struct table cost = { "cost", "Suggested COST (ctest, seconds: the median duration)", 4,
-                          0, 0, 0 };
+    struct table cost = { "cost", "Suggested COST (ctest, seconds: the median duration, served runs "
+                          "not counted)", 4, 0, 0, 0 };
     char limtitle[200];
     size_t i, k;
     int bad = 0;
@@ -454,7 +535,7 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
              "Suggested time limits per session (max timed x %g, at least %g s)", o.factor,
              o.floor);
     lim.title = limtitle;
-    row(&tests, "test", "runs", "passed", "failed", "skipped", "min/median/max");
+    row(&tests, "test", "runs", "passed", "failed", "skipped", "served", "min/median/max");
     row(&sess, "test", "config", "sessions", "snapshot", "max session", "max timed",
         "max wait", "timeouts", "limit", "verdicts");
     row(&flaky, "test", "config", "what", "seen");
@@ -463,7 +544,7 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
     for (i = 0; i < t->ntests && !bad; i++) {
         const struct test *te = &t->tests[i];
         double *d = calloc(te->nruns + 1, sizeof *d);
-        size_t nd = 0, np = 0, nf = 0, ns = 0, ng;
+        size_t nd = 0, np = 0, nf = 0, ns = 0, nsv = 0, ng;
         const char **g = NULL;
         unsigned best = 0, now = 0;
         int any_normal = 0;
@@ -476,12 +557,13 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
             np += te->runs[k].status == JUNIT_PASSED;
             nf += te->runs[k].status == JUNIT_FAILED;
             ns += te->runs[k].status == JUNIT_SKIPPED;
-            if (te->runs[k].status != JUNIT_SKIPPED)
+            nsv += te->runs[k].served;
+            if (te->runs[k].status != JUNIT_SKIPPED && !te->runs[k].served)
                 d[nd++] = te->runs[k].time;
         }
         {
             char *a = fmt("%zu", te->nruns), *b = fmt("%zu", np), *c = fmt("%zu", nf);
-            char *e = fmt("%zu", ns), *m = NULL, *md = NULL, *co = NULL;
+            char *e = fmt("%zu", ns), *sv = fmt("%zu", nsv), *m = NULL, *md = NULL, *co = NULL;
 
             if (nd) {
                 double med = median(d, nd);
@@ -492,14 +574,14 @@ int teststats_report(const struct teststats *t, const struct teststats_options *
                 co = fmt("%u", cs < 1 ? 1 : cs);
                 row(&cost, te->name, a, md, co);
             }
-            row(&tests, te->name, a, b, c, e, m ? m : "-");
+            row(&tests, te->name, a, b, c, e, sv, m ? m : "-");
             if (np && nf) {
                 char *s = str_printf("passed %zu, failed %zu", np, nf);
 
                 row(&flaky, te->name, "", "ctest result", s);
                 free(s);
             }
-            free(a), free(b), free(c), free(e), free(m), free(md), free(co);
+            free(a), free(b), free(c), free(e), free(sv), free(m), free(md), free(co);
         }
         free(d);
         if ((ng = groups(te, &g)) == (size_t)-1) {
@@ -579,6 +661,24 @@ static int by_name(const void *a, const void *b)
     return strcmp((*(const struct test *const *)a)->name, (*(const struct test *const *)b)->name);
 }
 
+/* whether the test's run of file f was served from a bundle */
+static int served_in(const struct test *te, size_t f)
+{
+    for (size_t k = 0; k < te->nruns; k++)
+        if (te->runs[k].file == f && te->runs[k].served)
+            return 1;
+    return 0;
+}
+
+/* whether every run of the test was served (and it has one) */
+static int only_served(const struct test *te)
+{
+    for (size_t k = 0; k < te->nruns; k++)
+        if (!te->runs[k].served)
+            return 0;
+    return te->nruns > 0;
+}
+
 /* the measured COST of a test, 0 = none (see teststats.h) */
 static unsigned measured_cost(const struct test *te, size_t nfiles, int *bad)
 {
@@ -592,7 +692,7 @@ static unsigned measured_cost(const struct test *te, size_t nfiles, int *bad)
         goto out;
     }
     for (size_t k = 0; k < te->nsess; k++)
-        if (!strcmp(te->sess[k].st.snapshot, "restored"))
+        if (!strcmp(te->sess[k].st.snapshot, "restored") && !served_in(te, te->sess[k].file))
             warm[nwarm++] = te->sess[k].st.session;
     if (!nwarm)
         goto out;               /* only cold sessions: no measurement */
@@ -603,6 +703,8 @@ static unsigned measured_cost(const struct test *te, size_t nfiles, int *bad)
         double sum = 0;
         int any = 0;
 
+        if (served_in(te, f))
+            continue;
         for (size_t k = 0; k < te->nsess; k++)
             if (te->sess[k].file == f) {
                 sum += !strcmp(te->sess[k].st.snapshot, "restored") ? te->sess[k].st.session : est;
@@ -624,9 +726,17 @@ out:
 
 int teststats_costs(const struct teststats *t, FILE *out)
 {
+    return teststats_costs_previous(t, NULL, out, NULL);
+}
+
+int teststats_costs_previous(const struct teststats *t, const struct tcosts *previous, FILE *out,
+                             size_t *left_out)
+{
     const struct test **v = calloc(t->ntests + 1, sizeof *v);
     int bad = 0;
 
+    if (left_out)
+        *left_out = 0;
     if (!v)
         return -1;
     for (size_t i = 0; i < t->ntests; i++)
@@ -635,6 +745,14 @@ int teststats_costs(const struct teststats *t, FILE *out)
     for (size_t i = 0; i < t->ntests && !bad; i++) {
         unsigned c = measured_cost(v[i], t->nfiles, &bad);
 
+        if (!c && only_served(v[i])) {
+            const struct tcost *p = previous ? tcosts_find(previous, v[i]->name) : NULL;
+
+            if (p)
+                c = p->cost;
+            else if (left_out)
+                ++*left_out;
+        }
         if (c)
             fprintf(out, "%s %u\n", v[i]->name, c);
     }
