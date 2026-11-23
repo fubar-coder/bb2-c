@@ -1,0 +1,14 @@
+# compiler-data-pad-byte.test.bas: tedstub compiles and runs the filler (job
+# r001) and then the driver (job r002) through COMPILE/RUN in one session;
+# the driver's console lines are the OUTPUT r002 lines of tedstub's log.
+# The original leaves what the filler wrote in the pad bytes
+fixed-orig = 969
+dirs = ["out/defaults.xtra"]
+files = ["src/filler.bb2|@TESTDATA@/compiler-data-pad-byte.filler"]
+jobline = ["run=r001|CORPUS:src/filler.bb2|RAM:con", "run=r002|@DRIVER@|RAM:con"]
+
+[asserts]
+"compile.log" = "contains \"OUTPUT\tr002\tdata2 pad 00000000 off 00000009\nOUTPUT\tr002\tdata1 pad 00000000 found 1\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "contains \"OUTPUT\tr002\tdata2 pad 00000002 off 00000009\nOUTPUT\tr002\tdata1 pad 00000045 found 1\n\""
