@@ -8,9 +8,9 @@
 ; AN_BadFreeAddr (0100 000F), which inject alertlog records.
 ; Correct: "Macro without End Macro", no alert, the compiler frees what it
 ; allocated.
-; @fixed-orig #965
-; @pass wrap=@INJECT@|fill=a5 alertlog track
-NPrint "hello"
+!TestCase{uninit_free_noend}
+  !CheckEq{1,1,"hello"}
+!EndTestCase
+
 Macro small
-a=1
-NPrint a
+  a=1

@@ -6,8 +6,6 @@
 ; would free foreign memory, compiler-macrobuff-freemem-large). inject
 ; track reports the FreeMem.
 ; Correct: macrobuff is freed with the size it was allocated with.
-; @fixed-orig #336
-; @pass wrap=@INJECT@|track
-; @pass jobline=macrobuf=64
-NPrint "hello"
-End
+!TestCase{macrobuf_freemem}
+  !CheckEq{1,1,"hello"}
+!EndTestCase

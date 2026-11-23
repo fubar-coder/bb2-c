@@ -1,0 +1,18 @@
+# compiler-macro-uninit-free.test.bas: the compiler runs through inject with
+# fill=a5 (the memory addhere does not clear holds $a5), alertlog and track;
+# "Macro too Big" in the 119th line of big ends the compile with the node of
+# the macro half-built. The correct result is the error and no alert; the
+# original frees the garbage text pointer: the same error with the alert
+# 0100000f in inject's report
+fixed-orig = 965
+wrap = "@INJECT@|fill=a5 alertlog track"
+
+[asserts]
+compile = "== \"error 119 Macro too Big\""
+"compile.inject" = "== \"inject: alertlog: 0 alerts\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+"compile.inject" = "== \"inject: alertlog: 1 alerts\ninject: alert 0100000f\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""

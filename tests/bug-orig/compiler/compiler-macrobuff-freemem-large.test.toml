@@ -1,0 +1,21 @@
+# compiler-macrobuff-freemem-large.test.bas: the compiler runs through inject
+# with track, the job line sets the Macro Buffer to 40000 bytes; the original
+# frees 40000 bytes of its 8192 byte block at its end: the compile ends ok, the
+# exec free list is corrupted and the session ends at its limit (alert 8100
+# 0005, #336). A session of its own for the original compiler
+fixed-orig = 336
+wrap = "@INJECT@|track"
+jobline = ["macrobuf=40000"]
+isolate = ["compiler=orig195"]
+timeout = 30
+
+[asserts]
+"compile.inject" = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+session = "== timeout"
+"compile.inject" = "not exists"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

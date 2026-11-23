@@ -15,11 +15,6 @@
 ; text and the ':' of a line end that End Macro removes), and the compiler
 ; frees what it allocated (inject track). A text of exactly 65535 bytes:
 ; compiler-macro-textlen-max.
-; @fixed-orig #964
-; @pass wrap=@INJECT@|track
-; @pass jobline=macrobuf=100000
-; @pass timeout=30
-b.l=0
 Macro big
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -1022,6 +1017,9 @@ a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 b=7
 End Macro
-!big
-NPrint b
-End
+
+!TestCase{textlen_word}
+  b.l=0
+  !big
+  !CheckEq{b,7,"expanded"}
+!EndTestCase
