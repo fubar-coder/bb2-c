@@ -1,0 +1,8 @@
+# rizonejoylib-zonetest-start-byte.test.bas: the original tests zone 4 under
+# the number 260
+fixed-orig = 881
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.start_zone_260.not_found" = "== fail"
+"check.start_zone_260.not_found.actual" = "== 260"

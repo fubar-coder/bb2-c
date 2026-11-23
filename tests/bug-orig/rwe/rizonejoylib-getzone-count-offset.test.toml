@@ -1,0 +1,14 @@
+# rizonejoylib-getzone-count-offset.test.bas: the original returns -1 for the
+# fields at offset 2, 4 and 6 and reads the zone behind the table
+fixed-orig = 870
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.field_offsets.x2" = "== fail"
+"check.field_offsets.x2.actual" = "== -1"
+"check.field_offsets.y1" = "== fail"
+"check.field_offsets.y1.actual" = "== -1"
+"check.field_offsets.y2" = "== fail"
+"check.field_offsets.y2.actual" = "== -1"
+"check.field_offsets.zone_behind" = "== fail"
+"check.field_offsets.zone_behind.actual" = "== 1234"

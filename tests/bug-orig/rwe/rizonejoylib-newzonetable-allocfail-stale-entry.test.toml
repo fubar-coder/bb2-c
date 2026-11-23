@@ -1,0 +1,13 @@
+# rizonejoylib-newzonetable-allocfail-stale-entry.test.bas: through inject the
+# first allocation of 164 bytes fails; the original keeps the freed table
+fixed-orig = 874
+rwe = ["rizonejoylib"]
+hang-after = 30
+runwrap = "@INJECT@|allocfail=164-164/1"
+
+[asserts]
+inject = "contains \"inject: allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.alloc_fails.table_gone" = "== fail"
+"check.alloc_fails.table_gone.actual" = "== -1"

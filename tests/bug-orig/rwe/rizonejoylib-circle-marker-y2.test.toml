@@ -1,0 +1,10 @@
+# rizonejoylib-circle-marker-y2.test.bas: the original's 68020 mode takes the
+# rectangle for a circle and stores one with y2 = -1
+fixed-orig = 866
+rwe = ["rizonejoylib"]
+
+[deviations."compiler=orig210"]
+"check.y2_marker.rectangle_found" = "== fail"
+"check.y2_marker.rectangle_found.actual" = "== -1"
+"check.y2_marker.minus_one_refused" = "== fail"
+"check.y2_marker.minus_one_refused.actual" = "== -1"

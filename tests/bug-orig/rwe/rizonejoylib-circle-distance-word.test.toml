@@ -1,0 +1,11 @@
+# rizonejoylib-circle-distance-word.test.bas (#1153, an open bug, wontfix): the
+# word differences wrap on both CPU modes (a500: 68000 mode, a1200: 68020
+# mode)
+rwe = ["rizonejoylib"]
+
+[matrix]
+machine = ["a500", "a1200"]
+
+[deviations."compiler=orig210"]
+"check.wrapped_distance.outside" = "== fail"
+"check.wrapped_distance.outside.actual" = "== 1"
