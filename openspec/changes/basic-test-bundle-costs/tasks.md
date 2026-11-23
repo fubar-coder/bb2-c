@@ -15,11 +15,11 @@ I7/I8 of `basic-test-bundle-key`.
 
 ## 3. Checks
 
-- [ ] 3.1 `ctest --preset host` (and with `-DHOST_SANITIZE=ON`); `testinfo costs` of the last `junit-all.xml` equals `tests/data/test-costs.txt` where the file was refreshed from it (no served runs in it). Verify: pass.
+- [x] 3.1 `ctest --preset host` (and with `-DHOST_SANITIZE=ON`); `testinfo costs` of the last `junit-all.xml` equals `tests/data/test-costs.txt` where the file was refreshed from it (no served runs in it). Verify: pass.
 
 ## 4. Documents
 
-- [ ] 4.1 `tools/testinfo/README.md`, `tests/README.md` "The measured COST" (served runs, `--previous`, the full-refresh command). Verify: coordinator's review.
+- [x] 4.1 `tools/testinfo/README.md`, `tests/README.md` "The measured COST" (served runs, `--previous`, the full-refresh command). Verify: coordinator's review.
 
 ## 5. Commit and report
 
