@@ -333,22 +333,126 @@ static int check_entries(const struct tc_tabkey *v, size_t n, const char *table,
     return 0;
 }
 
+int tc_end_split(const char *text, char **query, char **pred)
+{
+    const char *b = strchr(text, ' '), *p;
+
+    *query = *pred = NULL;
+    if (!b || b == text)
+        return -1;
+    for (p = b; *p == ' '; p++)
+        ;
+    if (!*p)
+        return -1;
+    if (!(*query = malloc((size_t)(b - text) + 1)) || !(*pred = tc_strdup(p))) {
+        free(*query);
+        *query = NULL;
+        return -2;
+    }
+    memcpy(*query, text, (size_t)(b - text));
+    (*query)[b - text] = 0;
+    return 0;
+}
+
+/* a query an alternative end may name: one whose value varies with the end */
+static int end_query(int kind)
+{
+    switch (kind) {
+    case TC_Q_SESSION:
+    case TC_Q_RC:
+    case TC_Q_REQUESTER:
+    case TC_Q_END_CASE:
+    case TC_Q_END_RUN:
+    case TC_Q_OUTPUT:
+    case TC_Q_CHECK:
+        return 1;
+    }
+    return 0;
+}
+
+/* the selectors, queries and predicates of the alternative ends */
+static int check_ends(const struct tc_config *c, char *err, size_t errlen)
+{
+    for (size_t i = 0; i < c->nends; i++) {
+        const struct tc_tabkey *t = &c->ends[i];
+        struct tc_selector sel;
+        char msg[300];
+        int r = tc_selector_parse(t->sel, 1, &sel, msg, sizeof msg);
+
+        if (r == -2)
+            return tc_err(err, errlen, "out of memory");
+        if (r)
+            return tc_err(err, errlen, "%s:%u: [ends.\"%s\"]: %s", t->at.file, t->at.line, t->sel, msg);
+        tc_selector_free(&sel);
+        if (!strcmp(t->key, "reason"))
+            continue;
+        for (size_t k = 0; k < t->value.nlist; k++) {
+            const char *a = t->value.list[k];
+            char *qt, *pt;
+            struct tc_query q;
+            struct tc_pred p;
+
+            r = tc_end_split(a, &qt, &pt);
+            if (r == -2)
+                return tc_err(err, errlen, "out of memory");
+            if (r)
+                return tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\": QUERY PREDICATE expected",
+                              t->at.file, t->at.line, t->key, a);
+            r = tc_query_parse(qt, &q, msg, sizeof msg);
+            if (r == 0 && !end_query(q.kind)) {
+                tc_query_free(&q);
+                tc_err(err, errlen, "%s:%u: the alternative end %s: the query %s does not vary with the end "
+                       "(an alternative names session, rc, requester, end.case, end.run, output or check.*)",
+                       t->at.file, t->at.line, t->key, qt);
+                free(qt);
+                free(pt);
+                return -1;
+            }
+            if (r == 0) {
+                r = tc_pred_parse(pt, q.kind, &p, msg, sizeof msg);
+                tc_query_free(&q);
+                if (r == 0)
+                    tc_pred_free(&p);
+            }
+            if (r == -2) {
+                free(qt);
+                free(pt);
+                return tc_err(err, errlen, "out of memory");
+            }
+            if (r) {
+                tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\": %s", t->at.file, t->at.line, t->key, a,
+                       msg);
+                free(qt);
+                free(pt);
+                return -1;
+            }
+            free(qt);
+            free(pt);
+        }
+    }
+    return 0;
+}
+
 int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
 {
     const struct tc_setting *fo = tc_get(c, "fixed-orig"), *fx = tc_get(c, "fixed");
     const struct tc_setting *ex = tc_get(c, "extension");
 
     if (check_entries(c->asserts, c->nasserts, "asserts", err, errlen)
-        || check_entries(c->deviations, c->ndeviations, "deviations", err, errlen))
+        || check_entries(c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
         return -1;
-    if (fo && c->ndeviations == 0)
+    /* the alternative ends are a declared deviation */
+    if (fo && c->ndeviations == 0 && c->nends == 0)
         return tc_err(err, errlen, "%s:%u: test %s: fixed-orig without a declared deviation", fo->at.file,
                       fo->at.line, c->id);
-    if (ex && c->ndeviations == 0)
+    if (ex && c->ndeviations == 0 && c->nends == 0)
         return tc_err(err, errlen, "%s:%u: test %s: extension without a declared deviation (what the original "
                       "does instead)", ex->at.file, ex->at.line, c->id);
     if (fx && c->ndeviations)
         return tc_err(err, errlen, "%s:%u: test %s: fixed with a declared deviation (an original bug is "
+                      "fixed-orig)", fx->at.file, fx->at.line, c->id);
+    if (fx && c->nends)
+        return tc_err(err, errlen, "%s:%u: test %s: fixed with declared alternative ends (an original bug is "
                       "fixed-orig)", fx->at.file, fx->at.line, c->id);
     return 0;
 }
@@ -415,6 +519,13 @@ int tc_cell_faulty(const struct tc_config *conf, const struct tc_matrix *m, size
         int oom = 0;
 
         if (entry_matches(&conf->deviations[i], conf, m, cell, case_name, 1, &spec, &oom))
+            return 1;
+    }
+    for (size_t i = 0; i < conf->nends; i++) {
+        size_t spec;
+        int oom = 0;
+
+        if (entry_matches(&conf->ends[i], conf, m, cell, case_name, 1, &spec, &oom))
             return 1;
     }
     return 0;
@@ -547,5 +658,124 @@ int tc_assertions_for(const struct tc_config *conf, const struct tc_matrix *m, s
         tc_err(err, errlen, "out of memory");
     if (r)
         tc_assertions_free(out);
+    return r;
+}
+
+/* ------------------------------------------------------------ alternative ends */
+
+int tc_query_same(const struct tc_query *a, const struct tc_query *b)
+{
+    if (a->kind != b->kind)
+        return 0;
+    if (a->kind != TC_Q_CHECK)
+        return 1;
+    return a->ns && b->ns && a->rest && b->rest && !strcmp(a->ns, b->ns) && !strcmp(a->rest, b->rest);
+}
+
+void tc_ends_free(struct tc_ends *e)
+{
+    for (size_t i = 0; i < e->n; i++) {
+        for (size_t k = 0; k < e->e[i].nalt; k++) {
+            struct tc_end_alt *a = &e->e[i].alt[k];
+
+            tc_assertions_free(&a->as);
+            for (size_t j = 0; j < a->ntexts; j++)
+                free(a->texts[j]);
+            free(a->texts);
+        }
+        free(e->e[i].alt);
+    }
+    free(e->e);
+    memset(e, 0, sizeof *e);
+}
+
+int tc_ends_name(const struct tc_ends *e, const struct tc_query *q)
+{
+    for (size_t i = 0; i < e->n; i++)
+        for (size_t k = 0; k < e->e[i].nalt; k++)
+            for (size_t j = 0; j < e->e[i].alt[k].as.n; j++)
+                if (tc_query_same(&e->e[i].alt[k].as.a[j].q, q))
+                    return 1;
+    return 0;
+}
+
+/* the alternative t (a key of the table of end) added to end */
+static int add_alt(struct tc_end *end, const struct tc_tabkey *t, char *err, size_t errlen)
+{
+    struct tc_end_alt *v = realloc(end->alt, (end->nalt + 1) * sizeof *v), *a;
+
+    if (!v)
+        return -2;
+    end->alt = v;
+    a = &v[end->nalt++];
+    memset(a, 0, sizeof *a);
+    a->name = t->key;
+    if (!(a->texts = calloc(2 * t->value.nlist + 1, sizeof *a->texts)))
+        return -2;
+    for (size_t k = 0; k < t->value.nlist; k++) {
+        char *q, *p;
+        int r = tc_end_split(t->value.list[k], &q, &p);
+
+        if (r == -2)
+            return -2;
+        if (r)
+            return tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\": QUERY PREDICATE expected", t->at.file,
+                          t->at.line, t->key, t->value.list[k]);
+        a->texts[a->ntexts++] = q;
+        a->texts[a->ntexts++] = p;
+        r = push(&a->as, q, p, end->sel, &t->at, 1);
+        if (r == -2)
+            return -2;
+        if (r)
+            return tc_err(err, errlen, "%s:%u: the alternative end %s: \"%s\" is malformed", t->at.file, t->at.line,
+                          t->key, t->value.list[k]);
+    }
+    return 0;
+}
+
+int tc_ends_for(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *case_name,
+                int mode, struct tc_ends *out, char *err, size_t errlen)
+{
+    int r = 0;
+
+    memset(out, 0, sizeof *out);
+    if (mode == TC_PLAIN)
+        return 0;
+    for (size_t i = 0; i < conf->nends && r == 0; i++) {
+        const struct tc_tabkey *t = &conf->ends[i];
+        size_t spec, e;
+        int oom = 0;
+
+        if (!entry_matches(t, conf, m, cell, case_name, mode == TC_DEVIATED, &spec, &oom)) {
+            if (oom)
+                r = -2;
+            continue;
+        }
+        /* the end of its selector, a new one at its first key */
+        for (e = 0; e < out->n && strcmp(out->e[e].sel, t->sel); e++)
+            ;
+        if (e == out->n) {
+            struct tc_end *v = realloc(out->e, (out->n + 1) * sizeof *v);
+
+            if (!v) {
+                r = -2;
+                break;
+            }
+            out->e = v;
+            memset(&v[out->n], 0, sizeof v[out->n]);
+            v[out->n].sel = t->sel;
+            v[out->n].at = t->at;
+            out->n++;
+        }
+        if (!strcmp(t->key, "reason")) {
+            out->e[e].reason = t->value.str;
+            out->e[e].at = t->at;
+        } else
+            r = add_alt(&out->e[e], t, err, errlen);
+    }
+    if (r == -2)
+        tc_err(err, errlen, "out of memory");
+    if (r)
+        tc_ends_free(out);
     return r;
 }

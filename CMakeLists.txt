@@ -28,6 +28,8 @@ include(cmake/emulation-queue.cmake)
 include(cmake/warnings.cmake)          # own_warnings()
 include(cmake/bug-orig-order.cmake)
 include(cmake/test-cost.cmake)
+# the measured COST of the tests (testinfo costs; tests/README.md, "The measured COST")
+test_costs_load(${PROJECT_SOURCE_DIR}/tests/data/test-costs.txt)
 
 if(NOT AMIGAOS)
 	message(FATAL_ERROR "Wrong toolchain file ${CMAKE_TOOLCHAIN_FILE}: only AmigaOS (cmake/m68k-amigaos.cmake)")
@@ -179,6 +181,19 @@ foreach(t emulation_owner emulation_owner_broken)
 endforeach()
 set_tests_properties(emulation_owner_broken PROPERTIES
 	PASS_REGULAR_EXPRESSION "t_emulator[ \n]+has[ \n]+no[ \n]+AMIGA_EMULATION_OWNER")
+# the measured COST of the tests (cmake/test-cost.cmake): applied, a measurement winning over
+# the list of the long tests; a file whose entry names no test stops the configuration
+foreach(t test_cost test_cost_broken)
+	set(broken)
+	if(t MATCHES "_broken$")
+		set(broken -DBROKEN=ON)
+	endif()
+	add_test(NAME ${t} COMMAND ${CMAKE_COMMAND} -DCOST=${PROJECT_SOURCE_DIR}/cmake/test-cost.cmake ${broken}
+		-DWORK=${CMAKE_BINARY_DIR}/${t} -P ${PROJECT_SOURCE_DIR}/cmake/test-cost-test.cmake)
+endforeach()
+set_tests_properties(test_cost PROPERTIES PASS_REGULAR_EXPRESSION "test-cost-test: the measured COST is applied")
+set_tests_properties(test_cost_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "test-cost-test: the stale entry stops the configuration")
 
 # the libraries' shadow headers of the NDK (cmake/ndk-calls.cmake): a
 # source with one varargs form gets only that wrapper, with the NDK's code

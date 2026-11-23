@@ -8,6 +8,7 @@
 #include "cli.hpp"
 
 void cmd_stats(CLI::App &app, int &status);
+void cmd_costs(CLI::App &app, int &status);
 void cmd_map(CLI::App &app, int &status);
 void cmd_select(CLI::App &app, int &status);
 

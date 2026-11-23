@@ -29,6 +29,12 @@
  * `not-run` and fails no default: the checks behind a declared crash count
  * as not run.
  *
+ * Where the deviations apply, the alternative ends of the cell (testconf.h
+ * tc_ends_for) judge the queries their alternatives name instead of the
+ * assertions and the defaults: one alternative must hold wholly; the report
+ * names the alternative that held (also for a cell that passed), or each
+ * alternative with its failed assertions.
+ *
  * The verdict of a case over the cells of a side (tj_verdict):
  *   - no deviation declared for the case: every cell must pass (PASSED);
  *   - deviations and fixed-orig (or extension, the test of an extension of
@@ -110,6 +116,13 @@ struct tj_test {
     int require_deviation;      /* a bug-orig test: one without any declared
                                    deviation is broken (it would not show its
                                    bug), whatever its cells show */
+    const char *const *cases;   /* the cases the driver called (the run of all
+                                   cases of a source, caserun.h); NULL: the
+                                   judged case alone.  A block of one of the
+                                   others belongs to that case, its entries
+                                   are not judged; a block of a case the
+                                   driver did not call fails the cell */
+    size_t ncases;
 };
 
 /**

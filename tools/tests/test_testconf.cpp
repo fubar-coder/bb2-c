@@ -271,6 +271,54 @@ TEST_CASE("testconf: unknown keys and wrong values", "[testconf]")
     refused(t, ".test.bas", { "is named ID.test.bas" });
 }
 
+TEST_CASE("testconf: isolate", "[testconf]")
+{
+    tree t;
+    tc_env e = env_of(t);
+    tc_config c;
+
+    t.write("x.test.bas", "");
+    // the forms: on, off, a list of cell selectors (also in a test's own file,
+    // a nearer file replacing the key whole)
+    for (const char *v : { "\"on\"", "\"off\"", "[\"libs=cd\"]", "[\"libs=cd\", \"compiler=orig195,rtg=on\"]" }) {
+        INFO(v);
+        t.write("tests.toml", std::string("root = true\nisolate = ") + v + "\n");
+        CHECK(resolve(t, "x.test.bas", &c, &e) == 0);
+        tc_free(&c);
+    }
+    t.write("tests.toml", "root = true\nisolate = [\"libs=cd\"]\n");
+    t.write("x.test.toml", "isolate = \"on\"\n");
+    REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+    CHECK(tc_get(&c, "isolate")->value.type == TT_STRING);
+    tc_free(&c);
+    fs::remove(t.root / "x.test.toml");
+    // broken input, each naming file and line: another string, an empty list,
+    // another type, a malformed selector, an unknown key or value, a case term
+    t.write("tests.toml", "root = true\n\nisolate = \"yes\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":3: isolate must be one of off|on or a list of cell "
+                                                      "selectors, not \"yes\"" });
+    t.write("tests.toml", "root = true\nisolate = []\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: isolate: an empty list of cell selectors" });
+    t.write("tests.toml", "root = true\nisolate = true\n");
+    refused(t, "x.test.bas", { ":2: isolate must be a string or a list of cell selectors, not a boolean" });
+    t.write("tests.toml", "root = true\nisolate = [\"libs\"]\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: isolate: the cell selector \"libs\": KEY=VALUE expected" });
+    t.write("tests.toml", "root = true\nisolate = [\"color=red\"]\n");
+    refused(t, "x.test.bas", { ":2: isolate: the cell selector \"color=red\": color is no run setting" });
+    t.write("tests.toml", "root = true\nisolate = [\"libs=cdx\"]\n");
+    refused(t, "x.test.bas", { ":2: isolate: the cell selector \"libs=cdx\": libs must be one of cd|clib" });
+    t.write("tests.toml", "root = true\nisolate = [\"libs=cd\", \"case=a\"]\n");
+    refused(t, "x.test.bas", { ":2: isolate: the cell selector \"case=a\": case= is not allowed here" });
+    // no axis, and no term of a selector
+    t.write("tests.toml", "root = true\n[matrix]\nisolate = [\"on\", \"off\"]\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":3: isolate gives cells an emulator session of their own "
+                                                      "and cannot be an axis" });
+    t.write("tests.toml", "root = true\nexclude = [\"isolate=on\"]\n");
+    refused(t, "x.test.bas", { ":2: exclude: the cell selector \"isolate=on\": isolate gives cells an emulator "
+                               "session of their own" });
+    tc_env_free(&e);
+}
+
 TEST_CASE("testconf: relative paths", "[testconf]")
 {
     tree t;

@@ -33,8 +33,9 @@ SUBCOMMANDS:
                               table of the results
   drop                        remove the data a pass published for other tests (the cleanup of
                               a ctest fixture)
-  case                        one case of a Blitz test of the BASIC test model (ID.test.bas) in
-                              Amiberry: the cells of one side compiled, run and judged
+  case                        one case of a Blitz test of the BASIC test model (ID.test.bas),
+                              or all its cases, in Amiberry: the cells of one side compiled,
+                              run and judged
 
 The exit status of pass in a bug-orig pass is the worst verdict: 0 FIXED, 1
 REPRODUCED, 3 BROKEN, 4 DIFFERS.
@@ -189,15 +190,16 @@ which is removed again with `Testing/runs` if empty).
 ```
 Usage: corpusrun case [OPTIONS]
 
-one case of a Blitz test of the BASIC test model (ID.test.bas) in Amiberry: the
-cells of one side compiled, run and judged
+one case of a Blitz test of the BASIC test model (ID.test.bas), or all its
+cases, in Amiberry: the cells of one side compiled, run and judged
 
 OPTIONS:
   -h,     --help              Print this help message and exit
           --env FILE REQUIRED the environment file of the build (tests/model-env.toml)
           --source FILE REQUIRED 
                               the test source ID.test.bas
-          --case CASE         the case (not with --print-config, --write-driver, --prev)
+          --case CASE         the case; without it every case of the source (not with
+                              --print-config, --write-driver, --prev)
           --side SIDE:{port,originals} 
                               the cells without original material (port, the default) or with
                               it (originals: the original compilers, the CD's libraries)
@@ -205,7 +207,8 @@ OPTIONS:
                               original is broken
           --print-config      print the effective configuration (every key with its value and
                               origin, the axes, the cells) and run nothing
-          --print-driver      print the driver of the case and run nothing
+          --print-driver      print the driver of the case (without --case of every case, the
+                              text --write-driver writes) and run nothing
           --write-driver FILE write the driver of all cases, tokenised, to FILE (its text
                               beside it as .bas) and run nothing: the build step of the
                               comparison with the prev build
@@ -221,11 +224,17 @@ OPTIONS:
                               any number)
 
 The cells of a side that share the session settings run in one emulator session.
-Exit status: 0 passed, 1 reproduced (an open bug shows as declared), 2 error (a
-configuration, source or result that cannot be judged; usage), 3 broken, 4
-failed, 77 skipped (no emulator, or a file of the side is missing). With --prev:
-0 the same, 1 a difference that is not intended or a stale entry, 2 error, 77
-skipped.
+Without --case every case of the source runs: the cases share one run of the
+driver of all of them, each judged from its own block; a case that asserts an
+observation of the whole program or announces a runtime error, the case open
+when a shared run did not end cleanly, and a case that did not pass in a shared
+run run on their own ("(alone)"), and a line per case and a summary line report
+them. Exit status: 0 passed, 1 reproduced (an open bug shows as declared), 2
+error (a configuration, source or result that cannot be judged; usage), 3
+broken, 4 failed, 77 skipped (no emulator, or a file of the side is missing);
+without --case the worst verdict of the cases, in the order error, broken,
+failed, skipped, reproduced, passed. With --prev: 0 the same, 1 a difference
+that is not intended or a stale entry, 2 error, 77 skipped.
 ```
 
 Runs one case of a test of the BASIC test model (`ID.test.bas` and its
@@ -248,7 +257,26 @@ error with `ID.test.bas:LINE`, and the verdict; the run directory below
 the environment's `work` stays when the case did not pass.
 `--print-config` prints the effective configuration (every key with its
 value and the file and line it comes from, the axes, the cells and their
-side), `--print-driver` the driver; neither starts a session.
+side), `--print-driver` the driver (without `--case` the driver of all
+cases, the text `--write-driver` writes); neither starts a session. A cell
+that the run setting `isolate` names (`"on"`, or a list of cell selectors)
+gets a session of its own (`cr_session_key`). A cell whose program runs
+through inject (`pad`, or a `runwrap` of inject) has inject's report, the
+output's `inject:` lines, as its query `inject`.
+
+Without `--case` it runs every case of the source on the side (`caserun.h`,
+"The run of all cases"): the cases share a run of the driver of all of them
+and each is judged from its own block; a case that asserts an observation
+of the whole program or announces a runtime error runs on its own from the
+start, a shared run that does not end cleanly runs the case open at its
+end on its own and the others again, and a case that does not pass in a
+shared run is confirmed on its own. In the cells `isolate` names every case
+runs on its own. The report has a block per case (` (alone)` when judged
+on its own, a line when the verdict on its own differs from the shared
+one) and the line `ID.test.bas: N cases, side SIDE: VERDICT`; the exit
+status is the worst verdict (error, broken, failed, skipped, reproduced,
+passed). The runs are `shared-N`, `alone-CASE` and `isolated-CASE` in the
+run directory of `ID` (`ID_originals`).
 
 The comparison with the prev build of a test of the model (`tests/README.md`,
 "The prev build"; `cmake/prev.cmake`, `prev_compile_model_test`) has two
@@ -287,7 +315,8 @@ line, message, size, masked SHA-256, xtra, note
 * `drop`: 0 removed or kept or nothing to remove, 1 a fixture could not be removed.
 * `case`: the verdict of the case: 0 passed, 1 reproduced (an open bug
   shows as declared), 2 error, 3 broken, 4 failed, 77 skipped (no
-  emulator, or a file of the side is missing). With `--prev` 0 the same, 1 a difference
+  emulator, or a file of the side is missing); without `--case` the worst
+  verdict of the cases (SKIPPED between failed and reproduced). With `--prev` 0 the same, 1 a difference
   that is not intended or a stale entry, 2 error, 77 skipped; with
   `--write-driver` 0 written, 2 error.
 * `cd`: 0 written (and no difference), 1 differences or a `source=` that

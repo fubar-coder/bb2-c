@@ -340,6 +340,61 @@ static void test_parse_run(void)
     cr_run_free(&r);
 }
 
+/* inject's report: its lines of the output, and which cells run through inject */
+static void test_inject(void)
+{
+    struct cr_run r;
+    char *l;
+    struct t t;
+
+    CHECK(cr_parse_run("hello\ninject: guard: written behind an allocation of 8 bytes\nworld\r\n"
+                       "inject: rc=0\nrc=0\n", &r) == 0);
+    l = cr_inject_lines(r.output);
+    CHECK(l && !strcmp(l, "inject: guard: written behind an allocation of 8 bytes\ninject: rc=0\n"));
+    free(l);
+    /* the output keeps the lines */
+    CHECK(strstr(r.output, "inject: guard: written behind") && strstr(r.output, "hello\n"));
+    cr_run_free(&r);
+    /* none, no line end at the end, a line that only contains it */
+    l = cr_inject_lines("hello\n");
+    CHECK(l && !strcmp(l, ""));
+    free(l);
+    l = cr_inject_lines("x inject: no\ninject: last");
+    CHECK(l && !strcmp(l, "inject: last\n"));
+    free(l);
+    l = cr_inject_lines("");
+    CHECK(l && !strcmp(l, ""));
+    free(l);
+    /* the cells: pad, a runwrap through the runner's inject, another runwrap,
+       none */
+    put("inj/tests.toml", "root = true\n");
+    put("inj/s.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    put("inj/s.test.toml", "pad = \"on\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/inject|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/inject\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/b/injector|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+    put("inj/s.test.toml", "runwrap = \"/x/w|guard\"\n");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+    put("inj/s.test.toml", "");
+    load(&t, "inj/s.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+}
+
 static void test_compile_mapped(void)
 {
     struct tp_source src = { 0 };
@@ -415,6 +470,7 @@ static void test_print_config(void)
                       "  serial = \"off\"    # (default)\n"
                       "  rtg = \"off\"    # (default)\n"
                       "  pad = \"off\"    # (default)\n"
+                      "  isolate = \"off\"    # (default)\n"
                       "  labels = [\"libs\"]    # %s/h/sub/tests.toml:1\n"
                       "  root = true    # %s/h/tests.toml:1\n"
                       "  fixed-orig = 12    # %s/h/sub/deep/p.test.toml:1\n"
@@ -536,6 +592,481 @@ static void test_prev_pass(void)
     CHECK(!cr_prev_unknown("blitz2_x_prev", names, 1, entries, 2, &cur));
 }
 
+/* ------------------------------------------------- the run of all cases */
+
+/* the preprocessed source rel (relative to work) */
+static int process(const char *rel, struct tp_source *src)
+{
+    char *path = str_printf("%s/%s", work, rel);
+    size_t len;
+    char *text = path ? (char *)read_file(path, &len) : NULL;
+    struct tp_params par = { 0 };
+    int r = -1;
+
+    memset(src, 0, sizeof *src);
+    par.file = rel;
+    par.test_id = "x";
+    par.testdata = "CORPUS:data";
+    if (text)
+        r = tp_process(text, len, &par, src);
+    CHECK(r == 0);
+    free(text);
+    free(path);
+    return r;
+}
+
+/* whether case c of the test runs on its own over all its cells */
+static int alone_of(const struct t *t, const struct tp_source *src, const char *c)
+{
+    size_t cells[16];
+
+    for (size_t i = 0; i < t->m.ncells && i < 16; i++)
+        cells[i] = i;
+    return cr_case_alone(&t->conf, &t->m, cells, t->m.ncells, src, c);
+}
+
+static void test_case_alone(void)
+{
+    /* every query of the whole program, asserted for case b only */
+    static const char *const whole[][2] = {
+        { "rc", "== 0" }, { "requester", "count == 0" }, { "compile", "== ok" },
+        { "\"compile.log\"", "contains \\\"x\\\"" }, { "output", "contains \\\"ok\\\"" },
+        { "serial", "contains \\\"x\\\"" }, { "inject", "contains \\\"x\\\"" }, { "session", "== done" },
+        { "\"end.run\"", "exists" },
+    };
+    struct tp_source src;
+    struct t t;
+
+    put("al/tests.toml", "root = true\n");
+    put("al/s.test.bas", "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n"
+                         "!TestCase{b}\n  !CheckEq{2,2,\"two\"}\n!EndTestCase\n"
+                         "!TestCase{e}\n  !ExpectError{\"Array\"}\n!EndTestCase\n");
+    if (process("al/s.test.bas", &src))
+        return;
+    /* without assertions only the case with !ExpectError runs on its own */
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "a") == 0);
+    CHECK(alone_of(&t, &src, "b") == 0);
+    CHECK(alone_of(&t, &src, "e") == 1);
+    unload(&t);
+    for (size_t q = 0; q < sizeof whole / sizeof whole[0]; q++) {
+        char *toml = str_printf("[asserts.\"case=b\"]\n%s = \"%s\"\n", whole[q][0], whole[q][1]);
+
+        put("al/s.test.toml", toml);
+        free(toml);
+        load(&t, "al/s.test.bas", ENV_RUNNER);
+        if (alone_of(&t, &src, "b") != 1)
+            fprintf(stderr, "the query %s does not set b apart\n", whole[q][0]);
+        CHECK(alone_of(&t, &src, "b") == 1);
+        CHECK(alone_of(&t, &src, "a") == 0);
+        unload(&t);
+    }
+    /* the queries of a case share: its end entry, its checks */
+    put("al/s.test.toml", "[asserts.\"case=b\"]\n\"end.case\" = \"not exists\"\n\"check.b.two\" = \"== fail\"\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 0);
+    unload(&t);
+    /* an alternative end is a deviation too: one naming the session sets the
+       case apart, one naming only the end of the case and a check does not */
+    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                          "one = [\"session == timeout\", \"check.b.two == not-run\"]\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 1 && alone_of(&t, &src, "a") == 0);
+    unload(&t);
+    put("al/s.test.toml", "[ends.\"compiler=port,case=b\"]\nreason = \"r\"\n"
+                          "one = [\"end.case not exists\", \"check.b.two == not-run\"]\n"
+                          "two = [\"end.case exists\"]\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "b") == 0);
+    unload(&t);
+    /* an assertion of all cases sets every case apart */
+    put("al/s.test.toml", "[asserts]\nrc = \"== 20\"\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    CHECK(alone_of(&t, &src, "a") == 1 && alone_of(&t, &src, "b") == 1);
+    unload(&t);
+    /* a deviation of an open bug in a cell of another side: judged as if its
+       axis term matched, so it sets the case apart on this side too */
+    put("al/s.test.toml", "[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
+                          "session = \"== timeout\"\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    {
+        size_t clib = cell(&t, "clib");
+
+        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "b") == 1);
+        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "a") == 0);
+    }
+    unload(&t);
+    /* any judging mode counts (D2), also for a fixed bug: its deviation of
+       the other side's cells sets the case apart on both sides; case a not */
+    put("al/s.test.toml", "fixed-orig = 7\n[matrix]\nlibs = [\"cd\", \"clib\"]\n[deviations.\"libs=cd,case=b\"]\n"
+                          "session = \"== timeout\"\n");
+    load(&t, "al/s.test.bas", ENV_RUNNER);
+    {
+        size_t clib = cell(&t, "clib"), cd = cell(&t, "cd");
+
+        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "b") == 1);
+        CHECK(cr_case_alone(&t.conf, &t.m, &clib, 1, &src, "a") == 0);
+        CHECK(cr_case_alone(&t.conf, &t.m, &cd, 1, &src, "b") == 1);
+    }
+    unload(&t);
+    put("al/s.test.toml", "");
+    tp_free(&src);
+}
+
+/* the observations of a cell that ended cleanly; result with "|" for TAB */
+static struct tj_obs clean_obs(char *buf, const char *result)
+{
+    struct tj_obs o = { 0 };
+    size_t i;
+
+    for (i = 0; result[i]; i++)
+        buf[i] = result[i] == '|' ? '\t' : result[i];
+    buf[i] = 0;
+    o.session = "done";
+    o.compile = "ok";
+    o.has_rc = 1;
+    o.rc = 0;
+    o.has_result = 1;
+    o.result = buf;
+    o.result_len = i;
+    return o;
+}
+
+static void test_clean(void)
+{
+    static const char ok[] = "begin|1\nblock|case|a\nblockend\nblock|case|b\nblockend\nend\n";
+    char buf[200];
+    struct tj_obs o = clean_obs(buf, ok);
+    struct tj_requester rq = { "AutoRequest", (size_t)-1 };
+
+    CHECK(cr_cell_clean(&o));
+    o.session = "timeout";
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.session = "halt";
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.compile = "error 3 Syntax Error";
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.req = &rq;
+    o.nreq = 1;
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.rc = 5;
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.has_rc = 0;
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, ok);
+    o.has_result = 0;
+    CHECK(!cr_cell_clean(&o));
+    /* the program ended inside a block (End in a case: the library writes
+       incomplete, then the end entry), the run's end entry missing, a last
+       line without its LF */
+    o = clean_obs(buf, "begin|1\nblock|case|a\nblockend\nblock|case|b\nincomplete\nend\n");
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, "begin|1\nblock|case|a\nblockend\nblock|case|b\n");
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, "begin|1\nblock|case|a\nblockend\nend");
+    CHECK(!cr_cell_clean(&o));
+    o = clean_obs(buf, "");
+    CHECK(!cr_cell_clean(&o));
+}
+
+static void test_open_case(void)
+{
+    char name[16], buf[200];
+    struct tj_obs o;
+
+    o = clean_obs(buf, "begin|1\nblock|init\nblockend\nblock|case|a\nblockend\nblock|case|b\ncheck|0|ok|$1|$1\n");
+    CHECK(cr_open_case(o.result, o.result_len, name, sizeof name) == 1 && !strcmp(name, "b"));
+    /* every block closed; the batch init or cleanup open is no case */
+    o = clean_obs(buf, "begin|1\nblock|case|a\nblockend\nend\n");
+    CHECK(cr_open_case(o.result, o.result_len, name, sizeof name) == 0 && !name[0]);
+    o = clean_obs(buf, "begin|1\nblock|init\n");
+    CHECK(cr_open_case(o.result, o.result_len, name, sizeof name) == 0);
+    o = clean_obs(buf, "begin|1\nblock|case|a\nblockend\nblock|final\n");
+    CHECK(cr_open_case(o.result, o.result_len, name, sizeof name) == 0);
+    /* a name longer than the room is cut */
+    o = clean_obs(buf, "begin|1\nblock|case|a_very_long_case_name\n");
+    CHECK(cr_open_case(o.result, o.result_len, name, sizeof name) == 1 && strlen(name) == sizeof name - 1);
+    CHECK(cr_open_case(NULL, 0, name, sizeof name) == 0);
+}
+
+/* the next run of p: its kind and cases as text ("shared 0,1" / "alone 2"
+   / "none") */
+static const char *next(struct cr_plan *p, char *out, size_t size)
+{
+    size_t set[16], n;
+    int kind;
+
+    if (!cr_plan_next(p, set, &n, &kind)) {
+        snprintf(out, size, "none");
+        return out;
+    }
+    snprintf(out, size, "%s ", kind == CR_RUN_SHARED ? "shared" : kind == CR_RUN_ISOLATED ? "isolated" : "alone");
+    for (size_t i = 0; i < n; i++)
+        snprintf(out + strlen(out), size - strlen(out), "%s%zu", i ? "," : "", set[i]);
+    return out;
+}
+
+static void test_plan(void)
+{
+    struct cr_plan p;
+    char s[64];
+
+    /* a clean shared run: the passing cases count, a failed one is confirmed
+       on its own, then the case that runs on its own from the start */
+    {
+        const int alone[] = { 0, 0, 0, 1 };
+
+        const size_t set[] = { 0, 1, 2 };
+
+        CHECK(cr_plan_init(&p, 4, alone, 0) == 0);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
+        /* without isolated cells the shared run judges its cases at once */
+        CHECK(cr_plan_clean(&p, set, 3) == 1);
+        cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
+        cr_plan_judged(&p, 1, TJ_V_FAILED, 0);
+        cr_plan_judged(&p, 2, TJ_V_REPRODUCED, 0);
+        CHECK(p.state[1] == CR_C_CONFIRM && p.shared[1] == TJ_V_FAILED);
+        CHECK(p.state[0] == CR_C_DONE && p.verdict[0] == TJ_V_PASSED && !p.alone[0]);
+        CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+        cr_plan_judged(&p, 1, TJ_V_PASSED, 1);
+        CHECK(p.verdict[1] == TJ_V_PASSED && p.alone[1] && p.shared[1] == TJ_V_FAILED);
+        CHECK(!strcmp(next(&p, s, sizeof s), "alone 3"));
+        cr_plan_judged(&p, 3, TJ_V_FAILED, 1);
+        CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+        CHECK(cr_plan_worst(&p) == TJ_V_FAILED);
+        cr_plan_free(&p);
+    }
+    /* an unclean shared run: the open case on its own, the others again;
+       with no open case every case on its own */
+    {
+        const size_t all[] = { 0, 1, 2, 3 }, rest[] = { 0, 2, 3 };
+        const long open_b[] = { 1 }, none[] = { -1 };
+
+        CHECK(cr_plan_init(&p, 4, NULL, 0) == 0);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2,3"));
+        cr_plan_unclean(&p, all, 4, open_b, 1);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,2,3"));
+        cr_plan_unclean(&p, rest, 3, none, 1);
+        CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
+        for (size_t c = 0; c < 4; c++)
+            CHECK(p.state[c] == CR_C_ALONE);
+        cr_plan_free(&p);
+    }
+    /* two unclean cells, each with its open case; an open case the set does
+       not hold counts as none; a set of one runs on its own */
+    {
+        const size_t all[] = { 0, 1, 2, 3 }, rest[] = { 1, 3 };
+        const long two[] = { 0, 2 }, other[] = { 0 };
+
+        CHECK(cr_plan_init(&p, 4, NULL, 0) == 0);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2,3"));
+        cr_plan_unclean(&p, all, 4, two, 2);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 1,3"));
+        cr_plan_unclean(&p, rest, 2, other, 1);
+        CHECK(p.state[1] == CR_C_ALONE && p.state[3] == CR_C_ALONE);
+        cr_plan_free(&p);
+        CHECK(cr_plan_init(&p, 3, NULL, 0) == 0);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
+        cr_plan_unclean(&p, all, 3, (const long[]){ 0 }, 1);
+        CHECK(!strcmp(next(&p, s, sizeof s), "shared 1,2"));
+        cr_plan_unclean(&p, rest, 1, (const long[]){ 1 }, 1);
+        /* left: case 2 alone in the shared state, a set of one */
+        CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
+        CHECK(p.state[2] == CR_C_ALONE);
+        cr_plan_free(&p);
+    }
+    /* the loop ends: every shared run unclean with its last case open takes
+       at most one shared run per case, then one run on its own per case */
+    {
+        size_t set[16], n, runs = 0;
+        int kind;
+
+        CHECK(cr_plan_init(&p, 8, NULL, 0) == 0);
+        while (cr_plan_next(&p, set, &n, &kind) && runs < 100) {
+            runs++;
+            if (kind == CR_RUN_SHARED) {
+                long last = (long)set[n - 1];
+
+                cr_plan_unclean(&p, set, n, &last, 1);
+            } else
+                cr_plan_judged(&p, set[0], TJ_V_PASSED, 1);
+        }
+        CHECK(runs <= 2 * 8);
+        CHECK(cr_plan_worst(&p) == TJ_V_PASSED);
+        for (size_t c = 0; c < 8; c++)
+            CHECK(p.state[c] == CR_C_DONE && p.alone[c]);
+        cr_plan_free(&p);
+    }
+    /* a verdict on its own never waits again */
+    CHECK(cr_plan_init(&p, 1, (const int[]){ 1 }, 0) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
+    cr_plan_judged(&p, 0, TJ_V_ERROR, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    CHECK(cr_plan_worst(&p) == TJ_V_ERROR);
+    cr_plan_free(&p);
+}
+
+/* the plan with isolated cells (D5): which case runs where */
+static void test_plan_isolated(void)
+{
+    struct cr_plan p;
+    char s[64];
+    const size_t all[] = { 0, 1, 2 }, rest[] = { 0, 2 };
+    const long open_b[] = { 1 };
+
+    /* case 2 runs on its own from the start; the shared run of 0 and 1 ends
+       cleanly: each then runs in the isolated cells, and is judged over all
+       cells; a failure is confirmed on its own in every cell */
+    CHECK(cr_plan_init(&p, 3, (const int[]){ 0, 0, 1 }, 1) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1"));
+    CHECK(cr_plan_clean(&p, all, 2) == 0);
+    CHECK(p.state[0] == CR_C_ISOLATED && p.state[1] == CR_C_ISOLATED);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 1"));
+    cr_plan_judged(&p, 1, TJ_V_BROKEN, 0);
+    CHECK(p.state[1] == CR_C_CONFIRM);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_BROKEN, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 2"));
+    cr_plan_judged(&p, 2, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    CHECK(cr_plan_worst(&p) == TJ_V_BROKEN && !p.alone[0] && p.alone[1]);
+    cr_plan_free(&p);
+    /* an unclean shared run: the open case on its own in every cell (no run
+       in the isolated cells), the others again in the shared cells */
+    CHECK(cr_plan_init(&p, 3, NULL, 1) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,1,2"));
+    cr_plan_unclean(&p, all, 3, open_b, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "shared 0,2"));
+    CHECK(cr_plan_clean(&p, rest, 2) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "isolated 2"));
+    cr_plan_judged(&p, 2, TJ_V_PASSED, 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    cr_plan_free(&p);
+    /* every cell isolated: the caller sets every case apart, no shared run */
+    CHECK(cr_plan_init(&p, 2, (const int[]){ 1, 1 }, 0) == 0);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 0"));
+    cr_plan_judged(&p, 0, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "alone 1"));
+    cr_plan_judged(&p, 1, TJ_V_PASSED, 1);
+    CHECK(!strcmp(next(&p, s, sizeof s), "none"));
+    cr_plan_free(&p);
+}
+
+/* the session keys of the cells with isolate */
+static void test_isolate_keys(void)
+{
+    struct t t;
+    char *k[3];
+
+    put("iso/tests.toml", "root = true\nexclude = [\"compiler=orig195,libs=clib\"]\n"
+                          "[matrix]\ncompiler = [\"port\", \"orig195\"]\nlibs = [\"cd\", \"clib\"]\n");
+    put("iso/s.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    /* without isolate the three cells share one session */
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    CHECK(t.m.ncells == 3);
+    for (size_t i = 0; i < 3; i++)
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+    CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* "on": three keys for three cells */
+    put("iso/s.test.toml", "isolate = \"on\"\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    for (size_t i = 0; i < 3; i++) {
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+        CHECK(tc_cell_isolated(&t.conf, &t.m, i));
+    }
+    CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* "off" as if the key were absent */
+    put("iso/s.test.toml", "isolate = \"off\"\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    for (size_t i = 0; i < 3; i++)
+        k[i] = cr_session_key(&t.conf, &t.m, i);
+    CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
+    for (size_t i = 0; i < 3; i++)
+        free(k[i]);
+    unload(&t);
+    /* ["libs=cd"]: a key each for port,cd and orig195,cd, port,clib with
+       the key of the cells without isolate */
+    put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    {
+        size_t pcd = cell(&t, "port,cd"), pclib = cell(&t, "port,clib"), ocd = cell(&t, "orig195,cd");
+        char *plain;
+
+        k[0] = cr_session_key(&t.conf, &t.m, pcd);
+        k[1] = cr_session_key(&t.conf, &t.m, ocd);
+        k[2] = cr_session_key(&t.conf, &t.m, pclib);
+        CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
+        CHECK(tc_cell_isolated(&t.conf, &t.m, pcd) && tc_cell_isolated(&t.conf, &t.m, ocd)
+              && !tc_cell_isolated(&t.conf, &t.m, pclib));
+        for (size_t i = 0; i < 3; i++)
+            free(k[i]);
+        unload(&t);
+        put("iso/s.test.toml", "");
+        load(&t, "iso/s.test.bas", ENV_RUNNER);
+        plain = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        unload(&t);
+        put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
+        load(&t, "iso/s.test.bas", ENV_RUNNER);
+        k[2] = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        CHECK(plain && k[2] && !strcmp(plain, k[2]));
+        free(plain);
+        free(k[2]);
+    }
+    unload(&t);
+    /* two selectors: the union */
+    put("iso/s.test.toml", "isolate = [\"compiler=orig195\", \"libs=clib\"]\n");
+    load(&t, "iso/s.test.bas", ENV_RUNNER);
+    CHECK(!tc_cell_isolated(&t.conf, &t.m, cell(&t, "port,cd")));
+    CHECK(tc_cell_isolated(&t.conf, &t.m, cell(&t, "port,clib")));
+    CHECK(tc_cell_isolated(&t.conf, &t.m, cell(&t, "orig195,cd")));
+    unload(&t);
+}
+
+static void test_verdict_order(void)
+{
+    /* error, broken, failed, skipped, reproduced, passed */
+    static const int order[] = { TJ_V_ERROR, TJ_V_BROKEN, TJ_V_FAILED, CR_SKIPPED, TJ_V_REPRODUCED, TJ_V_PASSED };
+    struct cr_plan p;
+
+    for (size_t i = 0; i < 6; i++)
+        for (size_t j = 0; j < 6; j++)
+            CHECK(cr_verdict_worse(order[i], order[j]) == (i < j));
+    CHECK(!strcmp(cr_verdict_name(CR_SKIPPED), "SKIPPED") && !strcmp(cr_verdict_name(TJ_V_BROKEN), "BROKEN"));
+    /* the worst of the cases: one failed, one reproduced; an error and a failure;
+       a skipped case and a reproduced one; skipped and failed */
+    {
+        static const int sets[][2] = { { TJ_V_REPRODUCED, TJ_V_FAILED }, { TJ_V_FAILED, TJ_V_ERROR },
+                                       { CR_SKIPPED, TJ_V_REPRODUCED }, { CR_SKIPPED, TJ_V_FAILED },
+                                       { TJ_V_PASSED, TJ_V_REPRODUCED } };
+        static const int worst[] = { TJ_V_FAILED, TJ_V_ERROR, CR_SKIPPED, TJ_V_FAILED, TJ_V_REPRODUCED };
+
+        for (size_t k = 0; k < sizeof sets / sizeof sets[0]; k++) {
+            CHECK(cr_plan_init(&p, 2, (const int[]){ 1, 1 }, 0) == 0);
+            cr_plan_judged(&p, 0, sets[k][0], 1);
+            cr_plan_judged(&p, 1, sets[k][1], 1);
+            CHECK(cr_plan_worst(&p) == worst[k]);
+            cr_plan_free(&p);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -553,9 +1084,17 @@ int main(int argc, char **argv)
     test_cell_refused();
     test_sessions();
     test_parse_run();
+    test_inject();
     test_compile_mapped();
     test_print_config();
     test_prev_pass();
+    test_case_alone();
+    test_clean();
+    test_open_case();
+    test_plan();
+    test_plan_isolated();
+    test_isolate_keys();
+    test_verdict_order();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

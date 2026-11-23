@@ -10,3 +10,9 @@ add_library(lib_teststats STATIC junit.c teststats.c)
 set_target_properties(lib_teststats PROPERTIES OUTPUT_NAME teststats)
 target_include_directories(lib_teststats PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(lib_teststats PUBLIC lib_statline m)
+
+# the measured COST of the tests, tests/data/test-costs.txt (testcosts.h):
+# written by testinfo costs, read by testreg
+add_library(lib_testcosts STATIC testcosts.c)
+set_target_properties(lib_testcosts PROPERTIES OUTPUT_NAME testcosts)
+target_include_directories(lib_testcosts PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

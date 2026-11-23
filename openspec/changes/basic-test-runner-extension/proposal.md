@@ -45,6 +45,11 @@ data: D5 stays": "Bei D5 bleiben").
 - **The query `inject` is filled** from inject's report (the lines
   `inject: ...` of the program's output when it ran through inject); the
   printed output keeps them.
+- **The announced runtime error as a check**: a named `!ExpectError` is
+  the query `check.NS.NAME` (`ok`, `fail`, `not-run`), so a deviation
+  declares the original's error (`== fail` with its `requester`) while
+  `!ExpectError` stays in the test for the port (design.md D8; added
+  2026-11-23 after round U1).
 - Control data stay compiled into the driver (D5 of `basic-testlib`,
   "Bei D5 bleiben"): no parameter interface of the driver.
 
@@ -68,6 +73,10 @@ Recorded in `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
   man mehr braucht?" — `isolate = "on"` or a list of cell selectors
   (design.md D5).
 - **A varying end**: "Benannte Alternativen (Recommended)" (design.md D6).
+
+Recorded in the same file, "!ExpectError stays for the port; a deviation
+declares the original's error" (2026-11-23): "Feature into the extension
+(Recommended)" (design.md D8, section 6 of tasks.md).
 
 ## Capabilities
 

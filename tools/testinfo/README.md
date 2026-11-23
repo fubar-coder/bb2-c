@@ -1,7 +1,8 @@
 # testinfo
 
 Reads the records of test runs: statistics of ctest runs from their JUnit
-files (`stats`), the coverage of each test as lcov tracefiles (`map`) and
+files (`stats`), the measured COST of the tests (`costs`), the coverage of
+each test as lcov tracefiles (`map`) and
 the tests a change can affect, from that coverage (`select`). The logic is
 in `tools/lib/teststats` (with `statline.h`, the `@stat` line of the
 runners' emulator sessions), `tools/lib/covmap` and `tools/lib/covsel`,
@@ -23,6 +24,7 @@ OPTIONS:
 
 SUBCOMMANDS:
   stats                       statistics of ctest runs and their emulator sessions
+  costs                       the measured COST of the tests (tests/data/test-costs.txt)
   map                         the coverage of each test as lcov tracefiles
   select                      the tests a change can affect, from the coverage of a coverage
                               run
@@ -62,6 +64,43 @@ value.
 * `--tsv`: tab-separated values instead of text tables;
 * `--factor X`: the factor of the time limits (default 3);
 * `--floor SEC`: the smallest suggested limit (default 30).
+
+### costs
+
+```
+Usage: testinfo costs [OPTIONS] JUNIT.xml...
+
+the measured COST of the tests (tests/data/test-costs.txt)
+
+POSITIONALS:
+  JUNIT.xml TEXT ... REQUIRED ctest's JUnit files, one per run
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --update FILE       put the measured entries into FILE, replacing those of the same
+                              tests (the others stay)
+
+The COST of a test is the median over the runs of the sum of its emulator
+sessions' times without the slot wait, a session that did not start from a
+snapshot (cold, first-save, fallback) counted as the median of the test's
+sessions that did; a test without such a session gets no entry. Exit status 0, 1
+problems in a JUnit file (reported on stderr), 2 usage error, a file that cannot
+be read or written, a malformed FILE.
+```
+
+Writes the measured COST of the tests (`tools/lib/teststats/testcosts.h`,
+`teststats_costs`): per test that had an emulator session started from a
+snapshot (`snapshot=restored` in its `@stat` lines), the median over the
+runs of the sum of its sessions' times without the slot wait (`session`);
+a session of the run that started cold (a cold start, a first save, a
+fallback: once per emulator slot and run, not a property of the test)
+counts as the median of the test's warm sessions, so it does not make the
+test look dear. A test without a warm session, and a test without
+sessions, gets no entry and keeps the COST the build gives it otherwise.
+With `--update FILE` the entries replace those of the same tests in
+`FILE`, the checked-in `tests/data/test-costs.txt`, whose other entries
+stay; the build reads that file (`cmake/test-cost.cmake`,
+`tools/testreg --costs`; `tests/README.md`, "The measured COST").
 
 ### map
 
@@ -161,7 +200,8 @@ stdout.
 
 ## Inputs and outputs
 
-`stats` reads ctest's JUnit files and writes its tables to stdout; a
+`stats` reads ctest's JUnit files and writes its tables to stdout (`costs`: the
+entries of the measured COST, to stdout or into `--update FILE`); a
 problem in a file (a malformed file, a testcase without name or time, a
 broken `@stat` line) goes to stderr, the rest is reported. `map` writes the
 lcov tracefiles (format: `tools/lib/covmap/covmap.h`) and the commit file;
@@ -170,7 +210,7 @@ lcov tracefiles (format: `tools/lib/covmap/covmap.h`) and the commit file;
 ## Exit codes
 
 * 0 success;
-* 1 `stats`: problems in a file (reported); `map`, `select`: an input is
+* 1 `stats`, `costs`: problems in a file (reported); `map`, `select`: an input is
   broken (the message on stderr);
 * 2 usage error; also a file that cannot be read (`stats`, `map`,
   `select`) or written (`map`), and running out of memory.
@@ -180,6 +220,8 @@ Messages go to stderr as `testinfo SUB: [FILE: ]message`.
 ## Callers
 
 * `stats`: by hand (`tests/README.md`, "Test statistics").
+* `costs`: by hand after an acceptance run (`tests/README.md`, "The measured
+  COST").
 * `map`: `cmake/coverage-map.cmake` (after a coverage run,
   `tests/README.md`, "Coverage").
 * `select`: `cmake/coverage-select.cmake`, with `tools/testinfo/rules.txt`.

@@ -229,3 +229,215 @@ None: no test changes form or name. The pilot tests keep working
 (`output` keeps inject's lines); `plane-64k` may add its cell `port,cd`
 back with `isolate = ["libs=cd"]` in a round of `bug-orig-basic-tests`, not
 here.
+
+## Findings
+
+- **`End` in a case leaves the run's end entry (task 1.5).** The test
+  library's finit writes `incomplete` and then the run's `end` entry when
+  the program ends inside a block (`basic-testlib`, "The end of a case and
+  of the run are marked"), so a shared run whose case `b` executes `End`
+  has its end entry, and D3's list (session done, compiled, exit code 0,
+  end entry, no requester) would call it clean: `b` would be judged from
+  it (and pass with `"end.case" = "not exists"`), and every case behind it
+  would fail as not started. The scenario "A case ends the program" of the
+  delta spec needs it unclean, so `cr_cell_clean` also requires that the
+  entry before the run's end entry is no `incomplete` (the program did not
+  end inside a block). The requirement "A case open at an unclean end runs
+  again" lists conditions that make a run unclean; this one is added, no
+  listed one is dropped, so the spec text stands. The open case is the one
+  whose block the `incomplete` closes (`cr_open_case`); a block of the
+  batch init or cleanup open at the end is no case, and every case of the
+  set runs on its own.
+- **A case that asserts nothing of the whole program but is set apart in
+  every judging mode (task 1.4).** D2 counts the assertions and deviations
+  "in any cell of the side and any judging mode", so the deviation of a
+  fixed bug for the other side's cells (`libs=cd`) also sets the case apart
+  on the side `port`, where it is never judged with the deviations
+  (`TC_DEVIATED_ANY` sees it with its axis terms ignored). Taken as
+  written: the case only runs on its own more often than needed.
+- **The tags of the report.** In the run of all cases the cell list of a
+  case names the run each cell was judged from (`port,cd (shared-0/c0)`,
+  `(alone-NAME/c0)`), the directory below the run's work directory that
+  holds that cell's `CORPUS:`; the run of one case keeps `port,cd (c0)`.
+- **The time limit with isolated cells (task 2.2).** Measured on this
+  machine (2026-11-23, the build's snapshots present): a session of
+  `selftest/model-isolate.test.bas` (compile and run of one small case)
+  takes 0.9-1.0 s from a restored snapshot and 3.1 s for the first one
+  that saves it (`@stat session=`); the two isolated sessions of its ctest
+  test took 1.9-2.0 s of wall time in all, so the runner adds about 0.05 s
+  besides the sessions. The registered test's limit is the sum of the
+  cells' time limits (`timeout`, default 90 s) plus the margin
+  `--timeout-extra` (60 s plus `EMULATION_QUEUE_WAIT`): an isolated cell
+  has its own session, but its time limit is already one term of the sum,
+  and a session start of 1-3 s per isolated cell stays far below the 60 s
+  of the margin (twenty cells would use it up at the cold start). `testreg`
+  is not changed.
+- **The run of all cases with isolated cells (task 2.3).** On the side
+  `originals` of `selftest/model-all-cases.test.bas` with
+  `isolate = ["libs=cd"]` (cells `port,cd`, `orig195,cd` isolated,
+  `orig195,clib` shared) the run of the six cases took 22 sessions: two
+  shared runs in `orig195,clib`, a run of each of the four cases the second
+  one judged clean in the two isolated cells (8), and four runs on their
+  own in the three cells (12).
+- **Alternative ends (tasks 3.1-3.3).** The table's own checks need its
+  header: a missing `reason` and a table without an alternative are
+  reported at the line of `[ends."SELECTOR"]`, the other refusals at the
+  line of the key. Two tables whose selectors both match a cell are judged
+  each on its own (each must have an alternative that holds), and a query
+  any of them names leaves the assertions; the more specific selector does
+  not replace the other, as no recorded case needs two. An alternative
+  replaces the defaults only for the queries it names, so an alternative
+  for a hang names `rc not exists` besides `session == timeout` and the
+  missing end entries (the default `rc == 0` would fail otherwise); the
+  report names the alternative that held also for a cell that passed (a
+  line under the cell's heading). The emulator check
+  (`selftest/model-varying-end.test.bas`) has the form of an open bug, as
+  a selftest has no issue for `fixed-orig`: both cells are judged with the
+  alternatives and the case comes out REPRODUCED, the ctest test checks
+  the report; `model-varying-end-one` (the same source, only `returns`)
+  is its check with broken input and fails in the cell that hangs.
+- **The query `inject` (task 4.1).** A cell runs through inject when
+  `pad = "on"` or the path field of its `runwrap` is the placeholder
+  `INJECT` of the environment file (or the runner's value `inject`, the
+  same program); `cr_cell_inject` decides it from the configuration, not
+  from the text `@INJECT@`, which the placeholder resolution has replaced.
+  Checked on the pilot `shapeslib-loadshape-width-zero` with
+  `inject = "contains \"inject: rc=0\""` in `[asserts]` and the guard line
+  as an `inject` deviation of `libs=cd` added for the run (not committed):
+  both sides PASSED; without the `runwrap` the port cell FAILED with
+  `assertion inject contains "inject: rc=0" (...) does not hold: not
+  captured` (log `~/.local/share/bb2-c-work/accept-runner-ext/s4-inject.log`).
+
+## Addendum: the announced runtime error as a check (section 6)
+
+**D8 `!ExpectError` stays for the port; a deviation declares the
+original's error** (user, 2026-11-23: "Feature into the extension
+(Recommended)", `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
+"!ExpectError stays for the port; a deviation declares the original's
+error"; the user before it: "dass der Testfall mit dem Original dort
+fehlschlägt ist ja eigentlich gewollt ... Wenn aber die Original-Fehler auch
+validiert und als Erfolgreich geprüft werden sollen, dann scheint der
+Workaround die sinnvollere Alternative zu sein - aber nur solange wie
+`!ExpectError` für den Port weiter im Testfall stehen kann/darf."). The
+movers of round U1 found that an announcement is judged in every cell: a
+deviation could not change it, and a test whose original shows another
+error (or none) had to drop `!ExpectError` and spell the error out
+(`requester contains`, `end.case not exists`, the check behind it
+`== not-run`).
+
+The announcement becomes a check of the judge. `!ExpectError{"MESSAGE",
+"NAME"}` already takes an optional name (`basic-test-interface`, "Check
+macros of a test source"; `testpp` keeps it in the table, the driver has
+neither message nor name), so no form, no driver and no library change:
+the query is `check.NS.NAME` as for every other check, with the verdict
+words of the checks: `ok` (the matching requester came after the
+announcement), `fail` (it did not come), `not-run` (no entry). An
+announcement that no assertion or deviation names is judged as today (the
+default "every check with entries passed", reported as "the announced
+runtime error ... did not come"); one that a deviation names, e.g.
+`"check.CASE.NAME" = "== fail"` with `requester = "contains \"Can't Read
+File\""`, is judged by it, and the requester that matched no announcement
+counts for `requester` as before. `.expected`/`.actual` of an announcement
+are refused when judged (it has no values). Not taken: a query by number
+(`check.NS.#N`; no other check is named that way), a verdict word `failed`
+(the checks say `fail`).
+- **The announcement as a check (section 6).** The judge counts an
+  `expect-error` entry as an entry of its check: matched by a requester
+  after it, it passes; not matched, it is the check's failure, reported
+  by the default of the checks as before ("the announced runtime error ...
+  did not come"), now after the assertions of the cell instead of before
+  them. The emulator check is the bug of #1052 (LoadShape of an ILBM with
+  0 planes): `!ExpectError{"Illegal Shape Depth","refused"}`, the CD's
+  libraries stop with "Can't Read File", declared with
+  `"check.depth_zero.refused" = "== fail"`, `requester`, `"end.case" = "not
+  exists"` and `rc = "exists"`; both sides PASSED, without the deviation
+  the side originals FAILED naming the announcement
+  (`selftest/model-expect-error*.test.bas`).
+
+## Addendum: tests of open bugs in the order of the bug-orig tests (section 7)
+
+**D9 testreg declares the bug-orig tests** (user, 2026-11-23: "testreg
+into the order (Recommended)",
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, "Model tests
+of open bugs join the bug-orig order"). The movers of round U1 found that a
+model test of an open bug (label `bug-orig`, REPRODUCED on purpose) had no
+`COST` and was declared before the old-form tests (the ctest include file
+of the registration comes first in `CTestTestfile.cmake`), so
+`bug_orig_order` failed. Only the build step knows the model tests, so it
+declares the old-form ones too: `bug_orig_declare_tests(FILE)` writes the
+recorded tests, sorted, as a ctest include of its own with a line `# @test
+NAME COST` before each declaration (at the end of the top directory by
+`cmake_language(DEFER)`, after `emulation_snapshot_owner` and
+`emulation_coverage`, whose environment `emulation_test_environment` gives
+them as before), and `basic_test_register(... ORDER FILE)` hands it to
+`testreg --order FILE`, which writes the tests of the label `bug-orig`
+last in its include, its own and the entries in one list, the largest
+`COST` first, equal ones by name. A model test of the label `bug-orig`
+without `cost` gets the sum of its cells' session limits (the time it can
+take; the old form's "session limit times sessions" with a session per
+cell, as the test's `TIMEOUT` counts it). Without model sources the order
+file is the declaration itself. `bug_orig_order` stays as strict;
+`bug_orig_order_model_late` and `_nocost` are its checks with a model
+test out of order and one without a `COST`. Not taken: leaving the model
+tests out of the check (the user's other option).
+- **Verified** without moving the deferred tests of slice A
+  (`shapeslib-anim-delta-bounds`, `polylib-word-range`; their move is the
+  follow-up agent's): `testreg_tool` (an open bug of COST 60 between
+  entries of 240, 60 and 10; broken order files), and a probe
+  `tests/bug-orig/libs/order-probe.test.bas` of an open bug, not committed:
+  registered with COST 90 among the 22 old-form tests, `bug_orig_order`
+  passed with 23 tests (`~/.local/share/bb2-c-work/accept-runner-ext/order-probe.log`).
+- **A gap found on the way:** the tests the registration declares (all
+  model tests) get no `AMIGA_EMULATION_OWNER` and no coverage directory:
+  `emulation_snapshot_owner` sets them on the tests CMake declared, and
+  the include files are not CMake's. The old-form bug-orig tests keep them
+  (written into the order file); the model tests are as before. Reported,
+  not changed here.
+
+## Addendum: the measured COST (section 8)
+
+**D10 A COST measured from a test run** (user, 2026-11-23: "Am besten
+gleich mit berücksichtigen, dann haben wir das für neue Testfälle",
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, "Measured
+COST in the runner extension"). `testinfo costs [--update FILE]
+JUNIT.xml...` (`tools/lib/teststats` `teststats_costs`, the file format
+`testcosts.h`) reads the `@stat` lines of ctest's JUnit files and writes
+`tests/data/test-costs.txt`, a line `NAME COST` per test, sorted by name.
+The COST of a run of a test is the sum of its sessions' `session` times
+(the slot wait is not in them); the COST is the median over the runs,
+rounded up, at least 1. The design choices:
+- **Cold sessions.** A session that did not start warm (`cold`,
+  `first-save`, `fallback`: once per emulator slot and ctest run) counts
+  as the median of the test's warm (`restored`) sessions over all runs, so
+  a test that happened to take a slot first does not look dear; a test
+  that had no warm session in the runs gets no entry (it keeps its
+  estimate) rather than a COST from a boot.
+- **Measurement or `cost` key.** A measurement wins over every estimate:
+  a model test's `cost` key, the sum of its cells' session limits, an
+  old-form bug-orig test's session limit times sessions, and the list of
+  long tests in `cmake/test-cost.cmake`; the estimates stay for the tests
+  without an entry. Why: the keys and the list were guesses for lack of a
+  measurement (the list itself is "the rounded durations of one cost
+  file"). The list stays as the fallback until the file covers those
+  tests; then it can go (not here: the order of the long tests must stay
+  sensible, and the file of this change holds only what this agent ran).
+- **Where it is read.** CMake reads the file at the start of the top
+  directory (`test_costs_load`, a configure dependency):
+  `long_test_costs()` gives every CMake test with an entry its COST, the
+  writer of the bug-orig order file the old-form bug-orig tests; testreg
+  (`--costs`, a dependency of its step) the tests of the model, also in
+  the sorted declaration of the label `bug-orig`.
+- **The check.** An entry whose test does not exist fails the build:
+  `long_test_costs()` stops the configuration for an entry that is no
+  CMake test, no recorded bug-orig test and no `PREFIX...__CASE` of a
+  registered prefix; testreg fails its step for a `PREFIX...__CASE` entry
+  of its prefix that it did not register (each test with broken input:
+  `test_cost_broken`, `testreg_tool`). The two parts are needed because
+  CMake does not know the tests of the model.
+- **Mixed scales.** Until the file is refreshed from a full run, measured
+  tests (seconds) and estimated ones (limits) are ordered together, so
+  the estimated ones come first; the coordinator refreshes the file after
+  the acceptance run (`tests/README.md`, "The measured COST"). The file of
+  this change holds the 250 tests of the run of `tests/blitz2` and the
+  model tests of `tests/bug-orig`
+  (`~/.local/share/bb2-c-work/accept-runner-ext/junit-s8.xml`).

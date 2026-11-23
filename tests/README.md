@@ -329,6 +329,7 @@ escapes) is refused with file and line.
 | `timeout`, `hang-after` | integer | time limit of a session, silence that ends it as a hang (seconds) |
 | `stack` | integer | the stack of the compiler and the program |
 | `serial`, `rtg`, `pad` | `off`, `on` | the serial peer, the RTG emulator, inject's `pad` (default `off`) |
+| `isolate` | `off`, `on` or a list of selectors | `on`: every cell an emulator session of its own; a list of cell selectors (the grammar of `exclude`): the cells they match (default `off`); no axis |
 | `wrap`, `runwrap` | `PATH[\|ARGS]` | the compiler, the program started through PATH |
 | `runargs`, `launcherargs` | string | arguments of the program, options of the launcher |
 | `files` | list of `DEST\|SRC[\|SELECTOR]` | files staged as `CORPUS:DEST`; with a cell selector as the third field only in the cells it matches |
@@ -345,7 +346,7 @@ The keys from `compiler` to `jobline` are the **run settings**; `labels`,
 `cost` and `fixtures` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, `extension`, the tables `deviations`) in a `tests.toml` or `root` in an
+`fixed`, `extension`, the tables `deviations` and `ends`) in a `tests.toml` or `root` in an
 `ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
 `fixed` must have none.
 
@@ -408,10 +409,10 @@ name (a check that a configuration names must have one).
 | `rc` | the exit code of the program | `CMP integer`, `exists` |
 | `requester` | the requesters shown, but the runtime errors the case announced | `contains`, `matches`, `exists`, `count` |
 | `compile` | `ok`, `error LINE MESSAGE` or `none` | `==`/`!=` with `ok`, `none` or a string, `contains`, `matches` |
-| `compile.log`, `output`, `serial`, `inject` | the compiler's log, the printed output, the serial data, inject's report | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
+| `compile.log`, `output`, `serial`, `inject` | the compiler's log, the printed output, the serial data, inject's report (the output's lines that start with `inject:`, of a cell whose program runs through inject: `pad`, or a `runwrap` of `@INJECT@`; of any other cell not captured) | `==`/`!=` string, `contains`, `matches`, `exists` (not empty) |
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
-| `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries | `==`/`!=` with `ok`, `fail`, `not-run` |
+| `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
 | `check.NS.NAME.expected`, `.actual` | the expected, the actual value of its first failed entry, else of its first | `CMP integer` (long values; the 32 bits of a quick or FFP float value, `$00018000` for the quick 1.5), `==`/`!=` string (decided by the length and CRC32 of the whole value, also of a cut one), `contains`, `matches` (strings; only on a value the library did not cut to fit the line: on a cut one the cell cannot be judged); a cut value is reported as its start with `(cut, length N)` |
 
 `contains` holds if the text (a requester, for `requester`) holds the
@@ -451,6 +452,31 @@ fixed-orig = 265
 [deviations."libs=cd"]
 "check.frames_maximum.width" = "== fail"
 "check.frames_maximum.width.actual" = "== 0"
+```
+
+An announced runtime error is judged like a check: a named
+`!ExpectError{"MESSAGE","NAME"}` is the query `check.NS.NAME`, so a
+deviation declares the original's other error (`== fail` with its
+`requester`) while the announcement stays for the port.
+
+**Alternative ends.** An original whose end varies with the memory
+layout (it returns or hangs, crashes or not) declares its ends in the
+table `ends."SELECTOR"` of the test's own file: a required `reason` and
+under every other key a named alternative, a non-empty list of `QUERY
+PREDICATE` (the grammar above; the queries `session`, `rc`, `requester`,
+`end.case`, `end.run`, `output`, `check.*`). It is a declared deviation:
+it applies where the deviations apply, counts for `fixed-orig` and
+`extension`, and is refused with `fixed` and in a `tests.toml`. There the
+queries the alternatives name leave the other assertions and the
+defaults, the cell passes that point if one alternative holds wholly, and
+the report names the one that held, or each with its failed assertion.
+
+```toml
+# an example, not a file of the tree: libs/blitzoslib-selectbox-range.test.toml
+[ends."libs=cd"]
+reason = "the original draws a box from the memory behind the table (#82); whether it then returns or hangs depends on that memory"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists"]
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]
 ```
 
 **The environment file** of a build (written by CMake,
@@ -650,7 +676,20 @@ The first prints the effective configuration: every key with its value
 and the file and line it comes from, the assertions and deviations, the
 defaults, the axes and the cells with their side. The second prints the
 driver of a case (the macro text, `TLBegin`, the preprocessed source,
-the calls).
+the calls); without `--case` the driver of all cases, the text the build
+writes for the comparison with the prev build.
+
+Without `--case` the runner runs every case of the source on the side
+(`tests/corpus/runner/README.md`, `caserun.h` "The run of all cases"):
+the cases share one run of the driver of all of them and each is judged
+from its own block; a case that asserts an observation of the whole
+program or announces a runtime error runs on its own, a shared run that
+does not end cleanly runs the case open at its end on its own and the
+others again, and a case that does not pass in a shared run is confirmed
+on its own (its verdict there counts, and the report names it when the
+two differ). The report marks the cases judged on their own `(alone)`
+and ends with `ID.test.bas: N cases, side SIDE: VERDICT`; the exit status
+is the worst verdict. ctest still runs one case per test.
 
 ## Original material and presets
 
@@ -2607,9 +2646,11 @@ section describe the environment):
 |---|---|
 | another value in a line a check judges | `"check.CASE.NAME" = "== fail"` and `"check.CASE.NAME.actual" = "== VALUE"` (the number the original printed; `$` for hex); a string: `== "TEXT"`; a value that varies: `matches "PATTERN"` (`*` any characters, `#` a number) |
 | a check passes in the original, though the program is wrong | no deviation of its own; the bug shows in another check or in `output` |
-| an `inject:` line (`guard`, `pad`: written behind an allocation) | `output = "contains \"written behind an allocation of 8 bytes\""` in the cells with the CD's libraries, `output = "not contains \"inject: guard\""` in `[asserts]` for all the others; the helper's lines are part of the program's output, the query `inject` is not filled for the runwrap helper |
+| an `inject:` line (`guard`, `pad`: written behind an allocation) | `inject = "contains \"written behind an allocation of 8 bytes\""` in the cells with the CD's libraries, `inject = "not contains \"inject: guard\""` in `[asserts]` for all the others (the query `inject` holds inject's report lines when the program runs through inject; `output` keeps them too, so an older test that asserts them on `output` stays valid) |
 | a `REQUESTER:` line, a runtime error the correct run does not have | `requester` (`contains`, `matches`, `count`) |
+| another runtime error than the one the port announces with `!ExpectError`, or none | the announcement named (`!ExpectError{"MESSAGE","refused"}`) and declared failed for the original, `"check.CASE.refused" = "== fail"`, with its `requester` (`contains "OTHER MESSAGE"`, or `count == 0`) and the end it then has (`"end.case" = "not exists"`, `rc`) |
 | the program ends early, hangs or crashes | `"end.case" = "not exists"` (and `end.run`), `session = "== timeout"` or `"== halt"`, `rc`; the checks behind the crash count as not run, so name the checks before it and leave the others to the default (not-run checks are not failures) |
+| an end that varies with the memory layout (returns or hangs, a crash or not) | `[ends."libs=cd"]` with a `reason` and one named alternative per end, each a list of `QUERY PREDICATE` (`returns = ["session == done", "rc == 0", ...]`, `hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]`) |
 | a line only a `# varies:` wildcard matched | the pattern of the validator, or, if the line is not the tested behaviour, no assertion about it |
 
 **An open bug.** A test without `fixed-orig`/`fixed`/`extension` is an open
@@ -2625,7 +2666,10 @@ never BROKEN, and the deviations of `libs=cd` are the lines of the old
 ([Fixed tests](#fixed-tests)). A bug-orig test without any deviation is
 BROKEN. (The pilot moved fixed bugs only; the open-bug path is the
 runner's `testjudge` rule, host test `testjudge`, "an open original
-bug", and was not exercised by a moved test yet.)
+bug".) A test of an open bug fails on purpose, so it takes its place in
+the [order of the bug-orig tests](#order-of-the-bug-orig-tests) by a
+`COST` the registration gives it (the sum of its cells' session limits);
+it needs no `cost` key.
 
 **What happens at the fix.** Nothing else of the test changes: the key
 `fixed-orig = N` is added, the case then carries the label `emulator`
@@ -2651,11 +2695,18 @@ cells.
   exists"`, and a check behind the faulty statement
   (`!Check{0,"not_refused"}`, reached only if no error is raised) is
   asserted `"== not-run"`. Where only the error matters use
-  `!ExpectError{"MESSAGE"}` and `runtime-errors = "on"`
+  `!ExpectError{"MESSAGE","NAME"}` and `runtime-errors = "on"`
   (`tests/blitz2/array-index-div0`); the case ends in the requester, which
-  the runner matches. The original's different error (here "Can't Read
-  File" instead of "Illegal Shape Depth") shows in the failed check or in
-  the `requester` deviation.
+  the runner matches. `!ExpectError` stays in the test for the port also
+  when the original shows another error (here "Can't Read File" instead
+  of "Illegal Shape Depth") or none: the named announcement is the query
+  `check.CASE.NAME` (`ok` the error came, `fail` it did not, `not-run`),
+  and the cells with the original's faulty part declare it
+  `"check.CASE.NAME" = "== fail"` with the original's `requester`
+  (`tests/blitz2/selftest/model-expect-error.test.toml`). The form without
+  `!ExpectError` (the requester, `end.case` and the check behind the
+  faulty statement spelled out) is only for a case where the port itself
+  raises no error.
 * **The cells of a side share one emulator session**, so `RAM:` and the
   memory. A file the test writes goes to `CORPUS:` (each cell has its
   own `CORPUS:`), not to `RAM:`: the CD's libraries leave the file behind
@@ -2664,17 +2715,19 @@ cells.
   "file_written" was broken in `orig195,cd`; with `CORPUS:` it passed). An original that writes far behind a
   block (`plane-64k`: 66560 bytes behind a block of 1032) wrecks the
   memory of the session, and a second cell with the CD's libraries ends in a
-  Software Failure. The cell is left out with `exclude` and the reason is
-  written into the `.test.toml` (the recorded original had one cell too);
-  an option to run every cell in its own session is a request to the
-  runner, not a workaround in the test. Cells whose bug writes only a few
-  bytes (the three `-zero` tests) can stay together.
+  Software Failure. Give such cells a session of their own:
+  `isolate = ["libs=cd"]` (or `isolate = "on"` for every cell) in the
+  `.test.toml`, with the reason in a comment; their memory and `RAM:` are
+  then shared with no other cell's program. Cells whose bug writes only a
+  few bytes (the three `-zero` tests) can stay together.
 * **Helpers and their output.** `runwrap = "@INJECT@|guard"` runs the
   program through inject; its report lines (`inject: rc=0`, `inject: guard:
-  written behind ...`) are in the `output` of the run; the query `inject` of
-  the assertions is not filled (a declared assertion on it fails with "not
-  captured"). Assert on `output`. The old expectation's line `inject: rc=0`
-  is no check of the new test: `output` is asserted on the guard line only.
+  written behind ...`) are the query `inject` of the assertions, and stay
+  in the `output` of the run (the pilot asserted them on `output`, which
+  stays valid). Assert on `inject`. Of a cell that does not run through
+  inject the query is not captured, and an assertion on it fails so. The
+  old expectation's line `inject: rc=0` is no check of the new test:
+  assert the guard line only.
 * **Cases are subroutines.** `Dim` and top-level statements do not stand
   outside the blocks: arrays and the setup go into the case (or the batch
   init), helpers (`Statement`, `Function`) stay outside. Cases share the
@@ -2693,12 +2746,18 @@ cells.
   `.orig` that is a crash, a stray return code or a different ending
   depending on the layout (`blitzoslib-selectbox-range`, #82;
   `rigtmenulib-createmenustrip-unchecked`, #689: "returns or hangs
-  depending on the memory behind the table") has no stable deviation
-  beyond what the program printed before: declare only that (the failing
-  check, or `end.case`/`session` if the end is the same in every layout),
-  and if even that is not stable, **report the test, do not weaken it**
-  (the old form had a wildcard line there; `matches` covers a value that
-  varies, not an end that varies). Not exercised by the pilot.
+  depending on the memory behind the table") has an end that varies:
+  declare its ends as named alternatives in `[ends."libs=cd"]`, with the
+  required `reason` and one alternative per end, each a list of `QUERY
+  PREDICATE` that must hold wholly (`returns = ["session == done", "rc ==
+  0", "end.case exists", "end.run exists"]`, `hangs = ["session ==
+  timeout", "rc not exists", "end.case not exists", "end.run not
+  exists"]`; the queries an alternative names leave the other assertions
+  and the defaults, so name every one the end changes); the report names
+  the alternative that held (`tests/blitz2/selftest/model-varying-end`).
+  An end that no such set describes is still reported, not weakened:
+  the alternatives are stricter than the old wildcard lines, keep them
+  so.
 * **Hang tests.** A program that hangs ends by the hang check
   (`hang-after`, the runner's default 8 s; `timeout` the limit): the
   deviation is `session = "== timeout"` and the missing end entry; the
@@ -3072,12 +3131,17 @@ bug-orig test: @fixed #N without a pair" (`test_tedab`).
 **Order of the bug-orig tests:** ctest with several jobs runs the
 tests that failed in its last run first, in declaration order and
 without regard to `COST`, and the bug-orig tests fail on purpose. So
-all of them (those of `libs/tests` too) are recorded with
-`bug_orig_add_test` and declared at the end of
-`tests/bug-orig/CMakeLists.txt`, sorted by their `COST` (session limit
-times sessions), the largest first (`cmake/bug-orig-order.cmake`);
-ctest `bug_orig_order` (host) checks the order, `bug_orig_order_broken`
-the check with a wrong one.
+all of them are declared in one list sorted by their `COST`, the largest
+first (`cmake/bug-orig-order.cmake`): the tests of the old form (those of
+`libs/tests` too) are recorded with `bug_orig_add_test` (`COST` the
+session limit times the sessions), `bug_orig_declare_tests` at the end of
+`tests/bug-orig/CMakeLists.txt` writes them to an order file, and the
+build step that registers the tests of the model (`tools/testreg --order`)
+declares them together with its tests of open bugs, whose `COST` is the
+sum of their cells' session limits. ctest `bug_orig_order` (host) checks
+the order, `bug_orig_order_broken`, `bug_orig_order_model_late` and
+`bug_orig_order_model_nocost` the check with a wrong one (a model test
+out of order, one without a `COST`).
 
 **Order of the long tests of the all suite:** the longest tests
 (`ted_ab`, the ab3 equivalence passes, `libs_emulator`, the corpus
@@ -3224,6 +3288,36 @@ without a number) and a suggested ctest `COST` per test (the median
 duration; a test's duration includes its waits for emulator slots). Broken input (malformed XML, a testcase without name or time,
 a bad `@stat` line) is reported on stderr (exit status 1), the rest
 still counts.
+
+### The measured COST
+
+`tests/data/test-costs.txt` gives the measured `COST` of the tests (a
+line `NAME COST` per test, sorted by name): the median over the runs of
+the sum of a test's emulator sessions' times without the slot wait, a
+session that did not start from a snapshot (a cold start, a first save:
+once per slot and run, not a property of the test) counted as the test's
+median warm session; a test without a warm session has no entry. The
+build reads it: `cmake/test-cost.cmake` (every CMake test with an entry,
+the list of the long tests for those without), `cmake/bug-orig-order.cmake`
+(the old-form bug-orig tests) and `tools/testreg --costs` (the tests of
+the model, also in the [order of the bug-orig tests](#order-of-the-bug-orig-tests));
+a measurement wins over a `cost` key and the estimates (a test without
+an entry keeps its `cost`, the sum of its cells' session limits, or its
+session limit times sessions). An entry whose test no longer exists
+fails the build (the configuration, or the registration step of the
+tests of the model), naming its line. After an acceptance run, refresh
+the file from its JUnit file(s) and commit it with the run's other
+results:
+
+```
+build/amiga/host/tools/testinfo/testinfo costs --update tests/data/test-costs.txt \
+    build/amiga/junit-all.xml [build/amiga/junit-originals.xml ...]
+```
+
+`--update` replaces the entries of the measured tests and keeps the
+others; remove the line of a removed test by hand (the build names it),
+or write the file anew from a full run without `--update`
+(`testinfo costs JUNIT... > tests/data/test-costs.txt`).
 
 ## Coverage
 

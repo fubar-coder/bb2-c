@@ -55,6 +55,8 @@ target_compile_definitions(test_testconf_readme PRIVATE
 target_compile_options(test_testconf_readme PRIVATE -Wall -Wextra)
 set_target_properties(test_testconf_readme PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME testconf_readme COMMAND test_testconf_readme)
+# the file of the measured COST (lib/teststats, testcosts.c) is tested with the statistics
+target_link_libraries(test_teststats PRIVATE lib_testcosts)
 
 # the judge of the library tests (lib/libscmp; libscmp), the raw block
 # observations (NAME.bin; libscmp_bin) and the order of the expected data's

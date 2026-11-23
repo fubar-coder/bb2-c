@@ -739,3 +739,201 @@ TEST_CASE("testjudge: calls out of order", "[testjudge]")
     CHECK(has(m, "check init initcheck (x.test.bas:6) failed: 1: expected 1 ($00000001), actual 2 ($00000002) "
                  "(its first failed entry)"));
 }
+
+// two cases and a batch cleanup, run by one driver (the run of all cases of
+// a source, corpusrun case without --case)
+static const char two_cases[] =
+    "!TestCase{a}\n"                                        // 1
+    "  !CheckEq{1,1,\"one\"}\n"                             // 2  K0
+    "!EndTestCase\n"                                        // 3
+    "!TestCase{b}\n"                                        // 4
+    "  !CheckEq{2,2,\"two\"}\n"                             // 5  K1
+    "!EndTestCase\n"                                        // 6
+    "!TestBatchCleanup\n"                                   // 7
+    "  !CheckEq{3,3,\"fin\"}\n"                             // 8  K2
+    "!EndTestBatchCleanup\n";                               // 9
+
+TEST_CASE("testjudge: the blocks of the other cases the driver called", "[testjudge]")
+{
+    static const char *const ab[] = { "a", "b" };
+    static const char *const a_only[] = { "a" };
+    fixture fa("", "", "a", two_cases), fb("", "", "b", two_cases);
+    std::string m;
+    const std::string pre = "begin|1\nblock|case|a\n", mid = "blockend\nblock|case|b\n";
+    const std::string fin = "blockend\nblock|final\ncheck|2|ok|$00000003|$00000003\nblockend\nend\n";
+
+    fa.t.cases = ab;
+    fa.t.ncases = 2;
+    fb.t.cases = ab;
+    fb.t.ncases = 2;
+    // two cases in one result file, each judged from its own block
+    obs both(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|ok|$00000002|$00000002\n" + fin);
+    CHECK(judge(fa, both, m) == TJ_PASS);
+    CHECK(m == "");
+    CHECK(judge(fb, both, m) == TJ_PASS);
+    CHECK(m == "");
+    // a failed check in b does not fail a
+    obs bfail(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|fail|$00000002|$00000005\n" + fin);
+    CHECK(judge(fa, bfail, m) == TJ_PASS);
+    CHECK(m == "");
+    CHECK(judge(fb, bfail, m) == TJ_FAIL);
+    CHECK(has(m, "check b two (x.test.bas:5) failed"));
+    // nor does the library's broken state reported in b's block
+    obs bbroken(pre + "check|0|ok|$00000001|$00000001\n" + mid + "broken|block end without a block\n" + fin);
+    CHECK(judge(fa, bbroken, m) == TJ_PASS);
+    CHECK(judge(fb, bbroken, m) == TJ_BROKEN);
+    // a failed check of the batch cleanup fails both
+    obs cfail(pre + "check|0|ok|$00000001|$00000001\n" + mid + "check|1|ok|$00000002|$00000002\n"
+              "blockend\nblock|final\ncheck|2|fail|$00000003|$00000004\nblockend\nend\n");
+    CHECK(judge(fa, cfail, m) == TJ_FAIL);
+    CHECK(has(m, "check cleanup fin (x.test.bas:8) failed"));
+    CHECK(judge(fb, cfail, m) == TJ_FAIL);
+    CHECK(has(m, "check cleanup fin (x.test.bas:8) failed"));
+    // the block of a case the driver did not call still fails the cell
+    fa.t.cases = a_only;
+    fa.t.ncases = 1;
+    CHECK(judge(fa, both, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case b (line 5), which was not selected"));
+    fa.t.cases = nullptr;
+    fa.t.ncases = 0;
+    CHECK(judge(fa, both, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case b (line 5), which was not selected"));
+    // the judged case twice stays a fault of the file, called or not
+    fa.t.cases = ab;
+    fa.t.ncases = 2;
+    obs twice(pre + "check|0|ok|$00000001|$00000001\nblockend\nblock|case|a\n" + fin);
+    CHECK(judge(fa, twice, m) == TJ_FAIL);
+    CHECK(has(m, "the result file holds the case a twice"));
+}
+
+// an original that returns or hangs depending on the memory: the two
+// alternative ends of the cells with the CD's libraries
+static const std::string ends_cd = "[ends.\"libs=cd\"]\n"
+                                   "reason = \"the memory behind the table\"\n"
+                                   "returns = [\"session == done\", \"rc == 0\", \"end.case exists\", "
+                                   "\"end.run exists\"]\n"
+                                   "hangs = [\"session == timeout\", \"rc not exists\", \"end.case not exists\", "
+                                   "\"end.run not exists\", \"check.frames_maximum.width == fail\"]\n";
+
+// a run that hangs after a failed check of width: no end entries, no exit code
+static obs hang_obs(const char *session = "timeout")
+{
+    obs o(head + "check|3|fail|$00000010|$00000000\n");
+
+    o.o.has_rc = 0;
+    o.o.session = session;
+    return o;
+}
+
+TEST_CASE("testjudge: alternative ends", "[testjudge]")
+{
+    std::string m;
+
+    {
+        // an open bug: both cells hang, the alternative hangs holds (and names
+        // the failed check, which leaves the default of the checks)
+        fixture f(matrix, ends_cd);
+        CHECK(tj_case_has_deviation(&f.t));
+        CHECK(verdict(f, hang_obs(), hang_obs(), m) == TJ_V_REPRODUCED);
+        CHECK(has(m, "case frames_maximum, cell cd (an open bug: its declared deviations):\n  the end of "
+                     "[ends.\"libs=cd\"] (" + (f.root / "x.test.toml").string() + ":2): the alternative hangs holds"));
+        // a cell where the original returns: the other alternative
+        CHECK(verdict(f, obs(good), hang_obs(), m) == TJ_V_REPRODUCED);
+        CHECK(has(m, "cell cd (an open bug: its declared deviations):\n  the end of [ends.\"libs=cd\"] ("
+                     + (f.root / "x.test.toml").string() + ":2): the alternative returns holds"));
+        // the session halts: no alternative holds, each is named with its
+        // failed assertion
+        CHECK(verdict(f, hang_obs("halt"), hang_obs(), m) == TJ_V_FAILED);
+        CHECK(has(m, "no alternative end of [ends.\"libs=cd\"] (" + (f.root / "x.test.toml").string()
+                         + ":2) holds:\n    the alternative returns:\n      assertion session == done ("));
+        CHECK(has(m, "    the alternative hangs:\n      assertion session == timeout ("));
+        // a bug-orig test with only alternative ends declares its deviation
+        f.t.require_deviation = 1;
+        CHECK(verdict(f, hang_obs(), hang_obs(), m) == TJ_V_REPRODUCED);
+    }
+    {
+        // a fixed bug: the original returns in the cell with the faulty part,
+        // the port's cell is judged plain
+        fixture f(matrix, "fixed-orig = 82\n" + ends_cd);
+        CHECK(verdict(f, obs(good), obs(good), m) == TJ_V_PASSED);
+        CHECK(has(m, "the alternative returns holds"));
+        CHECK(verdict(f, hang_obs(), obs(good), m) == TJ_V_PASSED);
+        CHECK(has(m, "the alternative hangs holds"));
+        // the port hangs: no alternative there, the defaults fail
+        CHECK(verdict(f, obs(good), hang_obs(), m) == TJ_V_FAILED);
+        CHECK(has(m, "case frames_maximum, cell clib:\n"));
+        CHECK(has(m, "assertion end.run exists ((default):0) does not hold: absent"));
+        CHECK(m.find("alternative", m.find("cell clib:")) == std::string::npos);
+    }
+    {
+        // the queries the alternatives name leave the other assertions: an
+        // assertion of rc in the directory's file does not apply in cd
+        fixture f(std::string(matrix) + "[asserts]\nrc = \"== 7\"\n", "fixed-orig = 82\n" + ends_cd);
+        CHECK(verdict(f, hang_obs(), obs(good, 7), m) == TJ_V_PASSED);
+    }
+}
+
+// a named announcement, judged like a check (section 6 of
+// basic-test-runner-extension): the port shows the announced error, the
+// original another one, which a deviation declares
+static const char named_error[] =
+    "!TestCase{a}\n"                                        // 1
+    "  !CheckEq{1,1,\"before\"}\n"                          // 2  K0
+    "  !ExpectError{\"Illegal Shape Depth\",\"refused\"}\n" // 3  K1
+    "  !Check{0,\"not_refused\"}\n"                         // 4  K2
+    "!EndTestCase\n";                                       // 5
+
+TEST_CASE("testjudge: an announcement judged like a check", "[testjudge]")
+{
+    const std::string ann = "begin|1\nblock|case|a\ncheck|0|ok|$00000001|$00000001\nexpect-error|1\nincomplete\nend\n";
+    const std::string orig_dev = "fixed-orig = 1\n[deviations.\"libs=cd\"]\n\"check.a.refused\" = \"== fail\"\n"
+                                 "requester = \"contains \\\"Can't Read File\\\"\"\n\"end.case\" = \"not exists\"\n"
+                                 "rc = \"exists\"\n";
+    std::string m;
+
+    {
+        // the port's cell with the announced error, the original's with the
+        // declared one: both pass
+        fixture f(matrix, orig_dev, "a", named_error);
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20).requester("Illegal Shape Depth"), m)
+              == TJ_V_PASSED);
+        // the original raises the announced error after all: the deviation
+        // wants it failed
+        CHECK(verdict(f, obs(ann, 20).requester("Illegal Shape Depth"), obs(ann, 20).requester("Illegal Shape Depth"),
+                      m)
+              == TJ_V_FAILED);
+        CHECK(has(m, "assertion check.a.refused == fail (" + (f.root / "x.test.toml").string()
+                         + ":3, a declared deviation) does not hold: ok"));
+        // the port without its error: the announcement fails as before
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20), m) == TJ_V_FAILED);
+        CHECK(has(m, "case a, cell clib:\n"));
+        CHECK(has(m, "  the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not "
+                     "come"));
+    }
+    {
+        // the deviation removed: the original's cell fails naming the announcement
+        fixture f(matrix, "", "a", named_error);
+        CHECK(verdict(f, obs(ann, 20).requester("Can't Read File"), obs(ann, 20).requester("Illegal Shape Depth"), m)
+              == TJ_V_FAILED);
+        CHECK(has(m, "case a, cell cd:\n"));
+        CHECK(has(m, "  the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not "
+                     "come"));
+        CHECK(has(m, "requester count == 0 ((default):0) does not hold: 1, the first \"Can't Read File\""));
+    }
+    {
+        // the verdicts of the query: ok, fail, not-run
+        fixture ok("[asserts]\n\"check.a.refused\" = \"== ok\"\n", "", "a", named_error);
+        CHECK(judge(ok, obs(ann, 20).requester("Illegal Shape Depth"), m) == TJ_PASS);
+        CHECK(judge(ok, obs(ann, 20), m) == TJ_FAIL);
+        CHECK(has(m, "the announced runtime error \"Illegal Shape Depth\" (x.test.bas:3) did not come"));
+        CHECK(has(m, "assertion check.a.refused == ok"));
+        fixture nr("[asserts]\n\"check.a.refused\" = \"== not-run\"\n\"end.case\" = \"not exists\"\n", "", "a",
+                   named_error);
+        CHECK(judge(nr, obs("begin|1\nblock|case|a\ncheck|0|ok|$00000001|$00000001\nincomplete\nend\n"), m)
+              == TJ_PASS);
+        // an announcement has no values
+        fixture v("[asserts]\n\"check.a.refused.actual\" = \"== 1\"\n", "", "a", named_error);
+        CHECK(judge(v, obs(ann, 20).requester("Illegal Shape Depth"), m) == TJ_ERROR);
+        CHECK(has(m, "this check has no values"));
+    }
+}

@@ -84,6 +84,22 @@ size_t teststats_runs(const struct teststats *t);
  */
 int teststats_report(const struct teststats *t, const struct teststats_options *o, FILE *out);
 
+/**
+ * @brief The measured COST of the tests (tests/data/test-costs.txt;
+ *        testinfo costs): a line "NAME COST" per test that has a session
+ *        started warm (snapshot=restored) in the runs, sorted by name.  The
+ *        COST of a run is the sum of its sessions' times without the slot
+ *        wait (`session`), a session that did not start warm (cold,
+ *        first-save, fallback: once per emulator slot and ctest run, not a
+ *        property of the test) counted as the median of the test's warm
+ *        sessions; the COST is the median over the runs that have sessions,
+ *        rounded up, at least 1.  A test without a warm session (and a test
+ *        without sessions) gets no line: it keeps the COST the build gives
+ *        it without a measurement.
+ * @return 0 = ok, -1 if memory ran out
+ */
+int teststats_costs(const struct teststats *t, FILE *out);
+
 
 #ifdef __cplusplus
 }

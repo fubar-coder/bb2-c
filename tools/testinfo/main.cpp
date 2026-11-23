@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 
     app.require_subcommand(1);
     cmd_stats(app, status);
+    cmd_costs(app, status);
     cmd_map(app, status);
     cmd_select(app, status);
     return cli::run(app, argc, argv, status);

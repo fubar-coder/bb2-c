@@ -1,0 +1,9 @@
+# model-expect-error-removed.test.bas: model-expect-error.test.toml without
+# fixed-orig and the deviation of libs=cd
+runtime-errors = "on"
+
+[matrix]
+libs = ["cd", "clib"]
+
+[asserts]
+"check.depth_zero.not_refused" = "== not-run"

@@ -39,6 +39,8 @@ static const struct tc_keydef keys[] = {
       "the RTG variant of the emulator", "off" },
     { "pad", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
       "inject's pad: zeroed bytes behind every allocation of the program", "off" },
+    { "isolate", TC_V_ONOFF_OR_SELECTORS, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
+      "on: every cell an emulator session of its own; a list of cell selectors: the cells they match", "off" },
     { "wrap", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, 0,
       "PATH[|ARGS]: the compiler is started through PATH", NULL },
     { "runwrap", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, 0,
@@ -479,6 +481,33 @@ int tc_check_type(const char *file, unsigned line, const struct tc_keydef *def,
 {
     static const int want[] = { TT_STRING, TT_STRING, TT_INTEGER, TT_BOOLEAN, TT_LIST };
 
+    if (def->vkind == TC_V_ONOFF_OR_SELECTORS) {
+        /* a string on or off, or the cell selectors of exclude */
+        if (v->type == TT_STRING) {
+            if (!tc_enum_ok(def, v->str))
+                return tc_err(err, errlen, "%s:%u: %s must be one of %s or a list of cell selectors, not \"%s\"",
+                              file, line, def->name, def->values, v->str);
+            return 0;
+        }
+        if (v->type != TT_LIST)
+            return tc_err(err, errlen, "%s:%u: %s must be a string or a list of cell selectors, not a%s %s", file,
+                          line, def->name, v->type == TT_INTEGER ? "n" : "", tt_type_name(v->type));
+        if (!v->nlist)
+            return tc_err(err, errlen, "%s:%u: %s: an empty list of cell selectors (\"off\": no cell)", file,
+                          line, def->name);
+        for (size_t i = 0; i < v->nlist; i++) {
+            struct tc_selector sel;
+            char msg[300];
+            int r = tc_selector_parse(v->list[i], 0, &sel, msg, sizeof msg);
+
+            if (r == -2)
+                return tc_err(err, errlen, "%s:%u: out of memory", file, line);
+            if (r)
+                return tc_err(err, errlen, "%s:%u: %s: %s", file, line, def->name, msg);
+            tc_selector_free(&sel);
+        }
+        return 0;
+    }
     if (v->type != want[def->vkind])
         return tc_err(err, errlen, "%s:%u: %s must be a%s %s, not a%s %s", file, line, def->name,
                       want[def->vkind] == TT_INTEGER ? "n" : "", tt_type_name(want[def->vkind]),
@@ -510,6 +539,35 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
                               d->file, t->line);
             continue;
         }
+        if (!strcmp(name, "ends")) {
+            int reason = 0;
+            size_t alts = 0;
+
+            if (!f->own)
+                return tc_err(err, errlen, "%s:%u: ends is a key of a single test, valid only in its ID.test.toml",
+                              d->file, t->line);
+            if (t->npath != 2)
+                return tc_err(err, errlen,
+                              "%s:%u: alternative ends need the cell selector of the cells with the original's "
+                              "faulty part ([ends.\"SELECTOR\"])", d->file, t->line);
+            for (size_t k = 0; k < d->n; k++) {
+                const struct tt_entry *e = &d->e[k];
+
+                if (e->ntable != 2 || strcmp(e->table[0], "ends") || strcmp(e->table[1], t->path[1]))
+                    continue;
+                if (!strcmp(e->key, "reason"))
+                    reason = 1;
+                else
+                    alts++;
+            }
+            if (!reason)
+                return tc_err(err, errlen, "%s:%u: [ends.\"%s\"] has no reason (why the end of these cells varies)",
+                              d->file, t->line, t->path[1]);
+            if (!alts)
+                return tc_err(err, errlen, "%s:%u: [ends.\"%s\"] declares no alternative end", d->file, t->line,
+                              t->path[1]);
+            continue;
+        }
         return tc_err(err, errlen, "%s:%u: unknown table [%s]", d->file, t->line, name);
     }
     for (size_t i = 0; i < d->n; i++) {
@@ -532,6 +590,18 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
         if (!strcmp(e->table[0], "matrix")) {
             if (tc_axis_check(d->file, e->line, e->key, &e->value, err, errlen))
                 return -1;
+            continue;
+        }
+        if (!strcmp(e->table[0], "ends")) {
+            if (!strcmp(e->key, "reason")) {
+                if (e->value.type != TT_STRING || !*e->value.str)
+                    return tc_err(err, errlen, "%s:%u: the reason of [ends.\"%s\"] must be a non-empty string",
+                                  d->file, e->line, e->table[1]);
+                continue;
+            }
+            if (e->value.type != TT_LIST || !e->value.nlist)
+                return tc_err(err, errlen, "%s:%u: the alternative end %s must be a non-empty list of \"QUERY "
+                              "PREDICATE\"", d->file, e->line, e->key);
             continue;
         }
         if (e->value.type != TT_STRING)
@@ -563,6 +633,9 @@ void tc_free(struct tc_config *c)
     for (size_t i = 0; i < c->ndeviations; i++)
         tc_tabkey_free(&c->deviations[i]);
     free(c->deviations);
+    for (size_t i = 0; i < c->nends; i++)
+        tc_tabkey_free(&c->ends[i]);
+    free(c->ends);
     for (size_t i = 0; i < c->nfiles; i++)
         free(c->files[i]);
     free(c->files);
@@ -685,6 +758,9 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
                 } else if (!strcmp(tab, "asserts")) {
                     v = &c->asserts;
                     n = &c->nasserts;
+                } else if (!strcmp(tab, "ends")) {
+                    v = &c->ends;
+                    n = &c->nends;
                 } else {
                     v = &c->deviations;
                     n = &c->ndeviations;

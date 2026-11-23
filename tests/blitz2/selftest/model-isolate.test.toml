@@ -1,0 +1,6 @@
+# model-isolate.test.bas: two cells of the side port, each in a session of
+# its own
+isolate = "on"
+
+[matrix]
+runtime-errors = ["off", "on"]

@@ -1,0 +1,17 @@
+# model-all-cases.test.bas: ends never reaches its end entry; prints asserts
+# its output, so it runs on its own in the run of all cases. The cells: the
+# port with the C libraries (the side port), and on the side originals the
+# port and 1.95 with the CD's libraries, each in a session of its own
+# (isolate: every case runs on its own there), and 1.95 with the C
+# libraries, where the cases share the run
+isolate = ["libs=cd"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=ends"]
+"end.case" = "not exists"
+
+[asserts."case=prints"]
+output = "contains \"hello\""

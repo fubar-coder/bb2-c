@@ -4,7 +4,7 @@
  *
  *   testreg --prefix P --output FILE [--env FILE] [--depfile FILE]
  *           [--tokens FILE]... [--cell-fixture SELECTOR|FIXTURE]...
- *           [--timeout-default SEC] [--timeout-extra SEC]
+ *           [--timeout-default SEC] [--timeout-extra SEC] [--order FILE] [--costs FILE]
  *           --command WORD [--command WORD]... SOURCE...
  *
  * Reads every source and its configuration, checks them, and writes the
@@ -18,13 +18,16 @@
 #include <vector>
 #include "cli.hpp"
 extern "C" {
+#include "testcosts.h"
 #include "testreg.h"
 }
 
 namespace fs = std::filesystem;
 
 static int run(const std::string &prefix, const std::string &output, const std::string &envfile,
-               const std::string &depfile, const std::vector<std::string> &tokfiles, long long tdef, long long textra,
+               const std::string &depfile, const std::string &orderfile, const std::string &costfile,
+               const std::vector<std::string> &tokfiles,
+               long long tdef, long long textra,
                const std::vector<std::string> &command, const std::vector<std::string> &cellfix,
                const std::vector<std::string> &sources)
 {
@@ -32,6 +35,8 @@ static int run(const std::string &prefix, const std::string &output, const std::
     treg_strs tokens = {};
     treg_result r = {};
     treg_opts o = {};
+    treg_entries order = {};
+    tcosts costs = {};
     char err[800];
     int rc = 0;
 
@@ -71,6 +76,24 @@ static int run(const std::string &prefix, const std::string &output, const std::
         fprintf(stderr, "testreg: out of memory\n");
         rc = 1;
     }
+    if (!orderfile.empty()) {
+        if (treg_entries_load(orderfile.c_str(), &order, err, sizeof err)) {
+            fprintf(stderr, "testreg: %s\n", err);
+            rc = 1;
+        } else if (treg_check_entries(&r, &order) < 0) {
+            fprintf(stderr, "testreg: out of memory\n");
+            rc = 1;
+        }
+    }
+    if (!costfile.empty()) {
+        if (tcosts_load(costfile.c_str(), &costs, err, sizeof err)) {
+            fprintf(stderr, "testreg: %s\n", err);
+            rc = 1;
+        } else if (treg_apply_costs(&r, prefix.c_str(), costfile.c_str(), &costs) < 0) {
+            fprintf(stderr, "testreg: out of memory\n");
+            rc = 1;
+        }
+    }
     for (size_t i = 0; i < r.errors.n; i++)
         fprintf(stderr, "%s\n", r.errors.v[i]);
     if (r.errors.n)
@@ -81,6 +104,10 @@ static int run(const std::string &prefix, const std::string &output, const std::
     if (!envfile.empty())
         deps.push_back(envfile);
     deps.insert(deps.end(), tokfiles.begin(), tokfiles.end());
+    if (!orderfile.empty())
+        deps.push_back(orderfile);
+    if (!costfile.empty())
+        deps.push_back(costfile);
     for (const std::string &d : deps) {
         char **v = (char **)realloc(r.deps.v, (r.deps.n + 1) * sizeof *v);
 
@@ -109,7 +136,7 @@ static int run(const std::string &prefix, const std::string &output, const std::
 
         for (const std::string &c : command)
             cmd.push_back(c.c_str());
-        if (!f || treg_write_include(f, &r, cmd.data(), cmd.size()) || fclose(f)) {
+        if (!f || treg_write_include(f, &r, cmd.data(), cmd.size(), &order) || fclose(f)) {
             fprintf(stderr, "testreg: cannot write %s (or a value cannot be quoted)\n", output.c_str());
             rc = 1;
         } else {
@@ -125,6 +152,8 @@ static int run(const std::string &prefix, const std::string &output, const std::
             fs::remove(tmp);
     }
     treg_free(&r);
+    treg_entries_free(&order);
+    tcosts_free(&costs);
     treg_strs_free(&tokens);
     tc_env_free(&env);
     return rc;
@@ -135,7 +164,7 @@ int main(int argc, char **argv)
     CLI::App app{"The ctest tests of the Blitz test sources of the model (ID.test.bas), one per case and side, "
                  "from the sources and their run configurations.",
                  "testreg"};
-    std::string prefix, output, envfile, depfile;
+    std::string prefix, output, envfile, depfile, orderfile, costfile;
     std::vector<std::string> tokfiles, command, cellfix, sources;
     long long tdef = 90, textra = 0;
     int status = 0;
@@ -174,11 +203,21 @@ int main(int argc, char **argv)
     app.add_option("--timeout-extra", textra, "added to the sum of the cells' time limits (default 0)")
         ->check(CLI::NonNegativeNumber)
         ->type_name("SEC");
+    app.add_option("--order", orderfile,
+                   "the bug-orig tests of the old form (cmake/bug-orig-order.cmake): declared with the tests of "
+                   "the label bug-orig, the largest COST first")
+        ->type_name("FILE");
+    app.add_option("--costs", costfile,
+                   "the measured COST of the tests (tests/data/test-costs.txt): an entry wins over the "
+                   "configuration's cost; an entry of a test of the model of the prefix that is not registered "
+                   "is an error")
+        ->type_name("FILE");
     app.footer("The include file is written only when every source and configuration passed the checks; "
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
                "or written, 2 usage error.");
     app.callback([&] {
-        status = run(prefix, output, envfile, depfile, tokfiles, tdef, textra, command, cellfix, sources);
+        status = run(prefix, output, envfile, depfile, orderfile, costfile, tokfiles, tdef, textra, command, cellfix,
+                     sources);
     });
     return cli::run(app, argc, argv, status);
 }

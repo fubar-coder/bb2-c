@@ -589,7 +589,8 @@ endforeach()
 # With a prev build those whose subject is the compiler (compiler/, regression/compiler-*) are
 # compared with it as in the old form (bug_orig_ID_prev, regression_ID_prev; cmake/prev.cmake)
 basic_test_register(bug_orig_ ${CMAKE_CURRENT_SOURCE_DIR} "*/*.test.bas" EXCLUDE "^(regression|selftest)/"
-	REQUIRE_DEVIATION PREV "^compiler/" PREV_EXCLUDE ${prev_not_compared})
+	REQUIRE_DEVIATION PREV "^compiler/" PREV_EXCLUDE ${prev_not_compared}
+	ORDER ${CMAKE_CURRENT_BINARY_DIR}/bug-orig-order.cmake)
 basic_test_register(regression_ ${CMAKE_CURRENT_SOURCE_DIR} "regression/*.test.bas"
 	PREV "^regression/compiler-" PREV_EXCLUDE ${prev_not_compared})
 
@@ -1238,9 +1239,9 @@ add_test(NAME bug_orig_record_target COMMAND ${CMAKE_COMMAND} -DRESULTS=${RESULT
 set_tests_properties(bug_orig_record_target PROPERTIES
 	PASS_REGULAR_EXPRESSION "record-target: all runs as expected")
 
-# all bug-orig tests (also those of libs/tests), the longest first
-# (cmake/bug-orig-order.cmake)
-bug_orig_declare_tests()
+# all bug-orig tests (also those of libs/tests), the longest first, declared by the
+# registration of the tests of the model above with its own (cmake/bug-orig-order.cmake)
+bug_orig_declare_tests(${CMAKE_CURRENT_BINARY_DIR}/bug-orig-order.cmake)
 # the order as ctest has it, and the check itself: a test with a larger
 # COST after a smaller one must fail
 add_test(NAME bug_orig_order COMMAND ${CMAKE_COMMAND} -DBUILD=${CMAKE_BINARY_DIR} -DLABEL=bug-orig
@@ -1259,6 +1260,26 @@ add_test(NAME bug_orig_order_broken COMMAND ${CMAKE_COMMAND} -DJSON=${broken} -D
 	-P ${PROJECT_SOURCE_DIR}/cmake/check-test-order.cmake)
 set_tests_properties(bug_orig_order_broken PROPERTIES PASS_REGULAR_EXPRESSION
 	"x_late \\(COST 180\\) is declared after[ \n]+x_short \\(COST 60\\)")
+# the same with a test of the model of an open bug (testreg declares them, with a COST):
+# declared after a test of the old form with a smaller COST, and without a COST
+foreach(variant late nocost)
+	set(json ${CMAKE_CURRENT_BINARY_DIR}/order-model-${variant}.json)
+	if(variant STREQUAL "late")
+		string(CONCAT model "{\"name\":\"x_open__c\",\"properties\":[{\"name\":\"COST\",\"value\":300},"
+			"{\"name\":\"LABELS\",\"value\":[\"bug-orig\",\"emulator\"]}]}")
+		set(want "x_open__c \\(COST 300\\) is declared after[ \n]+x_long \\(COST 270\\)")
+	else()
+		set(model "{\"name\":\"x_open__c\",\"properties\":[{\"name\":\"LABELS\",\"value\":[\"bug-orig\",\"emulator\"]}]}")
+		set(want "x_open__c \\(label bug-orig\\) has no COST")
+	endif()
+	string(CONCAT text "{\"tests\":[\n"
+		"{\"name\":\"x_long\",\"properties\":[{\"name\":\"COST\",\"value\":270},"
+		"{\"name\":\"LABELS\",\"value\":[\"bug-orig\",\"emulator\"]}]},\n" ${model} "]}\n")
+	file(WRITE ${json} "${text}")
+	add_test(NAME bug_orig_order_model_${variant} COMMAND ${CMAKE_COMMAND} -DJSON=${json} -DLABEL=bug-orig
+		-P ${PROJECT_SOURCE_DIR}/cmake/check-test-order.cmake)
+	set_tests_properties(bug_orig_order_model_${variant} PROPERTIES PASS_REGULAR_EXPRESSION "${want}")
+endforeach()
 
 # a fixed test keeps its recorded original (check-fixed-orig.cmake): the
 # configure above stops on a fixed test without ID.orig; the check with a

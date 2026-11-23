@@ -5,6 +5,7 @@
 #include "testreg.h"
 #include "testjudge.h"
 #include "testpp.h"
+#include "testcosts.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -164,12 +165,46 @@ static int id_ok(const char *id)
     return 1;
 }
 
-/* the check queries and case selectors of a table against the table of the source */
+/* the query text of t (its key, or a query of an alternative end): the
+   source must have the check it names */
+static int check_query(const char *text, const struct tc_tabkey *t, const struct tp_source *src,
+                       struct treg_strs *errs)
+{
+    struct tc_query q;
+    char m[300];
+    int r = 0;
+
+    if (tc_query_parse(text, &q, m, sizeof m))
+        return 0;
+    if (q.kind == TC_Q_CHECK) {
+        size_t len = strlen(q.rest);
+        int found = tp_find(src, q.ns, q.rest) != NULL;
+
+        for (size_t s = 0; !found && s < 2; s++) {
+            const char *suffix = s ? ".actual" : ".expected";
+            size_t sl = strlen(suffix);
+
+            if (len > sl && !strcmp(q.rest + len - sl, suffix)) {
+                char *name = strndup(q.rest, len - sl);
+
+                found = name && tp_find(src, q.ns, name) != NULL;
+                free(name);
+            }
+        }
+        if (!found && pushf(errs, "%s:%u: %s: the source has no check named %s in %s", t->at.file, t->at.line,
+                            text, q.rest, q.ns))
+            r = -1;
+    }
+    tc_query_free(&q);
+    return r;
+}
+
+/* the check queries and case selectors of a table against the table of the
+   source (for the alternative ends the queries of each alternative) */
 static int check_queries(const struct tc_tabkey *v, size_t n, const struct tp_source *src, struct treg_strs *errs)
 {
     for (size_t i = 0; i < n; i++) {
         const struct tc_tabkey *t = &v[i];
-        struct tc_query q;
         char m[300];
 
         if (t->sel) {
@@ -192,30 +227,21 @@ static int check_queries(const struct tc_tabkey *v, size_t n, const struct tp_so
                 tc_selector_free(&sel);
             }
         }
-        if (tc_query_parse(t->key, &q, m, sizeof m))
-            continue;
-        if (q.kind == TC_Q_CHECK) {
-            size_t len = strlen(q.rest);
-            int found = tp_find(src, q.ns, q.rest) != NULL;
+        if (t->value.type == TT_LIST) {
+            for (size_t k = 0; k < t->value.nlist; k++) {
+                char *qt, *pt;
+                int r;
 
-            for (size_t s = 0; !found && s < 2; s++) {
-                const char *suffix = s ? ".actual" : ".expected";
-                size_t sl = strlen(suffix);
-
-                if (len > sl && !strcmp(q.rest + len - sl, suffix)) {
-                    char *name = strndup(q.rest, len - sl);
-
-                    found = name && tp_find(src, q.ns, name) != NULL;
-                    free(name);
-                }
+                if (tc_end_split(t->value.list[k], &qt, &pt))
+                    continue;
+                r = check_query(qt, t, src, errs);
+                free(qt);
+                free(pt);
+                if (r)
+                    return -1;
             }
-            if (!found && pushf(errs, "%s:%u: %s: the source has no check named %s in %s", t->at.file, t->at.line,
-                                t->key, q.rest, q.ns)) {
-                tc_query_free(&q);
-                return -1;
-            }
-        }
-        tc_query_free(&q);
+        } else if (t->value.type == TT_STRING && strcmp(t->key, "reason") && check_query(t->key, t, src, errs))
+            return -1;
     }
     return 0;
 }
@@ -268,6 +294,12 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
     if ((s = tc_get(conf, "cost"))) {
         t.has_cost = 1;
         t.cost = s->value.integer;
+    } else if (has(&t.labels, "bug-orig")) {
+        /* an open bug fails on purpose, so ctest never learns its cost: the
+           time it can take, the sum of its cells' session limits, puts it in
+           the order of the bug-orig tests (cmake/bug-orig-order.cmake) */
+        t.has_cost = 1;
+        t.cost = t.timeout - o->timeout_extra;
     }
     if ((s = tc_get(conf, "fixtures")))
         for (size_t i = 0; i < s->value.nlist; i++)
@@ -390,7 +422,8 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         goto out;
     }
     if (check_queries(conf.asserts, conf.nasserts, &src, &r->errors)
-        || check_queries(conf.deviations, conf.ndeviations, &src, &r->errors))
+        || check_queries(conf.deviations, conf.ndeviations, &src, &r->errors)
+        || check_queries(conf.ends, conf.nends, &src, &r->errors))
         goto out;
     if (tc_matrix_build(&conf, &m, err, sizeof err)) {
         rc = pushf(&r->errors, "%s", err) ? -1 : 1;
@@ -405,7 +438,7 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         goto out;
     sprintf(abs, "%s/%s", conf.dir, par.file);
     for (size_t c = 0; c < src.ncases; c++) {
-        struct tj_test jt = { par.file, &src, &conf, &m, src.cases[c].name, 0 };
+        struct tj_test jt = { par.file, &src, &conf, &m, src.cases[c].name, 0, NULL, 0 };
         int dev = tj_case_has_deviation(&jt);
 
         if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 0, o, dev)
@@ -459,32 +492,178 @@ static int bracket_list(FILE *f, const struct treg_strs *l)
     return fputs("]==]", f) < 0 ? -1 : 0;
 }
 
-int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand)
+/* one registered test */
+static int write_test(FILE *f, const struct treg_test *t, const char *const *command, size_t ncommand)
 {
-    if (fprintf(f, "# the Blitz tests of the model (ID.test.bas), written by testreg: do not edit\n") < 0)
+    if (fputs("add_test(", f) < 0 || bracket(f, t->name))
         return -1;
+    for (size_t c = 0; c < ncommand; c++)
+        if (bracket(f, command[c]))
+            return -1;
+    if (bracket(f, "--source") || bracket(f, t->source) || bracket(f, "--case") || bracket(f, t->case_name)
+        || bracket(f, "--side") || bracket(f, t->originals ? "originals" : "port") || fputs(")\n", f) < 0)
+        return -1;
+    if (fputs("set_tests_properties(", f) < 0 || bracket(f, t->name) || fputs(" PROPERTIES LABELS", f) < 0
+        || bracket_list(f, &t->labels) || fprintf(f, " TIMEOUT %lld SKIP_RETURN_CODE 77", t->timeout) < 0)
+        return -1;
+    if (t->has_cost && fprintf(f, " COST %lld", t->cost) < 0)
+        return -1;
+    if (t->fixtures.n && (fputs(" FIXTURES_REQUIRED", f) < 0 || bracket_list(f, &t->fixtures)))
+        return -1;
+    return fputs(")\n", f) < 0 ? -1 : 0;
+}
+
+/* a test of the order: a registered one or an entry */
+struct ordered {
+    const char *name;
+    long long cost;
+    const struct treg_test *t;
+    const struct treg_entry *e;
+};
+
+static int by_cost(const void *a, const void *b)
+{
+    const struct ordered *x = a, *y = b;
+
+    if (x->cost != y->cost)
+        return x->cost > y->cost ? -1 : 1;
+    return strcmp(x->name, y->name);
+}
+
+int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand,
+                       const struct treg_entries *order)
+{
+    size_t ne = order ? order->n : 0, n = 0;
+    struct ordered *v = calloc(r->n + ne + 1, sizeof *v);
+    int rc = -1;
+
+    if (!v)
+        return -1;
+    if (fprintf(f, "# the Blitz tests of the model (ID.test.bas), written by testreg: do not edit\n") < 0)
+        goto out;
     for (size_t i = 0; i < r->n; i++) {
         const struct treg_test *t = &r->t[i];
 
-        if (fputs("add_test(", f) < 0 || bracket(f, t->name))
-            return -1;
-        for (size_t c = 0; c < ncommand; c++)
-            if (bracket(f, command[c]))
-                return -1;
-        if (bracket(f, "--source") || bracket(f, t->source) || bracket(f, "--case") || bracket(f, t->case_name)
-            || bracket(f, "--side") || bracket(f, t->originals ? "originals" : "port") || fputs(")\n", f) < 0)
-            return -1;
-        if (fputs("set_tests_properties(", f) < 0 || bracket(f, t->name) || fputs(" PROPERTIES LABELS", f) < 0
-            || bracket_list(f, &t->labels) || fprintf(f, " TIMEOUT %lld SKIP_RETURN_CODE 77", t->timeout) < 0)
-            return -1;
-        if (t->has_cost && fprintf(f, " COST %lld", t->cost) < 0)
-            return -1;
-        if (t->fixtures.n && (fputs(" FIXTURES_REQUIRED", f) < 0 || bracket_list(f, &t->fixtures)))
-            return -1;
-        if (fputs(")\n", f) < 0)
-            return -1;
+        if (has(&t->labels, "bug-orig")) {
+            v[n].name = t->name;
+            v[n].cost = t->has_cost ? t->cost : 0;
+            v[n++].t = t;
+        } else if (write_test(f, t, command, ncommand))
+            goto out;
     }
+    for (size_t i = 0; i < ne; i++) {
+        v[n].name = order->v[i].name;
+        v[n].cost = order->v[i].cost;
+        v[n++].e = &order->v[i];
+    }
+    /* the tests of the label bug-orig, the largest COST first (cmake/bug-orig-order.cmake) */
+    qsort(v, n, sizeof *v, by_cost);
+    if (n && fprintf(f, "# the tests of the label bug-orig, the largest COST first\n") < 0)
+        goto out;
+    for (size_t i = 0; i < n; i++)
+        if (v[i].t ? write_test(f, v[i].t, command, ncommand) : fputs(v[i].e->text, f) < 0)
+            goto out;
+    rc = 0;
+out:
+    free(v);
+    return rc;
+}
+
+void treg_entries_free(struct treg_entries *e)
+{
+    for (size_t i = 0; i < e->n; i++) {
+        free(e->v[i].name);
+        free(e->v[i].text);
+    }
+    free(e->v);
+    memset(e, 0, sizeof *e);
+}
+
+int treg_entries_load(const char *file, struct treg_entries *e, char *err, size_t errlen)
+{
+    FILE *f = fopen(file, "r");
+    char line[8192];
+    unsigned ln = 0;
+    struct treg_entry *cur = NULL;
+    size_t curlen = 0;
+
+    memset(e, 0, sizeof *e);
+    if (!f) {
+        snprintf(err, errlen, "%s: cannot read: %s", file, strerror(errno));
+        return -1;
+    }
+    while (fgets(line, sizeof line, f)) {
+        size_t len = strlen(line);
+
+        ln++;
+        if (len && line[len - 1] != '\n' && !feof(f)) {
+            snprintf(err, errlen, "%s:%u: a line longer than %zu bytes", file, ln, sizeof line - 1);
+            goto bad;
+        }
+        if (!strncmp(line, "# @test ", 8)) {
+            char name[512], *end;
+            long long cost;
+            struct treg_entry *nv;
+
+            if (sscanf(line + 8, "%511s", name) != 1 || !(end = strchr(line + 8, ' '))
+                || (errno = 0, cost = strtoll(end + 1, &end, 10), errno) || cost < 0
+                || (*end && *end != '\n')) {
+                snprintf(err, errlen, "%s:%u: an entry is \"# @test NAME COST\" (COST an integer >= 0)", file, ln);
+                goto bad;
+            }
+            if (!(nv = realloc(e->v, (e->n + 1) * sizeof *nv)))
+                goto oom;
+            e->v = nv;
+            cur = &nv[e->n++];
+            memset(cur, 0, sizeof *cur);
+            cur->cost = cost;
+            curlen = 0;
+            if (!(cur->name = strdup(name)) || !(cur->text = strdup("")))
+                goto oom;
+            continue;
+        }
+        if (!cur) {
+            if (line[0] == '#' || line[0] == '\n')
+                continue;
+            snprintf(err, errlen, "%s:%u: text before the first entry (\"# @test NAME COST\")", file, ln);
+            goto bad;
+        }
+        {
+            char *t = realloc(cur->text, curlen + len + 2);
+
+            if (!t)
+                goto oom;
+            cur->text = t;
+            memcpy(t + curlen, line, len);
+            curlen += len;
+            if (curlen && t[curlen - 1] != '\n')
+                t[curlen++] = '\n';
+            t[curlen] = 0;
+        }
+    }
+    fclose(f);
     return 0;
+oom:
+    snprintf(err, errlen, "%s: out of memory", file);
+bad:
+    fclose(f);
+    treg_entries_free(e);
+    return -1;
+}
+
+int treg_check_entries(struct treg_result *r, const struct treg_entries *e)
+{
+    int bad = 0;
+
+    for (size_t i = 0; i < r->n; i++)
+        for (size_t j = 0; j < e->n; j++)
+            if (!strcmp(r->t[i].name, e->v[j].name)) {
+                if (pushf(&r->errors, "%s: the test %s is also a test of the old form", r->t[i].source,
+                          r->t[i].name))
+                    return -1;
+                bad = 1;
+            }
+    return bad;
 }
 
 static int dep_path(FILE *f, const char *s)
@@ -508,4 +687,36 @@ int treg_write_depfile(FILE *f, const char *target, const struct treg_result *r)
         if (fputs(" \\\n  ", f) < 0 || dep_path(f, r->deps.v[i]))
             return -1;
     return fputc('\n', f) == EOF ? -1 : 0;
+}
+
+int treg_apply_costs(struct treg_result *r, const char *prefix, const char *file, const struct tcosts *c)
+{
+    size_t plen = strlen(prefix);
+    int bad = 0;
+
+    for (size_t i = 0; i < r->n; i++) {
+        const struct tcost *e = tcosts_find(c, r->t[i].name);
+
+        if (e) {
+            r->t[i].has_cost = 1;
+            r->t[i].cost = e->cost;
+        }
+    }
+    for (size_t k = 0; k < c->n; k++) {
+        const char *name = c->v[k].name;
+        size_t i;
+
+        if (strncmp(name, prefix, plen) || !strstr(name + plen, "__"))
+            continue;
+        for (i = 0; i < r->n && strcmp(r->t[i].name, name); i++)
+            ;
+        if (i == r->n) {
+            if (pushf(&r->errors, "%s:%u: %s: no such test (a test of the model of %s* that is not "
+                      "registered: refresh the file, tests/README.md \"The measured COST\")",
+                      file, c->v[k].line, name, prefix))
+                return -1;
+            bad = 1;
+        }
+    }
+    return bad;
 }

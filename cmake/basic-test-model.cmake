@@ -15,7 +15,7 @@
 #   library sets, the test library and the bug-orig user library); once, by
 #   the top CMakeLists.txt after the directories that define the programs
 # basic_test_register(PREFIX DIR GLOB... [EXCLUDE REGEX] [REQUIRE_DEVIATION]
-#                     [PREV REGEX [PREV_EXCLUDE ID...]])
+#                     [PREV REGEX [PREV_EXCLUDE ID...]] [ORDER FILE])
 #   the tests of the sources DIR/GLOB (e.g. "*/*.test.bas"; those whose path
 #   below DIR matches REGEX left out): ctest
 #   PREFIX + ID + "__" + CASE (and "_originals" for the side with original
@@ -23,7 +23,9 @@
 #   deviation is broken).  PREV: the sources whose path below DIR matches
 #   REGEX (but the ids PREV_EXCLUDE) are compared with the prev build
 #   (basic_test_driver, cmake/prev.cmake prev_compile_model_test): ctest
-#   PREFIX + ID + "_prev"
+#   PREFIX + ID + "_prev".  ORDER: the order file of bug_orig_declare_tests
+#   (cmake/bug-orig-order.cmake): its tests are declared with the tests of
+#   the label bug-orig in one list, the largest COST first
 # basic_test_driver(SOURCE OUT [CONFS...])
 #   the build writes the driver of all cases of SOURCE, tokenised, to OUT
 #   (NAME.bb2; corpusrun case --write-driver), a step of the target that
@@ -107,7 +109,7 @@ function(basic_test_driver src out)
 endfunction()
 
 function(basic_test_register prefix dir)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV" "PREV_EXCLUDE")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV;ORDER" "PREV_EXCLUDE")
 	set(srcs "")
 	set(confs "")
 	foreach(g IN LISTS arg_UNPARSED_ARGUMENTS)
@@ -126,6 +128,10 @@ function(basic_test_register prefix dir)
 	endforeach()
 	list(SORT srcs)
 	if(NOT srcs)
+		# the order file is a declaration of its own, sorted (cmake/bug-orig-order.cmake)
+		if(arg_ORDER)
+			set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES ${arg_ORDER})
+		endif()
 		return()
 	endif()
 	string(REGEX REPLACE "_$" "" stem "${prefix}")
@@ -135,12 +141,24 @@ function(basic_test_register prefix dir)
 		list(APPEND cmd --command --require-deviation)
 	endif()
 	math(EXPR extra "60 + ${EMULATION_QUEUE_WAIT}")
+	set(order "")
+	set_property(GLOBAL APPEND PROPERTY BASIC_TEST_PREFIXES ${prefix})
+	get_property(costs GLOBAL PROPERTY TEST_COSTS_FILE)
+	if(costs AND EXISTS ${costs})
+		list(APPEND order --costs ${costs})
+	else()
+		set(costs "")
+	endif()
+	if(arg_ORDER)
+		list(APPEND order --order ${arg_ORDER})
+	endif()
 	add_custom_command(OUTPUT ${inc}
 		COMMAND ${TESTREG} --prefix ${prefix} --output ${inc} --depfile ${inc}.d --env ${BASIC_TEST_ENV}
 			--tokens ${BASIC_TEST_TOKENS} --timeout-default ${BASIC_TEST_TIMEOUT} --timeout-extra ${extra}
-			--cell-fixture "compiler=orig195|originals_refbuild"
+			--cell-fixture "compiler=orig195|originals_refbuild" ${order}
 			${cmd} ${srcs}
 		DEPENDS ${srcs} ${confs} ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS} basic_test_tokens ${TESTREG} host_tools
+			${arg_ORDER} ${costs}
 		DEPFILE ${inc}.d
 		COMMENT "Registering the tests of the BASIC test model in ${dir} (${prefix}*)"
 		VERBATIM)

@@ -7,17 +7,23 @@
 # are declared in one place, sorted by COST (the session limit times the
 # sessions: the time the test can take), the largest first, equal ones by
 # name.  The COST stays for the first run (no failures known yet), where
-# ctest sorts by it itself.
+# ctest sorts by it itself.  The tests of the BASIC test model of an open
+# bug (label bug-orig, a COST from tools/testreg: the sum of their cells'
+# session limits) are known only to the build step that registers them, so
+# that step declares all of them: the tests recorded here and its own, in
+# one sorted list in its ctest include file (testreg --order FILE).
 #
 # bug_orig_add_test(NAME COST cost COMMAND args... [LABELS ...] [TIMEOUT s]
 #                   [SKIP_RETURN_CODE rc] [FIXTURES_REQUIRED ...])
 #   records a test of the current directory (its working directory: the
 #   current binary directory, as add_test would give it); any directory
 #   that is processed before tests/bug-orig
-# bug_orig_declare_tests()
-#   declares the recorded tests in that order, with these properties
-#   (tests/bug-orig/CMakeLists.txt, at its end; no test can be recorded
-#   after it).  The tests are tests of that directory.
+# bug_orig_declare_tests(FILE)
+#   writes the recorded tests to FILE (at the end of the top directory, with
+#   the environment emulation_test_environment gives them), the order file
+#   that basic_test_register(... ORDER FILE) hands to testreg
+#   (tests/bug-orig/CMakeLists.txt; no test can be recorded after it).  The
+#   tests are tests of the directory of that registration.
 
 function(bug_orig_add_test name)
 	cmake_parse_arguments(PARSE_ARGV 1 arg "" "COST;TIMEOUT;SKIP_RETURN_CODE"
@@ -40,14 +46,31 @@ function(bug_orig_add_test name)
 	endforeach()
 endfunction()
 
-function(bug_orig_declare_tests)
+function(bug_orig_declare_tests file)
 	set_property(GLOBAL PROPERTY BUG_ORIG_DECLARED ON)
+	set_property(GLOBAL PROPERTY BUG_ORIG_DECLARE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+	# at the end of the top directory: after emulation_snapshot_owner and
+	# emulation_coverage, whose environment the tests get as if CMake had
+	# declared them
+	set_property(GLOBAL PROPERTY BUG_ORIG_ORDER_FILE ${file})
+	# (a deferred call evaluates its arguments when it runs: the file by a property)
+	cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL _bug_orig_write_declarations)
+endfunction()
+
+# the entries of FILE: per recorded test "@test NAME COST" and its declaration
+function(_bug_orig_write_declarations)
+	get_property(file GLOBAL PROPERTY BUG_ORIG_ORDER_FILE)
 	get_property(names GLOBAL PROPERTY BUG_ORIG_TESTS)
-	# the sort key: 9999999 - COST (seven digits, ascending = the largest
-	# COST first), then the name
+	get_property(bin GLOBAL PROPERTY BUG_ORIG_DECLARE_DIR)
+	# sorted, so that the file is a declaration of its own too (a ctest include
+	# file); the sort key: 9999999 - COST (seven digits, ascending = the
+	# largest COST first), then the name
 	set(keys "")
 	foreach(name IN LISTS names)
 		get_property(cost GLOBAL PROPERTY BUG_ORIG_TEST_${name}_COST)
+		# a measured COST wins over the estimate (cmake/test-cost.cmake)
+		test_cost(cost ${name} ${cost})
+		set_property(GLOBAL PROPERTY BUG_ORIG_TEST_${name}_COST ${cost})
 		math(EXPR inv "9999999 - ${cost}")
 		string(LENGTH "${inv}" n)
 		while(n LESS 7)
@@ -57,17 +80,29 @@ function(bug_orig_declare_tests)
 		list(APPEND keys "${inv}|${name}")
 	endforeach()
 	list(SORT keys)
+	string(CONCAT text "# the bug-orig tests of the old form, the largest COST first (cmake/bug-orig-order.cmake);\n"
+		"# testreg declares them with the tests of the model of the label bug-orig\n")
 	foreach(key IN LISTS keys)
 		string(REGEX REPLACE "^[0-9]+\\|" "" name "${key}")
 		foreach(k DIR COST TIMEOUT SKIP_RETURN_CODE COMMAND LABELS FIXTURES_REQUIRED)
 			get_property(${k} GLOBAL PROPERTY BUG_ORIG_TEST_${name}_${k})
 		endforeach()
-		add_test(NAME ${name} COMMAND ${COMMAND} WORKING_DIRECTORY ${DIR})
-		set_tests_properties(${name} PROPERTIES COST ${COST} LABELS "${LABELS}")
+		string(APPEND text "# @test ${name} ${COST}\nadd_test([==[${name}]==]")
+		foreach(w IN LISTS COMMAND)
+			string(APPEND text " [==[${w}]==]")
+		endforeach()
+		string(APPEND text ")\nset_tests_properties([==[${name}]==] PROPERTIES WORKING_DIRECTORY [==[${DIR}]==]"
+			" COST ${COST} LABELS [==[${LABELS}]==]")
 		foreach(k TIMEOUT SKIP_RETURN_CODE FIXTURES_REQUIRED)
 			if(NOT "${${k}}" STREQUAL "")
-				set_tests_properties(${name} PROPERTIES ${k} "${${k}}")
+				string(APPEND text " ${k} [==[${${k}}]==]")
 			endif()
 		endforeach()
+		emulation_test_environment(env ${name} "${LABELS}" ${bin})
+		if(env)
+			string(APPEND text " ENVIRONMENT [==[${env}]==]")
+		endif()
+		string(APPEND text ")\n")
 	endforeach()
+	file(GENERATE OUTPUT ${file} CONTENT "${text}")
 endfunction()
