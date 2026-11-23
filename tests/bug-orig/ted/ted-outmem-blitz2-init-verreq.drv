@@ -10,7 +10,7 @@
 ; 2.10 under TED-C waits for the version requester's gadget (hangs).  The
 ; first two waits are longer than the session (90 s): a hang ends as the
 ; crash does, a session timeout.
-; @fixed #1008 Cc
+; @fixed-orig #1008 Cc
 ; @file bo.bas "NPrint \"hello\"\n"
 ; @source F bo.bas
 ; @command TEDAB:tools/inject alerts openwindowfail=2 blitz2:blitz2 @FILE@

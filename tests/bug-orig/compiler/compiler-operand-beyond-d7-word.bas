@@ -6,7 +6,7 @@
 ; Failure).
 ; Correct: the compile error "Expression too Complex" at the line, no
 ; wrong code.
-; @fixed #1185
+; @fixed-orig #1185
 aw.w=1 : bw.w=5 : cw.w=6
 NPrint "before"
 NPrint "hit(aw+bw*cw) ",RectsHit(20,0,10,10,0,0,aw+bw*cw,10)

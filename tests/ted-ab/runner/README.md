@@ -71,10 +71,10 @@ runs and its observation is compared with `orig=`, which is never
 written (the compare test `bug_orig_record_ID`); with `record=write` it is
 written to `record_to=` in the build directory (a recording run of the
 target `bug-orig-record`). With `fixed=1`
-in place of `orig=` the scripts are fixed tests (`; @fixed #NNN`, no
+in place of `orig=` the scripts are fixed tests (`; @fixed-orig #NNN`, no
 pair): every combination (the pass names C5) is judged by the script's
 expectations alone, FIXED (exit status 0) or REGRESSED (1). A script with
-`; @fixed #NNN Cc` is fixed in the port's combination only: a `fixed=1`
+`; @fixed-orig #NNN Cc` is fixed in the port's combination only: a `fixed=1`
 pass may name Cc alone (exit status 2 otherwise); C5 runs like an open
 test, in a pass with `orig=` and without `fixed=1`.
 

@@ -59,27 +59,34 @@ static size_t trimmed(const char *p, size_t *full)
     return n;
 }
 
-/* the issue of the line "; @fixed #N" of source: N, 0 = none, -2 = broken.
-   A TED script may name the pair Cc behind it: "; @fixed #N Cc" (fixed
-   in the port's pair only, tests/README.md); a Blitz source "/port" right
-   behind the number: "; @fixed #N/port" (the old form's marker of an
-   extension, the same as "; @fixed #N").  No test of the tree has it any
-   more (an extension's test is a test of the model, extension = N), but
-   the base of fix-scope may be a tree before that move */
+/* the issue of the line "; @fixed-orig #N" of source: N, 0 = none, -2 =
+   broken.  A TED script may name the pair Cc behind it: "; @fixed-orig #N
+   Cc" (fixed in the port's pair only, tests/README.md).  The marker's old
+   name "; @fixed #N", and with it the old form's marker of an extension
+   "; @fixed #N/port" (a Blitz source, "/port" right behind the number; the
+   same as "; @fixed #N"), is read as well: the tree refuses the old name
+   (tests/bug-orig/check-fixed-orig.cmake), but the base of fix-scope may
+   be a tree before the rename, whose fixed tests give the same cases */
 static long fixed_issue(const char *source, int ted, const char *path, char *err,
                         size_t errlen)
 {
-    static const char tag[] = "; @fixed";
+    static const char tag[] = "; @fixed-orig", old[] = "; @fixed";
     const char *p = source;
     unsigned no = 0;
     long issue = 0;
 
     while (*p) {
-        size_t full, n = trimmed(p, &full);
+        size_t full, n = trimmed(p, &full), k = 0;
+        int is_old = 0;
 
         no++;
-        if (n >= sizeof tag - 1 && !memcmp(p, tag, sizeof tag - 1)) {
-            size_t k = sizeof tag - 1;
+        if (n >= sizeof tag - 1 && !memcmp(p, tag, sizeof tag - 1))
+            k = sizeof tag - 1;
+        else if (n >= sizeof old - 1 && !memcmp(p, old, sizeof old - 1)) {
+            k = sizeof old - 1;
+            is_old = 1;
+        }
+        if (k) {
             long v = 0;
 
             if (k + 2 < n && p[k] == ' ' && p[k + 1] == '#' && p[k + 2] >= '1' && p[k + 2] <= '9')
@@ -87,14 +94,14 @@ static long fixed_issue(const char *source, int ted, const char *path, char *err
                     v = 10 * v + (p[k] - '0');
             if (ted && k + 3 == n && !memcmp(p + k, " Cc", 3))
                 k = n;
-            if (!ted && v && k + 5 == n && !memcmp(p + k, "/port", 5))
+            if (!ted && is_old && v && k + 5 == n && !memcmp(p + k, "/port", 5))
                 k = n;
             if (!v || k != n) {
-                snprintf(err, errlen, "%s:%u: not \"; @fixed #N\"", path, no);
+                snprintf(err, errlen, "%s:%u: not \"; @fixed-orig #N\"", path, no);
                 return -2;
             }
             if (issue) {
-                snprintf(err, errlen, "%s:%u: @fixed twice", path, no);
+                snprintf(err, errlen, "%s:%u: @fixed-orig twice", path, no);
                 return -2;
             }
             issue = v;

@@ -5,7 +5,7 @@
 // cell unchecked and checked) gives the files with their names, headers
 // and expected outputs, and the AmiBlitz3 cases of the agreement and
 // fixed sources; the cells of an issue fixed after the matrix stay in their
-// bug-orig tests with @fixed (T1); a value the model does not know needs
+// bug-orig tests with @fixed-orig (T1); a value the model does not know needs
 // its measured row;
 // the generator's own files are recognised by their path.
 #include <cstdio>
@@ -193,7 +193,7 @@ TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
 }
 
 // T1 (quick-long-arithmetic, design decision 13): the cells of an issue
-// fixed after the matrix stay in their bug-orig tests, with @fixed
+// fixed after the matrix stay in their bug-orig tests, with @fixed-orig
 TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
 {
     gen now(std::string(HEAD) + POW, EM_RULES_MATRIX);
@@ -210,17 +210,17 @@ TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
     // the port when the matrix was committed: no test is marked
     for (const auto &[path, text] : now.files)
         CHECK(text.find("@fixed") == std::string::npos);
-    // one issue fixed: the same test with @fixed, the same expectation;
+    // one issue fixed: the same test with @fixed-orig, the same expectation;
     // no corpus pair of it
-    CHECK(one.has(t + ".bas", "do not edit\n; @fixed #1178\n"));
+    CHECK(one.has(t + ".bas", "do not edit\n; @fixed-orig #1178\n"));
     CHECK(one.file(t + ".expect") == now.file(t + ".expect"));
     {
         std::string a = one.file(t + ".bas"), b = now.file(t + ".bas");
-        size_t at = a.find("; @fixed #1178\n");
+        size_t at = a.find("; @fixed-orig #1178\n");
         REQUIRE(at != std::string::npos);
-        CHECK(a.erase(at, 15) == b);
+        CHECK(a.erase(at, 20) == b);
     }
-    CHECK(one.has(tc + ".bas", "; @fixed #1178\n; @pass runtime_errors=on\n"));
+    CHECK(one.has(tc + ".bas", "; @fixed-orig #1178\n; @pass runtime_errors=on\n"));
     CHECK(one.files.size() == now.files.size());
     for (const auto &[path, text] : one.files)
         CHECK(path.find("fix1178") == std::string::npos);
@@ -228,11 +228,11 @@ TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
     CHECK(one.file(tq + ".expect") == now.file(tq + ".expect"));
     CHECK(!one.has(tq + ".bas", "@fixed"));
     // both fixed: marked by the last of them
-    CHECK(two.has(tq + ".bas", "; @fixed #1189\n"));
-    CHECK(two.has(t + ".bas", "; @fixed #1178\n"));
+    CHECK(two.has(tq + ".bas", "; @fixed-orig #1189\n"));
+    CHECK(two.has(t + ".bas", "; @fixed-orig #1178\n"));
     // a cell refused after the fix (the line of the error one further down,
-    // behind the @fixed line)
-    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.bas", "; @fixed #1188\n"));
+    // behind the @fixed-orig line)
+    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.bas", "; @fixed-orig #1188\n"));
     CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.expect", " Illegal Operator for Type\n"));
 }
 

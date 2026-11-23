@@ -8,7 +8,7 @@
 ; tokens read from behind the line, "a?????..." - memory contents, not
 ; compared.)  A tokenised file, so that the byte is a token start
 ; whatever readline does with a byte >= $80 of a text file (#374).
-; @fixed #379
+; @fixed-orig #379
 ; @file bo.bas "x\x00a\xe4"
 ; @source F bo.bas
 ; @expect data bo.bas "x\x00a\x00"

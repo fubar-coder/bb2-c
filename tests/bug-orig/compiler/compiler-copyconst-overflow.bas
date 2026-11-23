@@ -8,7 +8,7 @@
 ; Error").  With a destination 125 characters fit
 ; (compiler-copyconst-limit).
 ; Correct: "Operand too Long" at the macro's line.
-; @fixed #997
+; @fixed-orig #997
 Macro m
 move.l #`1+`1,dat
 End Macro

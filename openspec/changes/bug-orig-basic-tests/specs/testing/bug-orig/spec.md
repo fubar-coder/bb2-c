@@ -131,10 +131,10 @@ The normal run SHALL judge `port` and `clib` against `ID.expect` (FIXED) and, fo
 - **THEN** no `ref` session is started
 
 ### Requirement: A fixed test keeps its recorded original
-A fixed test (`; @fixed #N`) SHALL keep its `ID.orig`.
+A fixed test (`; @fixed-orig #N`) SHALL keep its `ID.orig`.
 
 #### Scenario: The original of a fixed test
-- **WHEN** a test has `; @fixed #N`
+- **WHEN** a test has `; @fixed-orig #N`
 - **THEN** its `ID.orig` is still committed next to it
 
 ## MODIFIED Requirements
@@ -152,7 +152,7 @@ For every bug-orig test outside the model of `testing/basic-test-runner`
 - **THEN** the verdict is DIFFERS
 
 #### Scenario: A fixed test keeps its original
-- **WHEN** a fix adds `; @fixed #N` to a test
+- **WHEN** a fix adds `; @fixed-orig #N` to a test
 - **THEN** `ID.orig` stays in the commit and the test passes in `all` with FIXED without reading it
 
 #### Scenario: Recording is separate
@@ -166,3 +166,22 @@ For every bug-orig test outside the model of `testing/basic-test-runner`
 #### Scenario: A test of the model
 - **WHEN** `bug-orig-record` runs and a bug-orig test is in the model of `testing/basic-test-runner`
 - **THEN** it writes no `ID.orig` for that test
+
+### Requirement: Fixed bug-orig tests run in the normal presets
+A bug-orig test whose header holds `; @fixed-orig #NNN` SHALL carry the label `emulator` and not `bug-orig`, SHALL run in `emulator` and `all` without a `ref` session, and SHALL pass only if every judged configuration is FIXED. A fix SHALL add the line in the commit that fixes the bug. The marker's old name, a line `; @fixed #NNN`, SHALL be refused with an error naming the new form.
+
+#### Scenario: A fixed test is in all
+- **WHEN** `ctest --preset all -N` lists the tests after a bug was fixed and its test got `; @fixed-orig #NNN`
+- **THEN** the test is listed, and `ctest --preset bug-orig -N` does not list it
+
+#### Scenario: A fix regresses
+- **WHEN** a later change makes a `; @fixed-orig` test's configuration show the bug again
+- **THEN** the test fails in `ctest --preset all` and the verdict names the configuration
+
+#### Scenario: No reference needed
+- **WHEN** a `; @fixed-orig` test runs on a machine without the CD
+- **THEN** it runs (or skips only for missing Amiberry), because it starts no `ref` session
+
+#### Scenario: The old name
+- **WHEN** the header of a bug-orig test or a line of a TED script holds `; @fixed #NNN`
+- **THEN** configuring (a script of `tests/ted-ab`: its lint and its run) fails naming the test and the new form `@fixed-orig`

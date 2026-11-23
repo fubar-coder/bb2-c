@@ -7,7 +7,7 @@
 ; namebuff, namebuff2 and the 8 bytes hold: blitz2.s wrote its 0 into
 ; optstuff (longer texts overwrite more of the data behind it).
 ; Correct: "Operand too Long" at the macro's line.
-; @fixed #997
+; @fixed-orig #997
 Macro r
 move.l #`1+`1+`1+`1+`2,d0
 End Macro

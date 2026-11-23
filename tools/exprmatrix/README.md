@@ -296,9 +296,9 @@ was committed (its rule outside `EM_RULES_MATRIX`, `exprmatrix.h`: #1178
 and later; #1177, #1186 and #1187 keep their corpus pairs) stay in their
 bug-orig tests when the fix comes: the port giving the expected value
 writes the open test again, with the same cells, `.expect` and name,
-and the header line `; @fixed #N` (FIXED in `ctest --preset all`); a
-test of two such issues of which one is fixed stays without `@fixed`
-(DIFFERS) and gets `; @fixed #N` of the last of its issues once both are
+and the header line `; @fixed-orig #N` (FIXED in `ctest --preset all`); a
+test of two such issues of which one is fixed stays without `@fixed-orig`
+(DIFFERS) and gets `; @fixed-orig #N` of the last of its issues once both are
 fixed (option T1 of the change `quick-long-arithmetic`, design decision
 13; the user's answer of 2026-11-22, "T1 for all fixes", until the test
 infrastructure is rebuilt). A test of a cell refused after the fix gets
@@ -331,7 +331,7 @@ measured).
 |---|---|
 | `tests/corpus/tests-exprmatrix/CTX-SET[-u\|-c]-TAG-NN.bas` | a corpus source of agreement (`agree`), baseline (`base`) or fixed cells (`fixN`); `-u`/`-c` an index source unchecked/checked |
 | `tests/corpus/expect/corpus_exprmatrix[_runerr]/NAME.out` | its expected output; for fixed cells the pair `NAME.orig.out` / `NAME.fixed-N.out` (an index source whose mode has no differing cell: `NAME.out`) |
-| `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN.bas`, `.expect` | a bug-orig test of open cells (`ISSUES` `1178`, or `1178-1189` for a cell that needs two fixes: DIFFERS between them); the header names `BUG(orig) (#N)` and the cells, and `; @fixed #N` once the issues are fixed (above); the `.orig` is recorded by `bug-orig-record`, not written here |
+| `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN.bas`, `.expect` | a bug-orig test of open cells (`ISSUES` `1178`, or `1178-1189` for a cell that needs two fixes: DIFFERS between them); the header names `BUG(orig) (#N)` and the cells, and `; @fixed-orig #N` once the issues are fixed (above); the `.orig` is recorded by `bug-orig-record`, not written here |
 | `tests/bug-orig/compiler/compiler-expr-ISSUES-refused-OP-L-R[-c].bas`, `.expect` | a cell the original compiles and a fix refuses: one representative per operator and operand classes (`I` a whole number, `Q`, `F`, `C` a constant with a fraction, `S`, `x` none) |
 | `tests/bug-orig/regression/compiler-expr-refused-OP-L-R[-c].bas`, `.expect` | a cell the originals and the port refuse ("Illegal Operator for Type"): one representative per operator and operand classes; `-c` refused only with runtime error checking |
 | `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |

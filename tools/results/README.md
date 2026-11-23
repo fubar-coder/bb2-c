@@ -510,10 +510,10 @@ Every case (a key with its qualifier) added, changed or removed is reported
 unless it is a "[fixed #N]" or "[orig #N]" case of a named issue, the "[orig]"
 case paired with one, or an unqualified case that became one of them ("[orig]"
 and "[orig #N]" with the same value are the same case). A bug-orig test's cases:
-one per section of ID.expect and ID.orig, "[fixed #N]" with its header "; @fixed
-#N". A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS [orig],
-NAME.fixed-N.OBS [fixed #N]. Exit status 0 nothing reported, 1 a case reported,
-2 usage error or a malformed or unreadable file.
+one per section of ID.expect and ID.orig, "[fixed #N]" with its header ";
+@fixed-orig #N". A corpus file's case: NAME.OBS unqualified, NAME.orig.OBS
+[orig], NAME.fixed-N.OBS [fixed #N]. Exit status 0 nothing reported, 1 a case
+reported, 2 usage error or a malformed or unreadable file.
 ```
 
 The check before a fix is merged (design D12 of the OpenSpec change
@@ -542,7 +542,7 @@ With `--bug-orig` the two directories are trees of bug-orig tests
 (`AREA/ID.bas` with `ID.expect`, `ted/ID.drv`, `ID.orig` beside them; not
 `selftest/`), each test projected onto cases (`tools/lib/bugorigcmp`,
 OpenSpec change `bug-orig-test-model`, design D6): one per section of
-`ID.expect` and `ID.orig`; with the header `; @fixed #N` the expectation
+`ID.expect` and `ID.orig`; with the header `; @fixed-orig #N` the expectation
 is `ID|SECTION||1 [fixed #N]` and the recorded original the pair
 `ID|SECTION|orig|1 [orig]` / `[fixed #N]`. Adding the header and editing
 `ID.expect` are then cases of issue N; a malformed test fails (2).

@@ -1,12 +1,12 @@
 ; Self test of the port-only fixed form of the TED bug-orig tests
-; (tests/bug-orig/CMakeLists.txt): "; @fixed #N Cc", the bug is fixed in
+; (tests/bug-orig/CMakeLists.txt): "; @fixed-orig #N Cc", the bug is fixed in
 ; blitz2-c only.  The expectation holds of TED-C (blitz2 without a file,
 ; QUIT, the command's output ends with rc=0), so the Cc run must be FIXED
 ; (exit status 0); the recorded original says the bug shows (written by
 ; hand), so the C5 run, which does not show it either, is FIXED (0): a real
 ; test wants REPRODUCED there and fails.
 ; 99999 is no issue.
-; @fixed #99999 Cc
+; @fixed-orig #99999 Cc
 ; @source none
 ; @expect stdout "rc=0"
 timeout 10

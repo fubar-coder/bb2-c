@@ -1,6 +1,6 @@
 ; correct: the port-only fixed form of a bug-orig script
 ; @source none
 ; @nofiles
-; @fixed #123 Cc
+; @fixed-orig #123 Cc
 timeout 10
 wait exit

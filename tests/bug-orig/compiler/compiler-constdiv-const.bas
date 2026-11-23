@@ -8,7 +8,7 @@
 ; prints 2147483647.
 ; Correct: the compile error "Division by Zero" at the line, for every
 ; type.
-; @fixed #1044
+; @fixed-orig #1044
 #c=5/0
 NPrint #c
 End

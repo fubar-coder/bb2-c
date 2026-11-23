@@ -2,7 +2,7 @@
 ; with a by-value field of the forward type .fwd before NEWTYPE .fwd: the
 ; element size is not known.
 ; Correct: "Type not yet defined" at the Dim.
-; @fixed #974
+; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE

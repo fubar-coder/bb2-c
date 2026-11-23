@@ -8,7 +8,7 @@
 ; @est 6
 ; @expect absent syntaxerr
 ; @expect same syntaxerr.bb2
-; @fixed #980 R5-Rc Rc-Cc
+; @fixed-orig #980 R5-Rc Rc-Cc
 timeout 10
 wait req "OKEE DOKEE"
 gad 1

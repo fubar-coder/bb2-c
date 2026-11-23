@@ -8,7 +8,7 @@
 ; division by zero the source states and nobody is told of.
 ; Correct: the compile error "Division by Zero" at the line, for every
 ; type.
-; @fixed #1044
+; @fixed-orig #1044
 NPrint "before"
 e.q=7/0
 NPrint e

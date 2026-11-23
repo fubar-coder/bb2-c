@@ -7,7 +7,7 @@
 ; prints "; Gr", ESC[1m, the "name" findtoke finds without a token list
 ; ("?????" when the long word at address 0 is 0), ESC[22m, "e".  Fixed in
 ; TED-C: without tokenise the bytes are printed as they are.
-; @fixed #371
+; @fixed-orig #371
 ; @file bo.bas "; Gr\xf6\xdfe\nb"
 ; @source F bo.bas
 ; @command blitz2:ted @FILE@

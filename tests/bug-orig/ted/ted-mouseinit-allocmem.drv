@@ -5,7 +5,7 @@
 ; code other than 0 (#357); the original copies the images to address 0
 ; on (exception vectors, ExecBase) and the system crashes (the session
 ; hangs).
-; @fixed #367
+; @fixed-orig #367
 ; @source none
 ; @command TEDAB:tools/inject alerts allocfail=152-152/chip/1 blitz2:ted
 ; @expect stdout "inject: allocfail: 1 allocations failed"

@@ -4,7 +4,7 @@
 ; console.device fails.  Correct: TED ends with a return code other
 ; than 0 (#357); the original calls RawKeyConvert through a null base and
 ; crashes.
-; @fixed #373
+; @fixed-orig #373
 ; @source none
 ; @command TEDAB:tools/inject opendevfail=console.device blitz2:ted
 ; @expect stdout "inject: opendevfail: 1 opens failed"

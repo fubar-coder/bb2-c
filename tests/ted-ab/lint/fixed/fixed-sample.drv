@@ -3,7 +3,7 @@
 ; so the pairs R5-C5 and Rc-Cc must differ; R5-Rc and C5-Cc stay the same.
 ; @source T t08_tokquirk
 ; @roundtrip
-; @fixed #123 R5-C5 Rc-Cc
+; @fixed-orig #123 R5-C5 Rc-Cc
 timeout 10
 wait req "OKEE DOKEE"
 gad 1

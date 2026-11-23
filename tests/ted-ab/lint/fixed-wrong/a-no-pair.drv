@@ -1,6 +1,6 @@
-; broken on purpose: @fixed without a pair
+; broken on purpose: @fixed-orig without a pair
 ; @source none
 ; @nofiles
-; @fixed #123
+; @fixed-orig #123
 timeout 10
 wait exit

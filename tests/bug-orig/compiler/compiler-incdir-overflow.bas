@@ -4,7 +4,7 @@
 ; program compiles, but crashes when it runs.
 ; Correct: a path longer than 95 characters is refused, with "Path too
 ; Long" at the IncDir line.
-; @fixed #16
+; @fixed-orig #16
 ; @pass timeout=30
 IncDir "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
 x=5

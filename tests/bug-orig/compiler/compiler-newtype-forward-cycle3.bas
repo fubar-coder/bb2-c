@@ -2,7 +2,7 @@
 ; contains the forward .tb by value, .tb (defined) the forward .tc, and .tc
 ; is defined with a field .ta by value.
 ; Correct: "Illegal Type" at the field z.ta.
-; @fixed #974
+; @fixed-orig #974
 NEWTYPE .pp
   *p.tb
   *q.tc

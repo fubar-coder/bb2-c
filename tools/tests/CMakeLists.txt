@@ -498,7 +498,7 @@ foreach(t
 endforeach()
 # the same for the bug-orig tests (--bug-orig: trees of tests/bug-orig,
 # lib/bugorigcmp): base has the open tests t1 and t3 and t2 fixed by #8;
-# the fix of #7 adds "; @fixed #7" to t1 and changes its ID.expect (passes
+# the fix of #7 adds "; @fixed-orig #7" to t1 and changes its ID.expect (passes
 # with Fixes #7); the same with t2's ID.expect changed too, or t3's (an open
 # test), names that test's case; without a "Fixes #N" line every changed
 # case is named; a malformed ID.expect fails.
@@ -510,7 +510,7 @@ function(bo_tree tree)
 	file(WRITE ${bo}/${tree}/compiler/t1.bas "; t1\n${a_T1_HEAD}Print 41\n")
 	file(WRITE ${bo}/${tree}/compiler/t1.expect "${a_T1_EXPECT}")
 	file(WRITE ${bo}/${tree}/compiler/t1.orig "${bo_orig}")
-	file(WRITE ${bo}/${tree}/libs/t2.bas "; t2\n; @fixed #8\nPrint 41\n")
+	file(WRITE ${bo}/${tree}/libs/t2.bas "; t2\n; @fixed-orig #8\nPrint 41\n")
 	file(WRITE ${bo}/${tree}/libs/t2.expect "${a_T2_EXPECT}")
 	file(WRITE ${bo}/${tree}/libs/t2.orig "${bo_orig}")
 	file(WRITE ${bo}/${tree}/libs/t3.bas "; t3\nPrint 41\n")
@@ -521,10 +521,10 @@ endfunction()
 set(e41 "[run]\n41\nrc=0\n")
 set(e43 "[run]\n43\nrc=0\n")
 bo_tree(base T1_EXPECT "${e41}" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
-bo_tree(own T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
-bo_tree(other_fixed T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e43}" T3_EXPECT "${e41}")
-bo_tree(other_open T1_HEAD "; @fixed #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e43}")
-bo_tree(malformed T1_HEAD "; @fixed #7\n" T1_EXPECT "junk\n" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
+bo_tree(own T1_HEAD "; @fixed-orig #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
+bo_tree(other_fixed T1_HEAD "; @fixed-orig #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e43}" T3_EXPECT "${e41}")
+bo_tree(other_open T1_HEAD "; @fixed-orig #7\n" T1_EXPECT "${e43}" T2_EXPECT "${e41}" T3_EXPECT "${e43}")
+bo_tree(malformed T1_HEAD "; @fixed-orig #7\n" T1_EXPECT "junk\n" T2_EXPECT "${e41}" T3_EXPECT "${e41}")
 add_test(NAME fix_scope_bug_orig_own COMMAND results fix-scope --bug-orig --log ${lc}/scope/log.txt
 	${bo}/base ${bo}/own)
 set_tests_properties(fix_scope_bug_orig_own PROPERTIES PASS_REGULAR_EXPRESSION

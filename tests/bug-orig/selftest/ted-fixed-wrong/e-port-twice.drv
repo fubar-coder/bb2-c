@@ -1,6 +1,6 @@
-; broken on purpose: Cc named twice after @fixed #N
+; broken on purpose: Cc named twice after @fixed-orig #N
 ; @source none
 ; @nofiles
-; @fixed #123 Cc Cc
+; @fixed-orig #123 Cc Cc
 timeout 10
 wait exit

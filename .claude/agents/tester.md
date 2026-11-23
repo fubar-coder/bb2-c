@@ -35,7 +35,7 @@ read them first):
   FIXED in `ctest --preset all`: a test of the BASIC test model
   (`ID.test.bas`) gets `fixed-orig = N` in its `ID.test.toml` and nothing
   else of it changes (its checks and declared deviations stay); a test of
-  the old form gets the header `; @fixed #N` and keeps its `ID.orig`
+  the old form gets the header `; @fixed-orig #N` and keeps its `ID.orig`
   (CLAUDE.md "Original bugs are fixed deliberately", tests/README.md
   "Fixed tests"). A test of a bug that is not in the original uses
   `fixed = N`. A test of an extension of the port (the original refuses

@@ -10,7 +10,7 @@
 ; @file lit.bb2 "a$=\"Gr\x1b\x90\xdfe \x90\xe9\"\x00\xdd\x82 a$\x00; caf\x90\xe9\x00"
 ; @source F lit.bb2
 ; @roundtrip
-; @fixed #1018 R5-C5 Rc-Cc
+; @fixed-orig #1018 R5-C5 Rc-Cc
 ; @est 3
 timeout 10
 wait req "OKEE DOKEE"

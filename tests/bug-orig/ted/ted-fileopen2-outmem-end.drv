@@ -7,7 +7,7 @@
 ; sessions' system, the two of fileopen2 and outmem among them).
 ; Correct: the alert "Not enough memory for operation!", then TED ends
 ; with return code -1 (#357); the original redraws from the freed lines.
-; @fixed #1009
+; @fixed-orig #1009
 ; @file bo.bas "abc\n"
 ; @file other.bas "\nabc\n"
 ; @source F bo.bas

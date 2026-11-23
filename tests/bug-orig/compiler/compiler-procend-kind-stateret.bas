@@ -3,7 +3,7 @@
 ; End Function or Function Return pushes: the exit pops the return
 ; address as the length.
 ; Correct: a compile error (Statement Return inside a Function).
-; @fixed #940
+; @fixed-orig #940
 Function$ f{}
   NPrint "in f"
   Statement Return

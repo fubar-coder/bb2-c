@@ -9,7 +9,7 @@
 ; word overwrites it: in blitz2.s the source expression runs on into the
 ; destination's text.
 ; Correct: "Operand too Long" at the move.
-; @fixed #997
+; @fixed-orig #997
 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:
 move.l #'a+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0+0,dat
 NPrint 0

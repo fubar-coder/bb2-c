@@ -3,7 +3,7 @@
 ; contain the other.
 ; Correct: "Illegal Type" at the field y.ta (as for a type that contains
 ; itself, #973).
-; @fixed #974
+; @fixed-orig #974
 NEWTYPE .pp
   *p.tb
 End NEWTYPE

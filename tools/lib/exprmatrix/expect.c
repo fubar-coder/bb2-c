@@ -20,8 +20,8 @@
  * and later) stay in their bug-orig tests when the fix comes (option T1 of
  * quick-long-arithmetic, design decision 13; ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md 2026-11-22,
  * "T1 for all fixes"): o != e = p gives the open test again, with
- * "; @fixed #N" in its header; a cell of two such issues of which one is
- * fixed stays in its test without @fixed (DIFFERS until the second fix).
+ * "; @fixed-orig #N" in its header; a cell of two such issues of which one is
+ * fixed stays in its test without @fixed-orig (DIFFERS until the second fix).
  * A source holds the cells of
  * one context, value set, mode and class (design decision 2b), at most
  * cells-per-source; its foldable constant MOD cells come last (#1049: a
@@ -478,7 +478,7 @@ static int late_issues(const char *issues, unsigned port, int *nfixed, int *n)
     return 1;
 }
 
-/* "; @fixed #N" for a test of issues fixed after the matrix, all of them
+/* "; @fixed-orig #N" for a test of issues fixed after the matrix, all of them
    in the port's rules: N the last of them (the order of the model's steps,
    the order the fixes are planned in) */
 static void put_fixed(struct buf *b, const char *issues, unsigned port)
@@ -489,7 +489,7 @@ static void put_fixed(struct buf *b, const char *issues, unsigned port)
     if (!late_issues(issues, port, &nf, &n) || nf != n)
         return;
     last = strrchr(issues, '+');
-    put(b, "; @fixed #%s\n", last ? last + 1 : issues);
+    put(b, "; @fixed-orig #%s\n", last ? last + 1 : issues);
 }
 
 /* "1178+1189" -> "#1178 and #1189" */
@@ -924,7 +924,7 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     } else if (strcmp(o, e) && late && nf
                && (nf < ni || (!strcmp(p, e) && (!strcmp(pc, e) || !strcmp(pc, o))))) {
         /* T1: an issue fixed after the matrix keeps its bug-orig test, with
-           @fixed when every issue of it is fixed (emit_open) */
+           @fixed-orig when every issue of it is fixed (emit_open) */
         snprintf(tag, sizeof tag, "open-%s", k->issues);
         g = group_of(gs, K_OPEN, mode, c, tag, k->issues);
         group_add(gs, g, c, o, e, "", "");

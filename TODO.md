@@ -557,7 +557,7 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     it); needs a mouse block to column 127 in teddrive.
   - [x] #369 done (2026-11-21): `ted-outmem-in-blitz2-call` (a macro
     text in an include whose allocation fails during Compile; inject
-    `allocfail` by its size), fixed in the port's pair (`@fixed #369 Cc`).
+    `allocfail` by its size), fixed in the port's pair (`@fixed-orig #369 Cc`).
   - [ ] #366: not reproducible on the reference (re-checked 2026-10-31
     with `alertlog`: no alert, no crash).
   - [ ] #655: deferred (needs two machines).

@@ -1,0 +1,2 @@
+; broken on purpose: the directive under its old name (now "; @fixed-orig #N")
+; @fixed #124 Cc

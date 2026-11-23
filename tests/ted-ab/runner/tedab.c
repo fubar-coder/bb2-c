@@ -253,7 +253,7 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
         memcpy(buf, p + 1, n);
         buf[n] = 0;
         key = buf;
-        for (p = buf; isalnum((unsigned char)*p) || *p == '_'; p++)
+        for (p = buf; isalnum((unsigned char)*p) || *p == '_' || *p == '-'; p++)
             ;
         if (p == buf)
             continue;
@@ -348,6 +348,14 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                 t->combos |= 1u << c;
             }
         } else if (!strcmp(key, "fixed")) {
+            /* the directive's old name: refused with the new one (read as
+               text it would turn a fixed test into an open one) */
+            snprintf(err, errlen,
+                     bugorig ? "%s line %u: @fixed is now @fixed-orig (@fixed-orig #NNN)"
+                             : "%s line %u: @fixed is now @fixed-orig (@fixed-orig #NNN PAIR...)",
+                     name, no);
+            return -1;
+        } else if (!strcmp(key, "fixed-orig")) {
             /* #NNN PAIR...: NNN > 0 without leading zeros; in a bug-orig
                script (bugorig) #NNN alone, no pair */
             unsigned long issue = 0;
@@ -361,22 +369,23 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
                 bad = *e || !issue || issue > 999999;
             }
             if (bad) {
-                snprintf(err, errlen, bugorig ? "%s line %u: @fixed #NNN (no pair: a bug-orig "
-                                                "script is judged by its expectations alone)"
-                                              : "%s line %u: @fixed #NNN PAIR... (PAIR e.g. R5-C5)",
+                snprintf(err, errlen,
+                         bugorig ? "%s line %u: @fixed-orig #NNN (no pair: a bug-orig script is "
+                                   "judged by its expectations alone)"
+                                 : "%s line %u: @fixed-orig #NNN PAIR... (PAIR e.g. R5-C5)",
                          name, no);
                 return -1;
             }
             if (bugorig) {
                 if (nw != 1 && !(nw == 2 && !strcmp(w[1], "Cc"))) {
-                    snprintf(err, errlen, "%s line %u: @fixed #NNN (no pair: a bug-orig script "
-                                          "is judged by its expectations alone; only the word "
-                                          "Cc may follow, for a fix of the port's compiler)",
+                    snprintf(err, errlen, "%s line %u: @fixed-orig #NNN (no pair: a bug-orig "
+                                          "script is judged by its expectations alone; only the "
+                                          "word Cc may follow, for a fix of the port's compiler)",
                              name, no);
                     return -1;
                 }
                 if (t->fixed_bug) {
-                    snprintf(err, errlen, "%s line %u: @fixed twice", name, no);
+                    snprintf(err, errlen, "%s line %u: @fixed-orig twice", name, no);
                     return -1;
                 }
                 t->fixed_bug = (unsigned)issue;
@@ -388,12 +397,12 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
 
                 if (pr < 0) {
                     snprintf(err, errlen,
-                             "%s line %u: @fixed: %s is no compared pair (R5-C5 Rc-Cc R5-Rc "
+                             "%s line %u: @fixed-orig: %s is no compared pair (R5-C5 Rc-Cc R5-Rc "
                              "C5-Cc C5-P5 Cc-Pc)", name, no, w[k]);
                     return -1;
                 }
                 if (t->fixed[pr]) {
-                    snprintf(err, errlen, "%s line %u: @fixed: pair %s named twice", name, no,
+                    snprintf(err, errlen, "%s line %u: @fixed-orig: pair %s named twice", name, no,
                              w[k]);
                     return -1;
                 }
@@ -507,7 +516,7 @@ int tedab_test_parse_mode(const char *name, const char *text, struct tedab_test 
         unsigned both = (1u << tedab_pairs[i][0]) | (1u << tedab_pairs[i][1]);
 
         if (t->fixed[i] && (t->combos & both) != both) {
-            snprintf(err, errlen, "%s: @fixed #%u %s-%s: a combination not in @combos (the "
+            snprintf(err, errlen, "%s: @fixed-orig #%u %s-%s: a combination not in @combos (the "
                                   "pair is never compared)", name, t->fixed[i],
                      tedab_combo_names[tedab_pairs[i][0]], tedab_combo_names[tedab_pairs[i][1]]);
             return -1;
