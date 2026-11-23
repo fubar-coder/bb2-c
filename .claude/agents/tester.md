@@ -31,11 +31,19 @@ read them first):
   `TEST:`/`RAM:`.
 * A bug-orig test checks the expected (correct) behaviour: for an open
   bug it comes out REPRODUCED in `ctest --preset bug-orig` (not BROKEN:
-  the original shows the bug); once the bug is fixed it carries the
-  header `; @fixed #N` and must come out FIXED in `ctest --preset all`
-  and keeps its `ID.orig` (CLAUDE.md "Original bugs are fixed
-  deliberately", tests/README.md "Fixed tests"). `ID.orig` is written by
-  the target `bug-orig-record` (two agreeing runs), never by a test; a
+  the original shows the bug); once the bug is fixed it must come out
+  FIXED in `ctest --preset all`: a test of the BASIC test model
+  (`ID.test.bas`) gets `fixed-orig = N` in its `ID.test.toml` and nothing
+  else of it changes (its checks and declared deviations stay); a test of
+  the old form gets the header `; @fixed #N` and keeps its `ID.orig`
+  (CLAUDE.md "Original bugs are fixed deliberately", tests/README.md
+  "Fixed tests"). A test of a bug that is not in the original uses
+  `fixed = N`. A test of an extension of the port (the original refuses
+  or does something else) is a test of the BASIC test model with
+  `extension = N` in its `ID.test.toml`; it must declare as deviations
+  what the original does instead, for the cells with the original's part,
+  and comes out passed in `ctest --preset all`. In the old form `ID.orig`
+  is written by the target `bug-orig-record` (two agreeing runs), never by a test; a
   line that legitimately varies is a wildcard behind `# varies: REASON`.
   A test that cannot be made deterministic is reported, not weakened.
 * Do not change program code; if a test shows a defect, report it.

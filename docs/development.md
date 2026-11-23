@@ -137,8 +137,10 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
 
 1. one issue per bug;
 2. in the fix commit: the code change; the test of the expected
-   behaviour - the bug-orig test gets the header `; @fixed #NNN` (or the
-   equivalent of its suite) and must come out FIXED in
+   behaviour - the bug-orig test gets `fixed-orig = NNN` in its `ID.test.toml`
+   (a test of the old form: the header `; @fixed #NNN`; another suite: its
+   equivalent; the test of an extension of the port: `extension = NNN`)
+   and must come out FIXED in
    `ctest --preset all` (`tests/README.md`, "Fixed tests"); the comment
    `BUG(orig) (#NNN)` becomes `Fixed (#NNN)`; the entry in
    `docs/*/deviations.md` as an intended deviation of kind F; the
