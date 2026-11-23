@@ -2,18 +2,17 @@
 
 No original bug: no bug-orig test, no `Fixes #N`. Builds on
 `basic-test-bundle-key`; task 4 on `basic-test-bundle-runner` (both merged
-first). G1: one volume per bundle if the spike of `basic-test-bundle-key` (task 0.1)
-shows it works, else padding with G1 (a); tasks marked "(spike)" follow
-the result brought into design.md.
+first). G1: one volume per bundle (option (b); the spike of `basic-test-bundle-key`,
+task 0.1, showed it works): no padding, a bundle of one case is ordinary.
 
 ## 1. Tests first
 
-- [ ] 1.1 (spike) Host tests of testreg (`tools/tests/`): 40 plain cases give bundles of 16, 16, 8 (names, member order, commands, DEPENDS); 17 cases give bundles of 16 and 1 (G1 (b); with (a): one bundle of 16 and one lone case test); different labels, fixtures or keys give different bundles; a case that asserts the output, a two-cell source, an isolated cell and the side originals are in none; `--no-bundle` gives no bundle and no DEPENDS; a bundle with the label bug-orig is ordered by its COST; a measured COST entry of a bundle is applied. Verify: fail on main.
+- [ ] 1.1 Host tests of testreg (`tools/tests/`): 40 plain cases give bundles of 16, 16, 8 (names, member order, commands, DEPENDS); 17 cases give bundles of 16 and 1; different labels, fixtures or keys give different bundles; a case that asserts the output, a two-cell source, an isolated cell and the side originals are in none; `--no-bundle` gives no bundle and no DEPENDS; a bundle with the label bug-orig is ordered by its COST; a measured COST entry of a bundle is applied. Verify: fail on main.
 - [ ] 1.2 `tools/testreg/tooltest.cmake`: the include file of a small directory with bundles is read by ctest (`ctest -N` lists the bundle and its members; `ctest -N -R CASE` lists the case alone; `ctest -N -L bug-orig` lists the bundles of that label). Verify: fails on main.
 
 ## 2. Implementation
 
-- [ ] 2.1 (spike) Groups, chunks and the bundle tests (design decisions 1, 2). Verify: 1.1 passes.
+- [ ] 2.1 Groups, chunks and the bundle tests (design decisions 1, 2). Verify: 1.1 passes.
 - [ ] 2.2 The members' options and DEPENDS (decision 3). Verify: 1.1, 1.2 pass.
 - [ ] 2.3 The switch (decision 4) in `tools/testreg/main.cpp` and `cmake/basic-test-model.cmake`. Verify: a build with `-DBASIC_TEST_BUNDLE=OFF` registers the tests of main (the include files equal but for the comment line).
 

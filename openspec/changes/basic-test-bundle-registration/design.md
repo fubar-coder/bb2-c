@@ -34,12 +34,10 @@ and `-R`/`-L` selections keep selecting what they select today.
 1. **Groups.** After all sources: the case tests of the side port for
    which `tj_bundle_case` is 1, grouped by (session key, sorted labels,
    sorted fixtures), each group in the order of `r->t`; chunks of 16
-   members. (spike) With one volume per bundle (G1 (b)) a chunk of one
-   member is a bundle like any other; if the spike falls back to padding
-   (G1 (a)), a group or last chunk of one member is not bundled and its case
-   test runs alone; the coordinator brings the result into this design (and
-   the scenario "Seventeen plain cases" of the spec delta). The source must
-   be read once for the key; testreg already
+   members. With one volume per bundle (G1 (b), shown to work by the spike
+   of `basic-test-bundle-key`) a chunk of one member is a bundle like any
+   other: it runs as an ordinary session with the same emulator
+   configuration. The source must be read once for the key; testreg already
    has `conf`, `m`, `src` in `treg_add_source` and keeps the key and the
    flag in `treg_test`.
 2. **The bundle test** (`struct treg_test` with `bundle` set and its
@@ -71,7 +69,7 @@ and `-R`/`-L` selections keep selecting what they select today.
 
 ## Questions
 
-(none: G1 is answered, "K1, K2 follow-up, G1"; its form follows the spike)
+(none: G1 is answered, "K1, K2 follow-up, G1", and the spike chose (b))
 
 ## Risks / Trade-offs
 

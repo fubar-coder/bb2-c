@@ -166,7 +166,7 @@ three relies on the new form.
   (`--member` repeated, three values: the case's ctest name, its source as an
   absolute path, the case). The members are in the order of the chunk; a
   session holds at most 16 cells (Q4), with one emulator configuration per
-  key (Q11; decision 5: one volume, or 16 volumes padded).
+  key (Q11; decision 5 and the spike: one volume `BUNDLE:`, no padding).
 - **I2 The case test** (G writes it, R parses it): the command of today plus
   `--test TEST --from-bundle NAME`. Without `--from-bundle` nothing changes.
 - **I3 The bundle test's name**: `PREFIX + "bundle_" + N` (N from 1 in the

@@ -18,10 +18,9 @@ Wie empfohlen"): Q4 chunks of 16 cells; Q5 the bundle test passes when it ran
 through, verdicts only from the case tests; Q6 the first set. "Q10-Q13:
 bundling details as recommended" ("Q10-Q13: Wie empfohlen"): Q10 one cell per
 case; Q11 chunks of exactly 16 cells, the remainder padded. "K1, K2
-follow-up, G1": "Zu G1: Ok, wie empfohlen falls möglich (b) ..." — with one
-volume per bundle (the spike of `basic-test-bundle-key`, design decision 5)
-a bundle of one case is no special case; if the spike falls back to padding,
-a group or last chunk of one member is not bundled (G1 (a)).
+follow-up, G1": "Zu G1: Ok, wie empfohlen falls möglich (b) ..." — one
+volume per bundle, which the spike of `basic-test-bundle-key` showed works:
+no padding, and a bundle of one case is no special case.
 
 ## What Changes
 
@@ -50,7 +49,7 @@ a group or last chunk of one member is not bundled (G1 (a)).
 
 ## Open questions
 
-(none; the spike's result may bring back G1 (a), design decision 1)
+(none)
 
 ## Capabilities
 

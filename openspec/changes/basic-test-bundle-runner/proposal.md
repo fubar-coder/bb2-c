@@ -27,17 +27,17 @@ first set; Q10 one cell per case first; Q11 chunks of exactly 16 cells, the
 remainder padded with empty cells; Q13 a cell judged complete from a session
 that a later cell ended may be stored. The originals side is not bundled
 ("Vorerst nicht"). "K1, K2 follow-up, G1": "Zu G1: Ok, wie empfohlen falls
-möglich (b) ..." — one volume for the bundle with a `CELLn:` assign per cell
-if the spike of `basic-test-bundle-key` (design decision 5) shows it works,
-else Q11's padding.
+möglich (b) ..." — one volume for the bundle with a `CELLn:` assign per cell;
+the spike of `basic-test-bundle-key` (its design, "The result of the
+spike") showed it works, so there is no padding.
 
 ## What Changes
 
 - **`corpusrun case --bundle NAME --member TEST SOURCE CASE ...`**: one
   context per member's source, one set of one case per member, the cells
   pooled by `tc_session_key` into sessions of at most 16 cells with one
-  emulator configuration per key (one volume for the bundle, or 16 volumes
-  padded: the spike's result),
+  emulator configuration (one volume `BUNDLE:` for the bundle, a directory
+  and a `CELLn:` assign per cell, no padding),
   observed and judged per member as the run of the case alone judges it;
   the verdicts PASSED and REPRODUCED of a clean cell stored for the case
   test (interface I1, I4-I6, I8, I9 of `basic-test-bundle-key`).
