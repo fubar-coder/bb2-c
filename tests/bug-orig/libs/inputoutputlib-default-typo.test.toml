@@ -1,0 +1,12 @@
+# inputoutputlib-default-typo.test.bas: with runtime error checking; the
+# original's message has the typo, the case ends in its requester
+fixed-orig = 193
+runtime-errors = "on"
+
+[asserts]
+"check.inkey_default_input.not_stopped" = "== not-run"
+
+[deviations."libs=cd"]
+"check.inkey_default_input.message" = "== fail"
+requester = "contains \"Can't Input Character from Defualt Input\""
+"end.case" = "not exists"

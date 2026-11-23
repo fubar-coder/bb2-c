@@ -1,0 +1,9 @@
+# mouselib-mouseon-counters.test.bas: the original moves the mouse by the
+# difference of the swapped counters
+fixed-orig = 223
+
+[deviations."libs=cd"]
+"check.counters.x" = "== fail"
+"check.counters.x.actual" = "== 128"
+"check.counters.y" = "== fail"
+"check.counters.y.actual" = "== 132"

@@ -3,10 +3,10 @@
 ; Character from Defualt Input": a typo.  As the corpus test t43, with
 ; runtime error checking.
 ; Correct: "Can't Input Character from Default Input".
-; @fixed #193
-; @configs clib
-; @pass runtime_errors=on
-NPrint "before"
-a$=Inkey$
-NPrint "after [",a$,"]"
-End
+DEFTYPE .l
+
+!TestCase{inkey_default_input}
+  !ExpectError{"Can't Input Character from Default Input","message"}
+  a$=Inkey$
+  !Check{0,"not_stopped"}
+!EndTestCase

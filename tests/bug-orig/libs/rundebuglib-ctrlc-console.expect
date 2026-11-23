@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-start
-signalled
-***Break
-CORPUS:out/rundebuglib-ctrlc-console failed returncode 20
-rc=20

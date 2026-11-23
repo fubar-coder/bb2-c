@@ -8,18 +8,19 @@
 ; the two counters of JOY0DAT differ by 32; the mouse is not moved.
 ; Correct: the position after Mouse On and three frames is the one set
 ; with PositionMouse (160 100).
-; @fixed #223
 DEFTYPE .l
-BLITZ
-MouseArea 0,0,640,512
-PositionMouse 160,100
-Poke.w $DFF036,$2000
-j=Peek.w($DFF00A) AND $FFFF
-Mouse On
-VWait 3
-x.q=MouseX : y.q=MouseY
-Mouse Off
-AMIGA
-NPrint "JOY0DAT ",Hex$(j)
-NPrint "mouse ",x," ",y
-End
+
+!TestCase{counters}
+  BLITZ
+  MouseArea 0,0,640,512
+  PositionMouse 160,100
+  Poke.w $DFF036,$2000
+  j=Peek.w($DFF00A) AND $FFFF
+  Mouse On
+  VWait 3
+  x=MouseX : y=MouseY
+  Mouse Off
+  AMIGA
+  !CheckEq{x,160,"x"}
+  !CheckEq{y,100,"y"}
+!EndTestCase

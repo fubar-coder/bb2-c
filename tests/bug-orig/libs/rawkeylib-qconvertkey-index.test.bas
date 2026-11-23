@@ -11,11 +11,9 @@
 ; The original returns the shifted character of raw code 15 and a byte of
 ; its own code.
 ; Correct: no character for a raw code beyond the tables (0 and 0).
-; @fixed #245
-; @configs clib
 DEFTYPE .l
-Function.l inject{c.l,q.l}
-  SHARED k
+
+Function.l keyevent{k.l,c.l,q.l}
   r=Peek.w(k+$70) : w=Peek.w(k+$72) : e=Peek.l(k+$78)
   Poke.w k+$78,c : Poke.w k+$7A,q
   Poke.w k+$70,0 : Poke.w k+$72,8
@@ -23,12 +21,16 @@ Function.l inject{c.l,q.l}
   Poke.w k+$70,r : Poke.w k+$72,w : Poke.l k+$78,e
   Function Return v
 End Function
-n=Peek.l(Peek.l(4)+350) : k=0
-While Peek.l(n)<>0
-  If Peeks$(Peek.l(n+10),15)="keyboard.device" Then k=n
-  n=Peek.l(n)
-Wend
-If k=0 Then NPrint "no keyboard.device" : End
-NPrint "raw $78 ",inject{$78,0}
-NPrint "raw $69 shift ",inject{$69,1}
-End
+
+!TestCase{raw_code_range}
+  n=Peek.l(Peek.l(4)+350) : k=0
+  While Peek.l(n)<>0
+    If Peeks$(Peek.l(n+10),15)="keyboard.device" Then k=n
+    n=Peek.l(n)
+  Wend
+  !Require{k<>0,"keyboard_device"}
+  a=keyevent{k,$78,0}
+  b=keyevent{k,$69,1}
+  !CheckEq{a,0,"raw_78"}
+  !CheckEq{b,0,"raw_69_shift"}
+!EndTestCase
