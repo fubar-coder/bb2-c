@@ -1,0 +1,8 @@
+# iffiolib-zero-count.test.bas: the original copies the empty ANNO chunk
+# ("ANNO", 0) behind the block
+fixed-orig = 179
+files = ["empty.8svx|@TESTDATA@/iffiolib-zero-count.8svx"]
+
+[deviations."libs=cd"]
+"check.empty_body.second_block_0" = "== fail"
+"check.empty_body.second_block_0.actual" = "== $414E4E4F"

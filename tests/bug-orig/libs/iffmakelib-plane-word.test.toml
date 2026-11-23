@@ -1,0 +1,8 @@
+# iffmakelib-plane-word.test.bas: the original writes 257 planes per row
+# into the BODY (the header's nPlanes is right)
+fixed-orig = 180
+timeout = 60
+
+[deviations."libs=cd"]
+"check.planes_per_row.body_length" = "== fail"
+"check.planes_per_row.body_length.actual" = "== 1542"

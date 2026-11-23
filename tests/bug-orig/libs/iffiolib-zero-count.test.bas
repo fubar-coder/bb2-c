@@ -8,17 +8,18 @@
 ; LoadSound's block takes its place, and the bytes behind it are the
 ; second block (cleared), which the program reads back.
 ; Correct: an empty BODY copies nothing - the second block stays 0.
-; @fixed #179
-; @configs clib
-; @pass file=empty.8svx|@TESTDATA@/iffiolib-zero-count.8svx
 DEFTYPE .l
-a=AllocMem_(8,2)
-b=AllocMem_(8,2)
-Poke.l b,0 : Poke.l b+4,0
-FreeMem_ a,8
-LoadSound 0,"CORPUS:empty.8svx"
-d=Peek.l(Addr Sound(0))
-NPrint "data behind the first block ",d=b
-NPrint "second block ",Hex$(Peek.l(b))," ",Hex$(Peek.l(b+4))
-FreeMem_ b,8
-End
+
+!TestCase{empty_body}
+  a=AllocMem_(8,2)
+  b=AllocMem_(8,2)
+  !Require{a<>0 AND b<>0,"blocks"}
+  Poke.l b,0 : Poke.l b+4,0
+  FreeMem_ a,8
+  LoadSound 0,"CORPUS:empty.8svx"
+  d=Peek.l(Addr Sound(0))
+  !Check{d=b,"data_behind_first_block"}
+  !CheckEq{Peek.l(b),0,"second_block_0"}
+  !CheckEq{Peek.l(b+4),0,"second_block_1"}
+  FreeMem_ b,8
+!EndTestCase

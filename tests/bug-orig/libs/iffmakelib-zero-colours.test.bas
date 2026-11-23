@@ -10,14 +10,14 @@
 ; writes the colours (otherwise it crashes): it shows that no check
 ; stopped the command before.
 ; Correct: the error check stops SaveBitmap with "Uninitialized Palette"
-; (the message of a palette without colours).
-; @fixed #182
-; @configs clib
-; @pass runtime_errors=on
+; (the message of a palette without colours).  The message is the tested
+; behaviour, so the error is not announced with !ExpectError (see the
+; configuration).
 DEFTYPE .l
-BitMap 0,32,2,1
-InitPalette 0,0
-NPrint "save"
-SaveBitmap 0,"RAM:bo182-nodir/p.iff",0
-NPrint "saved"
-End
+
+!TestCase{empty_palette}
+  BitMap 0,32,2,1
+  InitPalette 0,0
+  SaveBitmap 0,"CORPUS:bo182-nodir/p.iff",0
+  !Check{0,"saved"}
+!EndTestCase

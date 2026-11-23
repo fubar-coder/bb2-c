@@ -3,14 +3,11 @@
 ; read, and the old contents of the 2048 byte buffer are taken as the
 ; file's data.
 ; Here: LoadShape of an ILBM (16x4, 1 plane, BODY bytes 1..8) built in
-; memory and written to RAM: fills the buffer; then LoadShape of PRT:,
+; memory and written to CORPUS:: fills the buffer; then LoadShape of PRT:,
 ; where Read returns -1 (port-handler, no printer).  The original loads
 ; the old ILBM from the buffer as shape 1 and the program goes on.
 ; Correct: the read error is an error (or the end of the file): there is
 ; no ILBM, LoadShape stops with a runtime error.
-; @fixed #177
-; @configs clib
-; @pass runtime_errors=on
 DEFTYPE .l
 Statement pb{v.l}
   SHARED m,p
@@ -22,27 +19,27 @@ End Statement
 Statement pl{v.l}
   pw{(v LSR 16) AND $FFFF} : pw{v AND $FFFF}
 End Statement
-Statement shinfo{s.l}
-  a.l=Addr Shape(s)
-  NPrint "shape ",s," ",Peek.w(a)," ",Peek.w(a+2)," ",Right$(Hex$(Peek.b(Peek.l(a+14)) AND 255),2)
-End Statement
-m=AllocMem(256,65536) : p=0
-pl{$464F524D} : pl{0} : pl{$494C424D}
-pl{$424D4844} : pl{20}
-pw{16} : pw{4} : pw{0} : pw{0} : pb{1} : pb{0} : pb{0} : pb{0}
-pw{0} : pb{10} : pb{11} : pw{320} : pw{200}
-pl{$424F4459} : pl{8}
-For i=1 To 8 : pb{i} : Next
-Poke.l m+4,p-8
-If WriteFile(0,"RAM:bo177.iff")
+
+!TestCase{read_error}
+  m=AllocMem(256,65536) : p=0
+  pl{$464F524D} : pl{0} : pl{$494C424D}
+  pl{$424D4844} : pl{20}
+  pw{16} : pw{4} : pw{0} : pw{0} : pb{1} : pb{0} : pb{0} : pb{0}
+  pw{0} : pb{10} : pb{11} : pw{320} : pw{200}
+  pl{$424F4459} : pl{8}
+  For i=1 To 8 : pb{i} : Next
+  Poke.l m+4,p-8
+  ok=WriteFile(0,"CORPUS:bo177.iff")
+  !Require{ok,"file_written"}
   WriteMem 0,m,p
   CloseFile 0
-EndIf
-FreeMem m,256
-LoadShape 0,"RAM:bo177.iff"
-shinfo{0}
-KillFile "RAM:bo177.iff"
-NPrint "load PRT:"
-LoadShape 1,"PRT:"
-shinfo{1}
-End
+  FreeMem m,256
+  LoadShape 0,"CORPUS:bo177.iff"
+  a=Addr Shape(0)
+  !CheckEq{Peek.w(a),16,"shape0_width"}
+  !CheckEq{Peek.w(a+2),4,"shape0_height"}
+  !CheckEq{Peek.b(Peek.l(a+14)) AND 255,1,"shape0_data"}
+  KillFile "CORPUS:bo177.iff"
+  LoadShape 1,"PRT:"
+  !Check{0,"not_refused"}
+!EndTestCase

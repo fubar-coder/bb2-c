@@ -1,0 +1,7 @@
+# iffmakelib-savearow-overread.test.bas: the original packs row 0 with the
+# first byte of row 1 in view, so the literal ends one byte early
+fixed-orig = 183
+
+[deviations."libs=cd"]
+"check.pack_rows.body_bytes" = "== fail"
+"check.pack_rows.body_bytes.actual" = "== \"01 01 02 01 05 05 02 05 06 07 00 08\""

@@ -1,0 +1,12 @@
+# iffmakelib-saveshape-tempbm.test.bas: the handler of the expected error
+# ends the program, so the case has no end entry and the check behind the
+# SaveShape is not run; the original saves the shape without an error
+fixed-orig = 326
+
+[asserts]
+"end.case" = "not exists"
+"check.depth_15.not_refused" = "== not-run"
+
+[deviations."libs=cd"]
+"end.case" = "exists"
+"check.depth_15.not_refused" = "== fail"

@@ -9,24 +9,25 @@
 ; with the message in d0; any other exception goes on to the old handler.
 ; Correct: TRAP #0 with the message "Can't open File".  The original
 ; passes a pointer behind the library (a garbage text).
-; @fixed #185
-; @configs clib
-; @pass timeout=60
+; The handler (labels, assembler and the data of its two longs) stands in
+; the case, behind a Goto that skips it; the label rec continues the case
+; after the trap, checks the message and ends the program.
 DEFTYPE .l
-BitMap 0,32,2,1
-t=Peek.l(Peek.l(4)+276)
-o=Peek.l(t+50)
-Poke.l ?ar+4,o
-Poke.l t+50,?th
-NPrint "before"
-SaveBitmap 0,"RAM:iffmakelib-openerr-no-dir/t.iff"
-Poke.l t+50,o
-NPrint "after"
-End
+
+!TestCase{trap_message}
+  BitMap 0,32,2,1
+  t=Peek.l(Peek.l(4)+276)
+  o=Peek.l(t+50)
+  Poke.l ?ar+4,o
+  Poke.l t+50,?th
+  SaveBitmap 0,"CORPUS:iffmakelib-openerr-no-dir/t.iff"
+  Poke.l t+50,o
+  !Check{0,"no_trap"}
+  Goto fin
 
 rec:
   Poke.l t+50,o
-  NPrint "runtime error ",Peek$(Peek.l(?ar))
+  !CheckStrEq{Peek$(Peek.l(?ar)),"Can't open File","message"}
   End
 
 th:
@@ -41,3 +42,6 @@ thold:
 
 ar:
   Dc.l 0,0
+
+fin:
+!EndTestCase
