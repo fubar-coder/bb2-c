@@ -1,0 +1,17 @@
+# multi-68010-vbr.test.bas: on the 68010 with Kickstart 1.3; the original's
+# child takes the VBR as 0, and its TRAP #0 crashes it (the Software error
+# requester, the session ends as a hang)
+fixed-orig = 42
+machine = "a500-68010"
+
+[data]
+"child.bas" = "basic-compile"
+
+[deviations."libs=cd"]
+"run.moved_vbr.child" = "== open"
+"run.moved_vbr.child.output" = "contains \"cr_vbr is the moved table 0\""
+requester = "contains \"Software error - task held\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
