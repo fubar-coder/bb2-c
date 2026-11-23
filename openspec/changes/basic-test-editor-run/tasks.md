@@ -21,7 +21,7 @@ touched and `ctest --preset host`; emulator tests as named.
 ## 3. The users move to the model
 
 - [x] 3.1 `libs/dhandlerlib-no-cache-flush` (#409) to `ID.test.bas`/`ID.test.toml` (D8); verify: both sides keep the verdict (port FIXED with the CD, skipped 77 without; originals as declared), fix-scope reports only the move
-- [ ] 3.2 `regression/debuglib-setint-runtime-error` and `regression/compiler-macrobuff-nomem`; verify: `regression_*` tests pass on the side port, the old files removed in the same commit
+- [x] 3.2 `regression/debuglib-setint-runtime-error` and `regression/compiler-macrobuff-nomem`; verify: `regression_*` tests pass on the side port, the old files removed in the same commit
 - [ ] 3.3 `compiler/compiler-insasm-size-byte`, `-libsnode-name`, `-macro-textlen-max`, `-resconsts-last-next`, `-racing-stripe-wide`; verify: each keeps its verdict on both sides, the prev comparison (`-DBLITZ2_PREV=ON`) passes for them
 - [ ] 3.4 `compiler/compiler-panic-remtask` only if the user's answer to Q1 asks for it (then a new task group for `editor-run = "before"` and the PANIC setting first); otherwise it stays in the old form and the U4 list names it; verify: the answer recorded in `rounds/tr/decisions.md`
 

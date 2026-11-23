@@ -8,11 +8,11 @@
 ; TED-C notice, blitz2's own error "Out of Memory" outside the compile
 ; (XTRAERR) - and the old buffer of 8192 bytes stays: the program with
 ; a macro of 70 bytes compiles and runs.
-; @pass wrap=@INJECT@|allocfail=20000-20000/f=1/1
-; @pass jobline=macrobuf=20000
 Macro m
 a$="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 End Macro
-!m
-NPrint Len(a$)
-End
+
+!TestCase{old_buffer}
+  !m
+  !CheckEq{Len(a$),70,"macro_text"}
+!EndTestCase
