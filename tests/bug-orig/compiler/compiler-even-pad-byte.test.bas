@@ -6,13 +6,14 @@
 ; the bytes of the debug record (trap #1, line item, column) that
 ; debugstuff wrote at the start of each statement and undodebug
 ; withdrew for the label and the assembler directives. With 7 data bytes
-; the pad byte is the low byte of the record's column word ($0B here).
-; Correct: the pad byte is 0, the program prints zero.
-; @fixed #969
-; @pass runtime_errors=on
-Goto skip
-a: Dc.b "JKLMNO",0
-Even
-skip:
-If Peek.b(?a+7)=0 Then NPrint "zero" Else NPrint "garbage ",Hex$(Peek.b(?a+7)&255)
-End
+; the pad byte is the low byte of the record's column word.
+; Correct: the pad byte is 0.
+!TestCase{pad_byte}
+  Goto skip
+.a
+  Dc.b "JKLMNO",0
+  Even
+.skip
+  v.l=Peek.b(?a+7)&255
+  !CheckEq{v,0,"pad_byte"}
+!EndTestCase

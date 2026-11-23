@@ -1,0 +1,8 @@
+# compiler-even-pad-byte.test.bas: the pad byte is the original's debug
+# record, here the low byte of its column word (runtime error checking on)
+fixed-orig = 969
+runtime-errors = "on"
+
+[deviations."compiler=orig195"]
+"check.pad_byte.pad_byte.actual" = "== 9"
+"check.pad_byte.pad_byte" = "== fail"

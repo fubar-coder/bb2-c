@@ -1,0 +1,8 @@
+# compiler-even-pad-byte-code.test.bas: the pad byte is the low byte of the
+# trap #1 of the original's debug record (runtime error checking on)
+fixed-orig = 969
+runtime-errors = "on"
+
+[deviations."compiler=orig195"]
+"check.pad_byte_code.pad_byte" = "== fail"
+"check.pad_byte_code.pad_byte.actual" = "== 65"

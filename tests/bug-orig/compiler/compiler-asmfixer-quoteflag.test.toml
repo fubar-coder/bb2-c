@@ -1,0 +1,7 @@
+# compiler-asmfixer-quoteflag.test.bas: the original's #" " is the empty
+# constant, the immediate 0
+fixed-orig = 343
+
+[deviations."compiler=orig195"]
+"check.quoteflag.space_constant" = "== fail"
+"check.quoteflag.space_constant.actual" = "== 0"

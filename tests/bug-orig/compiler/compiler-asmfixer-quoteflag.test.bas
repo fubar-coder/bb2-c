@@ -7,11 +7,13 @@
 ; and on again, getchar2 skips the space between them, the constant is
 ; empty and the immediate 0. Found with the RWE LES debug library
 ; (ExtractLabel: CMPI.b #" ",d2 is 0 in RILESDEBUGLIB, a later line has
-; MOVE.w #">"*8,d0). Correct: the program prints 00000020.
-; @fixed #343
-MOVEQ #-1,d1
-MOVE.l #" ",d1
-PutReg d1,r.l
-NPrint Hex$(r)
-MOVE.w #">"*8,d1
-End
+; MOVE.w #">"*8,d0).
+; Here the case holds the two assembler lines.
+; Correct: the immediate #" " is 32: the register holds $20.
+!TestCase{quoteflag}
+  MOVEQ #-1,d1
+  MOVE.l #" ",d1
+  PutReg d1,r.l
+  !CheckEq{r,$20,"space_constant"}
+  MOVE.w #">"*8,d1
+!EndTestCase
