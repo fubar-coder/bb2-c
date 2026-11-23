@@ -298,7 +298,7 @@ static void test_sessions(void)
     load(&t, "e/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 4);
     for (size_t i = 0; i < 4; i++)
-        k[i] = cr_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i);
     /* the libraries and runtime error checking do not decide the session */
     CHECK(k[0] && k[1] && k[2] && k[3] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]) && !strcmp(k[0], k[3]));
     for (size_t i = 0; i < 4; i++)
@@ -309,7 +309,7 @@ static void test_sessions(void)
     load(&t, "e/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 4);
     for (size_t i = 0; i < 4; i++)
-        k[i] = cr_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i);
     for (size_t i = 0; i < 4; i++)
         for (size_t j = 0; j < i; j++)
             CHECK(strcmp(k[i], k[j]));
@@ -318,8 +318,8 @@ static void test_sessions(void)
     unload(&t);
     put("e/s.test.toml", "serial = \"on\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
     load(&t, "e/s.test.bas", ENV_RUNNER);
-    k[0] = cr_session_key(&t.conf, &t.m, 0);
-    k[1] = cr_session_key(&t.conf, &t.m, 1);
+    k[0] = tc_session_key(&t.conf, &t.m, 0);
+    k[1] = tc_session_key(&t.conf, &t.m, 1);
     CHECK(k[0] && k[1] && strcmp(k[0], k[1]));
     free(k[0]);
     free(k[1]);
@@ -1060,7 +1060,7 @@ static void test_isolate_keys(void)
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     CHECK(t.m.ncells == 3);
     for (size_t i = 0; i < 3; i++)
-        k[i] = cr_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i);
     CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
     for (size_t i = 0; i < 3; i++)
         free(k[i]);
@@ -1069,7 +1069,7 @@ static void test_isolate_keys(void)
     put("iso/s.test.toml", "isolate = \"on\"\n");
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     for (size_t i = 0; i < 3; i++) {
-        k[i] = cr_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i);
         CHECK(tc_cell_isolated(&t.conf, &t.m, i));
     }
     CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
@@ -1080,7 +1080,7 @@ static void test_isolate_keys(void)
     put("iso/s.test.toml", "isolate = \"off\"\n");
     load(&t, "iso/s.test.bas", ENV_RUNNER);
     for (size_t i = 0; i < 3; i++)
-        k[i] = cr_session_key(&t.conf, &t.m, i);
+        k[i] = tc_session_key(&t.conf, &t.m, i);
     CHECK(k[0] && k[1] && k[2] && !strcmp(k[0], k[1]) && !strcmp(k[0], k[2]));
     for (size_t i = 0; i < 3; i++)
         free(k[i]);
@@ -1093,9 +1093,9 @@ static void test_isolate_keys(void)
         size_t pcd = cell(&t, "port,cd"), pclib = cell(&t, "port,clib"), ocd = cell(&t, "orig195,cd");
         char *plain;
 
-        k[0] = cr_session_key(&t.conf, &t.m, pcd);
-        k[1] = cr_session_key(&t.conf, &t.m, ocd);
-        k[2] = cr_session_key(&t.conf, &t.m, pclib);
+        k[0] = tc_session_key(&t.conf, &t.m, pcd);
+        k[1] = tc_session_key(&t.conf, &t.m, ocd);
+        k[2] = tc_session_key(&t.conf, &t.m, pclib);
         CHECK(k[0] && k[1] && k[2] && strcmp(k[0], k[1]) && strcmp(k[0], k[2]) && strcmp(k[1], k[2]));
         CHECK(tc_cell_isolated(&t.conf, &t.m, pcd) && tc_cell_isolated(&t.conf, &t.m, ocd)
               && !tc_cell_isolated(&t.conf, &t.m, pclib));
@@ -1104,11 +1104,11 @@ static void test_isolate_keys(void)
         unload(&t);
         put("iso/s.test.toml", "");
         load(&t, "iso/s.test.bas", ENV_RUNNER);
-        plain = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        plain = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
         unload(&t);
         put("iso/s.test.toml", "isolate = [\"libs=cd\"]\n");
         load(&t, "iso/s.test.bas", ENV_RUNNER);
-        k[2] = cr_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
+        k[2] = tc_session_key(&t.conf, &t.m, cell(&t, "port,clib"));
         CHECK(plain && k[2] && !strcmp(plain, k[2]));
         free(plain);
         free(k[2]);

@@ -27,7 +27,7 @@
  * one configuration (cr_cell_pass: the compiler and libraries of the cell,
  * the test library in blitz2:userlibs/testlib/ - for orig195 also in
  * blitz2:testlib/ -, the run settings), staged in a directory of its own.
- * The cells whose session settings (cr_session_key: the machine, the
+ * The cells whose session settings (tc_session_key: the machine, the
  * emulator changes, RTG, the floppies, the mounts, the time limit, the
  * hang check) agree share one emulator session: each cell's directory is
  * the volume CELLk:, `Assign CORPUS: CELLk:` selects it, the compiles of
@@ -403,15 +403,6 @@ int cr_data_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
  * @return malloc'd, NULL = no such data source or out of memory
  */
 char *cr_data_staged(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *file);
-
-/**
- * @brief The settings that decide the session of a cell, as one text: two
- *        cells share a session if their keys are the same.  A cell with
- *        serial=on, and a cell the setting isolate names (tc_cell_isolated),
- *        gets a key of its own (the cell's number in it).
- * @return the key (malloc'd), NULL = out of memory
- */
-char *cr_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
 
 /** @brief What a program's output (NAME.run) holds. */
 struct cr_run {

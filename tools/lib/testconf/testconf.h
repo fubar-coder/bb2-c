@@ -436,6 +436,28 @@ int tc_selector_matches(const struct tc_selector *sel, const struct tc_config *c
  */
 int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
 
+/**
+ * @brief The settings that decide the emulator session of a cell, as one
+ *        text: two cells, of one test or of different tests, may share a
+ *        session if their keys are the same.
+ *
+ * The key holds the settings the session takes from its first cell: the
+ * cell's values of `machine`, `rtg`, `timeout` and `hang-after` (an unset
+ * one as "", so a time limit left to the environment differs from one
+ * set to the same value), and the elements of the list settings `uae`,
+ * `floppy` and `mount`, each in the order of the list (the order a
+ * configuration gives is the order the emulator gets; the paths are
+ * absolute, tc_resolve).  A cell with `serial = "on"` (the remote end of
+ * the serial port belongs to one program) and a cell `isolate` names
+ * (tc_cell_isolated) get a key of their own: it holds the test (its
+ * directory and ID) and the cell's number.  The settings of a cell's own
+ * volume and script (compiler, libraries, files, jobs, wrappers, ...) are
+ * not in it.  Every string is written with its length, so no value can
+ * end a line of the key early.
+ * @return the key (malloc'd), NULL = out of memory
+ */
+char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
+
 /* ------------------------------------------------------------ assertions
  *
  * An assertion is a key QUERY = "PREDICATE" of the table `asserts` (all

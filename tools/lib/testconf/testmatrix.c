@@ -310,6 +310,53 @@ int tc_cell_isolated(const struct tc_config *conf, const struct tc_matrix *m, si
     return 0;
 }
 
+/* ------------------------------------------------------------ the session key */
+
+/* NAME=LEN:TEXT and a newline */
+static void key_add(FILE *f, const char *name, const char *text)
+{
+    fprintf(f, "%s=%zu:%s\n", name, strlen(text), text);
+}
+
+char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+{
+    static const char *const values[] = { "machine", "rtg", "timeout", "hang-after" };
+    static const char *const lists[] = { "uae", "floppy", "mount" };
+    char *text = NULL, buf[24];
+    size_t len = 0;
+    FILE *f = open_memstream(&text, &len);
+    int own;
+
+    if (!f)
+        return NULL;
+    for (size_t i = 0; i < sizeof values / sizeof values[0]; i++)
+        key_add(f, values[i], tc_cell_value(conf, m, cell, tc_key(values[i]), buf));
+    /* the lists are the same in every cell of a test (no list is an axis) */
+    for (size_t k = 0; k < sizeof lists / sizeof lists[0]; k++) {
+        const struct tc_setting *s = tc_get(conf, lists[k]);
+
+        for (size_t i = 0; s && s->value.type == TT_LIST && i < s->value.nlist; i++)
+            key_add(f, lists[k], s->value.list[i]);
+    }
+    /* the remote end of the serial port belongs to one program; a cell
+       isolate names has its memory and RAM: of its own */
+    own = !strcmp(tc_cell_value(conf, m, cell, tc_key("serial"), buf), "on") || tc_cell_isolated(conf, m, cell);
+    if (own) {
+        fprintf(f, "own=%zu:%s/%zu:%s|%zu\n", strlen(conf->dir ? conf->dir : ""), conf->dir ? conf->dir : "",
+                strlen(conf->id ? conf->id : ""), conf->id ? conf->id : "", cell);
+    }
+    if (ferror(f)) {
+        fclose(f);
+        free(text);
+        return NULL;
+    }
+    if (fclose(f)) {
+        free(text);
+        return NULL;
+    }
+    return text;
+}
+
 /* ------------------------------------------------------------ a run from the editor */
 
 /* where a key of a cell is set: its axis, else its setting, else NULL */

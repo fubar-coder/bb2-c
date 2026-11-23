@@ -4,7 +4,8 @@
 // product minus exclusions, their names and the side with original
 // material, axes against settings of nearer files, cell selectors, the
 // cells that run from the editor - each rule with broken input (a key that
-// is no run setting among them).
+// is no run setting among them) -, and the session key of a cell, in one
+// test and across tests.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -384,4 +385,128 @@ TEST_CASE("testmatrix: a run from the editor", "[testmatrix]")
                           "editor-run = [\"off\", \"on\"]\n");
     refused(t, t.path("tests.toml") + ":3: jobline: the job ID r001 is the run from the editor in the cell on with "
                                       "editor-run = \"on\" (" + t.path("tests.toml") + ":5)");
+}
+
+// the session key of a cell of the test src
+static std::string session_key(const tree &t, const std::string &src, size_t cell = 0)
+{
+    built b(t, src);
+    std::string k;
+
+    REQUIRE(b.rc == 0);
+    REQUIRE(cell < b.m.ncells);
+    char *s = tc_session_key(&b.c, &b.m, cell);
+    REQUIRE(s != nullptr);
+    k = s;
+    free(s);
+    return k;
+}
+
+// two tests a/x and b/y with the settings ta and tb in their own files
+static void two(const tree &t, const std::string &ta, const std::string &tb)
+{
+    t.write("tests.toml", "root = true\n");
+    t.write("a/x.test.bas", "");
+    t.write("b/y.test.bas", "");
+    t.write("a/x.test.toml", ta);
+    t.write("b/y.test.toml", tb);
+}
+
+static bool same_session(const tree &t)
+{
+    return session_key(t, "a/x.test.bas") == session_key(t, "b/y.test.bas");
+}
+
+TEST_CASE("testmatrix: the session key across tests", "[testmatrix]")
+{
+    tree t;
+
+    // the same session settings: the same key, whatever the cell's volume
+    // and script hold
+    two(t, "", "");
+    CHECK(same_session(t));
+    two(t,
+        "machine = \"a600\"\nrtg = \"on\"\ntimeout = 30\nhang-after = 10\nuae = [\"cpu_speed=max\"]\n"
+        "floppy = [\"0|/img/a.adf\"]\nmount = [\"BB2|/cd\"]\n",
+        "machine = \"a600\"\nrtg = \"on\"\ntimeout = 30\nhang-after = 10\nuae = [\"cpu_speed=max\"]\n"
+        "floppy = [\"0|/img/a.adf\"]\nmount = [\"BB2|/cd\"]\ncompiler = \"orig195\"\nlibs = \"cd\"\n"
+        "runtime-errors = \"on\"\nstack = 9000\nfiles = [\"data/f|/abs/f\"]\ndirs = [\"d\"]\nremove = [\"d\"]\n"
+        "wrap = \"/w\"\nrunwrap = \"/r\"\nrunargs = \"x\"\nlauncherargs = \"y\"\nrwe = [\"r\"]\n"
+        "jobline = [\"max=3\"]\npad = \"off\"\nlabels = [\"l\"]\ncost = 5\n");
+    CHECK(same_session(t));
+    // each setting of the session on its own: another key
+    for (const char *s : { "machine = \"a600\"\n", "rtg = \"on\"\n", "timeout = 30\n", "hang-after = 10\n",
+                           "uae = [\"cpu_speed=max\"]\n", "floppy = [\"0|/img/a.adf\"]\n",
+                           "mount = [\"BB2|/cd\"]\n" }) {
+        INFO(s);
+        two(t, "", s);
+        CHECK(!same_session(t));
+    }
+    // another element of a list
+    two(t, "uae = [\"cpu_speed=max\"]\n", "uae = [\"cpu_speed=real\"]\n");
+    CHECK(!same_session(t));
+    two(t, "mount = [\"BB2|/cd\"]\n", "mount = [\"BB2|/cd2\"]\n");
+    CHECK(!same_session(t));
+    two(t, "floppy = [\"0|/img/a.adf\"]\n", "floppy = [\"1|/img/a.adf\"]\n");
+    CHECK(!same_session(t));
+    // a relative path is relative to its file's directory: the same text,
+    // two paths
+    two(t, "floppy = [\"0|a.adf\"]\n", "floppy = [\"0|a.adf\"]\n");
+    CHECK(!same_session(t));
+    // the lists in their order: the order is the one the emulator gets
+    two(t, "uae = [\"a=1\", \"b=2\"]\n", "uae = [\"a=1\", \"b=2\"]\n");
+    CHECK(same_session(t));
+    two(t, "uae = [\"a=1\", \"b=2\"]\n", "uae = [\"b=2\", \"a=1\"]\n");
+    CHECK(!same_session(t));
+    two(t, "mount = [\"A|/a\", \"B|/b\"]\n", "mount = [\"B|/b\", \"A|/a\"]\n");
+    CHECK(!same_session(t));
+    // a value cannot end its line early and pass for two elements
+    two(t, "uae = [\"a=1\", \"b=2\"]\n", "uae = [\"a=1\\nuae=3:b=2\"]\n");
+    CHECK(!same_session(t));
+    // a time limit left to the environment is not one set to a value
+    two(t, "", "timeout = 120\n");
+    CHECK(!same_session(t));
+    // serial and isolate: a key of its own, also against the same cell of
+    // another test with the same settings
+    for (const char *s : { "serial = \"on\"\n", "isolate = \"on\"\n" }) {
+        INFO(s);
+        two(t, s, s);
+        CHECK(!same_session(t));
+        CHECK(session_key(t, "a/x.test.bas") == session_key(t, "a/x.test.bas"));
+        two(t, "", s);
+        CHECK(!same_session(t));
+    }
+}
+
+TEST_CASE("testmatrix: the session key in one test", "[testmatrix]")
+{
+    tree t;
+
+    // the lists are the same in every cell: the axes of the session decide
+    t.write("tests.toml", "root = true\nuae = [\"a=1\"]\nmount = [\"M|/m\"]\nfloppy = [\"1|/f.adf\"]\n[matrix]\n"
+                          "libs = [\"cd\", \"clib\"]\nmachine = [\"a1200\", \"a600\"]\n");
+    {
+        built b(t);
+        std::vector<std::string> k, mach;
+        char buf[24];
+
+        REQUIRE(b.rc == 0);
+        REQUIRE(b.m.ncells == 4);
+        for (size_t i = 0; i < 4; i++) {
+            char *s = tc_session_key(&b.c, &b.m, i);
+
+            REQUIRE(s != nullptr);
+            k.push_back(s);
+            free(s);
+            mach.push_back(tc_cell_value(&b.c, &b.m, i, tc_key("machine"), buf));
+        }
+        for (size_t i = 0; i < 4; i++)
+            for (size_t j = 0; j < i; j++) {
+                INFO(b.m.cells[i].name, " ", b.m.cells[j].name);
+                CHECK((k[i] == k[j]) == (mach[i] == mach[j]));
+            }
+    }
+    // serial: every cell alone
+    t.write("tests.toml", "root = true\nserial = \"on\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    CHECK(session_key(t, "x.test.bas", 0) != session_key(t, "x.test.bas", 1));
 }

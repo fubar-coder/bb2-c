@@ -603,28 +603,6 @@ const char *cr_prev_unknown(const char *test, const char *const *names, size_t n
     return NULL;
 }
 
-char *cr_session_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
-{
-    static const char *const keys[] = { "machine", "rtg", "timeout", "hang-after" };
-    struct text t = { 0 };
-    char buf[24];
-
-    for (size_t i = 0; i < sizeof keys / sizeof keys[0]; i++)
-        text_add(&t, "%s=%s\n", keys[i], val(conf, m, cell, keys[i], buf));
-    /* the remote end of the serial port belongs to one program */
-    if (!strcmp(val(conf, m, cell, "serial", buf), "on"))
-        text_add(&t, "serial=%zu\n", cell);
-    /* a cell isolate names: its memory and RAM: are its own */
-    if (tc_cell_isolated(conf, m, cell))
-        text_add(&t, "isolate=%zu\n", cell);
-    /* the lists are the same in every cell (no list is an axis) */
-    if (t.bad) {
-        free(t.p);
-        return NULL;
-    }
-    return t.p;
-}
-
 /* ------------------------------------------------------------ outputs */
 
 int cr_parse_run(const char *run, struct cr_run *r)
@@ -1211,7 +1189,7 @@ struct cell {
     size_t idx;                 /* in the matrix */
     char tag[24];               /* c0, c1, ... */
     struct corpus_pass p;
-    char *key;                  /* cr_session_key */
+    char *key;                  /* tc_session_key */
     int done;                   /* observed */
     enum amiga_emulation_status status;
     int inject;                 /* the program runs through inject (cr_cell_inject) */
@@ -2304,7 +2282,7 @@ static int run_set(struct ctx *x, struct set *s)
             rc = 77;
             goto out;
         }
-        if (!(c->key = cr_session_key(&x->conf, &x->m, c->idx))) {
+        if (!(c->key = tc_session_key(&x->conf, &x->m, c->idx))) {
             fprintf(x->log, "corpusrun case: out of memory\n");
             goto out;
         }
