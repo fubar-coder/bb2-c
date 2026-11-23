@@ -82,7 +82,8 @@ correctly.
   with AmiBlitz3's own compiler.
 * **The fixed bugs** nearly all have a test program with the correct
   behaviour as its expectation. The port, with its own libraries, must
-  show that behaviour; the original is not needed for these tests.
+  show that behaviour, which needs no original material; the `originals`
+  run checks that the original still shows the bug.
 * **Tests that judge themselves** are Blitz Basic programs that check
   their results with a small test library; the expected values are in
   the program, and a configuration file says with which compilers and

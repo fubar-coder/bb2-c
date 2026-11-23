@@ -201,11 +201,14 @@ Every run works in a directory of its own below
       {{< filetree/folder name="run-XXXXXX" >}}
         {{< filetree/file name="driver.bas (the program the runner compiles)" >}}
         {{< filetree/file name="test.bb2 (the same, tokenised for the compiler)" >}}
+        {{< filetree/folder name="data (the test's own data, prepared once)" state="closed" >}}{{< /filetree/folder >}}
         {{< filetree/folder name="c0 (one directory per cell, by its tag)" >}}
           {{< filetree/folder name="vol/out" >}}
             {{< filetree/file name="blitz2.out (what the compiler wrote)" >}}
+            {{< filetree/file name="session.log (the log of the program that drives the compiler)" >}}
             {{< filetree/file name="test (the compiled program)" >}}
             {{< filetree/file name="test.res (the result file of the test library)" >}}
+            {{< filetree/file name="run-K.out (what a program started with !RunProgram printed)" >}}
           {{< /filetree/folder >}}
           {{< filetree/folder name="emu" >}}
             {{< filetree/file name="amiberry.log (the emulator's log)" >}}

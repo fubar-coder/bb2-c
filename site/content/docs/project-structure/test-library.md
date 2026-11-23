@@ -1,7 +1,7 @@
 ---
 title: The test library
 weight: 5
-description: Every macro a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions and expected runtime errors - with what each records, how cases, procedures, the batch init and the batch cleanup are written, the placeholders, and the known limits.
+description: Every macro a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions, expected runtime errors and started programs - with what each records, how cases, procedures, the batch init and the batch cleanup are written, the placeholders, and the known limits.
 ---
 
 A [test that judges itself]({{< relref "self-judging-tests" >}}) checks
@@ -25,9 +25,12 @@ A source has three kinds of blocks, in this order:
 | batch cleanup | `!TestBatchCleanup` ... `!EndTestBatchCleanup` | at most one, after the last case |
 
 Each macro stands on a line of its own; only a comment may follow it.
-Every run executes **one case**: the driver calls the batch init (if the
-source has one), then the case the run is for, then the batch cleanup (if the
-source has one).
+Each CTest test runs **one case**: the driver calls the batch init (if
+the source has one), then the case the test is for, then the batch
+cleanup (if the source has one). When you run all cases of a source at
+once with the test runner, it calls several cases in one program to save
+time, but still judges each case from its own part of the result file
+([Running all cases of a source]({{< relref "running-tests#running-all-cases-of-a-source" >}})).
 
 ```basic
 !TestBatchInit
@@ -47,8 +50,8 @@ source has one).
 ```
 
 A block is a subroutine of one program, called with `Gosub`. So the
-cases share the program's variables, and since a run executes only one
-case after the batch init, each case sets up what it uses itself. The
+cases share the program's variables, and since a case must not depend on
+what another case left behind, each case sets up what it uses itself. The
 batch init only prepares data that the cases read. Inside a block,
 `SetErr`, `SetInt`, labels and a local `Dim List` work as in any
 subroutine. A loop, a `Select`, a block `If` or a `CNIF` ... `CEND` must
@@ -60,6 +63,13 @@ holds letters, digits and `_`, but no `__`, and it does not end in
 `_originals`. It must not be the name of a command or function of any
 library set, whatever its case: `on`, `add`, `free` or `count` are
 refused. Each name appears once in a source.
+
+The same holds for the names of procedures and variables: a name that
+is also a command or function of a library, such as `colour`, `bset`,
+`eof`, `volume` or `instr`, does not work as a variable or procedure
+name. The build refuses such a case name at once, but a procedure or
+variable with such a name only fails when the driver is compiled, with a
+bare `Syntax Error` at its line.
 
 ### Outside the blocks
 
@@ -77,6 +87,61 @@ A helper is a procedure (a `Statement` or a `Function`) or a subroutine
 inside a case, never a `Gosub` target outside the blocks. A macro
 definition of the source must not contain a check, but a check may be an
 argument of a macro call inside a block.
+
+A label outside the blocks is written as a Blitz Basic label, `.name`;
+the form `name:` counts as code and is refused. `Data` belongs outside
+the blocks, behind such a label that the case reads with `Restore`:
+inside a case it would run as code. Assembler instructions are code as
+well, so an assembler routine stands inside the case, behind a `Goto`
+that jumps over it, and its labels are `.name` labels too. A label
+behind data of odd length (`IncBin`, `Dc.b`) needs an `Even` before it
+when a `Goto` jumps to it.
+
+```basic
+.table
+Data.l 3,5,7
+
+!TestCase{sum}
+  Restore table
+  s.l=0
+  For i.l=1 To 3
+    Read v.l
+    s=s+v
+  Next
+  !CheckEq{s,15,"sum"}
+!EndTestCase
+```
+
+### Types, line length and procedures
+
+A variable without a type in a case is a quick value (`.q`), not a long
+one. A test that keeps pointers or addresses in variables puts
+`DEFTYPE .l` outside the blocks; an address in a quick variable leads to
+errors such as `Unable to Free Memory`.
+
+A line may be at most 128 characters long after the macros are
+expanded, the limit of the editor's format; split a long line that
+builds a string.
+
+A `Statement` takes at most 6 parameters; the 7th gives `Too many
+parameters`. An array that a `Function` uses cannot be declared in a
+case, because its `Dim` must come before the function: use a memory
+block from `AllocMem_` or an array declared outside the blocks. The
+original compilers mishandle `PutReg` into a local variable of a
+`Function` (it leaves the local 0 and overwrites other memory; the port
+has this bug fixed). A case that also runs with an original compiler
+uses `PutReg` only into `SHARED` or global variables, in a `Statement`
+or directly in the case.
+
+A trap or error handler that lets the case continue must restore the
+stack: the trap leaves the library's frames on the stack, and the
+block's final `Return` would return into the program behind the faulty
+call, so the case would run again. Save the stack pointer before the
+statement that traps (`LEA sv(pc),a0 : MOVE.l a7,(a0)`) and restore it
+in the handler (`MOVE.l (a0),a7`) before the checks. A handler that only
+ends the program needs neither. A check cannot follow a `SetErr` jump to
+the end of the case, so such a handler holds the checks and the `End`
+itself.
 
 ## The checks
 
@@ -214,6 +279,15 @@ there: the program's exit code is not checked, and that requester does
 not count as an unexpected one. If no such requester comes, the case
 fails with `the announced runtime error "..." did not come`.
 
+Like a check, the announcement may have a name as its last argument,
+`!ExpectError{"MESSAGE","NAME"}`. The configuration can then name it as
+the check `check.CASE.NAME`: `ok` if its requester came, `fail` if not.
+A test of an original bug uses this to declare that the original shows
+another error in its place, while the announcement stays for the port.
+Since the announcement is judged by its requester, it cannot stand in a
+test with a cell that runs the program from the editor (the key
+`editor-run`), where requesters are not captured.
+
 ### Checks in loops and procedures
 
 A check in a loop runs once per pass and writes a line each time. It
@@ -243,6 +317,62 @@ End Statement
 !EndTestCase
 ```
 
+## Starting a program: `!RunProgram`
+
+A case can start another program and check what it did.
+`!RunProgram{COMMAND$,"name"}` runs a command line as the shell takes
+it, with its arguments and redirections, and waits for its end. The
+input of the program is `NIL:` unless the line redirects it; what it
+prints is kept in a file of the run. The macro stands in an expression
+and gives the address of the result, a `TLRun` structure that the case
+reads through a pointer:
+
+```basic
+!TestCase{child}
+  *r.TLRun=!RunProgram{"@TESTDIR@/child","child"}
+  !CheckEq{*r\rc,20,"rc"}
+  !CheckStrEq{*r\printed,"done"+Chr$(10),"printed"}
+!EndTestCase
+```
+
+The fields of `TLRun`:
+
+| Field | What it holds |
+|---|---|
+| `rc.l` | the return code, 0 if the system gave none |
+| `rcknown.w` | -1 if the system gave the return code; 0 on Kickstart 1.x, which gives none |
+| `cut.w` | -1 if the output was longer than 1024 bytes and `printed` holds only its start |
+| `size.l` | the number of bytes the program printed |
+| `printed.s` | the first 1024 bytes of what it printed, as they are |
+
+Read the fields only through the pointer (`*r\rc`; `r\rc` without the
+`*` is another variable and does not compile) and never assign to one:
+the structure belongs to the library. There is only one: a later
+`!RunProgram` overwrites it, so a case that needs the results of two
+programs copies what it needs of the first (`a$=*r\printed`,
+`c.l=*r\rc`) before it starts the second. When the return code is at
+or above the shell's fail limit, the shell's own line such as `child
+failed returncode 20` is part of the printed output.
+
+There is no time limit for the program: a program that hangs is ended by
+the hang check of the session, like the test itself. `!RunProgram`
+cannot start a program outside a block or in Blitz mode (also not while
+multitasking or interrupts are off); it then records the reason, and the
+case is broken. A case that starts a program runs on its own when the
+runner runs all cases of a source together, so the requesters, a crash
+or a hang of the program count for that case alone.
+
+What the case cannot check itself, whether the program returned at all
+and everything it printed beyond the first 1024 bytes, the configuration
+checks with the queries `run.CASE.NAME`
+([Assertions]({{< relref "self-judging-tests#assertions-what-else-a-run-must-show" >}})).
+That is why a started program that an assertion names needs a name.
+
+The program is usually one the test brings along in its own data
+directory: a Blitz Basic source there is compiled before the test runs
+and is found under `@TESTDIR@` (see
+[Data of a test]({{< relref "self-judging-tests#data-of-a-test" >}})).
+
 ## Placeholders in the source
 
 The runner replaces these words in the code and in strings, not in
@@ -254,8 +384,10 @@ comments:
 | `@CASE@` | the name of the case it stands in |
 | `@TEST@` | the test's name, `ID` |
 | `@TESTDATA@` | `CORPUS:data`, where `files = ["data/NAME\|@TESTDATA@/NAME"]` puts the test data |
+| `@TESTDIR@` | `CORPUS:ID.test`, where the test's own data arrive ([Data of a test]({{< relref "self-judging-tests#data-of-a-test" >}})) |
 
-Any other word of the form `@NAME@` is refused.
+Any other word of the form `@NAME@` in the source is refused. A Blitz
+Basic source among the test's own data gets the same placeholders.
 
 ```basic
 !TestCase{places}
@@ -271,6 +403,8 @@ The library is written so that it does not disturb what it tests:
   standard output, so a test can also check what the program prints.
 * Between the start of the program and its end it allocates and frees no
   memory, so a case can compare the free memory before and after a call.
+  The one exception is `!RunProgram`: starting a program takes memory of
+  the system and of the started program.
 * Its routines keep the registers `d2` to `d7` and `a2` to `a6`. They do
   not keep what the compiler leaves in other registers or in its string
   buffer: if the tested statement depends on such a value, set it in the

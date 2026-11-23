@@ -1,7 +1,7 @@
 ---
 title: Tests that judge themselves
 weight: 3
-description: How to write a Blitz Basic test that checks its own result, and every setting of its configuration files ID.test.toml and tests.toml - what to run, how to run it, the matrix of compilers and libraries, assertions and the declared deviations of an original bug - with step-by-step guides for adding cases, tests, directories and tests of original bugs.
+description: How to write a Blitz Basic test that checks its own result, and every setting of its configuration files ID.test.toml and tests.toml - what to run, how to run it, the test's own data, the matrix of compilers and libraries, assertions, the declared deviations and alternative ends of an original bug - with step-by-step guides for adding cases, tests, directories and tests of original bugs.
 ---
 
 Before this page you should know how the tests are run and what the
@@ -234,6 +234,16 @@ which puts 64 zeroed bytes behind every memory block the program
 allocates and reports a write behind a block. It cannot be combined
 with `runwrap`.
 
+**`isolate`** gives cells an emulator session of their own. Normally the
+runner runs all cells of a side whose session settings agree in one
+session, one after the other. `isolate = "on"` gives every cell its own
+session; a list of cell selectors (below), such as
+`isolate = ["libs=cd"]`, only the cells it names. When the runner runs
+all cases of a source together, every case of such a cell runs on its
+own as well. It is a way around a test that disturbs, or is disturbed
+by, what runs before it in the same session. Unlike the keys above,
+`isolate` cannot be an axis.
+
 **`wrap`** and **`runwrap`** start the compiler (`wrap`) or the compiled
 program (`runwrap`) through a helper program: `PATH` or `PATH|OPTIONS`,
 where the text after the `|` is passed to the helper. The test helpers
@@ -244,6 +254,24 @@ program the way the Workbench does.
 **`runargs`** are the arguments of the program, as on the command line.
 **`launcherargs`** are options of the small launcher that starts the
 program and watches its requesters.
+
+**`editor-run`**, `off` (the default) or `on`, runs the program from the
+editor, as its COMPILE/RUN does, instead of from the shell. The compiler
+then starts the program itself, and the runtime error checking also goes
+through the debugger. The test is compiled as in any other
+cell and its result file is judged the same way; what the program prints
+is what it wrote to the editor's console. The exit code and the
+requesters of such a run are not captured, so in its cells the queries
+`rc` and `requester` have no default and must not be asserted, and the
+keys of the shell start (`runwrap`, `runargs`, `launcherargs`,
+`pad = "on"`) are refused there, as is an `!ExpectError` anywhere in the
+test.
+
+**`defaultdbug`** is the path of the debugger module such a run uses,
+the file `blitz2:defaultdbug`; `@CD_BLITZ2@/DEFAULTDBUG` is the CD's.
+Without it, the cells with original material get the CD's module and
+the others none; when the module is missing (no CD), the side is
+skipped. The key is refused without `editor-run = "on"`.
 
 **`files`** is a list of files to copy into the session before the run,
 each `DEST|SRC`: the file `SRC` on your machine becomes `CORPUS:DEST`
@@ -266,12 +294,34 @@ floppy starts with a cold boot.
 `KEY=VALUE` in Amiberry's own terms, for example a CD image for the
 emulated SCSI device. **`jobline`** is a list of extra lines for the job
 list of the small program that drives the compiler in the emulator, as
-TED does: they set options of the compile such as the size of the string
-buffer or the maximum of a library's objects.
+TED does: they set options of the compile such as the size of the macro
+buffer or the maximum of a library's objects (`"macrobuf=128"`).
 
-A path in `files`, `mount`, `floppy`, `wrap` or `runwrap` that is
-relative is taken from the directory of the file that sets it; an
-absolute path, or an Amiga path with a `:`, stays as it is.
+A line of `jobline` can also add a *job* of its own: `job=` compiles a
+source, `run=` compiles and runs one as the editor's COMPILE/RUN does,
+`menu=` chooses an item of the compiler's menu and `resident=` compiles a
+source into a resident file. The first field behind the `=` is the job's name, which
+the assertions use (`compile.NAME`, `compile.log.NAME`, below). It
+consists of lower-case letters, digits and `_`, starts with a letter,
+has at most 15 characters and appears once in the list. The runner keeps
+some names for itself: `j000` is the compile of the test, `b` followed
+by three digits is the compile of a data source, `r001` the run from the
+editor of a cell with `editor-run = "on"`, and `log` and `inject` are
+taken by queries.
+
+Two placeholders stand only in an element of `jobline`: `@DRIVER@` is
+the test's own program as the runner wrote it, so that a job can compile
+it again, and `@DATA:FILE@` is the Blitz Basic source `FILE` of the
+test's own data (below), ready for the compiler:
+
+```toml
+# an example, not a file of the tree
+jobline = ["progress=on", "job=j001|@DRIVER@|CORPUS:out/again"]
+```
+
+A path in `files`, `mount`, `floppy`, `wrap`, `runwrap` or `defaultdbug`
+that is relative is taken from the directory of the file that sets it;
+an absolute path, or an Amiga path with a `:`, stays as it is.
 
 ### Placeholders
 
@@ -290,7 +340,55 @@ with a path of its own. The ones the tests use most:
 
 An unknown placeholder is an error with the file and line. In the
 test's source, `@TESTDATA@` stands for `CORPUS:data`, where the files of
-`files = ["data/NAME|@TESTDATA@/NAME"]` arrive.
+`files = ["data/NAME|@TESTDATA@/NAME"]` arrive, and `@TESTDIR@` for
+`CORPUS:ID.test`, where the test's own data arrive.
+
+## Data of a test
+
+A test can bring its own files: the directory `ID.test/` next to
+`ID.test.bas`. Its own file declares every file of that directory in the
+table `[data]`, by its path inside `ID.test/` (subdirectories are
+allowed, `..`, `:` and absolute paths are not), with the action that
+builds it:
+
+| Action | The file | What the cell gets |
+|---|---|---|
+| `basic-compile` | `NAME.bas`, a Blitz Basic source | the program `CORPUS:ID.test/NAME`, compiled in the cell's session before the test |
+| `copy` | any file | the file as it is |
+| `mktestdata` | `NAME.spec` | the file `NAME`, made on your machine by the test data generator |
+
+Each cell finds the built files under `CORPUS:ID.test/`, the
+placeholder `@TESTDIR@`, before its program starts. The short form
+`"FILE" = "ACTION"` takes the action with its defaults; a table
+`[data."FILE"]` sets the action and its options, one per line. A source
+of `basic-compile` is compiled with the cell's compiler, libraries and
+runtime error checking unless its options `compiler`, `libs` or
+`runtime-errors` say otherwise (their default `same` is the cell's
+value). It gets the placeholders of a test source, but it is a plain
+program: it has no checks.
+
+```toml
+# an example, not a file of the tree
+[data]
+"input.txt" = "copy"
+
+[data."child.bas"]
+action = "basic-compile"
+runtime-errors = "on"
+```
+
+A file of `ID.test/` that the table does not declare, a declared file
+that is missing, an unknown action or option, and an option that needs
+original material (a compiler other than `port`, or `libs = "cd"`) in a
+test with a cell of the side `port` are errors of the build. The data
+belong to one test, so the table is refused in a `tests.toml`. A
+changed, added or removed file of `ID.test/` registers the test again
+in the next build.
+
+The compile of each data source is the query `data.FILE` (below). It
+must succeed by default: when it does not and no assertion asks for that
+result, the cases of the cell are broken, and the report names the line
+of the data source and the compiler's message.
 
 ## Registering in CTest
 
@@ -303,6 +401,12 @@ registers:
   CTest runs the fixture's setup first.
 * **`cost`**, a number: the CTest cost, which makes CTest start a long
   test earlier.
+* **`flaky`**, a text, only in a test's own file: what is known of a
+  test that fails in full runs but passes when it runs alone. Say in
+  which cell and run it failed and how, what the test does about it and
+  whether the cause is known. The CTest tests get the label `flaky`, so
+  `ctest -L flaky` finds them; the verdict does not change. A way around
+  the failure, such as `isolate`, is set with its own key.
 
 ```toml
 labels = ["libs"]
@@ -328,8 +432,9 @@ test without axes has one cell, `default`.
 
 Any setting of the sections above that holds one value can be an axis:
 `compiler`, `libs`, `machine`, `runtime-errors`, `timeout`, `stack`,
-`wrap` and so on. A list setting (`rwe`, `files`, `mount`, ...) cannot,
-and neither can the keys for CTest or the keys of the next sections.
+`wrap`, `editor-run` and so on. A list setting (`rwe`, `files`, `mount`,
+...) cannot, and neither can `isolate`, the keys for CTest or the keys
+of the next sections.
 
 **`exclude`** removes cells from the product. It is a list of *cell
 selectors*. A selector is one or more `KEY=VALUE` terms joined by
@@ -377,30 +482,41 @@ requester = "count == 0"      # it shows no requester
 
 and every check in the source that ran must have passed. An assertion
 in a file replaces the default of its query only; a test that ends with
-exit code 20 on purpose sets `rc = "== 20"` and keeps the rest.
+exit code 20 on purpose sets `rc = "== 20"` and keeps the rest. In a
+cell that runs the program from the editor (`editor-run = "on"`), `rc`
+and `requester` have no default. The compile of the test and of each of
+its data sources must succeed by default, and every program a case
+started with `!RunProgram` must have returned.
 
 The queries:
 
 | Query | What it looks at | Predicates |
 |---|---|---|
 | `rc` | the program's exit code | a comparison with a number, `exists` |
-| `requester` | the requesters the program showed, apart from the runtime errors the case announced | `contains`, `matches`, `exists`, `count` |
-| `compile` | the compiler's result: `ok`, `error LINE MESSAGE` or `none` | `==`, `!=`, `contains`, `matches` |
-| `compile.log` | what the compiler wrote | `==`, `!=` a string, `contains`, `matches`, `exists` |
+| `requester` | the requesters the program showed, apart from the runtime errors the case announced; only the first line of each text (below) | `contains`, `matches`, `exists`, `count` |
+| `compile` | the compiler's result for the test: `ok`, `error LINE MESSAGE` or `none` | `==`, `!=`, `contains`, `matches` |
+| `compile.log` | what the compiler wrote, then the log of the program that drives it | `==`, `!=` a string, `contains`, `matches`, `exists` |
+| `compile.log.JOB` | the part of that log that belongs to the job `JOB` | as `compile.log` |
+| `compile.JOB` | the result of the `job=` or `resident=` job `JOB` of `jobline`, as for `compile`; no default | as `compile` |
+| `compile.inject` | the report of the helper `inject` on the compiler, in a cell with `wrap = "@INJECT@"` | as `compile.log` |
+| `data.FILE` | the result of the compile of the data source `ID.test/FILE`, as for `compile` | as `compile` |
 | `output` | what the program printed | as `compile.log` |
 | `serial` | the data the program sent to the serial port | as `compile.log` |
-| `inject` | the report of the helper `inject` | as `compile.log` |
+| `inject` | the report of the helper `inject` on the program, in a cell with `pad` or a `runwrap` of `@INJECT@` | as `compile.log` |
 | `session` | how the session ended: `done`, `timeout` or `halt` | `==`, `!=` |
 | `end.case`, `end.run` | whether the case, the program reached its end | `exists`, `not exists` |
-| `check.NS.NAME` | the verdict of a check: `ok`, `fail`, or `not-run` if it never ran | `==`, `!=` |
+| `check.NS.NAME` | the verdict of a check: `ok`, `fail`, or `not-run` if it never ran; of a named `!ExpectError`: `ok` if its requester came | `==`, `!=` |
 | `check.NS.NAME.expected`, `.actual` | the expected and the actual value of that check (of its first failed run, else its first) | a comparison with a number or a string, `contains`, `matches` |
+| `run.NS.NAME` | the program the `!RunProgram` named `NAME` started: `done` if it returned, `open` if it hung or crashed, `not-run` | `==`, `!=` |
+| `run.NS.NAME.rc` | its return code; no default, since the case checks it itself | a comparison with a number, `exists` |
+| `run.NS.NAME.output` | everything it printed, also when it did not return | as `compile.log` |
 
 A predicate is one of:
 
 * a comparison `==`, `!=`, `<`, `<=`, `>` or `>=` with a value: a number
   (`20`, `-1`, or `$7FFFFFFF` in hexadecimal), a string in `"..."`, or
-  one of the words `ok`, `fail`, `not-run`, `done`, `timeout`, `halt`,
-  `none`;
+  one of the words `ok`, `fail`, `not-run`, `done`, `open`, `timeout`,
+  `halt`, `none`;
 * `contains "TEXT"` or `not contains "TEXT"`;
 * `matches "PATTERN"`, which holds if a line matches the pattern: `*`
   stands for any characters, `#` for a decimal number, `\c` for the
@@ -409,7 +525,52 @@ A predicate is one of:
 * `count` with a comparison, for requesters: `count == 1`.
 
 Inside the TOML string, the quotes of a string value are escaped:
-`output = "contains \"done\""`.
+`output = "contains \"done\""`. There is no `and` or `or`: two
+conditions are two assertions on two queries, or the alternatives of an
+alternative end (below).
+
+The query `requester` sees only the first line of each requester's
+text. A requester whose text has several lines ends there for the query;
+its further lines, its buttons and the answer given to it are in
+`output`. Write a `contains` or `matches` on the first line, or count
+the requesters with `count`.
+
+A case that starts a program with `!RunProgram` checks the return code
+and the start of the printed text itself. The `run.` queries are for the
+rest: a program that is expected to hang, or an output longer than the
+1024 bytes the case can see:
+
+```toml
+# an example, not a file of the tree
+[asserts."case=hang"]
+"run.hang.child" = "== open"
+"run.hang.child.output" = "contains \"before the hang\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+```
+
+### Several compile jobs
+
+`compile` is the result of the compile of the test itself, `data.FILE`
+that of a data source and `compile.JOB` that of a job the test adds with
+`jobline`. `compile.log` is the whole log of all of them;
+`compile.log.JOB` cuts out the part of one job, so that a test that
+judges several jobs writes one assertion per job. `JOB` is the job's
+name: `j000` for the test's own compile, `r001` for the run from the
+editor, a name from `jobline`, or the file of a data source
+(`compile.log.child.bas`). A job that did not run has no part:
+`not exists` holds for it. A name that is no job of the test is refused.
+
+```toml
+# an example, not a file of the tree
+jobline = ["job=j001|@DRIVER@|CORPUS:out/again"]
+
+[asserts]
+"compile.j001" = "== ok"
+"compile.log.j001" = "contains \"RESULT\tj001\tok\""
+```
 
 A check is named by its *namespace* and its name: `NS` is the case it
 stands in, the procedure it stands in, `init` for the batch init or
@@ -506,11 +667,71 @@ A test has at most one of `fixed-orig`, `fixed` and `extension`.
 A test in `tests/bug-orig/` (outside `regression/`) must declare at
 least one deviation. Without one it is reported *broken*, because it
 would not show its bug. `fixed-orig` or `extension` without a deviation
-is refused, and so is `fixed` with one.
+is refused, and so is `fixed` with one. An alternative end (below)
+counts as a deviation.
 
-`fixed-orig`, `fixed`, `extension` and the deviations belong to a single
-test: they may stand only in its `ID.test.toml`. `root` may stand only in a
-`tests.toml`.
+`fixed-orig`, `fixed`, `extension`, `flaky`, the deviations, the
+alternative ends and the data belong to a single test: they may stand
+only in its `ID.test.toml`. `root` may stand only in a `tests.toml`.
+
+### Alternative ends
+
+Some originals do not end the same way every time: whether the faulty
+part returns or hangs, crashes or not, depends on what lies in memory.
+Such a test declares the possible ends in a table `[ends."SELECTOR"]`
+of its own file. It needs a key `reason`, which says why the end
+varies; every other key is a named *alternative*, a list of assertions
+written as `QUERY PREDICATE`:
+
+```toml
+# an example, not a file of the tree
+[ends."libs=cd"]
+reason = "reads behind the table; returns or hangs by memory"
+returns = ["session == done", "rc == 0", "end.case exists", "end.run exists"]
+hangs = ["session == timeout", "rc not exists", "end.case not exists", "end.run not exists"]
+```
+
+The cells pass that point if one alternative holds completely, and the
+report names the one that held, or each alternative with the assertion
+that failed. The queries an alternative can use are `session`, `rc`,
+`requester`, `end.case`, `end.run`, `output`, `check.NS.NAME` and `run.NS.NAME`; the
+queries it names are taken out of the other assertions and the defaults.
+An alternative end is a declared deviation: it applies where the
+deviations apply, counts for `fixed-orig` and `extension`, and is
+refused with `fixed`.
+
+**An original that corrupts memory** (a wild write, a jump into data, a
+free of memory it does not own) has no defined end at all: it may crash
+with a requester, hang, halt the CPU or return, and the end changes from
+run to run. Its test declares the general abnormal end, the built-in
+alternative `abnormal = ["any"]`, and nothing else about how the
+program ends: no requester text, exit code or end entry of its own.
+
+```toml
+# an example, not a file of the tree
+[ends."libs=cd"]
+reason = "writes behind the string: no defined end"
+abnormal = ["any"]
+```
+
+The runner expands `any` into four alternatives, for an end before the
+end of the case, after it, after the end of the run, and after the end
+of the run without the end of the case. Each requires that the session
+did not end normally (a crash runs into the time limit, a hang, a halt)
+and takes the exit code, the requesters and the end entries out of the
+defaults. A check that the crash can hide or the bug can fail is named
+behind `any` with `!= ok`, so that it goes into all four and need not
+pass: `abnormal = ["any", "check.box.width != ok"]`. Further elements
+may name `output`, `check.NS.NAME` and `run.NS.NAME`. The word `any` anywhere else
+is refused.
+
+If the original has also been seen to return, add an alternative
+`returns` with an observation only the bug gives, such as a failed
+check with its actual value. Keep a specific end (a requester text, a
+single `session == timeout` or `halt`) only where that end is the bug
+itself and not a consequence of corrupted memory: an odd address on the
+68000, a call that Kickstart 1.3 does not have, a division by zero, a
+loop that never ends.
 
 ## A complete example
 
@@ -648,8 +869,9 @@ declarations are allowed: constants, `Macro`, `Statement` and
 or a subroutine inside a case.
 
 Inside a block, the checks of the test library compare long, quick,
-float and string values, `!Require` checks a precondition and
-`!ExpectError` announces a runtime error. A check may have a name, its
+float and string values, `!Require` checks a precondition,
+`!ExpectError` announces a runtime error and `!RunProgram` starts
+another program. A check may have a name, its
 last argument; a check that a configuration names needs one. Every
 macro, with its arguments, what it records and the rules for case names,
 is described in [The test library]({{< relref "test-library" >}}).
@@ -759,7 +981,9 @@ named after the bug: the library or part, then what goes wrong, as in
 
 Write the cases with their checks. Add `ID.test.toml` only for what the
 directory files do not already give: other cells, a longer time limit,
-files, assertions, and for a bug test its deviations.
+files, assertions, and for a bug test its deviations. Files that only
+this test uses, such as a small program it starts, go into `ID.test/`
+and its table `[data]`.
 
 #### Check the configuration
 
@@ -806,8 +1030,8 @@ found.
 Put the settings all its tests share into `tests.toml`: a matrix, an
 `exclude`, a time limit, labels, common assertions. Do not set
 `root = true` there: the search must go on to `tests/tests.toml`, and
-`fixed-orig`, `fixed`, `extension` and deviations are not allowed in a directory
-file.
+`fixed-orig`, `fixed`, `extension`, `flaky`, deviations, alternative ends
+and data are not allowed in a directory file.
 
 #### Check a test of it
 
@@ -878,20 +1102,24 @@ are described in the repository's
 | `serial` | `off`, `on` | `off` | remote end on the serial port |
 | `rtg` | `off`, `on` | `off` | emulator with a graphics card |
 | `pad` | `off`, `on` | `off` | zeroed bytes behind every allocation (through `inject`) |
+| `isolate` | `off`, `on`, list of cell selectors | `off` | an emulator session of its own for every cell, or for the cells named; no axis |
 | `wrap` | `PATH[\|OPTIONS]` | none | start the compiler through a helper |
 | `runwrap` | `PATH[\|OPTIONS]` | none | start the program through a helper |
 | `runargs` | string | none | arguments of the program |
 | `launcherargs` | string | none | options of the launcher |
+| `editor-run` | `off`, `on` | `off` | run the program from the editor instead of from the shell |
+| `defaultdbug` | path | see above | the debugger module of a run from the editor; only with `editor-run = "on"` |
 | `files` | list of `DEST\|SRC[\|SELECTOR]` | none | files copied to `CORPUS:DEST` |
 | `dirs` | list | none | empty directories in `CORPUS:` |
 | `remove` | list | none | files deleted after the copying |
 | `mount` | list of `NAME\|DIR` | none | read-only volumes |
 | `floppy` | list of `N\|SRC` | none | disk images in drive `DFN:` |
 | `uae` | list of `KEY=VALUE` | none | changes of the emulator's configuration |
-| `jobline` | list | none | extra lines of the compiler's job list |
+| `jobline` | list | none | extra lines and jobs of the compiler's job list |
 | `labels` | list | none | further CTest labels |
 | `fixtures` | list | none | CTest fixtures the tests require |
 | `cost` | number | none | CTest cost |
+| `flaky` | text, not empty | none | what is known of a test that fails only in full runs; the label `flaky`; only in an `ID.test.toml` |
 | `exclude` | list of cell selectors | none | cells left out of the matrix |
 | `root` | `true`, `false` | `false` | the search for files stops here; only in a `tests.toml` |
 | `fixed-orig` | issue number | none | the original bug is fixed by this issue; only in an `ID.test.toml` |
@@ -900,6 +1128,8 @@ are described in the repository's
 | `[matrix]` | `KEY = ["VALUE", ...]` | none | the axes |
 | `[asserts]`, `[asserts."SELECTOR"]` | `QUERY = "PREDICATE"` | the defaults above | assertions |
 | `[deviations."SELECTOR"]` | `QUERY = "PREDICATE"` | none | how the original's faulty part deviates; only in an `ID.test.toml` |
+| `[ends."SELECTOR"]` | `reason = "TEXT"`, `NAME = ["QUERY PREDICATE", ...]` | none | the alternative ends of the original; only in an `ID.test.toml` |
+| `[data]`, `[data."FILE"]` | `"FILE" = "ACTION"`, or `action` and options | none | the test's own files in `ID.test/`; only in an `ID.test.toml` |
 
 Every key may stand in a test's own file and in a directory file,
 except where the table says otherwise. A key the build does not know, or a key in the wrong kind of
