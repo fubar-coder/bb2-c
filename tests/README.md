@@ -659,10 +659,13 @@ reason = "the original ... (#N): memory corruption, so the end is not defined"
 abnormal = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run not exists"]
 abnormal_after_case = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run not exists"]
 abnormal_after_run = ["session != done", "rc not exists", "requester count >= 0", "end.case exists", "end.run exists"]
+abnormal_run_only = ["session != done", "rc not exists", "requester count >= 0", "end.case not exists", "end.run exists"]
 ```
 
-The three alternatives are the three places where the end can come: before
-the end of the case, behind it, behind the end of the run. `session !=
+The four alternatives are the places where the end can come: before
+the end of the case, behind it, behind the end of the run, and (a handler
+that ends the program, so the case has no end entry) behind the end of the run
+without the case. `session !=
 done` holds for a crash (the session runs into its timeout), a hang and a
 halt. The alternatives must name `rc`, `requester`, `end.case` and
 `end.run` although they need no value of them: a query that no alternative
