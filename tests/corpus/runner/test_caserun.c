@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "caserun.h"
 #include "corpus.h"
 #include "util.h"
@@ -829,6 +830,9 @@ static void test_clean(void)
     o = clean_obs(buf, ok);
     o.has_rc = 0;
     CHECK(!cr_cell_clean(&o));
+    /* a run from the editor gives no exit code */
+    o.editor_run = 1;
+    CHECK(cr_cell_clean(&o));
     o = clean_obs(buf, ok);
     o.has_result = 0;
     CHECK(!cr_cell_clean(&o));
@@ -1270,6 +1274,170 @@ static void test_data_pass(void)
     }
 }
 
+/* the cell pass of a run from the editor: editrun=on, the debugger module
+   of the setting on either side, the driver's source in a job line; the
+   prev pass without them */
+static void test_editor_run_pass(void)
+{
+    struct t t;
+    char err[600], *p, *cp = NULL, *pp = NULL;
+
+    put("er/tests.toml", "root = true\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
+    put("er/x.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    put("er/x.test.toml", "editor-run = \"on\"\nruntime-errors = \"on\"\ndefaultdbug = \"@TESTDATA@/DBG\"\n"
+        "wrap = \"/b/inject|cacheflush=Debug\"\njobline = [\"job=j001|@DRIVER@|CORPUS:out/again\", \"progress=on\"]\n");
+    load(&t, "er/x.test.bas", ENV_RUNNER);
+    /* the side port: the setting's module (the cell has no original material) */
+    p = pass(&t, "clib", err, sizeof err);
+    CHECK(p && has(p, "editrun=on"));
+    CHECK(p && has(p, "defaultdbug=/td/DBG"));
+    CHECK(p && has(p, "jobline=job=j001|CORPUS:src/test.bb2|CORPUS:out/again"));
+    CHECK(p && has(p, "jobline=progress=on"));
+    CHECK(p && has(p, "wrap=/b/inject|cacheflush=Debug"));
+    CHECK(p && !strstr(p, "runwrap=") && !strstr(p, "@DRIVER@"));
+    if (p) {
+        struct corpus_pass cpp;
+        char perr[400];
+
+        CHECK(corpus_parse(p, &cpp, perr, sizeof perr) == 0);
+        CHECK(cpp.editrun && cpp.cell);
+        corpus_free(&cpp);
+    }
+    free(p);
+    /* the side originals: the setting's module replaces the CD's */
+    p = pass(&t, "cd", err, sizeof err);
+    CHECK(p && has(p, "defaultdbug=/td/DBG"));
+    CHECK(p && !strstr(p, "defaultdbug=/cd/DEFAULTDBUG"));
+    CHECK(p && has(p, "editrun=on"));
+    free(p);
+    CHECK(cr_cell_wrap_inject(&t.conf, &t.m, 0, &t.env) == 1);
+    CHECK(cr_cell_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    /* the prev pass: the driver compiled as job j000, nothing run, no module;
+       the job line names the prev pass's driver */
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "clib"), &t.env, "clib", "/w/p/x", "/w/p/x.bb2", &cp, err,
+                       sizeof err) == 0);
+    CHECK(cp && has(cp, "jobline=job=j001|CORPUS:src/x.bb2|CORPUS:out/again"));
+    CHECK(cp && cr_prev_pass(cp, "blitz2_x_prev", "x", "/w/p/x", "/w/p/x.bb2", "/prev/blitz2", "/prev", NULL, 0,
+                             &pp, err, sizeof err) == 0);
+    CHECK(pp && !strstr(pp, "editrun=") && !strstr(pp, "defaultdbug=") && has(pp, "run=off"));
+    CHECK(pp && has(pp, "jobline=job=j001|CORPUS:src/x.bb2|CORPUS:out/again"));
+    if (pp) {
+        struct corpus_pass cpp;
+        char perr[400];
+
+        CHECK(corpus_parse(pp, &cpp, perr, sizeof perr) == 0);
+        corpus_free(&cpp);
+    }
+    free(cp);
+    free(pp);
+    unload(&t);
+    /* without the setting: the CD's module in the cells with original
+       material only, and no run from the editor */
+    put("er/x.test.toml", "");
+    load(&t, "er/x.test.bas", ENV_RUNNER);
+    p = pass(&t, "clib", err, sizeof err);
+    CHECK(p && !strstr(p, "defaultdbug=") && !strstr(p, "editrun="));
+    free(p);
+    p = pass(&t, "cd", err, sizeof err);
+    CHECK(p && has(p, "defaultdbug=/cd/DEFAULTDBUG"));
+    free(p);
+    CHECK(cr_cell_wrap_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+    /* a wrap that is not inject */
+    put("er/x.test.toml", "wrap = \"/x/w|track\"\n");
+    load(&t, "er/x.test.bas", ENV_RUNNER);
+    CHECK(cr_cell_wrap_inject(&t.conf, &t.m, 0, &t.env) == 0);
+    unload(&t);
+}
+
+/* the observation of a recorded cell directory (cr_observe): a run from the
+   shell and a run from the editor, a compiler through inject and one without */
+static void test_observe(void)
+{
+    static const char src_text[] = "!TestCase{c}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n";
+    static const char res[] = "begin\t1\nblock\tcase\tc\ncheck\t0\tok\t$00000001\t$00000001\nblockend\nend\n";
+    static const char b2[] = "inject: track: 0 allocations left, 0 bytes\ninject: rc=0\nrc=0\n";
+    static const char log[] = "BATCH\tstart\nJOB\tj000\tCORPUS:src/test.bb2\nRESULT\tj000\tok\t1234\n"
+                              "JOB\tr001\tCORPUS:src/test.bb2\nOPENIO\tr001\nCLOSEIO\tr001\nOUTPUT\tr001\tstart\n"
+                              "REQUESTERS\tr001\t0\nBATCH\tend\n";
+    struct tp_source src = { 0 };
+    struct tp_params par = { 0 };
+    struct tp_driver drv = { 0 };
+    struct corpus_pass p;
+    struct cr_obs ob;
+    struct t t;
+    char err[400];
+
+    par.file = "s.test.bas";
+    par.test_id = "s";
+    CHECK(tp_process(src_text, strlen(src_text), &par, &src) == 0);
+    put("ob/tests.toml", "root = true\n");
+    put("ob/s.test.bas", src_text);
+    load(&t, "ob/s.test.bas", ENV_RUNNER);
+    /* the shell: the program's output and exit code; the compiler through inject */
+    put("ob/sh/out/session.log", "BATCH\tstart\nJOB\tj000\tCORPUS:src/test.bb2\nRESULT\tj000\tok\t1234\nBATCH\tend\n");
+    put("ob/sh/out/blitz2.out", b2);
+    put("ob/sh/out/test.run", "hello\nrc=5\n");
+    put("ob/sh/out/test.res", res);
+    CHECK(corpus_parse("cell=on\nwork=/w\nreport=/w/r.txt\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                       "source=/s/test.bb2\n", &p, err, sizeof err) == 0);
+    {
+        char *vol = str_printf("%s/ob/sh", work);
+        struct cr_cellrun c = { vol, "done", &p, 0, 1 };
+
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "s.test.bas", &ob) == 0);
+        CHECK(ob.o.output && !strcmp(ob.o.output, "hello\n"));
+        CHECK(ob.o.has_rc && ob.o.rc == 5 && !ob.o.editor_run);
+        CHECK(ob.o.compile && !strcmp(ob.o.compile, "ok"));
+        CHECK(ob.o.compile_inject && !strcmp(ob.o.compile_inject, "inject: track: 0 allocations left, 0 bytes\n"
+                                                                  "inject: rc=0\n"));
+        CHECK(!ob.o.inject);
+        CHECK(ob.o.has_result);
+        cr_obs_free(&ob);
+        /* without inject on the compiler: not captured */
+        c.wrap_inject = 0;
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "s.test.bas", &ob) == 0);
+        CHECK(!ob.o.compile_inject);
+        cr_obs_free(&ob);
+        free(vol);
+    }
+    corpus_free(&p);
+    /* the editor: the console is the output, no exit code and no requesters
+       (a test.run of another run does not count) */
+    put("ob/ed/out/session.log", log);
+    put("ob/ed/out/blitz2.out", "rc=0\n");
+    put("ob/ed/out/test.con", "start\n");
+    put("ob/ed/out/test.run", "REQUESTER: x\nother\nrc=0\n");
+    put("ob/ed/out/test.res", res);
+    CHECK(corpus_parse("cell=on\neditrun=on\nwork=/w\nreport=/w/r.txt\nted=/t\nlauncher=/l\n"
+                       "config=c0|ref|/b|/d|/a\nsource=/s/test.bb2\n", &p, err, sizeof err) == 0);
+    {
+        char *vol = str_printf("%s/ob/ed", work);
+        struct cr_cellrun c = { vol, "done", &p, 0, 0 };
+
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "s.test.bas", &ob) == 0);
+        CHECK(ob.o.output && !strcmp(ob.o.output, "start\n"));
+        CHECK(ob.o.editor_run && !ob.o.has_rc && ob.o.nreq == 0);
+        CHECK(ob.o.compile_log && strstr(ob.o.compile_log, "OUTPUT\tr001\tstart\nREQUESTERS\tr001\t0\n"));
+        CHECK(cr_cell_clean(&ob.o));
+        cr_obs_free(&ob);
+        /* the program did not start: no console, the output not captured */
+        {
+            char *con = str_printf("%s/ob/ed/out/test.con", work);
+
+            CHECK(con && unlink(con) == 0);
+            free(con);
+        }
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "s.test.bas", &ob) == 0);
+        CHECK(!ob.o.output);
+        cr_obs_free(&ob);
+        free(vol);
+    }
+    corpus_free(&p);
+    unload(&t);
+    tp_free(&src);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1300,6 +1468,8 @@ int main(int argc, char **argv)
     test_verdict_order();
     test_side_status();
     test_data_pass();
+    test_editor_run_pass();
+    test_observe();
     if (!failures)
         rm_tree(work);
     printf("test_caserun: %d failures\n", failures);

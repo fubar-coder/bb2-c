@@ -1,0 +1,9 @@
+# model-compile-inject.test.bas: the port with the C libraries, the
+# compiler started through inject; its report is the query compile.inject
+# (the lines of blitz2.out that start with "inject:"), and compile.log
+# keeps them
+wrap = "@INJECT@|track"
+
+[asserts]
+"compile.inject" = "matches \"inject: track: # allocations left, # bytes*\""
+"compile.log" = "contains \"inject: rc=0\""

@@ -60,6 +60,8 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include "bugorig.h"
+#include "corpus.h"
 #include "testconf.h"
 #include "testdriver.h"
 #include "testjudge.h"
@@ -122,7 +124,8 @@ struct caserun_opts {
  * @brief The pass file text of one compile of the comparison: the cell's
  *        pass (cr_cell_pass, tag clib) without what belongs to a run (the
  *        launcher, rcput, the hang check, serial, runwrap, runargs,
- *        launcherargs, the debugger module, the floppies), with run=off,
+ *        launcherargs, the debugger module, the run from the editor
+ *        editrun, the floppies), with run=off,
  *        test=TEST, the configuration prev|exe:TAG after the cell's, the
  *        source (NULL: none, a pass of data sources alone), the work
  *        directory and its report WORK.txt, mask_traps=on
@@ -247,7 +250,8 @@ int cr_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
 /**
  * @brief Whether a cell's program in a shared run ended cleanly: its session
  *        ended (done), it compiled (ok), it showed no requester, its exit
- *        code is 0 and the result file has the run's end entry without an
+ *        code is 0 (a run from the editor has none: tj_obs.editor_run) and
+ *        the result file has the run's end entry without an
  *        incomplete entry before it (the program did not end inside a
  *        block: End in a case, a crash the library's finit survived).
  */
@@ -349,10 +353,13 @@ int cr_plan_worst(const struct cr_plan *p);
 
 /**
  * @brief The pass file text (corpus.h) of one cell: configuration TAG,
- *        source the tokenised driver, work= WORK; the job lines with
- *        @DRIVER@ (TC_DRIVER) replaced by the driver's source on the cell's
- *        volume, CORPUS:src/NAME.bb2 (NAME the base name of source without
- *        .bb2).
+ *        source the tokenised driver, work= WORK; with editor-run = "on"
+ *        editrun=on (the driver runs from the editor, not from the
+ *        shell); the debugger module defaultdbug= the setting's, else in a
+ *        cell with original material the runner's cd-defaultdbug; the job
+ *        lines with @DRIVER@ (TC_DRIVER) replaced by the driver's source on
+ *        the cell's volume, CORPUS:src/NAME.bb2 (NAME the base name of
+ *        source without .bb2).
  * @param tag     the configuration's tag ("c0")
  * @param work    the run directory
  * @param source  the tokenised driver (its name without .bb2 is the program)
@@ -424,6 +431,58 @@ char *cr_inject_lines(const char *output);
  *        captured.
  */
 int cr_cell_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env);
+
+/**
+ * @brief Whether the compiler of a cell runs through inject: a wrap whose
+ *        path is inject (as for cr_cell_inject).  The query compile.inject
+ *        of such a cell holds inject's report in the compiler's output
+ *        (cr_inject_lines of CORPUS:out/blitz2.out), of any other cell it is
+ *        not captured.
+ */
+int cr_cell_wrap_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
+                        const struct tc_env *env);
+
+/** @brief A cell's run as cr_observe reads it. */
+struct cr_cellrun {
+    const char *vol;            /* the host directory of its volume CORPUS: */
+    const char *session;        /* how its session ended: done, timeout, halt */
+    const struct corpus_pass *p;    /* its pass (editrun, the jobs of the data sources) */
+    int inject;                 /* the program runs through inject (cr_cell_inject) */
+    int wrap_inject;            /* the compiler runs through inject (cr_cell_wrap_inject) */
+};
+
+/** @brief The observation of a cell for the judge (o) and the texts it points to. */
+struct cr_obs {
+    struct tj_obs o;
+    struct cr_run run;
+    struct tj_requester *req;
+    char *log, *b2, *result, *serial, *compile, *compile_log, *where, *inject, *con, *cinject;
+    struct bugorig_obs bo;
+    struct tj_data *data;       /* the compiles of the data sources */
+    char **dres;
+    size_t ndata;
+    struct tj_runout *runs;     /* the output files of the started programs */
+    char **rtext;
+    size_t nruns;
+};
+
+/**
+ * @brief The observation of a cell from the files of its volume (out/):
+ *        the session log and the compiler's output (compile, compile.log;
+ *        with wrap_inject compile.inject, inject's lines of blitz2.out), the
+ *        result file test.res, the serial data, and the program's run: from
+ *        the shell test.run (output, rc, requesters; with inject the
+ *        query inject), from the editor (p->editrun) its console test.con
+ *        as the output, no exit code and no requesters (tj_obs.editor_run);
+ *        the compiles of the data sources and the outputs of the started
+ *        programs.  A file that is missing is not captured.
+ * @param d     the driver (the compile error in the terms of the source)
+ * @param file  the source's name in the report
+ * @return 0, -1 = out of memory (cr_obs_free after either)
+ */
+int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const struct tp_source *src,
+               const struct tp_driver *d, const char *file, struct cr_obs *ob);
+void cr_obs_free(struct cr_obs *ob);
 
 /**
  * @brief The compile result of the driver in the terms of the source:

@@ -200,3 +200,32 @@ them out.
 Additive: no key, query or default of an existing test changes; the moved
 tests replace their `.bas`/`.expect`/`.orig` in the commit that adds the
 model files.
+
+## Findings of the implementation
+
+- **D3 measured** (task 2.4, `blitz2_selftest_model_editor_run_hang`,
+  2026-11-23): the program of an editor-run cell that prints a line and
+  loops ends its session after 11.3 s and 11.5 s (two runs; `hang-after`
+  the runner's 8 s, the session's limit 90 s): the hang check armed on the
+  console file `CORPUS:out/test.con` works, the hang does not take the
+  time limit. The case that ends normally (`blitz2_selftest_model_editor_run`)
+  takes a session of 3 s.
+- **The arm of a shared session.** `corpus_session_start` arms the hang
+  check by the first cell of the session (its pass): if that cell runs from
+  the editor, its console arms the check, and the compiles of the cells
+  behind it in the same session count against `hang-after` (a compile
+  silent for longer would end the session as a hang); if it runs from the
+  shell, an editor run of a later cell is not hang-checked until the first
+  cell's shell run starts. No user mixes the two in one session (the moved
+  tests have one value of `editor-run`) — L1 Unlikely / I1 Low / E2
+  Reasoned → Monitor.
+- **The observation is a function of its own.** For the host test of task
+  2.3 ("a recorded cell directory of each kind") the observation of a cell
+  is `cr_observe` (`caserun.h`, with `struct cr_cellrun` and `struct
+  cr_obs`), which reads the files of a cell's volume; the run calls it as
+  before.
+- **The defaults** of `rc` and `requester` are left out by
+  `tc_assertions_for` for an editor-run cell (`struct tc_default.shell`),
+  so the judge, `cr_case_alone` and `--print-config` see the same set;
+  `cr_cell_clean` takes such a cell as clean without an exit code
+  (`tj_obs.editor_run`).

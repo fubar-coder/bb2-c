@@ -262,9 +262,15 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
         if (!strcmp(compiler, "orig195"))
             text_add(&t, "file=blitz2/testlib/testlib.obj|%s\n", testlib);
     }
-    /* the debugger module of the CD for the cells with original material */
-    if (originals && (v = tc_env_runner(env, "cd-defaultdbug")))
+    /* the debugger module: the setting's, else the CD's for the cells with
+       original material */
+    if (*(v = val(conf, m, cell, "defaultdbug", b2)))
         text_add(&t, "defaultdbug=%s\n", v);
+    else if (originals && (v = tc_env_runner(env, "cd-defaultdbug")))
+        text_add(&t, "defaultdbug=%s\n", v);
+    /* the program runs from the editor instead of from the shell */
+    if (!strcmp(val(conf, m, cell, "editor-run", b2), "on"))
+        text_add(&t, "editrun=on\n");
     if (*(v = val(conf, m, cell, "stack", b2)))
         text_add(&t, "stack=%s\n", v);
     {
@@ -401,7 +407,7 @@ int cr_prev_pass(const char *cell_pass, const char *test, const char *name, cons
     /* the keys of a run, not of a compile (as prev_compile_test drops them), and
        the ones this pass sets itself */
     static const char *const drop[] = { "cell", "launcher", "rcput", "hang_after", "hang_from", "serial",
-                                        "runwrap", "runargs", "launcherargs", "defaultdbug", "floppy",
+                                        "runwrap", "runargs", "launcherargs", "defaultdbug", "editrun", "floppy",
                                         "parallel", "report", "work", "source", "run", "test", "intended" };
     struct text t = { 0 };
     const char *l = cell_pass;
@@ -598,20 +604,33 @@ static int runwrap_is(const char *runwrap, const char *path)
     return n && !strncmp(runwrap, path, n) && (runwrap[n] == '|' || !runwrap[n]);
 }
 
+/* whether a wrap or runwrap value starts its program through inject: @INJECT@
+   of the configuration, or the runner's inject */
+static int wrap_inject(const char *wrap, const struct tc_env *env)
+{
+    if (!*wrap)
+        return 0;
+    for (size_t i = 0; env && i < env->nph; i++)
+        if (!strcmp(env->ph[i].name, "INJECT") && runwrap_is(wrap, env->ph[i].value))
+            return 1;
+    return runwrap_is(wrap, tc_env_runner(env, "inject"));
+}
+
 int cr_cell_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env)
 {
     char b[24];
-    const char *runwrap = val(conf, m, cell, "runwrap", b);
 
     if (!strcmp(val(conf, m, cell, "pad", b), "on"))
         return 1;
-    if (!*runwrap)
-        return 0;
-    /* @INJECT@ of the configuration, or the runner's inject */
-    for (size_t i = 0; env && i < env->nph; i++)
-        if (!strcmp(env->ph[i].name, "INJECT") && runwrap_is(runwrap, env->ph[i].value))
-            return 1;
-    return runwrap_is(runwrap, tc_env_runner(env, "inject"));
+    return wrap_inject(val(conf, m, cell, "runwrap", b), env);
+}
+
+int cr_cell_wrap_inject(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
+                        const struct tc_env *env)
+{
+    char b[24];
+
+    return wrap_inject(val(conf, m, cell, "wrap", b), env);
 }
 
 void cr_run_free(struct cr_run *r)
@@ -775,8 +794,9 @@ int cr_cell_clean(const struct tj_obs *o)
     const char *l, *end;
     int kinds[2] = { -1, -1 };  /* the last entry, the one before it */
 
+    /* a run from the editor gives no exit code */
     if (!o->session || strcmp(o->session, "done") || !o->compile || strcmp(o->compile, "ok") || o->nreq
-        || !o->has_rc || o->rc != 0 || !o->has_result || !o->result || !o->result_len)
+        || (!o->editor_run && (!o->has_rc || o->rc != 0)) || !o->has_result || !o->result || !o->result_len)
         return 0;
     end = o->result + o->result_len;
     if (end[-1] != '\n')
@@ -1096,6 +1116,7 @@ struct cell {
     int done;                   /* observed */
     enum amiga_emulation_status status;
     int inject;                 /* the program runs through inject (cr_cell_inject) */
+    int wrap_inject;            /* the compiler runs through inject (cr_cell_wrap_inject) */
 };
 
 /* the last line of a file holds rc= */
@@ -1122,7 +1143,8 @@ static int cell_complete(const struct cell *c)
     char *b2 = str_printf("%s/%s/vol/out/blitz2.out", c->p.work, c->tag);
     char *exe = str_printf("%s/%s/vol/out/" CR_PROGRAM, c->p.work, c->tag);
     char *run = str_printf("%s/%s/vol/out/" CR_PROGRAM ".run", c->p.work, c->tag);
-    int r = b2 && exe && run && has_rc(b2) && (access(exe, F_OK) || has_rc(run));
+    /* a run from the editor ends inside the compile part */
+    int r = b2 && exe && run && has_rc(b2) && (c->p.editrun || access(exe, F_OK) || has_rc(run));
 
     free(b2);
     free(exe);
@@ -1130,22 +1152,7 @@ static int cell_complete(const struct cell *c)
     return r;
 }
 
-/* the observation of a cell for the judge; the strings are kept in keep */
-struct obs {
-    struct tj_obs o;
-    struct cr_run run;
-    struct tj_requester *req;
-    char *log, *b2, *result, *serial, *compile, *compile_log, *where, *inject;
-    struct bugorig_obs bo;
-    struct tj_data *data;       /* the compiles of the data sources */
-    char **dres;
-    size_t ndata;
-    struct tj_runout *runs;     /* the output files of the started programs */
-    char **rtext;
-    size_t nruns;
-};
-
-static void obs_free(struct obs *ob)
+void cr_obs_free(struct cr_obs *ob)
 {
     cr_run_free(&ob->run);
     free(ob->req);
@@ -1157,6 +1164,8 @@ static void obs_free(struct obs *ob)
     free(ob->compile_log);
     free(ob->where);
     free(ob->inject);
+    free(ob->con);
+    free(ob->cinject);
     bugorig_free(&ob->bo);
     for (size_t i = 0; i < ob->ndata; i++)
         free(ob->dres[i]);
@@ -1176,7 +1185,7 @@ static const char *status_name(enum amiga_emulation_status st)
 
 /* the compiles of the data sources of a cell (their jobs bNNN, in the order
    of the data sources: cr_data_pass) */
-static int observe_data(const struct cell *c, const struct tc_config *conf, struct obs *ob)
+static int observe_data(const struct cr_cellrun *c, const struct tc_config *conf, struct cr_obs *ob)
 {
     size_t n = 0;
 
@@ -1186,16 +1195,16 @@ static int observe_data(const struct cell *c, const struct tc_config *conf, stru
         return 0;
     if (!(ob->data = calloc(n, sizeof *ob->data)) || !(ob->dres = calloc(n, sizeof *ob->dres)))
         return -1;
-    for (size_t i = 0, j = 0; i < conf->ndata && j < c->p.nbjobs; i++) {
-        const struct corpus_build_job *b = &c->p.bjobs[j];
+    for (size_t i = 0, j = 0; i < conf->ndata && j < c->p->nbjobs; i++) {
+        const struct corpus_build_job *b = &c->p->bjobs[j];
         char job[32], *path, *log;
         size_t len;
 
         if (conf->data[i].action != TC_DA_BASIC_COMPILE)
             continue;
         snprintf(job, sizeof job, "b%03zu", j);
-        path = b->part ? str_printf("%s/%s/vol/%s/session.log", c->p.work, c->tag, b->part)
-                       : str_printf("%s/%s/vol/out/session.log", c->p.work, c->tag);
+        path = b->part ? str_printf("%s/%s/session.log", c->vol, b->part)
+                       : str_printf("%s/out/session.log", c->vol);
         if (!path)
             return -1;
         log = (char *)read_file(path, &len);
@@ -1215,7 +1224,7 @@ static int observe_data(const struct cell *c, const struct tc_config *conf, stru
 
 /* the output files of the started programs of a cell, CORPUS:out/run-K.out
    (also of one that did not return) */
-static int observe_runs(const struct cell *c, const struct tp_source *src, struct obs *ob)
+static int observe_runs(const struct cr_cellrun *c, const struct tp_source *src, struct cr_obs *ob)
 {
     size_t n = 0;
 
@@ -1232,7 +1241,7 @@ static int observe_runs(const struct cell *c, const struct tp_source *src, struc
 
         if (k->kind != TP_RUNPROGRAM)
             continue;
-        if (!(path = str_printf("%s/%s/vol/out/run-%u.out", c->p.work, c->tag, k->k)))
+        if (!(path = str_printf("%s/out/run-%u.out", c->vol, k->k)))
             return -1;
         ob->rtext[ob->nruns] = (char *)read_file(path, &len);
         free(path);
@@ -1247,10 +1256,10 @@ static int observe_runs(const struct cell *c, const struct tp_source *src, struc
     return 0;
 }
 
-static int observe_cell(const struct cell *c, const struct tc_config *conf, const struct tp_source *src,
-                        const struct tp_driver *d, const char *file, struct obs *ob)
+int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const struct tp_source *src,
+               const struct tp_driver *d, const char *file, struct cr_obs *ob)
 {
-    char *dir = str_printf("%s/%s/vol/out", c->p.work, c->tag), *path;
+    char *dir = str_printf("%s/out", c->vol), *path;
     size_t len;
     char *run = NULL;
     struct bugorig_outputs bout;
@@ -1278,7 +1287,7 @@ static int observe_cell(const struct cell *c, const struct tc_config *conf, cons
         ob->o.result = ob->result;
     }
     free(path);
-    bout.session = status_name(c->status);
+    bout.session = c->session;
     bout.log = ob->log;
     bout.blitz2 = ob->b2;
     bout.run = run;
@@ -1310,7 +1319,7 @@ static int observe_cell(const struct cell *c, const struct tc_config *conf, cons
            result file: after every line of it */
         ob->req[i].after = (size_t)-1;
     }
-    ob->o.session = status_name(c->status);
+    ob->o.session = c->session;
     ob->o.compile = ob->compile;
     ob->o.compile_log = ob->compile_log;
     ob->o.output = run ? ob->run.output : NULL;
@@ -1318,10 +1327,24 @@ static int observe_cell(const struct cell *c, const struct tc_config *conf, cons
     /* inject's report: its lines of the output, which keeps them */
     if (c->inject && run && !(ob->o.inject = ob->inject = cr_inject_lines(ob->run.output)))
         goto out;
+    /* inject's report of the compiler: its lines of the compiler's output */
+    if (c->wrap_inject && ob->b2 && !(ob->o.compile_inject = ob->cinject = cr_inject_lines(ob->b2)))
+        goto out;
     ob->o.has_rc = ob->run.has_rc;
     ob->o.rc = ob->run.rc;
     ob->o.req = ob->req;
     ob->o.nreq = ob->run.nreq;
+    if (c->p->editrun) {
+        /* the run from the editor: the output is its console; no exit code,
+           no requesters */
+        if ((path = str_printf("%s/" CR_PROGRAM ".con", dir)))
+            ob->con = (char *)read_file(path, &len);
+        free(path);
+        ob->o.output = ob->con;
+        ob->o.editor_run = 1;
+        ob->o.has_rc = 0;
+        ob->o.nreq = 0;
+    }
     if (observe_data(c, conf, ob) || observe_runs(c, src, ob))
         goto out;
     r = 0;
@@ -1962,7 +1985,7 @@ struct set {
                                    dir), NULL: the run of one case */
     struct tp_driver drv;
     struct cell *c;
-    struct obs *ob;
+    struct cr_obs *ob;
 };
 
 static void set_free(struct set *s)
@@ -1972,7 +1995,7 @@ static void set_free(struct set *s)
         free(s->c[i].key);
     }
     for (size_t i = 0; s->ob && i < s->ncells; i++)
-        obs_free(&s->ob[i]);
+        cr_obs_free(&s->ob[i]);
     free(s->c);
     free(s->ob);
     free(s->cases);
@@ -2042,6 +2065,7 @@ static int run_set(struct ctx *x, struct set *s)
 
         c->idx = s->idx[k];
         c->inject = cr_cell_inject(&x->conf, &x->m, c->idx, &x->env);
+        c->wrap_inject = cr_cell_wrap_inject(&x->conf, &x->m, c->idx, &x->env);
         snprintf(c->tag, sizeof c->tag, "c%zu", k);
         if ((r = cr_cell_pass(&x->conf, &x->m, c->idx, &x->env, c->tag, s->dir, bb2, &pt, err, sizeof err))) {
             fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
@@ -2108,11 +2132,18 @@ static int run_set(struct ctx *x, struct set *s)
         }
     }
     /* the observations */
-    for (size_t k = 0; k < s->ncells; k++)
-        if (observe_cell(&s->c[k], &x->conf, &x->src, &s->drv, x->file, &s->ob[k])) {
+    for (size_t k = 0; k < s->ncells; k++) {
+        const struct cell *c = &s->c[k];
+        char *vol = str_printf("%s/%s/vol", c->p.work, c->tag);
+        struct cr_cellrun cr = { vol, status_name(c->status), &c->p, c->inject, c->wrap_inject };
+        int r = vol ? cr_observe(&cr, &x->conf, &x->src, &s->drv, x->file, &s->ob[k]) : -1;
+
+        free(vol);
+        if (r) {
             fprintf(x->log, "corpusrun case: out of memory\n");
             goto out;
         }
+    }
     rc = 0;
 out:
     free(drvpath);
