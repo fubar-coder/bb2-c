@@ -26,10 +26,18 @@ original material, else `bug-orig` and `emulator` for a case with a
 declared deviation of an open bug, `emulator` for the others, then the
 configuration's `labels`), `TIMEOUT` (the sum of the cells' `timeout`,
 else `--timeout-default`, plus `--timeout-extra`), `SKIP_RETURN_CODE 77`,
-`COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures`, and the
-fixture of each `--cell-fixture SELECTOR|FIXTURE` whose selector matches
-a cell of the side (the build uses `compiler=orig195|originals_refbuild`:
-the build of `blitz2.s`, not built by default). The depfile
+`COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures` (a test of the
+label `bug-orig` without `cost`: the sum of its cells' session limits,
+the time it can take, as it fails on purpose and ctest never learns its
+cost), and the fixture of each `--cell-fixture SELECTOR|FIXTURE` whose
+selector matches a cell of the side (the build uses
+`compiler=orig195|originals_refbuild`: the build of `blitz2.s`, not built
+by default). The tests of the label `bug-orig` come last, the largest
+`COST` first, equal ones by name, together with the entries of `--order
+FILE`: the bug-orig tests of the old form, which CMake records and writes
+to that file (`cmake/bug-orig-order.cmake`, a line `# @test NAME COST`
+before each declaration; `tests/README.md`, "Order of the bug-orig
+tests"), so that all of them are declared in one sorted list. The depfile
 names every file the tool read (the sources, the configuration files, the
 environment file, the token lists), so the build step reruns when one of
 them changes. A depfile cannot name a file that does not exist yet: a
@@ -68,6 +76,9 @@ OPTIONS:
                               the time limit of a cell without timeout (default 90)
           --timeout-extra SEC:NONNEGATIVE
                               added to the sum of the cells' time limits (default 0)
+          --order FILE        the bug-orig tests of the old form (cmake/bug-orig-order.cmake):
+                              declared with the tests of the label bug-orig, the largest COST
+                              first
 
 The include file is written only when every source and configuration passed the
 checks; the depfile is written in any case. Exit status 0 ok, 1 a check failed

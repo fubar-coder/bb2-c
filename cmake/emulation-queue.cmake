@@ -27,6 +27,7 @@ set(EMULATION_QUEUE_WAIT 7200 CACHE STRING
 # snapshot of the owner "none", which every build directory and worktree
 # shares.  cmake/emulation-owner-test.cmake checks it.
 function(emulation_snapshot_owner owner)
+	set_property(GLOBAL PROPERTY EMULATION_SNAPSHOT_OWNER ${owner})
 	set(emulator_labels emulator originals oracle)
 	set(dirs ${CMAKE_SOURCE_DIR})
 	while(dirs)
@@ -57,6 +58,7 @@ endfunction()
 # coverage/NAME in the test's binary directory, where ctest runs it.  Call
 # it after all add_test, like emulation_snapshot_owner.
 function(emulation_coverage)
+	set_property(GLOBAL PROPERTY EMULATION_COVERAGE ON)
 	set(dirs ${CMAKE_SOURCE_DIR})
 	while(dirs)
 		list(POP_FRONT dirs dir)
@@ -72,4 +74,23 @@ function(emulation_coverage)
 			endif()
 		endforeach()
 	endwhile()
+endfunction()
+
+# The environment the two functions above give a test named NAME with the
+# labels LABELS of the binary directory BIN, for a test declared after they
+# ran: the bug-orig tests of the old form, which the registration of the
+# tests of the model declares (cmake/bug-orig-order.cmake).  The same rules:
+# the owner for the labels emulator, originals and oracle, the coverage
+# directory for emulator but host_emulator.
+function(emulation_test_environment var name labels bin)
+	set(env "")
+	get_property(owner GLOBAL PROPERTY EMULATION_SNAPSHOT_OWNER)
+	if(owner AND ("emulator" IN_LIST labels OR "originals" IN_LIST labels OR "oracle" IN_LIST labels))
+		list(APPEND env AMIGA_EMULATION_OWNER=${owner})
+	endif()
+	get_property(cov GLOBAL PROPERTY EMULATION_COVERAGE)
+	if(cov AND "emulator" IN_LIST labels AND NOT name STREQUAL "host_emulator")
+		list(APPEND env AMIGA_EMULATION_COVERAGE=${bin}/coverage/${name})
+	endif()
+	set(${var} "${env}" PARENT_SCOPE)
 endfunction()

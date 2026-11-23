@@ -107,6 +107,55 @@ refused("--cell-fixture compiler=orig195 is not SELECTOR\\|FIXTURE" --cell-fixtu
 	${s}/libs/sub/fixed-one.test.bas)
 refused("--cell-fixture nokey=1\\|f: " --cell-fixture "nokey=1|f" ${s}/libs/sub/fixed-one.test.bas)
 
+# --order: the bug-orig tests of the old form (cmake/bug-orig-order.cmake)
+# declared with the tests of an open bug, the largest COST first and equal
+# ones by name; an open bug without a configured cost gets the sum of its
+# cells' session limits (60, the port side's one cell); the tests without
+# the label bug-orig come first
+file(MAKE_DIRECTORY ${s}/order)
+file(WRITE ${s}/order/order-open.test.bas "!TestCase{c}\n  !CheckEq{1,1,\"w\"}\n!EndTestCase\n")
+file(WRITE ${s}/order/order-open.test.toml "[deviations.\"libs=cd\"]\n\"check.c.w\" = \"== fail\"\n")
+file(WRITE ${WORK}/order.cmake "# the old form\n"
+	"# @test bug_orig_small 10\nadd_test(bug_orig_small run small)\n"
+	"# @test bug_orig_big 240\nadd_test(bug_orig_big run big)\nset_tests_properties(bug_orig_big PROPERTIES COST 240)\n"
+	"# @test bug_orig_a_mid 60\nadd_test(bug_orig_a_mid run mid)\n")
+run(0 --prefix bug_orig_ --output ${WORK}/order-tests.cmake ${env} --command run --order ${WORK}/order.cmake
+	--depfile ${WORK}/order-tests.d ${s}/order/order-open.test.bas)
+file(READ ${WORK}/order-tests.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+set(last -1)
+foreach(want "add_test( bug_orig_order_open__c_originals"
+		"# the tests of the label bug-orig, the largest COST first"
+		"add_test(bug_orig_big run big)\nset_tests_properties(bug_orig_big PROPERTIES COST 240)\n"
+		"add_test(bug_orig_a_mid run mid)\n"
+		"set_tests_properties( bug_orig_order_open__c PROPERTIES LABELS bug-orig;emulator TIMEOUT 60 SKIP_RETURN_CODE 77 COST 60)"
+		"add_test(bug_orig_small run small)\n")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0 OR NOT at GREATER last)
+		message(FATAL_ERROR "--order: the include file lacks, or has out of order,\n  ${want}\nin\n${inc}")
+	endif()
+	set(last ${at})
+endforeach()
+file(READ ${WORK}/order-tests.d dep)
+string(FIND "${dep}" "${WORK}/order.cmake" at)
+if(at LESS 0)
+	message(FATAL_ERROR "--order: the depfile lacks the order file:\n${dep}")
+endif()
+# broken input: text before the first entry, a malformed entry, a test of
+# both forms, no such file
+file(WRITE ${WORK}/order-bad.cmake "add_test(x run)\n")
+refused("order-bad\\.cmake:1: text before the first entry" --order ${WORK}/order-bad.cmake
+	${s}/order/order-open.test.bas)
+file(WRITE ${WORK}/order-bad.cmake "# @test bug_orig_x many\n")
+refused("order-bad\\.cmake:1: an entry is \"# @test NAME COST\"" --order ${WORK}/order-bad.cmake
+	${s}/order/order-open.test.bas)
+file(WRITE ${WORK}/order-bad.cmake "# @test bug_orig_order_open__c 5\nadd_test(x run)\n")
+refused("the test bug_orig_order_open__c is also a test of the old form" --order ${WORK}/order-bad.cmake
+	${s}/order/order-open.test.bas)
+refused("no-such\\.cmake: cannot read" --order ${WORK}/no-such.cmake ${s}/order/order-open.test.bas)
+file(REMOVE_RECURSE ${s}/order)
+
 # a source given by a relative path: the test names it by its absolute path
 execute_process(COMMAND ${TESTREG} --prefix p_ --output ${WORK}/rel.cmake ${env} --command run
 	libs/sub/fixed-one.test.bas WORKING_DIRECTORY ${s} RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)

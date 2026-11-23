@@ -99,12 +99,48 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
 int treg_check_names(struct treg_result *r);
 
 /**
+ * @brief The order of the bug-orig tests (cmake/bug-orig-order.cmake): the
+ *        tests of the old form that CMake recorded, each an entry of the
+ *        file the build writes, a line "# @test NAME COST" and then the CMake
+ *        text that declares it (add_test, set_tests_properties) up to the
+ *        next such line.
+ */
+struct treg_entry {
+    char *name;
+    long long cost;
+    char *text;                 /* its declaration, lines ended by LF */
+};
+
+struct treg_entries {
+    struct treg_entry *v;
+    size_t n;
+};
+
+/**
+ * @brief Read the entries of the order file.
+ * @return 0, -1 = error (err: "FILE:LINE: TEXT", a line before the first
+ *         entry, a malformed entry line)
+ */
+int treg_entries_load(const char *file, struct treg_entries *e, char *err, size_t errlen);
+void treg_entries_free(struct treg_entries *e);
+
+/** @brief The names of r that an entry also has; 0 = none, 1 = errors added, -1 = out of memory. */
+int treg_check_entries(struct treg_result *r, const struct treg_entries *e);
+
+/**
  * @brief Write the ctest include file (TEST_INCLUDE_FILES): an add_test()
  *        and a set_tests_properties() per test; the test runs COMMAND...
- *        --source SOURCE --case CASE --side port|originals.
+ *        --source SOURCE --case CASE --side port|originals.  First the
+ *        tests without the label bug-orig, in the order of r, then those
+ *        with it (a test of an open bug, which has a COST: its configured
+ *        cost, else the sum of its cells' session limits) together with the
+ *        entries of order (NULL: none), the largest COST first, equal ones
+ *        by name: the order the tests of the label bug-orig must be
+ *        declared in (cmake/bug-orig-order.cmake).
  * @return 0, -1 = a value that cannot be quoted or a write error
  */
-int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand);
+int treg_write_include(FILE *f, const struct treg_result *r, const char *const *command, size_t ncommand,
+                       const struct treg_entries *order);
 
 /** @brief Write a depfile "TARGET: DEP..." (Makefile syntax, as ninja reads it). */
 int treg_write_depfile(FILE *f, const char *target, const struct treg_result *r);

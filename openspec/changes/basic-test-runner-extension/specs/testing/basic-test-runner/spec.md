@@ -204,3 +204,13 @@ count for the query `requester`.
 #### Scenario: The deviation removed
 - **WHEN** the same test runs without the deviation
 - **THEN** the cells with the CD's libraries fail naming the announcement that did not come
+
+### Requirement: Tests of open bugs join the order of the bug-orig tests
+A registered test of an open bug without a configured cost SHALL get the
+sum of its cells' session limits as its cost, and SHALL be declared with
+the bug-orig tests of the old form in the order of their cost, the largest
+first.
+
+#### Scenario: A test of an open bug between two of the old form
+- **WHEN** a test of an open bug with one cell of a session limit of 90 seconds is registered next to bug-orig tests of the old form with the costs 240 and 10
+- **THEN** its cost is 90 and it is declared after the one of 240 and before the one of 10

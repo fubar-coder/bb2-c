@@ -353,3 +353,43 @@ are refused when judged (it has no values). Not taken: a query by number
   exists"` and `rc = "exists"`; both sides PASSED, without the deviation
   the side originals FAILED naming the announcement
   (`selftest/model-expect-error*.test.bas`).
+
+## Addendum: tests of open bugs in the order of the bug-orig tests (section 7)
+
+**D9 testreg declares the bug-orig tests** (user, 2026-11-23: "testreg
+into the order (Recommended)",
+`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, "Model tests
+of open bugs join the bug-orig order"). The movers of round U1 found that a
+model test of an open bug (label `bug-orig`, REPRODUCED on purpose) had no
+`COST` and was declared before the old-form tests (the ctest include file
+of the registration comes first in `CTestTestfile.cmake`), so
+`bug_orig_order` failed. Only the build step knows the model tests, so it
+declares the old-form ones too: `bug_orig_declare_tests(FILE)` writes the
+recorded tests, sorted, as a ctest include of its own with a line `# @test
+NAME COST` before each declaration (at the end of the top directory by
+`cmake_language(DEFER)`, after `emulation_snapshot_owner` and
+`emulation_coverage`, whose environment `emulation_test_environment` gives
+them as before), and `basic_test_register(... ORDER FILE)` hands it to
+`testreg --order FILE`, which writes the tests of the label `bug-orig`
+last in its include, its own and the entries in one list, the largest
+`COST` first, equal ones by name. A model test of the label `bug-orig`
+without `cost` gets the sum of its cells' session limits (the time it can
+take; the old form's "session limit times sessions" with a session per
+cell, as the test's `TIMEOUT` counts it). Without model sources the order
+file is the declaration itself. `bug_orig_order` stays as strict;
+`bug_orig_order_model_late` and `_nocost` are its checks with a model
+test out of order and one without a `COST`. Not taken: leaving the model
+tests out of the check (the user's other option).
+- **Verified** without moving the deferred tests of slice A
+  (`shapeslib-anim-delta-bounds`, `polylib-word-range`; their move is the
+  follow-up agent's): `testreg_tool` (an open bug of COST 60 between
+  entries of 240, 60 and 10; broken order files), and a probe
+  `tests/bug-orig/libs/order-probe.test.bas` of an open bug, not committed:
+  registered with COST 90 among the 22 old-form tests, `bug_orig_order`
+  passed with 23 tests (`~/.local/share/bb2-c-work/accept-runner-ext/order-probe.log`).
+- **A gap found on the way:** the tests the registration declares (all
+  model tests) get no `AMIGA_EMULATION_OWNER` and no coverage directory:
+  `emulation_snapshot_owner` sets them on the tests CMake declared, and
+  the include files are not CMake's. The old-form bug-orig tests keep them
+  (written into the order file); the model tests are as before. Reported,
+  not changed here.
