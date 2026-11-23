@@ -1,0 +1,14 @@
+# ridoslib-v36-calls.test.bas: on the A500 (Kickstart 1.3); the original
+# crashes at its start-up (the session of its own ends in the time limit)
+fixed-orig = 1142
+rwe = ["ridoslib"]
+machine = "a500"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[deviations."compiler=orig210"]
+session = "== timeout"
+rc = "not exists"
+requester = "contains \"Software error - task held\""
+"end.case" = "not exists"
+"end.run" = "not exists"

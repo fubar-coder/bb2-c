@@ -1,0 +1,19 @@
+# ridoslib-addnotify-allocmem-request.test.bas: through inject, which fails
+# the first allocation of 48 bytes and tracks the rest; the original builds
+# the request at address 0 and the CPU halts (every cell has a session of
+# its own)
+fixed-orig = 619
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|allocfail=48-48/1 track"
+timeout = 30
+isolate = ["compiler=orig210"]
+
+[asserts]
+inject = "contains \"allocfail: 1 allocations failed\ninject: rc=0\ninject: track: 0 allocations left, 0 bytes\""
+
+[deviations."compiler=orig210"]
+session = "== halt"
+rc = "not exists"
+inject = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

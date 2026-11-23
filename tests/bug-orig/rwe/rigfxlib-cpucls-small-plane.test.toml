@@ -1,0 +1,7 @@
+# rigfxlib-cpucls-small-plane.test.bas: the original clears the marker
+fixed-orig = 682
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.small_plane.marker_kept" = "== fail"
+"check.small_plane.marker_kept.actual" = "== 0"

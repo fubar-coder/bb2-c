@@ -1,0 +1,14 @@
+# rigfxlib-fillpalette-end-upper-word.test.bas: the original fills nothing
+# with the constant 0 and the word variable 0 as the end
+fixed-orig = 683
+rwe = ["rigfxlib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.end_zero.constant_2" = "== fail"
+"check.end_zero.constant_2.actual" = "== 1"
+"check.end_zero.constant_7" = "== fail"
+"check.end_zero.constant_7.actual" = "== 1"
+"check.end_zero.word_2" = "== fail"
+"check.end_zero.word_2.actual" = "== 1"
+"check.end_zero.word_7" = "== fail"
+"check.end_zero.word_7.actual" = "== 1"

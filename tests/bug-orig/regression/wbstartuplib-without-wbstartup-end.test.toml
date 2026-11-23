@@ -1,0 +1,11 @@
+# wbstartuplib-without-wbstartup-end.test.bas: wbrunt (wbrun with a reply
+# time of 5 s) starts the child the Workbench way; the launcher answers
+# the requester "Software Failure" with Suspend
+launcherargs = "-harden"
+files = ["wbrunt|@WBRUNT@"]
+
+[data]
+"child.bas" = "basic-compile"
+
+[asserts]
+requester = "contains \"Software Failure\""

@@ -1,0 +1,15 @@
+# rigtmenulib-freemenu-negative-item.test.bas: with runtime error checking
+# for the announced error; the original raises none, frees the title as an
+# item and the case goes on
+fixed-orig = 1089
+rwe = ["rigtmenulib"]
+runtime-errors = "on"
+timeout = 30
+
+[asserts]
+"check.negative_item.not_refused" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.negative_item.refused" = "== fail"
+"check.negative_item.not_refused" = "== fail"
+requester = "count == 0"

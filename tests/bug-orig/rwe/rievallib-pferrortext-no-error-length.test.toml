@@ -1,0 +1,10 @@
+# rievallib-pferrortext-no-error-length.test.bas: the original's empty text
+# has the upper word of d0 as its length; the cells with the CD's libraries
+# get the acidlibs of the library's variant (library 121 is the CD's polylib)
+fixed-orig = 640
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.no_error.text_length" = "== fail"
+"check.no_error.text_length.actual" = "== 131072"

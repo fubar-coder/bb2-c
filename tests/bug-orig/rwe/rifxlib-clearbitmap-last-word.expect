@@ -1,8 +1,0 @@
-[compile]
-ok
-[run]
-row 0: FFFFFFFF
-row 1: 00000000
-row 2: 00000000
-row 3: FFFFFFFF
-rc=0

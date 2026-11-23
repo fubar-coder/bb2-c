@@ -1,0 +1,8 @@
+# ridoslib-path-buffer-overflow.test.bas: the original overwrites the code
+# behind its buffer, NotifyPort then returns whatever d0 holds
+fixed-orig = 627
+rwe = ["ridoslib"]
+timeout = 30
+
+[deviations."compiler=orig210"]
+"check.long_name.port_as_before" = "== fail"

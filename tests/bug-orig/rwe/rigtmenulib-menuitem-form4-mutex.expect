@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-Mx 6
-Data 3 00001234
-rc=0

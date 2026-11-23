@@ -1,0 +1,25 @@
+# rievallib-power-exponents.test.bas: the original's "^" gives the base for
+# the exponents 0 and below and counts with the low word; the cells with the
+# CD's libraries get the acidlibs of the library's variant (library 121 is
+# the CD's polylib)
+fixed-orig = 641
+rwe = ["rievallib"]
+files = ["blitz2/acidlibs|@TESTDATA@/../../../variants/rwe-1999-eval/acidlibs|libs=cd"]
+
+[deviations."compiler=orig210"]
+"check.exponents.base_3_exp_0_result" = "== fail"
+"check.exponents.base_3_exp_0_result.actual" = "== 3"
+"check.exponents.base_0_exp_5_result" = "== fail"
+"check.exponents.base_0_exp_5_result.actual" = "== 1"
+"check.exponents.base_2_exp_m1_result" = "== fail"
+"check.exponents.base_2_exp_m1_result.actual" = "== 2"
+"check.exponents.base_m1_exp_m2_result" = "== fail"
+"check.exponents.base_m1_exp_m2_result.actual" = "== -1"
+"check.exponents.base_0_exp_m1_result" = "== fail"
+"check.exponents.base_0_exp_m1_result.actual" = "== 1"
+"check.exponents.base_0_exp_m1_error" = "== fail"
+"check.exponents.base_0_exp_m1_error.actual" = "== 0"
+"check.exponents.base_3_exp_65538_result" = "== fail"
+"check.exponents.base_3_exp_65538_result.actual" = "== 9"
+"check.exponents.base_7_exp_m2_result" = "== fail"
+"check.exponents.base_7_exp_m2_result.actual" = "== 7"

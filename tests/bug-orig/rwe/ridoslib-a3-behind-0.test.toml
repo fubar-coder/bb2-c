@@ -1,0 +1,12 @@
+# ridoslib-a3-behind-0.test.bas: the original writes the next part of the
+# string expression one byte too far
+fixed-orig = 618
+rwe = ["ridoslib"]
+
+[deviations."compiler=orig210"]
+"check.string_expressions.path_last" = "== fail"
+"check.string_expressions.path_last.actual" = "== 0"
+"check.string_expressions.volume_last" = "== fail"
+"check.string_expressions.volume_last.actual" = "== 0"
+"check.string_expressions.volume_zeros" = "== fail"
+"check.string_expressions.volume_zeros.actual" = "== 1"

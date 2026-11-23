@@ -1,0 +1,18 @@
+# compiler-incbin-odd-end.test.bas: the original's End jumps to an odd
+# address: the child prints "before", then the Software Failure requester
+# (address error) and the session ends as a hang
+fixed-orig = 979
+timeout = 30
+
+[data]
+"odd.bin.spec" = "mktestdata"
+"child.bas" = "basic-compile"
+
+[deviations."compiler=orig195"]
+"run.child.child" = "== open"
+"run.child.child.output" = "== \"before\n\""
+requester = "contains \"Software Failure\""
+session = "== timeout"
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

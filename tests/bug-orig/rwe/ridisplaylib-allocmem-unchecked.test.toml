@@ -1,0 +1,13 @@
+# ridisplaylib-allocmem-unchecked.test.bas: through inject, which fails the
+# chip allocation of the copper list; the original writes the list to the
+# addresses 0-15
+fixed-orig = 888
+rwe = ["ridisplaylib"]
+runwrap = "@INJECT@|allocfail=2342-2350/chip"
+
+[asserts]
+inject = "contains \"allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.allocation_fails.low_memory_changed" = "== fail"
+"check.allocation_fails.low_memory_changed.actual" = "== 1"

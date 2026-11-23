@@ -1,0 +1,10 @@
+# riencryptlib-length-zero-one-byte.test.bas: the original processes one
+# byte for the length 0: Encrypt changes byte 1, Decrypt the byte in front
+fixed-orig = 630
+rwe = ["riencryptlib"]
+
+[deviations."compiler=orig210"]
+"check.length_zero.encrypt_byte_1" = "== fail"
+"check.length_zero.encrypt_byte_1.actual" = "== 7"
+"check.length_zero.decrypt_byte_0" = "== fail"
+"check.length_zero.decrypt_byte_0.actual" = "== -6"

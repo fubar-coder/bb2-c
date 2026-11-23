@@ -1,0 +1,8 @@
+# ridisasmlib-docomma-empty-movem-list.test.bas: the original puts a comma
+# in front of the destination of MOVEM with an empty register list
+fixed-orig = 615
+rwe = ["ridisasmlib"]
+
+[deviations."compiler=orig210"]
+"check.empty_list.empty" = "== fail"
+"check.empty_list.empty.actual" = "== \"movem.l  ,-(a7)                   \""

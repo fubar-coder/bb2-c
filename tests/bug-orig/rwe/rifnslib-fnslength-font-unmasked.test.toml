@@ -1,0 +1,8 @@
+# rifnslib-fnslength-font-unmasked.test.bas: the original reads the long
+# behind the 16 slots as a font
+fixed-orig = 660
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.font_16.same" = "== fail"
+"check.font_16.same.actual" = "== -1"

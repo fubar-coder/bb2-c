@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-before
-REQUESTER: AutoRequest body "ZoomXY needs InitZoomXY" *
-rc=0

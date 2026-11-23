@@ -1,0 +1,8 @@
+# ridoslib-devicetype-after-free.test.bas: through inject, which fills every
+# freed block with $AA; the original reads the freed entry
+fixed-orig = 622
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|freefill=AA"
+
+[deviations."compiler=orig210"]
+"check.read_after_free.after_free_list" = "== fail"

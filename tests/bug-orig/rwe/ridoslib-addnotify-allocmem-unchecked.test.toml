@@ -1,0 +1,13 @@
+# ridoslib-addnotify-allocmem-unchecked.test.bas: through inject, which fails
+# the first allocation of 4 bytes; the original writes the name to address 0
+fixed-orig = 619
+rwe = ["ridoslib"]
+runwrap = "@INJECT@|allocfail=4-4/1"
+
+[asserts]
+inject = "contains \"allocfail: 1 allocations failed\""
+
+[deviations."compiler=orig210"]
+"check.name_allocation_fails.result" = "== fail"
+"check.name_allocation_fails.result.actual" = "== -1"
+"check.name_allocation_fails.address_0_kept" = "== fail"

@@ -1,0 +1,8 @@
+# rifastseriallib-finit-interrupts.test.bas: the original's FinitSerialIO
+# leaves RBF off
+fixed-orig = 651
+rwe = ["rifastseriallib"]
+
+[deviations."compiler=orig210"]
+"check.rbf_restored.rbf_after_finit" = "== fail"
+"check.rbf_restored.rbf_after_finit.actual" = "== 0"

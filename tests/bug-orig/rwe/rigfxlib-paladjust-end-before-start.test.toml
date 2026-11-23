@@ -1,0 +1,15 @@
+# rigfxlib-paladjust-end-before-start.test.bas: with runtime error
+# checking for the announced error; the original raises none and
+# overwrites the marker, the case goes on
+fixed-orig = 684
+rwe = ["rigfxlib", "riamosfunclib"]
+runtime-errors = "on"
+
+[asserts]
+"check.end_before_start.marker_kept" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.end_before_start.refused" = "== fail"
+"check.end_before_start.marker_kept" = "== fail"
+"check.end_before_start.marker_kept.actual" = "== 0"
+requester = "count == 0"

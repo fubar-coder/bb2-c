@@ -1,0 +1,7 @@
+# rifnslib-fnslength-minus-two.test.bas: the original subtracts 2
+fixed-orig = 662
+rwe = ["rifnslib", "riamosfunclib"]
+
+[deviations."compiler=orig210"]
+"check.minus_two.sum_of_widths" = "== fail"
+"check.minus_two.sum_of_widths.actual" = "== 28"

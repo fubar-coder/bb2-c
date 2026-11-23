@@ -1,0 +1,8 @@
+# ridisplaylib-cmove-absolute-addresses.test.bas: the original's list holds
+# the words found at the absolute addresses, none of them a register move
+fixed-orig = 889
+rwe = ["ridisplaylib"]
+
+[deviations."compiler=orig210"]
+"check.first_moves.moves_right" = "== fail"
+"check.first_moves.moves_right.actual" = "== 0"

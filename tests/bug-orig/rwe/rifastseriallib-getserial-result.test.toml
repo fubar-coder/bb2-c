@@ -1,0 +1,9 @@
+# rifastseriallib-getserial-result.test.bas: with the serial port of the
+# emulator; the original's result is the low byte of the buffer's address
+# (it varies with the memory, so only the failure is declared)
+fixed-orig = 649
+rwe = ["rifastseriallib"]
+serial = "on"
+
+[deviations."compiler=orig210"]
+"check.block_received.result" = "== fail"

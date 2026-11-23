@@ -1,0 +1,15 @@
+# rifxlib-zoomyzoom-small.test.bas: with runtime error checking for the
+# announced error; the original raises none and writes behind the plane, the
+# case goes on
+fixed-orig = 676
+rwe = ["rifxlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.small_bitmap.row_1_unchanged" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.small_bitmap.refused" = "== fail"
+"check.small_bitmap.row_1_unchanged" = "== fail"
+"check.small_bitmap.row_1_unchanged.actual" = "== 0"
+requester = "count == 0"
