@@ -1,0 +1,16 @@
+# rimapeditorlib-shapeto1616-dest-unchecked.test.bas: with runtime error
+# checking for the announced error; the original raises none and overwrites
+# the marker
+fixed-orig = 900
+rwe = ["rimapeditorlib"]
+runtime-errors = "on"
+
+[asserts]
+"check.depth_1_destination.not_refused" = "== not-run"
+"check.depth_1_destination.marker_kept" = "== not-run"
+
+[deviations."compiler=orig210"]
+"check.depth_1_destination.refused" = "== fail"
+"check.depth_1_destination.not_refused" = "== fail"
+"check.depth_1_destination.marker_kept" = "== fail"
+requester = "count == 0"

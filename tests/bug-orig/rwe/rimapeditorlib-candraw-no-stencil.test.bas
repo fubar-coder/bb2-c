@@ -8,11 +8,11 @@
 ; checking.
 ; Correct: the error check refuses MapCanDraw without a SetStencil:
 ; "MapCanDraw needs SetStencil".
-; @fixed #893
-; @rwe rimapeditorlib
-; @pass runtime_errors=on
-CreateMap 0,4,4,16,16,"m"
-NPrint "before"
-r=MapCanDraw(3,1,1)
-NPrint "after"
-End
+DEFTYPE .l
+
+!TestCase{no_setstencil}
+  CreateMap 0,4,4,16,16,"m"
+  !ExpectError{"MapCanDraw needs SetStencil","refused"}
+  r=MapCanDraw(3,1,1)
+  !Check{0,"not_refused"}
+!EndTestCase

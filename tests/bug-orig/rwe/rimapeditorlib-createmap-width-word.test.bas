@@ -9,13 +9,10 @@
 ; error checking.
 ; Correct: the error check refuses the width of 40000: "Map width above
 ; 32767".
-; @fixed #1152
-; @rwe rimapeditorlib
-; @pass runtime_errors=on
 DEFTYPE .l
-CreateMap 0,40000,1,16,16,"w"
-If MapDataAdr=0 Then NPrint "no data" : End
-s=MapDataSize
-w=MapObjWidth AND $FFFF
-NPrint "data ",s," bytes for ",w," words"
-End
+
+!TestCase{width_40000}
+  !ExpectError{"Map width above 32767","refused"}
+  CreateMap 0,40000,1,16,16,"w"
+  !Check{0,"not_refused"}
+!EndTestCase

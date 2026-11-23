@@ -12,27 +12,27 @@
 ; Correct: the ShapeTo1616 into a destination of depth 2 works; the
 ; error check refuses the destination of depth 1: "ShapeTo1616 needs a
 ; 16 x 16 destination as deep as the source", nothing is written.
-; @fixed #900
-; @rwe rimapeditorlib
-; @pass runtime_errors=on
 DEFTYPE .l
-InitShape 0,16,16,2
-InitShape 1,16,16,1
-InitShape 2,16,16,2
-ShapeTo1616 0,2
-NPrint "depth 2 done"
-b=AllocMem_(128,$10002)
-If b=0 Then NPrint "no memory" : End
-For i=32 To 60 Step 4 : Poke.l b+i,$12345678 : Next
-s=Addr Shape(1)
-d=Peek.l(s+14)
-Poke.l s+14,b : Poke.w s+30,$634C
-ShapeTo1616 0,1
-Poke.l s+14,d : Poke.w s+30,0
-k=0
-For i=32 To 60 Step 4
-  If Peek.l(b+i)=$12345678 Then k+1
-Next
-FreeMem_ b,128
-If k=8 Then NPrint "marker kept" Else NPrint "marker overwritten"
-End
+
+!TestCase{depth_1_destination}
+  InitShape 0,16,16,2
+  InitShape 1,16,16,1
+  InitShape 2,16,16,2
+  ShapeTo1616 0,2
+  b=AllocMem_(128,$10002)
+  !Require{b<>0,"allocated"}
+  For i=32 To 60 Step 4 : Poke.l b+i,$12345678 : Next
+  s=Addr Shape(1)
+  d=Peek.l(s+14)
+  Poke.l s+14,b : Poke.w s+30,$634C
+  !ExpectError{"ShapeTo1616 needs a 16 x 16 destination as deep as the source","refused"}
+  ShapeTo1616 0,1
+  !Check{0,"not_refused"}
+  Poke.l s+14,d : Poke.w s+30,0
+  k=0
+  For i=32 To 60 Step 4
+    If Peek.l(b+i)=$12345678 Then k+1
+  Next
+  FreeMem_ b,128
+  !CheckEq{k,8,"marker_kept"}
+!EndTestCase

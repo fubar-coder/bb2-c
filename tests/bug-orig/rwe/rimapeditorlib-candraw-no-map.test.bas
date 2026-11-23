@@ -7,12 +7,12 @@
 ; runtime error checking.
 ; Correct: the error check refuses MapCanDraw on the freed map:
 ; "MapObject has no map data".
-; @fixed #893
-; @rwe rimapeditorlib
-; @pass runtime_errors=on
-CreateMap 0,4,4,16,16,"m"
-Free MapObject 0
-NPrint "before"
-r=MapCanDraw(3,1,1)
-NPrint "after ",r
-End
+DEFTYPE .l
+
+!TestCase{freed_map}
+  CreateMap 0,4,4,16,16,"m"
+  Free MapObject 0
+  !ExpectError{"MapObject has no map data","refused"}
+  r=MapCanDraw(3,1,1)
+  !Check{0,"not_refused"}
+!EndTestCase

@@ -6,13 +6,15 @@
 ; runtime error checking.
 ; Correct: MapDataAdr(7,7) works; the error check refuses x = 8: "Map
 ; position outside the map".
-; @fixed #892
-; @rwe rimapeditorlib
-; @pass runtime_errors=on
 DEFTYPE .l
-CreateMap 0,8,8,16,16,"m"
-a=MapDataAdr(7,7)
-If a=MapDataAdr+126 Then NPrint "inside done"
-a=MapDataAdr(8,0)
-If a=MapDataAdr+16 Then NPrint "address of the next row"
-End
+
+!TestCase{x_8}
+  CreateMap 0,8,8,16,16,"m"
+  a=MapDataAdr(7,7)
+  ok=0
+  If a=MapDataAdr+126 Then ok=1
+  !CheckEq{ok,1,"inside"}
+  !ExpectError{"Map position outside the map","refused"}
+  a=MapDataAdr(8,0)
+  !Check{0,"not_refused"}
+!EndTestCase

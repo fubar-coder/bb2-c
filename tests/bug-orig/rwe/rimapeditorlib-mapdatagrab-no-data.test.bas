@@ -7,22 +7,22 @@
 ; height 1 by hand, so one value is written - at address 0, whose long
 ; holds a marker (put back at the end).
 ; Correct: a map without data gets nothing (the marker stays).
-; @fixed #895
-; @rwe rimapeditorlib
 DEFTYPE .l
-b=AllocMem_(2,$10000)
-If b=0 Then NPrint "no memory" : End
-Poke.b b,7 : Poke.b b+1,8
-CreateMap 0,0,1,16,16,"m"
-If MapDataAdr<>0 Then NPrint "map has data" : End
-m=Addr MapObject(0)
-Poke.w m,1 : Poke.w m+2,1
-o=Peek.l(0)
-Poke.l 0,$12345678
-MapDataGrab b,0,0
-v=Peek.l(0)
-Poke.l 0,o
-Poke.w m,0 : Poke.w m+2,0
-FreeMem_ b,2
-If v=$12345678 Then NPrint "address 0 kept" Else NPrint "address 0 written"
-End
+
+!TestCase{no_data}
+  b=AllocMem_(2,$10000)
+  !Require{b<>0,"allocated"}
+  Poke.b b,7 : Poke.b b+1,8
+  CreateMap 0,0,1,16,16,"m"
+  !Require{MapDataAdr=0,"map_without_data"}
+  mo=Addr MapObject(0)
+  Poke.w mo,1 : Poke.w mo+2,1
+  o=Peek.l(0)
+  Poke.l 0,$12345678
+  MapDataGrab b,0,0
+  v=Peek.l(0)
+  Poke.l 0,o
+  Poke.w mo,0 : Poke.w mo+2,0
+  FreeMem_ b,2
+  !CheckEq{v,$12345678,"address_0_kept"}
+!EndTestCase
