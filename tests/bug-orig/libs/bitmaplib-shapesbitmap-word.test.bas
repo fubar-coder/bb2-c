@@ -6,11 +6,9 @@
 ; per plane) and ShapesBitMap 0,0; the plane pointers of the bitmap are
 ; read, nothing is drawn.
 ; Correct: plane 1 of the bitmap is plane 0 + 32800, as in the shape.
-; @fixed #79
-; @configs clib
-DEFTYPE .l
-InitShape 0,640,410,2
-ShapesBitMap 0,0
-b=Addr BitMap(0)
-NPrint "plane 1 - plane 0 ",Peek.l(b+12)-Peek.l(b+8)
-End
+!TestCase{plane_step}
+  InitShape 0,640,410,2
+  ShapesBitMap 0,0
+  b.l=Addr BitMap(0)
+  !CheckEq{Peek.l(b+12)-Peek.l(b+8),32800,"plane_step"}
+!EndTestCase

@@ -1,0 +1,13 @@
+# bitmaplib-bitmapchk-depth-message.test.bas: the error is only raised with
+# runtime error checking; the requester with its text is the tested
+# behaviour, the case ends in it
+fixed-orig = 1040
+runtime-errors = "on"
+
+[asserts]
+requester = "contains \"Illegal BitMap Depth\""
+"end.case" = "not exists"
+"check.depth_zero.after" = "== not-run"
+
+[deviations."libs=cd"]
+requester = "not contains \"Illegal BitMap Depth\""

@@ -1,0 +1,7 @@
+# bitmaplib-shapesbitmap-word.test.bas: the original steps back by the
+# plane size taken as a signed word (32800 - 65536)
+fixed-orig = 79
+
+[deviations."libs=cd"]
+"check.plane_step.plane_step" = "== fail"
+"check.plane_step.plane_step.actual" = "== -32736"

@@ -1,0 +1,12 @@
+# bitmaplib-planes-not-cleared.test.bas: the original keeps the pointers of
+# the planes above the new depth (addresses of the freed memory, so the
+# deviation only says they are not 0)
+fixed-orig = 80
+
+[deviations."libs=cd"]
+"check.planes_cleared.plane2_cleared" = "== fail"
+"check.planes_cleared.plane2_cleared.actual" = "!= 0"
+"check.planes_cleared.plane3_cleared" = "== fail"
+"check.planes_cleared.plane3_cleared.actual" = "!= 0"
+"check.planes_cleared.plane4_cleared" = "== fail"
+"check.planes_cleared.plane4_cleared.actual" = "!= 0"

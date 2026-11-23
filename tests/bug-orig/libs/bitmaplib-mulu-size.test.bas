@@ -7,9 +7,6 @@
 ; measured before and after the BitMap; nothing is written into the
 ; planes (the original would overwrite foreign memory).
 ; Correct: the bitmap takes at least 131072 bytes of CHIP memory.
-; @fixed #76
-; @configs clib
-DEFTYPE .l
 Function.l chipfree{}
   h.l=Peek.l(Peek.l(4)+322) : f.l=0
   While Peek.l(h)<>0
@@ -18,10 +15,12 @@ Function.l chipfree{}
   Wend
   Function Return f
 End Function
-f0=chipfree{}
-BitMap 0,16,8192,8
-f1=chipfree{}
-b=Addr BitMap(0)
-NPrint "plane 7 at 7*16384 ",Peek.l(b+36)-Peek.l(b+8)=7*16384
-NPrint "allocated at least 131072 ",(f0-f1)>=131072
-End
+
+!TestCase{planes_size}
+  f0.l=chipfree{}
+  BitMap 0,16,8192,8
+  f1.l=chipfree{}
+  b.l=Addr BitMap(0)
+  !CheckEq{Peek.l(b+36)-Peek.l(b+8),7*16384,"plane7_offset"}
+  !Check{(f0-f1)>=131072,"allocated"}
+!EndTestCase
