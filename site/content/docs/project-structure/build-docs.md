@@ -1,6 +1,6 @@
 ---
 title: Building the documentation
-weight: 6
+weight: 8
 description: How to build this website and its API reference locally, update the command reference after a library change, and how the Pages workflow publishes it.
 next: /docs
 ---

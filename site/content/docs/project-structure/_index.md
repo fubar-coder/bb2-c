@@ -71,6 +71,7 @@ its licence is listed in the repository's
   {{< card link="repository" title="Finding your way in the repository" subtitle="The directories and what you find in them." >}}
   {{< card link="tests" title="Tests" subtitle="The test runs, what they compare, and how to set up the emulator tests." >}}
   {{< card link="self-judging-tests" title="Tests that judge themselves" subtitle="Writing a Blitz Basic test that checks its own result, and every setting of its configuration files." >}}
+  {{< card link="running-tests" title="Running a single test" subtitle="One test or one case, directly with the test runner or with CTest: names, labels, the verdict and the files of a run." >}}
   {{< card link="library-test-cases" title="Reading library test results" subtitle="What a line of the library tests' expected data or a failure message says." >}}
   {{< card link="build-checks" title="What the build checks" subtitle="The checks a result must pass before it counts as built." >}}
   {{< card link="build-docs" title="Building the documentation" subtitle="The website, its API reference and the command reference, locally and in the Pages workflow." >}}
