@@ -1,18 +1,20 @@
 # compiler-macrobuff-size.test.bas: the original's Macro Buffer keeps its
 # 8192 bytes whatever the option says.  With the driver's own macros in the
-# compile (the old test had none before the macro big) the original does not
-# get as far as "Macro too Big" at the macro big: with macrobuf=16384 every
-# compile of a driver hangs (also one without any macro of the test), which
-# ends the session at its limit; a session of its own for the original
-# compiler, and a short limit, as nothing runs after the hang
+# compile the original does not get as far as "Macro too Big" at the macro
+# big: its compile ends in a way that depends on the memory (#965: the macro
+# node is half built after an error, also at the default size), and any
+# macrobuf other than 8192 hangs the original at its exit (#336).  So the
+# original's cell declares only what holds every time: the session ends at
+# its limit and the compile does not end ok.  A session of its own for the
+# original compiler, and a short limit, as nothing runs after the hang
 fixed-orig = 336
 jobline = ["macrobuf=16384"]
 isolate = ["compiler=orig195"]
 timeout = 40
 
 [deviations."compiler=orig195"]
-compile = "== none"
+compile = "!= ok"
 session = "== timeout"
+rc = "not exists"
 "end.case" = "not exists"
 "end.run" = "not exists"
-rc = "not exists"
