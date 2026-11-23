@@ -2,16 +2,17 @@
 ; with a by-value field of the forward type .fwd before NEWTYPE .fwd: the
 ; element size is not known.
 ; Correct: "Type not yet defined" at the Dim.
-; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE
 NEWTYPE .dd
   x.fwd
 End NEWTYPE
-Dim a.dd(3)
-NEWTYPE .fwd
-  a.l
-End NEWTYPE
-NPrint "compiled"
-End
+
+!TestCase{early_dim}
+  Dim a.dd(3)
+  NEWTYPE .fwd
+    a.l
+  End NEWTYPE
+  !CheckEq{1,1,"compiled"}
+!EndTestCase

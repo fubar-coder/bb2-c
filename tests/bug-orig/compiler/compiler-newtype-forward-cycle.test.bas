@@ -3,7 +3,6 @@
 ; contain the other.
 ; Correct: "Illegal Type" at the field y.ta (as for a type that contains
 ; itself, #973).
-; @fixed-orig #974
 NEWTYPE .pp
   *p.tb
 End NEWTYPE
@@ -13,5 +12,7 @@ End NEWTYPE
 NEWTYPE .tb
   y.ta
 End NEWTYPE
-NPrint "compiled"
-End
+
+!TestCase{cycle_two}
+  !CheckEq{1,1,"compiled"}
+!EndTestCase

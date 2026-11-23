@@ -2,7 +2,6 @@
 ; variable of a type with a by-value field of the forward type .fwd ends
 ; before NEWTYPE .fwd: its memory is laid out at the end of the procedure.
 ; Correct: "Type not yet defined" at End Statement.
-; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE
@@ -11,10 +10,12 @@ NEWTYPE .dd
 End NEWTYPE
 Statement s{}
   DEFTYPE .dd v
-  NPrint "in s"
+  !CheckEq{1,1,"in_s"}
 End Statement
 NEWTYPE .fwd
   a.l
 End NEWTYPE
-s{}
-End
+
+!TestCase{early_local}
+  s{}
+!EndTestCase

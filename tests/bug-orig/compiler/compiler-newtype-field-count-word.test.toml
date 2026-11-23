@@ -1,0 +1,17 @@
+# compiler-newtype-field-count-word.test.bas: the correct result is a failed
+# compile (Type too Big at the field's line) and nothing runs; the original
+# takes the count modulo 65536, compiles with a type of 4 bytes and the case
+# runs
+fixed-orig = 1084
+
+[asserts]
+compile = "== \"error 9 Type too Big\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

@@ -3,7 +3,6 @@
 ; NEWTYPE .fwd gives the size.  The offset of x itself is known.
 ; Correct: "Type not yet defined" at v\y=1 (SizeOf .dd\x before it is 0
 ; and compiles).
-; @fixed-orig #974
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE
@@ -12,10 +11,12 @@ NEWTYPE .dd
   y.l
 End NEWTYPE
 DEFTYPE .dd v
-o.l=SizeOf .dd\x
-v\y=1
-NEWTYPE .fwd
-  a.l
-End NEWTYPE
-NPrint o
-End
+
+!TestCase{early_field}
+  o.l=SizeOf .dd\x
+  v\y=1
+  NEWTYPE .fwd
+    a.l
+  End NEWTYPE
+  !CheckEq{o,0,"offset"}
+!EndTestCase
