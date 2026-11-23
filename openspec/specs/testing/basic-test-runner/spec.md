@@ -609,3 +609,294 @@ be an error naming the file, the line and the key.
 #### Scenario: The key in a directory file
 - **WHEN** a `tests.toml` sets `flaky`
 - **THEN** the registration fails naming the file, the line and the key
+
+### Requirement: Test-local data are declared in the test's own file
+The files of the directory `ID.test/` beside `ID.test.bas` SHALL be declared in the table `data` of `ID.test.toml`, one entry per file by its path relative to `ID.test/`. The table SHALL be refused in a `tests.toml`. A file of `ID.test/` without an entry, and an entry without its file, SHALL be errors of the registration naming file and line.
+
+#### Scenario: An undeclared file
+- **WHEN** `ID.test/` holds `child.bas` and `extra.bin` and `ID.test.toml` declares only `child.bas`
+- **THEN** the registration refuses the test, naming `extra.bin` and `ID.test.toml`
+
+#### Scenario: Data in a directory's file
+- **WHEN** a `tests.toml` holds a table `data`
+- **THEN** the registration refuses it, naming the file and the line
+
+### Requirement: Each data file has a build action
+An entry of `data` SHALL name a build action: `basic-compile` (a Blitz source compiled in the emulator; the result is named without `.bas`), `copy` (the file as it is) or `mktestdata` (a `NAME.spec` made into `NAME` on the host). An unknown action or an option the action does not take SHALL be an error naming file, line and key.
+
+#### Scenario: An unknown action
+- **WHEN** an entry names the action `assemble`
+- **THEN** the registration refuses it, naming the file, the line and the value
+
+#### Scenario: The result of a compile
+- **WHEN** `child.bas` has the action `basic-compile`
+- **THEN** the program finds the executable as `CORPUS:ID.test/child`
+
+### Requirement: The compiler of a data source
+The action `basic-compile` SHALL take the options `compiler` (`same`, `port`, `orig195`, `orig210`), `libs` (`same`, `cd`, `clib`) and `runtime-errors` (`same`, `on`, `off`), each `same` by default: `same` is the value of the cell. A data source SHALL be tokenised with the token list of the cell and get the placeholders of a test source, but no check macro.
+
+#### Scenario: The cell's compiler
+- **WHEN** `child.bas` has `compiler = "same"` in a test with the cells `port,clib` and `orig195,cd`
+- **THEN** the child is compiled by the port with the C libraries in the first cell and by 1.95 with the CD's libraries in the second
+
+#### Scenario: A check macro in a data source
+- **WHEN** a data source with the action `basic-compile` holds `!CheckEq{a,1}`
+- **THEN** the registration refuses it, naming the data file and the line
+
+### Requirement: Data that need original material
+A data file whose build needs original material (a compiler other than the port, or the CD's libraries, by a fixed option) SHALL be refused in a test that has a cell of the side without original material.
+
+#### Scenario: A fixed original compiler on the port side
+- **WHEN** a test with the cell `port,clib` declares `compiler = "orig195"` for a data source
+- **THEN** the registration refuses it, naming the file, the line and the cell
+
+### Requirement: Built data are in the cell's own CORPUS
+Each cell SHALL find the built files of its test under `CORPUS:ID.test/` of its own `CORPUS:`, before its program runs; `@TESTDIR@` SHALL stand for `CORPUS:ID.test` in the test source and the data sources.
+
+#### Scenario: Two cells with different compilers
+- **WHEN** two cells of one session compile `child.bas` with their own compilers
+- **THEN** each cell's program starts its own executable from `@TESTDIR@/child`
+
+### Requirement: The compile of a data source is judged
+The query `data.FILE` SHALL be the compile result of the data source `FILE` in the terms of `compile` (`ok`, `error LINE MESSAGE` with the line of the data source, or `none`), with the default assertion `== ok`. A compile that does not give what its assertion asks SHALL make every case of the cell BROKEN, naming the data file and the result.
+
+#### Scenario: A data source that does not compile
+- **WHEN** `child.bas` gives `error 3 Syntax Error` and no assertion names `data.child.bas`
+- **THEN** every case of the cell is BROKEN and the report names `child.bas:3` and the message
+
+#### Scenario: A declared compile error of the original
+- **WHEN** the deviations of `compiler=orig195` hold `"data.child.bas" = "contains \"Syntax Error\""`
+- **THEN** that cell's cases run, judged without the child's executable
+
+### Requirement: The observations of a started program belong to its case
+A case that holds a `!RunProgram` SHALL run on its own in the run of all cases. The requesters, the crash or the hang of a program it starts SHALL be judged as observations of that case.
+
+#### Scenario: A requester of a child
+- **WHEN** a case starts a child that shows the requester "End of Program"
+- **THEN** the query `requester` of that case holds it, and no other case of the source is judged from that run
+
+### Requirement: Queries of a started program
+The queries `run.NS.NAME` (`done` it returned, `open` it did not, `not-run`), `run.NS.NAME.rc` (its return code; `CMP integer`, `exists`) and `run.NS.NAME.output` (what it wrote; the string predicates) SHALL judge the program the `!RunProgram` named `NAME` started; they are for what the case cannot check itself (a run that does not return, its output then). The default SHALL be `run.NS.NAME == done` for every one that ran; the return code has no default (the case checks it with `*r\rc`).
+
+#### Scenario: The output of a child that hangs
+- **WHEN** a started child prints `cols 0,0,0` and then hangs until the hang check ends the session
+- **THEN** `run.NS.NAME` is `open`, `run.NS.NAME.output` holds `cols 0,0,0`, and the cell fails unless an assertion or deviation declares both
+
+#### Scenario: A return code without a default
+- **WHEN** a child ends with return code 20 and the configuration asserts `"run.ctrlc.edit.rc" = "== 20"`
+- **THEN** that point of the cell passes
+
+### Requirement: Compiled data in the prev comparison
+The executables of `basic-compile` data SHALL be compared with the previous commit's compiler wherever the test's driver is compared, under the name `ID/FILE` for the `PREV_INTENDED` entries.
+
+#### Scenario: A compiler change that alters a child
+- **WHEN** a commit changes the code the compiler writes for a statement of `child.bas` in a test of `tests/blitz2`
+- **THEN** the `_prev` test fails naming `ID/child.bas`, unless an entry `TEST:ID/child.bas` names it
+
+### Requirement: A program run from the editor
+A run setting `editor-run` SHALL take `off` (the default) or `on`. In a
+cell with `on` the driver SHALL be compiled as in any cell and then run
+once with the editor's COMPILE/RUN instead of from the shell, without
+arguments; its result file SHALL be judged as that of a shell run.
+
+#### Scenario: The run of a cell from the editor
+- **WHEN** a case of a cell with `editor-run = "on"` passes its checks
+- **THEN** the program ran once, from the editor, and the case passes from that run's result file
+
+#### Scenario: No second writer of the result file
+- **WHEN** a cell with `editor-run = "on"` has run
+- **THEN** no shell run of the driver followed in that cell
+
+### Requirement: The observations of a run from the editor
+In a cell with `editor-run = "on"` the printed output SHALL be what the
+program wrote to the editor's console. The exit code and the requesters
+SHALL be not captured there: their default assertions SHALL NOT apply, and
+an assertion on `rc` or `requester` in such a cell SHALL be refused naming
+file, line and the setting.
+
+#### Scenario: The console is the output
+- **WHEN** the program of an editor-run cell prints "start" and ends
+- **THEN** the query `output` holds "start"
+
+#### Scenario: An assertion on the exit code
+- **WHEN** a test sets `editor-run = "on"` and asserts `rc = "== 0"` for the same cells
+- **THEN** the configuration is refused naming the file, the line of the assertion and `editor-run`
+
+### Requirement: Settings that need a shell run
+A cell with `editor-run = "on"` SHALL be refused, naming file, line and
+both keys, when it sets `runwrap`, `runargs`, `launcherargs` or `pad = "on"`;
+a case of such a cell with an announced runtime error SHALL be refused
+naming the source line of the announcement.
+
+#### Scenario: A wrapper of the program
+- **WHEN** a test sets `editor-run = "on"` and `runwrap = "@INJECT@|guard"`
+- **THEN** the configuration is refused naming both keys
+
+#### Scenario: An announced runtime error
+- **WHEN** a case of an editor-run cell holds `!ExpectError{"Shape too Big"}`
+- **THEN** the test is refused naming the file and the line of the announcement
+
+### Requirement: The debugger module of a cell
+A run setting `defaultdbug` SHALL name a file, as a path setting, that
+SHALL be `blitz2:defaultdbug` in every cell the setting applies to, on
+either side. Without it a cell with original material SHALL get the CD's
+module and another cell none. A missing module SHALL skip the side as a
+missing file does.
+
+#### Scenario: The CD's module in a cell with the C libraries
+- **WHEN** a test sets `defaultdbug = "@CD_BLITZ2@/DEFAULTDBUG"` and its cell has the C libraries
+- **THEN** that cell's `blitz2:defaultdbug` is the CD's module and the cell stays on the side port
+
+#### Scenario: Without the CD
+- **WHEN** the module a cell of the side port names is missing
+- **THEN** the test of that side exits 77 before any session
+
+### Requirement: A debugger module needs a run from the editor
+A cell that sets `defaultdbug` and not `editor-run = "on"` SHALL be
+refused naming file, line and both keys: a module is used only by a run
+from the editor and is never part of an executable.
+
+#### Scenario: A module without an editor run
+- **WHEN** a test sets `defaultdbug` and leaves `editor-run` off
+- **THEN** the configuration is refused naming `defaultdbug` and `editor-run`
+
+### Requirement: The query of inject's report of the compiler
+When a cell's compiler runs through inject (the `wrap` of inject), the
+query `compile.inject` SHALL hold the lines starting with `inject:` of the
+compiler's output; otherwise it SHALL be not captured, which fails an
+assertion that queries it. It SHALL count as an observation of the whole
+program for the cases that run on their own.
+
+#### Scenario: The tracked allocations
+- **WHEN** a cell's compiler runs through inject with `track` and inject reports "inject: track: 0 allocations left, 0 bytes"
+- **THEN** `compile.inject` contains that line and `compile.log` keeps it
+
+#### Scenario: A compiler without inject
+- **WHEN** a cell's compiler does not run through inject and an assertion queries `compile.inject`
+- **THEN** the cell fails naming the assertion as not captured
+
+#### Scenario: A case that asserts it runs on its own
+- **WHEN** case b of a source with the cases a, b and c asserts `compile.inject`
+- **THEN** in the run of all cases b runs on its own
+
+### Requirement: The driver's source in a job line
+The placeholder `@DRIVER@` in an element of `jobline` SHALL stand for the
+driver's tokenised source on the cell's volume; elsewhere it SHALL be an
+error naming file, line and placeholder.
+
+#### Scenario: A second compile of the test's source
+- **WHEN** a test sets `jobline = ["job=j001|@DRIVER@|CORPUS:out/again"]`
+- **THEN** the cell's job list compiles the driver's source a second time as job j001
+
+### Requirement: The prev comparison leaves out the run from the editor
+The comparison with the prev build SHALL compile the driver of an
+editor-run test as that of any other test and SHALL NOT run it from the
+editor; the debugger module SHALL NOT be staged for it.
+
+#### Scenario: An editor-run test with a prev build
+- **WHEN** the prev comparison of a test with `editor-run = "on"` runs
+- **THEN** both compilers compile the driver as job j000 and no program runs
+
+### Requirement: The compile jobs of a cell have names
+Every compile job of a cell SHALL have a name: the driver's job `j000`; in
+a cell with `editor-run = "on"` its run `r001`; a data source of
+`basic-compile` its file name relative to `ID.test/`; a job of `jobline`
+(`job=`, `run=`, `menu=`, `resident=`) its ID.
+
+#### Scenario: A data source is named by its file
+- **WHEN** a test declares `"victim.bas" = "basic-compile"` behind another data source of `basic-compile`
+- **THEN** the name of its compile job is `victim.bas`, whatever its position in `[data]`
+
+### Requirement: The IDs of the jobline jobs are checked
+A jobline ID SHALL match `[a-z][a-z0-9_]*`, have at most 15 characters,
+be unique among the jobline elements of a cell (a `resident=` element
+counts once), and SHALL NOT be `j000`, `b` followed by three digits,
+`log`, `inject`, or `r001` in a cell with `editor-run = "on"`; otherwise
+the configuration SHALL be refused naming file, line and ID.
+
+#### Scenario: A jobline job named like the driver's
+- **WHEN** a test sets `jobline = ["job=j000|@DRIVER@|CORPUS:out/again"]`
+- **THEN** the configuration is refused naming the file, the line and `j000`
+
+#### Scenario: Two jobline elements with one ID
+- **WHEN** a test sets `jobline = ["job=j001|@DRIVER@|CORPUS:out/a", "menu=j001|9"]`
+- **THEN** the configuration is refused naming `j001`
+
+### Requirement: The log block of a named job
+The query `compile.log.NAME` SHALL be the block of the job `NAME` in
+tedstub's log of the session that compiled it (a data source's own build
+session where it has one): its lines from the first that belongs to it up
+to its last line that carries its ID, with the size removed from a
+`RESULT ID ok SIZE` line as in `compile.log`. A block without lines SHALL
+be not captured. The predicates SHALL be those of `compile.log`.
+
+#### Scenario: Two jobs, two blocks
+- **WHEN** the driver's job j000 logs `GUARD\tj000\tok` and the jobline job j001 logs `GUARD\tj001\tok`
+- **THEN** `compile.log.j000` contains the first line and not the second, and `compile.log.j001` the second and not the first
+
+#### Scenario: A job that did not run
+- **WHEN** a session ended before the jobline job j002 and an assertion asks `compile.log.j002` to contain a line
+- **THEN** the cell fails naming the assertion as not captured
+
+### Requirement: The block of a data source does not show its position
+In the block of a data source its internal job ID SHALL be written as its
+file name and its staged source as `@DATA:FILE@`. A `NAME` that is no job
+of the test SHALL be refused naming file, line and query.
+
+#### Scenario: The block of a data source
+- **WHEN** the data source `victim.bas` is compiled as the internal job b001 and the assertion is `"compile.log.victim.bas" = "contains \"RESULT\tvictim.bas\tok\""`
+- **THEN** the assertion holds
+
+#### Scenario: An unknown name
+- **WHEN** a test asserts `compile.log.j009` and has no job j009
+- **THEN** the configuration is refused naming the file, the line and the query
+
+### Requirement: The compile result of a named jobline job
+The query `compile.NAME` SHALL be the compile result of the `job=` or
+`resident=` job `NAME` of `jobline` in the terms of `compile` (`ok`,
+`error LINE MESSAGE` with the line of the compiled source, another result
+of its `RESULT` line, or `none`), with the predicates of `compile` and no
+default assertion. For the driver's job it SHALL be refused naming
+`compile`, for a data source naming `data.FILE`, and for a `run=` or
+`menu=` step naming `compile.log.NAME`.
+
+#### Scenario: A second compile of the driver
+- **WHEN** a test asserts `"compile.j001" = "== ok"` and its jobline job j001 compiles `@DRIVER@` without error
+- **THEN** the assertion holds
+
+#### Scenario: The driver's result under its name
+- **WHEN** a test asserts `compile.j000`
+- **THEN** the configuration is refused naming `compile`
+
+#### Scenario: A data source's result under its name
+- **WHEN** a test asserts `compile.victim.bas`
+- **THEN** the configuration is refused naming `data.victim.bas`
+
+### Requirement: The unnamed compile queries
+The queries `compile`, `compile.log` and `compile.inject` SHALL keep their
+meaning: the driver's compile result with its default `== ok`, the whole
+log (the compiler's output, then tedstub's log), and inject's report of
+the compiler process. Inject's report SHALL have no query per job.
+
+#### Scenario: The whole log with named jobs
+- **WHEN** a cell has the jobs j000 and j001 and asserts `compile.log` to contain a line of j001's block
+- **THEN** the assertion holds as without named jobs
+
+### Requirement: The staged source of a data source in a job line
+The placeholder `@DATA:FILE@` in an element of `jobline` SHALL stand for
+the tokenised source of the data source `FILE` (action `basic-compile`) on
+the cell's volume. In another setting, or for a `FILE` that is no data
+source of `basic-compile` of the test, it SHALL be an error naming file,
+line and placeholder.
+
+#### Scenario: The victim of a run from the editor
+- **WHEN** a test with the data source `victim.bas` sets `jobline = ["run=r001|@DATA:victim.bas@|RAM:con|100"]`
+- **THEN** the cell's job list runs the staged source of `victim.bas` as r001, whatever its position in `[data]`
+
+#### Scenario: A file that is not a data source
+- **WHEN** a test sets `jobline = ["run=r001|@DATA:other.bas@|RAM:con"]` and declares no data source `other.bas`
+- **THEN** the configuration is refused naming the file, the line and `@DATA:other.bas@`
+
+#### Scenario: Outside a job line
+- **WHEN** a test sets `files = ["x.bb2|@DATA:victim.bas@"]`
+- **THEN** the configuration is refused naming the placeholder
