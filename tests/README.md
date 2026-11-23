@@ -2578,9 +2578,9 @@ never in both forms (the registration would take the old one).
 | `ID.orig`, the lines that differ from `ID.expect` | declared deviations in `[deviations."libs=cd"]` (a library bug) or `compiler=orig195` (a compiler bug), see below |
 | `; @fixed #N` | `fixed-orig = N` (another bug than an original one: `fixed = N`; an extension of the port: `extension = N`) in `ID.test.toml`; the checks and the deviations stay as they are |
 | `; @configs clib` | the `tests.toml` of the directory: `exclude = ["compiler=orig195,libs=clib"]` and `[matrix]` with `compiler = ["port", "orig195"]`, `libs = ["cd", "clib"]` (`libs/tests.toml`): the cells `port,cd`, `port,clib` and `orig195,cd` |
-| `; @pass runwrap=@INJECT@|pad` | `pad = "on"` |
-| `; @pass runwrap=@INJECT@|OPTIONS` | `runwrap = "@INJECT@|OPTIONS"` |
-| `; @pass file=DEST|SRC`, `dirs=`, `remove=`, `mount=`, `floppy=` | `files`, `dirs`, `remove`, `mount`, `floppy` (the same values, a list of strings) |
+| `; @pass runwrap=@INJECT@\|pad` | `pad = "on"` |
+| `; @pass runwrap=@INJECT@\|OPTIONS` | `runwrap = "@INJECT@\|OPTIONS"` |
+| `; @pass file=DEST\|SRC`, `dirs=`, `remove=`, `mount=`, `floppy=` | `files`, `dirs`, `remove`, `mount`, `floppy` (the same values, a list of strings) |
 | `; @pass timeout=N`, `hang_after=N`, `runtime_errors=on`, `serial=on`, `rtg=on`, `uae=`, `jobline=`, `runargs=`, `launcherargs=` | `timeout`, `hang-after`, `runtime-errors = "on"`, `serial`, `rtg`, `uae`, `jobline`, `runargs`, `launcherargs` |
 | `; @rwe NAME...` | `rwe = ["NAME", ...]` |
 
