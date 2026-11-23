@@ -1,8 +1,9 @@
 # compiler-procend-kind.test.bas: the correct result is a failed compile
 # (Illegal End Procedure at the End Statement line) and nothing runs; the
 # original compiles the Function and the program returns into garbage (a
-# stray return code or a crash, depending on the memory layout: the session
-# ends at its limit)
+# stray return code or a crash, depending on the memory layout)
+# The end is not defined (memory corruption): the general alternatives of
+# tests/README.md, "Alternative ends".
 fixed-orig = 940
 timeout = 30
 
@@ -14,8 +15,7 @@ rc = "not exists"
 
 [deviations."compiler=orig195"]
 compile = "== ok"
-requester = "contains \"Software Failure\""
-session = "== timeout"
-"end.case" = "not exists"
-"end.run" = "not exists"
-rc = "not exists"
+
+[ends."compiler=orig195"]
+reason = "the original returns to a wrong address (#940): its end is not defined, it may crash, hang or halt"
+abnormal = ["any"]
