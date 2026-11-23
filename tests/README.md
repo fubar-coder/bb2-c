@@ -346,9 +346,45 @@ The keys from `compiler` to `jobline` are the **run settings**; `labels`,
 `cost` and `fixtures` describe the registered ctest test, which is one per
 case and side, not per cell. A key the runner does not know is an error
 naming file, line and key, and so is a key of a single test (`fixed-orig`,
-`fixed`, `extension`, the tables `deviations` and `ends`) in a `tests.toml` or `root` in an
+`fixed`, `extension`, the tables `deviations`, `ends` and `data`) in a `tests.toml` or `root` in an
 `ID.test.toml`. `fixed-orig` and `extension` need a declared deviation,
 `fixed` must have none.
+
+**Test-local data.** A test may bring its own files: the directory
+`ID.test/` beside `ID.test.bas` (change `basic-test-local-data`). Its
+`ID.test.toml` declares each file in the table `data`, by its path
+relative to `ID.test/` (subdirectories allowed; no `..`, no `:`, no
+absolute path), with a build action; the data belong to one test, so the
+table is refused in a `tests.toml`. A file of `ID.test/` that the table
+does not declare, and a declared one that is not there, are errors of the
+registration. Each cell finds the built files under `CORPUS:ID.test/`
+(the placeholder `@TESTDIR@`) before its program runs.
+
+| Action | The file | What the cell gets | Options |
+|---|---|---|---|
+| `basic-compile` | `NAME.bas`, a Blitz source | the executable `CORPUS:ID.test/NAME`, compiled in the cell's emulator session before the driver | `compiler` (`same`, `port`, `orig195`, `orig210`), `libs` (`same`, `cd`, `clib`), `runtime-errors` (`same`, `on`, `off`); `same`, the cell's value, by default |
+| `copy` | any file | the file as it is | none |
+| `mktestdata` | `NAME.spec` | `NAME`, made on the host by `tools/mktestdata` | none |
+
+The short form `"FILE" = "ACTION"` in `[data]` takes the action with its
+defaults; a table `[data."FILE"]` per file sets the action and the
+options, one per line. A data source of `basic-compile` is tokenised with
+the cell's token list and gets the placeholders of a test source, but no
+check macro (its program has no result file). An unknown action or
+option, an option the action does not take, a value that is none of the
+option's, and a fixed option that needs original material (a compiler
+other than `port`, or `libs = "cd"`) in a test with a cell of the side
+port are errors naming file, line and key.
+
+```toml
+# an example, not a file of the tree: libs/editlib-edit-eof.test.toml
+[data]
+"input.txt" = "copy"
+
+[data."child.bas"]
+action = "basic-compile"
+runtime-errors = "on"
+```
 
 **The matrix.** The table `matrix` names the axes: each key a run
 setting that is no list, each value a non-empty list of its values as
@@ -518,6 +554,7 @@ model](#moving-a-bug-orig-test-to-the-model).
 |---|---|
 | `DIR/ID.test.bas` | the source: declarations and blocks (below); `ID` lower-case kebab-case |
 | `DIR/ID.test.toml` | its own configuration (optional): the run settings, the matrix, the assertions; `fixed-orig`/`fixed` and the deviations only here |
+| `DIR/ID.test/` | its own data (optional): the files its `ID.test.toml` declares in the table `data`, each with a build action ([Test-local data](#the-run-configuration)); a cell finds them built under `CORPUS:ID.test/` (`@TESTDIR@`) |
 | `DIR/tests.toml` | a directory's configuration, inherited by the tests below it |
 | `tests/tests.toml` | the root (`root = true`): the search for configuration files stops here |
 
@@ -534,8 +571,8 @@ original compiler or the CD's libraries; label `originals`). `PREFIX` is
 `bug_orig_` (`tests/bug-orig`, `regression/` `regression_`) or `blitz2_`;
 `-` of the id becomes `_`. The list is complete after the build, as with
 `gtest_discover_tests`: `ctest -N` before it does not show a new test.
-A changed source or configuration file registers again in the next
-build. A bug-orig test (all areas but `regression/`) must declare a
+A changed source or configuration file, or a file of `ID.test/` changed,
+added or removed, registers again in the next build. A bug-orig test (all areas but `regression/`) must declare a
 deviation of the original; without one it is BROKEN.
 
 ### Writing a test source
@@ -588,10 +625,11 @@ the rest, naming file and line):
   library keeps `d2`-`d7` and `a2`-`a6`, but not what the compiler leaves
   in other registers or in the string buffer).
 * **Placeholders**: `@LINE@` (the source line), `@CASE@` (the case the
-  line stands in), `@TEST@` (the id) and `@TESTDATA@` (`CORPUS:data`,
-  where `files = ["data/NAME|@TESTDATA@/NAME"]` stages test data) are
-  replaced in code and strings, not in comments; any other `@NAME@` is
-  refused.
+  line stands in), `@TEST@` (the id), `@TESTDATA@` (`CORPUS:data`,
+  where `files = ["data/NAME|@TESTDATA@/NAME"]` stages test data) and
+  `@TESTDIR@` (`CORPUS:ID.test`, the test's own data) are replaced in code
+  and strings, not in comments; any other `@NAME@` is refused. A data
+  source of `ID.test/` gets the same placeholders.
 
 Known limits of the compiler that a test meets (open issues):
 

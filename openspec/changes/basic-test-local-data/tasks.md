@@ -10,7 +10,7 @@
 - [x] 1.2 `testreg`: the files of `ID.test/` are inputs of the registration (a changed or added file registers again), an undeclared file and a missing declared one are errors; verify: `testreg_tool` host tests (both errors, a test without `ID.test/` unchanged)
 - [x] 1.3 `testpp`: `@TESTDIR@` in the test source and in `basic-compile` sources, a check macro in a data source refused with its file and line; verify: host tests of `testpp`
 - [x] 1.4 The name length (D7): an emulator probe on `a500` and `a1200` with a 36-character `ID.test` directory under `CORPUS:`; if 1.3 fails, the registration refuses an id too long for a Kickstart 1.x cell; verify: the measurement in design.md "Findings", a `testreg` broken-input test if the refusal is added
-- [ ] 1.5 Docs: `tests/README.md` "The run configuration" (the table `data`, the key table, `@TESTDIR@`) and "Tests that judge themselves" ("Files and names": `ID.test/`); verify: `basictest_readme`-style host test of the TOML blocks if one exists for the section, the text names the three actions and the refusals
+- [x] 1.5 Docs: `tests/README.md` "The run configuration" (the table `data`, the key table, `@TESTDIR@`) and "Tests that judge themselves" ("Files and names": `ID.test/`); verify: `basictest_readme`-style host test of the TOML blocks if one exists for the section, the text names the three actions and the refusals
 
 ## 2. Building the data in the cell
 
