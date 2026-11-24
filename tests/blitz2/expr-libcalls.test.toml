@@ -1,0 +1,4 @@
+# expr-libcalls.test.bas: without and with runtime error checking (a
+# library function's error check routines are called around it then)
+[matrix]
+runtime-errors = ["off", "on"]

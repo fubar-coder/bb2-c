@@ -4,7 +4,7 @@ After `expr-tree-3c-calls`. "The check": `expr-tree-1-typing/design.md`, "The ch
 
 ## 1. Tests first
 
-- [ ] 1.1 Compile-only cases for unreached forms (coverage build): a library function whose parameter is another library's function, each used first there; forms with repeats; unknown-type parameters; each intrinsic with a Quick, a Long and a string argument, as the whole right side and inside an expression; verify: pass on main, in `compiler_prev`.
+- [x] 1.1 Compile-only cases for unreached forms (coverage build): a library function whose parameter is another library's function, each used first there; forms with repeats; unknown-type parameters; each intrinsic with a Quick, a Long and a string argument, as the whole right side and inside an expression; verify: pass on main, in `compiler_prev`.
 
 ## 2. Implementation
 
