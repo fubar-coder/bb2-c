@@ -1,7 +1,8 @@
-# compiler-let-left-a6.test.bas: an open bug: the port has the same
-# behaviour as the originals (1.95 and 2.10), so every cell shows the
-# declared deviations: the right side's Abs goes through
+# compiler-let-left-a6.test.bas: the originals (1.95 and 2.10) move the
+# code of the left side's index behind the right side's with lasta6 as
+# the index left it: the right side's Abs goes through
 # mathieeesingbas.library's base and gives -5
+fixed-orig = 1212
 exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
 
 [matrix]

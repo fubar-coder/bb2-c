@@ -176,6 +176,7 @@ void maketrap(UWORD n);     /* 2868 emit TRAP #n ($4E40|n) */
 void debugstuff(void);      /* 2871 emit TRAP #1 debug record */
 void undodebug(void);       /* 2915 take back last debug record */
 void setsvars(void);        /* 2927 per-statement variable init */
+void stmtvars(void);        /* 2930 setsvars after its prepstack */
 void dostatement(void);     /* 2953 compile one statement (falls into
                                handlechar); leaves current char for reget */
 

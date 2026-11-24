@@ -466,19 +466,28 @@ elements start again behind it.
 
 The narrowing of a later array index is decided when the index is built
 (`idxnarrow`, table of step 4a); the code of `Select`'s expression is
-written in its place:
+written in its place, and the code of an assignment's left side in the
+order it runs:
 
 | Original (`blitz2.s`) | What it did | Now |
 |---|---|---|
 | 13183-13192 `doselect`'s `pushstart`, `pushdo`, `clr`, `pushput` | the expression's code cut out, the `clr.l -(a7)` of a string written, the code put back behind it and its relocations moved | `bakevalubefore`: the expression built (`evalunit`), the `clr` written (`selclr`), then the expression's code |
+| 14340-14346 `dolet2`'s `pushstart`, `calcvar`, `pushdo`; 14379, 14416 its `pushput` | the left side's address (an array index, a path) compiled, its code cut out and put back behind the right side's with its relocations moved; `lasta6` and the string base as the left side's code left them (#1212) | the left side built as a unit of its own (`unitbegin`, `unitbuilt`: the parts of `evalunit`, `eval.c`) before the right side is read, its code written behind the right side's (`letaddr`, `unitwrite`) with the emitter's state the right side's code left; its relocations are added where it is written (those of a library the left side used first where the left side's code calls it); the string assignment's `setsvars` keeps the unit (`stmtvars`, without `prepstack`) |
+| 11022-11057 `pushstart`, `pushdo`, `pushput` | the code copied away and back | gone |
+
+The fix of #1212 changes the executables of assignments whose left side
+has code, where the emitter's state matters: the right side loads a6
+where the address code loaded it first (`compiler-let-left-a6`), a
+procedure call in the index of a string array saves the string being
+built; and the relocations of the address code are added after those of
+the right side, which reorders the relocation list of many programs
+compiled with runtime error checking (the array checks).
 
 Not decided on the nodes: `countpees` counts the parameters of a library
 function in the source before they are read (its form, chosen by their
 number, gives each parameter the type it is read in); the intrinsics
 `Frac` and `Len`/`Asc` look at the source behind the call and at the
-argument (`fracend`, `intrstrvar`); `dolet2` moves the code of the left
-side's address behind the right side (`pushstart`, `pushdo`,
-`pushput`; the open original bug `compiler-let-left-a6`).
+argument (`fracend`, `intrstrvar`).
 
 ## Node bound
 

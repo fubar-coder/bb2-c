@@ -78,23 +78,6 @@ extern BOOL constword;
    (consttype2).  Returns the value (asm d0); no callers in the asm. */
 ULONG constotype(UWORD *type);
 
-/* --------------------------------------------- code push/pull (motion) */
-/* Non-reentrant: one static save area (pushpc/pushoff/pushdooff/pushclen/
-   pushat). Sequence: pushstart ... pushdo ... (other code) ... pushput. */
-
-/* blitz2.s:11022 pushstart - remember pc and firstoff */
-void pushstart(void);
-/* blitz2.s:11028 pushdo - cut the code emitted since pushstart out of the
-   object buffer (pc rewinds) into an AllocMem'ed save buffer */
-void pushdo(void);
-/* blitz2.s:11057 pushput - re-emit the saved code at the current pc and
-   relocate its offset nodes by the move distance; frees the buffer.
-   Fixed (#14): also when the object buffer is full (nomemleft). */
-void pushput(void);
-/* Fixed (#994): not in blitz2.s - frees a save buffer of pushdo that no
-   pushput freed (a compile error between them); called by qfree */
-void freepush(void);
-
 /* ---------------------------------------------------- code generation */
 
 /* blitz2.s:11106 muld1 - emit D(regat) *= #mul: lsl.l for a power of two,

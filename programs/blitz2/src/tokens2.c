@@ -1271,33 +1271,32 @@ static void letaddr(struct stmtunit *u)
 }
 
 /* blitz2.s:14340 dolet2
-   BUG(orig) (#1212): the code of the left side's address (an array index,
-   regat 1) is compiled before the right side and moved behind it
-   (pushdo, pushput), but lasta6 stays as the left side's code left it:
-   a library function in the index whose base is passed in a6 (Abs of a
-   Word: ffplib's) makes the right side's call of a function with the
-   same base skip its load of a6, and the right side's code runs first,
-   with whatever a6 holds then (a(Abs(-j))=Abs(-5): a wrong value or a
+   Fixed (#1212): the left side's address (calcvar's path: an array
+   index, regat 1) is built first, in reading order, and its code is
+   written behind the right side's, where it runs, with the emitter's
+   state (lasta6, the string base) as the right side's code left it.  The
+   original compiled it first and moved its code behind the right side
+   (pushstart, pushdo, pushput, blitz2.s:11022-11057) with lasta6 as the
+   left side's code left it: a library function in the index whose base
+   is passed in a6 (Abs of a Word: ffplib's) made the right side's call
+   of a function with the same base skip its load of a6, although the
+   right side's code runs first (a(Abs(-j))=Abs(-5): a wrong value or a
    crash; test compiler-let-left-a6). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;
     struct type *t;
+    struct stmtunit left;   /* the left side's address */
     UWORD vartype, et;
     UWORD pcodd;            /* asm: global pcodd (14509), add 1 for bytes */
     WORD voff;
 
-    struct stmtunit left;
-
-    pushstart();
     regat = 1;              /* don't disturb this reg! */
     v = fetchvar(len, &t, &c);              /* var in a3, type in a2 */
     unitbegin(&left);
     vartype = calcvar(&v, &t, &c, &voff);   /* get offset stuff */
     unitbuilt(&left);
-    letaddr(&left);
     regat = 0;
-    pushdo();
     commode = 0;
     pcodd = 0;
     if (c != '=')
@@ -1311,7 +1310,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             /* string get! */
             svoff = lastoffset;
             svmode = varmode;
-            setsvars();     /* !@! */
+            stmtvars();     /* !@! setsvars, the left side's unit kept */
             et = T_STRING;
             c = eval(&et);
             varmode = svmode;
@@ -1320,7 +1319,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             if (commode)
                 pokecode(pulla2st, pulla2stf);
             else
-                pushput();
+                letaddr(&left);
             if (!(vartype & 0x8000)) {
                 leaa5d3a2[1] = voff;
                 pokela5s(tl(leaa5d3a2));
@@ -1351,7 +1350,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             ext_assigncheck(vartype);
             lastoffset = svoff;
             if (!commode)
-                pushput();
+                letaddr(&left);
             varmode = svmode;
             opcode = 0x2b40;                /* move.l d0,x(a5) */
             if (varmode)

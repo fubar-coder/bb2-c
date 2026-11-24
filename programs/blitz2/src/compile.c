@@ -293,7 +293,6 @@ void qfree(void)
     freexincs();
     freefors();
     freeasms();
-    freepush();         /* Fixed (#994): not in blitz2.s */
     freefwdfields();    /* Fixed (#974): not in blitz2.s */
     relocreset();       /* the relocations kept for an expression: not in blitz2.s */
     exprtree_reset();   /* the expression arena's further blocks: not in blitz2.s */
@@ -1187,6 +1186,13 @@ void undodebug(void)
 void setsvars(void)
 {
     prepstack();
+    stmtvars();
+}
+
+/* blitz2.s:2930-2935 setsvars after its prepstack - the statement's
+   variables set, the units being built kept (dolet2's left side) */
+void stmtvars(void)
+{
     regat = 0;
     nonew = 0;
     sbasegot = 0;
