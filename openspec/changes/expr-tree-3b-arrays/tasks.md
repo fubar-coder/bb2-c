@@ -4,7 +4,7 @@ After `expr-tree-3a-leaves`. "The check": `expr-tree-1-typing/design.md`, "The c
 
 ## 1. Tests first
 
-- [ ] 1.1 The branches of `calcvar` listed; coverage build over the compared sources; compile-only (and where they run, run) cases in `tests/blitz2` for every unreached form: list arrays, `\` paths and `UsePath`, NewType arrays and fields of array elements, pointers `*p`, multi-dimensional arrays with and without runtime checking, arrays in procedures (local, shared); verify: the cases pass on main, are in `compiler_prev`, and the coverage report shows every branch reached or named.
+- [x] 1.1 The branches of `calcvar` listed; coverage build over the compared sources; compile-only (and where they run, run) cases in `tests/blitz2` for every unreached form: list arrays, `\` paths and `UsePath`, NewType arrays and fields of array elements, pointers `*p`, multi-dimensional arrays with and without runtime checking, arrays in procedures (local, shared); verify: the cases pass on main, are in `compiler_prev`, and the coverage report shows every branch reached or named.
 
 ## 2. Implementation
 

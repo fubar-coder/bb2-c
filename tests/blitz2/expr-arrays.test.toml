@@ -1,0 +1,4 @@
+# expr-arrays.test.bas: without and with runtime error checking (the
+# bound checks of the arrays and the field arrays are its code)
+[matrix]
+runtime-errors = ["off", "on"]
