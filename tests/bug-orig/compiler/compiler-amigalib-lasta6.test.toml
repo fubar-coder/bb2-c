@@ -1,0 +1,6 @@
+# compiler-amigalib-lasta6.test.bas: an open bug (issue to be filed):
+# the port has the same behaviour as the original, so every cell shows
+# the declared deviations
+[deviations."compiler=orig195"]
+"check.float.after_a_float_operation" = "== fail"
+"check.float.after_a_float_operation.actual" = "== $BF800084"

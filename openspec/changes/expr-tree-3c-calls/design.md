@@ -28,3 +28,7 @@ Each parameter subtree is emitted with today's push (`maineval2`'s push flag, `p
 ## Planning choices (mine, not the user's)
 
 - `Point: enter/exit actions per node instead of "all library use at emit time" (the analysis's rule would move a call's library before or after its parameters' libraries) — L2 Possible / I2 Medium / E2 Reasoned → Plan`.
+
+## Findings (implementation)
+
+- Found while writing the test: an OS call in an expression after a Float operation (or a library function that takes a base in a6) leaves `lasta6` naming the FFP base while a6 holds the OS library's: the FFP calls after it (the conversion of the OS call's result, the operation) jump through the OS library's base (`Abs(-2)+FindTask_(0)`: a Privilege Violation; with mathieeesingbas.library, laid out as mathffp's, a wrong value). The original 1.95 does the same (`blitz2.s:10183-10258` has no `move #-1,lasta6`). An open original bug of class (a) (D-021: valid code, normal use; it crashes); `BUG(orig)` note in `eval.c` `amigalib`, bug-orig test `compiler-amigalib-lasta6` (REPRODUCED, the originals cell with 1.95 shows the same value). Not fixed here (the change changes no result).

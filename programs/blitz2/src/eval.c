@@ -2928,6 +2928,13 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
     }
     if (!a45)                       /* .nopars */
         pokel(L_(libbase));
+    /* BUG(orig) (issue to be filed): libbase loads the OS library's base
+       into a6, but lasta6 still names the base a6 held before (the FFP
+       base after a Float operation, a library's after its function), so
+       an FFP call after this one in the same expression (the conversion
+       of the result, the operation) skips its load and jumps through the
+       OS library's base: Abs(-2)+FindTask_(0) crashes (test
+       compiler-amigalib-lasta6). */
     pokel(L_(libjsr));
     if (a45)
         pokel(0x4cdf3000UL);        /* fixed (#958): movem.l (a7)+,a4/a5 */
