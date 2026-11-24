@@ -56,3 +56,4 @@ The tool `tools/lib/exprtype_tables/`, `tools/exprtables` and the generated page
 ## Open questions
 
 - `rb.b=vb AND 2.0` and `rb.b=vb LSL 2.0` (`vb.b=3`; compile today, #1186's whole literal, spec "A whole-valued literal stays whole under a Byte type") are refused under P+ as the model reads F6 with F2: `2.0` is fractional under a Byte type and beside whole numbers only a Float, which a bit operator refuses. The answer F6 ("Neue Regel überall (Recommended)") named the #1188 row and the values (`b.b=b/2.0` 1 either way), not this refusal (design decision 1: a source that compiled and is refused is a named change of its own). For the user before group 3.
+- A 48.16 division by 0 under a Quick destination (`x.q=l/q`, today $7FFFFFFF, under P+ the decided largest value wraps to -1.0) and `Mod` by 0 at run time: design open questions 2 and 3.

@@ -178,7 +178,7 @@ Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's
 - **THEN** both conditions are true (today the first is false)
 
 ### Requirement: 16.16 operations give today's values
-Where the rule computes in 16.16, the compiler SHALL give today's values bit for bit: the products of `qmul`, the quotients of `qdivide` with its last bit (up to 1/65536 above the quotient towards zero), and for a divisor 0 the largest number with the dividend's sign ($7FFFFFFF, for a negative dividend $80000001); a 48.16 division by 0 under a wanted Long SHALL give the largest Long with the dividend's sign, as `lqdiv`.
+Where the rule computes in 16.16, the compiler SHALL give today's values bit for bit: the products of `qmul`, the quotients of `qdivide` with its last bit (up to 1/65536 above the quotient towards zero), and for a divisor 0 the largest number with the dividend's sign ($7FFFFFFF, for a negative dividend $80000001); a 48.16 division by 0 SHALL give the largest value with the dividend's sign, as `lqdiv` ($7FFFFFFF or -$7FFFFFFF as its whole part).
 
 #### Scenario: qdivide's last bit
 - **WHEN** a program evaluates `x.q=q/p` with `q=-7.25`, `p=0.3`
@@ -187,6 +187,10 @@ Where the rule computes in 16.16, the compiler SHALL give today's values bit for
 #### Scenario: Division by zero
 - **WHEN** a program evaluates `x.q=q/p` with `p=0` and `q=1`, and with `q=-1`, and `r.l=l/q` with `l.l=-100`, `q=0`
 - **THEN** x is $7FFFFFFF and $80000001, r is -2147483647, as today
+
+#### Scenario: 48.16 division by zero without a wanted Long
+- **WHEN** a program executes `NPrint l/q` with `l.l=-100`, `q=0`
+- **THEN** it prints -2147483647, as today
 
 ## MODIFIED Requirements
 
