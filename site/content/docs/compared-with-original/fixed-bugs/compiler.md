@@ -1028,6 +1028,11 @@ Each point says first what the original did, then what the port does.
   memory of the expanded line until the next macro or compile, and for good
   if blitz2 ended first; it is freed once the line is compiled
   ([#1204](https://github.com/fubar-coder/bb2-c/issues/1204)).
+* A macro whose last line ended in some commands or operators (`NOT`,
+  `OR`, `MOD`, `Print`, `Len` and others) kept a colon at its end: a
+  calling line that went on after the macro, as in `c = !m b` with the
+  text `NOT`, gave "Syntax Error"; the macro text ends without the colon
+  ([#1206](https://github.com/fubar-coder/bb2-c/issues/1206)).
 
 ### Residents
 
