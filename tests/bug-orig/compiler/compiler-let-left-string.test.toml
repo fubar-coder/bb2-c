@@ -1,0 +1,62 @@
+# compiler-let-left-string.test.bas: an open bug: the port has the same
+# behaviour as the originals (1.95 and 2.10), so every cell shows the
+# declared deviations: the index code overwrites the right side's string
+# in the work area (the codes of the characters stored, a NUL among
+# them).  With a Function in the index that assigns a local string (or
+# a string element of its own) the element gets the bytes at a stray a3
+# (the originals: what earlier code left in the work area; the port: the
+# Function's string), so these checks declare the failure only.  Runtime
+# error checking only for the port.
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib", "compiler=orig195,runtime-errors=on", "compiler=orig210,runtime-errors=on"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+runtime-errors = ["off", "on"]
+
+[deviations."compiler=orig195"]
+"check.lib_index.stored" = "== fail"
+"check.lib_index.stored.actual" = "== \"50,0,99,100,101,\""
+"check.instr_index.stored" = "== fail"
+"check.instr_index.stored.actual" = "== \"99,100,101,0,100,\""
+"check.compare_index.stored" = "== fail"
+"check.compare_index.stored.actual" = "== \"99,100,101,120,0,\""
+"check.function_index.stored" = "== fail"
+"check.function_index.stored.actual" = "== \"50,113,0,100,101,\""
+"check.parameter_index.stored" = "== fail"
+"check.parameter_index.stored.actual" = "== \"113,0,99,100,101,\""
+"check.string_function_index.stored" = "== fail"
+"check.string_function_index.stored.actual" = "== \"50,122,122,0,101,\""
+"check.field.stored" = "== fail"
+"check.field.stored.actual" = "== \"50,0,51,0,101,\""
+"check.local_string.stored" = "== fail"
+"check.local_string_literal.stored" = "== fail"
+"check.local_string_long.stored" = "== fail"
+"check.local_string_field.stored" = "== fail"
+"check.local_string_two_dims.stored" = "== fail"
+"check.nested.stored" = "== fail"
+"check.comma_form.first" = "== fail"
+"check.comma_form.first.actual" = "== \"50,0,99,100,101,\""
+
+[deviations."compiler=orig210"]
+"check.lib_index.stored" = "== fail"
+"check.lib_index.stored.actual" = "== \"50,0,99,100,101,\""
+"check.instr_index.stored" = "== fail"
+"check.instr_index.stored.actual" = "== \"99,100,101,0,100,\""
+"check.compare_index.stored" = "== fail"
+"check.compare_index.stored.actual" = "== \"99,100,101,120,0,\""
+"check.function_index.stored" = "== fail"
+"check.function_index.stored.actual" = "== \"50,113,0,100,101,\""
+"check.parameter_index.stored" = "== fail"
+"check.parameter_index.stored.actual" = "== \"113,0,99,100,101,\""
+"check.string_function_index.stored" = "== fail"
+"check.string_function_index.stored.actual" = "== \"50,122,122,0,101,\""
+"check.field.stored" = "== fail"
+"check.field.stored.actual" = "== \"50,0,51,0,101,\""
+"check.local_string.stored" = "== fail"
+"check.local_string_literal.stored" = "== fail"
+"check.local_string_long.stored" = "== fail"
+"check.local_string_field.stored" = "== fail"
+"check.local_string_two_dims.stored" = "== fail"
+"check.nested.stored" = "== fail"
+"check.comma_form.first" = "== fail"
+"check.comma_form.first.actual" = "== \"50,0,99,100,101,\""

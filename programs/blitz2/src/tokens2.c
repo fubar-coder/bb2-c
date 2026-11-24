@@ -1281,7 +1281,16 @@ static void letaddr(struct stmtunit *u)
    is passed in a6 (Abs of a Word: ffplib's) made the right side's call
    of a function with the same base skip its load of a6, although the
    right side's code runs first (a(Abs(-j))=Abs(-5): a wrong value or a
-   crash; test compiler-let-left-a6). */
+   crash; test compiler-let-left-a6).
+   BUG(orig) (#1213): for a string the right side's finished string lies
+   at the start of the string work area when the left side's code runs
+   (a3 at its start after moved0a3, its length on the stack); an index
+   that uses the work area (a library function with a string argument,
+   a string comparison, a Function that takes, builds or returns
+   strings) starts its own strings at the same place and overwrites it,
+   and a Function with a local string leaves a3 elsewhere: the element
+   gets the right length with the wrong characters (blitz2.s:14360ff,
+   .nextcom; test compiler-let-left-string). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;
