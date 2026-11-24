@@ -1178,9 +1178,22 @@ void exprtree_overflow(void)
     pserr();
 }
 
-void exprtree_full(void)
+/* no asm counterpart: no memory for a further block of the arena; the
+   compile error of every allocation the compiler cannot get (#369) */
+void exprtree_nomem(void)
 {
-    conmemerr();                    /* not reached: EXPRTREE_NODES */
+    nomemerr();
+}
+
+/* no asm counterpart: the further blocks of the arena (exprtree.h) */
+void *exprtree_getblock(void)
+{
+    return AllocMem(EXPRTREE_BLOCK, MEMF_PUBLIC);
+}
+
+void exprtree_freeblock(void *block)
+{
+    FreeMem(block, EXPRTREE_BLOCK);
 }
 
 /* blitz2.s:8972 eval4 - an expression up to the first char that is no

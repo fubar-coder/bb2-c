@@ -37,4 +37,4 @@ None (rule 3); the check of the series. One new behaviour without a changed resu
 
 ## Open questions
 
-1. (Decide) The error when the arena cannot get memory: "Out of Memory" (the compiler's existing error, with TED's notice, #369) or "Expression too Complex". Assumption worked with: "Out of Memory" (planning report Q2). The spec scenario follows the answer.
+1. (Answered 2026-11-24, rounds/tree/decisions.md "Q2: the arena without memory gives \"Out of Memory\"") The error when the arena cannot get memory: "Out of Memory" (the compiler's existing error, with TED's notice, #369), not "Expression too Complex". The spec scenario follows the answer.

@@ -295,6 +295,7 @@ void qfree(void)
     freeasms();
     freepush();         /* Fixed (#994): not in blitz2.s */
     freefwdfields();    /* Fixed (#974): not in blitz2.s */
+    exprtree_reset();   /* the expression arena's further blocks: not in blitz2.s */
 }
 
 /* blitz2.s:2010 freeemup */

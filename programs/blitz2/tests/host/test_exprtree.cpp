@@ -15,12 +15,15 @@
 // makes it).  Each emitted operator is appended to the output, so the
 // output is the expression in postfix order.  Tested: the order of the
 // emission, the counted nodes' limit (the 65th is exprtree_overflow), the
-// bound of the arena (EXPRTREE_NODES is never reached), the reset, and
+// bound of the arena (EXPRTREE_NODES is never reached), the further
+// blocks beyond the static one (and "Out of Memory" without them), the
+// reset, and
 // that the walk's stack does not grow along a chain of one precedence
 // (100 000 operators).
 #include <csetjmp>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #include <snitch/snitch.hpp>
 extern "C" {
@@ -38,7 +41,12 @@ struct ctx {
     unsigned maxlive, maxpend;  // the arena's high water
 };
 
-std::jmp_buf errjmp;            // exprtree_overflow (1), exprtree_full (2), a syntax error (3)
+std::jmp_buf errjmp;            // exprtree_overflow (1), exprtree_nomem (2), a syntax error (3)
+
+// the further blocks: how many the system gives (-1: any number), how
+// many were asked for, given and given back; exprtree_nomem's calls
+int blocksleft = -1;
+unsigned blocksasked, blocksgiven, blocksfreed, nomemcalls;
 
 unsigned precof(char c)
 {
@@ -208,9 +216,27 @@ void exprtree_overflow(void)
     std::longjmp(errjmp, 1);
 }
 
-void exprtree_full(void)
+void exprtree_nomem(void)
 {
+    nomemcalls++;
     std::longjmp(errjmp, 2);
+}
+
+void *exprtree_getblock(void)
+{
+    blocksasked++;
+    if (blocksleft == 0)
+        return nullptr;
+    if (blocksleft > 0)
+        blocksleft--;
+    blocksgiven++;
+    return std::malloc(EXPRTREE_BLOCK);
+}
+
+void exprtree_freeblock(void *block)
+{
+    blocksfreed++;
+    std::free(block);
 }
 
 } // extern "C"
@@ -371,4 +397,61 @@ TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprt
     ctx mixed;
     CHECK(walk("a" + times("*a+a", 50000), mixed).size() == 200001);
     CHECK(mixed.maxpend <= 3);
+}
+
+TEST_CASE("exprtree: further blocks beyond the static one, Out of Memory without them", "[exprtree]")
+{
+    unsigned k, n;
+    volatile unsigned made;
+    exprnode *first;
+
+    exprtree_reset();
+    blocksleft = -1;
+    blocksasked = blocksgiven = blocksfreed = nomemcalls = 0;
+    // the static block's nodes come first, then further blocks
+    for (k = 0; k < EXPRTREE_NODES; k++)
+        exprtree_new(EXN_LEAF);
+    CHECK(exprtree_blocks() == 0);
+    first = exprtree_new(EXN_LEAF);
+    CHECK(exprtree_blocks() == 1);
+    CHECK(first->kind == EXN_LEAF);
+    for (n = 1; exprtree_blocks() < 3; n++)
+        exprtree_new(EXN_BINOP)->value = n;
+    CHECK(n > 2 * (EXPRTREE_BLOCK / sizeof(exprnode) - 1));
+    // a release keeps the blocks for the next nodes, which take them again
+    exprtree_release(first);
+    CHECK(exprtree_blocks() == 3);
+    CHECK(exprtree_live() == EXPRTREE_NODES);
+    for (k = 0; k < n; k++)
+        exprtree_new(EXN_LEAF);
+    CHECK(blocksasked == 3);
+    // the reset gives every further block back
+    exprtree_reset();
+    CHECK(exprtree_blocks() == 0);
+    CHECK(blocksfreed == 3);
+    CHECK(exprtree_live() == 0);
+
+    // the system has no further block: exprtree_nomem once, no retry
+    blocksleft = 1;
+    blocksasked = blocksgiven = blocksfreed = nomemcalls = 0;
+    made = 0;
+    if (setjmp(errjmp) == 0) {
+        for (;;) {
+            exprtree_new(EXN_LEAF);
+            made = made + 1;
+        }
+    }
+    CHECK(nomemcalls == 1);
+    CHECK(blocksasked == 2);
+    CHECK(blocksgiven == 1);
+    CHECK(made > EXPRTREE_NODES + EXPRTREE_BLOCK / sizeof(exprnode) - 2);
+    // the arena is released by the reset of the next statement (or of the
+    // end of the pass): the block given back, the static block free
+    exprtree_reset();
+    CHECK(blocksfreed == 1);
+    CHECK(exprtree_blocks() == 0);
+    CHECK(exprtree_live() == 0);
+    blocksleft = -1;
+    CHECK(walk("a+b*c") == "abc*+");
+    CHECK(blocksasked == 2);
 }

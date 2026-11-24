@@ -164,7 +164,8 @@ enum {
  *         entries). */
 #define EXPRTREE_PENDING 64
 
-/** @brief The number of nodes of the arena (168, 7728 bytes on the 68000).
+/** @brief The number of nodes of the arena's static block (168, 7728 bytes
+ *         on the 68000).
  *
  * The live nodes are at most the 64 counted ones (the precedence limit),
  * the 65th, which is made before it is counted, and one leaf or one run
@@ -259,11 +260,14 @@ void exprtree_enter(void *ctx, struct exprnode *n);
 /** n's right operand is read (n->right): emit n (and set n->tafter) */
 void exprtree_emit(void *ctx, struct exprnode *n);
 
+/** @brief The size of a further block of the arena in bytes. */
+#define EXPRTREE_BLOCK 4096
+
 /** @brief The caller's error functions, which never return.
  *
  * exprtree_overflow is for the 65th counted node ("Precedence Stack
- * Overflow"), exprtree_full for a full arena (not reached: see
- * EXPRTREE_NODES). */
+ * Overflow"), exprtree_nomem for a further block of the arena that the
+ * system does not give ("Out of Memory"). */
 #ifdef __GNUC__
 __attribute__((noreturn))
 #endif
@@ -271,13 +275,29 @@ void exprtree_overflow(void);
 #ifdef __GNUC__
 __attribute__((noreturn))
 #endif
-void exprtree_full(void);
+void exprtree_nomem(void);
 
-/** @brief Every node free, none pending (prepstack). */
+/** @brief The caller's memory for a further block of the arena.
+ *
+ * exprtree_getblock returns EXPRTREE_BLOCK bytes, or NULL when the system
+ * has none; exprtree_freeblock gives such a block back. */
+void *exprtree_getblock(void);
+void exprtree_freeblock(void *block);
+
+/** @brief Every node free, none pending, the further blocks given back
+ *         (prepstack, the end of a pass). */
 void exprtree_reset(void);
 
-/** @brief A new node of kind kind, cleared. */
+/** @brief A new node of kind kind, cleared.
+ *
+ * It comes from the static block, or from a further block when that is
+ * full; when the system has no further block, exprtree_nomem is called,
+ * once, and nothing is retried. */
 struct exprnode *exprtree_new(unsigned kind);
+
+/** @brief size bytes from the arena, aligned as a node, not cleared;
+ *         released with the nodes (exprtree_release, exprtree_reset). */
+void *exprtree_alloc(unsigned size);
 
 /** @brief Counts n (makes it pending) with operator op and precedence prec.
  *
@@ -287,16 +307,24 @@ void exprtree_push(struct exprnode *n, unsigned op, unsigned prec);
 /** @brief The pending node on top (NULL: none). */
 struct exprnode *exprtree_top(void);
 
-/** @brief n and every node after it free; the counted ones among them
- *         are no longer pending. */
+/** @brief n and everything allocated after it free; the counted ones
+ *         among them are no longer pending.
+ *
+ * The further blocks stay with the arena for the next nodes until
+ * exprtree_reset. */
 void exprtree_release(struct exprnode *n);
 
-/** @brief The node after n if it is in use, else NULL. */
+/** @brief The node after n if it is in use, else NULL (the nodes made
+ *         after n with nothing else allocated between). */
 struct exprnode *exprtree_after(struct exprnode *n);
 
-/** @brief The number of nodes in use, of pending ones. */
+/** @brief The bytes of the arena in use; the number of nodes in use when
+ *         only nodes are allocated; the number of pending ones; the
+ *         number of further blocks the arena holds. */
+unsigned long exprtree_used(void);
 unsigned exprtree_live(void);
 unsigned exprtree_pending(void);
+unsigned exprtree_blocks(void);
 
 /** @brief The walk of one level (eval5), returning the precedence of the
  *         operator that ends it (0: none), *op that operator.
