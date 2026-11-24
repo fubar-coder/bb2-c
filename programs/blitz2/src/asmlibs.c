@@ -7,6 +7,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "blitz2.h"
+#include "exprtree.h"
 
 /* ================================================================ data */
 
@@ -721,18 +722,24 @@ void putap(UWORD type, UWORD pmode)
         putapincreg();
 }
 
-/* blitz2.s:5679 pushap - push D(regat), type in d2 */
-void pushap(UWORD type)
+/* blitz2.s:5679 pushap - push D(regat), type in d2 (the code an action:
+   eval.h emitact) */
+static void pushapact(struct expract *a)
 {
     UWORD opcode;
 
     stackuse += 4;
     opcode = pushdn[0] | regat;         /* push long */
-    if (type < 3) {
+    if (a->y < 3) {
         stackuse -= 2;
         opcode |= 0x1000;               /* push word only */
     }
     pokewd(opcode);
+}
+
+void pushap(UWORD type)
+{
+    emitact(pushapact, NULL, 0, type);
 }
 
 /* blitz2.s:5689 putapincreg */
@@ -745,6 +752,14 @@ void putapincreg(void)
 void putalp(UWORD pmode)
 {
     putap(T_LONG, pmode);
+}
+
+/* blitz2.s:5698 handlevara's .unp - the type word pushed: a->y */
+static void ptypeact(struct expract *a)
+{
+    stackuse += 2;
+    pokewd(ptype[0]);
+    pokewd(a->y);
 }
 
 /* blitz2.s:5698 handlevara - Here, we want the address of a var type d2 */
@@ -761,9 +776,7 @@ UWORD handlevara(UWORD type, UWORD pmode)
             vtype = (vtype & 0xff00) | 3;
     }
     if ((UBYTE)exp == 0) {              /* .unp */
-        stackuse += 2;
-        pokewd(ptype[0]);
-        pokewd((UBYTE)vtype);
+        emitact(ptypeact, NULL, 0, (UBYTE)vtype);
         putalp(pmode);
         return c;
     }
@@ -799,7 +812,7 @@ void sendtype(struct var *v, struct type *t)
             arrerr1();                  /* illegal type to send */
         opcode = (opcode & 0xff00) | B_((UBYTE *)t + 7);
     }
-    pokewd(opcode);                     /* moveq #type,d regat */
+    emitact(pokeact, NULL, opcode, 0);  /* moveq #type,d regat */
     pushap(2);                          /* just a word. */
 }
 
@@ -818,14 +831,15 @@ void baseadd(struct var **v, struct type **t, UWORD pmode)
         syntaxerr();
     if (added)
         noarrayerr();
-    pokewd((regat << 9) | fbase[0]);
-    pokewd((*v)->offset);
+    emitact(pokeact, NULL, ACT_TWO | (UWORD)((regat << 9) | fbase[0]), (UWORD)(*v)->offset);
     putalp(pmode);                      /* OK, we've got da base reg. */
 }
 
-/* blitz2.s:5781 highadd - send high end of array on stack */
-void highadd(struct var *v, UWORD pmode)
+/* blitz2.s:5781 highadd - send high end of array on stack: the code (the
+   variable a->p, the push mode a->y) */
+static void highaddact(struct expract *a)
 {
+    const struct var *v = a->p;
     WORD off;
     UWORD w;
 
@@ -836,7 +850,7 @@ void highadd(struct var *v, UWORD pmode)
     off += v->offset;
     pokewd(off);
     w = regat << 9;
-    if (pmode || regat >= 7) {
+    if (a->y || regat >= 7) {
         /* we just pushed last parameter / last was d6, it must have been
            pushed too: we have to add to stack! */
         w |= pushadd[0];
@@ -845,6 +859,11 @@ void highadd(struct var *v, UWORD pmode)
         w |= (UWORD)(regat - 1);
     }
     pokewd(w);
+}
+
+void highadd(struct var *v, UWORD pmode)
+{
+    emitact(highaddact, v, 0, pmode);
     pmode = (pmode & 0x00ff) | 0x100;   /* move.b #1,pmode */
     putalp(pmode);
 }
@@ -885,8 +904,121 @@ struct blitzlib *uselib(UWORD libnum)
     return uselib3(findlib(libnum), libnum);
 }
 
+/* The relocations of a library used while an expression is built (no asm
+   counterpart).  The use is made then, in the order of the source with
+   the variables (exprtree.h); its relocations (addoff2) go into the list
+   of the program's relocations when its code calls the library for the
+   first time, so that the list has the order of the original, which added
+   them in the middle of that code: they are kept per library used
+   (relocpend) and moved into the list by the first uselib3 of the
+   library while the code is written (relocsplice).  Relocations whose
+   code is never written (the conversion a comparison drops, #1177) are
+   freed at the end of the expression, as cmpownleft freed them
+   (relocdrop). */
+#define NPENDLIBS 32
+static struct {
+    struct blitzlib *lib;
+    struct offnode *first;
+} pendrelocs[NPENDLIBS];
+static UWORD npendrelocs = 0;
+static UWORD relocbase = 0;         /* the first entry of the unit being written */
+static BOOL capturing = FALSE;
+static struct offnode *capfirst, **captail;
+
+/* the unit (exprtree.h) whose code is written next keeps the entries from
+   here on (a constant computed while an expression is built has its own
+   unit); returns the one before, for relocdrop */
+UWORD relocunit(void)
+{
+    UWORD b = relocbase;
+
+    relocbase = npendrelocs;
+    return b;
+}
+
+/* addoff2 while a library is used for an expression being built: n kept */
+BOOL reloccapture(struct offnode *n)
+{
+    if (!capturing)
+        return FALSE;
+    n->next = NULL;
+    *captail = n;
+    captail = &n->next;
+    return TRUE;
+}
+
+static void relocsplice(struct blitzlib *l)
+{
+    UWORD k;
+    struct offnode *n, *next;
+
+    for (k = relocbase; k < npendrelocs && pendrelocs[k].lib != l; k++)
+        ;
+    if (k == npendrelocs)
+        return;
+    for (n = pendrelocs[k].first; n; n = next) {
+        next = n->next;
+        n->next = firstoff;
+        firstoff = n;
+        numoffs++;
+    }
+    pendrelocs[k] = pendrelocs[--npendrelocs];
+}
+
+/* the unit's entries whose relocations were not taken freed; base: what
+   relocunit returned */
+void relocdrop(UWORD base)
+{
+    struct offnode *n, *next;
+
+    while (npendrelocs > relocbase) {
+        for (n = pendrelocs[--npendrelocs].first; n; n = next) {
+            next = n->next;
+            FreeMem(n, 8);
+        }
+    }
+    relocbase = base;
+}
+
+/* every entry freed (the reset of a statement, after a compile error in
+   the middle of an expression) */
+void relocreset(void)
+{
+    relocbase = 0;
+    relocdrop(0);
+    capturing = FALSE;
+}
+
+static struct blitzlib *uselib3a(struct blitzlib *l, UWORD libnum);
+
 /* blitz2.s:5841 uselib3 */
 struct blitzlib *uselib3(struct blitzlib *l, UWORD libnum)
+{
+    struct blitzlib *r;
+
+    if (exprtree_replaying()) {
+        if (!cfetchmode && !(l->flags & LIBF_USED))
+            interr2();              /* not reached: used while it was built */
+        relocsplice(l);
+        return uselib3a(l, libnum);
+    }
+    if (!exprtree_building() || capturing || cfetchmode || (l->flags & LIBF_USED))
+        return uselib3a(l, libnum);
+    capturing = TRUE;
+    capfirst = NULL;
+    captail = &capfirst;
+    r = uselib3a(l, libnum);
+    capturing = FALSE;
+    if (capfirst) {
+        if (npendrelocs == NPENDLIBS)
+            interr2();              /* not reached: libraries used for one expression */
+        pendrelocs[npendrelocs].lib = l;
+        pendrelocs[npendrelocs++].first = capfirst;
+    }
+    return r;
+}
+
+static struct blitzlib *uselib3a(struct blitzlib *l, UWORD libnum)
 {
     UBYTE *p;
     ULONG end, dest;

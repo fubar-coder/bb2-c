@@ -295,6 +295,7 @@ void qfree(void)
     freeasms();
     freepush();         /* Fixed (#994): not in blitz2.s */
     freefwdfields();    /* Fixed (#974): not in blitz2.s */
+    relocreset();       /* the relocations kept for an expression: not in blitz2.s */
     exprtree_reset();   /* the expression arena's further blocks: not in blitz2.s */
 }
 
@@ -1091,6 +1092,8 @@ void prepstack(void)
 {
     forthsp = forthstack;
     exprtree_reset();
+    exprbuildreset();
+    relocreset();
 }
 
 /* blitz2.s:2828 chkrealstop - return ne if really a stop! */
@@ -1535,6 +1538,14 @@ UBYTE *libform(UWORD nparams, UBYTE *sub)
     }
 }
 
+/* no asm counterpart: the stack use 0 for the parameters (an action:
+   eval.h emitact) */
+static void stackzero(struct expract *a)
+{
+    (void)a;
+    stackuse = 0;
+}
+
 /* no asm counterpart; replaces blitz2.s:3217-3228 dolibtoke's .found and
    .nopees - the nparams parameters of the form (fetchlibps: each into its
    register or pushed as it is read, stackuse the bytes pushed, numreps
@@ -1544,7 +1555,7 @@ void libparams(UWORD nparams, UBYTE *form)
     UWORD pspec = nparams | (UWORD)form[0] << 8;  /* + repeat info, see fetchlibps */
 
     /* Got it! */
-    stackuse = 0;
+    stateact(stackzero, NULL, 0, 0);
     if (pspec)
         fetchlibps(pspec, form + 2);
     else

@@ -72,10 +72,11 @@ void element(ctx *x);
 void expression(ctx *x, unsigned kind)
 {
     unsigned op;
+    exprnode *last;
 
     exprtree_push(exprtree_new(kind), OP_NONE, 1);
     note(x);
-    if (exprtree_climb(x, &op))
+    if (exprtree_climb(x, &op, &last))
         std::longjmp(errjmp, 3);
 }
 
@@ -157,7 +158,7 @@ void element(ctx *x)
 
 extern "C" {
 
-unsigned exprtree_operand(void *v, unsigned *op)
+unsigned exprtree_operand(void *v, exprnode *, unsigned *op)
 {
     ctx *x = static_cast<ctx *>(v);
     auto at = reinterpret_cast<std::uintptr_t>(__builtin_frame_address(0));
@@ -216,6 +217,11 @@ void exprtree_overflow(void)
     std::longjmp(errjmp, 1);
 }
 
+void exprtree_runact(expract *a)
+{
+    a->fn(a);
+}
+
 void exprtree_nomem(void)
 {
     nomemcalls++;
@@ -252,7 +258,12 @@ std::string walk(const std::string &text, ctx &x)
     x.lo = UINTPTR_MAX;
     x.hi = 0;
     x.maxlive = x.maxpend = 0;
+    struct exprunit outer;
+    struct exprmark m;
+
     exprtree_reset();
+    m = exprtree_mark();
+    exprtree_begin(&outer);
     switch (setjmp(errjmp)) {
     case 0:
         break;
@@ -265,6 +276,8 @@ std::string walk(const std::string &text, ctx &x)
     }
     expression(&x, EXN_EXPR);
     exprtree_release(exprtree_top());
+    exprtree_end(&outer);
+    exprtree_unwind(m);
     if (*x.p)
         return "syntax";
     return x.out;
@@ -347,38 +360,93 @@ TEST_CASE("exprtree: 64 counted nodes, the 65th is the overflow", "[exprtree]")
     CHECK(walk("a+(b*~" + times("(", 59) + "c" + times(")", 60), x) == "abc~*+");
     CHECK(x.maxpend == 64);
     CHECK(walk("a+(b*~" + times("(", 60) + "c" + times(")", 61)) == "overflow");
-    // a minus sign is not counted, but each is a node in the arena: the
-    // bound of EXPRTREE_NODES
+    // a minus sign is not counted
     CHECK(walk(times("_(", 63) + "a" + times(")", 63), x) == "a" + times("_", 63));
     CHECK(x.maxpend == 64);
-    CHECK(x.maxlive == 128);
     CHECK(walk(times("_(", 64) + "a" + times(")", 64)) == "overflow");
-    // an element's leaf behind the run of minus signs of the innermost
-    // level: the other way to the bound (129)
     CHECK(walk(times("_(", 63) + "_a" + times(")", 63), x) == "a" + times("_", 64));
-    CHECK(x.maxlive == 129);
-    CHECK(x.maxlive <= EXPRTREE_NODES);
-    // arrays nested in their indexes behind minus signs: each index is counted, a step and the
-    // variable node live only at the leaf's place: the bound stays 129
+    // arrays nested in their indexes behind minus signs: each index is counted
     CHECK(walk(times("_A[", 63) + "_b" + times("]", 63), x) == "b_" + times("A_", 63));
     CHECK(x.maxpend == 64);
-    CHECK(x.maxlive == 129);
     CHECK(walk(times("_A[", 64) + "b" + times("]", 64)) == "overflow");
-    // calls nested in their parameters behind minus signs: a call's node lives beside the run of minus
-    // signs of its level while its parameter is read.  The compiler nests
-    // at most 32 calls (each holds an entry of forthstack, the 33rd is
-    // "Expression too Complex"), so the bound is 64 counted nodes, the
-    // 65th, 64 runs of minus signs and 32 calls: 161
+    // calls nested in their parameters behind minus signs
     CHECK(walk(times("_F{", 31) + times("_(", 32) + "_b" + times(")", 32) + times("}", 31), x)
           == "b" + times("_", 33) + times("F_", 31));
     CHECK(x.maxpend == 64);
-    CHECK(x.maxlive == 160);
-    CHECK(walk(times("_F{", 31) + times("_(", 32) + "_G{}" + times(")", 32) + times("}", 31), x)
-          == "G" + times("_", 33) + times("F_", 31));
-    CHECK(x.maxlive == 160);
     CHECK(walk(times("_F{", 32) + times("_(", 32) + "b" + times(")", 32) + times("}", 32))
           == "overflow");
-    CHECK(161 <= EXPRTREE_NODES);
+}
+
+TEST_CASE("exprtree: the whole expression stays in the arena while it is built", "[exprtree]")
+{
+    ctx x;
+
+    // every node made while the unit is built is kept: more than the
+    // static block holds, in further blocks; the end of the unit frees them
+    CHECK(walk(times("_F{", 31) + times("_(", 32) + "_b" + times(")", 32) + times("}", 31), x)
+          == "b" + times("_", 33) + times("F_", 31));
+    CHECK(x.maxlive > EXPRTREE_NODES);
+    CHECK(exprtree_blocks() > 0);
+    CHECK(exprtree_live() == 0);
+    CHECK(exprtree_pending() == 0);
+    // outside a unit a release frees the node and what follows it
+    exprtree_reset();
+    exprnode *n = exprtree_new(EXN_LEAF);
+    exprtree_new(EXN_LEAF);
+    exprtree_release(n);
+    CHECK(exprtree_live() == 0);
+    // inside one it stays until the unit is unwound
+    struct exprunit outer;
+    struct exprmark m = exprtree_mark();
+    exprtree_begin(&outer);
+    CHECK(exprtree_building());
+    n = exprtree_new(EXN_LEAF);
+    exprtree_new(EXN_LEAF);
+    exprtree_release(n);
+    CHECK(exprtree_live() == 2);
+    exprtree_end(&outer);
+    CHECK(!exprtree_building());
+    exprtree_unwind(m);
+    CHECK(exprtree_live() == 0);
+}
+
+namespace {
+
+// an action of the host test: appends its x to the text p
+void actappend(expract *a)
+{
+    static_cast<std::string *>(a->p)->push_back(static_cast<char>(a->x));
+}
+
+} // namespace
+
+TEST_CASE("exprtree: the actions of a unit run in their order, a nested unit apart", "[exprtree]")
+{
+    std::string out;
+    struct exprunit outer, inner;
+    expract *list, *act;
+
+    exprtree_reset();
+    exprtree_begin(&outer);
+    act = exprtree_act(actappend);
+    act->p = &out;
+    act->x = 'a';
+    exprtree_begin(&inner);         // a unit built in the middle of one
+    act = exprtree_act(actappend);
+    act->p = &out;
+    act->x = 'x';
+    list = exprtree_end(&inner);
+    CHECK(exprtree_building());
+    exprtree_run(list);
+    CHECK(out == "x");
+    act = exprtree_act(actappend);
+    act->p = &out;
+    act->x = 'b';
+    list = exprtree_end(&outer);
+    CHECK(!exprtree_building());
+    CHECK(!exprtree_replaying());
+    exprtree_run(list);
+    CHECK(out == "xab");
 }
 
 TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprtree]")
@@ -389,8 +457,6 @@ TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprt
 
     CHECK(walk(a, small).size() == 21);
     CHECK(walk(b, big).size() == 200001);
-    CHECK(big.maxlive == small.maxlive);
-    CHECK(big.maxlive <= 4);
     CHECK(big.hi - big.lo == small.hi - small.lo);
     // a higher precedence is one level deeper each, as the original's
     // recursion: a*a+a*a+... stays two levels

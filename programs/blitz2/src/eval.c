@@ -183,6 +183,157 @@ static ULONG elemcount = 0;
 static UWORD letdepth = 0;
 static ULONG letelem = 0;
 
+/* ============================================ the build and the emission
+   No asm counterpart.  An expression is built before its code is written:
+   it is read, typed, its variables and labels made and its libraries used
+   in the order of the source, and each part of its code is an action
+   (exprtree.h, struct expract), recorded in the order the original wrote
+   that code.  The evaluation that began the unit (maineval2 outside one)
+   runs the actions when the whole expression is built.  An action writes
+   its code from its node and the emitter's state (pc, lasta6, sbgot,
+   stackuse, forthstack's positions...), with regat, varmode and evaldepth
+   as they were where its part was read (ctx).  What the build decides from
+   the code the original had written by then, it decides from what it has
+   read and recorded: the records below. */
+
+/* the forthstack as the build has it: per pending element whether it is
+   a constant (constgot 0) and a Byte or Word value (#1179); the emitter's
+   forthstack holds where the element's code begins */
+static struct {
+    UWORD constgot;
+    UBYTE wordval;
+} bforth[32];
+static UWORD nbforth = 0;
+
+/* the actions recorded (their number), the last one that writes code;
+   the action of the last conversion a value's code ends in (#1177: the
+   conversion cmpownleft drops), the last literal made a whole number and
+   the minus signs after it (#1186: fraclitfloat), and whether a string
+   base is got (sbasegot, set by makesbase's code) */
+static ULONG actseq = 0, codeseq = 0, prevcodeseq = 0;
+static struct {
+    ULONG seq;
+    UWORD from, to, depth;
+} bconv;
+static struct {
+    ULONG seq, before, last;
+} blit;
+static BOOL bsbase = FALSE;
+
+/* no asm counterpart: the state of the build reset (prepstack) */
+void exprbuildreset(void)
+{
+    nbforth = 0;
+    bconv.seq = blit.seq = 0;
+}
+
+/* no asm counterpart: the state an action is written in, recorded where
+   it is read */
+static void actctx(struct expract *a)
+{
+    a->ctx[0] = regat;
+    a->ctx[1] = (UWORD)varmode;
+    a->ctx[2] = evaldepth;
+}
+
+/* no asm counterpart (exprtree.h): the action a run, in the state it was
+   recorded in */
+void exprtree_runact(struct expract *a)
+{
+    regat = a->ctx[0];
+    varmode = (WORD)a->ctx[1];
+    evaldepth = a->ctx[2];
+    a->fn(a);
+}
+
+/* no asm counterpart (eval.h): the action fn with p, x and y, recorded
+   when an expression is built, else run at once; nocode: it writes no
+   code (it records a position or a state) */
+static void negemit(struct expract *a);
+static void convprep(UWORD from, UWORD to);
+
+static struct expract *recordact(exprtree_actfn *fn, void *p, ULONG x, UWORD y, BOOL nocode)
+{
+    struct expract *a;
+
+    if (!exprtree_building()) {
+        /* outside an expression the code is written at once (an action
+           kept in the arena until the statement ends: arrevalchk's mark) */
+        a = exprtree_alloc(sizeof *a);
+        memset(a, 0, sizeof *a);
+        a->fn = fn;
+        a->p = p;
+        a->x = x;
+        a->y = y;
+        actctx(a);
+        fn(a);
+        return a;
+    }
+    a = exprtree_act(fn);
+    a->p = p;
+    a->x = x;
+    a->y = y;
+    actctx(a);
+    actseq++;
+    if (!nocode) {
+        prevcodeseq = codeseq;
+        codeseq = actseq;
+        /* #1186: only the minus signs of a Byte or Word may follow the
+           literal */
+        if (blit.seq) {
+            if (fn == negemit && y < T_LONG)
+                blit.last = codeseq;
+            else
+                blit.seq = 0;
+        }
+    }
+    return a;
+}
+
+struct expract *emitact(exprtree_actfn *fn, void *p, ULONG x, UWORD y)
+{
+    return recordact(fn, p, x, y, FALSE);
+}
+
+struct expract *stateact(exprtree_actfn *fn, void *p, ULONG x, UWORD y)
+{
+    return recordact(fn, p, x, y, TRUE);
+}
+
+/* no asm counterpart: a library used while the expression is read (a
+   function's lookup, Used, Addr, Maximum, an OS library): the use now,
+   and an action where its code is written that takes the library's
+   relocations into the program's list there (uselib3, asmlibs.c) */
+static void useact(struct expract *a)
+{
+    uselib3((struct blitzlib *)a->p, (UWORD)a->x);
+}
+
+UBYTE *findtokeact(UWORD tok, struct blitzlib **libp)
+{
+    UBYTE *sub = findtoke(tok, libp);
+
+    stateact(useact, *libp, (*libp)->libnum, 0);
+    return sub;
+}
+
+struct blitzlib *uselibact(UWORD libnum)
+{
+    struct blitzlib *bl = uselib(libnum);
+
+    stateact(useact, bl, libnum, 0);
+    return bl;
+}
+
+/* no asm counterpart: actions of a few words of code (x: the first word,
+   y: the second; one word without ACT_TWO) */
+void pokeact(struct expract *a)
+{
+    pokewd((UWORD)a->x);
+    if (a->x & 0x10000UL)
+        pokewd(a->y);
+}
+
 /* forward declarations of the internal routines */
 static void fdo2(WORD lvo);
 static void bytetof2(void);
@@ -198,7 +349,11 @@ static UWORD eval2(UWORD *type, UWORD *c, unsigned *op);
 static UWORD doop(struct opentry *op, UWORD type);
 static void mixedop(struct opentry *op, const struct exprtype_bin *d);
 static void doplus2(UWORD opcode);
-static ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend);
+static ULONG cmpownleft(ULONG lstart, ULONG lend);
+/* the operator operate emits has two constants (BNF_FOLD) */
+static BOOL foldnow = FALSE;
+/* operate is run for the check of a division by zero only (divzerobuild) */
+static BOOL zeroonly = FALSE;
 static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
 static void divzerochk(const struct opentry *op, UWORD type);
 static UWORD getelement(UWORD *type);
@@ -212,6 +367,7 @@ static UWORD function(UWORD c, UWORD *type);
 static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen);
 static void dopusha3(void);
 static void dopulla3(void);
+
 
 /* ============================================ Poking to Object code stuff */
 
@@ -671,21 +827,23 @@ void sbtolong(void)
    a(i,j), b(i,j,k), a(5,7) stays the original's byte for byte.  A change
    of makelmul that reads the whole Long (indexes above 65535) must drop
    this narrowing. */
-UWORD arrevalchk(void)
+/* no asm counterpart: arrevalchk's mark (in its action: where the index
+   begins, the relocations then) and the narrowing after the index (a->p
+   the mark) */
+static void idxmark(struct expract *a)
 {
-    ULONG at = pc;
-    struct offnode *off = firstoff;
-    UWORD c;
+    a->x = pc;
+    a->p = firstoff;
+}
 
-    idxnext = TRUE;
-    c = arreval();
-    if (debugga >> 8) {
-        arrszchk();
-        return c;
-    }
+static void idxnarrow(struct expract *a)
+{
+    const struct expract *m = a->p;
+    ULONG at = m->x;
+
     /* decided by the positions the code was emitted at, not by reading
        it: a pass whose code is not stored (nomemleft) gets the same size */
-    if (firstoff == off && islongconst(at, pc)) {
+    if (firstoff == (struct offnode *)m->p && islongconst(at, pc)) {
         if (!nomemleft) {           /* move.l #x,Dn -> move.w #x,Dn */
             W_(at) |= 0x1000;
             W_(at + 2) = W_(at + 4);
@@ -697,6 +855,27 @@ UWORD arrevalchk(void)
         pc -= 2;                    /* the element's ext.l */
         conv.end = rawcutend = 0;
     }
+}
+
+static void szchkact(struct expract *a)
+{
+    (void)a;
+    arrszchk();
+}
+
+UWORD arrevalchk(void)
+{
+    struct expract *m = stateact(idxmark, NULL, 0, 0);
+    UWORD c;
+
+    idxnext = TRUE;
+    c = arreval();
+    if (debugga >> 8) {
+        tokuse(arrerr);
+        emitact(szchkact, NULL, 0, 0);
+        return c;
+    }
+    emitact(idxnarrow, m, 0, 0);
     return c;
 }
 
@@ -802,46 +981,91 @@ UWORD maineval(WORD push, UWORD *type, WORD unk)
     return maineval2(push, type, unk);
 }
 
-/* blitz2.s:8879 maineval2 - d2=type to get, d1=push flag */
-UWORD maineval2(WORD push, UWORD *type, WORD unk)
+
+/* no asm counterpart: the facts the code of the last elements leaves for
+   the code after it (#978, #1177, #1178, #1179, #1186) */
+struct facts {
+    struct emitfacts c;
+    ULONG bytevalend, rawcutend;
+    UWORD rawcutdepth;
+    ULONG convat, convend;
+    struct offnode *convoff;
+    WORD conva6;
+    UWORD convfrom, convto, convdepth;
+};
+
+static void getfacts(struct facts *f)
 {
-    WORD s_thisstuse = thisstuse;
-    WORD s_pushflag, s_sbgot, s_unknown;
-    UWORD asked, t, c;
-    BOOL s_rawq = rawq;
-    BOOL s_cmpres = cmpres;
-    BOOL s_laterindex = laterindex;
+    getemitfacts(&f->c);
+    f->bytevalend = bytevalend;
+    f->rawcutend = rawcutend;
+    f->rawcutdepth = rawcutdepth;
+    f->convat = conv.at;
+    f->convend = conv.end;
+    f->convoff = conv.off;
+    f->conva6 = conv.a6;
+    f->convfrom = conv.from;
+    f->convto = conv.to;
+    f->convdepth = conv.depth;
+}
 
-    laterindex = idxnext;           /* Fixed (#1179) */
-    idxnext = FALSE;
+static void setfactsact(struct expract *a)
+{
+    const struct facts *f = a->p;
+
+    setemitfacts(&f->c);
+    bytevalend = f->bytevalend;
+    rawcutend = f->rawcutend;
+    rawcutdepth = f->rawcutdepth;
+    conv.at = f->convat;
+    conv.end = f->convend;
+    conv.off = f->convoff;
+    conv.a6 = f->conva6;
+    conv.from = f->convfrom;
+    conv.to = f->convto;
+    conv.depth = f->convdepth;
+}
+
+/* no asm counterpart; replaces blitz2.s:8879-8886 maineval2's saves - the
+   enter action of the evaluation e (EVAL): the stack use at its start,
+   the push flag a->y, no string base pushed for it yet; what they were in
+   e (value, aux, off) */
+static void evalenter(struct expract *a)
+{
+    struct exprnode *e = a->p;
+
+    e->value = (UWORD)thisstuse;
+    e->aux = (UWORD)pushflag;
+    e->off = sbgot;
     thisstuse = stackuse;
-    s_pushflag = pushflag;
-    pushflag = push;
-    s_sbgot = sbgot;
+    pushflag = (WORD)a->y;
     sbgot = 0;                      /* not pushed yet */
-    s_unknown = unknown;
-    unknown = unk;
+}
 
-    asked = *type;
-    t = asked;
-    evaldepth++;
-    rawq = FALSE;
-    c = eval3(&t);
-    if (rawq) {                     /* Fixed (#1178): a raw Quick, floor */
-        quicktolong();
-        rawcutend = pc;             /* Fixed (#1179), for arrevalchk */
-        rawcutdepth = evaldepth;
-    }
-    rawq = s_rawq;
-    cmpres = s_cmpres;              /* Fixed (#1182) */
-    evaldepth--;
-    if (asked && !unknown) {        /* type asked for */
-        convtype(t, asked);         /* exg d2,d3 / convtype */
-        t = asked;
-    }
-    unknown = s_unknown;            /* .noconv */
-    if (pushflag == 2)              /* the argument of an intrinsic */
-        pushflag = intrinsic_quick(t) ? 0 : 1;
+/* no asm counterpart; replaces blitz2.s:8879 maineval2's rawq cut (Fixed
+   (#1178), #1179) - a raw Quick at the end rounded down */
+static void rawcutact(struct expract *a)
+{
+    (void)a;
+    quicktolong();
+    rawcutend = pc;                 /* Fixed (#1179), for arrevalchk */
+    rawcutdepth = evaldepth;
+}
+
+/* no asm counterpart; replaces blitz2.s:8893-8962 maineval2 after eval3
+   (the conversion, .hi1, .skipme, .notst, .skip) - the exit action of the
+   evaluation e: the value converted from e->tbefore to e->tafter
+   (EVF_CONV), the push flag a->y (as the argument of an intrinsic
+   decided), the type pushed, a string ended, the result pushed; the
+   state of the enter action back */
+static void evalexit(struct expract *a)
+{
+    struct exprnode *e = a->p;
+    UWORD t = e->tafter;
+
+    if (e->lflags & EVF_CONV)
+        convtype(e->tbefore, t);    /* exg d2,d3 / convtype */
+    pushflag = (WORD)a->y;
     if (pushflag > 0) {
         /* push the type got. */
         UWORD regfield = regat << 9;
@@ -858,7 +1082,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
         sbtolong();
     } else if ((UWORD)sbgot >= 2)                   /* .notst */
         pokewd(ststfix[0]);
-    sbgot = s_sbgot;                                /* .notst2 */
+    sbgot = e->off;                                 /* .notst2 */
     if (pushflag < 0) {
         UWORD opcode = *pushd0wd;
         stackuse += 2;
@@ -868,12 +1092,103 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
         }
         pokewd(opcode | regat);
     }
-    pushflag = s_pushflag;                          /* .skip */
-    thisstuse = s_thisstuse;
+    pushflag = (WORD)e->aux;                        /* .skip */
+    thisstuse = (WORD)e->value;
+}
+
+/* no asm counterpart; replaces blitz2.s:8879-8962 maineval2's control -
+   the evaluation built: its node (EVAL) with its enter action, the
+   expression (eval3), its exit action.  The type asked for (unk: none)
+   and the push flag are decided here; *type is the type got. */
+static UWORD evalbuild(WORD push, UWORD *type, WORD unk)
+{
+    struct exprnode *e = exprtree_new(EXN_EVAL);
+    UWORD asked = *type, t = asked, c;
+    BOOL s_rawq = rawq;
+    BOOL s_cmpres = cmpres;
+    BOOL s_laterindex = laterindex;
+
+    laterindex = idxnext;           /* Fixed (#1179) */
+    idxnext = FALSE;
+    stateact(evalenter, e, 0, (UWORD)push);
+    evaldepth++;
+    rawq = FALSE;
+    c = eval3(&t);
+    if (rawq)                       /* Fixed (#1178): a raw Quick, floor */
+        emitact(rawcutact, NULL, 0, 0);
+    rawq = s_rawq;
+    cmpres = s_cmpres;              /* Fixed (#1182) */
+    evaldepth--;
+    e->tbefore = t;
+    if (asked && !unk) {            /* type asked for */
+        convprep(t, asked);
+        e->lflags |= EVF_CONV;
+        t = asked;
+    }
+    if (push == 2)                  /* the argument of an intrinsic */
+        push = intrinsic_quick(t) ? 0 : 1;
+    e->tafter = t;
+    emitact(evalexit, e, 0, (UWORD)push);
     laterindex = s_laterindex;
     *type = t;
     return c;
 }
+
+/* blitz2.s:8879 maineval2 - d2=type to get, d1=push flag.  Outside an
+   expression it begins the unit (exprtree.h): the expression is built,
+   then its actions write its code; inside one (a parameter, an index) it
+   is built as a part of it. */
+UWORD maineval2(WORD push, UWORD *type, WORD unk)
+{
+    struct exprunit outer;
+    struct exprmark m;
+    ULONG at = pc;
+    ULONG s_actseq = actseq, s_codeseq = codeseq;
+    BOOL s_bsbase = bsbase;
+    UWORD c, rb;
+
+    if (exprtree_building())
+        return evalbuild(push, type, unk);
+    m = exprtree_mark();
+    bsbase = sbasegot != 0;
+    bconv.seq = blit.seq = 0;
+    rb = relocunit();
+    exprtree_begin(&outer);
+    c = evalbuild(push, type, unk);
+    if (pc != at)
+        interr2();                  /* not reached: no code while it is built */
+    exprtree_run(exprtree_end(&outer));
+    relocdrop(rb);
+    exprtree_unwind(m);
+    actseq = s_actseq;
+    codeseq = s_codeseq;
+    bsbase = s_bsbase;
+    return c;
+}
+
+/* no asm counterpart (eval.h): a constant computed in the middle of an
+   expression (evalconst2: a ~ constant, CNIF) is a unit of its own, the
+   expression being built is set aside meanwhile; its code left the facts
+   of its last elements, which the code after it in the expression finds
+   (an action where it was read) */
+void exprsuspend(struct exprunit *s)
+{
+    exprtree_suspend(s);
+}
+
+void exprresume(struct exprunit *s)
+{
+    struct facts *f;
+
+    exprtree_end(s);
+    if (!exprtree_building())
+        return;
+    bconv.seq = blit.seq = 0;
+    f = exprtree_alloc(sizeof *f);
+    getfacts(f);
+    stateact(setfactsact, f, 0, 0);
+}
+
 
 /* blitz2.s:9017 the constant fold of eval5 (exprtree_emit): the code of
    the last two operands (both constants: forthsp[-2], forthsp[-1]) and
@@ -968,31 +1283,30 @@ static unsigned opindex(const struct opentry *op)
 }
 
 /* no asm counterpart; replaces blitz2.s:8995-9000 (eval5 after .higher's
-   right operand: convtypef, .skip's popprec, doop): the operator n on its
-   left operand (n->left, of type n->tbefore) in D(regat) and the right
-   one, whose evaluation ended with the type so far right, in D(regat+1)
-   (n->left->start, n->start: where their code begins; the left one's
-   facts in its flags and n's).  exprtype_binop decides, this emits what
-   it returns.  Returns the type so far; the left operand is marked
-   EXF_CMP when the result is lowered by a comparison (#1182). */
-static UWORD operate(struct exprnode *n, UWORD right)
+   right operand: convtypef, .skip's popprec, doop): the code of the
+   operator n on its left operand (n->left, of type n->tbefore) in
+   D(regat) and the right one, whose evaluation ended with the type so far
+   n->vtype, in D(regat+1) (n->left->start, n->start: where their code
+   begins; the facts of the build in n->lflags, those of the code before
+   it in n->flags and the emitter's state).  exprtype_binop decides, this
+   emits what it returns.  Returns the type so far. */
+static UWORD operate(struct exprnode *n)
 {
     struct exprnode *l = n->left;
     struct opentry *op = &operators[n->op];
-    UWORD left = n->tbefore;
+    UWORD left = n->tbefore, right = n->vtype;
     struct exprtype_binfacts f;
     struct exprtype_bin d;
 
-    f.lraw = (l->flags & EXF_RAW) != 0;
-    f.rraw = rawq;
-    rawq = FALSE;
-    f.rcmp = cmpres;
+    f.lraw = (n->lflags & BNF_LRAW) != 0;
+    f.rraw = (n->lflags & BNF_RRAW) != 0;
+    f.rcmp = (n->lflags & BNF_RCMP) != 0;
     f.lbyte = (n->flags & EXF_LBYTE) != 0;
     f.lconst = (n->flags & EXF_LCONST) != 0;
     f.rbyte = bytevalend == pc && bytevalend > n->start;
     f.rconst = isbyteconst(n->start, pc);
     /* Fixed (#1179): a later index, both operands Word values */
-    f.words = laterindex && forthsp[-2].wordval && forthsp[-1].wordval;
+    f.words = (n->lflags & BNF_WORDS) != 0;
     d = exprtype_binop(n->op, left, right, &f);
     /* Fixed (#978): the constant compared with a byte value */
     if (d.byteext == ETB_RIGHT)
@@ -1014,6 +1328,7 @@ static UWORD operate(struct exprnode *n, UWORD right)
         convtype(d.rup_from, d.rup_to);
         regat--;
     }
+    foldnow = (n->lflags & BNF_FOLD) != 0;
     if (d.path == ETP_COMPARE || d.path == ETP_CMPLQ) {
         if (d.rcut)                 /* not reached: the right starts at 0 */
             rawcut(regat + 1);
@@ -1024,10 +1339,336 @@ static UWORD operate(struct exprnode *n, UWORD right)
         if (d.lconv_from)
             convtypef(d.lconv_from, d.lconv_to); /* could possibly fuck regat+1 ! */
         divzerochk(op, d.handler);
+        if (zeroonly)
+            return d.result;
         wordop = d.wordop;
         doop(op, d.handler);
         wordop = FALSE;
     }
+    return d.result;
+}
+
+/* no asm counterpart; replaces blitz2.s:9001-9083 eval5 after doop - the
+   code of the operator n: the operation, the constant fold of two
+   constants (BNF_FOLD, not of a result that is no constant: BNF_NOFOLD),
+   the forthstack's entry of the right operand dropped */
+static void binopact(struct expract *a)
+{
+    struct exprnode *n = a->p;
+    struct forthent *fs;
+    UWORD t = operate(n);
+
+    if (t != n->tafter)
+        interr2();                  /* not reached: typed when it was built */
+    /* O.K., lets check the forth stack to see if last two operators are
+       constants!  if so, we can JSR the routine to optimize into a
+       constant! */
+    fs = forthsp;
+    if ((n->lflags & (BNF_FOLD | BNF_NOFOLD)) == BNF_FOLD && !nomemleft) {
+        /* YES! We can do it! */
+        constfold(t);
+        fs = forthsp;
+    }
+    forthsp = fs - 1;                           /* .no */
+}
+
+/* no asm counterpart: the emitter's state, kept around the code written
+   for divzerobuild's check */
+struct emitsave {
+    ULONG pc, bigpc;
+    WORD nomemleft, a6, stackuse, sbgot, thisstuse, pushflag, fuckpos;
+    struct offnode *firstoff;
+    ULONG numoffs;
+    UWORD forthn;
+    BOOL wordop, foldnow;
+    struct facts f;
+    struct forthent fs[32];
+};
+
+static void emitkeep(struct emitsave *s)
+{
+    s->pc = pc;
+    s->bigpc = bigpc;
+    s->nomemleft = nomemleft;
+    s->a6 = lasta6;
+    s->stackuse = stackuse;
+    s->sbgot = sbgot;
+    s->thisstuse = thisstuse;
+    s->pushflag = pushflag;
+    s->fuckpos = fuckpos;
+    s->firstoff = firstoff;
+    s->numoffs = numoffs;
+    s->forthn = (UWORD)(forthsp - forthstack);
+    s->wordop = wordop;
+    s->foldnow = foldnow;
+    getfacts(&s->f);
+    memcpy(s->fs, forthstack, sizeof forthstack);
+}
+
+static void emitback(const struct emitsave *s)
+{
+    struct offnode *node;
+
+    while (firstoff != s->firstoff) {       /* the code's relocations */
+        node = firstoff;
+        firstoff = node->next;
+        FreeMem(node, 8);
+    }
+    numoffs = s->numoffs;
+    pc = s->pc;
+    bigpc = s->bigpc;
+    nomemleft = s->nomemleft;
+    lasta6 = s->a6;
+    stackuse = s->stackuse;
+    sbgot = s->sbgot;
+    thisstuse = s->thisstuse;
+    pushflag = s->pushflag;
+    fuckpos = s->fuckpos;
+    forthsp = forthstack + s->forthn;
+    wordop = s->wordop;
+    foldnow = s->foldnow;
+    setfactsact(&(struct expract){ .p = (void *)&s->f });
+    memcpy(forthstack, s->fs, sizeof forthstack);
+}
+
+/* no asm counterpart: the check of a division of two constants by zero
+   (divzerochk: "Division by Zero"), made while the expression is built,
+   where the original made it, before what is read after the operator n:
+   the code of its operands (the actions from the left operand's first,
+   l->value, to the last one recorded) and of the operation up to the
+   check is written behind pc and run, then everything it changed is set
+   back.  The code is written again later, the check then finds the same
+   divisor. */
+static void divzerobuild(struct exprnode *n, const struct exprtype_bin *d)
+{
+    struct expract *a = (struct expract *)n->left->value, *last = exprtree_lastact();
+    struct exprunit outer;
+    struct emitsave s;
+    UWORD s_regat = regat, s_depth = evaldepth;
+    WORD s_varmode = varmode;
+
+    if ((n->op != ETO_DIV && n->op != ETO_MOD) || d->handler < T_BYTE || d->handler > T_FLOAT
+        || (d->path != ETP_PLAIN && d->path != ETP_MIXED) || !a || nomemleft)
+        return;
+    emitkeep(&s);
+    exprtree_begin(&outer);         /* nothing is recorded while it runs */
+    for (;; a = a->next) {
+        exprtree_runact(a);
+        if (a == last)
+            break;
+    }
+    regat = n->reg;
+    zeroonly = TRUE;
+    operate(n);
+    zeroonly = FALSE;
+    exprtree_end(&outer);
+    emitback(&s);
+    regat = s_regat;
+    varmode = s_varmode;
+    evaldepth = s_depth;
+}
+
+/* no asm counterpart: what the code of a conversion from -> to needs
+   while the expression is built: "Can't Convert Types" where convtable
+   has none, the libraries its routines use (convtable's handlers:
+   overchk's routines with runtime error and overflow checking, the FFP
+   base, floatquicklib) */
+static void overuse(UWORD token)
+{
+    if ((debugga >> 8) && (optreq2ga4.Flags & GFLG_SELECTED) && !cfetchmode)
+        tokuse(token);
+}
+
+static void convprep(UWORD from, UWORD to)
+{
+    WORD idx = (WORD)((from - 1) * 7 + to - 1);
+
+    if (idx < 0 || idx >= 49)
+        return;
+    if (convtable[idx] == noconerr)
+        noconerr();
+    if (from == T_ADDR)
+        from = T_LONG;
+    if (to == T_ADDR)
+        to = T_LONG;
+    switch (from) {
+    case T_BYTE:
+        if (to == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case T_WORD:
+        if (to == T_BYTE)
+            overuse(wtobover);
+        else if (to == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case T_LONG:
+        if (to == T_BYTE)
+            overuse(ltobover);
+        else if (to == T_WORD || to == T_QUICK)
+            overuse(ltowover);
+        else if (to == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case T_QUICK:
+        if (to == T_BYTE)
+            overuse(qtobover);
+        else if (to == T_FLOAT)
+            tokuse(qutofl);
+        break;
+    case T_FLOAT:
+        if (to == T_BYTE) {
+            overuse(ftobover);
+            tokuse(getffpbase);
+            overuse(ltobover);
+        } else if (to == T_WORD) {
+            overuse(ftowover);
+            tokuse(getffpbase);
+            overuse(ltowover);
+        } else if (to == T_LONG) {
+            overuse(ftolover);
+            tokuse(getffpbase);
+        } else if (to == T_QUICK) {
+            overuse(ftowover);
+            tokuse(fltoqu);
+        }
+        break;
+    }
+}
+
+/* no asm counterpart: what doop's handler for op and type t needs while
+   the expression is built: "Illegal Operator for Type" where it has none,
+   the libraries of its routines (wordop: #1179's inline Word * and /) */
+static void opprep(unsigned op, UWORD t, BOOL words)
+{
+    if (!exprtype_optype(op, t))
+        illoperr();
+    switch (op) {
+    case ETO_ADD:
+    case ETO_SUB:
+        if (t == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case ETO_MUL:
+        if (t == T_QUICK)
+            tokuse(quickmult);
+        else if (t == T_LONG && !words)
+            tokuse(longmult);
+        else if (t == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case ETO_DIV:
+        if (t == T_LONG && !words)
+            tokuse(longdiv);
+        else if (t == T_QUICK)
+            tokuse(quickdiv);
+        else if (t == T_FLOAT)
+            tokuse(getffpbase);
+        break;
+    case ETO_MOD:
+        tokuse(t == T_BYTE ? modbyte : t == T_WORD ? modword : t == T_LONG ? modlong
+               : t == T_QUICK ? modquick : modfloat);
+        break;
+    case ETO_POW:                   /* dopow */
+        convprep(t, T_FLOAT);
+        convprep(t, T_FLOAT);
+        tokuse(mathq * 128 + 1);
+        break;
+    case ETO_EQ: case ETO_NE: case ETO_LT: case ETO_LE: case ETO_GT: case ETO_GE:
+        if (t == T_FLOAT)
+            tokuse(getffpbase);
+        else if (t == T_STRING)
+            tokuse(strcomp);
+        break;
+    case ETO_LSL: case ETO_ASL: case ETO_LSR: case ETO_ASR:     /* shpoke */
+        convprep(t, T_WORD);
+        if (t != T_QUICK)
+            convprep(t, T_LONG);
+        break;
+    case ETO_BITTST: case ETO_BITSET: case ETO_BITCLR: case ETO_BITCHG: /* dothebit */
+        convprep(t, T_LONG);
+        convprep(t, T_BYTE);
+        break;
+    }
+}
+
+/* no asm counterpart: what operate's code for the decision d of op needs
+   while the expression is built, in operate's order: the errors and the
+   libraries of its conversions and its handler */
+static void binopprep(unsigned op, const struct exprtype_bin *d)
+{
+    if (d->path != ETP_COMPARE && d->rup_from)
+        convprep(d->rup_from, d->rup_to);
+    if (d->path == ETP_CMPLQ)
+        return;
+    if (d->path == ETP_COMPARE) {
+        if (d->rup_from)
+            convprep(d->rup_from, d->rup_to);
+        if (d->lconv_from)
+            convprep(d->lconv_from, d->lconv_to);
+        opprep(op, d->handler, FALSE);
+        return;
+    }
+    if (d->path == ETP_MIXED && !d->handler) {
+        if (op == ETO_MUL)
+            tokuse(d->lq && d->rq ? qqmult : mixmult);
+        else if (op == ETO_DIV)
+            tokuse(d->rq && !d->lq ? lqdiv : longdiv);
+        return;
+    }
+    if (d->lconv_from)
+        convprep(d->lconv_from, d->lconv_to);
+    if (d->path == ETP_MIXED && d->rconv_from)
+        convprep(d->rconv_from, d->rconv_to);
+    opprep(op, d->handler, d->path == ETP_PLAIN && d->wordop);
+}
+
+/* no asm counterpart; replaces blitz2.s:8995-9083 eval5 after the right
+   operand, the decisions - the operator n built: typed (exprtype_binop
+   with the facts of its operands; the left operand is marked EXF_CMP when
+   the result is lowered by a comparison, #1182), its errors raised and
+   its libraries used, the fold decided by the forthstack (bforth: the
+   pairwise rule, the nocando of ^, a Long or Float Mod and a raw Quick's
+   * and /), its code recorded.  right: the type so far after the right
+   operand. */
+static UWORD binopbuild(struct exprnode *n, UWORD right)
+{
+    struct exprnode *l = n->left;
+    struct exprtype_binfacts f;
+    struct exprtype_bin d;
+
+    memset(&f, 0, sizeof f);
+    f.lraw = (l->flags & EXF_RAW) != 0;
+    f.rraw = rawq;
+    rawq = FALSE;
+    f.rcmp = cmpres;
+    /* Fixed (#1179): a later index, both operands Word values */
+    f.words = laterindex && bforth[nbforth - 2].wordval && bforth[nbforth - 1].wordval;
+    d = exprtype_binop(n->op, n->tbefore, right, &f);
+    n->vtype = right;
+    if (f.lraw)
+        n->lflags |= BNF_LRAW;
+    if (f.rraw)
+        n->lflags |= BNF_RRAW;
+    if (f.rcmp)
+        n->lflags |= BNF_RCMP;
+    if (f.words)
+        n->lflags |= BNF_WORDS;
+    binopprep(n->op, &d);
+    if (!(bforth[nbforth - 2].constgot | bforth[nbforth - 1].constgot))
+        n->lflags |= BNF_FOLD;
+    if (n->lflags & BNF_FOLD)
+        divzerobuild(n, &d);       /* "Division by Zero" before the next element */
+    if (n->op == ETO_POW || (n->op == ETO_MOD && (d.handler == T_LONG || d.handler == T_FLOAT))
+        || (d.path == ETP_MIXED && !d.handler && (n->op == ETO_MUL || n->op == ETO_DIV))) {
+        n->lflags |= BNF_NOFOLD;    /* nocando */
+        bforth[nbforth - 1].constgot = 0xffff;
+    }
+    bforth[nbforth - 2].constgot |= bforth[nbforth - 1].constgot;
+    bforth[nbforth - 2].wordval = 0;    /* Fixed (#1179): a result */
+    nbforth--;
+    n->tafter = d.result;
+    emitact(binopact, n, 0, 0);
     if (d.cmpres)
         l->flags |= EXF_CMP;        /* Fixed (#1182) */
     return d.result;
@@ -1035,32 +1676,50 @@ static UWORD operate(struct exprnode *n, UWORD right)
 
 /* The hooks of the walk (exprtree.h, exprtree_climb: eval5's control),
    blitz2.s:8983 eval5.  The context of one expression (eval4): the type
-   so far (asm d2), where the operand being read begins, the current char
-   (d0). */
+   so far (asm d2), the current char (d0). */
 struct evalctx {
     UWORD *type;
-    ULONG start;
     UWORD c;
 };
 
+/* no asm counterpart: the marks of an operand's code (its start and end
+   in the leaf of the walk) */
+static void startmark(struct expract *a)
+{
+    ((struct exprnode *)a->p)->start = pc;
+}
+
+static void endmark(struct expract *a)
+{
+    ((struct exprnode *)a->p)->end = pc;
+}
+
+static void cutact(struct expract *a)
+{
+    (void)a;
+    quicktolong();
+}
+
 /* no asm counterpart; replaces blitz2.s:8983 eval5's bsr eval2 - the
-   operand and the operator after it */
-unsigned exprtree_operand(void *x, unsigned *op)
+   operand l and the operator after it (l->aux: the code recorded before
+   it, for exprtree_pre) */
+unsigned exprtree_operand(void *x, struct exprnode *l, unsigned *op)
 {
     struct evalctx *e = x;
 
-    e->start = pc;
+    l->aux = codeseq;
+    l->value = (ULONG)stateact(startmark, l, 0, 0);
     return eval2(e->type, &e->c, op);
 }
 
 /* no asm counterpart; replaces blitz2.s:8983 eval5 after its bsr eval2 -
-   the operand read is the leaf l (its code e->start..pc) */
+   the operand read is the leaf l (its code from its start mark to its
+   end mark) */
 void exprtree_left(void *x, struct exprnode *l, unsigned consumer)
 {
     struct evalctx *e = x;
 
-    l->start = e->start;
-    l->end = pc;
+    stateact(endmark, l, 0, 0);
     l->tbefore = *e->type;
     if (rawq)                       /* Fixed (#1178): the left operand raw */
         l->flags |= EXF_RAW;
@@ -1071,7 +1730,7 @@ void exprtree_left(void *x, struct exprnode *l, unsigned consumer)
        shift, a logic operator, Mod or a bit operator is rounded down here,
        where varcont cut it: today's value and code (exprtype_cutsraw) */
     if ((l->flags & EXF_RAW) && exprtype_cutsraw(consumer)) {
-        quicktolong();
+        emitact(cutact, NULL, 0, 0);
         l->flags &= ~EXF_RAW;
     }
 }
@@ -1083,6 +1742,46 @@ void exprtree_done(void *x, struct exprnode *l)
     (void)x;
     rawq = (l->flags & EXF_RAW) != 0;
     cmpres = (l->flags & EXF_CMP) != 0;
+}
+
+/* no asm counterpart: does the comparison's left operand l (an element's
+   leaf) get its own type back (#1177; cmpownleft's conditions, decided
+   from the actions recorded since l began, l->aux: the code before it)?
+   A literal made a whole number (#1186) that is the operand, with only
+   its minus signs after it, is a Float again; a value whose code ends in
+   the conversion contemit made gets the type it had before it
+   (exprtype_ownleft).  *type is the type the operand has then. */
+static BOOL ownleft(const struct exprnode *l, UWORD *type)
+{
+    if (blit.seq && blit.before == l->aux && blit.last == codeseq) {
+        *type = T_FLOAT;
+        blit.seq = 0;
+        return TRUE;
+    }
+    if (bconv.seq && bconv.seq == codeseq && bconv.seq > l->aux && bconv.depth == evaldepth
+        && exprtype_ownleft(bconv.from, bconv.to)) {
+        *type = bconv.from;
+        bconv.seq = 0;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/* no asm counterpart; replaces the code of blitz2.s:8989 eval5 .higher
+   before its bsr pushprec - the code between the left and the right
+   operand of n: the left one's conversion dropped (BNF_OWNLEFT,
+   cmpownleft), its #978 facts, where the right one begins */
+static void midact(struct expract *a)
+{
+    struct exprnode *n = a->p, *l = n->left;
+
+    if (n->lflags & BNF_OWNLEFT)
+        l->end = cmpownleft(l->start, l->end);
+    if (l->end && bytevalend == l->end && bytevalend > l->start)
+        n->flags |= EXF_LBYTE;
+    if (l->end && isbyteconst(l->start, l->end))
+        n->flags |= EXF_LCONST;
+    n->start = pc;                  /* the right operand begins */
 }
 
 /* no asm counterpart; replaces blitz2.s:8989 eval5 .higher before its bsr
@@ -1108,29 +1807,25 @@ void exprtree_pre(void *x, struct exprnode *n)
        own values, not in the type the expression is wanted in (the
        original handed that type to both, and varcont cut a Quick under a
        Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one element
-       gets its own type back (cmpownleft), the right operand starts at
-       type 0, compareop compares the two (exprtype_leftop). */
+       gets its own type back (ownleft, cmpownleft), the right operand
+       starts at type 0, compareop compares the two (exprtype_leftop). */
     pre = exprtype_leftop(n->op, *e->type, (l->flags & EXF_RAW) != 0);
     *e->type = pre.left;            /* Fixed (#1178): a raw left is a Quick */
     if (pre.lraw)
         l->flags |= EXF_RAW;
     else
         l->flags &= ~EXF_RAW;
-    if (pre.ownleft && l->end)
-        l->end = cmpownleft(e->type, l->start, l->end);
+    if (pre.ownleft && l->kind == EXN_LEAF && ownleft(l, e->type))
+        n->lflags |= BNF_OWNLEFT;
     /* Fixed (#978): an equality comparison (= or <>) of a byte value with
        a constant from 128 to 255 (each operand one element) takes the
        constant as the byte it stands for, sign-extended as varcont
        extends the byte: "a.b=$90 : If a=$90" matches.  The ordering
        comparisons stay mathematical (a<200 is true for every byte).  The
-       facts here, the rule in exprtype_binop. */
-    if (l->end && bytevalend == l->end && bytevalend > l->start)
-        n->flags |= EXF_LBYTE;
-    if (l->end && isbyteconst(l->start, l->end))
-        n->flags |= EXF_LCONST;
+       facts in midact, the rule in exprtype_binop. */
     if (pre.compare)
         n->flags |= EXF_COMPARE;
-    n->start = pc;                  /* the right operand begins */
+    emitact(midact, n, 0, 0);
 }
 
 /* no asm counterpart; replaces blitz2.s:8990-8992 eval5 .higher after
@@ -1148,27 +1843,14 @@ void exprtree_enter(void *x, struct exprnode *n)
 }
 
 /* no asm counterpart; replaces blitz2.s:8993-9083 eval5 after the right
-   operand (subq #1,regat, the operation: operate, the constant fold,
-   reget) - emit n */
+   operand (subq #1,regat, the operation, the constant fold, reget) - n
+   built (binopbuild) */
 void exprtree_emit(void *x, struct exprnode *n)
 {
     struct evalctx *e = x;
-    struct forthent *fs;
 
     regat--;
-    *e->type = n->tafter = operate(n, *e->type);
-    forthsp[-2].wordval = 0;        /* Fixed (#1179): a result */
-    /* O.K., lets check the forth stack to see if last two operators are
-       constants!  if so, we can JSR the routine to optimize into a
-       constant! */
-    fs = forthsp;
-    fs[-2].constgot |= fs[-1].constgot;
-    if (!fs[-2].constgot && !nomemleft) {
-        /* YES! We can do it! */
-        constfold(*e->type);
-        fs = forthsp;
-    }
-    forthsp = fs - 1;                           /* .no */
+    *e->type = binopbuild(n, *e->type);
     e->c = reget();
 }
 
@@ -1199,18 +1881,19 @@ void exprtree_freeblock(void *block)
 /* blitz2.s:8972 eval4 - an expression up to the first char that is no
    operator: its node (kind: EXN_EXPR, EXN_BRACKET, EXN_NOT) counted as
    the asm's pushprec of precedence 1, then the walk.  The node stays
-   pending: the caller releases it (eval4end) once it has emitted
-   what belongs to it (asm: subq.l #6,precsp here; nothing is counted in
+   pending: the caller releases it (eval4end) once it has built what
+   belongs to it (asm: subq.l #6,precsp here; nothing is counted in
    between). */
 static UWORD eval4(UWORD *type, unsigned kind)
 {
     struct evalctx e;
+    struct exprnode *last;
     unsigned op;
 
     e.type = type;
     /* asm: a0 is whatever it was (garbage) for the sentinel */
     exprtree_push(exprtree_new(kind), ETO_END, 1);
-    if (exprtree_climb(&e, &op))
+    if (exprtree_climb(&e, &op, &last))
         syntaxerr();
     return e.c;
 }
@@ -1221,13 +1904,21 @@ static void eval4end(void)
     exprtree_release(exprtree_top());
 }
 
+/* no asm counterpart: the forthstack's entry of the expression dropped */
+static void forthpop(struct expract *a)
+{
+    (void)a;
+    forthsp--;                      /* sub.l #18,forthsp */
+}
+
 /* blitz2.s:8968 eval3 */
 static UWORD eval3(UWORD *type)
 {
     UWORD c = eval4(type, EXN_EXPR);
 
     eval4end();
-    forthsp--;                      /* sub.l #18,forthsp */
+    nbforth--;
+    stateact(forthpop, NULL, 0, 0);
     return c;
 }
 
@@ -1346,6 +2037,8 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
             regat--;
         }
         divzerochk(op, d->handler);
+        if (zeroonly)
+            return;
         doop(op, d->handler);
         return;
     }
@@ -1445,7 +2138,7 @@ static void divzerochk(const struct opentry *op, UWORD type)
 
     if ((op != opdiv && op != opmod) || type < T_BYTE || type > T_FLOAT)
         return;                     /* doop refuses the other types */
-    if ((fs[-2].constgot | fs[-1].constgot) || nomemleft)
+    if (!foldnow || nomemleft)
         return;                     /* not folded: the program divides */
     pokewd(0x2000 | (regat + 1));   /* move.l D(regat+1),d0 */
     pokewd(0x4e75);                 /* rts */
@@ -1521,20 +2214,23 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    compared 1 with 1.5; since then only a whole-valued literal (1.0) is
    such a literal, and the re-emission keeps its code as it was.  Not
    covered (#1183): a compound left operand (q*2), computed in the wanted
-   type before the comparison operator is read.  Returns the new end of
-   the operand. */
+   type before the comparison operator is read.  The type is decided when
+   the expression is built (ownleft); this is the code, from the
+   operand's code lstart..lend.  Returns the new end of the operand. */
 static __attribute__((noinline))
-ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
+ULONG cmpownleft(ULONG lstart, ULONG lend)
 {
     struct offnode **link = &firstoff, *node;
-    UWORD from = conv.from, to = conv.to;
+    UWORD from = conv.from, to = conv.to, t;
 
-    if (fraclitfloat(lstart, &lend, regat, type))
+    if (fraclitfloat(lstart, &lend, regat, &t))
         return lend;
-    if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth)
+    if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth
+        || !exprtype_ownleft(from, to)) {
+        if (!nomemleft)
+            interr2();              /* not reached: ownleft decided it */
         return lend;
-    if (!exprtype_ownleft(from, to))
-        return lend;
+    }
     while ((node = *link) != conv.off && node) {
         if (node->offset >= conv.at - pcat) {
             *link = node->next;
@@ -1548,7 +2244,6 @@ ULONG cmpownleft(UWORD *type, ULONG lstart, ULONG lend)
     if (bytevalend == lend)
         bytevalend = pc;            /* a byte keeps its ext.w (#978) */
     conv.end = 0;
-    *type = from;
     return pc;
 }
 
@@ -2139,18 +2834,34 @@ static UWORD getelement(UWORD *type)
        comparison) saves the long; the element may be a Long or Quick and
        a move.w would bring back only the low word of the old d6 */
     opcode = *type && *type < 3 ? 0x3f06 : 0x2f06;  /* move.x d6,-(a7) */
-    pokewd(opcode);
+    emitact(pokeact, NULL, opcode, 0);
     regat--;
     c = getelement2(type);
     regat++;
-    pokewd(*type < 3 ? 0x3e06 : 0x2e06);    /* move.x d6,d7 */
-    pokewd((opcode & 0xf000) | 0x0c1f);     /* move.x (a7)+,d6 */
+    emitact(pokeact, NULL, ACT_TWO | (*type < 3 ? 0x3e06 : 0x2e06), /* move.x d6,d7 */
+            (opcode & 0xf000) | 0x0c1f);                         /* move.x (a7)+,d6 */
     return c;
 }
 
 /* Fixed (#1070): the element getelement2 fetches next is negated (an odd
    number of '-' in front of it); it hands a literal's sign on as litneg */
 static BOOL negnext;
+
+/* no asm counterpart; replaces blitz2.s:9667 negate's .doneg - the code of
+   the run of minus signs n (op: how many) on a value of type a->y: one
+   neg (or SPNeg) per minus sign */
+static void negemit(struct expract *a)
+{
+    const struct exprnode *n = a->p;
+    UWORD k;
+
+    for (k = n->op; k; k--) {
+        if (a->y >= 5)
+            fdo2(-60);              /* SPNeg */
+        else
+            pokewd((a->y >= 3 ? 0x4480 : 0x4440) | regat);  /* neg.l / neg.w */
+    }
+}
 
 /* no asm counterpart; replaces blitz2.s:9667 negate and its recursion
    through getelement2 for each further minus sign - a run of minus signs
@@ -2164,7 +2875,7 @@ static BOOL negnext;
 static UWORD negate(UWORD *type)
 {
     struct exprnode *n = exprtree_new(EXN_NEG);
-    UWORD c, k;
+    UWORD c;
 
     n->op = 1;
     n->reg = (UBYTE)regat;
@@ -2172,26 +2883,17 @@ static UWORD negate(UWORD *type)
         negnext = !negnext;
         rawq = FALSE;
         cmpres = FALSE;
-        conv.end = 0;
+        bconv.seq = 0;
         elemcount++;
         n->op++;
     }
     c = element(c, type);
     n->tbefore = n->tafter = *type;
-    for (k = n->op; k; k--) {
-        UWORD opcode = 0x4440;      /* neg.w */
-
-        if (*type >= 3) {
-            opcode = 0x4480;        /* neg.l */
-            if (*type >= 5) {
-                if (*type >= 6)
-                    illoperr();
-                fdo2(-60);          /* SPNeg */
-                continue;
-            }
-        }
-        pokewd(opcode | regat);     /* .doneg */
-    }
+    if (*type >= 6)
+        illoperr();
+    if (*type >= 5)
+        tokuse(getffpbase);
+    emitact(negemit, n, 0, *type);
     exprtree_release(n);
     return c;
 }
@@ -2207,24 +2909,32 @@ static UWORD bracket(UWORD *type)
     return getchar3();
 }
 
+/* no asm counterpart; replaces blitz2.s:9688-9697 notit's code - not.w
+   or not.l of a value of type a->y (Fixed (#1209): of a Quick's whole
+   part) */
+static void notemit(struct expract *a)
+{
+    UWORD opcode = regat | 0x4640;  /* not.w */
+
+    if (a->y >= 3)
+        opcode ^= 0xc0;             /* not.l */
+    pokewd(opcode);
+    quickwhole(a->y);               /* Fixed (#1209): Not of floor(q) */
+}
+
 /* blitz2.s:9688 notit - do NOT. (applies to the whole rest of the
    expression: eval4, whose node is the NOT's) */
 static UWORD notit(UWORD *type)
 {
     UWORD c = eval4(type, EXN_NOT);
-    UWORD opcode;
 
     if (rawq) {                     /* Fixed (#1178): Not of floor(q) */
-        quicktolong();
+        emitact(cutact, NULL, 0, 0);
         rawq = FALSE;
     }
     if (*type >= 5)
         illoperr();
-    opcode = regat | 0x4640;        /* not.w */
-    if (*type >= 3)
-        opcode ^= 0xc0;             /* not.l */
-    pokewd(opcode);
-    quickwhole(*type);              /* Fixed (#1209): Not of floor(q) */
+    emitact(notemit, NULL, 0, *type);
     eval4end();
     return c;
 }
@@ -2232,12 +2942,10 @@ static UWORD notit(UWORD *type)
 /* The elements as leaves.  The parse part of an element reads it and makes
    its leaf (exprtree.h: kind LEAF, op its ELK_*), with the type so far it
    was read under, its own type, the type so far after it and its facts;
-   the emit part writes its code from the leaf and the emitter's state
-   (regat, lasta6, ...) only.  The emit part runs right after the parse
-   part and the leaf is released after it, so the code and its moment are
-   those of the original; the char after the element is read after its
-   code, as the original does.  What each one changes besides the code,
-   and when: docs/blitz2/expression-tree.md. */
+   its code is an action (the emit part), which writes it from the leaf
+   and the emitter's state (regat, lasta6, ...) only, when the expression
+   is built.  What each one changes besides the code, and when:
+   docs/blitz2/expression-tree.md. */
 
 /* no asm counterpart: a new leaf of the element kind kind, read under the
    type so far tsf */
@@ -2250,8 +2958,8 @@ static struct exprnode *newleaf(unsigned kind, UWORD tsf)
     return l;
 }
 
-/* no asm counterpart: the leaf l emitted (its code l->start..l->end) and
-   released; *type is the type so far after it */
+/* no asm counterpart: the leaf l built (its code recorded); *type is the
+   type so far after it */
 static void leafdone(struct exprnode *l, UWORD *type)
 {
     *type = l->tafter;
@@ -2260,8 +2968,10 @@ static void leafdone(struct exprnode *l, UWORD *type)
 
 /* no asm counterpart; replaces blitz2.s:9700 fetchpi's code - move.l
    #Pi,D(regat) */
-static void piemit(struct exprnode *l)
+static void piemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
+
     l->start = pc;
     pokewd((regat << 9) | 0x203c);  /* move.l #x,dn */
     pokel(0xc90fda42);
@@ -2275,7 +2985,7 @@ static UWORD fetchpi(UWORD *type)
     struct exprnode *l = newleaf(ELK_PI, *type);
 
     l->own = l->tafter = T_FLOAT;
-    piemit(l);
+    emitact(piemit, l, 0, 0);
     leafdone(l, type);
     return getchar3();
 }
@@ -2297,37 +3007,14 @@ static UWORD getelement2(UWORD *type)
     return element(getchar3(), type);
 }
 
-/* blitz2.s:9719 getelement2 after its bsr getchar3 - the element that
-   begins with c (negate reads a run of minus signs itself) */
-static UWORD element(UWORD c, UWORD *type)
+/* no asm counterpart; replaces blitz2.s:9741-9752 getelement2's push of a
+   forthstack entry - the code of the element begins here (its position,
+   relocations and lasta6, for the constant fold) */
+static void forthpush(struct expract *a)
 {
-    struct forthent *f;
-    BOOL neg = negnext;             /* Fixed (#1070) */
+    struct forthent *f = forthsp;
 
-    negnext = FALSE;
-    rawq = FALSE;                   /* Fixed (#1178): not a raw Quick yet */
-    cmpres = FALSE;                 /* Fixed (#1182): not lowered yet */
-    conv.end = 0;                   /* Fixed (#1177): no conversion yet */
-    elemcount++;                    /* for the intrinsics */
-    if (c & 0x8000)
-        ext_evalvalue(0, 0);        /* a token: a value without a type */
-    if (c == '(' || c == '{')
-        return bracket(type);
-    if (c == '-') {
-        negnext = !neg;
-        c = negate(type);
-        forthsp[-1].wordval = 0;    /* Fixed (#1179): -(-32768) */
-        return c;
-    }
-    if (c == TOK_ASM_NOT) {
-        c = notit(type);
-        forthsp[-1].wordval = 0;    /* Fixed (#1179): a result */
-        return c;
-    }
-
-    f = forthsp;
-    if (f >= &forthstack[32])       /* cmp.l #forthsp,a1 */
-        conmemerr();
+    (void)a;
     /* stack contains..... pc.l,firstoff.l,optat.l,lasta6.w,0,constgot.w! */
     f->pc = pc;
     f->firstoff = firstoff;
@@ -2336,14 +3023,59 @@ static UWORD element(UWORD c, UWORD *type)
     f->wordval = 0;
     f->constgot = 0;
     forthsp = f + 1;
+    conv.end = 0;                   /* Fixed (#1177): no conversion yet */
+}
+
+/* no asm counterpart: AmiBlitz3's report of a token's value (ext_evalvalue,
+   a value without a type) */
+static void tokvalact(struct expract *a)
+{
+    (void)a;
+    ext_evalvalue(0, 0);
+}
+
+/* blitz2.s:9719 getelement2 after its bsr getchar3 - the element that
+   begins with c (negate reads a run of minus signs itself) */
+static UWORD element(UWORD c, UWORD *type)
+{
+    BOOL neg = negnext;             /* Fixed (#1070) */
+    UWORD k;
+
+    negnext = FALSE;
+    rawq = FALSE;                   /* Fixed (#1178): not a raw Quick yet */
+    cmpres = FALSE;                 /* Fixed (#1182): not lowered yet */
+    bconv.seq = 0;                  /* Fixed (#1177): no conversion yet */
+    elemcount++;                    /* for the intrinsics */
+    if (c & 0x8000)
+        stateact(tokvalact, NULL, 0, 0);    /* a token: a value without a type */
+    if (c == '(' || c == '{')
+        return bracket(type);
+    if (c == '-') {
+        negnext = !neg;
+        c = negate(type);
+        bforth[nbforth - 1].wordval = 0;    /* Fixed (#1179): -(-32768) */
+        return c;
+    }
+    if (c == TOK_ASM_NOT) {
+        c = notit(type);
+        bforth[nbforth - 1].wordval = 0;    /* Fixed (#1179): a result */
+        return c;
+    }
+
+    if (nbforth >= 32)              /* cmp.l #forthsp,a1 */
+        conmemerr();
+    k = nbforth++;
+    bforth[k].constgot = 0;
+    bforth[k].wordval = 0;
+    stateact(forthpush, NULL, 0, 0);
 
     /* First, we have stuff which won't fuck constgot */
     litneg = neg;
     /* Fixed (#1179): an integer literal or #constant 0..32767 is a Word
-       value (iswordconst) */
+       value (iswordconst: constword) */
     if (tstnum(c)) {
         c = (UWORD)fetchnum(c, type, FALSE);
-        f->wordval = iswordconst(f->pc, pc);
+        bforth[k].wordval = constword;
         return c;
     }
     if (c == '.')
@@ -2356,7 +3088,7 @@ static UWORD element(UWORD c, UWORD *type)
             c = (UWORD)fetchhex(type, FALSE);
         else
             c = (UWORD)fetchbin(type, FALSE);
-        f->wordval = iswordconst(f->pc, pc);
+        bforth[k].wordval = constword;
         return c;
     }
     if (c == TOK_SIZEOF)
@@ -2377,7 +3109,7 @@ static UWORD element(UWORD c, UWORD *type)
     }
     if (cfetchmode)                 /* .noasm */
         badconerr();                /* we're trying to get a const here! */
-    f->constgot = ~f->constgot;     /* .asmok: not -(a1) - non-const */
+    bforth[k].constgot = 0xffff;    /* .asmok: not -(a1) - non-const */
 
     /* Here, we have stuff which will fuck it! */
     if (tstalpha(c) || c == '*' || c == '\\' || ext_letter(c))
@@ -2393,6 +3125,25 @@ static UWORD element(UWORD c, UWORD *type)
     if (ext_element(c, type, &c))
         return c;
     syntaxerr();
+}
+
+/* no asm counterpart: the element being built is a constant (fetchnum3:
+   ELF_FOLD) */
+BOOL elemconst(void)
+{
+    return nbforth && !bforth[nbforth - 1].constgot;
+}
+
+/* no asm counterpart: the constant whose code is the action a (the last
+   one recorded) is a literal made a whole number (#1186): the code before
+   it, for ownleft */
+void constlit(struct expract *a)
+{
+    (void)a;
+    if (!exprtree_building())
+        return;
+    blit.seq = blit.last = codeseq;
+    blit.before = prevcodeseq;
 }
 
 /* blitz2.s:9801 fetchsize - SizeOf */
@@ -2604,8 +3355,9 @@ static UWORD ampersand(UWORD *type)
    bsr calcvar - the variable's type reported (ext_evalvalue), then the
    code of its address into D(regat): a string's from its pointer, a
    simple variable's lea x(a5); an address calcvar left in a2 as it is */
-static void addrofemit(struct exprnode *l)
+static void addrofemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
     UWORD vartype = l->vtype;
 
     l->start = pc;
@@ -2644,7 +3396,7 @@ static void varleaf(struct exprnode *l, unsigned kind, UWORD tsf)
 
 /* blitz2.s:9910 ampersand2.  The parse part finds the variable (fetchvar
    makes it at first sight) and reads its path (varparse: an array's
-   indexes, a pointer's or a path's address code are emitted as they are
+   indexes, a pointer's or a path's address code recorded as they are
    read); its variable node becomes the leaf, with calcvar's type, the
    offset and what ext_evalvalue reports.  *type is calcvar's type (with
    its flags). */
@@ -2663,21 +3415,31 @@ UWORD ampersand2(UWORD *type)
     varleaf(l, ELK_ADDROF, *type);
     l->own = (UBYTE)l->vtype;
     l->tafter = l->vtype;
-    addrofemit(l);
+    emitact(addrofemit, l, 0, 0);
     leafdone(l, type);
     return c;
 }
 
 /* blitz2.s:9941 doern - read err number.
    NB(orig): no getchar; the current char stays the token. */
+/* no asm counterpart; replaces blitz2.s:9941 doern's tokejsr ern - the
+   code of ErrNum's leaf (a->p): the call */
+static void errnumemit(struct expract *a)
+{
+    struct exprnode *l = a->p;
+
+    l->start = pc;
+    tokejsr(ern);
+    l->end = pc;
+}
+
 static UWORD doern(UWORD c, UWORD *type)
 {
     struct exprnode *l = newleaf(ELK_ERRNUM, *type);
 
     l->own = l->tafter = T_LONG;
-    l->start = pc;                  /* emit: the call (the library used here) */
-    tokejsr(ern);
-    l->end = pc;
+    tokuse(ern);                    /* the library used here */
+    emitact(errnumemit, l, 0, 0);
     leafdone(l, type);
     return c;
 }
@@ -2691,7 +3453,7 @@ static struct blitzlib *fetchit(void)
 
     if (!(c & 0x8000))
         syntaxerr();
-    findtoke(c & 0x7fff, &bl);
+    findtokeact(c & 0x7fff, &bl);
     if (!LIBMAX_SHIFT(bl))          /* tst -2(a2,d0.l) */
         freeerr();
     return bl;
@@ -2710,7 +3472,7 @@ static UWORD revmask(UWORD mask)
     return rev;
 }
 
-static void usedemit(struct exprnode *l);
+static void usedemit(struct expract *a);
 
 /* blitz2.s:9989 doused - return 'used' object.  The parse part is fetchit
    (the object's library: its leaf's value), the code usedemit's. */
@@ -2722,7 +3484,7 @@ static UWORD doused(UWORD *type)
     l = newleaf(ELK_USED, *type);
     l->value = (ULONG)bl;
     l->own = l->tafter = T_WORD;    /* .skip4: moveq #2,d2 */
-    usedemit(l);
+    emitact(usedemit, l, 0, 0);
     leafdone(l, type);
     return getchar3();
 }
@@ -2737,8 +3499,9 @@ static UWORD doused(UWORD *type)
    BitMap after Use BitMap 1025 gave 1).  Where objlong (tokens1.c) says
    the object offset is a long, the shifts are lsr.l; with smaller maxima
    (all defaults) the code is unchanged. */
-static void usedemit(struct exprnode *l)
+static void usedemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
     struct blitzlib *bl = (struct blitzlib *)l->value;
     UWORD shift = LIBMAX_SHIFT(bl);
     UWORD *start, *end, maxoff;
@@ -2788,8 +3551,9 @@ static UWORD domaximum(UWORD *type)
    plus the object's offset (in D(regat), from the index) into D(regat).
    Fixed (#939): the offset is added as a long where objlong (tokens1.c)
    says so; Addr Shape(1025) was 32 KB before the shape table. */
-static void addremit(struct exprnode *l)
+static void addremit(struct expract *a)
 {
+    struct exprnode *l = a->p;
     UBYTE *e = (UBYTE *)l->value;
 
     l->start = pc;
@@ -2822,7 +3586,7 @@ static UWORD doaddr(UWORD *type)
     l = newleaf(ELK_ADDR, *type);
     l->value = (ULONG)e;
     l->own = l->tafter = T_LONG;    /* now a long */
-    addremit(l);
+    emitact(addremit, l, 0, 0);
     leafdone(l, type);
     return getchar3();
 }
@@ -2878,18 +3642,19 @@ static void amigasave(const UBYTE *regs, ULONG *push, ULONG *pull)
    A procedure call (afunction) or an OS call (amigalib) in an expression
    is a node (exprtree.h: kind CALL, op CLK_PROC or CLK_OS), made when the
    call has been looked up.  It lives while its parameters are read: each
-   one is an expression of its own (its node EXPR), compiled into its
-   register or pushed as it is read, with the push protocol of the original
-   (fetchprocps, peval): the node's children.  Its code has two parts:
-   the enter action before the parameters (the registers saved, the
-   string base) and the exit action after them (the call, the result
-   into D(regat), the registers restored).  Both run at the moments the
-   code was written before; then the node is the leaf of the call's value
+   one is an expression of its own (its node EXPR), its code into its
+   register or its push recorded as it is read, with the push protocol of
+   the original (fetchprocps, peval): the node's children.  Its code has
+   two parts: the enter action before the parameters (the registers saved,
+   the string base) and the exit action after them (the call, the result
+   into D(regat), the registers restored), each where the original wrote
+   it; a leaf of the call's value follows the node
    (callcont: varcont's facts and code).  What each one changes besides
    the code, and when: docs/blitz2/expression-tree.md. */
 
 static void contleaf(struct exprnode *l);
-static void contemit(struct exprnode *l);
+static void contrecord(struct exprnode *l, exprtree_actfn *fn);
+static void contemit(struct expract *a);
 
 /* no asm counterpart: a new call node of kind kind, read under the type
    so far tsf */
@@ -2903,17 +3668,17 @@ static struct exprnode *callnode(unsigned kind, UWORD tsf)
 }
 
 /* no asm counterpart; replaces blitz2.s:10479 varcont after a call - the
-   call node n (its exit action emitted) made the leaf of the call's value
-   (of type n->own) under the type so far n->tbefore: its facts, the
-   code, and the node released (as varcont) */
+   leaf of the value (of type n->own) of the call n (its exit action
+   recorded) under the type so far n->tbefore: its facts and its code (as
+   varcont) */
 static UWORD callcont(struct exprnode *n, UWORD *type)
 {
-    n->kind = EXN_LEAF;
-    n->op = 0;
-    n->lflags = 0;
-    contleaf(n);
-    contemit(n);
-    leafdone(n, type);
+    struct exprnode *l = newleaf(0, n->tbefore);
+
+    l->own = n->own;
+    contleaf(l);
+    contrecord(l, contemit);
+    leafdone(l, type);
     return reget();                 /* .done */
 }
 
@@ -2921,8 +3686,9 @@ static UWORD callcont(struct exprnode *n, UWORD *type)
    savereg and bsr pokemovem - the enter action of the OS call n: d0/d1
    and the parameter registers that hold a value of the expression saved
    (#344), a4/a5 (#958) */
-static void osenter(struct exprnode *n)
+static void osenter(struct expract *a)
 {
+    struct exprnode *n = a->p;
     const UBYTE *regs = (const UBYTE *)n->value + 10;
     ULONG push, pull;
 
@@ -2938,8 +3704,9 @@ static void osenter(struct exprnode *n)
    to .nofin's bsr pokemovem - the exit action of the OS call n: the
    parameters popped into their registers, the library base into a6, the
    jsr, the result into D(regat), the registers restored */
-static void osexit(struct exprnode *n)
+static void osexit(struct expract *a)
 {
+    struct exprnode *n = a->p;
     const UBYTE *sub = (const UBYTE *)n->value, *p;
     BOOL a45 = (n->lflags & CLF_A45) != 0;
     WORD i;
@@ -2981,6 +3748,12 @@ static void osexit(struct exprnode *n)
     pokemovem(n->aux);              /* .nofin */
 }
 
+/* no asm counterpart: the stack use adjusted by a->x (signed) */
+static void stackact(struct expract *a)
+{
+    stackuse += (WORD)a->x;
+}
+
 /* blitz2.s:10183 amigalib - Amiga OS library function call.  The parse
    part: the OS library looked up (uselib: used from here on), the
    parameters (each pushed by peval as it is read), the brackets; the
@@ -2998,10 +3771,10 @@ static UWORD amigalib(struct exprnode *n, UWORD *type)
     UWORD first, c, k;
     const UBYTE *p;
 
-    ol = uselib(W_(sub + 6));       /* get lib for base address */
+    ol = uselibact(W_(sub + 6));    /* get lib for base address */
     n->off = (WORD)ol->varoff;      /* libbase reg */
     n->own = T_LONG;
-    osenter(n);
+    emitact(osenter, n, 0, 0);
     c = first = getchar3();         /* remember first bracket.... */
     /* collect longs for lib */
     k = 0;
@@ -3013,7 +3786,7 @@ static UWORD amigalib(struct exprnode *n, UWORD *type)
         t = T_LONG;
         k++;
         c = peval(&t);
-        stackuse -= 4;              /* readjust stack! it's coming off later! */
+        stateact(stackact, NULL, (ULONG)-4, 0); /* readjust stack! it's coming off later! */
         if (c == ',')
             continue;
         if ((BYTE)*p >= 0)
@@ -3022,11 +3795,12 @@ static UWORD amigalib(struct exprnode *n, UWORD *type)
     }
     c = tstbras(first, c, k);       /* .done */
     n->reg = (UBYTE)k;
-    osexit(n);
+    emitact(osexit, n, 0, 0);
     reget();
     (void)c;
     return callcont(n, type);
 }
+
 
 /* Fixed (#46): does a form of the library function sub load a3 (a
    register spec $13xx in its !libs list, toreg in libcall.c: an object
@@ -3258,6 +4032,16 @@ static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
    an array or a pointer, so calcvar emits nothing) and the entry's code
    is emitted on its long; TRUE, *c the ')' (as dolibtoke's reget).
    Else FALSE: nothing is read, the call is compiled as the original does. */
+/* no asm counterpart: the code of a string intrinsic on a plain string
+   variable (the intrinsic a->p, the variable's offset a->x): its long
+   into d0, the entry's code */
+static void strvaremit(struct expract *a)
+{
+    pokewda5s(0x202d);              /* move.l off(a5),d0 (a local: a4) */
+    pokewd((UWORD)a->x);
+    ((const struct intrinsic *)a->p)->emit();
+}
+
 static BOOL intrstrvar(const struct intrinsic *in, UWORD *c)
 {
     const UBYTE *p = srcptr;
@@ -3287,9 +4071,7 @@ static BOOL intrstrvar(const struct intrinsic *in, UWORD *c)
     vartype = calcvar(&v, &t, &ch, &off);
     if (vartype != T_STRING || ch != ')')
         syntaxerr();
-    pokewda5s(0x202d);              /* move.l off(a5),d0 (a local: a4) */
-    pokewd((UWORD)off);
-    in->emit();
+    emitact(strvaremit, (void *)in, (UWORD)off, 0);
     *c = reget();
     return TRUE;
 }
@@ -3334,42 +4116,53 @@ BOOL intrinsic_code(void)
 /* The library calls as nodes.  A library function in an expression is a
    call node as a procedure call (exprtree.h: kind CALL, op CLK_LIB), made
    when its token has been looked up (looktoke, no side effect).  Its
-   enter action begins with the use of its library (calluse, right after
-   the lookup, before anything of the call is read: the moment findtoke
-   used it, so a library first used in another one's parameters comes
-   after it in the program); then the string base and the registers below
-   regat saved (libenter), the brackets counted, regat 0 for the
-   parameters (libregs).  Its form (libform) and its parameters
-   (libparams: each one an expression of its own, compiled into its
-   register or pushed as it is read, the node's children) follow, then
-   its exit action: the call (libexit), the ')', the result into D(regat)
-   and the registers restored (libresult).  An OS call's node is made by
-   the same lookup (CLK_OS, amigalib).  What each one changes besides the
-   code, and when: docs/blitz2/expression-tree.md. */
+   library is used right after the lookup (calluse, before anything of the
+   call is read: the moment findtoke used it, so a library first used in
+   another one's parameters comes after it in the program); then its enter
+   action: the string base and the registers below regat saved
+   (libenter), the brackets counted, regat 0 for the parameters (libregs).
+   Its form (libform) and its parameters (libparams: each one an
+   expression of its own, compiled into its register or pushed, the
+   node's children) follow, then its exit action: the call (libexit), the
+   ')', the result into D(regat) and the registers restored (libresult).
+   An OS call's node is made by the same lookup (CLK_OS, amigalib).  What
+   each one changes besides the code, and when:
+   docs/blitz2/expression-tree.md. */
 
 /* no asm counterpart; replaces blitz2.s:6300-6305 findtoke's .found for
-   a library function or an OS call in an expression - the use action of
-   the call n, the first part of its enter action, right after its
-   lookup: its token's library (n->aux) used (uselib3: copied into the
-   program at its first use, its variable offset) */
+   a library function or an OS call in an expression - right after the
+   lookup of the call n its token's library (n->aux) used (uselib3:
+   copied into the program at its first use, its variable offset), its
+   relocations taken where the call's code begins */
 static void calluse(struct exprnode *n)
 {
     struct blitzlib *bl = (struct blitzlib *)n->aux;
 
     uselib3(bl, bl->libnum);        /* set lib# */
+    stateact(useact, bl, bl->libnum, 0);
+}
+
+/* no asm counterpart: makesbase's library (workstart, at the first string
+   of a statement) used while the expression is built; its code follows */
+static void sbaseuse(void)
+{
+    if (!bsbase)
+        tokuse(workstart);
+    bsbase = TRUE;
 }
 
 /* no asm counterpart; replaces blitz2.s:10121-10128 libfunction's .no0
-   and .notst0 - the enter action of the library call n after its use:
-   the string base for a string result, the registers
+   and .notst0 - the enter action of the library call n after its use (its
+   result type a->y): the string base for a string result, the registers
    below regat saved (fixed #46: and a3, see libfunction) */
-static void libenter(struct exprnode *n)
+static void libenter(struct expract *a)
 {
+    struct exprnode *n = a->p;
     UWORD mask, c;
 
-    if (n->own == T_STRING)         /* .no0 */
+    if (a->y == T_STRING)           /* .no0 */
         makesbase();
-    if (sbasegot && n->own != T_STRING && liba3((const UBYTE *)n->value)) {
+    if (sbasegot && a->y != T_STRING && liba3((const UBYTE *)n->value)) {
         /* fixed (#46): the movem regs and a3 */
         mask = 0;
         for (c = regat; c; c--)
@@ -3383,65 +4176,84 @@ static void libenter(struct exprnode *n)
     n->vtype = mask;
 }
 
-/* no asm counterpart; replaces blitz2.s:10139-10148 libfunction's .skip0
-   up to .no2 - the rest of the enter action of the library call n, after
-   its brackets were counted: regat kept and 0 for the parameters, the
-   type of a size specifier into d0 */
-static void libregs(struct exprnode *n)
-{
-    n->reg = (UBYTE)regat;          /* .skip0 */
-    regat = 0;
-    if (B_((const UBYTE *)n->value + 1) & 8) {
-        pokewd(n->own | 0x7000);    /* moveq #type,d0 */
-        regat++;
-    }
-}
-
 /* no asm counterpart; replaces blitz2.s:3229-3254 dolibtoke's .skip up
    to .skip4 for a library function in an expression - the exit action of
    the library call n: the call of its form (libjsrcode: a2 above the
-   parameters pushed, the repeats, the jsr or an intrinsic's code, the
-   stack back) */
-static void libexit(struct exprnode *n)
+   parameters pushed, the repeats a->x, the jsr or, a->y, an intrinsic's
+   code, the stack back) */
+static void libexit(struct expract *a)
 {
+    struct exprnode *n = a->p;
+    WORD s_numreps = numreps;
+    UWORD s_state = intrstate;
+    const struct intrinsic *s_cur = intrcur;
+
+    numreps = (WORD)a->x;
+    intrcur = n->prec ? &intrinsics[n->prec - 1] : NULL;
+    intrstate = a->y ? INTR_QUICK : INTR_IDLE;
     libjsrcode((struct blitzlib *)n->aux, (UBYTE *)n->value + n->off);
+    intrcur = s_cur;
+    intrstate = s_state;
+    numreps = s_numreps;
 }
 
 /* no asm counterpart; replaces blitz2.s:10155-10180 libfunction's .skip
-   up to .notst - the rest of the exit action of the library call n,
-   after its ')': regat back, the result into D(regat), the registers
-   restored, a string's length */
-static void libresult(struct exprnode *n)
+   up to .notst - the rest of the exit action of the library call n
+   (its result type a->y), after its ')': the result into D(regat), the
+   registers restored, a string's length */
+static void libresult(struct expract *a)
 {
-    regat = n->reg;                 /* .skip */
+    struct exprnode *n = a->p;
+
     if (regat)
         pokewd((regat << 9) | 0x2000);  /* move.l d0,regat */
     if (n->vtype) {                 /* .skip2 */
         pokewd(0x4cdf);
         pokewd(revmask(n->vtype));  /* poke movem (a7)+... */
     }
-    if (n->own == T_STRING)         /* .nomovem */
+    if (a->y == T_STRING)           /* .nomovem */
         pokewd(*putstlen | regat);
+}
+
+/* no asm counterpart: the stack use kept in the action (dolibtoke's save
+   around a call) and set back from it (a->p: the saving action) */
+static void stacksave(struct expract *a)
+{
+    a->x = (UWORD)stackuse;
+}
+
+static void stackrestore(struct expract *a)
+{
+    stackuse = (WORD)((const struct expract *)a->p)->x;
 }
 
 /* no asm counterpart; replaces blitz2.s:3181-3258 dolibtoke for a library
    function in an expression - the form of the library call n with np
    parameters (libform, its offset in the node), the parameters
-   (libparams) and the node's exit action (libexit), between the save of
-   the globals a nested call changes and their restore, as dolibtoke */
+   (libparams), what its call uses (userjsruse; an intrinsic the argument
+   made inline: none) and the node's exit action (libexit), between the
+   save of the globals a nested call changes and their restore, as
+   dolibtoke */
 static UWORD libcallnode(struct exprnode *n, UWORD np)
 {
     WORD s_numreps = numreps;       /* recurs. */
     WORD s_userp = userp;
-    WORD s_stackuse = stackuse;
+    struct expract *save;
     UBYTE *sub = (UBYTE *)n->value, *form;
+    BOOL inl;
 
     userp = usertype;
     form = libform(np, sub);
     n->off = (WORD)(form - sub);
+    save = stateact(stacksave, NULL, 0, 0);
     libparams(np, form);
-    libexit(n);
-    stackuse = s_stackuse;          /* .skip3 */
+    inl = intrstate == INTR_QUICK;  /* intrinsic_code's state */
+    if (inl)
+        intrstate = INTR_DONE;
+    else
+        userjsruse((struct blitzlib *)n->aux, form);
+    emitact(libexit, n, (UWORD)numreps, (UWORD)inl);
+    stateact(stackrestore, save, 0, 0);     /* .skip3 */
     userp = s_userp;
     numreps = s_numreps;
     return reget();
@@ -3452,9 +4264,10 @@ static UWORD libcallnode(struct exprnode *n, UWORD np)
    library used by function): the result type (a size specifier), the
    brackets and the parameters counted, the form and the parameters
    (libcallnode), the ')'; the code: the node's enter action (libenter
-   before the brackets, libregs after them) before the parameters, its
-   exit action after them (libexit, the call; libresult after the ')');
-   then the node is the leaf of the call's value (callcont).
+   before the brackets; libregs's moveq after them: regat kept and 0 for
+   the parameters, the type of a size specifier into d0) before the
+   parameters, its exit action after them (libexit, the call; libresult
+   after the ')'); then the leaf of the call's value (callcont).
    Fixed (intended deviation, #46): a function whose !libs list loads a3
    (an object, $13xx) inside a string expression saves a3, the end of
    the string being built (sbasegot, the criterion afunction uses for
@@ -3478,7 +4291,9 @@ static UWORD libfunction(struct exprnode *n, UWORD tok, UWORD *type)
     n->own = (UBYTE)(W_(sub) >> 8);
     if (B_(sub + 1) & 8)
         n->own = (UBYTE)sizespec2();
-    libenter(n);
+    if (n->own == T_STRING)
+        sbaseuse();
+    emitact(libenter, n, 0, n->own);
     c = getchar3();
     np = 0;
     if (c == '(') {
@@ -3487,7 +4302,12 @@ static UWORD libfunction(struct exprnode *n, UWORD tok, UWORD *type)
             syntaxerr();
     } else
         bakup();                    /* .nopars */
-    libregs(n);
+    n->reg = (UBYTE)regat;          /* .skip0 */
+    regat = 0;
+    if (B_(sub + 1) & 8) {
+        emitact(pokeact, NULL, n->own | 0x7000, 0); /* moveq #type,d0 */
+        regat++;
+    }
     in = intrfind(tok, sub, np, n->tbefore);
     n->prec = in ? (UWORD)(in - intrinsics + 1) : 0;
     scur = intrcur;                 /* an intrinsic around this call */
@@ -3513,7 +4333,8 @@ static UWORD libfunction(struct exprnode *n, UWORD tok, UWORD *type)
             syntaxerr();
         getchar3();
     }
-    libresult(n);
+    regat = n->reg;                 /* .skip */
+    emitact(libresult, n, 0, n->own);
     return callcont(n, type);       /* .notst */
 }
 
@@ -3601,12 +4422,23 @@ static void makesbase(void)
     tokejsr(workstart);
 }
 
+/* no asm counterpart; replaces blitz2.s:10327 litstring's bsr makesbase -
+   the first part of the code of the string literal's leaf (a->p): the
+   work area */
+static void litbase(struct expract *a)
+{
+    ((struct exprnode *)a->p)->start = pc;
+    makesbase();
+}
+
 /* no asm counterpart; replaces blitz2.s:10391 makelit - the rest of the
    code of the string literal's leaf l: the address of its text in the
    literal area (l->value) into a0 with its relocation, its length
    pushed, the copy into the work area (copstring) */
-static void litemit(struct exprnode *l)
+static void litemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
+
     pokewd(*numtoa0);
     addoff();
     pokel(l->value);
@@ -3626,8 +4458,8 @@ static UWORD litstring(UWORD *type)
     struct exprnode *l = newleaf(ELK_STRING, *type);
     UWORD len = 0, c;
 
-    l->start = pc;
-    makesbase();
+    sbaseuse();
+    emitact(litbase, l, 0, 0);
     l->value = litdata1 = data1;
     /* placeholder for the length long (asm pokes whatever d1 holds) */
     pokedata1(0);
@@ -3655,7 +4487,8 @@ static UWORD litstring(UWORD *type)
         pokedata1b(0);
     l->aux = len;
     l->own = l->tafter = T_STRING;
-    litemit(l);
+    tokuse(copstring);
+    emitact(litemit, l, 0, 0);
     leafdone(l, type);
     return getchar3();
 }
@@ -3738,8 +4571,9 @@ struct label *makealab2(UWORD len, UWORD *c)
 /* no asm counterpart; replaces blitz2.s:10409-10416 qmark's code - the
    reference to the label if it is not defined yet, then move.l
    #label,D(regat) with its relocation */
-static void labelemit(struct exprnode *l)
+static void labelemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
     struct label *lab = (struct label *)l->value;
 
     l->start = pc;
@@ -3773,7 +4607,7 @@ static __attribute__((noinline)) UWORD qmark(UWORD *type)
     if (ref)
         l->lflags |= ELF_REF;
     l->own = l->tafter = T_LONG;
-    labelemit(l);
+    emitact(labelemit, l, 0, 0);
     leafdone(l, type);
     return reget();
 }
@@ -3895,11 +4729,8 @@ static void contleaf(struct exprnode *l)
 /* no asm counterpart; replaces the code of blitz2.s:10479-10499 varcont -
    after a value in D(regat): a Byte extended, the value converted to the
    type so far, from the leaf l (contleaf) */
-static void contemit(struct exprnode *l)
+static void contcode(struct exprnode *l)
 {
-    /* Fixed (#1179): a Byte or Word value (for operate's inline Word * and
-       / of a later index) */
-    forthsp[-1].wordval = (l->lflags & ELF_WORD) != 0;
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with
@@ -3911,13 +4742,12 @@ static void contemit(struct exprnode *l)
     /* Fixed (#1178): a Quick under a Long type so far is not cut to a
        whole number here (the original's goto conv2, blitz2.s:10491-10498:
        r.l=q*2 with q=1.5 gave 2).  It stays a raw 16.16 value, the type
-       so far stays Long and rawq says so: the operator computes with the
-       fraction and rounds (operate, mixedop: + - * down, / towards zero),
-       a comparison takes it as a Quick (#1177), a shift, logic operator,
-       Mod, Not and the end of the expression round it down as the original does. */
-    if (l->lflags & ELF_RAW)
-        rawq = TRUE;
-    else if (l->lflags & ELF_CONV) {
+       so far stays Long and rawq says so (contrecord): the operator
+       computes with the fraction and rounds (operate, mixedop: + - *
+       down, / towards zero), a comparison takes it as a Quick (#1177), a
+       shift, logic operator, Mod, Not and the end of the expression round
+       it down as the original does. */
+    if (!(l->lflags & ELF_RAW) && (l->lflags & ELF_CONV)) {
         conv.at = pc;
         conv.off = firstoff;
         conv.a6 = lasta6;
@@ -3931,26 +4761,55 @@ static void contemit(struct exprnode *l)
         bytevalend = pc;
 }
 
+static void contemit(struct expract *a)
+{
+    contcode(a->p);
+}
+
+/* no asm counterpart: the code fn of the leaf l of a value with varcont's
+   code (contemit, varemit) recorded, and what the code after it reads
+   while the expression is built: the conversion's errors and libraries,
+   a Byte or Word value (#1179, the forthstack's wordval), a raw Quick
+   (#1178: rawq), the conversion a comparison may drop (#1177: bconv) */
+static void contrecord(struct exprnode *l, exprtree_actfn *fn)
+{
+    if (l->lflags & ELF_CONV)
+        convprep(l->own, l->tafter);
+    emitact(fn, l, 0, 0);
+    bforth[nbforth - 1].wordval = (l->lflags & ELF_WORD) != 0;
+    if (l->lflags & ELF_RAW)
+        rawq = TRUE;
+    else if (l->lflags & ELF_CONV) {
+        bconv.seq = codeseq;
+        bconv.from = l->own;
+        bconv.to = l->tafter;
+        bconv.depth = evaldepth;
+    }
+}
+
 /* no asm counterpart; replaces blitz2.s:10478 variable's bsr variable2
    and the code of varcont - the code of the variable's leaf l: its value
    into D(regat), its type reported (ext_evalvalue), then varcont's code */
-static void varemit(struct exprnode *l)
+static void varemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
+
     l->start = pc;
     varmode = (l->lflags & ELF_LOCAL) ? -1 : 0;   /* pokewda5s: a4 or a5 */
     variable2(l);
     ext_evalvalue(l->value, (UWORD)l->aux);
-    contemit(l);
+    contcode(l);
     l->end = pc;
 }
 
 /* blitz2.s:10471 variable.  The parse part finds the variable (fetchvar
    makes it at first sight, with its offset) and reads its path
-   (varparse: an array's indexes, a pointer's or a path's address code are
-   emitted as they are read); its variable node becomes the leaf, with
-   calcvar's type, the offset, what ext_evalvalue reports, and varcont's
-   decisions (contleaf).  A name with { is a procedure call (afunction,
-   its call node). */
+   (varparse: the code of an array's indexes, a pointer's or a path's
+   address recorded as they are read); its variable node becomes the
+   leaf, with calcvar's type, the offset, what ext_evalvalue reports, and
+   varcont's decisions (contleaf).  A string variable uses the string
+   base (stvar).  A name with { is a procedure call (afunction, its call
+   node). */
 static UWORD variable(UWORD c, UWORD *type)
 {
     UWORD namelen;          /* asm d2 after getvname */
@@ -3967,7 +4826,11 @@ static UWORD variable(UWORD c, UWORD *type)
     varleaf(l, ELK_VAR, old);
     l->own = (UBYTE)vartypeof(l->vtype);
     contleaf(l);
-    varemit(l);
+    if ((l->vtype & 0xff) == T_STRING) {
+        sbaseuse();
+        tokuse(copstring);
+    }
+    contrecord(l, varemit);
     leafdone(l, type);
     return reget();                 /* varcont .done */
 }
@@ -3997,14 +4860,14 @@ void makefjsr(ULONG addr)
     pokel(addr);
 }
 
-/* no asm counterpart; replaces blitz2.s:10531-10548, 10556 and 10561
-   afunction from the stack adjustment up to .sssz's bsr savem, and
-   .somepars' old regat and clr regat -
-   the enter action of the procedure call n: the stack the procedure
-   removes, the string base, a3 pushed in a string expression, the
-   registers below regat saved; regat 0 for the parameters */
-static void procenter(struct exprnode *n)
+/* no asm counterpart; replaces blitz2.s:10531-10548 and 10556 afunction
+   from the stack adjustment up to .sssz's bsr savem - the enter action
+   of the procedure call n: the stack the procedure removes, the string
+   base, a3 pushed in a string expression, the registers below regat
+   saved (regat 0 for the parameters: afunction) */
+static void procenter(struct expract *a)
 {
+    struct exprnode *n = a->p;
     const struct proc *p = (const struct proc *)n->value;
 
     stackuse -= ext_procstackbytes(p);  /* removed by the procedure */
@@ -4015,30 +4878,29 @@ static void procenter(struct exprnode *n)
         dopusha3();
     }
     n->aux = savem();               /* .sssz: the movem regs */
-    n->reg = (UBYTE)regat;          /* .somepars: old regat */
-    if (p->nparams)
-        regat = 0;
 }
 
 /* no asm counterpart; replaces blitz2.s:10550-10553 and 10564-10567
-   afunction's makefjsr, bsr chkstak and the old regat back - the first
-   part of the exit action of the procedure call n: the jsr */
-static void procexit(struct exprnode *n)
+   afunction's makefjsr and bsr chkstak - the first part of the exit
+   action of the procedure call n: the jsr (the old regat back:
+   afunction) */
+static void procexit(struct expract *a)
 {
-    const struct proc *p = (const struct proc *)n->value;
+    const struct proc *p = (const struct proc *)((struct exprnode *)a->p)->value;
 
     if (p->nparams)
         chkstak();
     makefjsr(p->pc);                /* pc of function call */
-    regat = n->reg;
 }
 
 /* no asm counterpart; replaces blitz2.s:10572-10609 afunction from
    .nopars' result move up to .notst - the rest of the exit action of
    the procedure call n, after its }: the result into D(regat), the
    registers restored, a3 back, the type reported (ext_evalvalue) */
-static void procresult(struct exprnode *n)
+static void procresult(struct expract *a)
 {
+    struct exprnode *n = a->p;
+
     if (regat)
         pokewd((regat << 9) | 0x2000);  /* move.l d0,regat */
     if (n->aux) {                   /* .nopars3 */
@@ -4063,7 +4925,9 @@ static void procresult(struct exprnode *n)
    (fetchprocps: each compiled into its register or pushed as it is
    read), the }; the code: the node's enter action (procenter) before the
    parameters, its exit action after them (procexit, the jsr; procresult
-   after the }, which a call without parameters reads after the jsr). */
+   after the }, which a call without parameters reads after the jsr).
+   regat is kept in the node and 0 for the parameters (.somepars), back
+   after the jsr. */
 static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
 {
     struct proc *p = findproc(namelen, NULL);
@@ -4077,17 +4941,26 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
     n = callnode(CLK_PROC, oldtype);
     n->value = (ULONG)p;
     n->own = (UBYTE)p->rettype;
-    procenter(n);
+    if (n->own == T_STRING)
+        sbaseuse();
+    emitact(procenter, n, 0, 0);
+    n->reg = (UBYTE)regat;          /* .somepars: old regat */
+    if (p->nparams)
+        regat = 0;
     if (!p->nparams) {
-        procexit(n);
+        emitact(procexit, n, 0, 0);
+        regat = n->reg;
         c = getchar3();
     } else {
         c = fetchprocps(p);         /* pointer to var desc */
-        procexit(n);
+        if ((debugga & 0xff00) && !makeexec)   /* chkstak */
+            tokuse(stchk);
+        emitact(procexit, n, 0, 0);
+        regat = n->reg;
     }
     if (c != '}')                   /* .nopars */
         syntaxerr();
-    procresult(n);
+    emitact(procresult, n, 0, 0);
     getchar3();                     /* .notst */
     return callcont(n, type);
 }

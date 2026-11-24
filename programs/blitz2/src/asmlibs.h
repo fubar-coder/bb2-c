@@ -143,6 +143,15 @@ struct blitzlib *usevars(void);
 struct blitzlib *uselib(UWORD libnum);
 /* 5841 uselib for a known lib (libnum = lib->libnum, asm d1) */
 struct blitzlib *uselib3(struct blitzlib *l, UWORD libnum);
+/* the relocations of a library used while an expression is built (no asm
+   counterpart, asmlibs.c): addoff2 keeps them (reloccapture: TRUE, n
+   kept), the first uselib3 of the library while its code is written puts
+   them into the list; relocunit at the start of a unit (its old value to
+   relocdrop at its end), relocreset at the reset of a statement */
+BOOL reloccapture(struct offnode *n);
+UWORD relocunit(void);
+void relocdrop(UWORD base);
+void relocreset(void);
 /* 6237 use every lib of the dependency list at lib+off+6 except self.
    off == 0: nothing (asm: Z flag from the caller's move.l) */
 void uselib2(struct blitzlib *l, ULONG off, UWORD self);

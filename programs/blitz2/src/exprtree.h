@@ -1,38 +1,39 @@
 /*
  * exprtree.h - the nodes of an expression (issue #1180): a node for each
  * binary operator, each bracket, each NOT, each run of minus signs and the
- * expression itself, and a leaf for each operand.  The nodes live in a
- * static arena that prepstack resets for every statement; a node is
- * released when its operator has been emitted, so the arena holds only the
- * window of the pending operators and their left operands.
+ * expression itself, and a leaf for each operand.  An expression is built
+ * whole before its code is written (a unit, exprtree_begin): its nodes stay
+ * in the arena until the unit ends, and each part of its code is an action
+ * (struct expract) in the unit's list, in the order of a walk of the tree
+ * that writes a node's enter actions before its children and its exit
+ * actions after them; the unit's owner runs them when the expression is
+ * built (exprtree_run).  The arena is a static block and further blocks
+ * from the system, which prepstack gives back for every statement.
  *
- * An operand is a leaf that records where its code begins and ends.  A
- * simple element is parsed into a leaf of its own (op: its ELK_* kind),
- * which its emit part turns into code right after and which is released
- * then; a string literal is such a leaf as well (ELK_STRING), its text
- * written to the literal area while it is read.  A variable's path (an
- * array's indexes, fields, field arrays, pointers) is read by calcvar's
- * parse part (varparse, parse.c) into a node per step, each emitted and
- * released as soon as it is read, and a variable node at the end, which an
- * element makes its leaf; a string variable is a variable's leaf.  A
- * procedure, OS or library call is a node that lives while its parameters
- * are read, with an enter action emitted before them and an exit action
- * after them; it then becomes the leaf of the call's value (a string
- * result is a call's).  A library function's lookup has no side effect:
- * its library is used right after the lookup.  The operators on strings (+
- * and the comparisons) are operator nodes like the others: the string
- * protocol (the work area, a length on the stack per string) is kept by
- * emitting each of them at the original's moment.
+ * An operand is a leaf of the walk that records where its code begins and
+ * ends.  A simple element is parsed into a leaf of its own (op: its ELK_*
+ * kind), whose code is an action; a string literal is such a leaf as well
+ * (ELK_STRING), its text written to the literal area while it is read.  A
+ * variable's path (an array's indexes, fields, field arrays, pointers) is
+ * read by calcvar's parse part (varparse, parse.c) into a node per step,
+ * each with the action of its code, and a variable node at the end, which
+ * an element makes its leaf; a string variable is a variable's leaf.  A
+ * procedure, OS or library call is a node whose parameters are read
+ * between its enter actions and its exit actions; a leaf of the call's
+ * value follows it (a string result is a call's).  The operators on
+ * strings (+ and the comparisons) are operator nodes like the others: the
+ * string protocol (the work area, a length on the stack per string) is
+ * kept by the order of the actions.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
  * pending one it reads that operator's right operand (recursing once per
- * higher precedence, as eval5 did) and emits the operator; along a chain
+ * higher precedence, as eval5 did) and builds the operator; along a chain
  * of one precedence it iterates.  What an operand is and what an operator
- * emits are the hooks exprtree_operand to exprtree_emit (eval.c).  The
- * pending operators, brackets, NOTs and the expression are counted: the
- * 65th is "Precedence Stack Overflow" (exprtree_overflow), the limit of
- * the original's precedence stack.
+ * is built into are the hooks exprtree_operand to exprtree_emit (eval.c).
+ * The pending operators, brackets, NOTs and the expression are counted:
+ * the 65th is "Precedence Stack Overflow" (exprtree_overflow), the limit
+ * of the original's precedence stack.
  *
  * Pure C99 without the compiler's globals or AmigaOS headers: blitz2 and
  * blitz2-ab3 compile it, and the host test
@@ -56,23 +57,45 @@ enum {
     EXN_BINOP,                  /* a binary operator */
     EXN_LEAF,                   /* an operand: the code start..end of what it read;
                                    op: its element kind (ELK_*); 0: the operand of the walk,
-                                   or the value of a call (a CALL made its leaf: callcont;
-                                   a library function: varcont) */
+                                   or the value of a call (callcont) */
     EXN_RESULT,                 /* an operand that is the result of an operator now */
     EXN_VAR,                    /* a variable with its path, read by calcvar's parse part
                                    (varparse, parse.c); an element's leaf in an expression */
-    EXN_STEP,                   /* a step of a variable's path (op: its VST_* kind), emitted
-                                   when it is read and released then */
-    EXN_CALL                    /* a procedure, OS or library call (op: its CLK_* kind), live
-                                   while its parameters are read; then the leaf of its value */
+    EXN_STEP,                   /* a step of a variable's path (op: its VST_* kind), its
+                                   code an action recorded when it is read */
+    EXN_CALL,                   /* a procedure, OS or library call (op: its CLK_* kind);
+                                   its parameters are read between its enter and exit
+                                   actions, then a leaf of its value follows it */
+    EXN_EVAL                    /* an evaluation (maineval2: the expression of a statement,
+                                   a parameter, an index): its state at the enter action,
+                                   the conversion and the pushes of its exit action */
+};
+
+/** @brief The facts of a BINOP (exprnode.lflags), decided when it is
+ *         built and read by its code. */
+enum {
+    BNF_LRAW = 1,               /* the left operand is a raw Quick (#1178) */
+    BNF_RRAW = 2,               /* the right operand is one */
+    BNF_RCMP = 4,               /* the right operand was lowered by a comparison (#1182) */
+    BNF_WORDS = 8,              /* a later array index, both operands Byte or Word values (#1179) */
+    BNF_FOLD = 16,              /* both operands constants: folded */
+    BNF_OWNLEFT = 32,           /* a comparison's left operand gets its own type back (#1177) */
+    BNF_NOFOLD = 64             /* the result is no constant (^: nocando) */
+};
+
+/** @brief The facts of an EVAL (exprnode.lflags). */
+enum {
+    EVF_RAWCUT = 1,             /* a raw Quick rounded down at the end (#1178) */
+    EVF_CONV = 2,               /* converted from tbefore to the type asked for, tafter */
+    EVF_FILLER = 4              /* AmiBlitz3's filler below a string argument (ext_strfiller) */
 };
 
 /** @brief The kinds of call (exprnode.op of a CALL).
  *
- * The call is looked up, its node made, its enter action emitted, its
- * parameters read (each an expression of its own, compiled and pushed as
- * it is read: the node's children), then its exit action emitted
- * (eval.c). */
+ * The call is looked up, its node made, its enter action recorded, its
+ * parameters read (each an expression of its own, its code and its push
+ * recorded as it is read: the node's children), then its exit action
+ * recorded (eval.c). */
 enum {
     CLK_PROC = 1,               /* a Function in an expression, f{...} (afunction) */
     CLK_OS,                     /* an OS library function, Name_(...) (amigalib) */
@@ -120,7 +143,7 @@ enum {
 
 /** @brief The element kinds of a LEAF an element makes (exprnode.op).
  *
- * The element is parsed into its leaf, and the leaf emitted right after. */
+ * The element is parsed into its leaf, the leaf's code is an action. */
 enum {
     ELK_CONST = 1,              /* a number: a literal, #constant, SizeOf, On, Off, Maximum... */
     ELK_PI,                     /* Pi */
@@ -167,25 +190,12 @@ enum {
 /** @brief The number of nodes of the arena's static block (168, 7728 bytes
  *         on the 68000).
  *
- * The live nodes are at most the 64 counted ones (the precedence limit),
- * the 65th, which is made before it is counted, and one leaf or one run
- * of minus signs per level of the walk, of which there is one per counted
- * node: 129, reached by 64 times "-(" ("Precedence Stack Overflow"; 63
- * times compile with 128 nodes live).  An element's leaf lives only while
- * its element is emitted, which makes no node: behind the run of minus
- * signs of the innermost level it is the 129th (63 times "-(" and "-b"),
- * never with the 65th counted node.  A step of a variable's path and the
- * variable node take the leaf's place (made after the index, released
- * before the next node: 62 times "-(" and "-a(-c)" 129).
- *
- * A call's node lives beside the run of minus signs of its level while
- * its parameters are read; the compiler nests at most 32 calls (each
- * holds an entry of forthstack, the 33rd is "Expression too Complex"):
- * 129 + 32 = 161, reached by 32 times "-f{" and 32 times "-(" ("Precedence
- * Stack Overflow").  A library function's call is such a node as well and
- * counts among the 32 (10 times "-Abs(" and 21 or 22 times "-f{" before
- * 32 times "-(": 160 and 161).  The arena has a margin of 7 nodes to 168.
- * The measurements: docs/blitz2/expression-tree.md, "Node bound". */
+ * An expression's nodes and the actions of its code stay in the arena
+ * until it is built and its code written; what the static block cannot
+ * hold is in further blocks (EXPRTREE_BLOCK).  Its size holds the pending
+ * nodes with their left operands of any expression (161 nodes,
+ * docs/blitz2/expression-tree.md, "Node bound") and a usual line's
+ * expression. */
 #define EXPRTREE_NODES 168
 
 /** @brief A node of an expression.
@@ -194,20 +204,25 @@ enum {
  *         precedence, left the operand before it (a LEAF or a RESULT),
  *         right the one after it (once read), start where the right
  *         operand's code begins, reg the register of the left operand,
- *         tbefore the left operand's type, tafter the result's.  LEAF of
- *         the walk (op 0): start..end the code it emitted (end 0: none to
- *         look at), tbefore its type.  LEAF of an element (op its ELK_*):
- *         tbefore the type so far it was read under, own its own type,
- *         tafter the type so far after it, lflags its facts (ELF_*),
- *         value, aux, vtype and off what its kind needs (eval.c,
- *         libcall.c; docs/blitz2/expression-tree.md), start..end the code
- *         its emit part wrote.  VAR (parse.c, varparse): value the
- *         variable or its last field (struct var *), aux its type
- *         (struct type *), vtype and off calcvar's type and offset,
+ *         tbefore the left operand's type, vtype the type so far after
+ *         the right one, tafter the result's, lflags the facts the build
+ *         decided (BNF_*), flags those of the code before it (EXF_*).
+ *         LEAF of the walk (op 0): start..end its code (end 0: none to
+ *         look at), tbefore its type, value and aux the caller's (eval.c:
+ *         the action its code begins with, the code recorded before it);
+ *         a RESULT the same, value of its operator's left operand.  LEAF
+ *         of an element (op its ELK_*): tbefore the type so far it was
+ *         read under, own its own type, tafter the type so far after it,
+ *         lflags its facts (ELF_*), value, aux, vtype and off what its
+ *         kind needs (eval.c, libcall.c; docs/blitz2/expression-tree.md),
+ *         start..end the code its action wrote.  VAR (parse.c, varparse):
+ *         value the variable or its last field (struct var *), aux its
+ *         type (struct type *), vtype and off calcvar's type and offset,
  *         lflags ELF_LOCAL.  STEP (op its VST_*): value, off and lflags
- *         (VSF_*, ELF_LOCAL) what its kind needs, aux of an INDEX and a
- *         BRCLOSE where its index's code begins (it ends at start),
- *         start..end the code stepemit wrote.  CALL (op its CLK_*): tbefore
+ *         (VSF_*, ELF_LOCAL) what its kind needs, start..end the code
+ *         stepemit wrote.  EVAL (eval.c, maineval2): tbefore the type got,
+ *         tafter the type of the result, lflags its EVF_*, value, aux and
+ *         off what its enter action kept.  CALL (op its CLK_*): tbefore
  *         the type so far it was read under, own the type of its value;
  *         a PROC's value the procedure (struct proc *), aux the movem mask
  *         its enter action saved (savem), reg regat before the
@@ -243,12 +258,12 @@ struct exprnode {
  * ctx is the caller's.  They are functions, not pointers: the walk
  * recurses once per level, and each value it keeps is part of every
  * level's frame (#1080). */
-/** reads an operand and the operator after it: its precedence (0: none),
- *  *op its ETO_* */
-unsigned exprtree_operand(void *ctx, unsigned *op);
-/** the operand just read is l (a new LEAF); consumer is the operator that
- *  will take it (the next one if it binds tighter than the pending one,
- *  else the pending one; ETO_END: none) */
+/** reads the operand l (a new LEAF) and the operator after it: its
+ *  precedence (0: none), *op its ETO_* */
+unsigned exprtree_operand(void *ctx, struct exprnode *l, unsigned *op);
+/** the operand l is read; consumer is the operator that will take it
+ *  (the next one if it binds tighter than the pending one, else the
+ *  pending one; ETO_END: none) */
 void exprtree_left(void *ctx, struct exprnode *l, unsigned consumer);
 /** no operator binds tighter than the pending one: the level ends with
  *  its left operand l */
@@ -257,7 +272,8 @@ void exprtree_done(void *ctx, struct exprnode *l);
 void exprtree_pre(void *ctx, struct exprnode *n);
 /** n is counted, its right operand is read next */
 void exprtree_enter(void *ctx, struct exprnode *n);
-/** n's right operand is read (n->right): emit n (and set n->tafter) */
+/** n's right operand n->right is read: type n (n->tafter) and give it its
+ *  code */
 void exprtree_emit(void *ctx, struct exprnode *n);
 
 /** @brief The size of a further block of the arena in bytes. */
@@ -307,16 +323,23 @@ void exprtree_push(struct exprnode *n, unsigned op, unsigned prec);
 /** @brief The pending node on top (NULL: none). */
 struct exprnode *exprtree_top(void);
 
-/** @brief n and everything allocated after it free; the counted ones
- *         among them are no longer pending.
+/** @brief n is done: a counted n is no longer pending (with the nodes
+ *         counted after it); outside an expression being built (a unit,
+ *         exprtree_begin) n and everything allocated after it are free.
  *
+ * Inside a unit the nodes stay until the unit's end (exprtree_unwind).
  * The further blocks stay with the arena for the next nodes until
  * exprtree_reset. */
 void exprtree_release(struct exprnode *n);
 
-/** @brief The node after n if it is in use, else NULL (the nodes made
- *         after n with nothing else allocated between). */
-struct exprnode *exprtree_after(struct exprnode *n);
+/** @brief A place in the arena (exprtree_mark), to free it back to
+ *         (exprtree_unwind). */
+struct exprmark {
+    void *block;                /* the block (NULL: the static one) */
+    char *at;                   /* the first free byte */
+};
+struct exprmark exprtree_mark(void);
+void exprtree_unwind(struct exprmark m);
 
 /** @brief The bytes of the arena in use; the number of nodes in use when
  *         only nodes are allocated; the number of pending ones; the
@@ -327,10 +350,67 @@ unsigned exprtree_pending(void);
 unsigned exprtree_blocks(void);
 
 /** @brief The walk of one level (eval5), returning the precedence of the
- *         operator that ends it (0: none), *op that operator.
+ *         operator that ends it (0: none), *op that operator, *last the
+ *         level's operand (a LEAF, or the RESULT of its last operator).
  *
  * There must be a pending node (the expression's, or an operator's). */
-unsigned exprtree_climb(void *ctx, unsigned *op);
+unsigned exprtree_climb(void *ctx, unsigned *op, struct exprnode **last);
+
+/** @brief An action of the emission: a part of a node's code.
+ *
+ * While an expression is built (a unit) its code is not written: each
+ * part of it is an action, appended to the unit's list in the order the
+ * expression is read, which is the order of a walk of its tree that
+ * writes a node's enter actions before its children and its exit actions
+ * after them.  The unit's owner runs the actions when the expression is
+ * built (exprtree_end); fn writes the code from the action (p the node it
+ * belongs to or what it needs, x and y its arguments) and the emitter's
+ * state, ctx is the caller's record of that state at the action (eval.c:
+ * regat, varmode, evaldepth). */
+struct expract;
+typedef void exprtree_actfn(struct expract *a);
+struct expract {
+    struct expract *next;
+    exprtree_actfn *fn;
+    void *p;
+    unsigned long x;
+    unsigned short y;
+    unsigned short ctx[3];
+};
+
+/** @brief The unit being built, saved while another one is (evalconst:
+ *         a constant computed in the middle of an expression). */
+struct exprunit {
+    struct expract *first, **tail;
+    int building;
+};
+
+/** @brief A new unit: the one being built (if any) is saved in *outer;
+ *         exprtree_suspend: none is built until exprtree_end(outer). */
+void exprtree_begin(struct exprunit *outer);
+void exprtree_suspend(struct exprunit *outer);
+
+/** @brief The unit's actions, in order; the saved unit *outer is the one
+ *         being built again. */
+struct expract *exprtree_end(struct exprunit *outer);
+
+/** @brief An expression is being built (inside a unit). */
+int exprtree_building(void);
+
+/** @brief The actions from a on run in order (exprtree_runact each, the
+ *         caller's), the code of a unit written. */
+void exprtree_run(struct expract *a);
+void exprtree_runact(struct expract *a);
+
+/** @brief The actions of a unit are being run. */
+int exprtree_replaying(void);
+
+/** @brief A new action fn appended to the unit being built, cleared but
+ *         for fn (there must be one: exprtree_building). */
+struct expract *exprtree_act(exprtree_actfn *fn);
+
+/** @brief The last action of the unit being built (NULL: none yet). */
+struct expract *exprtree_lastact(void);
 
 #ifdef __cplusplus
 }

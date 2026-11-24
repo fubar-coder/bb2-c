@@ -10,7 +10,7 @@ After `expr-tree-3e-strings`. Open question 1 answered before 2.5. "The check": 
 
 ## 2. Implementation
 
-- [ ] 2.1 Build-then-emit for a top-level `maineval2` (design decisions 1, 2); verify: the check.
+- [x] 2.1 Build-then-emit for a top-level `maineval2` (design decisions 1, 2); verify: the check.
 - [ ] 2.2 The fold on nodes (decision 3), `forthstack` removed; verify: the check, 1.3.
 - [ ] 2.3 #978 as a node rule, the patch removed; verify: the check, `compiler-byte-const-compare` FIXED.
 - [ ] 2.4 #1177's left operand as a node rule, `cmpownleft` removed, the library use of decision 4; verify: the check, 1.1, `compiler-quick-compare` FIXED, `compiler-compare-compound-left` (#1183) REPRODUCED.

@@ -199,25 +199,15 @@ void objlongcode(UWORD dn, UWORD shifts)
     }
 }
 
-/* blitz2.s:12196 getmaxel, *libp = the lib.  The asm kept the lib in the
-   global mymaxlib (12251) for maxjsr; Free/Use now hand it over.  The
-   offset is a long where objlong says so (Fixed (#939)). */
-static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
+/* blitz2.s:12196 getmaxel after the index - its code (the object's
+   maximum entry a->p): the check of the maximum with runtime error
+   checking, the index times the object size */
+static void maxelact(struct expract *a)
 {
-    struct blitzlib *bl;
-    UBYTE *e;
-    UWORD type, opcode;
+    UBYTE *e = a->p;
+    UWORD opcode;
     WORD shifts;
 
-    if (!(c & 0x8000))
-        syntaxerr();
-    findtoke(c & 0x7fff, &bl);
-    if (LIBMAX_SHIFT(bl) == 0)
-        freeerr();
-    type = T_WORD;
-    eval(&type);
-    *libp = bl;
-    e = LIBMAX_E(bl);
     if (debugga) {
         /* check maximum overflow */
         pokewd(0xb07c | (regat << 9));         /* cmp #x,dn */
@@ -228,7 +218,7 @@ static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
     shifts = *(WORD *)(e - 2);                  /* .pen: # shifts */
     if (objlong(e)) {
         objlongcode(regat, (UWORD)shifts);
-        return e;
+        return;
     }
     for (;;) {                                  /* .loop */
         opcode = regat | lslimm[0];
@@ -241,6 +231,29 @@ static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
         if (!shifts)
             break;
     }
+}
+
+/* blitz2.s:12196 getmaxel, *libp = the lib.  The asm kept the lib in the
+   global mymaxlib (12251) for maxjsr; Free/Use now hand it over.  The
+   offset is a long where objlong says so (Fixed (#939)). */
+static UBYTE *getmaxlib(UWORD c, struct blitzlib **libp)
+{
+    struct blitzlib *bl;
+    UBYTE *e;
+    UWORD type;
+
+    if (!(c & 0x8000))
+        syntaxerr();
+    findtokeact(c & 0x7fff, &bl);
+    if (LIBMAX_SHIFT(bl) == 0)
+        freeerr();
+    type = T_WORD;
+    eval(&type);
+    *libp = bl;
+    e = LIBMAX_E(bl);
+    if (debugga)
+        tokuse(maxerr);
+    emitact(maxelact, e, 0, 0);
     return e;
 }
 

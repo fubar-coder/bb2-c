@@ -108,6 +108,9 @@ void fraclitdrop(void);
    Quick literal that rounds to 32768.0 is then -32768 ($80000000, which
    the negation keeps), else 32767.99998 ($7FFFFFFF). */
 extern BOOL litneg;
+/* Fixed (#1179): the last constant built is a Word value (a move.l of
+   0..32767: iswordconst), for getelement2 */
+extern BOOL constword;
 
 /* blitz2.s:10906 constotype - evalconst, then size the constant to *type
    (consttype2).  Returns the value (asm d0); no callers in the asm. */
@@ -153,6 +156,23 @@ void chkstak(void);
    tokejsr2 (11427) = lasta6 = -1, then tokejsr. */
 struct blitzlib *tokejsr(UWORD token);
 struct blitzlib *tokejsr2(UWORD token);
+
+/* no asm counterpart: what tokejsr(token) and userjsr(bl, params) use
+   (the libraries, the blitz mode flag) and the mode errors they raise, in
+   their order, without code: an expression's calls use them while it is
+   built (exprtree.h), its code is written after */
+void tokuse(UWORD token);
+void userjsruse(struct blitzlib *bl, UBYTE *params);
+
+/* no asm counterpart: the facts the code of the last constant leaves
+   (#978 constat, constend, constval; #1186 litat, litend, litffp,
+   litint), read and set again around a constant computed in the middle
+   of an expression (eval.c maineval2) */
+struct emitfacts {
+    ULONG constat, constend, constval, litat, litend, litffp, litint;
+};
+void getemitfacts(struct emitfacts *f);
+void setemitfacts(const struct emitfacts *f);
 
 /* blitz2.s:11466 makelibsub - generate a call of lib sub `off` (entry =
    (UBYTE*)lib + 6 + off): parameter register loads (fetchregs/toreg),

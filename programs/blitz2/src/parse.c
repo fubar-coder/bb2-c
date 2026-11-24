@@ -346,10 +346,13 @@ void addoff(void)
 void addoff2(ULONG off)
 {
     struct offnode *n = doallocerr(8, 1);
+
+    n->offset = off;
+    if (reloccapture(n))            /* a library used for an expression being built */
+        return;
     numoffs++;
     n->next = firstoff;
     firstoff = n;
-    n->offset = off;
 }
 
 /* blitz2.s:7022 killoffs - kill all offsets */
@@ -1312,8 +1315,10 @@ static void makelmul(WORD off)
    (.notalist, .arloop, .ardone, .normalar, .notap, .loop0 with its [ ]
    and .pointer, .done2) - the code of the step s of a variable's path,
    from s and the emitter's state only */
-static void stepemit(struct exprnode *s)
+static void stepemit(struct expract *a)
 {
+    struct exprnode *s = a->p;
+
     s->start = pc;
     varmode = (s->lflags & ELF_LOCAL) ? -1 : 0;   /* pokela5s: a4 or a5 */
     switch (s->op) {
@@ -1330,18 +1335,21 @@ static void stepemit(struct exprnode *s)
             if (s->lflags & VSF_CHECK)
                 arrszchk();
             muld1((UWORD)s->value);
-            regat++;
         } else
             makeamul((WORD)s->value);
         if (s->lflags & VSF_CHECK) {        /* .arloop */
-            pokewda5s(*zarrchk | ((regat - 1) << 9));   /* cmp.l x(a5),D regat */
+            /* the first index's register: regat at the first one, one
+               below at a later one (the step after the first one counts
+               regat up: varparse) */
+            UWORD r = (s->lflags & VSF_FIRST) ? regat : regat - 1;
+
+            pokewda5s(*zarrchk | (r << 9));    /* cmp.l x(a5),D regat */
             pokewd(s->off);
             pokel(TL(arrchk2));
             tokejsr(arrerr);
         }
         break;
     case VST_ARRAY:                         /* .ardone */
-        regat--;
         movea5a0[1] = (UWORD)s->value;
         pokela5s(TL(movea5a0));
         pokewd(regat | 0xd5c0);             /* add.l Dr,a2 */
@@ -1404,21 +1412,33 @@ static struct exprnode *newstep(unsigned op)
     return s;
 }
 
-/* no asm counterpart - the step s emitted and released (the window of
-   exprtree.h) */
+/* no asm counterpart - the step s built: the libraries of its runtime
+   error checks used, its code recorded (in an expression; else written
+   now), regat counted down to the array's register before the end of the
+   indexes and up after the first index (for the later ones), s released */
 static void stepdone(struct exprnode *s)
 {
-    stepemit(s);
+    if (s->lflags & VSF_CHECK) {
+        if (s->op == VST_LIST)
+            tokuse(currentchk);
+        else if (s->op == VST_INDEX)
+            tokuse(arrerr);         /* arrszchk, the check */
+    }
+    if (s->op == VST_ARRAY)
+        regat--;
+    emitact(stepemit, s, 0, 0);
+    if (s->op == VST_INDEX && (s->lflags & VSF_FIRST))
+        regat++;
     exprtree_release(s);
 }
 
 /* blitz2.s:8170 calcvar / 8172 calcvar2, the parse part - use a3 = var, a2 = type, flagmask = flags.
    Reads the path of the variable v of type t (fetchvar's; *pc0 the char
    after its name, out: the char after the path): the indexes of an array
-   (compiled into D(regat) as they are read: arreval, arrevalchk), the
+   (each an expression into D(regat): arreval, arrevalchk), the
    fields after \, the index of a field array [ ], the pointers followed.
-   Each step is a node (EXN_STEP) that is emitted (stepemit) as soon as it
-   is read and released then, so the code comes at the moments the original did.
+   Each step is a node (EXN_STEP) whose code (stepemit) is recorded when
+   it is read (stepdone), in the order of the original's code.
    Returns the variable node (EXN_VAR, the last node of the arena): value
    the variable or the last field, aux its type, vtype the asm's d2 (if
    bit 15 then code has been generated for address of thing in a2, else
@@ -1451,7 +1471,6 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
             struct type *ftype;
             WORD fvarmode, fndims, foff, fprev = 0;
             UWORD fmask, elsize, listoff;
-            ULONG at;
             BOOL first = TRUE;
 
             /* Fixed (#937): the asm kept this in one word in the code
@@ -1471,7 +1490,6 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
             ftype = t;
             fmask = flagmask;
             bakup();
-            at = pc;
             ch = arreval();
             flagmask = fmask;
             varmode = fvarmode;
@@ -1484,7 +1502,6 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
                 if (fvarmode)
                     foff -= 8;
                 s = newstep(VST_INDEX);
-                s->aux = at;                /* the index's code: at..s->start */
                 s->off = foff;
                 if (!first)
                     s->value = (UWORD)fprev;
@@ -1499,7 +1516,6 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
                     break;
                 if (ch != ',')
                     syntaxerr();
-                at = pc;
                 ch = arrevalchk();
                 varmode = fvarmode;
                 fprev = foff;
@@ -1572,7 +1588,7 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
             struct type *st;
             struct var *sv;
             WORD svm;
-            ULONG slo, at;
+            ULONG slo;
             UWORD ty, elsize;
 
             if (!(v->flags & 2))
@@ -1582,13 +1598,11 @@ struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
             stepdone(s);
             st = t; sv = v; svm = varmode; slo = lastoffset;
             ty = 2;
-            at = pc;
             ch = eval(&ty);
             if (ch != ']')
                 syntaxerr();
             lastoffset = slo; varmode = svm; t = st; v = sv;
             s = newstep(VST_BRCLOSE);
-            s->aux = at;                    /* the index's code: at..s->start */
             s->value = (UWORD)v->ndims;
             if (debugga && v->ndims)
                 s->lflags |= VSF_CHECK;

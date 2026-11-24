@@ -264,15 +264,17 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
 }
 
 /* no asm counterpart; replaces blitz2.s:10860-10888 fetchnum3's .doit,
-   .word and .long - the code of the constant's leaf l: move.w/move.l
-   #value,D(regat).  It uses only the leaf and the emitter's state; it
-   leaves the facts of the constant for the code after it (#978
+   .word and .long - the code of the constant's leaf l (the action's p):
+   move.w/move.l #value,D(regat).  It uses only the leaf and the emitter's
+   state; it leaves the facts of the constant for the code after it (#978
    constat..constend and constval, #1186 litat..litend) and the code in
    l->start..l->end. */
-static void constemit(struct exprnode *l)
+static void constemit(struct expract *a)
 {
+    struct exprnode *l = a->p;
     ULONG at = pc, val = l->value;
 
+    litat = 0;                      /* #1186 */
     /* Fixed (#978): remember where the last integer constant is */
     constat = constend = 0;
     if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT)
@@ -307,19 +309,25 @@ static void constemit(struct exprnode *l)
     l->end = pc;
 }
 
+/* Fixed (#1179): the last constant built is a Word value (iswordconst of
+   its code: a move.l of 0..32767), for getelement2's forthstack */
+BOOL constword;
+
 /* blitz2.s:10856 fetchnum3 - return the value (Data), or end the
    constant's parse part: its leaf (the value, the type so far tsf it was
-   read under, the type it is now and its facts) emitted at once
-   (constemit) and released (the window of exprtree.h); returns the next
-   char.  data: the asm flag dfetch (10854), set by fetchdata and cleared
-   here; C passes it down the fetch routines. */
+   read under, the type it is now and its facts) built (constemit, its
+   code) and released; returns the next char.  data: the asm flag dfetch
+   (10854), set by fetchdata and cleared here; C passes it down the fetch
+   routines. */
 static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
 {
     struct exprnode *l;
+    struct expract *a;
 
-    litat = 0;                      /* #1186 */
-    if (data)
+    if (data) {
+        litat = 0;                  /* #1186 */
         return val;
+    }
     l = exprtree_new(EXN_LEAF);
     l->op = ELK_CONST;
     l->value = val;
@@ -331,12 +339,18 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
         l->lflags |= ELF_POINT;
     if (litcut)
         l->lflags |= ELF_CUT;
-    if (!forthsp[-1].constgot)
+    if (elemconst())
         l->lflags |= ELF_FOLD;
-    constemit(l);
+    if (l->tafter < T_BYTE || l->tafter > T_FLOAT)
+        mismatcherr();
+    constword = !numfloat && (l->tafter == T_LONG || l->tafter == T_QUICK) && val <= 32767;
+    a = emitact(constemit, l, 0, 0);
+    if (litcut)
+        constlit(a);
     exprtree_release(l);
     return reget();
 }
+
 
 BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type)
 {
@@ -368,6 +382,28 @@ BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type)
 void fraclitdrop(void)
 {
     litat = 0;
+}
+
+void getemitfacts(struct emitfacts *f)
+{
+    f->constat = constat;
+    f->constend = constend;
+    f->constval = constval;
+    f->litat = litat;
+    f->litend = litend;
+    f->litffp = litffp;
+    f->litint = litint;
+}
+
+void setemitfacts(const struct emitfacts *f)
+{
+    constat = f->constat;
+    constend = f->constend;
+    constval = f->constval;
+    litat = f->litat;
+    litend = f->litend;
+    litffp = f->litffp;
+    litint = f->litint;
 }
 
 BOOL isbyteconst(ULONG from, ULONG to)
@@ -1146,6 +1182,131 @@ WORD getbbase(void)
     return blitzoff;
 }
 
+/* The library uses of a call (no asm counterpart): what makelsub3 uses
+   of libraries and of the variables (the libraries its register list
+   loads, the blitz mode flag and the error check routines of the runtime
+   error checking), and the errors it raises (blitzerr, amigaerr), in its
+   order, without code.  An expression is built before its code is
+   written (exprtree.h); its calls use their libraries while it is built,
+   at the moment the code that calls them is read, as the original did:
+   in the same order with the variables, which share their offsets
+   (varoff). */
+
+static void jsruse3(struct blitzlib *bl, UBYTE *sub);
+
+/* no asm counterpart; makebtst's uses: the blitz mode flag, the check
+   routine */
+static void btstuse(UWORD tok)
+{
+    getbbase();
+    tokuse(tok);
+}
+
+/* no asm counterpart; doajsr2's uses: a blitz mode variation's check */
+static void ajsruse(struct blitzlib *bl, ULONG off)
+{
+    UBYTE *p;
+
+    if (!off || cfetchmode)
+        return;
+    p = (UBYTE *)bl + off;
+    for (;;) {
+        if (*p++ != 0xa0)
+            return;
+        if (*p++ != 1) {
+            p += 2;
+            continue;
+        }
+        if (blitzmode < 0) {
+            if (DEBUGGA_B)
+                btstuse(inblitz);
+            p = (UBYTE *)bl + L_(p);
+        } else {
+            if (DEBUGGA_B)
+                btstuse(inamiga);
+            p += 4;
+        }
+    }
+}
+
+/* no asm counterpart; doajsrrout's uses and error */
+static void ajsrroutuse(struct blitzlib *bl, ULONG off)
+{
+    if (off & 1) {
+        if (blitzmode < 0)
+            amigaerr();
+        if (DEBUGGA_B)
+            btstuse(inamiga);
+        off &= ~1UL;
+    }
+    ajsruse(bl, off);
+}
+
+/* no asm counterpart; makelsub3's uses and errors: fetchregs (toreg: the
+   library of each register, not those the blitz or amiga mode skips;
+   maxerr for a maximum item checked), then the routines */
+static void jsruse3(struct blitzlib *bl, UBYTE *sub)
+{
+    UWORD libnum, regspec;
+    ULONG before;
+
+    for (;;) {
+        libnum = W_(sub);
+        sub += 2;
+        if (libnum == 0)
+            break;
+        regspec = W_(sub);
+        sub += 2;
+        if (regspec < 0xff00) {
+            if (regspec & 0x8000) {
+                regspec &= ~0x8000;
+                if (blitzmode >= 0)
+                    continue;
+            } else if (regspec & 0x4000) {
+                regspec &= ~0x4000;
+                if (blitzmode < 0)
+                    continue;
+            }
+        }
+        uselib(libnum);
+        if ((UBYTE)regspec != 0 && (UBYTE)regspec != 3 && (UBYTE)regspec != 4
+            && (BYTE)regspec < 0 && DEBUGGA_B)
+            tokuse(maxerr);
+    }
+    if (DEBUGGA_B && ((L_(sub) | L_(sub + 8)) & ~1UL)) {
+        before = L_(sub);
+        sub += 4;
+        if (before & 1) {
+            if (blitzmode >= 0)
+                blitzerr();
+            btstuse(inblitz);
+            before &= ~1UL;
+        }
+        ajsruse(bl, before);
+        ajsrroutuse(bl, L_(sub));
+        ajsruse(bl, L_(sub + 4));
+        return;
+    }
+    if ((B_(sub + 3) & 1) && blitzmode >= 0)
+        blitzerr();
+    ajsrroutuse(bl, L_(sub + 4));
+}
+
+void tokuse(UWORD token)
+{
+    struct blitzlib *bl;
+    UBYTE *sub = findtoke(token, &bl);
+
+    jsruse3(bl, sub + 6);
+}
+
+void userjsruse(struct blitzlib *bl, UBYTE *params)
+{
+    UBYTE *sub = params + 2 + (W_(params) & 255);
+
+    jsruse3(bl, (UBYTE *)(((ULONG)sub + 1) & ~1UL));
+}
+
 /* blitz2.s:11633 tstmode */
 UWORD tstmode[] = {
     0x4A6D, 0x0000,                    /* +0   tstmode tst 0(a5) */
@@ -1365,7 +1526,9 @@ ULONG evalconst2(UWORD *c, WORD *isfloat)
     WORD s_nomemleft, s_lasta6, s_cfetchmode;
     struct m68kregs r;
     UWORD ch;
+    struct exprunit outer;
 
+    exprsuspend(&outer);
     regat = 0;
     s_pc = pc;
     s_libat = libat;
@@ -1409,6 +1572,7 @@ ULONG evalconst2(UWORD *c, WORD *isfloat)
     libat = s_libat;
     pc = s_pc;
     regat = s_regat;
+    exprresume(&outer);
     ch = reget();
     if (c)
         *c = ch;

@@ -61,6 +61,7 @@ static WORD paroff[MAXPARS];
 #define MAXARGS 64
 static UWORD argdepth[MAXARGS];
 static UWORD nargs;
+static UWORD bnargs;        /* the lists being read (the code of nargs is written later) */
 
 static UWORD hashof(const struct proc *p)
 {
@@ -98,7 +99,7 @@ void ab3_procpass(void)
     defrettype = 0;
     deffast = FALSE;
     definfo = NULL;
-    nargs = 0;
+    nargs = bnargs = 0;
 }
 
 void ab3_procfree(void)
@@ -328,9 +329,13 @@ ULONG ext_proctype(const struct proc *p)
 
 /* the defaults of the omitted parameters k and up (design D4); empty: the
    call has no arguments (name{}, AmiBlitz3.ab3:4446-4495), else they end
-   after k (the tail, 8339-8466) */
-static void defaults(const struct proc *p, UWORD k, BOOL empty)
+   after k (the tail, 8339-8466); the code of an action (eval.h emitact:
+   the procedure a->p, k a->x, empty a->y) */
+static void defaultsact(struct expract *a)
 {
+    const struct proc *p = a->p;
+    UWORD k = (UWORD)a->x;
+    BOOL empty = a->y != 0;
     UWORD n = p->nparams & 15;
 
     for (; k < n; k++) {
@@ -385,7 +390,7 @@ BOOL ext_procnoargs(const struct proc *p)
         q++;
     if (*q != '}')
         return FALSE;
-    defaults(p, 0, TRUE);
+    emitact(defaultsact, (void *)p, 0, TRUE);
     return TRUE;
 }
 
@@ -393,8 +398,18 @@ BOOL ext_procdefaults(const struct proc *p, UWORD n)
 {
     if (progmode != XTRA_MODE_AB3 || n < firstopt(p))
         return FALSE;
-    defaults(p, n, FALSE);
+    emitact(defaultsact, (void *)p, n, FALSE);
     return TRUE;
+}
+
+/* the argument list of p begins (NULL: ends): its depth (evaldepth)
+   kept for ext_strpointer, at the moment of its code (an action) */
+static void argsact(struct expract *a)
+{
+    if (a->y)
+        argdepth[nargs++] = evaldepth;
+    else
+        nargs--;
 }
 
 void ext_procargs(const struct proc *p)
@@ -402,12 +417,14 @@ void ext_procargs(const struct proc *p)
     if (progmode != XTRA_MODE_AB3)
         return;
     if (!p) {
-        nargs--;
+        bnargs--;
+        stateact(argsact, NULL, 0, 0);
         return;
     }
-    if (nargs == MAXARGS)
+    if (bnargs == MAXARGS)
         conmemerr();
-    argdepth[nargs++] = evaldepth;
+    bnargs++;
+    stateact(argsact, NULL, 0, 1);
 }
 
 /* a string argument of a procedure in d0-d5: the filler of its slot below

@@ -25,6 +25,7 @@
 
 #include <exec/types.h>
 #include "structs.h"
+#include "exprtree.h"
 
 /* ===================================================== object code emitters
    All write at `pc` (global ULONG, address in the object buffer).  If
@@ -120,6 +121,35 @@ UWORD maineval2(WORD push, UWORD *type, WORD unknown);  /* 8879, no regat>=6 che
    expression, more inside the parameters or indices in it; for the
    extension points of ext.h (ext_evalvalue) */
 extern UWORD evaldepth;
+
+/* The code of an expression is written after it is built (no asm
+   counterpart; exprtree.h, eval.c): a part of it that shared code writes
+   while an expression is built (a parameter pushed, a path's step, a
+   procedure's default arguments) is an action.  emitact records the
+   action fn (with p, x and y) in the expression being built, with regat,
+   varmode and evaldepth as they are now, or runs it at once outside one;
+   stateact the same for one that writes no code (a position, a state).
+   They return the action (outside an expression: kept in the arena until
+   the statement ends).  exprbuildreset: prepstack. */
+struct expract *emitact(exprtree_actfn *fn, void *p, ULONG x, UWORD y);
+struct expract *stateact(exprtree_actfn *fn, void *p, ULONG x, UWORD y);
+void exprbuildreset(void);
+/* a constant computed in the middle of an expression being built
+   (evalconst2): the expression set aside, then back */
+void exprsuspend(struct exprunit *s);
+void exprresume(struct exprunit *s);
+/* the element being built is a constant of the fold (ELF_FOLD); the
+   constant whose code is the action a is a literal made a whole number
+   (#1186, for the left operand of a comparison) */
+BOOL elemconst(void);
+void constlit(struct expract *a);
+/* findtoke and uselib for an expression being built: the use now, the
+   library's relocations where its code is written (eval.c) */
+UBYTE *findtokeact(UWORD tok, struct blitzlib **libp);
+struct blitzlib *uselibact(UWORD libnum);
+/* the action of one word of code (x), or of two (x with ACT_TWO, y) */
+void pokeact(struct expract *a);
+#define ACT_TWO 0x10000UL
 
 /* Intrinsics (no asm counterpart; openspec/specs/compiler/intrinsics,
    docs/blitz2/extensions.md): a library function compiled as inline code
