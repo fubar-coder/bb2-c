@@ -30,8 +30,8 @@ before.
 | 8999-9000 `eval5` `.skip`: `bsr popprec`, `bsr doop` | the handler of that type | `exprtype_binop` (`handler`, `result`), emitted by `operate` |
 | 9142 `doop` | "Illegal Operator for Type" for type 0 or a type without a handler | `exprtype_optype` (0: none); `doop` raises the error and calls the handler |
 | 14704 `operators` and the handlers' result types: 9322 `cpoke`, 9334 `doplusb` ("now a word"), 9337 `doplusw` ("now a long"), 9402 `dotimesb`, 9406 `dotimesw`, 9428 `dopow`, 9459 `domodq`, 9463 `domodf`, 9547 `shpoke`, 9572 `bittst`, 9586-9596 `bitset`, `bitclr`, `bitchg` | the type an operation gives | `exprtype_optype`'s table (the handlers still emit their code, and their own conversions: `shpoke`, `dothebit`, `dopow`, `dodivb`) |
-| 10479-10487 `varcont`: `ext.w Dn` | a Byte value is held as a Word | `exprtype_element` (`ext`), emitted by `varcont` |
-| 10488-10498 `varcont` `.notabyte`, `.nob`, `.conv2` | the value converted up to the type so far, or the type so far raised to the value's type; a Quick under a Long cut (the port: held raw, #1178) | `exprtype_element` (`conv`, `result`, `raw`), emitted by `varcont` |
+| 10479-10487 `varcont`: `ext.w Dn` | a Byte value is held as a Word | `exprtype_element` (`ext`), emitted by `contemit` |
+| 10488-10498 `varcont` `.notabyte`, `.nob`, `.conv2` | the value converted up to the type so far, or the type so far raised to the value's type; a Quick under a Long cut (the port: held raw, #1178) | `exprtype_element` (`conv`, `result`, `raw`), emitted by `contemit` |
 | 10913-11013 `consttype2` (`.something`'s switch, `.byte`, `.word`, `.long`, `.quick`, `.qint`, `.float`, `numdofloat`) | the constant's type from the type so far and its size | `exprtype_element` with the constant's facts (`exprtype_constfacts`); `consttype2` finds the facts and makes the value (`quickconst`: `.quick2`) |
 
 The port's own decisions (no asm counterpart) moved as well:
@@ -136,7 +136,7 @@ the 68000 (the block of 136: 6256 bytes).
 | 10409-10418 `qmark`'s code | `move.l #label,Dn` and its relocation | `labelemit` (the reference first, as `makealab2` made it) |
 | 10471-10477 `variable` up to `bsr calcvar` | the variable (made at first sight) and its offset or path | `variable` (`ELK_VAR`; a name with `{` is a procedure call, `afunction`: step 3c) |
 | 10478 `bsr variable2`, 10641-10682 `variable2` | the value into Dn; the type in d2 (`moveq #3`, `move.b #3`, `and #255`) | `variable2` from the leaf; the type: `vartypeof` at parse |
-| 10479-10500 `varcont` | `ext.w` of a Byte, the conversion up to the type so far | the decisions `contleaf` (`exprtype_element`) at parse, the code `contemit`; `varcont` (both, for a library function, step 3d) and `callcont` (both, on the call node, step 3c) |
+| 10479-10500 `varcont` | `ext.w` of a Byte, the conversion up to the type so far | the decisions `contleaf` (`exprtype_element`) at parse, the code `contemit`; `callcont` (both, on the call node of a procedure, OS or library call: steps 3c, 3d) |
 
 What each element (and each step of a variable's path, step 3b: the
 `VST_*` rows) changes besides its code, and when (change 8 relies on
@@ -253,7 +253,7 @@ forms of a call.
 | 10569-10570 `.nopars` | the `}` ("Syntax Error") | `afunction` |
 | 10572-10609 up to `.notst` | the result into `D(regat)`, the registers restored, a3 back (`deca3` or `geta3`, `dopulla3`), a string's length | `procresult` (the exit action's rest; AB3's `ext_evalvalue` of the result type there) |
 | 10611-10613 `.notst` | the next char, `bra varcont` | `afunction`, `callcont` |
-| 10183-10184 `amigalib` up to `bsr uselib` | the OS library's base used from here on | `amigalib` (the node: `value` the function's entry, `off` the base's offset) |
+| 10183-10184 `amigalib` up to `bsr uselib` | the OS library's base used from here on | `amigalib` (the node, made by `function` after the lookup, step 3d: `value` the function's entry; `off` the base's offset) |
 | 10185-10188 `bsr savereg`, `bsr pokemovem` | d0/d1 saved (`fuckpos`) | `osenter` (the enter action, with #344's and #958's registers) |
 | 10189-10213 up to `bsr tstbras` | the brackets, the parameters (each pushed by `peval`, `stackuse` readjusted) | `amigalib` |
 | 10214-10255 `.toend` up to `.nofin`'s `bsr pokemovem` | the parameters popped into their registers, `move.l off(a5),a6`, the jsr, the result, the registers restored | `osexit` (the exit action) |
@@ -265,20 +265,69 @@ step 3a):
 | Kind | Calls | At parse | At emit | Children | Errors |
 |---|---|---|---|---|---|
 | `CLK_PROC` | a Function in an expression, `f{...}` | the procedure looked up (`findproc`: only the procedures defined so far; a Function used before its definition is "Procedure not found"); AB3: the defaults of left-out parameters (`ext_procdefaults`), the argument list's depth (`ext_procargs`) | enter: `stackuse` less the stack the procedure removes (AB3's `ext_procstackbytes`); a string result: the string base (`makesbase`: `sbasegot`, `sbgot`, the library routine `workstart` used at its first use); in a string expression a3 pushed (`dopusha3`: the library 65235 used); `regat` 0 for the parameters. Exit: with parameters and runtime error checking the library routine `stchk` used (`chkstak`); the jsr's relocation (`addoff`); `regat` back; a3 back (`dopulla3`); AB3's `ext_evalvalue` of the result type; then `varcont`'s (`callcont`: `wordval`, `bytevalend`, `conv`, `rawq`, a conversion's library use) | each parameter (its expression, compiled into its register or pushed), between enter and exit | parse: "Procedure not found", "Illegal Procedure Call" before the node; the parameters' and "Syntax Error" (no `}`) between the exit action's parts |
-| `CLK_OS` | an OS library function, `Name_(...)` | the library used (`uselib`: its base variable made at its first use) | enter: none besides the code; exit: `libbase` and `libjsr` patched in place, `lasta6` -1 (a6 holds the OS library's base; fixed #1211, the original left it as it was); then `varcont`'s (`callcont`) | each parameter (pushed by `peval`, `stackuse` 4 less after it), between enter and exit | parse: the parameters' and "Syntax Error" (`tstbras`: the brackets, a missing parameter) before the exit action |
+| `CLK_OS` | an OS library function, `Name_(...)` | right after the lookup (`looktoke`) the token's library used (`calluse`, the use action of step 3d); the OS library used (`uselib`: its base variable made at its first use) | enter: none besides the code; exit: `libbase` and `libjsr` patched in place, `lasta6` -1 (a6 holds the OS library's base; fixed #1211, the original left it as it was); then `varcont`'s (`callcont`) | each parameter (pushed by `peval`, `stackuse` 4 less after it), between enter and exit | parse: the parameters' and "Syntax Error" (`tstbras`: the brackets, a missing parameter) before the exit action |
 
 ## Step 3d: library calls (`expr-tree-3d-library-calls`)
 
-A library function in an expression is looked up without a side effect
-(`looktoke`, `asmlibs.c`); its library is used (`uselib3`: copied into
-the program at its first use, its variable offset) right after the
-lookup, before anything of the call is read, at the moment `findtoke`
-used it before, so the order of the libraries in the program and their
-offsets are the same. The other callers of `findtoke` (the statements,
-`tokejsr`, `Used`, `Addr`, `Maximum`, the assembler) keep the lookup
-and the use in one.
+A library function in an expression (`Name(...)`, `libfunction`) is a
+call node as a procedure call (`struct exprnode` of kind `EXN_CALL`, `op`
+`CLK_LIB`, `exprtree.h`), made when its token has been looked up. The
+lookup has no side effect (`looktoke`, `asmlibs.c`): the use of the
+library (`uselib3`: copied into the program at its first use, its
+variable offset) is the first part of the node's enter action
+(`calluse`), right after the lookup and before anything of the call is
+read, at the moment `findtoke` used it before. So the libraries keep
+their order in the program and their offsets: a library first used in
+the parameters of another one's function comes after it. An OS call's
+node is made by the same lookup (`function`; then `amigalib`, step 3c).
+The other callers of `findtoke` (the statements, `tokejsr`, `Used`,
+`Addr`, `Maximum`, the library routines' jsrs `tokecode` and `maketjsr`)
+keep the lookup and the use in one.
+
+The rest of the enter action runs before the brackets (`libenter`: the
+string base for a string result, the registers below `regat` saved, with
+a3 in a string expression when the function loads a3, #46) and after
+them (`libregs`: `regat` kept and 0, the type of a size specifier into
+d0). The parameters are `dolibtoke`'s, which a statement still calls as
+before: the form chosen by the number of parameters where it was chosen
+(`libform`; the node holds it, so the parameters' wanted types are the
+form's type bytes), the parameters each compiled into its register or
+pushed as it is read (`libparams`, `fetchlibps`: the node's children,
+with the type word of a parameter of unknown type pushed at its moment).
+The exit action is the call (`libexit`: `libjsrcode`, the stack prepared,
+the jsr or an intrinsic's code, the stack back) and, after the `)`, the
+result into `D(regat)` and the registers restored (`libresult`). An
+intrinsic armed for the call (`Int`, `Frac`, `Len`, `Asc`, the state
+machine of `intrinsic_argpush`, `intrinsic_quick` and `intrinsic_code`)
+is noted in the node (`prec`: its entry; `CLF_INLINE`: the call compiled
+inline, its type then the entry's). After its exit action the node is
+the leaf of the call's value (`callcont`). The bound of the arena stays
+161: a library call is one of the at most 32 nested calls (10 times
+`-Abs(` and 21 or 22 times `-f{` before 32 times `-(`: 160 and
+"Precedence Stack Overflow" at 161). `tests/blitz2/expr-libcalls.test.bas`
+compiles the forms of a library call.
 
 | Original (`blitz2.s`) | What it did | Now |
 |---|---|---|
 | 6277-6299 `findtoke` up to `.found`, 6307-6316 `.userlib`, `.next` | the token's library and its entry | `looktoke`; `findtoke` is `looktoke` and the use |
-| 6300-6305 `findtoke` `.found` | the library used (`uselib3`) | `findtoke`; for a library function in an expression `function` (`eval.c`) after `looktoke` |
+| 6300-6305 `findtoke` `.found` | the library used (`uselib3`) | `findtoke`; for a library function or an OS call in an expression `calluse` (the node's use action, `function`) |
+| 10087-10111 `function` | the special tokens, the lookup, the function test (`btst #1`), an OS call (`btst #2`) | `function` (the node: `value` the entry, `aux` the library) |
+| 10112-10119 `libfunction` up to `sizespec2` | the result type, a size specifier | `libfunction` (`own`) |
+| 10121-10128 `.no0`, `.notst0` | `makesbase` for a string result, `savem` | `libenter` (the enter action; `vtype` the movem mask, `CLF_A3`) |
+| 10130-10138 up to `.nopars` | the brackets, `countpees` | `libfunction` |
+| 10139-10148 `.skip0` up to `.no2` | `regat` kept and 0, `moveq #type,d0` for a size specifier | `libregs` (the enter action's rest; `reg`) |
+| 10149 `.no2` | `bsr dolibtoke` | `libcallnode` (for a statement: `dolibtoke`) |
+| 3184-3188, 3255-3258 `dolibtoke`, `.skip3` | the save of `numreps`, `userp`, `stackuse` and their restore | `dolibtoke`, `libcallnode` |
+| 3189-3216 `dolibtoke` `.loop`, `.next` | the form with that number of parameters | `libform` (the node: `off`) |
+| 3217-3228 `.found`, `.nopees` | the parameters (`fetchlibps`) | `libparams` |
+| 3229-3254 `.skip` up to `.skip4` | `preplibst`, `movenumrep`, the jsr (`userjsr`), the stack back | `libjsrcode`; for a library function the node's exit action `libexit` |
+| 10150-10154 | the `)` | `libfunction` |
+| 10155-10180 `.skip` up to `.nomovem` | `regat` back, the result into `D(regat)`, the movem back, a string's length | `libresult` (the exit action's rest) |
+| 10181 `.notst` | `bra varcont` | `callcont` |
+
+What a library call changes besides its code, and when (the columns of
+the table of step 3a):
+
+| Kind | Calls | At parse | At emit | Children | Errors |
+|---|---|---|---|---|---|
+| `CLK_LIB` | a library function in an expression, `Name(...)`, `Name.t(...)` (a size specifier), `Name` (no parameters); the intrinsics `Int`, `Frac`, `Len`, `Asc` | right after the lookup (`looktoke`) the library used (`calluse`: `uselib3`, at its first use its code copied into the program, a maximum library's object variable, its variable offset; in a constant expression "Illegal Constant Expression" for a library without constant rules, in direct mode "Library not Available in Direct Mode"); AB3's `ext_newtoken` before the lookup; a size specifier read (`sizespec2`: `usertype`); the brackets counted (`countpees`); the intrinsic found (`intrfind`, `intrstrvar`'s look at the source) | enter: a string result: the string base (`makesbase`: `sbasegot`, `sbgot`, the library routine `workstart` used at its first use); `regat` 0 for the parameters. Exit: the form's code (`libjsrcode`: its `!libs` registers loaded, `toreg`, `uselib` of the libraries they name; with runtime error checking the error check routines; the jsr's relocation; or an intrinsic's code); `regat` back; then `varcont`'s (`callcont`: `wordval`, `bytevalend`, `conv`, `rawq`, a conversion's library use) | each parameter (its expression, compiled into its register or pushed, `stackuse`, `numreps`), between enter and exit; a plain string variable of `Len` or `Asc` read instead (`intrstrvar`, no parameter) | parse: "Token Not Found" (`looktoke`), "Syntax Error" (not a function) after the use; "Type Not Found", "Illegal Type" (a size specifier), "Syntax Error" (no parameters in brackets, no form with that number of them, no `)`), the parameters'; emit: "Only Available in Blitz mode" and "Only Available in Amiga mode" (`libjsrcode`) |

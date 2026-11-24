@@ -641,8 +641,8 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   `Pi`, `Used`, `Addr` ...) is parsed into a leaf node whose code is
   emitted right after, a variable's path (an array's indexes, fields,
   field arrays, pointers: `varparse`, the parse part of `calcvar`) into a
-  node per step whose code is emitted as soon as it is read, a procedure
-  or OS call into a node that lives while its parameters are read, with
+  node per step whose code is emitted as soon as it is read, a procedure,
+  OS or library call into a node that lives while its parameters are read, with
   an enter action before them and an exit action after them; the type of
   each operation is decided by
   `exprtype.c` (`docs/blitz2/expression-tree.md`, issue #1180).
@@ -665,11 +665,14 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
 ### 5.5 A library command is compiled [S]
 
 For statements `handlelib` → `dolibtoke`, for functions
-`libfunction` (`blitz2.s:10112`, `eval.c libfunction()`) → `dolibtoke`:
+`libfunction` (`blitz2.s:10112`, `eval.c libfunction()`) → `dolibtoke`'s
+parts (`libform`, `libparams`, `libjsrcode`, on the function's call
+node; 5.4):
 
 1. `findtoke` (`blitz2.s:6277`) looks up lib and entry, marks the lib
-   as used (`uselib3`, 5.6).
-2. `countpees` counts the arguments; `dolibtoke` chooses the **form** with
+   as used (`uselib3`, 5.6). A function in an expression is looked up by
+   `looktoke` (the lookup alone) and its lib marked right after it.
+2. `countpees` counts the arguments; `dolibtoke` (`libform`) chooses the **form** with
    a matching count (overloading, repetition groups of `!repargs`).
 3. `fetchlibps` (`blitz2.s:5563`) evaluates the arguments: the first into
    d0, the next into d1 etc. (`regat`); arguments with `#push` and

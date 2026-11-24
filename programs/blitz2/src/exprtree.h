@@ -18,7 +18,9 @@
  * procedure or OS call (step 3c: change expr-tree-3c-calls) is a node
  * that lives while its parameters are read, with an enter action emitted
  * before them and an exit action after them; it then becomes the leaf of
- * the call's value.
+ * the call's value.  So is a library function's call (step 3d: change
+ * expr-tree-3d-library-calls), made after its lookup, which has no side
+ * effect: its library is used right after the lookup.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
@@ -59,24 +61,28 @@ enum {
                                    (varparse, parse.c); an element's leaf in an expression */
     EXN_STEP,                   /* a step of a variable's path (op: its VST_* kind), emitted
                                    when it is read and released then */
-    EXN_CALL                    /* a procedure or OS call (op: its CLK_* kind), live while its
-                                   parameters are read; then the leaf of its value */
+    EXN_CALL                    /* a procedure, OS or library call (op: its CLK_* kind), live
+                                   while its parameters are read; then the leaf of its value */
 };
 
-/** @brief The kinds of call (exprnode.op of a CALL; issue #1180, step 3c,
- *         change expr-tree-3c-calls): the call is looked up, its node
+/** @brief The kinds of call (exprnode.op of a CALL; issue #1180, steps
+ *         3c and 3d, changes expr-tree-3c-calls and
+ *         expr-tree-3d-library-calls): the call is looked up, its node
  *         made, its enter action emitted, its parameters read (each an
  *         expression of its own, compiled and pushed as it is read: the
  *         node's children), then its exit action emitted (eval.c). */
 enum {
     CLK_PROC = 1,               /* a Function in an expression, f{...} (afunction) */
-    CLK_OS                      /* an OS library function, Name_(...) (amigalib) */
+    CLK_OS,                     /* an OS library function, Name_(...) (amigalib) */
+    CLK_LIB                     /* a library function, Name(...) (libfunction) */
 };
 
-/** @brief The facts of a CALL (exprnode.lflags), set by its enter action. */
+/** @brief The facts of a CALL (exprnode.lflags), set by its actions. */
 enum {
     CLF_SB = 1,                 /* PROC: in a string expression: a3 pushed (dopusha3) */
-    CLF_A45 = 2                 /* OS: a parameter in a4 or a5: a4/a5 saved (#958) */
+    CLF_A45 = 2,                /* OS: a parameter in a4 or a5: a4/a5 saved (#958) */
+    CLF_A3 = 4,                 /* LIB: a3 saved with the registers below regat (#46) */
+    CLF_INLINE = 8              /* LIB: compiled inline (an intrinsic, eval.c intrinsics[]) */
 };
 
 /** @brief The steps of a variable's path (exprnode.op of a STEP; issue
@@ -173,7 +179,10 @@ enum {
  *         calls (each holds an entry of forthstack, the 33rd is
  *         "Expression too Complex"): 129 + 32 = 161, reached by 32 times
  *         "-f{" and 32 times "-(" ("Precedence Stack Overflow"; change
- *         expr-tree-3c-calls).
+ *         expr-tree-3c-calls).  A library function's call is such a node
+ *         as well and counts among the 32 (10 times "-Abs(" and 21 or 22
+ *         times "-f{" before 32 times "-(": 160 and 161, change
+ *         expr-tree-3d-library-calls).
  *         A margin to 168 (7728 bytes on the 68000). */
 #define EXPRTREE_NODES 168
 
@@ -199,9 +208,15 @@ enum {
  *         a PROC's value the procedure (struct proc *), aux the movem mask
  *         its enter action saved (savem), reg regat before the
  *         parameters; an OS call's value the library function's entry
- *         (findtoke's sub), off the offset of its library base, aux the
- *         movem.l (a7)+ of the registers its enter action saved, reg the
- *         number of parameters; lflags its CLF_*.  The counted ones (EXPR,
+ *         (looktoke's sub), aux its token's library (struct blitzlib *)
+ *         until the enter action, then the movem.l (a7)+ of the registers
+ *         that action saved, off the offset of its library base, reg the
+ *         number of parameters; a library function's value its entry
+ *         (looktoke's sub), aux its library (struct blitzlib *), off its
+ *         form (libform's, as an offset from value), vtype the movem mask
+ *         its enter action saved, reg regat before the parameters, prec
+ *         its intrinsic (eval.c intrinsics[]: the index + 1; 0 none);
+ *         lflags its CLF_*.  The counted ones (EXPR,
  *         BRACKET, NOT, BINOP) are linked by down, the pending one
  *         below. */
 struct exprnode {

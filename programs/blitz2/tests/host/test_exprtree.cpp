@@ -95,8 +95,9 @@ void element(ctx *x)
         x->out += c;
         exprtree_release(l);
     } else if (c >= 'A' && c <= 'Z' && *x->p == '{') {
-        // a call (eval.c: afunction, amigalib; change expr-tree-3c-calls):
-        // its node lives while its parameters are read, each an
+        // a call (eval.c: afunction, amigalib, libfunction; changes
+        // expr-tree-3c-calls and expr-tree-3d-library-calls, all of one
+        // shape): its node lives while its parameters are read, each an
         // expression of its own, and is then the leaf of its value
         // (callcont)
         exprnode *n = exprtree_new(EXN_CALL);

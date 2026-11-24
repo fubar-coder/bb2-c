@@ -207,7 +207,6 @@ static void nocando(void);
 static void domylib(UWORD tok);
 static void doflib(WORD lvo);
 static void makesbase(void);
-static UWORD varcont(UWORD oldtype, UWORD *type);
 static UWORD variable(UWORD c, UWORD *type);
 static UWORD function(UWORD c, UWORD *type);
 static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen);
@@ -2971,24 +2970,23 @@ static void osexit(struct exprnode *n)
 }
 
 /* blitz2.s:10183 amigalib - Amiga OS library function call.  The parse
-   part: the library looked up (uselib: used from here on), the call
-   node, the parameters (each pushed by peval as it is read), the
-   brackets; the code: the node's enter action (osenter) before the
-   parameters, its exit action (osexit) after them.
+   part: the OS library looked up (uselib: used from here on), the
+   parameters (each pushed by peval as it is read), the brackets; the
+   code: the enter action of the call node n (function: its token's
+   library used; osenter) before the parameters, its exit action
+   (osexit) after them.
    Fixed (intended deviation, #958): parameters in a4/a5 no longer
    clobber the variable bases, as in stamigalib (see amigaa4a5).
    Fixed (#344): parameter registers holding intermediates are saved,
    see amigasave. */
-static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
+static UWORD amigalib(struct exprnode *n, UWORD *type)
 {
-    struct exprnode *n;
+    const UBYTE *sub = (const UBYTE *)n->value;
     struct blitzlib *ol;
     UWORD first, c, k;
     const UBYTE *p;
 
     ol = uselib(W_(sub + 6));       /* get lib for base address */
-    n = callnode(CLK_OS, oldtype);
-    n->value = (ULONG)sub;
     n->off = (WORD)ol->varoff;      /* libbase reg */
     n->own = T_LONG;
     osenter(n);
@@ -3065,20 +3063,20 @@ static BOOL liba3(const UBYTE *sub)
    routine reads it at -2(a2); or one string parameter), so a library of
    another form (the original vallib's Frac takes a Float) is called as
    before.  A string entry does not take the way below: libfunction asks
-   intrstrvar before dolibtoke, which compiles the argument and the call
+   intrstrvar before libcallnode, which compiles the argument and the call
    as before unless it is a plain string variable.
 
-   The way through the shared code: libfunction arms the entry before
-   dolibtoke; dolibtoke compiles the argument as for
-   the call, getap asks intrinsic_argpush for the push flag of the
+   The way through the shared code: libfunction arms the entry (its
+   call node holds it) before libcallnode; libparams compiles the
+   argument as for the call, getap asks intrinsic_argpush for the push flag of the
    argument (2 instead of evalu2's 1), and maineval2, when the argument's
    type is known, asks intrinsic_quick: for a Quick the entry accepts it
-   pushes no type word, so stackuse stays 0 and dolibtoke sets up no a2;
-   dolibtoke then asks intrinsic_code instead of making the JSR (userjsr,
+   pushes no type word, so stackuse stays 0 and libjsrcode sets up no a2;
+   libjsrcode then asks intrinsic_code instead of making the JSR (userjsr,
    with the error check routine of the runtime error checking mode), and
    the entry's code works on d0, the argument (libfunction's regat = 0).
-   Everything before (libfunction's movem of the registers below regat)
-   and after (move.l d0,D(regat), the movem back, varcont) is the
+   Everything before (libenter's movem of the registers below regat)
+   and after (libresult's move.l d0,D(regat), the movem back, callcont) is the
    call's.  For every other type the argument and the call are compiled
    exactly as before.  Not in constant evaluation (cfetchmode: the code
    runs in the compiler, with the library's constant rules) and not in
@@ -3219,7 +3217,7 @@ static const struct intrinsic *intrcur = NULL;
 static UWORD intrstate = INTR_IDLE;
 
 /* the entry of intrinsics[] for the library function token tok (its sub
-   from findtoke, called with np parameters), if it may be used here */
+   from looktoke, called with np parameters), if it may be used here */
 static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
                                         UWORD oldtype)
 {
@@ -3321,8 +3319,131 @@ BOOL intrinsic_code(void)
     return TRUE;
 }
 
+/* The library calls as nodes (issue #1180, step 3d: change
+   expr-tree-3d-library-calls).  A library function in an expression is a
+   call node as a procedure call (exprtree.h: kind CALL, op CLK_LIB), made
+   when its token has been looked up (looktoke, no side effect).  Its
+   enter action begins with the use of its library (calluse, right after
+   the lookup, before anything of the call is read: the moment findtoke
+   used it, so a library first used in another one's parameters comes
+   after it in the program); then the string base and the registers below
+   regat saved (libenter), the brackets counted, regat 0 for the
+   parameters (libregs).  Its form (libform) and its parameters
+   (libparams: each one an expression of its own, compiled into its
+   register or pushed as it is read, the node's children) follow, then
+   its exit action: the call (libexit), the ')', the result into D(regat)
+   and the registers restored (libresult).  An OS call's node is made by
+   the same lookup (CLK_OS, amigalib).  What each one changes besides the
+   code, and when: docs/blitz2/expression-tree.md. */
+
+/* no asm counterpart; replaces blitz2.s:6300-6305 findtoke's .found for
+   a library function or an OS call in an expression - the use action of
+   the call n, the first part of its enter action, right after its
+   lookup: its token's library (n->aux) used (uselib3: copied into the
+   program at its first use, its variable offset) */
+static void calluse(struct exprnode *n)
+{
+    struct blitzlib *bl = (struct blitzlib *)n->aux;
+
+    uselib3(bl, bl->libnum);        /* set lib# */
+}
+
+/* no asm counterpart; replaces blitz2.s:10121-10128 libfunction's .no0
+   and .notst0 - the enter action of the library call n after its use:
+   the string base for a string result, the registers
+   below regat saved (fixed #46: and a3, see libfunction) */
+static void libenter(struct exprnode *n)
+{
+    UWORD mask, c;
+
+    if (n->own == T_STRING)         /* .no0 */
+        makesbase();
+    if (sbasegot && n->own != T_STRING && liba3((const UBYTE *)n->value)) {
+        /* fixed (#46): the movem regs and a3 */
+        mask = 0;
+        for (c = regat; c; c--)
+            mask = (mask >> 1) | 0x8000;
+        mask |= 1 << 4;             /* a3, predecrement order */
+        pokewd(0x48e7);
+        pokewd(mask);
+        n->lflags |= CLF_A3;
+    } else
+        mask = savem();             /* .notst0: the movem regs */
+    n->vtype = mask;
+}
+
+/* no asm counterpart; replaces blitz2.s:10139-10148 libfunction's .skip0
+   up to .no2 - the rest of the enter action of the library call n, after
+   its brackets were counted: regat kept and 0 for the parameters, the
+   type of a size specifier into d0 */
+static void libregs(struct exprnode *n)
+{
+    n->reg = (UBYTE)regat;          /* .skip0 */
+    regat = 0;
+    if (B_((const UBYTE *)n->value + 1) & 8) {
+        pokewd(n->own | 0x7000);    /* moveq #type,d0 */
+        regat++;
+    }
+}
+
+/* no asm counterpart; replaces blitz2.s:3229-3254 dolibtoke's .skip up
+   to .skip4 for a library function in an expression - the exit action of
+   the library call n: the call of its form (libjsrcode: a2 above the
+   parameters pushed, the repeats, the jsr or an intrinsic's code, the
+   stack back) */
+static void libexit(struct exprnode *n)
+{
+    libjsrcode((struct blitzlib *)n->aux, (UBYTE *)n->value + n->off);
+}
+
+/* no asm counterpart; replaces blitz2.s:10155-10180 libfunction's .skip
+   up to .notst - the rest of the exit action of the library call n,
+   after its ')': regat back, the result into D(regat), the registers
+   restored, a string's length */
+static void libresult(struct exprnode *n)
+{
+    regat = n->reg;                 /* .skip */
+    if (regat)
+        pokewd((regat << 9) | 0x2000);  /* move.l d0,regat */
+    if (n->vtype) {                 /* .skip2 */
+        pokewd(0x4cdf);
+        pokewd(revmask(n->vtype));  /* poke movem (a7)+... */
+    }
+    if (n->own == T_STRING)         /* .nomovem */
+        pokewd(*putstlen | regat);
+}
+
+/* no asm counterpart; replaces blitz2.s:3181-3258 dolibtoke for a library
+   function in an expression - the form of the library call n with np
+   parameters (libform, its offset in the node), the parameters
+   (libparams) and the node's exit action (libexit), between the save of
+   the globals a nested call changes and their restore, as dolibtoke */
+static UWORD libcallnode(struct exprnode *n, UWORD np)
+{
+    WORD s_numreps = numreps;       /* recurs. */
+    WORD s_userp = userp;
+    WORD s_stackuse = stackuse;
+    UBYTE *sub = (UBYTE *)n->value, *form;
+
+    userp = usertype;
+    form = libform(np, sub);
+    n->off = (WORD)(form - sub);
+    libparams(np, form);
+    libexit(n);
+    stackuse = s_stackuse;          /* .skip3 */
+    userp = s_userp;
+    numreps = s_numreps;
+    return reget();
+}
+
 /* blitz2.s:10112 libfunction - do a user library function, eg
-   a=pixel{x,y}.
+   a=pixel{x,y}.  The parse part of the library call n (made and its
+   library used by function): the result type (a size specifier), the
+   brackets and the parameters counted, the form and the parameters
+   (libcallnode), the ')'; the code: the node's enter action (libenter
+   before the brackets, libregs after them) before the parameters, its
+   exit action after them (libexit, the call; libresult after the ')');
+   then the node is the leaf of the call's value (callcont).
    Fixed (intended deviation, #46): a function whose !libs list loads a3
    (an object, $13xx) inside a string expression saves a3, the end of
    the string being built (sbasegot, the criterion afunction uses for
@@ -3334,28 +3455,19 @@ BOOL intrinsic_code(void)
    result at a3 and is compiled as before, as is every call outside a
    string expression.
    tok: the library token (function), for the intrinsics: an entry of
-   intrinsics[] is armed for the argument (no asm counterpart). */
-static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *bl,
-                         UBYTE *sub, UWORD tok, UWORD *type)
+   intrinsics[] is armed for the argument (no asm counterpart); the node
+   holds it (prec) and whether the call was compiled inline
+   (CLF_INLINE, its type then the entry's). */
+static UWORD libfunction(struct exprnode *n, UWORD tok, UWORD *type)
 {
-    UWORD rettype, mask, c, np, sregat, sstate;
+    UBYTE *sub = (UBYTE *)n->value;
+    UWORD c, np, sstate;
     const struct intrinsic *in, *scur;
 
-    rettype = flags >> 8;
+    n->own = (UBYTE)(W_(sub) >> 8);
     if (B_(sub + 1) & 8)
-        rettype = sizespec2();
-    if (rettype == T_STRING)        /* .no0 */
-        makesbase();
-    if (sbasegot && rettype != T_STRING && liba3(sub)) {
-        /* fixed (#46): the movem regs and a3 */
-        mask = 0;
-        for (c = regat; c; c--)
-            mask = (mask >> 1) | 0x8000;
-        mask |= 1 << 4;             /* a3, predecrement order */
-        pokewd(0x48e7);
-        pokewd(mask);
-    } else
-        mask = savem();             /* .notst0: the movem regs */
+        n->own = (UBYTE)sizespec2();
+    libenter(n);
     c = getchar3();
     np = 0;
     if (c == '(') {
@@ -3364,13 +3476,9 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *bl,
             syntaxerr();
     } else
         bakup();                    /* .nopars */
-    sregat = regat;                 /* .skip0 */
-    regat = 0;
-    if (B_(sub + 1) & 8) {
-        pokewd(rettype | 0x7000);   /* moveq #type,d0 */
-        regat++;
-    }
-    in = intrfind(tok, sub, np, oldtype);
+    libregs(n);
+    in = intrfind(tok, sub, np, n->tbefore);
+    n->prec = in ? (UWORD)(in - intrinsics + 1) : 0;
     scur = intrcur;                 /* an intrinsic around this call */
     sstate = intrstate;
     intrcur = in;
@@ -3380,11 +3488,13 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *bl,
         if (intrstrvar(in, &c))
             intrstate = INTR_DONE;
         else
-            c = dolibtoke(np, bl, sub);
+            c = libcallnode(n, np);
     } else
-        c = dolibtoke(np, bl, sub);     /* .no2 */
-    if (intrstate == INTR_DONE)
-        rettype = in->restype;      /* compiled inline */
+        c = libcallnode(n, np);     /* .no2 */
+    if (intrstate == INTR_DONE) {
+        n->lflags |= CLF_INLINE;
+        n->own = (UBYTE)in->restype;    /* compiled inline */
+    }
     intrcur = scur;
     intrstate = sstate;
     if (np) {
@@ -3392,25 +3502,19 @@ static UWORD libfunction(UWORD oldtype, UWORD flags, struct blitzlib *bl,
             syntaxerr();
         getchar3();
     }
-    regat = sregat;                 /* .skip */
-    if (regat)
-        pokewd((regat << 9) | 0x2000);  /* move.l d0,regat */
-    if (mask) {                     /* .skip2 */
-        pokewd(0x4cdf);
-        pokewd(revmask(mask));      /* poke movem (a7)+... */
-    }
-    *type = rettype;                /* .nomovem */
-    if (rettype == T_STRING)
-        pokewd(*putstlen | regat);
-    return varcont(oldtype, type);  /* .notst */
+    libresult(n);
+    return callcont(n, type);       /* .notst */
 }
 
-/* blitz2.s:10087 function - do a function */
+/* blitz2.s:10087 function - do a function.  A library function or an OS
+   call: its token looked up (looktoke), its call node made and its
+   library used (calluse: findtoke's use, at its moment) */
 static UWORD function(UWORD c, UWORD *type)
 {
     struct blitzlib *bl;
+    struct exprnode *n;
     UBYTE *sub;
-    UWORD old, fl;
+    UWORD fl;
 
     if (c <= 0x8000 + tnum)
         syntaxerr();
@@ -3424,16 +3528,21 @@ static UWORD function(UWORD c, UWORD *type)
     if (c == TOK_USED)
         return doused(type);
     ext_newtoken(c & 0x7fff);
-    old = *type;                    /* remember old type! */
     sub = looktoke(c & 0x7fff, &bl);    /* findtoke: the lookup */
-    uselib3(bl, bl->libnum);        /* and the use of the lib */
+    n = callnode(CLK_LIB, *type);   /* remember old type! */
+    n->value = (ULONG)sub;
+    n->aux = (ULONG)bl;
+    calluse(n);                     /* and the use of the lib */
     fl = W_(sub);
     if (!(fl & 2))
         syntaxerr();
-    if (fl & 4)
-        return amigalib(old, sub, type);
-    return libfunction(old, fl, bl, sub, c & 0x7fff, type);
+    if (fl & 4) {
+        n->op = CLK_OS;
+        return amigalib(n, type);
+    }
+    return libfunction(n, c & 0x7fff, type);
 }
+
 
 /* blitz2.s:10279 pokemovem */
 void pokemovem(ULONG l)
@@ -3837,21 +3946,6 @@ static UWORD variable(UWORD c, UWORD *type)
     varemit(l);
     leafdone(l, type);
     return reget();                 /* varcont .done */
-}
-
-/* blitz2.s:10479 varcont - common tail after a function value of type
-   *type (libfunction; a call node: callcont): ext byte to
-   word, bump the type up to the old one.  Its facts in a leaf of no
-   element kind, emitted at once (contleaf, contemit). */
-static UWORD varcont(UWORD oldtype, UWORD *type)
-{
-    struct exprnode *l = newleaf(0, oldtype);
-
-    l->own = (UBYTE)*type;
-    contleaf(l);
-    contemit(l);
-    leafdone(l, type);
-    return reget();                 /* .done */
 }
 
 /* blitz2.s:10502 savem */

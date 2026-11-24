@@ -183,6 +183,16 @@ void dostatement(void);     /* 2953 compile one statement (falls into
  * in: nparams (asm d1), blib (a2), sub (a3, from findtoke), usertype.
  * Returns current char (asm: tail `bra reget`, use eos()). */
 UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub);
+/* dolibtoke's parts (no asm counterpart; issue #1180, change
+ * expr-tree-3d-library-calls), which a library function in an expression
+ * (eval.c, libfunction) calls as the parse part and the exit action of
+ * its call node: libform the form of sub with nparams parameters
+ * ("Syntax Error" if none), libparams its parameters (stackuse, numreps),
+ * libjsrcode the call after them (the stack prepared, the jsr or an
+ * intrinsic's code, the stack back). */
+UBYTE *libform(UWORD nparams, UBYTE *sub);
+void libparams(UWORD nparams, UBYTE *form);
+void libjsrcode(struct blitzlib *blib, UBYTE *form);
 
 /* 3260 sizespec2: parse optional size specifier (.type / $) after a lib
  * token.  Returns the primitive type code (asm d1), also stored in

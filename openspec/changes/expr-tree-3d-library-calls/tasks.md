@@ -9,9 +9,9 @@ After `expr-tree-3c-calls`. "The check": `expr-tree-1-typing/design.md`, "The ch
 ## 2. Implementation
 
 - [x] 2.1 `findtoke` split (design decision 1); verify: the check.
-- [ ] 2.2 Library call nodes with enter/exit; the intrinsic state stored in the node; verify: the check, `ctest --preset oracle`.
-- [ ] 2.3 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
+- [x] 2.2 Library call nodes with enter/exit; the intrinsic state stored in the node; verify: the check, `ctest --preset oracle`.
+- [x] 2.3 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
 
 ## 3. Commit
 
-- [ ] 3.1 Tests first, then one rework commit per task 2.1 and 2.2; verify: each passes the check.
+- [x] 3.1 Tests first, then one rework commit per task 2.1 and 2.2; verify: each passes the check.

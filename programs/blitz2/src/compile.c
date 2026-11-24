@@ -1499,35 +1499,31 @@ static void handlelib(UWORD tok)
     dolibtoke(n, blib, sub);    /* falls through into dolibtoke */
 }
 
-/* blitz2.s:3181 dolibtoke - number of parameters in d1....
-   a2=lib base, a3=sub for this toke */
-UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
+/* no asm counterpart; replaces blitz2.s:3189-3216 dolibtoke's lea
+   6(a3),a1, .loop and .next - the form of the library entry sub with
+   nparams parameters: one with as many, or one whose repeats make up
+   the rest; "Syntax Error" if none */
+UBYTE *libform(UWORD nparams, UBYTE *sub)
 {
-    WORD s_numreps = numreps;   /* recurs. */
-    WORD s_userp = userp;
-    WORD s_stackuse = stackuse;
-    UBYTE *form;
-    UWORD fparams, pspec;
+    UBYTE *form = sub + 6;
 
-    userp = usertype;
-    form = sub + 6;
     /* now to find a form with d1 parameters in it..... */
     for (;;) {
         WORD w = (WORD)W_(form);
-        UWORD nrep;
+        UWORD fparams, nrep;
 
         if (w < 0)
             syntaxerr();
         fparams = (UWORD)w & 255;
         if (nparams == fparams)
-            break;
+            return form;
         if (nparams > fparams) {
             nrep = form[0] & 7;
             if (nrep) {
                 UWORD fixed = fparams - nrep;
                 ULONG extra = (UWORD)(nparams - fixed);
                 if (extra % nrep == 0)  /* divu / swap / tst */
-                    break;
+                    return form;
             }
         }
         /* .next */
@@ -1536,13 +1532,30 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
         form = skiplibreg(form);
         form += 12;
     }
+}
+
+/* no asm counterpart; replaces blitz2.s:3217-3228 dolibtoke's .found and
+   .nopees - the nparams parameters of the form (fetchlibps: each into its
+   register or pushed as it is read, stackuse the bytes pushed, numreps
+   the repeats), or the char after a call without them */
+void libparams(UWORD nparams, UBYTE *form)
+{
+    UWORD pspec = nparams | (UWORD)form[0] << 8;  /* + repeat info, see fetchlibps */
+
     /* Got it! */
-    pspec = nparams | (UWORD)form[0] << 8;  /* + repeat info, see fetchlibps */
     stackuse = 0;
     if (pspec)
         fetchlibps(pspec, form + 2);
     else
         getchar3();
+}
+
+/* no asm counterpart; replaces blitz2.s:3229-3254 dolibtoke's .skip up
+   to .skip4 - the call of the form of blib after its parameters: a2
+   above the ones pushed (preplibst), the repeats into d7 (movenumrep),
+   the jsr (or an intrinsic's code, eval.h), the stack back */
+void libjsrcode(struct blitzlib *blib, UBYTE *form)
+{
     if (stackuse) {
         preplibst[1] = (UWORD)stackuse;         /* move d1,preplibst+2 */
         pokel(L_(preplibst));
@@ -1551,17 +1564,34 @@ UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
             pokel(L_(movenumrep));
     }
     if (!intrinsic_code())      /* not compiled inline (eval.h) */
-        userjsr(blib, form);    /* make the JSR */
+        userjsr(blib, form);    /* .skip2: make the JSR */
     if (stackuse) {
         UWORD s = (UWORD)stackuse;
         if (s <= 8) {
             pokewd((UWORD)(((s & 7) << 9) | 0x504f));   /* addq #x,a7 */
         } else {
-            fixlibst[1] = s;
+            fixlibst[1] = s;                            /* .skip4 */
             pokel(L_(fixlibst));
         }
     }
-    stackuse = s_stackuse;
+}
+
+/* blitz2.s:3181 dolibtoke - number of parameters in d1....
+   a2=lib base, a3=sub for this toke.  The form (libform), its
+   parameters (libparams) and the call (libjsrcode), between the save of
+   the globals a nested call changes and their restore (.skip3). */
+UWORD dolibtoke(UWORD nparams, struct blitzlib *blib, UBYTE *sub)
+{
+    WORD s_numreps = numreps;   /* recurs. */
+    WORD s_userp = userp;
+    WORD s_stackuse = stackuse;
+    UBYTE *form;
+
+    userp = usertype;
+    form = libform(nparams, sub);
+    libparams(nparams, form);
+    libjsrcode(blib, form);
+    stackuse = s_stackuse;      /* .skip3 */
     userp = s_userp;
     numreps = s_numreps;
     return reget();

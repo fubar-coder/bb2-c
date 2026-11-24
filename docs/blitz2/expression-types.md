@@ -476,7 +476,7 @@ the four give the same results, except for `Dim a(65535)` with checking
   -3.0000153.
 
 The comments `Fixed (#1178)` and `Fixed (#1179)` in
-`programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) and
+`programs/blitz2/src/eval.c` (`contemit`, `mixedop`, `arrevalchk`) and
 `Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) and
 `Fixed (#1189)` in `programs/blitz2/src/eval.c` (`dopow`) and
 `libs/acidlibs/mathtranslib.c` and `Fixed (#1209)` in
@@ -493,7 +493,7 @@ the rules of #978, #1177, #1178, #1179 and #1182 included),
 type so far after it; `varcont` and `consttype2`'s sizing, #1188
 included), and `exprtype_optype` for the type each operator handler
 gives. The evaluator (`exprtree_pre`, `operate`, `doop`, `compareop`, `mixedop`,
-`cmpownleft`, `varcont`, `consttype2`) asks them and emits what they
+`cmpownleft`, `contleaf`, `consttype2`) asks them and emits what they
 return. Their decisions are pinned by the host test `blitz2_exprtype`
 (`programs/blitz2/tests/host/test_exprtype.cpp`) against the committed
 table `programs/blitz2/tests/host/exprtype.tsv`, which lists every
