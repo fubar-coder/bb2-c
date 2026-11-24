@@ -2,7 +2,7 @@
 
 ## Context
 
-After `compare-compound-left` the expression is a typed tree before emission (flow typing at build time, `expr-tree-4a-emit-after-build`); step 1's function decides each operation from (operator, left, right, facts). Variant C of #1178 and its rounding ("Zwischenlösung: / gegen Null (Recommended)") are the value rules of a mixed operation. The series: `expr-tree-1-typing/design.md`.
+After `compare-compound-left` the expression is a typed tree before emission (flow typing at build time, `expr-tree-4a-emit-after-build`); step 1's function decides each operation from (operator, left, right, facts). Variant C of #1178 and its rounding ("Zwischenlösung: / gegen Null (Recommended)") are the value rules of a mixed operation. The series: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`.
 
 ## Goals / Non-Goals
 

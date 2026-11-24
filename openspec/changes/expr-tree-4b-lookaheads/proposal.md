@@ -2,7 +2,7 @@
 
 ## Why
 
-Ninth change of the expression-tree series (#1180 step 4, second part; the series: `expr-tree-1-typing/design.md`). With the whole expression built before emission (`expr-tree-4a-emit-after-build`), the remaining single-pass mechanisms have their information in the tree: `countpees` rescans a parameter list in the source to count its commas (`asmlibs.c`; quadratic in the nesting of calls); the intrinsics read the raw text behind the cursor (`fracend`, `intrstrvar`) and count elements (`frachere`, `elemcount`, `letelem`) and thread a state machine through four routines; `dolet2` and `doselect` compile the address of the left side, copy it away and copy it back behind the right side (`pushstart`/`pushdo`/`pushput`, `libcall.c`).; `arrevalchk` narrows a later array index by patching the code already written for it.
+Ninth change of the expression-tree series (#1180 step 4, second part; the series: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`). With the whole expression built before emission (`expr-tree-4a-emit-after-build`), the remaining single-pass mechanisms have their information in the tree: `countpees` rescans a parameter list in the source to count its commas (`asmlibs.c`; quadratic in the nesting of calls); the intrinsics read the raw text behind the cursor (`fracend`, `intrstrvar`) and count elements (`frachere`, `elemcount`, `letelem`) and thread a state machine through four routines; `dolet2` and `doselect` compile the address of the left side, copy it away and copy it back behind the right side (`pushstart`/`pushdo`/`pushput`, `libcall.c`).; `arrevalchk` narrows a later array index by patching the code already written for it.
 
 ## What Changes
 

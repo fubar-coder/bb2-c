@@ -2,7 +2,7 @@
 
 ## Context
 
-After `expr-tree-4a-emit-after-build` the comparison node has both subtrees before any code; the left subtree is typed by flow under the wanted type, and #1177's rule exists as a node rule for a one-element left operand. The series: `expr-tree-1-typing/design.md`.
+After `expr-tree-4a-emit-after-build` the comparison node has both subtrees before any code; the left subtree is typed by flow under the wanted type, and #1177's rule exists as a node rule for a one-element left operand. The series: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`.
 
 ## Goals / Non-Goals
 

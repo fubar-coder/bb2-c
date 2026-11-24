@@ -1,6 +1,6 @@
 # Tasks
 
-After `expr-tree-4a-emit-after-build`. "The check": `expr-tree-1-typing/design.md`, "The check of every byte-identical step" (after archive: its copy in `openspec/changes/archive/`).
+After `expr-tree-4a-emit-after-build`. "The check": `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`, "The check of every byte-identical step".
 
 ## 1. Tests first
 

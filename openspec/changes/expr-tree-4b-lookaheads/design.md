@@ -2,7 +2,7 @@
 
 ## Context
 
-The series and its check: `expr-tree-1-typing/design.md`; the tree built before emission: `expr-tree-4a-emit-after-build/design.md`.
+The series and its check: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`; the tree built before emission: `openspec/changes/archive/2026-11-24-expr-tree-4a-emit-after-build/design.md`.
 
 ## Goals / Non-Goals
 
