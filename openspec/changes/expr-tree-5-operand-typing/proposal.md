@@ -6,6 +6,8 @@ The goal of #1180: the type of an operation depends on the wanted type and on bo
 
 ## What Changes
 
+- **Readable tables of today's type rules first** (user, 2026-11-24): a C tool derives from `exprtype.c` tables per operator group (operator, left type, right type, wanted type -> result type and conversions, the exceptions as notes with their issues, constants and elements in their own table); they go into the docs with a build check that they equal the tool's output. The decision round shows each candidate rule as the same tables beside today's.
+
 - **Operand typing**: a typing pass over the built tree; bottom-up each node gets the type its operands give (operator, left type, right type), top-down the wanted type; the result does not depend on the order of the operands of `+`, `*`, `AND`, `OR`, `EOR`, the comparisons, nor on the place of a subexpression in a chain.
 - The rule's details are decided before the implementation (open questions 1-3), with the tables of #1178 and a new run over its 376 places and the expression matrix's model.
 - The bug-fix workflow where the user classifies the order dependence as an original bug (open question 4).
@@ -16,7 +18,7 @@ Optimisations the tree allows (#1180 step 6: folding beyond pairs, immediates, r
 
 ## Results that change
 
-Named (rule 3): the expression matrix cells whose expected value under the decided rule differs from today's (the list is produced by the model in task 1.2 and is the only set of matrix cells allowed to change); the bug-orig/fixed tests of the cells; `tests/blitz2/quick-arith-long.bas` lines 20/21 (`NPrint 1+1+1+q` 4 -> 4.5, `NPrint w+v+q` by the rule); the 376-place scan's changed places; the executables the prev run lists (named in `PREV_INTENDED` explicitly, not `ON`); `docs/blitz2/expression-types.md`, the site's "The type of an expression".
+Named (rule 3): the expression matrix cells whose expected value under the decided rule differs from today's (the list is produced by the model in task 2.2 and is the only set of matrix cells allowed to change); the bug-orig/fixed tests of the cells; `tests/blitz2/quick-arith-long.bas` lines 20/21 (`NPrint 1+1+1+q` 4 -> 4.5, `NPrint w+v+q` by the rule); the 376-place scan's changed places; the executables the prev run lists (named in `PREV_INTENDED` explicitly, not `ON`); `docs/blitz2/expression-types.md`, the generated `docs/blitz2/expression-type-tables.md` (new, from task 1.2; regenerated with the decided rule), the site's "The type of an expression".
 
 ## Capabilities
 
@@ -26,13 +28,13 @@ Named (rule 3): the expression matrix cells whose expected value under the decid
 
 ### Modified Capabilities
 
-- `compiler/expression-types`: the requirement "The expected type flows as before" (from `quick-long-arithmetic`) is replaced by order independence. ADDED here while neither change is archived; converted to MODIFIED/REMOVED when they are (task 4.2).
+- `compiler/expression-types`: the requirement "The expected type flows as before" (from `quick-long-arithmetic`) is replaced by order independence. ADDED here while neither change is archived; converted to MODIFIED/REMOVED when they are (task 5.2).
 
 ## Impact
 
-`exprtype.c` and its golden table, the typing pass in `exprtree.c`, `eval.c`; `tools/lib/exprmatrix/model.c` (the new rule), the matrix's expected files, the #1178 tests; docs, site; `docs/ab3/variant.md` (AB3 mode by open question 2). After `compare-compound-left`.
+a new tool (`tools/lib/exprtype_tables/`, `tools/exprtables`, tests in `tools/tests/`) and the generated page `docs/blitz2/expression-type-tables.md` with its build check (first group); `exprtype.c` and its golden table, the typing pass in `exprtree.c`, `eval.c`; `tools/lib/exprmatrix/model.c` (the new rule), the matrix's expected files, the #1178 tests; docs, site; `docs/ab3/variant.md` (AB3 mode by open question 2). After `compare-compound-left`.
 
-## Open questions (all Decide, before group 2; planning report Q4)
+## Open questions (all Decide, before group 3; planning report Q4)
 
 1. The rule: the type of Word+Word and Word*Word (today Long, so `w+v+q` differs from `w-v+q`); whether a constant takes the wanted type, the other operand's type, or its value class; how far a wanted whole-number type reaches into a Quick-only subtree (`adr.l=base+q*4`: Quick product with its +-32768 range, or exact then rounded as variant C). A candidate the decision round computes too (the user, 2026-11-24, `rounds/tree/decisions.md` "Constants as integral or fractional numbers"): a constant without a fraction is a generic integral number, one with a fraction a generic fractional number, and both are reinterpreted as needed once the types of both operands are known (`q.q=1.5 : l.l=q*2`: the 2 stays untyped until the tree decides a Quick-times-Long multiplication).
 2. AB3 mode: the same rule (the port then differs from AmiBlitz3 in both modes; oracle tests marked) or flow typing kept in AB3 mode (two typings maintained). For #1178 the user chose "Neue Regel auch in AB3 (Recommended)" (another case).
