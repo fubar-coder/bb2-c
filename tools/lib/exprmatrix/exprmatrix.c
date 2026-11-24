@@ -804,6 +804,41 @@ static int count_lines(const struct buf *t)
     return n;
 }
 
+/* the lines of the operand variables and the counts of the cells, each
+   line behind indent */
+static void variables(struct buf *t, const struct em_matrix *m, const struct em_cell *const *cells, size_t n,
+                      const char *indent)
+{
+    const struct em_set *s = &m->sets[cells[0]->set];
+    int used[EM_NKINDS] = { 0 }, cnt[EM_NKINDS] = { 0 };
+    const char *sep;
+
+    for (size_t i = 0; i < n; i++) {
+        used[cells[i]->left] = 1;
+        if (cells[i]->right >= 0)
+            (takes_count(cells[i]->op) ? cnt : used)[cells[i]->right] = 1;
+    }
+    sep = indent;
+    for (int k = 0; k <= EM_S; k++)
+        if (used[k]) {
+            if (k == EM_S)
+                put(t, "%sv%s$=\"%s\"", sep, kind_names[k], s->value[k]);
+            else
+                put(t, "%sv%s%s=%s", sep, kind_names[k], kind_suffix[k], s->value[k]);
+            sep = " : ";
+        }
+    if (sep != indent)
+        put(t, "\n");
+    sep = indent;
+    for (int k = 0; k < EM_S; k++)
+        if (cnt[k]) {
+            put(t, "%sn%s%s=%s", sep, kind_names[k], kind_suffix[k], s->count[k]);
+            sep = " : ";
+        }
+    if (sep != indent)
+        put(t, "\n");
+}
+
 /* the variables, the context's setup and the cell lines (source_text,
    em_source_text) */
 static void source_body(struct buf *t, const struct em_matrix *m, const struct em_cell *const *cells, size_t n,
@@ -813,33 +848,8 @@ static void source_body(struct buf *t, const struct em_matrix *m, const struct e
     const struct em_set *s = &m->sets[c0->set];
     enum em_ctx x = c0->ctx;
     char ty = ctx_type(x);
-    int used[EM_NKINDS] = { 0 }, cnt[EM_NKINDS] = { 0 };
-    const char *sep;
 
-    for (size_t i = 0; i < n; i++) {
-        used[cells[i]->left] = 1;
-        if (cells[i]->right >= 0)
-            (takes_count(cells[i]->op) ? cnt : used)[cells[i]->right] = 1;
-    }
-    sep = "";
-    for (int k = 0; k <= EM_S; k++)
-        if (used[k]) {
-            if (k == EM_S)
-                put(t, "%sv%s$=\"%s\"", sep, kind_names[k], s->value[k]);
-            else
-                put(t, "%sv%s%s=%s", sep, kind_names[k], kind_suffix[k], s->value[k]);
-            sep = " : ";
-        }
-    if (*sep)
-        put(t, "\n");
-    sep = "";
-    for (int k = 0; k < EM_S; k++)
-        if (cnt[k]) {
-            put(t, "%sn%s%s=%s", sep, kind_names[k], kind_suffix[k], s->count[k]);
-            sep = " : ";
-        }
-    if (*sep)
-        put(t, "\n");
+    variables(t, m, cells, n, "");
     if (x <= EM_DF)
         put(t, "r%c.%c=0\n", ty, ty);
     else if (x <= EM_PF) {
@@ -922,6 +932,95 @@ char *em_source_text(const struct em_matrix *m, const struct em_cell *const *cel
         return NULL;
     put(&t, "%s", head);
     source_body(&t, m, cells, n, seterr, line_of);
+    if (t.oom) {
+        free(t.s);
+        return NULL;
+    }
+    return t.s;
+}
+
+char *em_case_text(const struct em_matrix *m, const struct em_cell *const *cells, size_t n, const char *head,
+                   const char *const *expect, int seterr)
+{
+    const struct em_cell *c0;
+    const struct em_set *s;
+    enum em_ctx x;
+    char ty;
+    struct buf t = { 0 };
+
+    if (!n)
+        return NULL;
+    c0 = cells[0];
+    s = &m->sets[c0->set];
+    x = c0->ctx;
+    ty = ctx_type(x);
+    put(&t, "%s", head);
+    /* a parameter context: the statement stores its argument in a global
+       the case checks */
+    if (x >= EM_PL && x <= EM_PF)
+        put(&t, "DEFTYPE .%c g%c\nStatement p%c{x.%c}\n  SHARED g%c\n  g%c=x\nEnd Statement\n", ty, ty, ty, ty, ty,
+            ty);
+    put(&t, "!TestCase{cells}\n");
+    variables(&t, m, cells, n, "  ");
+    if (x <= EM_DF)
+        put(&t, "  r%c.%c=0\n", ty, ty);
+    else if (x == EM_IF)
+        put(&t, "  t.l=0\n");
+    else if (x == EM_I1)
+        put(&t, "  Dim ia.l(%ld)\n  For ii.l=0 To %ld : ia(ii)=ii*16+1 : Next\n  vv.l=0\n", m->dim, m->dim);
+    else if (x == EM_I2)
+        put(&t, "  Dim ja.l(1,%ld)\n  For ii.l=0 To %ld : ja(1,ii)=ii*16+1 : Next\n  vv.l=0\n", m->dim, m->dim);
+    for (size_t i = 0; i < n; i++) {
+        const struct em_cell *c = cells[i];
+        const char *v = expect ? expect[i] : "";
+        int cmp = em_op_is_compare(c->op);
+
+        switch (x) {
+        case EM_DB: case EM_DW: case EM_DL: case EM_DQ: case EM_DF:
+            put(&t, "  r%c=%s", ty, cmp ? "(" : "");
+            expression(&t, s, c);
+            if (ty == 'q' || ty == 'f')
+                put(&t, "%s : !CheckEq{Peek.l(&r%c),%s,\"%s\"}\n", cmp ? ")" : "", ty, v, c->key);
+            else
+                put(&t, "%s : !CheckEq{r%c,%s,\"%s\"}\n", cmp ? ")" : "", ty, v, c->key);
+            break;
+        case EM_PL: case EM_PW: case EM_PQ: case EM_PF:
+            put(&t, "  p%c{", ty);
+            expression(&t, s, c);
+            if (ty == 'q' || ty == 'f')
+                put(&t, "} : !CheckEq{Peek.l(&g%c),%s,\"%s\"}\n", ty, v, c->key);
+            else
+                put(&t, "} : !CheckEq{g%c,%s,\"%s\"}\n", ty, v, c->key);
+            break;
+        case EM_IF:
+            put(&t, "  If ");
+            expression(&t, s, c);
+            put(&t, " Then t=1 Else t=0\n  !CheckEq{t,%s,\"%s\"}\n", v, c->key);
+            break;
+        case EM_I1:
+        case EM_I2:
+            /* checked: a runtime error (outside the array) goes to the
+               handler, which leaves -1 and goes on behind the cell */
+            if (seterr)
+                put(&t, "  vv=0 : SetErr : vv=-1 : Goto mx%zu : End SetErr\n", i + 1);
+            put(&t, "  vv=%s", x == EM_I1 ? "ia(" : "ja(1,");
+            expression(&t, s, c);
+            put(&t, ")");
+            if (seterr)
+                put(&t, "\n  mx%zu:\n  !CheckEq{vv,%s,\"%s\"}\n", i + 1, v, c->key);
+            else
+                put(&t, " : !CheckEq{vv,%s,\"%s\"}\n", v, c->key);
+            break;
+        default:
+            put(&t, "  NPrint \"%s \",", c->key);
+            expression(&t, s, c);
+            put(&t, "\n");
+            break;
+        }
+    }
+    if (seterr)
+        put(&t, "  ClrErr\n");
+    put(&t, "!EndTestCase\n");
     if (t.oom) {
         free(t.s);
         return NULL;

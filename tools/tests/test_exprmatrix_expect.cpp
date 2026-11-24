@@ -1,13 +1,13 @@
 // test_exprmatrix_expect - the committed tests of the expression matrix
 // (lib/exprmatrix, expect.c): a small description with a cell of every
-// kind of file (an agreement, a baseline, a fixed and an open cell, one of
-// two issues' values, a refused one, one refused after a fix, an index
-// cell unchecked and checked) gives the files with their names, headers
-// and expected outputs, and the AmiBlitz3 cases of the agreement and
-// fixed sources; the cells of an issue fixed after the matrix stay in their
-// bug-orig tests with @fixed-orig (T1); a value the model does not know needs
-// its measured row;
-// the generator's own files are recognised by their path.
+// context and of every kind of test (an agreement, a baseline, a fixed and
+// an open cell, one of two issues' values, a refused one, one refused
+// after a fix, an index cell unchecked and checked) gives the tests of the
+// BASIC test model with their names, cases, checks, settings and
+// deviations, and the AmiBlitz3 cases of the agreement and fixed sources;
+// the cells of an issue fixed after the matrix stay in their bug-orig
+// tests with fixed-orig (T1); a value the model does not know needs its
+// measured row; the generator's own files are recognised by their path.
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -28,7 +28,9 @@ static const char *const DESC =
     "block t\n"
     "cell A dl + w l\ncell A dl * l l\ncell A db < q l\ncell A dl * l q\ncell A db AND cf b\n"
     "cell A dl AND f b\ncell I i1 * q w\ncell B dl ^ f b\ncell B df ^ f b\ncell A db MOD cb cb\n"
-    "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\ncell B dl ^ q b\n";
+    "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\ncell B dl ^ q b\n"
+    "cell A dq * q q\ncell A pl + w l\ncell A pq + q l\ncell A if - q q\ncell A if < q l\n"
+    "cell I i2 + b w\ncell I i2 * l cl\ncell A print + w l\ncell A print / q l\n";
 
 static const char *const HEAD = "key\tsource\tc210\tc195\tportcd\tclib\tab3\tc210_on\tc195_on\tportcd_on\tclib_on\n";
 // the Float powers the model does not compute: 1.95's bits of (-2.5)^3, and
@@ -88,60 +90,73 @@ struct gen {
 // shifted under a Byte type; here made up for an agreement cell)
 static const char *const AB3REF = "dl-mod-l-cb-A\t-\t1\t1\t1\t1\t!noncompile:Illegal operator for this type\t\t\t\t\n";
 
-static const std::string SRC = "tests/corpus/tests-exprmatrix/", EXP = "tests/corpus/expect/corpus_exprmatrix/",
-                         EXPR = "tests/corpus/expect/corpus_exprmatrix_runerr/", BUG = "tests/bug-orig/compiler/",
-                         REG = "tests/bug-orig/regression/", AB3 = "tests/ab3/cli/exprmatrix/";
+static const std::string SRC = "tests/corpus/tests-exprmatrix/", COR = "tests/bug-orig/exprmatrix/",
+                         BUG = "tests/bug-orig/compiler/", REG = "tests/bug-orig/regression/",
+                         AB3 = "tests/ab3/cli/exprmatrix/";
 
-TEST_CASE("exprmatrix expect: the files of every kind", "[exprmatrix]")
+// the line of text in the file (1 = the first), 0: not there
+static int line_of(const std::string &file, const std::string &text)
+{
+    size_t at = file.find(text);
+    int line = 1;
+
+    if (at == std::string::npos)
+        return 0;
+    for (size_t i = 0; i < at; i++)
+        line += file[i] == '\n';
+    return line;
+}
+
+TEST_CASE("exprmatrix expect: a cell per context in its model line", "[exprmatrix]")
 {
     gen g(std::string(HEAD) + POW);
 
     REQUIRE(g.rc == 0);
-    // agreement and baseline cells: corpus sources with one expected file
-    CHECK(g.file(EXP + "dl-A-agree-01.out") == "dl-add-w-l-A 101000\ndl-mod-cl-cb-A 1\ndl-mod-l-cb-A 1\nrc=0\n");
-    CHECK(g.has(SRC + "dl-A-agree-01.bas", "; agreement cells"));
-    CHECK(g.has(EXP + "dl-A-base-01.out", "dl-mul-l-l-A 1410065408\n"));
-    CHECK(g.has(SRC + "dl-A-base-01.bas", "; baseline cells (the original's measured value)"));
-    // the folded constant MOD (a Byte one) after the Long one (#1049); a
-    // Long constant MOD is not folded and keeps its place
+    // a destination: the value checked under the cell's key, in the case
+    // "cells" with its variables; a Quick destination by its raw bits
     {
-        std::string b = g.file(SRC + "db-A-agree-01.bas");
-        CHECK(b.find("db-mod-cb-cb-A") != std::string::npos);
-        CHECK(b.find("db-mod-cb-cl-A") < b.find("db-mod-cb-cb-A"));
+        std::string b = g.file(COR + "dl-a-agree-01.test.bas");
+        CHECK(b.find("; agreement cells") != std::string::npos);
+        CHECK(b.find("!TestCase{cells}\n  vw.w=1000 : vl.l=100000\n  rl.l=0\n") != std::string::npos);
+        CHECK(b.find("  rl=vw + vl : !CheckEq{rl,101000,\"dl-add-w-l-A\"}\n") != std::string::npos);
+        CHECK(b.find("!EndTestCase\n") != std::string::npos);
+        CHECK(b.find("NPrint") == std::string::npos);
     }
-    // a fixed cell (#1177 in the port): the pair
-    CHECK(g.file(EXP + "db-A-fix1177-01.orig.out") == "db-lt-q-l-A 0\nrc=0\n");
-    CHECK(g.file(EXP + "db-A-fix1177-01.fixed-1177.out") == "db-lt-q-l-A -1\nrc=0\n");
-    CHECK(g.file(EXP + "db-A-fix1177-01.out") == "(no file)");
-    // open cells: bug-orig tests with the expected values
-    CHECK(g.has(BUG + "compiler-expr-1178-dl-A-01.bas", "BUG(orig) (#1178)"));
-    CHECK(g.has(BUG + "compiler-expr-1178-dl-A-01.bas", "; cells: dl-mul-l-q-A\n"));
-    CHECK(g.file(BUG + "compiler-expr-1178-dl-A-01.expect") == "[compile]\nok\n[run]\ndl-mul-l-q-A 150000\nrc=0\n");
-    CHECK(g.has(BUG + "compiler-expr-1189-dl-B-01.expect", "dl-pow-f-b-B -15\n"));
-    // ... the measured Float bits with the sign of the odd power
-    CHECK(g.has(BUG + "compiler-expr-1189-df-B-01.expect", "df-pow-f-b-B F9FFFBC4\n"));
-    // an index cell, unchecked and checked (SetErr, runtime error checking)
-    CHECK(g.has(BUG + "compiler-expr-1178-i1-I-u-01.expect", "i1-mul-q-w-I 481\n"));
-    CHECK(g.has(BUG + "compiler-expr-1178-i1-I-c-01.bas", "; @pass runtime_errors=on\n"));
-    CHECK(g.has(BUG + "compiler-expr-1178-i1-I-c-01.bas",
-                "SetErr : NPrint \"i1-mul-q-w-I !runtime\" : Goto mx1 : End SetErr\n"));
-    CHECK(!g.has(BUG + "compiler-expr-1178-i1-I-u-01.bas", "SetErr"));
-    // a refused cell: one representative, its line in the expectation
+    CHECK(g.has(COR + "dq-a-agree-01.test.bas", "  rq=vq * vq : !CheckEq{Peek.l(&rq),$00024000,\"dq-mul-q-q-A\"}\n"));
+    // a comparison in a destination keeps its parentheses
+    CHECK(g.has(COR + "db-a-fix1177-01.test.bas", "  rb=(vq < vl) : !CheckEq{rb,-1,\"db-lt-q-l-A\"}\n"));
+    // a parameter: the statement stores it in a global the case checks
+    CHECK(g.has(COR + "pl-a-agree-01.test.bas",
+                "DEFTYPE .l gl\nStatement pl{x.l}\n  SHARED gl\n  gl=x\nEnd Statement\n!TestCase{cells}\n"));
+    CHECK(g.has(COR + "pl-a-agree-01.test.bas", "  pl{vw + vl} : !CheckEq{gl,101000,\"pl-add-w-l-A\"}\n"));
+    CHECK(g.has(COR + "pq-a-base-01.test.bas", "  pq{vq + vl} : !CheckEq{Peek.l(&gq),$86A18000,\"pq-add-q-l-A\"}\n"));
+    // If: 1 or 0
+    CHECK(g.has(COR + "if-a-agree-01.test.bas", "  If vq - vq Then t=1 Else t=0\n  !CheckEq{t,0,\"if-sub-q-q-A\"}\n"));
+    // an index unchecked: read into a Long; checked: behind SetErr, -1 the
+    // runtime error, ClrErr at the end, runtime error checking on
     {
-        std::string b = g.file(REG + "compiler-expr-refused-and-F-I.bas");
-        size_t at = b.find("rl=vf AND vb");
-        REQUIRE(at != std::string::npos);
-        int line = 1;
-        for (size_t i = 0; i < at; i++)
-            line += b[i] == '\n';
-        CHECK(g.file(REG + "compiler-expr-refused-and-F-I.expect")
-              == "[compile]\nerror " + std::to_string(line) + " Illegal Operator for Type\n");
+        std::string b = g.file(COR + "i2-i-c-agree-01.test.bas");
+        CHECK(b.find("  vv=0 : SetErr : vv=-1 : Goto mx2 : End SetErr\n  vv=ja(1,vl * 40000)\n  mx2:\n"
+                     "  !CheckEq{vv,-1,\"i2-mul-l-cl-I\"}\n  ClrErr\n!EndTestCase\n")
+              != std::string::npos);
     }
-    // a cell refused after #1188's fix: a bug-orig test that expects the refusal
-    CHECK(g.has(BUG + "compiler-expr-1188-refused-and-C-I.expect", "Illegal Operator for Type"));
-    CHECK(g.has(BUG + "compiler-expr-1188-refused-and-C-I.bas", "BUG(orig) (#1188)"));
-    // every header line fits TED (at most 128 characters)
+    CHECK(g.has(COR + "i2-i-c-agree-01.test.toml", "runtime-errors = \"on\"\n"));
+    CHECK(!g.has(COR + "i2-i-c-agree-01.test.toml", "isolate"));
+    CHECK(g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.bas", "  vv=ia(vq * vw) : !CheckEq{vv,481,\"i1-mul-q-w-I\"}\n"));
+    CHECK(!g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.bas", "SetErr"));
+    // the unchecked index cells: every cell in a session of its own
+    CHECK(g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.toml", "\nisolate = \"on\"\n"));
+    CHECK(g.has(COR + "i2-i-u-agree-01.test.toml", "\nisolate = \"on\"\n"));
+    // Print: the lines printed, judged by the output
+    CHECK(g.has(COR + "print-a-agree-01.test.bas", "  NPrint \"print-add-w-l-A \",vw + vl\n"));
+    CHECK(g.has(COR + "print-a-agree-01.test.toml", "\n[asserts]\noutput = \"== \\\"print-add-w-l-A 101000\\n\\\"\"\n"));
+    // an agreement source: no deviation, no fixed-orig
+    CHECK(!g.has(COR + "dl-a-agree-01.test.toml", "deviations"));
+    CHECK(!g.has(COR + "dl-a-agree-01.test.toml", "fixed-orig"));
+    // every line fits TED (at most 128 characters)
     for (const auto &[path, text] : g.files) {
+        if (path.size() > 5 && path.compare(path.size() - 5, 5, ".toml") == 0)
+            continue;
         size_t start = 0;
         while (start < text.size()) {
             size_t end = text.find('\n', start);
@@ -153,6 +168,75 @@ TEST_CASE("exprmatrix expect: the files of every kind", "[exprmatrix]")
     }
     CHECK(g.files.count(SRC + "left-out.txt") == 1);
     CHECK(g.report.find("files ") != std::string::npos);
+}
+
+TEST_CASE("exprmatrix expect: deviations and fixed-orig", "[exprmatrix]")
+{
+    gen g(std::string(HEAD) + POW);
+
+    REQUIRE(g.rc == 0);
+    // a compiler fix in the corpus: the original's value in both cells of
+    // 2.10 (both library sets), fixed-orig
+    CHECK(g.file(COR + "db-a-fix1177-01.test.toml")
+          == "# db-a-fix1177-01.test.bas: generated by exprmatrix expect from m.txt (tools/exprmatrix/README.md); "
+             "do not edit\nfixed-orig = 1177\n\n[deviations.\"compiler=orig210\"]\n"
+             "\"check.cells.db-lt-q-l-A\" = \"== fail\"\n\"check.cells.db-lt-q-l-A.actual\" = \"== 0\"\n");
+    // a library fix (#234): the cells with the CD's libraries
+    CHECK(g.has(COR + "print-a-fix234-01.test.toml", "fixed-orig = 234\n"));
+    CHECK(g.has(COR + "print-a-fix234-01.test.toml",
+                "\n[deviations.\"libs=cd\"]\noutput = \"== \\\"print-div-q-l-A -.\\n\\\"\"\n"));
+    // a compiler fix in the bug-orig area: 1.95, the original's value
+    CHECK(g.has(BUG + "compiler-expr-1178-dl-a-01.test.toml",
+                "fixed-orig = 1178\n\n[deviations.\"compiler=orig195\"]\n\"check.cells.dl-mul-l-q-A\" = \"== fail\"\n"
+                "\"check.cells.dl-mul-l-q-A.actual\" = \"== 100000\"\n"));
+    CHECK(g.has(BUG + "compiler-expr-1178-dl-a-01.test.bas", "BUG(orig) (#1178)"));
+    CHECK(g.has(BUG + "compiler-expr-1178-dl-a-01.test.bas", "; cells: dl-mul-l-q-A\n"));
+    CHECK(!g.has(BUG + "compiler-expr-1178-dl-a-01.test.bas", "@fixed-orig"));
+    // a cell whose fix is in the library (#1189 with a Float base): the CD's
+    // libraries, the raw bits as a signed Long; the check has the bits with
+    // the sign of the odd power
+    CHECK(g.has(BUG + "compiler-expr-1189-df-b-01.test.bas", "!CheckEq{Peek.l(&rf),$F9FFFBC4,\"df-pow-f-b-B\"}"));
+    CHECK(g.has(BUG + "compiler-expr-1189-df-b-01.test.toml",
+                "\n[deviations.\"libs=cd\"]\n\"check.cells.df-pow-f-b-B\" = \"== fail\"\n"
+                "\"check.cells.df-pow-f-b-B.actual\" = \"== -100664508\"\n"));
+    // two issues: fixed-orig of the last of them
+    CHECK(g.has(BUG + "compiler-expr-1178-1189-dl-b-01.test.toml", "fixed-orig = 1189\n"));
+    CHECK(g.has(BUG + "compiler-expr-1178-1189-dl-b-01.test.bas", "!CheckEq{rl,-3,\"dl-pow-q-b-B\"}"));
+    // no file of the old form
+    for (const auto &[path, text] : g.files) {
+        CHECK(path.find(".expect") == std::string::npos || path.compare(0, AB3.size(), AB3) == 0);
+        CHECK(path.find(".out") == std::string::npos);
+        CHECK(text.find("@fixed-orig") == std::string::npos);
+        CHECK(text.find("@pass") == std::string::npos);
+    }
+}
+
+TEST_CASE("exprmatrix expect: the refused cells as data sources", "[exprmatrix]")
+{
+    gen g(std::string(HEAD) + POW);
+
+    REQUIRE(g.rc == 0);
+    // refused by the originals and the port: a regression test per
+    // operator, a data source per operand classes, its error at its line
+    {
+        std::string d = g.file(REG + "compiler-expr-refused-and.test/F-I.bas");
+        int line = line_of(d, "rl=vf AND vb");
+
+        REQUIRE(line > 0);
+        CHECK(g.has(REG + "compiler-expr-refused-and.test.toml", "\n[data]\n\"F-I.bas\" = \"basic-compile\"\n"));
+        CHECK(g.has(REG + "compiler-expr-refused-and.test.toml",
+                    "\n[asserts]\n\"data.F-I.bas\" = \"== \\\"error " + std::to_string(line)
+                        + " Illegal Operator for Type\\\"\"\n"));
+        CHECK(!g.has(REG + "compiler-expr-refused-and.test.toml", "deviations"));
+    }
+    CHECK(g.has(REG + "compiler-expr-refused-and.test.bas", "!TestCase{cells}\n  !Check{1,\"driver\"}\n!EndTestCase\n"));
+    // refused after #1188's fix: a bug-orig test per issue set, the
+    // original's compile its deviation
+    CHECK(g.has(BUG + "compiler-expr-1188-refused.test.bas", "BUG(orig) (#1188)"));
+    CHECK(g.files.count(BUG + "compiler-expr-1188-refused.test/and-C-I.bas") == 1);
+    CHECK(g.has(BUG + "compiler-expr-1188-refused.test.toml", "fixed-orig = 1188\n"));
+    CHECK(g.has(BUG + "compiler-expr-1188-refused.test.toml",
+                "\n[deviations.\"compiler=orig195\"]\n\"data.and-C-I.bas\" = \"== ok\"\n"));
 }
 
 TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
@@ -179,7 +263,7 @@ TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
     CHECK(g.file(AB3 + "db-A-fix1177-01.ref.expect") == "[compile]\nrc=0\n[run]\ndb-lt-q-l-A 0\nrc=0\n");
     // no case of a baseline or a checked source
     CHECK(g.file(AB3 + "dl-A-base-01.ab3") == "(no file)");
-    CHECK(g.file(AB3 + "i1-I-c-agree-01.ab3") == "(no file)");
+    CHECK(g.file(AB3 + "i2-I-c-agree-01.ab3") == "(no file)");
     // the case list for tests/ab3
     {
         std::string c = g.file(AB3 + "cases.cmake");
@@ -193,47 +277,44 @@ TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
 }
 
 // T1 (quick-long-arithmetic, design decision 13): the cells of an issue
-// fixed after the matrix stay in their bug-orig tests, with @fixed-orig
+// fixed after the matrix stay in their bug-orig tests, with fixed-orig
 TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
 {
     gen now(std::string(HEAD) + POW, EM_RULES_MATRIX);
     gen one(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1178);
     gen two(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1178 | EM_R_1189);
     gen ref(std::string(HEAD) + POW, EM_RULES_MATRIX | EM_R_1188);
-    const std::string t = BUG + "compiler-expr-1178-dl-A-01", tq = BUG + "compiler-expr-1178-1189-dl-B-01",
-                      tc = BUG + "compiler-expr-1178-i1-I-c-01";
+    const std::string t = BUG + "compiler-expr-1178-dl-a-01", tq = BUG + "compiler-expr-1178-1189-dl-b-01";
 
     REQUIRE(now.rc == 0);
     REQUIRE(one.rc == 0);
     REQUIRE(two.rc == 0);
     REQUIRE(ref.rc == 0);
-    // the port when the matrix was committed: no test is marked
+    // the port when the matrix was committed: no bug-orig test is marked
+    // (an open bug: the deviations, no fixed-orig; the port with the CD's
+    // libraries gives the original's value, so they are those of libs=cd)
     for (const auto &[path, text] : now.files)
-        CHECK(text.find("@fixed") == std::string::npos);
-    // one issue fixed: the same test with @fixed-orig, the same expectation;
-    // no corpus pair of it
-    CHECK(one.has(t + ".bas", "do not edit\n; @fixed-orig #1178\n"));
-    CHECK(one.file(t + ".expect") == now.file(t + ".expect"));
-    {
-        std::string a = one.file(t + ".bas"), b = now.file(t + ".bas");
-        size_t at = a.find("; @fixed-orig #1178\n");
-        REQUIRE(at != std::string::npos);
-        CHECK(a.erase(at, 20) == b);
-    }
-    CHECK(one.has(tc + ".bas", "; @fixed-orig #1178\n; @pass runtime_errors=on\n"));
+        if (path.compare(0, BUG.size(), BUG) == 0)
+            CHECK(text.find("fixed-orig") == std::string::npos);
+    CHECK(now.has(t + ".test.toml", "[deviations.\"libs=cd\"]\n"));
+    CHECK(one.has(t + ".test.toml", "[deviations.\"compiler=orig195\"]\n"));
+    // one issue fixed: the same test with fixed-orig and the same source;
+    // no corpus test of it
+    CHECK(one.has(t + ".test.toml", "do not edit\nfixed-orig = 1178\n"));
+    CHECK(one.file(t + ".test.bas") == now.file(t + ".test.bas"));
     CHECK(one.files.size() == now.files.size());
     for (const auto &[path, text] : one.files)
         CHECK(path.find("fix1178") == std::string::npos);
-    // a test of two issues, one fixed: kept, not marked (DIFFERS)
-    CHECK(one.file(tq + ".expect") == now.file(tq + ".expect"));
-    CHECK(!one.has(tq + ".bas", "@fixed"));
+    // a test of two issues, one fixed: kept, not marked
+    CHECK(one.file(tq + ".test.bas") == now.file(tq + ".test.bas"));
+    CHECK(!one.has(tq + ".test.toml", "fixed-orig"));
     // both fixed: marked by the last of them
-    CHECK(two.has(tq + ".bas", "; @fixed-orig #1189\n"));
-    CHECK(two.has(t + ".bas", "; @fixed-orig #1178\n"));
-    // a cell refused after the fix (the line of the error one further down,
-    // behind the @fixed-orig line)
-    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.bas", "; @fixed-orig #1188\n"));
-    CHECK(ref.has(BUG + "compiler-expr-1188-refused-and-C-I.expect", " Illegal Operator for Type\n"));
+    CHECK(two.has(tq + ".test.toml", "fixed-orig = 1189\n"));
+    CHECK(two.has(t + ".test.toml", "fixed-orig = 1178\n"));
+    // a cell refused after the fix
+    CHECK(ref.has(BUG + "compiler-expr-1188-refused.test.toml", "fixed-orig = 1188\n"));
+    CHECK(ref.has(BUG + "compiler-expr-1188-refused.test.toml", " Illegal Operator for Type\\\"\"\n"));
+    CHECK(!now.has(BUG + "compiler-expr-1188-refused.test.toml", "fixed-orig"));
 }
 
 TEST_CASE("exprmatrix expect: a value the model does not know", "[exprmatrix]")
@@ -248,19 +329,21 @@ TEST_CASE("exprmatrix expect: a value the model does not know", "[exprmatrix]")
 
 TEST_CASE("exprmatrix expect: the files of its own", "[exprmatrix]")
 {
-    CHECK(em_expect_owns("tests/corpus/tests-exprmatrix/dl-A-agree-01.bas"));
     CHECK(em_expect_owns("tests/corpus/tests-exprmatrix/left-out.txt"));
     CHECK(!em_expect_owns("tests/corpus/tests-exprmatrix/matrix.txt"));
     CHECK(!em_expect_owns("tests/corpus/tests-exprmatrix/measured.tsv"));
-    CHECK(em_expect_owns("tests/corpus/expect/corpus_exprmatrix/dl-A-agree-01.out"));
-    CHECK(em_expect_owns("tests/corpus/expect/corpus_exprmatrix_runerr/i1-I-c-agree-01.out"));
-    CHECK(!em_expect_owns("tests/corpus/expect/corpus/t01_int.out"));
-    CHECK(em_expect_owns("tests/bug-orig/compiler/compiler-expr-1178-dl-A-01.bas"));
-    CHECK(em_expect_owns("tests/bug-orig/compiler/compiler-expr-1178-dl-A-01.expect"));
-    CHECK(!em_expect_owns("tests/bug-orig/compiler/compiler-expr-1178-dl-A-01.orig"));
-    CHECK(!em_expect_owns("tests/bug-orig/compiler/compiler-float-condition.bas"));
-    CHECK(em_expect_owns("tests/bug-orig/regression/compiler-expr-refused-and-F-I.bas"));
-    CHECK(!em_expect_owns("tests/bug-orig/regression/compiler-expr-depth-d7.bas"));
+    CHECK(em_expect_owns("tests/bug-orig/exprmatrix/dl-a-agree-01.test.bas"));
+    CHECK(em_expect_owns("tests/bug-orig/exprmatrix/dl-a-agree-01.test.toml"));
+    CHECK(!em_expect_owns("tests/bug-orig/exprmatrix/tests.toml"));
+    CHECK(em_expect_owns("tests/bug-orig/compiler/compiler-expr-1178-dl-a-01.test.bas"));
+    CHECK(em_expect_owns("tests/bug-orig/compiler/compiler-expr-1178-dl-a-01.test.toml"));
+    CHECK(em_expect_owns("tests/bug-orig/compiler/compiler-expr-1188-refused.test/and-C-I.bas"));
+    CHECK(!em_expect_owns("tests/bug-orig/compiler/compiler-expr-1188-refused.test/sub/and-C-I.bas"));
+    CHECK(!em_expect_owns("tests/bug-orig/compiler/compiler-float-condition.test.bas"));
+    CHECK(!em_expect_owns("tests/bug-orig/compiler/compiler-fold-buffer-full.test/child.bas"));
+    CHECK(em_expect_owns("tests/bug-orig/regression/compiler-expr-refused-and.test.bas"));
+    CHECK(em_expect_owns("tests/bug-orig/regression/compiler-expr-refused-and.test/F-I.bas"));
+    CHECK(!em_expect_owns("tests/bug-orig/regression/compiler-expr-depth-d7.test.bas"));
     CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3"));
     CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/cases.cmake"));
     CHECK(!em_expect_owns("tests/ab3/cli/atoi.ab3"));

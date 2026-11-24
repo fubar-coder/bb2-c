@@ -1,9 +1,9 @@
 # committed-broken.cmake - the broken-input test of exprmatrix_committed
 # (CMakeLists.txt here): a copy of the matrix's committed files (the
-# description, the measured values, a corpus source, its expected file, a
-# bug-orig test) in WORK, checked as a tree by exprmatrix expect --check:
-# the copy lacks the other files, and the edited source and an extra file
-# must be named.
+# description, the measured values, a corpus test with its configuration,
+# a data source of a test of refused cells) in WORK, checked as a tree by
+# exprmatrix expect --check: the copy lacks the other files, and the edited
+# configuration, the edited data source and an extra file must be named.
 #   cmake -DEXPRMATRIX=exprmatrix -DREPO=DIR -DWORK=DIR -P committed-broken.cmake
 foreach(v EXPRMATRIX REPO WORK)
 	if(NOT DEFINED ${v})
@@ -11,14 +11,17 @@ foreach(v EXPRMATRIX REPO WORK)
 	endif()
 endforeach()
 set(src tests/corpus/tests-exprmatrix)
-file(MAKE_DIRECTORY ${WORK}/${src} ${WORK}/tests/corpus/expect/corpus_exprmatrix)
-file(COPY ${REPO}/${src}/matrix.txt ${REPO}/${src}/measured.tsv ${REPO}/${src}/dl-A-agree-01.bas
-	DESTINATION ${WORK}/${src})
-file(COPY ${REPO}/tests/corpus/expect/corpus_exprmatrix/dl-A-agree-01.out
-	DESTINATION ${WORK}/tests/corpus/expect/corpus_exprmatrix)
-# a source edited by hand and a file the generator does not write
-file(APPEND ${WORK}/${src}/dl-A-agree-01.bas "NPrint \"edited\"\n")
-file(WRITE ${WORK}/tests/corpus/expect/corpus_exprmatrix/zz-extra-01.out "rc=0\n")
+set(cor tests/bug-orig/exprmatrix)
+set(ref tests/bug-orig/regression/compiler-expr-refused-and.test)
+file(MAKE_DIRECTORY ${WORK}/${src} ${WORK}/${cor} ${WORK}/${ref})
+file(COPY ${REPO}/${src}/matrix.txt ${REPO}/${src}/measured.tsv DESTINATION ${WORK}/${src})
+file(COPY ${REPO}/${cor}/dl-a-agree-01.test.bas ${REPO}/${cor}/dl-a-agree-01.test.toml DESTINATION ${WORK}/${cor})
+file(COPY ${REPO}/${ref}/F-I.bas DESTINATION ${WORK}/${ref})
+# a configuration and a data source edited by hand, and a file the
+# generator does not write
+file(APPEND ${WORK}/${cor}/dl-a-agree-01.test.toml "isolate = \"on\"\n")
+file(APPEND ${WORK}/${ref}/F-I.bas "NPrint \"edited\"\n")
+file(WRITE ${WORK}/${cor}/zz-extra-01.test.bas "!TestCase{cells}\n!EndTestCase\n")
 execute_process(COMMAND ${EXPRMATRIX} expect ${WORK}/${src}/matrix.txt ${WORK}/${src}/measured.tsv
 	-o ${WORK} --check RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE err)
 set(bad "")
@@ -26,17 +29,18 @@ if(NOT rc EQUAL 1)
 	string(APPEND bad "exit status ${rc}, wanted 1\n")
 endif()
 foreach(want
-		"tests/corpus/tests-exprmatrix/dl-A-agree-01.bas: differs from the generator's output"
-		"tests/corpus/expect/corpus_exprmatrix/zz-extra-01.out: not written by the generator"
-		"tests/corpus/tests-exprmatrix/dw-A-agree-01.bas: missing")
+		"${cor}/dl-a-agree-01.test.toml: differs from the generator's output"
+		"${ref}/F-I.bas: differs from the generator's output"
+		"${cor}/zz-extra-01.test.bas: not written by the generator"
+		"${cor}/dw-a-agree-01.test.bas: missing")
 	string(FIND "${out}" "${want}" at)
 	if(at LESS 0)
 		string(APPEND bad "no line \"${want}\"\n")
 	endif()
 endforeach()
-string(FIND "${out}" "corpus_exprmatrix/dl-A-agree-01.out:" at)
+string(FIND "${out}" "${cor}/dl-a-agree-01.test.bas:" at)
 if(NOT at LESS 0)
-	string(APPEND bad "the unchanged dl-A-agree-01.out named\n")
+	string(APPEND bad "the unchanged dl-a-agree-01.test.bas named\n")
 endif()
 if(bad)
 	message(FATAL_ERROR "committed-broken:\n${bad}output:\n${out}${err}")

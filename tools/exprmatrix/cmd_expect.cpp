@@ -49,8 +49,8 @@ static bool write_file(const std::string &path, const char *text)
 
 // the directories whose files em_expect may own
 static const char *const dirs[] = {
-    "tests/corpus/tests-exprmatrix",  "tests/corpus/expect/corpus_exprmatrix",
-    "tests/corpus/expect/corpus_exprmatrix_runerr", "tests/bug-orig/compiler", "tests/bug-orig/regression",
+    "tests/corpus/tests-exprmatrix", "tests/bug-orig/exprmatrix",
+    "tests/bug-orig/compiler", "tests/bug-orig/regression",
     "tests/ab3/cli/exprmatrix",
 };
 
@@ -130,21 +130,32 @@ static int run(const std::string &me, const std::string &desc, const std::string
         } else
             written++;
     }
+    // the files of its own the generator did not write: their directories
+    // and the data directories ID.test/ in them
+    std::set<std::string> stale;
     for (const char *d : dirs) {
         fs::path dir = fs::path(root) / d;
 
         if (!fs::is_directory(dir, ec))
             continue;
-        for (const auto &e : fs::directory_iterator(dir, ec)) {
-            std::string relp = std::string(d) + "/" + e.path().filename().string();
+        for (const auto &e : fs::recursive_directory_iterator(dir, ec)) {
+            std::string relp = std::string(d) + "/" + fs::relative(e.path(), dir, ec).generic_string();
 
-            if (!e.is_regular_file() || !em_expect_owns(relp.c_str()) || made.count(relp))
-                continue;
-            if (check) {
-                std::printf("%s: not written by the generator\n", relp.c_str());
-                bad++;
-            } else if (fs::remove(e.path(), ec))
-                removed++;
+            if (e.is_regular_file() && em_expect_owns(relp.c_str()) && !made.count(relp))
+                stale.insert(relp);
+        }
+    }
+    for (const std::string &relp : stale) {
+        fs::path path = fs::path(root) / relp;
+
+        if (check) {
+            std::printf("%s: not written by the generator\n", relp.c_str());
+            bad++;
+        } else if (fs::remove(path, ec)) {
+            removed++;
+            // a data directory left empty goes with its last file
+            if (path.parent_path().extension() == ".test" && fs::is_empty(path.parent_path(), ec))
+                fs::remove(path.parent_path(), ec);
         }
     }
     if (check)

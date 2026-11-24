@@ -1,10 +1,11 @@
 /*
- * expect.c - the committed tests of the expression matrix (OpenSpec change
- * expression-type-matrix, task 3.1; exprmatrix.h, em_expect): from the
- * description, the model and the few measured values the model cannot
- * compute (em_measured), the corpus sources with their expected files,
- * the bug-orig tests of the open cells, the tests of the refused cells and
- * the list of the cells left out.
+ * expect.c - the committed tests of the expression matrix (OpenSpec changes
+ * expression-type-matrix, task 3.1, and exprmatrix-model-tests;
+ * exprmatrix.h, em_expect): from the description, the model and the few
+ * measured values the model cannot compute (em_measured), the tests of the
+ * BASIC test model of the agreement, baseline and fixed cells, the
+ * bug-orig tests of the open cells, the tests of the refused cells and the
+ * list of the cells left out.
  *
  * Every cell is looked at in its modes: a cell of a destination,
  * parameter, If or Print context in one ('v'), an index cell unchecked
@@ -19,23 +20,29 @@
  * after the matrix was committed (its rule outside EM_RULES_MATRIX: #1178
  * and later) stay in their bug-orig tests when the fix comes (option T1 of
  * quick-long-arithmetic, design decision 13; ~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md 2026-11-22,
- * "T1 for all fixes"): o != e = p gives the open test again, with
- * "; @fixed-orig #N" in its header; a cell of two such issues of which one is
- * fixed stays in its test without @fixed-orig (DIFFERS until the second fix).
- * A source holds the cells of
- * one context, value set, mode and class (design decision 2b), at most
+ * "T1 for all fixes", and rounds/tree/decisions.md 2026-11-24,
+ * "exprmatrix-model-tests: Q1 and Q2"): o != e = p gives the open test
+ * again, with fixed-orig = N in its configuration; a cell of two such
+ * issues of which one is fixed stays in its test without fixed-orig (it
+ * fails until the second fix).  A source holds the cells of one context,
+ * value set, mode and class (design decision 2b), at most
  * cells-per-source; its foldable constant MOD cells come last (#1049: a
  * folded constant MOD as modlib's first use drops its relocations, and a
  * Long or Float MOD after it crashes the originals).
  *
+ * A test checks each cell under its key (em_case_text) and declares the
+ * values of the configurations with original material that differ from
+ * the expected ones as deviations (deviate); the refused cells are data
+ * sources of tests per operator or issue set (emit_refused).
+ *
  * The agreement and fixed sources of a destination, parameter, If or Print
  * context and the unchecked index sources are also AmiBlitz3 cases (task
- * 3.5, design decision 9): NAME.ab3, the same text without the cells
- * AmiBlitz3 refuses, NAME.expect the output of blitz2-ab3 in AB3 mode (the
- * port's compiler, one core, with AmiBlitz3's libraries, which have the
- * CD's #199 and #234: the port's value with the CD's libraries) and
- * NAME.ref.expect AmiBlitz3's measured output where it differs, listed in
- * cases.cmake for tests/ab3.
+ * 3.5, design decision 9): NAME.ab3, a source that prints each cell
+ * (em_source_text) without the cells AmiBlitz3 refuses, NAME.expect the
+ * output of blitz2-ab3 in AB3 mode (the port's compiler, one core, with
+ * AmiBlitz3's libraries, which have the CD's #199 and #234: the port's
+ * value with the CD's libraries) and NAME.ref.expect AmiBlitz3's measured
+ * output where it differs, listed in cases.cmake for tests/ab3.
  */
 #include <stdarg.h>
 #include <stdio.h>
@@ -88,9 +95,8 @@ static void put(struct buf *b, const char *fmt, ...)
 /* ---------------------------------------------------------- the places */
 
 #define DIR_SRC "tests/corpus/tests-exprmatrix/"
-#define DIR_EXP "tests/corpus/expect/corpus_exprmatrix/"
-#define DIR_EXPR "tests/corpus/expect/corpus_exprmatrix_runerr/"
 #define DIR_BUG "tests/bug-orig/compiler/"
+#define DIR_CORPUS "tests/bug-orig/exprmatrix/"
 #define DIR_REG "tests/bug-orig/regression/"
 #define DIR_AB3 "tests/ab3/cli/exprmatrix/"
 #define LEFT_OUT DIR_SRC "left-out.txt"
@@ -113,19 +119,35 @@ static int under(const char *path, const char *dir, const char **rest)
     return 1;
 }
 
+/* a file of the BASIC test model in dir: ID.test.bas, ID.test.toml or a
+   data source ID.test/NAME.bas; *id the start of ID (rest of the path) */
+static int model_file(const char *path, const char *dir, const char **id)
+{
+    size_t n = strlen(dir);
+    const char *r = path + n, *slash, *t;
+
+    if (strncmp(path, dir, n) || !*r)
+        return 0;
+    *id = r;
+    slash = strchr(r, '/');
+    if (!slash)
+        return ends(r, ".test.bas") || ends(r, ".test.toml");
+    if (strchr(slash + 1, '/') || !slash[1] || !ends(slash, ".bas"))
+        return 0;
+    t = slash - 5;
+    return t > r && !strncmp(t, ".test", 5);
+}
+
 int em_expect_owns(const char *path)
 {
     const char *r;
 
-    if (under(path, DIR_SRC, &r))
-        return ends(r, ".bas") || !strcmp(path, LEFT_OUT);
-    if (under(path, DIR_EXP, &r) || under(path, DIR_EXPR, &r))
-        return r[0] != '.';
-    if (under(path, DIR_BUG, &r))
-        return !strncmp(r, "compiler-expr-", 14) && r[14] >= '1' && r[14] <= '9'
-               && (ends(r, ".bas") || ends(r, ".expect"));
-    if (under(path, DIR_REG, &r))
-        return !strncmp(r, "compiler-expr-refused-", 22) && (ends(r, ".bas") || ends(r, ".expect"));
+    if (!strcmp(path, LEFT_OUT) || model_file(path, DIR_CORPUS, &r))
+        return 1;
+    if (model_file(path, DIR_BUG, &r))
+        return !strncmp(r, "compiler-expr-", 14) && r[14] >= '1' && r[14] <= '9';
+    if (model_file(path, DIR_REG, &r))
+        return !strncmp(r, "compiler-expr-refused-", 22);
     if (under(path, DIR_AB3, &r))
         return r[0] != '.';
     return 0;
@@ -147,7 +169,7 @@ static int has_checked(const struct em_cell *c)
 
 /* the rule sets whose value a row of the measured table may have to give */
 static const unsigned want_rules[] = { EM_RULES_ORIG, EM_RULES_FIXED, EM_RULES_PORTNOW,
-                                       EM_RULES_PORTNOW | EM_R_CDLIB };
+                                       (EM_RULES_PORTNOW & ~EM_RULES_LIBFIX) | EM_R_CDLIB };
 
 static int model_unknown(const struct em_matrix *m, const struct em_cell *c)
 {
@@ -298,6 +320,7 @@ struct ent {
     char o[EM_TEXT_MAX], e[EM_TEXT_MAX];
     char a[EM_TEXT_MAX];        /* AmiBlitz3's value (unchecked only; "" in mode c) */
     char pc[EM_TEXT_MAX];       /* the port's value with the CD's libraries */
+    char oc[EM_TEXT_MAX];       /* the original compiler's value with the C libraries (the corpus) */
 };
 
 struct group {
@@ -383,7 +406,7 @@ static struct group *group_of(struct groups *gs, enum kind_of kind, char mode, c
 }
 
 static void group_add(struct groups *gs, struct group *g, const struct em_cell *c, const char *o, const char *e,
-                      const char *a, const char *pc)
+                      const char *a, const char *pc, const char *oc)
 {
     if (!g)
         return;
@@ -403,6 +426,7 @@ static void group_add(struct groups *gs, struct group *g, const struct em_cell *
     snprintf(g->e[g->n].e, EM_TEXT_MAX, "%s", e);
     snprintf(g->e[g->n].a, EM_TEXT_MAX, "%s", a);
     snprintf(g->e[g->n].pc, EM_TEXT_MAX, "%s", pc);
+    snprintf(g->e[g->n].oc, EM_TEXT_MAX, "%s", oc);
     g->n++;
 }
 
@@ -455,6 +479,19 @@ static unsigned issue_rule(const char *issue)
     return 0;
 }
 
+/* the rules of the issues "1178+1189" */
+static unsigned issue_rules(const char *issues)
+{
+    char tmp[32];
+    char *p, *save = NULL;
+    unsigned r = 0;
+
+    snprintf(tmp, sizeof tmp, "%s", issues);
+    for (p = strtok_r(tmp, "+", &save); p; p = strtok_r(NULL, "+", &save))
+        r |= issue_rule(p);
+    return r;
+}
+
 /* issues ("1178+1189") all fixed after the matrix was committed (their
    rules outside EM_RULES_MATRIX): returns 1 with *nfixed the number of
    them in the port's rules port and *n their number; 0 otherwise */
@@ -479,18 +516,18 @@ static int late_issues(const char *issues, unsigned port, int *nfixed, int *n)
     return 1;
 }
 
-/* "; @fixed-orig #N" for a test of issues fixed after the matrix, all of them
-   in the port's rules: N the last of them (the order of the model's steps,
-   the order the fixes are planned in) */
-static void put_fixed(struct buf *b, const char *issues, unsigned port)
+/* the issue of "fixed-orig = N" of a test of issues fixed after the matrix,
+   all of them in the port's rules port: N the last of them (the order of
+   the model's steps, the order the fixes are planned in); NULL: none */
+static const char *fixed_issue(const char *issues, unsigned port)
 {
     int nf, n;
     const char *last;
 
     if (!late_issues(issues, port, &nf, &n) || nf != n)
-        return;
+        return NULL;
     last = strrchr(issues, '+');
-    put(b, "; @fixed-orig #%s\n", last ? last + 1 : issues);
+    return last ? last + 1 : issues;
 }
 
 /* "1178+1189" -> "#1178 and #1189" */
@@ -570,20 +607,6 @@ static void order(const struct em_matrix *m, struct group *g)
     free(tmp);
 }
 
-static void lines(struct buf *b, const struct ent *e, size_t n, int orig)
-{
-    for (size_t i = 0; i < n; i++)
-        put(b, "%s %s\n", e[i].c->key, orig ? e[i].o : e[i].e);
-}
-
-static int all_same(const struct ent *e, size_t n)
-{
-    for (size_t i = 0; i < n; i++)
-        if (strcmp(e[i].o, e[i].e))
-            return 0;
-    return 1;
-}
-
 static char *text_of(struct buf *b)
 {
     if (b->oom) {
@@ -593,15 +616,12 @@ static char *text_of(struct buf *b)
     return b->s ? b->s : strdup("");
 }
 
-/* the source of the cells with the header head, every comment line of it
-   longer than 96 characters wrapped (TED takes lines of at most 128);
-   malloc'd, NULL out of memory */
-static char *source_of(const struct em_matrix *m, const struct em_cell *const *cells, size_t n, struct buf *head,
-                       int seterr, int *line_of)
+/* the header head, every comment line of it longer than 96 characters
+   wrapped (TED takes lines of at most 128); malloc'd, NULL out of memory */
+static char *wrap_head(struct buf *head)
 {
     struct buf b = { 0 };
     const char *p = head->s;
-    char *src;
 
     if (head->oom || !p)
         return NULL;
@@ -621,12 +641,20 @@ static char *source_of(const struct em_matrix *m, const struct em_cell *const *c
             put(&b, "%.*s\n", (int)len, p);
         p += len + (eol ? 1 : 0);
     }
-    if (b.oom) {
-        free(b.s);
+    return text_of(&b);
+}
+
+/* the source of the cells with the header head (wrap_head) in the old
+   form (em_source_text); malloc'd, NULL out of memory */
+static char *source_of(const struct em_matrix *m, const struct em_cell *const *cells, size_t n, struct buf *head,
+                       int seterr, int *line_of)
+{
+    char *h = wrap_head(head), *src;
+
+    if (!h)
         return NULL;
-    }
-    src = em_source_text(m, cells, n, b.s, seterr, line_of);
-    free(b.s);
+    src = em_source_text(m, cells, n, h, seterr, line_of);
+    free(h);
     return src;
 }
 
@@ -724,55 +752,9 @@ static void emit_ab3(struct ctx *x, struct group *g, const char *name, const str
     free(cells);
 }
 
-static void emit_corpus(struct ctx *x, struct group *g, const char *name, struct ent *e, size_t n)
-{
-    const struct em_matrix *m = x->m;
-    const struct em_cell **cells = malloc(n * sizeof *cells);
-    struct buf head = { 0 }, a = { 0 }, f = { 0 };
-    const char *dir = g->mode == 'c' ? DIR_EXPR : DIR_EXP;
-    char *src;
-
-    if (!cells) {
-        x->out.oom = 1;
-        return;
-    }
-    for (size_t i = 0; i < n; i++)
-        cells[i] = e[i].c;
-    put(&head, "; %s - expression matrix: context %s, value set %s%s, %zu cells\n", name,
-        em_ctx_name(g->ctx), m->sets[g->set].name, mode_text(g->mode), n);
-    if (!strcmp(g->tag, "agree"))
-        put(&head, "; agreement cells: the value a recorded rule or the exact result gives, which the\n"
-                   "; originals and the port give\n");
-    else if (!strcmp(g->tag, "base"))
-        put(&head, "; baseline cells (the original's measured value): no recorded rule covers them, the\n"
-                   "; value is kept as a regression check, not as a decision that it is right\n");
-    else
-        put(&head, "; fixed cells of #%s (%s): %s.orig.out the original's value, %s.fixed-%s.out the port's\n",
-            g->issues, bug_text(g->issues) ? bug_text(g->issues) : "?", name, name, g->issues);
-    put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
-    src = source_of(m, cells, n, &head, g->mode == 'c', NULL);
-    free(head.s);
-    free(cells);
-    add_file(&x->out, str_printf(DIR_SRC "%s.bas", name), src);
-    if (all_same(e, n)) {
-        lines(&a, e, n, 0);
-        put(&a, "rc=0\n");
-        add_file(&x->out, str_printf("%s%s.out", dir, name), text_of(&a));
-    } else {
-        lines(&a, e, n, 1);
-        put(&a, "rc=0\n");
-        lines(&f, e, n, 0);
-        put(&f, "rc=0\n");
-        add_file(&x->out, str_printf("%s%s.orig.out", dir, name), text_of(&a));
-        add_file(&x->out, str_printf("%s%s.fixed-%s.out", dir, name, g->issues), text_of(&f));
-    }
-    x->files_kind[K_CORPUS]++;
-    if (g->mode != 'c' && strcmp(g->tag, "base"))
-        emit_ab3(x, g, name, e, n);
-}
 
 /* the header of a bug-orig test of issues */
-static void bug_header(struct buf *b, const char *id, const char *issues, const char *what)
+static void bug_header(struct buf *b, const char *id, const char *issues, const char *what, const char *correct)
 {
     char list[64], tmp[32];
     char *p, *save = NULL;
@@ -790,83 +772,254 @@ static void bug_header(struct buf *b, const char *id, const char *issues, const 
             put_wrapped(b, "; ", l.s);
         free(l.s);
     }
-    put(b, "; Correct: the values of the fixed rules of the matrix's model (tools/lib/exprmatrix/\n"
-           "; model.c); the original's values are ID.orig.\n");
+    put(b, "%s", correct);
     if (two)
-        put(b, "; The cells need the fixes of both issues: after the first fix the test comes out\n"
-               "; DIFFERS (the port neither reproduces the original nor meets the expectation), the\n"
-               "; commit of the second fix marks it fixed.\n");
+        put(b, "; The cells need the fixes of both issues: after the first fix the port\n"
+               "; neither reproduces the original nor meets the expectation and the test fails;\n"
+               "; the commit of the second fix marks it fixed.\n");
 }
 
-static void emit_open(struct ctx *x, struct group *g, const char *id, struct ent *e, size_t n)
+/* ------------------------------------------------- the model's files */
+
+/* text as the inside of a TOML basic string (quote also escapes '"' and
+   '\' a second time: a string of a predicate inside the TOML string) */
+static void put_toml(struct buf *b, const char *text, int quote)
+{
+    for (const char *p = text; *p; p++) {
+        if (*p == '\n')
+            put(b, "\\n");
+        else if (*p == '"' || *p == '\\')
+            put(b, quote ? "\\\\\\%c" : "\\%c", *p);
+        else
+            put(b, "%c", *p);
+    }
+}
+
+/* the configurations with original material of a test: the port with the
+   CD's libraries, the original compiler with them and (the corpus) with
+   the C libraries */
+enum { CF_PC, CF_OD, CF_OC, CF_N };
+
+/* the tables of the deviations: the original compiler's cells, the CD's
+   libraries' cells, one per configuration */
+enum { T_COMPILER, T_LIBS, T_PC, T_OD, T_OC, T_N };
+
+struct devs {
+    const char *orig;           /* "orig195" (bug-orig area), "orig210" (the corpus) */
+    int has_oc;                 /* the configuration CF_OC is a cell */
+    struct buf t[T_N];
+    size_t n;                   /* the deviations written */
+};
+
+typedef void (*devline)(struct buf *b, const char *query, const char *value);
+
+/* the deviation of query with the expected value e and the value v[CF]
+   of each configuration: in the table of the original compiler when it
+   alone differs (both library sets alike), in that of the CD's libraries
+   when they alone differ (both compilers alike), else in the table of each
+   configuration that differs; f writes its lines */
+static void deviate(struct devs *d, const char *query, const char *e, const char *const v[CF_N], devline f)
+{
+    int s[CF_N] = { 0 };
+    int nc = d->has_oc ? CF_N : CF_OC, any = 0;
+
+    for (int c = 0; c < nc; c++)
+        any |= s[c] = strcmp(v[c], e) != 0;
+    if (!any)
+        return;
+    d->n++;
+    if (s[CF_OD] && !s[CF_PC] && (!d->has_oc || (s[CF_OC] && !strcmp(v[CF_OD], v[CF_OC]))))
+        f(&d->t[T_COMPILER], query, v[CF_OD]);
+    else if (s[CF_PC] && s[CF_OD] && (!d->has_oc || !s[CF_OC]) && !strcmp(v[CF_PC], v[CF_OD]))
+        f(&d->t[T_LIBS], query, v[CF_PC]);
+    else
+        for (int c = 0; c < nc; c++)
+            if (s[c])
+                f(&d->t[T_PC + c], query, v[c]);
+}
+
+/* the tables of d, each behind its header */
+static void put_devs(struct buf *b, struct devs *d)
+{
+    for (int k = 0; k < T_N; k++) {
+        if (!d->t[k].n)
+            continue;
+        switch (k) {
+        case T_COMPILER: put(b, "\n[deviations.\"compiler=%s\"]\n", d->orig); break;
+        case T_LIBS: put(b, "\n[deviations.\"libs=cd\"]\n"); break;
+        case T_PC: put(b, "\n[deviations.\"compiler=port,libs=cd\"]\n"); break;
+        case T_OD: put(b, "\n[deviations.\"compiler=%s,libs=cd\"]\n", d->orig); break;
+        default: put(b, "\n[deviations.\"compiler=%s,libs=clib\"]\n", d->orig); break;
+        }
+        if (d->t[k].oom)
+            b->oom = 1;
+        else
+            put(b, "%s", d->t[k].s);
+    }
+}
+
+static void devs_free(struct devs *d)
+{
+    for (int k = 0; k < T_N; k++)
+        free(d->t[k].s);
+}
+
+/* the compile result of a data source as a predicate value */
+static void data_line(struct buf *b, const char *query, const char *value)
+{
+    put(b, "\"%s\" = \"== ", query);
+    if (!strcmp(value, "ok"))
+        put(b, "ok\"\n");
+    else {
+        put(b, "\\\"");
+        put_toml(b, value, 1);
+        put(b, "\\\"\"\n");
+    }
+}
+
+/* the operands of a refused cell as the header names them */
+static void operands_text(struct buf *b, const struct em_cell *c)
+{
+    if (c->right >= 0)
+        put(b, "the operands %c and %c", kind_class(c->left), kind_class(c->right));
+    else
+        put(b, "the operand %c", kind_class(c->left));
+}
+
+/*
+ * The test of the refused cells of the groups gl[0..n) (one operator, or
+ * one issue set: bug): a data source ID.test/NAME.bas per group, the
+ * source of one representative cell, compiled by each cell of the test,
+ * which asserts its error; for a bug-orig test the original's compile,
+ * which gives no error, is the deviation.  The case only makes the driver.
+ */
+static void emit_refused_test(struct ctx *x, struct group *const *gl, size_t n, const char *id, int bug)
 {
     const struct em_matrix *m = x->m;
-    const struct em_cell **cells = malloc(n * sizeof *cells);
-    struct buf head = { 0 }, ex = { 0 }, keys = { 0 }, what = { 0 };
-    char *src;
+    const char *dir = bug ? DIR_BUG : DIR_REG;
+    struct buf src = { 0 }, conf = { 0 }, opts = { 0 }, as = { 0 };
+    struct devs d = { .orig = "orig195" };
+    const char *op = em_op_text(gl[0]->e[0].c->op);
+    size_t cells = 0;
 
-    if (!cells) {
+    for (size_t i = 0; i < n; i++)
+        cells += gl[i]->n;
+    if (bug) {
+        struct buf what = { 0 };
+
+        put(&what, "the cells refused after the fix, %zu cells in %zu data sources of %s.test/, each one cell of "
+                   "an operator and operand classes", cells, n, id);
+        bug_header(&src, id, gl[0]->issues, what.oom ? "" : what.s,
+                   "; Correct: the compile refuses each cell (Illegal Operator for Type); the original\n"
+                   "; compiles it (the declared deviations).\n");
+        free(what.s);
+    } else
+        put(&src, "; %s - expression matrix: the refused cells of the operator %s, %zu cells in %zu data sources "
+                  "of %s.test/, each one cell of an operand class; blitz2 refuses them, as 1.95 and 2.10 do\n",
+            id, op, cells, n, id);
+    put(&src, "; The operand classes: I a whole number, Q a Quick, F a Float, C a constant with a fraction, S a "
+              "string.  The compile of each data source is judged (%s.test.toml); the case only makes the "
+              "driver.\n", id);
+    put(&src, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
+    put(&src, "!TestCase{cells}\n  !Check{1,\"driver\"}\n!EndTestCase\n");
+    add_file(&x->out, str_printf("%s%s.test.bas", dir, id), wrap_head(&src));
+    free(src.s);
+    put(&conf, "# %s.test.bas: the data sources %s.test/*.bas, each a cell the compilers refuse%s; generated by "
+               "exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n",
+        id, id, bug ? " after the fix (the original compiles it: the deviations)" : "", x->desc);
+    if (bug && fixed_issue(gl[0]->issues, x->port))
+        put(&conf, "fixed-orig = %s\n", fixed_issue(gl[0]->issues, x->port));
+    put(&conf, "\n[data]\n");
+    for (size_t i = 0; i < n; i++) {
+        const struct group *g = gl[i];
+        const struct ent *e = &g->e[0];
+        const struct em_cell *c = e->c;
+        struct buf head = { 0 };
+        char name[64], query[80], err[64];
+        const char *v[CF_N];
+        int line = 0;
+        char *text;
+
+        /* OP-L-R, the regression tests' without the operator */
+        snprintf(name, sizeof name, "%s%s.bas", bug ? g->tag : strchr(g->tag, '-') + 1, g->mode == 'c' ? "-c" : "");
+        put(&head, "; %s.test/%s - expression matrix: a refused cell, %s of the %zu cells with the operator %s and ",
+            id, name, c->key, g->n, em_op_text(c->op));
+        operands_text(&head, c);
+        put(&head, "%s\n; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n",
+            mode_text(g->mode), x->desc);
+        text = source_of(m, &c, 1, &head, 0, &line);
+        free(head.s);
+        add_file(&x->out, str_printf("%s%s.test/%s", dir, id, name), text);
+        if (g->mode == 'c')
+            put(&opts, "\n[data.\"%s\"]\naction = \"basic-compile\"\nruntime-errors = \"on\"\n", name);
+        else
+            put(&conf, "\"%s\" = \"basic-compile\"\n", name);
+        snprintf(query, sizeof query, "data.%s", name);
+        snprintf(err, sizeof err, "error %d Illegal Operator for Type", line);
+        data_line(&as, query, err);
+        v[CF_PC] = e->pc[0] == '!' ? err : "ok";
+        v[CF_OD] = e->o[0] == '!' ? err : "ok";
+        v[CF_OC] = err;
+        if (bug)
+            deviate(&d, query, err, v, data_line);
+    }
+    if (!opts.oom && opts.s)
+        put(&conf, "%s", opts.s);
+    put(&conf, "\n[asserts]\n");
+    if (!as.oom && as.s)
+        put(&conf, "%s", as.s);
+    if (opts.oom || as.oom)
+        conf.oom = 1;
+    put_devs(&conf, &d);
+    add_file(&x->out, str_printf("%s%s.test.toml", dir, id), text_of(&conf));
+    free(opts.s);
+    free(as.s);
+    devs_free(&d);
+    x->files_kind[bug ? K_OPEN_REFUSED : K_REFUSED]++;
+}
+
+/* the tests of the refused cells: one per operator (regression), one per
+   issue set (bug-orig) */
+static void emit_refused(struct ctx *x, struct groups *gs)
+{
+    struct group **gl = malloc((gs->n ? gs->n : 1) * sizeof *gl);
+    unsigned char *done = calloc(gs->n ? gs->n : 1, 1);
+
+    if (!gl || !done) {
+        free(gl);
+        free(done);
         x->out.oom = 1;
         return;
     }
-    for (size_t i = 0; i < n; i++) {
-        cells[i] = e[i].c;
-        put(&keys, "%s%s", i ? " " : "", e[i].c->key);
-    }
-    put(&what, "open cells, context %s, value set %s%s, %zu cells", em_ctx_name(g->ctx), m->sets[g->set].name,
-        mode_text(g->mode), n);
-    bug_header(&head, id, g->issues, what.oom ? "" : what.s);
-    if (!keys.oom)
-        put_wrapped(&head, "; cells: ", keys.s);
-    put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
-    put_fixed(&head, g->issues, x->port);
-    if (g->mode == 'c')
-        put(&head, "; @pass runtime_errors=on\n");
-    src = source_of(m, cells, n, &head, g->mode == 'c', NULL);
-    put(&ex, "[compile]\nok\n[run]\n");
-    lines(&ex, e, n, 0);
-    put(&ex, "rc=0\n");
-    add_file(&x->out, str_printf(DIR_BUG "%s.bas", id), src);
-    add_file(&x->out, str_printf(DIR_BUG "%s.expect", id), text_of(&ex));
-    free(head.s);
-    free(keys.s);
-    free(what.s);
-    free(cells);
-    x->files_kind[K_OPEN]++;
-}
+    for (size_t i = 0; i < gs->n; i++) {
+        struct group *g = &gs->g[i];
+        int bug = g->kind == K_OPEN_REFUSED;
+        size_t n = 0;
+        char id[96], iss[32];
 
-static void emit_refused(struct ctx *x, struct group *g, const char *id, const struct ent *e)
-{
-    const struct em_matrix *m = x->m;
-    const struct em_cell *c = e->c;
-    struct buf head = { 0 }, ex = { 0 }, what = { 0 };
-    int line = 0;
-    char *src;
-    char l = kind_class(c->left), r = c->right >= 0 ? kind_class(c->right) : '-';
+        if (done[i] || (g->kind != K_REFUSED && !bug))
+            continue;
+        for (size_t j = i; j < gs->n; j++) {
+            struct group *h = &gs->g[j];
 
-    if (g->kind == K_REFUSED) {
-        put(&head, "; %s - expression matrix: a refused cell, %s of the %zu cells with the\n", id, c->key, g->n);
-        put(&head, "; operator %s and the operands %c%s%c (I a whole number, Q a Quick, F a Float, C a\n",
-            em_op_text(c->op), l, c->right >= 0 ? " and " : "", c->right >= 0 ? r : ' ');
-        put(&head, "; constant with a fraction)%s: blitz2 refuses it, as 1.95 and 2.10 do\n", mode_text(g->mode));
-    } else {
-        put(&what, "a cell refused after the fix, %s of the %zu cells with the operator %s and the operands %c%s%c%s",
-            c->key, g->n, em_op_text(c->op), l, c->right >= 0 ? " and " : "", c->right >= 0 ? r : ' ',
-            mode_text(g->mode));
-        bug_header(&head, id, g->issues, what.oom ? "" : what.s);
+            if (done[j] || h->kind != g->kind
+                || (bug ? strcmp(h->issues, g->issues) : h->e[0].c->op != g->e[0].c->op))
+                continue;
+            gl[n++] = h;
+            done[j] = 1;
+        }
+        snprintf(iss, sizeof iss, "%s", g->issues);
+        for (char *p = iss; *p; p++)
+            if (*p == '+')
+                *p = '-';
+        if (bug)
+            snprintf(id, sizeof id, "compiler-expr-%s-refused", iss);
+        else
+            snprintf(id, sizeof id, "compiler-expr-refused-%s", em_op_name(g->e[0].c->op));
+        emit_refused_test(x, gl, n, id, bug);
     }
-    put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
-    if (g->kind == K_OPEN_REFUSED)
-        put_fixed(&head, g->issues, x->port);
-    if (g->mode == 'c')
-        put(&head, "; @pass runtime_errors=on\n");
-    src = source_of(m, &c, 1, &head, 0, &line);
-    put(&ex, "[compile]\nerror %d Illegal Operator for Type\n", line);
-    add_file(&x->out, str_printf("%s%s.bas", g->kind == K_REFUSED ? DIR_REG : DIR_BUG, id), src);
-    add_file(&x->out, str_printf("%s%s.expect", g->kind == K_REFUSED ? DIR_REG : DIR_BUG, id), text_of(&ex));
-    free(head.s);
-    free(what.s);
-    x->files_kind[g->kind]++;
+    free(gl);
+    free(done);
 }
 
 static void left_out(struct ctx *x, const struct em_cell *c, char mode, const char *why)
@@ -887,6 +1040,14 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     char tag[48];
     struct group *g;
     int nf, ni, late = late_issues(k->issues, x->port, &nf, &ni);
+    struct em_value ov;
+    char oc[EM_TEXT_MAX];
+
+    /* the original compiler with the C libraries (the corpus's 2.10 with
+       them, never measured): the model's value, the original's where the
+       model does not know it (a Float power, the If on a Float) */
+    em_model(x->m, c, EM_RULES_ORIG & ~EM_R_CDLIB, chk, &ov);
+    snprintf(oc, sizeof oc, "%s", ov.text[0] == '?' ? o : ov.text);
 
     if (!strcmp(e, "!noncompile")) {
         /* one representative per operator and operand classes; a checked
@@ -899,14 +1060,14 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
             snprintf(tag, sizeof tag, "%s-%c-%c", em_op_name(c->op), kind_class(c->left),
                      c->right >= 0 ? kind_class(c->right) : 'x');
             g = group_of(gs, K_REFUSED, mode, c, tag, "");
-            group_add(gs, g, c, o, e, "", "");
+            group_add(gs, g, c, o, e, "", pc, "");
             x->counts[K_REFUSED]++;
         } else if ((!strcmp(p, o) && !strcmp(pc, o) && k->issues[0])
                    || (late && nf && (nf < ni || (!strcmp(p, e) && !strcmp(pc, e))))) {
             snprintf(tag, sizeof tag, "%s-%c-%c", em_op_name(c->op), kind_class(c->left),
                      c->right >= 0 ? kind_class(c->right) : 'x');
             g = group_of(gs, K_OPEN_REFUSED, mode, c, tag, k->issues);
-            group_add(gs, g, c, o, e, "", "");
+            group_add(gs, g, c, o, e, "", pc, "");
             x->counts[K_OPEN_REFUSED]++;
         } else
             left_out(x, c, mode, "refused after a fix, but the port differs");
@@ -920,26 +1081,30 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     }
     if (!strcmp(o, e) && !strcmp(p, e) && !strcmp(pc, e)) {
         g = group_of(gs, K_CORPUS, mode, c, k->base ? "base" : "agree", "");
-        group_add(gs, g, c, o, e, ab, pc);
+        group_add(gs, g, c, o, e, ab, pc, oc);
         x->counts[K_CORPUS]++;
     } else if (strcmp(o, e) && late && nf
-               && (nf < ni || (!strcmp(p, e) && (!strcmp(pc, e) || !strcmp(pc, o))))) {
+               && (nf < ni || (!strcmp(p, e) && (!strcmp(pc, e) || !strcmp(pc, o)
+                                                 || (issue_rules(k->issues) & EM_RULES_LIBFIX))))) {
         /* T1: an issue fixed after the matrix keeps its bug-orig test, with
-           @fixed-orig when every issue of it is fixed (emit_open) */
+           fixed-orig when every issue of it is fixed (emit_open); with an
+           issue fixed in the C libraries the port with the CD's libraries
+           may give a third value (that issue's original rule with the
+           port's other rules) */
         snprintf(tag, sizeof tag, "open-%s", k->issues);
         g = group_of(gs, K_OPEN, mode, c, tag, k->issues);
-        group_add(gs, g, c, o, e, "", "");
+        group_add(gs, g, c, o, e, "", pc, "");
         x->counts[K_OPEN]++;
     } else if (strcmp(o, e) && !strcmp(p, e) && k->issues[0] && !strchr(k->issues, '+')
                && (!strcmp(pc, e) || !strcmp(pc, o))) {
         snprintf(tag, sizeof tag, "fixed-%s", k->issues);
         g = group_of(gs, K_CORPUS, mode, c, tag, k->issues);
-        group_add(gs, g, c, o, e, ab, pc);
+        group_add(gs, g, c, o, e, ab, pc, oc);
         x->counts[K_CORPUS]++;
     } else if (strcmp(o, e) && !strcmp(p, o) && !strcmp(pc, o) && k->issues[0]) {
         snprintf(tag, sizeof tag, "open-%s", k->issues);
         g = group_of(gs, K_OPEN, mode, c, tag, k->issues);
-        group_add(gs, g, c, o, e, "", "");
+        group_add(gs, g, c, o, e, "", pc, "");
         x->counts[K_OPEN]++;
     } else {
         char why[320];
@@ -950,8 +1115,222 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     }
 }
 
-/* the source names: CTX-SET[-MODE]-TAG-NN (corpus), compiler-expr-ISSUES-CTX-SET[-MODE]-NN (open),
-   compiler-expr-refused-OP-L-R[-c], compiler-expr-ISSUES-refused-OP-L-R[-c] */
+/* an id of the BASIC test model is lower-case (the value sets are
+   upper-case letters) */
+static void lower(char *s)
+{
+    for (; *s; s++)
+        if (*s >= 'A' && *s <= 'Z')
+            *s = (char)(*s - 'A' + 'a');
+}
+
+/* a Quick or Float destination or parameter: the check takes the raw bits */
+static int raw_bits(enum em_ctx x)
+{
+    return x == EM_DQ || x == EM_DF || x == EM_PQ || x == EM_PF;
+}
+
+/* a value of a cell in context x as the signed decimal Long its check
+   sees: the raw bits of a Quick or Float, 1 or 0 of an If, -1 of the
+   runtime error */
+static void check_value(char *out, size_t n, enum em_ctx x, const char *v)
+{
+    if (!strcmp(v, "!runtime"))
+        snprintf(out, n, "-1");
+    else if (x == EM_IF)
+        snprintf(out, n, "%d", !strcmp(v, "T"));
+    else if (raw_bits(x))
+        snprintf(out, n, "%ld", (long)(int)(unsigned)strtoul(v, NULL, 16));
+    else
+        snprintf(out, n, "%ld", strtol(v, NULL, 10));
+}
+
+/* the expected value of a cell as the check's constant: the raw bits as
+   $BITS (as the old form printed them), else check_value */
+static void check_literal(char *out, size_t n, enum em_ctx x, const char *v)
+{
+    if (raw_bits(x) && strcmp(v, "!runtime"))
+        snprintf(out, n, "$%s", v);
+    else
+        check_value(out, n, x, v);
+}
+
+static void check_line(struct buf *b, const char *query, const char *value)
+{
+    put(b, "\"%s\" = \"== fail\"\n\"%s.actual\" = \"== %s\"\n", query, query, value);
+}
+
+static void output_line(struct buf *b, const char *query, const char *value)
+{
+    put(b, "%s = \"== \\\"", query);
+    put_toml(b, value, 1);
+    put(b, "\\\"\"\n");
+}
+
+/* the printed output of the cells, each "KEY VALUE" (which: 'e' the
+   expected values, 'p' the port's with the CD's libraries, 'o' the
+   original's, 'c' the original compiler's with the C libraries) */
+static char *output_of(const struct ent *e, size_t n, char which)
+{
+    struct buf b = { 0 };
+
+    for (size_t i = 0; i < n; i++)
+        put(&b, "%s %s\n", e[i].c->key,
+            which == 'e' ? e[i].e : which == 'p' ? e[i].pc : which == 'o' ? e[i].o : e[i].oc);
+    return text_of(&b);
+}
+
+/*
+ * A test of the BASIC test model of the cells e[0..n) of group g (an open
+ * or T1 bug-orig test, corpus 0; a corpus source, corpus 1): ID.test.bas
+ * with the header head and the case of the cells (em_case_text), and
+ * ID.test.toml: fixed-orig for a test of fixed issues, runtime error
+ * checking for the checked index cells, a session of their own for the
+ * unchecked index cells, the output of the Print cells, and the values of
+ * the configurations with original material that differ from the
+ * expected ones as deviations.
+ */
+static void emit_model(struct ctx *x, struct group *g, const char *path, struct buf *head, struct ent *e, size_t n,
+                       int corpus, const char *fixed)
+{
+    const struct em_matrix *m = x->m;
+    const struct em_cell **cells = malloc((n ? n : 1) * sizeof *cells);
+    char (*lit)[EM_TEXT_MAX] = malloc((n ? n : 1) * sizeof *lit);
+    const char **lits = malloc((n ? n : 1) * sizeof *lits);
+    struct buf conf = { 0 };
+    struct devs d = { .orig = corpus ? "orig210" : "orig195", .has_oc = corpus };
+    const char *id = strrchr(path, '/') + 1;
+    char *h;
+
+    if (!cells || !lit || !lits) {
+        free(cells);
+        free(lit);
+        free(lits);
+        x->out.oom = 1;
+        return;
+    }
+    for (size_t i = 0; i < n; i++) {
+        cells[i] = e[i].c;
+        check_literal(lit[i], sizeof lit[i], g->ctx, e[i].e);
+        lits[i] = lit[i];
+    }
+    h = wrap_head(head);
+    add_file(&x->out, str_printf("%s.test.bas", path),
+             h ? em_case_text(m, cells, n, h, g->ctx == EM_PRINT ? NULL : lits, g->mode == 'c') : NULL);
+    free(h);
+    put(&conf, "# %s.test.bas: generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n",
+        id, x->desc);
+    if (fixed && *fixed)
+        put(&conf, "fixed-orig = %s\n", fixed);
+    if (g->mode == 'c')
+        put(&conf, "runtime-errors = \"on\"\n");
+    if (g->mode == 'u')
+        put(&conf, "# an unchecked index read: every cell in a session of its own (a program reading beyond an\n"
+                   "# array disturbed the next ones in the matrix's measurement)\n"
+                   "isolate = \"on\"\n");
+    if (g->ctx == EM_PRINT) {
+        char *v[CF_N], *ex = output_of(e, n, 'e');
+
+        v[CF_PC] = output_of(e, n, 'p');
+        v[CF_OD] = output_of(e, n, 'o');
+        v[CF_OC] = output_of(e, n, 'c');
+        if (ex && v[CF_PC] && v[CF_OD] && v[CF_OC]) {
+            put(&conf, "\n[asserts]\n");
+            output_line(&conf, "output", ex);
+            deviate(&d, "output", ex, (const char *const *)v, output_line);
+        } else
+            conf.oom = 1;
+        free(ex);
+        for (int c = 0; c < CF_N; c++)
+            free(v[c]);
+    } else
+        for (size_t i = 0; i < n; i++) {
+            char query[64], ev[24], vv[CF_N][24];
+            const char *v[CF_N] = { vv[CF_PC], vv[CF_OD], vv[CF_OC] };
+
+            snprintf(query, sizeof query, "check.cells.%s", e[i].c->key);
+            check_value(ev, sizeof ev, g->ctx, e[i].e);
+            check_value(vv[CF_PC], sizeof vv[CF_PC], g->ctx, e[i].pc);
+            check_value(vv[CF_OD], sizeof vv[CF_OD], g->ctx, e[i].o);
+            check_value(vv[CF_OC], sizeof vv[CF_OC], g->ctx, corpus ? e[i].oc : e[i].e);
+            deviate(&d, query, ev, v, check_line);
+        }
+    put_devs(&conf, &d);
+    add_file(&x->out, str_printf("%s.test.toml", path), text_of(&conf));
+    devs_free(&d);
+    free(cells);
+    free(lit);
+    free(lits);
+}
+
+static void emit_open(struct ctx *x, struct group *g, const char *id, struct ent *e, size_t n)
+{
+    const struct em_matrix *m = x->m;
+    struct buf head = { 0 }, keys = { 0 }, what = { 0 };
+    char *path;
+
+    for (size_t i = 0; i < n; i++)
+        put(&keys, "%s%s", i ? " " : "", e[i].c->key);
+    put(&what, "open cells, context %s, value set %s%s, %zu cells", em_ctx_name(g->ctx), m->sets[g->set].name,
+        mode_text(g->mode), n);
+    bug_header(&head, id, g->issues, what.oom ? "" : what.s,
+               "; Correct: the values of the fixed rules of the matrix's model (tools/lib/exprmatrix/\n"
+               "; model.c); the original's values are the declared deviations of the test.\n");
+    if (!keys.oom)
+        put_wrapped(&head, "; cells: ", keys.s);
+    put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
+    path = str_printf(DIR_BUG "%s", id);
+    if (path)
+        emit_model(x, g, path, &head, e, n, 0, fixed_issue(g->issues, x->port));
+    else
+        x->out.oom = 1;
+    free(path);
+    free(head.s);
+    free(keys.s);
+    free(what.s);
+    x->files_kind[K_OPEN]++;
+}
+
+/* a source of agreement, baseline or fixed cells: a test of the BASIC
+   test model in DIR_CORPUS (its id the lower-case name), and the
+   AmiBlitz3 case of the agreement and fixed sources (name) */
+static void emit_corpus(struct ctx *x, struct group *g, const char *name, struct ent *e, size_t n)
+{
+    const struct em_matrix *m = x->m;
+    struct buf head = { 0 };
+    char id[160];
+    char *path;
+    int fixed = !strncmp(g->tag, "fixed-", 6);
+
+    snprintf(id, sizeof id, "%s", name);
+    lower(id);
+    put(&head, "; %s - expression matrix: context %s, value set %s%s, %zu cells\n", id,
+        em_ctx_name(g->ctx), m->sets[g->set].name, mode_text(g->mode), n);
+    if (!strcmp(g->tag, "agree"))
+        put(&head, "; agreement cells: the value a recorded rule or the exact result gives, which the\n"
+                   "; originals and the port give\n");
+    else if (!strcmp(g->tag, "base"))
+        put(&head, "; baseline cells (the original's measured value): no recorded rule covers them, the\n"
+                   "; value is kept as a regression check, not as a decision that it is right\n");
+    else
+        put(&head, "; fixed cells of #%s (%s): the checks have the port's values, the original's are the "
+                   "declared deviations of the test\n",
+            g->issues, bug_text(g->issues) ? bug_text(g->issues) : "?");
+    put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
+    path = str_printf(DIR_CORPUS "%s", id);
+    if (path)
+        emit_model(x, g, path, &head, e, n, 1, fixed ? g->issues : NULL);
+    else
+        x->out.oom = 1;
+    free(path);
+    free(head.s);
+    x->files_kind[K_CORPUS]++;
+    if (g->mode != 'c' && strcmp(g->tag, "base"))
+        emit_ab3(x, g, name, e, n);
+}
+
+/* the source names: CTX-SET[-MODE]-TAG-NN (corpus), compiler-expr-ISSUES-CTX-SET[-MODE]-NN (open);
+   the refused cells: emit_refused */
 static void emit_group(struct ctx *x, struct group *g)
 {
     const struct em_matrix *m = x->m;
@@ -964,16 +1343,8 @@ static void emit_group(struct ctx *x, struct group *g)
             *p = '-';
     if (g->mode != 'v')
         snprintf(ms, sizeof ms, "-%c", g->mode);
-    if (g->kind == K_REFUSED || g->kind == K_OPEN_REFUSED) {
-        char id[160];
-
-        if (g->kind == K_REFUSED)
-            snprintf(id, sizeof id, "compiler-expr-refused-%s%s", g->tag, g->mode == 'c' ? "-c" : "");
-        else
-            snprintf(id, sizeof id, "compiler-expr-%s-refused-%s%s", iss, g->tag, g->mode == 'c' ? "-c" : "");
-        emit_refused(x, g, id, &g->e[0]);
-        return;
-    }
+    if (g->kind == K_REFUSED || g->kind == K_OPEN_REFUSED)
+        return;                 /* emit_refused */
     order(m, g);
     for (size_t first = 0, part = 1; first < g->n; first += per, part++) {
         size_t k = g->n - first < per ? g->n - first : per;
@@ -988,6 +1359,7 @@ static void emit_group(struct ctx *x, struct group *g)
         } else {
             snprintf(name, sizeof name, "compiler-expr-%s-%s-%s%s-%02zu", iss, em_ctx_name(g->ctx),
                      m->sets[g->set].name, ms, part);
+            lower(name);
             emit_open(x, g, name, g->e + first, k);
         }
     }
@@ -1055,7 +1427,7 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
             *r = *mrow[i];
         r->key = (char *)c->key;
         for (int on = 0; on <= 1; on++) {
-            struct em_value o, p, pc;
+            struct em_value o, p, pc, pf;
 
             if (on && !chk) {
                 r->has[EM_C210_ON] = r->has[EM_C195_ON] = r->has[EM_PORTCD_ON] = r->has[EM_CLIB_ON] = 0;
@@ -1063,7 +1435,16 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
             }
             em_model(m, c, EM_RULES_ORIG, on, &o);
             em_model(m, c, port, on, &p);
-            em_model(m, c, port | EM_R_CDLIB, on, &pc);
+            em_model(m, c, (port & ~EM_RULES_LIBFIX) | EM_R_CDLIB, on, &pc);
+            /* a power the model does not compute: with the CD's libraries
+               the port calls the original's SPPow; the same operands give
+               the original's value */
+            if (pc.text[0] == '?' && pc.sig == o.sig) {
+                const char *ov = mrow[i] ? mrow[i]->v[on ? EM_C195_ON : EM_C195] : o.text;
+
+                if (ov[0] != '?')
+                    snprintf(pc.text, sizeof pc.text, "%s", ov);
+            }
             if (!mrow[i]) {
                 if (o.text[0] == '?' || p.text[0] == '?' || pc.text[0] == '?') {
                     put(&x.err, "%s: the model does not know its value and the measured table has no row\n",
@@ -1079,7 +1460,8 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
                 snprintf(r->v[on ? EM_CLIB_ON : EM_CLIB], EM_TEXT_MAX, "%s", p.text);
             if (pc.text[0] != '?')
                 snprintf(r->v[on ? EM_PORTCD_ON : EM_PORTCD], EM_TEXT_MAX, "%s", pc.text);
-            if (mrow[i] && (p.text[0] == '?') != (pc.text[0] == '?')) {
+            em_model(m, c, port | EM_R_CDLIB, on, &pf);
+            if (mrow[i] && (p.text[0] == '?') != (pf.text[0] == '?')) {
                 put(&x.err, "%s: the model knows the port's value with one library set only\n", c->key);
                 x.nerr++;
             }
@@ -1135,6 +1517,7 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
         goto out;
     for (size_t i = 0; i < gs.n; i++)
         emit_group(&x, &gs.g[i]);
+    emit_refused(&x, &gs);
     add_file(&x.out, strdup(LEFT_OUT),
              str_printf("# the cells of the matrix left out of the committed tests, with the reason\n"
                         "# generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n%s",

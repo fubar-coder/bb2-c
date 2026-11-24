@@ -153,6 +153,23 @@ char *em_source_text(const struct em_matrix *m, const struct em_cell *const *cel
                      int seterr, int *line_of);
 
 /*
+ * The source of a test of the BASIC test model of the cells (n >= 1, one
+ * value set and one context; tests/README.md, "Tests that judge
+ * themselves"): head (comment lines, each ending in a newline), the
+ * statement of a parameter context (it stores its argument in the global
+ * gT), and the case "cells": the variables, the context's setup and per
+ * cell its line with a check named by the cell's key whose expected value
+ * is expect[i] (a Long constant: a Quick or Float destination or
+ * parameter checks its raw bits, an If 1 or 0, a checked index cell -1
+ * for the runtime error); a Print cell prints "KEY VALUE" and has no
+ * check (expect may be NULL).  seterr: every index cell behind a SetErr
+ * handler that leaves -1 and goes on behind the cell, ClrErr at the end.
+ * malloc'd; NULL out of memory.
+ */
+char *em_case_text(const struct em_matrix *m, const struct em_cell *const *cells, size_t n, const char *head,
+                   const char *const *expect, int seterr);
+
+/*
  * The model (model.c, design decision 7): the value a cell prints by a set
  * of rules.  The rules are flags; the original's set is EM_RULES_ORIG
  * (blitz2 1.95 with the CD's libraries), the fixed one EM_RULES_FIXED.
@@ -174,8 +191,11 @@ enum {
 #define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)  /* the port of this commit, C libraries */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
-   get "; @fixed-orig #N" (expect.c, option T1) */
+   get fixed-orig = N (expect.c, option T1) */
 #define EM_RULES_MATRIX (EM_R_1177 | EM_R_1186 | EM_R_1187)
+/* the fixes made in the C libraries (#1189: mathtranslib's power): the
+   port with the CD's libraries keeps the original's rule there */
+#define EM_RULES_LIBFIX EM_R_1189
 #define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)
 
 /* what keeps a value from being exact or known (the question classes of
@@ -281,12 +301,12 @@ int em_classes(const struct em_matrix *m, const struct em_table *t, struct em_cl
  * The committed tests of the matrix (expect.c, task 3.1 of the change).
  * meas: the measured values the model cannot compute (em_measured); every
  * other value is the model's.  The files (paths relative to the root of
- * the source tree, LF line ends): the corpus sources and expected files of
- * the agreement, baseline and fixed cells, the bug-orig tests of the open
+ * the source tree, LF line ends): the tests of the BASIC test model of the
+ * agreement, baseline and fixed cells, the bug-orig tests of the open
  * cells (and of the cells of an issue fixed after the matrix was
- * committed, EM_RULES_MATRIX, with "; @fixed-orig #N"), the tests of the
- * refused cells and the list of the cells left
- * out (README.md, "expect").  *report: the counts.  Returns 0; 1 with the
+ * committed, EM_RULES_MATRIX, with fixed-orig = N), the tests of the
+ * refused cells with their data sources, the AmiBlitz3 cases and the list
+ * of the cells left out (README.md, "expect").  *report: the counts.  Returns 0; 1 with the
  * errors in *errors; -1 out of memory.
  */
 struct em_file {
