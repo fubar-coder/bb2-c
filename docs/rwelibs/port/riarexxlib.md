@@ -97,7 +97,10 @@ kind F):
 * **RXRunCommand** (and RXExecuteScript, RXRunScript, which share its
   code) returns -1 when the message was sent, 0 when not, as the manual
   says of the older generation's RXSendMsg. The original returned
-  whatever d0 PutMsg leaves (#543).
+  whatever d0 PutMsg leaves (#543): on the A1200 configuration the
+  receiving task's pending signals as they were before the send, so a
+  program sending to its own port got 0, the bit of its port, or another
+  pending signal such as SIGF_DOS, never -1.
 * **RXNextArg** advances past every argument it returns, an empty one
   too (the argument slot is not 0). The original tested the length, so
   at an empty argument it returned "" for ever (#534).

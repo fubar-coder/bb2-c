@@ -1,5 +1,6 @@
 # riarexxlib-runcommand-result.test.bas: the reference library returns the d0
-# that PutMsg leaves (0 here)
+# that PutMsg leaves, the receiving task's pending signals (0 or a signal
+# mask; never -1, which is what the test checks)
 fixed-orig = 543
 rwe = ["riarexxlib"]
 
