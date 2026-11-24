@@ -62,6 +62,7 @@ static const char *const traces[][2] = {
     /* the nodes of an expression (covsel: the nodes of an expression) */
     { "blitz2_expr_limits__chain_1000", "TN:blitz2_expr_limits__chain_1000\n" EVAL("1", "0") },
     { "blitz2_expr_arrays__arrays", "TN:blitz2_expr_arrays__arrays\n" EVAL("1", "0") },
+    { "blitz2_expr_calls__results", "TN:blitz2_expr_calls__results\n" EVAL("1", "0") },
     { "blitz2_expr_leaves__literals", "TN:blitz2_expr_leaves__literals\n" EVAL("1", "0") },
     { "blitz2_intrinsic_asc__calls", "TN:blitz2_intrinsic_asc__calls\n" EVAL("1", "0") },
     { "host/blitz2_exprtree", "TN:host_blitz2_exprtree\n"
@@ -435,14 +436,16 @@ TEST_CASE("covsel: the type decisions of an expression", "[covsel]")
 
 /* the nodes of an expression and the walk (programs/blitz2/src/exprtree.c,
    change expr-tree-2-operators, the leaves of the elements, change
-   expr-tree-3a-leaves, and the steps of a variable's path, change
-   expr-tree-3b-arrays): its source and header select its host test, the
-   tests of the evaluator's limits, of its simple elements and of the
-   paths of variables, the expression matrix's corpus and compiler_prev;
-   its test source the host test */
+   expr-tree-3a-leaves, the steps of a variable's path, change
+   expr-tree-3b-arrays, and the calls, change expr-tree-3c-calls): its
+   source and header select its host test, the tests of the evaluator's
+   limits, of its simple elements, of the paths of variables and of the
+   calls, the expression matrix's corpus and compiler_prev; its test
+   source the host test */
 static const char exprtree_tests[] =
     "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
     TEST("blitz2_expr_arrays__arrays", "\"emulator\"") ","
+    TEST("blitz2_expr_calls__results", "\"emulator\"") ","
     TEST("blitz2_expr_leaves__literals", "\"emulator\"") ","
     TEST("blitz2_expr_limits__chain_1000", "\"emulator\"") ","
     TEST("blitz2_intrinsic_asc__calls", "\"emulator\"") ","
@@ -461,9 +464,9 @@ TEST_CASE("covsel: the nodes of an expression", "[covsel]")
     cur_tests = exprtree_tests;
     cur_host_tests = exprtree_host_tests;
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_leaves__literals blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_leaves__literals blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
     r = select_for(real_rules, diff1("programs/blitz2/tests/host/test_exprtree.cpp", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, "host"));

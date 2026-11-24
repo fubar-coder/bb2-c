@@ -5,8 +5,11 @@
 // leaf is made, emitted and released as in eval.c: change
 // expr-tree-3a-leaves), a capital letter with [ ] an array element (its
 // index, a step of its path and its variable node as in parse.c's
-// varparse: change expr-tree-3b-arrays), + - binary operators of
-// one precedence, * / of a higher one, ^ of a higher one still, ( ) a
+// varparse: change expr-tree-3b-arrays), a capital letter with { } a call
+// (its node live while its parameters, separated by commas, are read, as
+// eval.c's afunction and amigalib: change expr-tree-3c-calls), + -
+// binary operators of one precedence, * / of a higher one, ^ of a higher
+// one still, ( ) a
 // bracket and ~ NOT (each an expression node of its own, as eval4 makes
 // them), _ a minus sign (a run of them is one node, as eval.c's negate
 // makes it).  Each emitted operator is appended to the output, so the
@@ -91,6 +94,30 @@ void element(ctx *x)
         note(x);
         x->out += c;
         exprtree_release(l);
+    } else if (c >= 'A' && c <= 'Z' && *x->p == '{') {
+        // a call (eval.c: afunction, amigalib; change expr-tree-3c-calls):
+        // its node lives while its parameters are read, each an
+        // expression of its own, and is then the leaf of its value
+        // (callcont)
+        exprnode *n = exprtree_new(EXN_CALL);
+
+        n->op = CLK_PROC;
+        x->p++;
+        note(x);
+        if (*x->p != '}')
+            for (;;) {
+                expression(x, EXN_EXPR);
+                exprtree_release(exprtree_top());
+                if (*x->p != ',')
+                    break;
+                x->p++;
+            }
+        if (*x->p++ != '}')
+            std::longjmp(errjmp, 3);
+        n->kind = EXN_LEAF;
+        n->op = 0;
+        x->out += c;
+        exprtree_release(n);
     } else if (c >= 'A' && c <= 'Z') {
         // an array element (parse.c, varparse): its index an expression of
         // its own, then a step of its path, emitted and released, then the
@@ -254,6 +281,10 @@ TEST_CASE("exprtree: the order of the emission", "[exprtree]")
     CHECK(walk("_(a+b)") == "ab+_");
     CHECK(walk("A[b+c]*d") == "bc+Ad*");   // the index before the array
     CHECK(walk("a+A[B[c]]") == "acBA+");
+    CHECK(walk("F{a+b}*c") == "ab+Fc*");   // the parameters before the call
+    CHECK(walk("a+F{}") == "aF+");
+    CHECK(walk("F{a,G{b*c},d}") == "abc*GdF");
+    CHECK(walk("F{a") == "syntax");
     CHECK(walk("a+") == "syntax");
     CHECK(walk("(a") == "syntax");
 }
@@ -308,6 +339,22 @@ TEST_CASE("exprtree: 64 counted nodes, the 65th is the overflow", "[exprtree]")
     CHECK(x.maxpend == 64);
     CHECK(x.maxlive == 129);
     CHECK(walk(times("_A[", 64) + "b" + times("]", 64)) == "overflow");
+    // calls nested in their parameters behind minus signs (change
+    // expr-tree-3c-calls): a call's node lives beside the run of minus
+    // signs of its level while its parameter is read.  The compiler nests
+    // at most 32 calls (each holds an entry of forthstack, the 33rd is
+    // "Expression too Complex"), so the bound is 64 counted nodes, the
+    // 65th, 64 runs of minus signs and 32 calls: 161
+    CHECK(walk(times("_F{", 31) + times("_(", 32) + "_b" + times(")", 32) + times("}", 31), x)
+          == "b" + times("_", 33) + times("F_", 31));
+    CHECK(x.maxpend == 64);
+    CHECK(x.maxlive == 160);
+    CHECK(walk(times("_F{", 31) + times("_(", 32) + "_G{}" + times(")", 32) + times("}", 31), x)
+          == "G" + times("_", 33) + times("F_", 31));
+    CHECK(x.maxlive == 160);
+    CHECK(walk(times("_F{", 32) + times("_(", 32) + "b" + times(")", 32) + times("}", 32))
+          == "overflow");
+    CHECK(161 <= EXPRTREE_NODES);
 }
 
 TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprtree]")

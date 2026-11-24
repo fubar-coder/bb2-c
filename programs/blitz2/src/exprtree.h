@@ -14,7 +14,11 @@
  * expr-tree-3b-arrays: an array's indexes, fields, field arrays,
  * pointers) is read by calcvar's parse part (varparse, parse.c) into a
  * node per step, each emitted and released as soon as it is read, and a
- * variable node at the end, which an element makes its leaf.
+ * variable node at the end, which an element makes its leaf.  A
+ * procedure or OS call (step 3c: change expr-tree-3c-calls) is a node
+ * that lives while its parameters are read, with an enter action emitted
+ * before them and an exit action after them; it then becomes the leaf of
+ * the call's value.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
@@ -48,12 +52,31 @@ enum {
     EXN_BINOP,                  /* a binary operator */
     EXN_LEAF,                   /* an operand: the code start..end of what it read;
                                    op: its element kind (ELK_*); 0: the operand of the walk,
-                                   or the value of a call (varcont, steps 3c and 3d) */
+                                   or the value of a call (a CALL made its leaf: callcont;
+                                   a library function: varcont) */
     EXN_RESULT,                 /* an operand that is the result of an operator now */
     EXN_VAR,                    /* a variable with its path, read by calcvar's parse part
                                    (varparse, parse.c); an element's leaf in an expression */
-    EXN_STEP                    /* a step of a variable's path (op: its VST_* kind), emitted
+    EXN_STEP,                   /* a step of a variable's path (op: its VST_* kind), emitted
                                    when it is read and released then */
+    EXN_CALL                    /* a procedure or OS call (op: its CLK_* kind), live while its
+                                   parameters are read; then the leaf of its value */
+};
+
+/** @brief The kinds of call (exprnode.op of a CALL; issue #1180, step 3c,
+ *         change expr-tree-3c-calls): the call is looked up, its node
+ *         made, its enter action emitted, its parameters read (each an
+ *         expression of its own, compiled and pushed as it is read: the
+ *         node's children), then its exit action emitted (eval.c). */
+enum {
+    CLK_PROC = 1,               /* a Function in an expression, f{...} (afunction) */
+    CLK_OS                      /* an OS library function, Name_(...) (amigalib) */
+};
+
+/** @brief The facts of a CALL (exprnode.lflags), set by its enter action. */
+enum {
+    CLF_SB = 1,                 /* PROC: in a string expression: a3 pushed (dopusha3) */
+    CLF_A45 = 2                 /* OS: a parameter in a4 or a5: a4/a5 saved (#958) */
 };
 
 /** @brief The steps of a variable's path (exprnode.op of a STEP; issue
@@ -145,8 +168,14 @@ enum {
  *         leaf's place (made after the index, released before the next
  *         node: 62 times "-(" and "-a(-c)" 129, change
  *         expr-tree-3b-arrays).
- *         A margin to 136 (6256 bytes on the 68000). */
-#define EXPRTREE_NODES 136
+ *         A call's node lives beside the run of minus signs of its level
+ *         while its parameters are read; the compiler nests at most 32
+ *         calls (each holds an entry of forthstack, the 33rd is
+ *         "Expression too Complex"): 129 + 32 = 161, reached by 32 times
+ *         "-f{" and 32 times "-(" ("Precedence Stack Overflow"; change
+ *         expr-tree-3c-calls).
+ *         A margin to 168 (7728 bytes on the 68000). */
+#define EXPRTREE_NODES 168
 
 /** @brief A node.  BINOP: op the operator (exprtype.h's ETO_*), prec its
  *         precedence, left the operand before it (a LEAF or a RESULT),
@@ -165,7 +194,14 @@ enum {
  *         lflags ELF_LOCAL.  STEP (op its VST_*): value, off and lflags
  *         (VSF_*, ELF_LOCAL) what its kind needs, aux of an INDEX and a
  *         BRCLOSE where its index's code begins (it ends at start),
- *         start..end the code stepemit wrote.  The counted ones (EXPR,
+ *         start..end the code stepemit wrote.  CALL (op its CLK_*): tbefore
+ *         the type so far it was read under, own the type of its value;
+ *         a PROC's value the procedure (struct proc *), aux the movem mask
+ *         its enter action saved (savem), reg regat before the
+ *         parameters; an OS call's value the library function's entry
+ *         (findtoke's sub), off the offset of its library base, aux the
+ *         movem.l (a7)+ of the registers its enter action saved, reg the
+ *         number of parameters; lflags its CLF_*.  The counted ones (EXPR,
  *         BRACKET, NOT, BINOP) are linked by down, the pending one
  *         below. */
 struct exprnode {

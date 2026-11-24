@@ -134,9 +134,9 @@ the 68000 (the block of 136: 6256 bytes).
 | 10368-10380 `makealab2` `.makeit` | the outstanding reference at `pc` + 2 | `labref` |
 | 10406-10407 `qmark` | `?` and the label | `qmark` (`ELK_LABEL`, the label in `value`, `ELF_REF` when it needs a reference) |
 | 10409-10418 `qmark`'s code | `move.l #label,Dn` and its relocation | `labelemit` (the reference first, as `makealab2` made it) |
-| 10471-10477 `variable` up to `bsr calcvar` | the variable (made at first sight) and its offset or path | `variable` (`ELK_VAR`; a name with `{` is `afunction`, step 3c) |
+| 10471-10477 `variable` up to `bsr calcvar` | the variable (made at first sight) and its offset or path | `variable` (`ELK_VAR`; a name with `{` is a procedure call, `afunction`: step 3c) |
 | 10478 `bsr variable2`, 10641-10682 `variable2` | the value into Dn; the type in d2 (`moveq #3`, `move.b #3`, `and #255`) | `variable2` from the leaf; the type: `vartypeof` at parse |
-| 10479-10500 `varcont` | `ext.w` of a Byte, the conversion up to the type so far | the decisions `contleaf` (`exprtype_element`) at parse, the code `contemit`; `varcont` (both, for the calls of steps 3c and 3d) |
+| 10479-10500 `varcont` | `ext.w` of a Byte, the conversion up to the type so far | the decisions `contleaf` (`exprtype_element`) at parse, the code `contemit`; `varcont` (both, for a library function, step 3d) and `callcont` (both, on the call node, step 3c) |
 
 What each element (and each step of a variable's path, step 3b: the
 `VST_*` rows) changes besides its code, and when (change 8 relies on
@@ -214,3 +214,55 @@ compiles every form of a path.
 
 What each step changes besides its code, and when: the `VST_*` rows of
 the table of step 3a.
+
+## Step 3c: procedure and OS calls (`expr-tree-3c-calls`)
+
+A procedure call in an expression (`f{...}`, `afunction`) and an OS call
+(`Name_(...)`, `amigalib`) is a node (`struct exprnode` of kind
+`EXN_CALL`, `op` its call kind `CLK_PROC` or `CLK_OS`, `exprtree.h`),
+made when the call has been looked up: the procedure (`findproc`) or the
+OS library (`uselib`). Its code has two actions. The enter action runs
+before the parameters: the registers below `regat` saved, the string base
+(`makesbase`, a3 pushed in a string expression) for a procedure, d0/d1
+and the parameter registers that hold a value of the expression (#344)
+and a4/a5 (#958) for an OS call. The exit action runs after them: the
+call, the result into `D(regat)`, the registers restored. Each parameter
+is an expression of its own (its node `EXN_EXPR`), compiled and pushed as
+it is read with the push protocol of before (`fetchprocps`, `peval`):
+the node's children. Both actions run at the moments the code was written
+before, so the code is the same; step 4a (`expr-tree-4a-emit-after-build`)
+keeps them in this order when it emits after the build. After its exit
+action the node is the leaf of the call's value (`callcont`: the
+decisions and the code of `varcont`) and is released.
+
+A call's node lives while its parameters are read, beside the run of
+minus signs of its level. The compiler nests at most 32 calls (each holds
+an entry of `forthstack` from its element on, the 33rd is "Expression too
+Complex"), so the bound of the arena is 161 nodes: 64 counted nodes, the
+65th, 64 runs of minus signs and 32 calls (32 times `-f{` and 32 times
+`-(`; the host test `blitz2_exprtree` pins it); the arena has 168 (7728
+bytes on the 68000). `tests/blitz2/expr-calls.test.bas` compiles the
+forms of a call.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 10522-10530 `afunction` up to `bmi illprocerr` | the procedure looked up ("Procedure not found", "Illegal Procedure Call"), its result type | `afunction` (the node: `value` the procedure, `own` its type) |
+| 10531-10548, 10556, 10561 | the stack the procedure removes, `makesbase` for a string result, a3 pushed (`.sss`), the registers below `regat` saved (`savem`), `regat` kept and 0 for the parameters | `procenter` (the enter action) |
+| 10557-10562 `.somepars` up to `bsr fetchpees2` | the parameters | `afunction` (`fetchprocps`) |
+| 10550-10553, 10564-10567 | `chkstak`, the jsr (`makefjsr`), `regat` back; a call without parameters reads its `}` after the jsr | `procexit` (the exit action's first part) |
+| 10569-10570 `.nopars` | the `}` ("Syntax Error") | `afunction` |
+| 10572-10609 up to `.notst` | the result into `D(regat)`, the registers restored, a3 back (`deca3` or `geta3`, `dopulla3`), a string's length | `procresult` (the exit action's rest; AB3's `ext_evalvalue` of the result type there) |
+| 10611-10613 `.notst` | the next char, `bra varcont` | `afunction`, `callcont` |
+| 10183-10184 `amigalib` up to `bsr uselib` | the OS library's base used from here on | `amigalib` (the node: `value` the function's entry, `off` the base's offset) |
+| 10185-10188 `bsr savereg`, `bsr pokemovem` | d0/d1 saved (`fuckpos`) | `osenter` (the enter action, with #344's and #958's registers) |
+| 10189-10213 up to `bsr tstbras` | the brackets, the parameters (each pushed by `peval`, `stackuse` readjusted) | `amigalib` |
+| 10214-10255 `.toend` up to `.nofin`'s `bsr pokemovem` | the parameters popped into their registers, `move.l off(a5),a6`, the jsr, the result, the registers restored | `osexit` (the exit action) |
+| 10256-10258 | `reget`, `bra varcont` | `amigalib`, `callcont` |
+
+What each call changes besides its code, and when (the columns of the table of
+step 3a):
+
+| Kind | Calls | At parse | At emit | Children | Errors |
+|---|---|---|---|---|---|
+| `CLK_PROC` | a Function in an expression, `f{...}` | the procedure looked up (`findproc`: only the procedures defined so far; a Function used before its definition is "Procedure not found"); AB3: the defaults of left-out parameters (`ext_procdefaults`), the argument list's depth (`ext_procargs`) | enter: `stackuse` less the stack the procedure removes (AB3's `ext_procstackbytes`); a string result: the string base (`makesbase`: `sbasegot`, `sbgot`, the library routine `workstart` used at its first use); in a string expression a3 pushed (`dopusha3`: the library 65235 used); `regat` 0 for the parameters. Exit: with parameters and runtime error checking the library routine `stchk` used (`chkstak`); the jsr's relocation (`addoff`); `regat` back; a3 back (`dopulla3`); AB3's `ext_evalvalue` of the result type; then `varcont`'s (`callcont`: `wordval`, `bytevalend`, `conv`, `rawq`, a conversion's library use) | each parameter (its expression, compiled into its register or pushed), between enter and exit | parse: "Procedure not found", "Illegal Procedure Call" before the node; the parameters' and "Syntax Error" (no `}`) between the exit action's parts |
+| `CLK_OS` | an OS library function, `Name_(...)` | the library used (`uselib`: its base variable made at its first use) | enter: none besides the code; exit: `libbase` and `libjsr` patched in place; then `varcont`'s (`callcont`) | each parameter (pushed by `peval`, `stackuse` 4 less after it), between enter and exit | parse: the parameters' and "Syntax Error" (`tstbras`: the brackets, a missing parameter) before the exit action |

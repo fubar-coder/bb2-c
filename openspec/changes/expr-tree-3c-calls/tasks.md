@@ -8,11 +8,11 @@ After `expr-tree-3b-arrays`. "The check": `expr-tree-1-typing/design.md`, "The c
 
 ## 2. Implementation
 
-- [ ] 2.1 Call node with enter/exit (design decision 1) for `afunction`; verify: the check.
-- [ ] 2.2 The same for `amigalib`; verify: the check.
-- [ ] 2.3 Stack high-water mark for 16 and 30 nested calls (method of `expr-tree-2-operators` task 2.3); verify: not deeper than before plus 10 %.
-- [ ] 2.4 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
+- [x] 2.1 Call node with enter/exit (design decision 1) for `afunction`; verify: the check.
+- [x] 2.2 The same for `amigalib`; verify: the check.
+- [x] 2.3 Stack high-water mark for 16 and 30 nested calls (method of `expr-tree-2-operators` task 2.3); verify: not deeper than before plus 10 %.
+- [x] 2.4 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
 
 ## 3. Commit
 
-- [ ] 3.1 Tests first, then the rework commit; verify: each passes the check.
+- [x] 3.1 Tests first, then the rework commit; verify: each passes the check.

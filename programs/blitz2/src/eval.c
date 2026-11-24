@@ -2863,54 +2863,82 @@ static void amigasave(const UBYTE *regs, ULONG *push, ULONG *pull)
     }
 }
 
-/* blitz2.s:10183 amigalib - Amiga OS library function call.
-   Fixed (intended deviation, #958): parameters in a4/a5 no longer
-   clobber the variable bases, as in stamigalib (see amigaa4a5).
-   Fixed (#344): parameter registers holding intermediates are saved,
-   see amigasave. */
-static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
-{
-    struct blitzlib *ol;
-    ULONG push, pull;
-    UWORD base, lvo, first, c, n;
-    UBYTE *p, *regs;
-    WORD i;
-    BOOL a45;
+/* The calls as nodes (issue #1180, step 3c: change expr-tree-3c-calls).
+   A procedure call (afunction) or an OS call (amigalib) in an expression
+   is a node (exprtree.h: kind CALL, op CLK_PROC or CLK_OS), made when the
+   call has been looked up.  It lives while its parameters are read: each
+   one is an expression of its own (its node EXPR), compiled into its
+   register or pushed as it is read, with the push protocol of before
+   (fetchprocps, peval): the node's children.  Its code has two parts:
+   the enter action before the parameters (the registers saved, the
+   string base) and the exit action after them (the call, the result
+   into D(regat), the registers restored).  Both run at the moments the
+   code was written before; then the node is the leaf of the call's value
+   (callcont: varcont's facts and code).  What each one changes besides
+   the code, and when: docs/blitz2/expression-tree.md. */
 
-    ol = uselib(W_(sub + 6));       /* get lib for base address */
-    base = ol->varoff;              /* libbase reg */
-    p = sub + 8;
-    lvo = W_(p);                    /* get offset for lib */
-    p += 2;
-    regs = p;
+static void contleaf(struct exprnode *l);
+static void contemit(struct exprnode *l);
+
+/* no asm counterpart: a new call node of kind kind, read under the type
+   so far tsf */
+static struct exprnode *callnode(unsigned kind, UWORD tsf)
+{
+    struct exprnode *n = exprtree_new(EXN_CALL);
+
+    n->op = (UWORD)kind;
+    n->tbefore = tsf;
+    return n;
+}
+
+/* no asm counterpart; replaces blitz2.s:10479 varcont after a call - the
+   call node n (its exit action emitted) made the leaf of the call's value
+   (of type n->own) under the type so far n->tbefore: its facts, the
+   code, and the node released (as varcont) */
+static UWORD callcont(struct exprnode *n, UWORD *type)
+{
+    n->kind = EXN_LEAF;
+    n->op = 0;
+    n->lflags = 0;
+    contleaf(n);
+    contemit(n);
+    leafdone(n, type);
+    return reget();                 /* .done */
+}
+
+/* no asm counterpart; replaces blitz2.s:10185-10188 amigalib's bsr
+   savereg and bsr pokemovem - the enter action of the OS call n: d0/d1
+   and the parameter registers that hold a value of the expression saved
+   (#344), a4/a5 (#958) */
+static void osenter(struct exprnode *n)
+{
+    const UBYTE *regs = (const UBYTE *)n->value + 10;
+    ULONG push, pull;
+
     savereg(&push, &pull);
     amigasave(regs, &push, &pull);  /* fixed (#344) */
     pokemovem(push);
-    a45 = amigaa4a5(regs);          /* fixed (#958): movem.l a4/a5,-(a7) */
-    c = first = getchar3();         /* remember first bracket.... */
-    /* collect longs for lib */
-    n = 0;
-    for (;;) {
-        UWORD t;
-        if ((BYTE)*p++ < 0)
-            break;                  /* .done */
-        t = T_LONG;
-        n++;
-        c = peval(&t);
-        stackuse -= 4;              /* readjust stack! it's coming off later! */
-        if (c == ',')
-            continue;
-        if ((BYTE)*p >= 0)
-            syntaxerr();
-        break;
-    }
-    c = tstbras(first, c, n);       /* .done */
-    libjsr[1] = lvo;
-    libbase[1] = base;
+    if (amigaa4a5(regs))            /* fixed (#958): movem.l a4/a5,-(a7) */
+        n->lflags |= CLF_A45;
+    n->aux = pull;
+}
+
+/* no asm counterpart; replaces blitz2.s:10214-10255 amigalib's .toend up
+   to .nofin's bsr pokemovem - the exit action of the OS call n: the
+   parameters popped into their registers, the library base into a6, the
+   jsr, the result into D(regat), the registers restored */
+static void osexit(struct exprnode *n)
+{
+    const UBYTE *sub = (const UBYTE *)n->value, *p;
+    BOOL a45 = (n->lflags & CLF_A45) != 0;
+    WORD i;
+
+    libjsr[1] = W_(sub + 8);        /* the offset for the lib */
+    libbase[1] = (UWORD)n->off;     /* the libbase reg */
     if (a45)
         pokel(L_(libbase));         /* fixed (#958): a6 before a5 is popped */
-    p = regs;
-    i = (WORD)n - 1;
+    p = sub + 10;
+    i = (WORD)n->reg - 1;
     if (i >= 0) {
         while ((BYTE)*p++ >= 0)     /* .toend: go to end of params */
             ;
@@ -2940,11 +2968,55 @@ static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
         pokel(0x4cdf3000UL);        /* fixed (#958): movem.l (a7)+,a4/a5 */
     if (regat)
         pokewd((regat << 9) | 0x2000);
-    pokemovem(pull);                /* .nofin */
-    *type = T_LONG;
+    pokemovem(n->aux);              /* .nofin */
+}
+
+/* blitz2.s:10183 amigalib - Amiga OS library function call.  The parse
+   part: the library looked up (uselib: used from here on), the call
+   node, the parameters (each pushed by peval as it is read), the
+   brackets; the code: the node's enter action (osenter) before the
+   parameters, its exit action (osexit) after them.
+   Fixed (intended deviation, #958): parameters in a4/a5 no longer
+   clobber the variable bases, as in stamigalib (see amigaa4a5).
+   Fixed (#344): parameter registers holding intermediates are saved,
+   see amigasave. */
+static UWORD amigalib(UWORD oldtype, UBYTE *sub, UWORD *type)
+{
+    struct exprnode *n;
+    struct blitzlib *ol;
+    UWORD first, c, k;
+    const UBYTE *p;
+
+    ol = uselib(W_(sub + 6));       /* get lib for base address */
+    n = callnode(CLK_OS, oldtype);
+    n->value = (ULONG)sub;
+    n->off = (WORD)ol->varoff;      /* libbase reg */
+    n->own = T_LONG;
+    osenter(n);
+    c = first = getchar3();         /* remember first bracket.... */
+    /* collect longs for lib */
+    k = 0;
+    p = sub + 10;
+    for (;;) {
+        UWORD t;
+        if ((BYTE)*p++ < 0)
+            break;                  /* .done */
+        t = T_LONG;
+        k++;
+        c = peval(&t);
+        stackuse -= 4;              /* readjust stack! it's coming off later! */
+        if (c == ',')
+            continue;
+        if ((BYTE)*p >= 0)
+            syntaxerr();
+        break;
+    }
+    c = tstbras(first, c, k);       /* .done */
+    n->reg = (UBYTE)k;
+    osexit(n);
     reget();
     (void)c;
-    return varcont(oldtype, type);
+    return callcont(n, type);
 }
 
 /* Fixed (#46): does a form of the library function sub load a3 (a
@@ -3745,7 +3817,7 @@ static void varemit(struct exprnode *l)
    emitted as they are read); its variable node becomes the leaf, with
    calcvar's type, the offset, what ext_evalvalue reports, and varcont's
    decisions (contleaf).  A name with { is a procedure call (afunction,
-   step 3c). */
+   its call node). */
 static UWORD variable(UWORD c, UWORD *type)
 {
     UWORD namelen;          /* asm d2 after getvname */
@@ -3768,7 +3840,7 @@ static UWORD variable(UWORD c, UWORD *type)
 }
 
 /* blitz2.s:10479 varcont - common tail after a function value of type
-   *type (afunction, libfunction, amigalib: steps 3c, 3d): ext byte to
+   *type (libfunction; a call node: callcont): ext byte to
    word, bump the type up to the old one.  Its facts in a leaf of no
    element kind, emitted at once (contleaf, contemit). */
 static UWORD varcont(UWORD oldtype, UWORD *type)
@@ -3807,60 +3879,99 @@ void makefjsr(ULONG addr)
     pokel(addr);
 }
 
-/* blitz2.s:10522 afunction - do a local function, eg a=pixel{x,y} */
-static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
+/* no asm counterpart; replaces blitz2.s:10531-10548, 10556 and 10561
+   afunction from the stack adjustment up to .sssz's bsr savem, and
+   .somepars' old regat and clr regat -
+   the enter action of the procedure call n: the stack the procedure
+   removes, the string base, a3 pushed in a string expression, the
+   registers below regat saved; regat 0 for the parameters */
+static void procenter(struct exprnode *n)
 {
-    struct proc *p = findproc(namelen, NULL);
-    UWORD rt, mask, c;
-    WORD ssg;
-    ULONG addr;
+    const struct proc *p = (const struct proc *)n->value;
 
-    if (!p)
-        noprocerr();
-    if (p->rettype < 0)
-        illprocerr();
-    rt = (UBYTE)p->rettype;
     stackuse -= ext_procstackbytes(p);  /* removed by the procedure */
-    if (rt == T_STRING)             /* .skip: function type! */
+    if (n->own == T_STRING)         /* .skip: function type! */
         makesbase();
-    ssg = sbasegot;                 /* .sss */
-    if (ssg)
+    if (sbasegot) {                 /* .sss */
+        n->lflags |= CLF_SB;
         dopusha3();
-    mask = savem();                 /* .sssz: the movem regs */
-    addr = p->pc;                   /* pc of function call */
-    if (!p->nparams) {
-        makefjsr(addr);
-        c = getchar3();
-    } else {
-        UWORD sregat = regat;       /* .somepars: old regat */
-        regat = 0;
-        c = fetchprocps(p);         /* pointer to var desc */
-        chkstak();
-        makefjsr(addr);
-        regat = sregat;
     }
-    if (c != '}')                   /* .nopars */
-        syntaxerr();
+    n->aux = savem();               /* .sssz: the movem regs */
+    n->reg = (UBYTE)regat;          /* .somepars: old regat */
+    if (p->nparams)
+        regat = 0;
+}
+
+/* no asm counterpart; replaces blitz2.s:10550-10553 and 10564-10567
+   afunction's makefjsr, bsr chkstak and the old regat back - the first
+   part of the exit action of the procedure call n: the jsr */
+static void procexit(struct exprnode *n)
+{
+    const struct proc *p = (const struct proc *)n->value;
+
+    if (p->nparams)
+        chkstak();
+    makefjsr(p->pc);                /* pc of function call */
+    regat = n->reg;
+}
+
+/* no asm counterpart; replaces blitz2.s:10572-10609 afunction from
+   .nopars' result move up to .notst - the rest of the exit action of
+   the procedure call n, after its }: the result into D(regat), the
+   registers restored, a3 back, the type reported (ext_evalvalue) */
+static void procresult(struct exprnode *n)
+{
     if (regat)
         pokewd((regat << 9) | 0x2000);  /* move.l d0,regat */
-    if (mask) {                     /* .nopars3 */
+    if (n->aux) {                   /* .nopars3 */
         pokewd(0x4cdf);
-        pokewd(revmask(mask));      /* poke movem (a7)+... */
+        pokewd(revmask((UWORD)n->aux)); /* poke movem (a7)+... */
     }
-    if (ssg) {                      /* .nomovem */
-        if (rt == T_STRING)
+    if (n->lflags & CLF_SB) {       /* .nomovem */
+        if (n->own == T_STRING)
             pokewd(*deca3);         /* .issb: is a string, wack off last '0' */
         else
             /* not a string...set a3 back to start of any strings... */
             pokecode(geta3, geta3f);
         dopulla3();                 /* .nosb: fix up string base */
     }
-    *type = rt;                     /* .nores: what it returns! */
-    ext_evalvalue(ext_proctype(p), 0);
-    if (rt == T_STRING)
+    ext_evalvalue(ext_proctype((const struct proc *)n->value), 0); /* .nores */
+    if (n->own == T_STRING)
         pokewd(*putstlen | regat);
+}
+
+/* blitz2.s:10522 afunction - do a local function, eg a=pixel{x,y}.  The
+   parse part: the procedure looked up, the call node, the parameters
+   (fetchprocps: each compiled into its register or pushed as it is
+   read), the }; the code: the node's enter action (procenter) before the
+   parameters, its exit action after them (procexit, the jsr; procresult
+   after the }, which a call without parameters reads after the jsr). */
+static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
+{
+    struct proc *p = findproc(namelen, NULL);
+    struct exprnode *n;
+    UWORD c;
+
+    if (!p)
+        noprocerr();
+    if (p->rettype < 0)
+        illprocerr();
+    n = callnode(CLK_PROC, oldtype);
+    n->value = (ULONG)p;
+    n->own = (UBYTE)p->rettype;
+    procenter(n);
+    if (!p->nparams) {
+        procexit(n);
+        c = getchar3();
+    } else {
+        c = fetchprocps(p);         /* pointer to var desc */
+        procexit(n);
+    }
+    if (c != '}')                   /* .nopars */
+        syntaxerr();
+    procresult(n);
     getchar3();                     /* .notst */
-    return varcont(oldtype, type);
+    return callcont(n, type);
 }
 
 /* blitz2.s:10617 stvar - handle string variable get! */
