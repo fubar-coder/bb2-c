@@ -71,15 +71,18 @@
  *   - init sets the state as at the load (slave, not initialised, no
  *     buffers); the original's init was empty, a second run from the
  *     editor started with the state of the run before (#1159).
- * Kept on purpose (not fixed, decision):
- * BUG(orig) (#655), wontfix: SyncSerial - two machines that start at the
- * same time both become master (each takes the other's sync byte for the
- * echo).  Not changed (R10 decision Q5 (a)): the handshake would need a
- * new protocol on both ends; a program avoids the race by starting one
- * side first or by choosing the roles itself (SetSerialMode).
  * SyncGet sends the byte in bytebuf (whatever was last written there) for
  * every byte received: no defect, like the original (the answer only
  * paces the sender, its value does not matter).
+ *
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#655), wontfix: SyncSerial - two machines that start at
+ *     the same time both become master (each takes the other's sync byte
+ *     for the echo).  Not changed (R10 decision Q5 (a)): the handshake
+ *     would need a new protocol on both ends; a program avoids the race
+ *     by starting one side first or by choosing the roles itself
+ *     (SetSerialMode).
+ *
  * Registers: the original changes d0 in every routine that sends (the
  * word $01xx of !writebyte) and d7, a0, a1 in the block routines; the
  * thunks keep all of d0/d1/a0/a1 that are not the result, GCC keeps
