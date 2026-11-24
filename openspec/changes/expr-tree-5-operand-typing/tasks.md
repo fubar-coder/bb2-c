@@ -4,7 +4,7 @@ After `compare-compound-left`. Open questions 1-4 answered between groups 1 and 
 
 ## 1. Decision round (measure first)
 
-- [ ] 1.1 Candidate rules for open question 1 in the matrix model as rule sets (`tools/lib/exprmatrix/model.c`, snitch tests); for each: the matrix cells that change, the 376 places of #1178 re-run (`tr-quick-arith-variants-report.md`'s method) with the places that change value, the CD executables a prototype changes, and cycles for the typical changed forms; report `~/.local/share/bb2-c-work/expr-tree-5-rules.md`; verify: every candidate has the four numbers; `ctest --preset host`.
+- [ ] 1.1 Candidate rules for open question 1 in the matrix model as rule sets (among them the integral/fractional constants of open question 1) (`tools/lib/exprmatrix/model.c`, snitch tests); for each: the matrix cells that change, the 376 places of #1178 re-run (`tr-quick-arith-variants-report.md`'s method) with the places that change value, the CD executables a prototype changes, and cycles for the typical changed forms; report `~/.local/share/bb2-c-work/expr-tree-5-rules.md`; verify: every candidate has the four numbers; `ctest --preset host`.
 - [ ] 1.2 The questions with the numbers to the coordinator (open-questions file); after the answers: the chosen rule in the model, the named-cell list generated (`exprmatrix expect` with the new rule), the spec delta completed with the decided scenarios (`openspec-update-change`); verify: `openspec validate expr-tree-5-operand-typing --strict`.
 
 ## 2. Tests first
