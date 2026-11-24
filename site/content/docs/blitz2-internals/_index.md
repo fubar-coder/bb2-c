@@ -1,8 +1,8 @@
 ---
 title: blitz2 internals
-weight: 9
+weight: 10
 description: Writing libraries in C, library variants, the RWE userlibs, and reading the compiler's source.
-prev: /docs/ab3-compared/differences-from-amiblitz3
+prev: /docs/how-to/readable-source
 next: /docs/blitz2-internals/library-anatomy
 ---
 

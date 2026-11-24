@@ -1,6 +1,6 @@
 ---
 title: Project structure
-weight: 10
+weight: 11
 description: The parts of the BB2 C port's repository, how the build fits them together, the tests, and the original material the project uses.
 prev: /docs/blitz2-internals/compiler-source
 next: /docs/project-structure/repository

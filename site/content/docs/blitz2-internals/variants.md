@@ -84,6 +84,8 @@ build/amiga/host/tools/bbsrc/bbsrc tokens build/amiga/blitz2/blitz2 \
 
 In this example the commands of the fade library move from `CE81` and
 following to `8181` and following: their library is now number 3.
+The same libraries turn a source written for the variant into text
+([Make a tokenised source readable]({{< relref "/docs/how-to/readable-source" >}})).
 
 {{% /steps %}}
 

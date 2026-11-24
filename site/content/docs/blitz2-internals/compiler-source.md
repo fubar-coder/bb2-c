@@ -91,7 +91,9 @@ The editor is organised the same way, with one difference: its core, the
 part that edits and tokenises lines, has no calls to the operating system.
 That core is also compiled for the host, where the tests exercise it
 directly, and it is the basis of the tools that tokenise and detokenise
-sources on the host. The rest, screen, input, requesters and files, is the
+sources on the host
+([Make a tokenised source readable]({{< relref "/docs/how-to/readable-source" >}})).
+The rest, screen, input, requesters and files, is the
 Amiga part.
 
 ## The reference builds

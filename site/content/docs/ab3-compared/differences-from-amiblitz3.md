@@ -2,7 +2,7 @@
 title: Where AB3 mode differs from AmiBlitz3
 weight: 5
 description: Cases where AmiBlitz3 v3.14.0's own compiler gives another result than AB3 mode, mostly bugs of AmiBlitz3 that AB3 mode does not copy.
-next: /docs/blitz2-internals
+next: /docs/how-to
 ---
 
 Before this page you should know what AB3 mode supports ([Language

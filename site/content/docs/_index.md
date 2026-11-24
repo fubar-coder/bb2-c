@@ -47,6 +47,7 @@ on the port itself.
   {{< card link="compared-with-original" title="Differences from the original" subtitle="Where the port differs from Blitz Basic 2: the fixed bugs, the bugs not fixed yet and the extensions." >}}
   {{< card link="ab3-mode" title="AB3 mode" subtitle="Compiling AmiBlitz3 sources." >}}
   {{< card link="ab3-compared" title="AB3 compared with blitz2" subtitle="What the AB3 mode changes." >}}
+  {{< card link="how-to" title="How-to" subtitle="Recipes for tasks with the port's tools, such as making a tokenised source readable." >}}
   {{< card link="blitz2-internals" title="blitz2 internals" subtitle="Writing libraries in C and reading the compiler's source." >}}
   {{< card link="project-structure" title="Project structure" subtitle="The parts of the project, the tests and the checks of the build." >}}
 {{< /cards >}}
