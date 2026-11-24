@@ -1033,6 +1033,11 @@ Each point says first what the original did, then what the port does.
   calling line that went on after the macro, as in `c = !m b` with the
   text `NOT`, gave "Syntax Error"; the macro text ends without the colon
   ([#1206](https://github.com/fubar-coder/bb2-c/issues/1206)).
+* The blank between a macro call and the rest of its line was dropped,
+  so a macro text ending in a letter or digit was glued to the next name
+  or number: `!mw b` with the text `!mq` became `!mqb` ("Macro not Found"
+  or another macro); the blank is kept
+  ([#1207](https://github.com/fubar-coder/bb2-c/issues/1207)).
 
 ### Residents
 

@@ -8134,3 +8134,11 @@ rows:
     text: "A macro whose last line ends in `NOT`, `OR`, `MOD`, `Print`, `Len` or another token with a high low byte no longer keeps the colon of its line end; `c = !m b` with the text `NOT` compiles."
     page: compiler
     anchor: macros
+  - issue: 1207
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Macro"
+    text: "The blank between a macro call and what follows it on the line is kept, so `!mw b` with the macro text `!mq` expands to `!mq b`; the original dropped it and glued a macro text ending in a letter or digit to the next name or number (`!mqb`, \"Macro not Found\" or another macro)."
+    page: compiler
+    anchor: macros
