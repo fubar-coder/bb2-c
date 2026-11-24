@@ -367,6 +367,15 @@ again):
   them with the change. ctest `cmdref_complete`: no committed file
   without a library; `cmdref_check_broken`, `cmdref_complete_broken`:
   the checks with broken input.
+* the tables of the type rules of an expression
+  (`docs/blitz2/expression-type-tables.md`, target
+  `expression_type_tables` of the host side, `tools/exprtables`): the
+  build step generates the page from `programs/blitz2/src/exprtype.c`
+  and compares it with the committed one (`exprtables page --check`); a
+  page that differs fails the step and is not written. After an intended
+  change of the rules, build the target `expression_type_tables_update`
+  and commit the page with the change. ctest `exprtables_page_broken`: a
+  copy with a changed cell and one without a note fail the check.
 * a fixed bug-orig test keeps no recorded original (`ID.orig` next to a
   `.bas` or a TED `.drv`, each with `; @fixed-orig #N`):
   configuring `tests/bug-orig` fails naming the file

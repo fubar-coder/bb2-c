@@ -12,6 +12,11 @@ with a fraction under a Byte (#1188), the power with a negative base
 (#1189) and the bit operators under a Quick type so far (#1209), original
 bugs fixed in the port.
 
+Every rule as a table (each operator with each pair of operand types under
+each type so far, the elements and the constants): [Expression type
+tables](expression-type-tables.md), a page generated from the compiler's
+type decisions.
+
 ## The types and the "type so far"
 
 A value has one of the types Byte, Word, Long, Quick, Float, in this order
@@ -498,5 +503,8 @@ return. Their decisions are pinned by the host test `blitz2_exprtype`
 (`programs/blitz2/tests/host/test_exprtype.cpp`) against the committed
 table `programs/blitz2/tests/host/exprtype.tsv`, which lists every
 operator, type so far, operand type and operand fact, and against the
-expression matrix's model for its two-operand cells. Which routine of the
-original each rule comes from: [expression-tree.md](expression-tree.md).
+expression matrix's model for its two-operand cells. The tables of
+[expression-type-tables.md](expression-type-tables.md) are generated from
+these functions by `tools/exprtables`; the build checks that the committed
+page is up to date. Which routine of the original each rule comes from:
+[expression-tree.md](expression-tree.md).

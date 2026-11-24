@@ -22,6 +22,17 @@ foreach(t exprmatrix_model exprmatrix_classify exprmatrix_expect)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
 
+# the readable tables of the type rules of an expression (lib/exprtype_tables):
+# their cells against exprtype.tsv, the rows of exprtype.c's decisions
+get_filename_component(tests_repo ${CMAKE_CURRENT_SOURCE_DIR}/../.. ABSOLUTE)
+add_executable(test_exprtables test_exprtables.cpp)
+target_link_libraries(test_exprtables PRIVATE lib_exprtype_tables snitch::snitch)
+target_compile_definitions(test_exprtables PRIVATE
+	EXPRTYPE_TSV="${tests_repo}/programs/blitz2/tests/host/exprtype.tsv")
+target_compile_options(test_exprtables PRIVATE -Wall -Wextra)
+set_target_properties(test_exprtables PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME exprtables COMMAND test_exprtables)
+
 # the matrix of the run configuration of the Blitz tests (lib/testconf;
 # testconf is in the list above): snitch programs
 foreach(t testmatrix testassert)

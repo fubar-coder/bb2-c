@@ -88,6 +88,9 @@
 #              per case and side, the ctest include file (tools/testreg)
 #   exprmatrix the expression matrix of blitz2: its description, its keyed
 #              cells and their Blitz sources (tools/exprmatrix)
+#   exprtype_tables  readable tables of the type rules of an expression
+#              (exprtype.c, its table exprtype.tsv) and their page
+#              docs/blitz2/expression-type-tables.md (tools/exprtables)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -132,3 +135,4 @@ add_subdirectory(testpp)
 add_subdirectory(testjudge)
 add_subdirectory(testreg)
 add_subdirectory(exprmatrix)
+add_subdirectory(exprtype_tables)

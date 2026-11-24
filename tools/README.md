@@ -21,6 +21,7 @@ its logic.
 | [`siteexamples`](siteexamples/README.md) | the Blitz Basic examples of the website: every fenced block has an entry in a manifest (run or compiled only, with the reason) and is written as a source for the emulator tests |
 | [`testreg`](testreg/README.md) | the Blitz tests that judge themselves (`ID.test.bas`): their sources and run configurations checked at build time and registered as ctest tests, one per case and side |
 | [`exprmatrix`](exprmatrix/README.md) | the expression matrix of blitz2: every cell (context, operator, operand kinds in order, value set) a keyed line of a generated Blitz source |
+| [`exprtables`](exprtables/README.md) | readable tables of the type rules of an expression in blitz2 (operator, operand types, type so far), the generated page `docs/blitz2/expression-type-tables.md` and its check in the build |
 | [`amiga_run`](amiga_run/README.md) | an AmigaDOS script in Amiberry, without a window and isolated (front end of `lib/amiga_emulation`) |
 
 Three tools live with the component they belong to:
