@@ -4,7 +4,7 @@ After `expr-tree-4a-emit-after-build`. "The check": `expr-tree-1-typing/design.m
 
 ## 1. Tests first
 
-- [ ] 1.1 Cases (coverage build) for unreached forms: arrays with a later index whose narrowing applies and one where it does not, nested calls 8 deep with commas inside string literals and brackets (`countpees`), each intrinsic as the whole right side and not, assignments with relocated left sides (global NewType arrays, string arrays, `\` paths), `Select` on an array element; verify: pass on main, in `compiler_prev`.
+- [x] 1.1 Cases (coverage build) for unreached forms: arrays with a later index whose narrowing applies and one where it does not, nested calls 8 deep with commas inside string literals and brackets (`countpees`), each intrinsic as the whole right side and not, assignments with relocated left sides (global NewType arrays, string arrays, `\` paths), `Select` on an array element; verify: pass on main, in `compiler_prev`.
 
 ## 2. Implementation
 

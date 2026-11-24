@@ -1,0 +1,4 @@
+# expr-lookahead.test.bas: without and with runtime error checking (a later
+# array index is not narrowed then, the index is checked)
+[matrix]
+runtime-errors = ["off", "on"]
