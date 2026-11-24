@@ -1,12 +1,11 @@
-# compiler-let-left-string.test.bas: an open bug: the port has the same
-# behaviour as the originals (1.95 and 2.10), so every cell shows the
-# declared deviations: the index code overwrites the right side's string
-# in the work area (the codes of the characters stored, a NUL among
-# them).  With a Function in the index that assigns a local string (or
-# a string element of its own) the element gets the bytes at a stray a3
-# (the originals: what earlier code left in the work area; the port: the
-# Function's string), so these checks declare the failure only.  Runtime
-# error checking only for the port.
+# compiler-let-left-string.test.bas: the originals (1.95 and 2.10) run the
+# index code with the right side's string at the start of the work area:
+# it overwrites the string (the codes of the characters stored, a NUL
+# among them).  With a Function in the index that assigns a local string
+# (or a string element of its own) the element gets the bytes at a stray
+# a3, what earlier code left in the work area, so these checks declare
+# the failure only.  Runtime error checking only for the port.
+fixed-orig = 1213
 exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib", "compiler=orig195,runtime-errors=on", "compiler=orig210,runtime-errors=on"]
 
 [matrix]

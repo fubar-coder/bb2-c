@@ -142,14 +142,16 @@ void exprresume(struct exprunit *s);
    between unitbegin and unitbuilt is built, its code is written by
    unitwrite, which ends the unit; code written in between is in front of
    it.  Outside an expression being built.  struct stmtunit holds the
-   unit's actions and what its end gives back. */
+   unit's actions, what its end gives back and whether its code may use
+   the string work area or a3 (strwork: a string, a procedure call, a
+   library or OS call that loads a3). */
 struct stmtunit {
     struct exprunit outer;
     struct exprmark m;
     struct expract *acts;
     ULONG at, actseq, codeseq;
     UWORD rb;
-    BOOL bsbase;
+    BOOL bsbase, strwork;
 };
 void unitbegin(struct stmtunit *u);
 void unitbuilt(struct stmtunit *u);

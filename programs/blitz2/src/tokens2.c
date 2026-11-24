@@ -1257,40 +1257,75 @@ static void letcode(UWORD opcode, UWORD vartype, WORD offset, UWORD *pcodd)
 }
 
 /* no asm counterpart: the code of the left side's address (calcvar's path,
-   built in the unit u) written; regat, varmode and evaldepth stay as
-   they are */
-static void letaddr(struct stmtunit *u)
+   built in the unit u) written with the string base as it was where the
+   unit was begun (sbasegot sb, sbgot sg: the statement's start, where
+   the original compiled it); regat, varmode, evaldepth, sbasegot and
+   sbgot stay as they are */
+static void letaddr(struct stmtunit *u, WORD sb, WORD sg)
 {
     UWORD r = regat, d = evaldepth;
-    WORD m = varmode;
+    WORD m = varmode, b = sbasegot, g = sbgot;
 
+    sbasegot = sb;
+    sbgot = sg;
     unitwrite(u);
     regat = r;
     varmode = m;
     evaldepth = d;
+    sbasegot = b;
+    sbgot = g;
+}
+
+/* Fixed (#1213), no asm counterpart; replaces blitz2.s:14371 dolet2's
+   moved0a3 before the address code - the code of a string's left side's
+   address u (sb, sg: letaddr) written behind the right side's string,
+   which starts at the string base, a3 behind it, its length on the
+   stack.  An address whose code may use the string work area or a3
+   (strwork) runs with the base moved behind the string (pusha3), so its
+   strings and those of the Functions it calls start there; then the base
+   is set back and a3 to the string's start for lastring (pulla3, geta3).
+   Any other address code is written behind a3 set to the string's start
+   (moved0a3), as in the original.  The original wrote moved0a3 in every
+   case: the index's strings overwrote the right side's string, a
+   Function with a local string left a3 elsewhere. */
+static void letaddrstr(struct stmtunit *u, WORD sb, WORD sg)
+{
+    if (!u->strwork) {
+        pokewd(moved0a3[0]);
+        letaddr(u, sb, sg);
+        return;
+    }
+    uselib(65235);
+    pokecode(pusha3, pusha3f);
+    letaddr(u, sb, sg);
+    pokecode(pulla3, pulla3f);
+    pokecode(geta3, geta3f);
 }
 
 /* blitz2.s:14340 dolet2
    Fixed (#1212): the left side's address (calcvar's path: an array
    index, regat 1) is built first, in reading order, and its code is
-   written behind the right side's, where it runs, with the emitter's
-   state (lasta6, the string base) as the right side's code left it.  The
-   original compiled it first and moved its code behind the right side
-   (pushstart, pushdo, pushput, blitz2.s:11022-11057) with lasta6 as the
-   left side's code left it: a library function in the index whose base
-   is passed in a6 (Abs of a Word: ffplib's) made the right side's call
-   of a function with the same base skip its load of a6, although the
-   right side's code runs first (a(Abs(-j))=Abs(-5): a wrong value or a
-   crash; test compiler-let-left-a6).
-   BUG(orig) (#1213): for a string the right side's finished string lies
-   at the start of the string work area when the left side's code runs
-   (a3 at its start after moved0a3, its length on the stack); an index
-   that uses the work area (a library function with a string argument,
-   a string comparison, a Function that takes, builds or returns
-   strings) starts its own strings at the same place and overwrites it,
-   and a Function with a local string leaves a3 elsewhere: the element
-   gets the right length with the wrong characters (blitz2.s:14360ff,
-   .nextcom; test compiler-let-left-string). */
+   written behind the right side's, where it runs, with lasta6 as the
+   right side's code left it and the string base as it was at the
+   statement's start (letaddr).  The original compiled it first and moved
+   its code behind the right side (pushstart, pushdo, pushput,
+   blitz2.s:11022-11057) with lasta6 as the left side's code left it: a
+   library function in the index whose base is passed in a6 (Abs of a
+   Word: ffplib's) made the right side's call of a function with the same
+   base skip its load of a6, although the right side's code runs first
+   (a(Abs(-j))=Abs(-5): a wrong value or a crash; test
+   compiler-let-left-a6).
+   Fixed (#1213): for a string, an address whose code may use the string
+   work area runs with the string base behind the right side's finished
+   string (letaddrstr).  In the original the string lay at the start of
+   the work area when the address code ran (a3 at its start after
+   moved0a3, its length on the stack); an index that uses the work area
+   (a library function with a string argument, a string comparison, a
+   Function that takes, builds or returns strings) started its own
+   strings at the same place and overwrote it, and a Function with a
+   local string left a3 elsewhere: the element got the right length with
+   the wrong characters (blitz2.s:14358-14375, .nextcom; test
+   compiler-let-left-string). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;
@@ -1299,9 +1334,12 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
     UWORD vartype, et;
     UWORD pcodd;            /* asm: global pcodd (14509), add 1 for bytes */
     WORD voff;
+    WORD sb, sg;            /* the string base at the statement's start */
 
     regat = 1;              /* don't disturb this reg! */
     v = fetchvar(len, &t, &c);              /* var in a3, type in a2 */
+    sb = sbasegot;
+    sg = sbgot;
     unitbegin(&left);
     vartype = calcvar(&v, &t, &c, &voff);   /* get offset stuff */
     unitbuilt(&left);
@@ -1324,11 +1362,11 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             c = eval(&et);
             varmode = svmode;
             lastoffset = svoff;
-            pokewd(moved0a3[0]);
-            if (commode)
+            if (commode) {
+                pokewd(moved0a3[0]);
                 pokecode(pulla2st, pulla2stf);
-            else
-                letaddr(&left);
+            } else
+                letaddrstr(&left, sb, sg);
             if (!(vartype & 0x8000)) {
                 leaa5d3a2[1] = voff;
                 pokela5s(tl(leaa5d3a2));
@@ -1359,7 +1397,7 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
             ext_assigncheck(vartype);
             lastoffset = svoff;
             if (!commode)
-                letaddr(&left);
+                letaddr(&left, sb, sg);
             varmode = svmode;
             opcode = 0x2b40;                /* move.l d0,x(a5) */
             if (varmode)

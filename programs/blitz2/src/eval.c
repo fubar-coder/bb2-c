@@ -189,7 +189,8 @@ static UWORD nbforth = 0;
    the action of the last conversion a value's code ends in (#1177: the
    conversion a comparison drops), the last literal made a whole number and
    the minus signs after it (#1186: fraclitfloat), and whether a string
-   base is got (sbasegot, set by makesbase's code) */
+   base is got (sbasegot, set by makesbase's code); whether the code
+   built may use the string work area or a3 (bstrwork, a unit's strwork) */
 static ULONG actseq = 0, codeseq = 0, prevcodeseq = 0;
 static struct {
     ULONG seq;
@@ -201,7 +202,7 @@ static struct {
     struct exprnode *leaf, *neg;     /* the literal, its last run of minus signs */
     UWORD negs;                      /* the minus signs */
 } blit;
-static BOOL bsbase = FALSE;
+static BOOL bsbase = FALSE, bstrwork = FALSE;
 /* the action of the last value whose code ends in a byte's ext.w, of the
    last integer constant (the code before it, its leaf), for #978 */
 static ULONG bbyte = 0;
@@ -1129,17 +1130,24 @@ void unitbegin(struct stmtunit *u)
     u->codeseq = codeseq;
     u->bsbase = bsbase;
     bsbase = sbasegot != 0;
+    u->strwork = bstrwork;
+    bstrwork = FALSE;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
     u->rb = relocunit();
     exprtree_begin(&u->outer);
 }
 
-/* no asm counterpart (eval.h): the unit built, its actions kept */
+/* no asm counterpart (eval.h): the unit built, its actions kept, whether
+   its code may use the string work area or a3 noted (strwork) */
 void unitbuilt(struct stmtunit *u)
 {
+    BOOL sw = bstrwork;
+
     if (pc != u->at)
         interr2();                  /* not reached: no code while it is built */
     u->acts = exprtree_end(&u->outer);
+    bstrwork = sw || u->strwork;    /* for a build around the unit */
+    u->strwork = sw;
 }
 
 /* no asm counterpart (eval.h): the unit's code written, the unit ended */
@@ -3724,8 +3732,10 @@ static UWORD amigalib(struct exprnode *n, UWORD *type)
     p = sub + 10;
     for (;;) {
         UWORD t;
-        if ((BYTE)*p++ < 0)
+        if ((BYTE)*p < 0)
             break;                  /* .done */
+        if (*p++ == 0x13)
+            bstrwork = TRUE;        /* a parameter in a3 */
         t = T_LONG;
         k++;
         c = peval(&t);
@@ -4089,6 +4099,7 @@ static void calluse(struct exprnode *n)
    of a statement) used while the expression is built; its code follows */
 static void sbaseuse(void)
 {
+    bstrwork = TRUE;
     if (!bsbase)
         tokuse(workstart);
     bsbase = TRUE;
@@ -4236,6 +4247,8 @@ static UWORD libfunction(struct exprnode *n, UWORD tok, UWORD *type)
         n->own = (UBYTE)sizespec2();
     if (n->own == T_STRING)
         sbaseuse();
+    if (liba3(sub))
+        bstrwork = TRUE;            /* a3 loaded */
     emitact(libenter, n, 0, n->own);
     c = getchar3();
     np = 0;
@@ -4888,6 +4901,7 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
         illprocerr();
     n = callnode(CLK_PROC, oldtype);
     n->value = (ULONG)p;
+    bstrwork = TRUE;                /* its strings, its a3: not known here */
     n->own = (UBYTE)p->rettype;
     if (n->own == T_STRING)
         sbaseuse();
