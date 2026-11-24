@@ -207,6 +207,9 @@ function(basic_test_register prefix dir)
 			set(drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/${id}.bb2)
 			basic_test_driver(${s} ${drv} ${confs})
 			list(APPEND drivers ${drv})
+			# the drivers are compiled by the equivalence passes of blitz2-ab3 too
+			# (tests/ab3/CMakeLists.txt), named STEM/ID
+			set_property(GLOBAL APPEND PROPERTY BASIC_TEST_DRIVERS "${drv}|${stem}/${id}")
 			string(REPLACE "-" "_" name "${prefix}${id}_prev")
 			prev_compile_model_test(${name} ${s} ${drv})
 		endforeach()

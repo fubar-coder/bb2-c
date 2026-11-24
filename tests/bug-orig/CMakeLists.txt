@@ -818,9 +818,34 @@ add_test(NAME inject_alert_stray_broken COMMAND ${CMAKE_COMMAND} -DAMIGA_RUN=${A
 set_tests_properties(inject_alert_stray inject_alert_stray_broken PROPERTIES
 	LABELS emulator SKIP_RETURN_CODE 77 TIMEOUT 240)
 
-add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files})
+# the data sources of the expression matrix's tests of refused cells
+# (compiler/compiler-expr-*.test/, regression/compiler-expr-refused-*.test/),
+# tokenised with the token list of the BASIC test model for the equivalence
+# of blitz2-ab3 (tests/ab3), named ID.test/NAME.bas as in the prev comparison
+file(GLOB exprmatrix_data RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS
+	${CMAKE_CURRENT_SOURCE_DIR}/compiler/compiler-expr-*.test/*.bas
+	${CMAKE_CURRENT_SOURCE_DIR}/regression/compiler-expr-refused-*.test/*.bas)
+set(exprmatrix_data_sources "")
+set(exprmatrix_data_files "")
+foreach(d IN LISTS exprmatrix_data)
+	get_filename_component(name ${d} NAME)
+	get_filename_component(tdir ${d} DIRECTORY)
+	get_filename_component(tdir ${tdir} NAME)
+	string(REGEX REPLACE "\\.bas$" ".bb2" out "${CMAKE_CURRENT_BINARY_DIR}/exprmatrix-data/${d}")
+	get_filename_component(odir ${out} DIRECTORY)
+	add_custom_command(OUTPUT ${out}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${odir}
+		COMMAND ${TEDSRC} tok ${BASIC_TEST_TOKENS} ${CMAKE_CURRENT_SOURCE_DIR}/${d} ${out}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${d} ${BASIC_TEST_TOKENS} basic_test_tokens ${TEDSRC} host_tools
+		COMMENT "Tokenising the data source ${d}"
+		VERBATIM)
+	list(APPEND exprmatrix_data_files ${out})
+	list(APPEND exprmatrix_data_sources "${out}|${tdir}/${name}")
+endforeach()
+add_custom_target(bug_orig_sources ALL DEPENDS ${bug_orig_sources} ${testdata_files} ${exprmatrix_data_files})
 # for the equivalence of blitz2-ab3 (tests/ab3)
 set_property(GLOBAL PROPERTY BUG_ORIG_SOURCES ${bug_orig_sources})
+set_property(GLOBAL PROPERTY EXPRMATRIX_DATA_SOURCES ${exprmatrix_data_sources})
 set_property(GLOBAL PROPERTY BUG_ORIG_USERLIB ${USERLIB})
 if(bug_orig_deps)
 	list(REMOVE_DUPLICATES bug_orig_deps)

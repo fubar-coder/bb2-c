@@ -1,15 +1,19 @@
 # The tests of blitz2-ab3 (docs/ab3/variant.md).
 #
 # Equivalence with blitz2 (BB2 mode): every source of the corpus
-# (tests/corpus/tests*/) and of the bug-orig tests (tests/bug-orig/*/) is
-# compiled through tedstub once by blitz2 (the reference) and once by
-# blitz2-ab3, with the C libraries of this build and the bug-orig test
-# library in blitz2:userlibs; the programs are not run (corpusrun
-# run=off).  Every source must give the same compile result (tedstub's
-# RESULT line: size, or error line and message) and the same executable -
-# byte-identical without runtime error checking, with it the trap #1/#4
-# parameter blocks zeroed (the address of the editor's line item depends
-# on the memory layout).  A bug-orig source that needs more than that
+# (tests/corpus/tests*/), of the bug-orig tests of the old form
+# (tests/bug-orig/*/), the driver of every test of the BASIC test model
+# that the prev build compares (the bug-orig, regression, blitz2 and
+# expression matrix tests) and the data sources of the expression matrix's
+# tests of refused cells is compiled through tedstub once by blitz2 (the
+# reference) and once by blitz2-ab3, with the C libraries of this build,
+# the bug-orig user library and the test library in blitz2:userlibs; the
+# programs are not run (corpusrun run=off).  Every source must give
+# the same compile result (tedstub's RESULT line: size, or error line
+# and message) and the same executable - byte-identical without runtime
+# error checking, with it the trap #1/#4 parameter blocks zeroed
+# (the address of the editor's line item depends on the memory layout).
+# A bug-orig source that needs more than that
 # (RWE userlibs, its own jobs or residents) does not compile in either:
 # it is compared by its error; one that cannot be compared is left out
 # (below).  Nothing of the CD (the executables never contain
@@ -18,12 +22,25 @@
 get_property(corpus_sources GLOBAL PROPERTY CORPUS_SOURCES)
 get_property(bug_orig_sources GLOBAL PROPERTY BUG_ORIG_SOURCES)
 get_property(bug_orig_userlib GLOBAL PROPERTY BUG_ORIG_USERLIB)
+# the drivers of the tests of the BASIC test model compared with the prev build
+# (cmake/basic-test-model.cmake: PATH|STEM/ID) and the data sources of the
+# expression matrix's tests of refused cells (PATH|ID.test/NAME.bas), with the
+# test library in blitz2:userlibs
+get_property(model_drivers GLOBAL PROPERTY BASIC_TEST_DRIVERS)
+get_property(exprmatrix_data GLOBAL PROPERTY EXPRMATRIX_DATA_SOURCES)
 # not compared - NAME|reason:
 #   compiler-maxs-libjsr      the unresolved JSRs inside linked library code
 #                             (#335) put addresses of the compiler's memory
 #                             into the executable: they depend on its layout
-foreach(n compiler-maxs-libjsr)
+#   compiler-expr-1178-dl-b-01, compiler-expr-1178-i1-j-c-01,
+#   compiler-expr-1178-i2-j-c-01, compiler-expr-1178-pl-b-01 (the drivers)
+#                             the same: two JSRs of a linked library
+#                             routine (behind the division routines) keep
+#                             the compiler's addresses, not relocated
+foreach(n compiler-maxs-libjsr compiler-expr-1178-dl-b-01 compiler-expr-1178-i1-j-c-01
+		compiler-expr-1178-i2-j-c-01 compiler-expr-1178-pl-b-01)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
+	list(FILTER model_drivers EXCLUDE REGEX "/${n}\\.bb2\\|")
 endforeach()
 set(AB3_EQUIVALENCE_TIMEOUT 600 CACHE STRING
 	"ab3 equivalence: time limit of one emulator session (seconds)")
@@ -37,8 +54,12 @@ function(equivalence_pass name runtime_errors)
 		"parallel=${CORPUS_PARALLEL}\nted=$<TARGET_FILE:tedstub>\n"
 		"config=blitz2|ref|$<TARGET_FILE:blitz2>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
 		"config=ab3|exe|$<TARGET_FILE:blitz2-ab3>|${BLITZ2_DIR}/deflibs|${BLITZ2_DIR}/acidlibs\n"
-		"file=blitz2/userlibs/bugorig/bugorig.obj|${bug_orig_userlib}\n")
+		"file=blitz2/userlibs/bugorig/bugorig.obj|${bug_orig_userlib}\n"
+		"file=blitz2/userlibs/testlib/testlib.obj|${TESTLIB_OBJ}\n")
 	foreach(s IN LISTS corpus_sources bug_orig_sources)
+		string(APPEND text "source=${s}\n")
+	endforeach()
+	foreach(s IN LISTS model_drivers exprmatrix_data)
 		string(APPEND text "source=${s}\n")
 	endforeach()
 	file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
