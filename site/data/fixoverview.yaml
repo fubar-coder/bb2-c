@@ -8159,3 +8159,11 @@ rows:
     text: "The blank between a macro call and what follows it on the line is kept, so `!mw b` with the macro text `!mq` expands to `!mq b`; the original dropped it and glued a macro text ending in a letter or digit to the next name or number (`!mqb`, \"Macro not Found\" or another macro)."
     page: compiler
     anchor: macros
+  - issue: 1211
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "OS library functions (`Name_`)"
+    text: "An OS library function after a Float calculation in the same expression no longer makes the Float operations after it go through that library: `Abs(-2)+FindTask_(0)` crashed, `x*y+IEEESPFix_(i)` gave a wrong value; an OS call before the Float part was not affected."
+    page: compiler
+    anchor: expressions-and-statements

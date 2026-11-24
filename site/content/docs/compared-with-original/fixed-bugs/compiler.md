@@ -1017,6 +1017,12 @@ Each point says first what the original did, then what the port does.
   with it is a compile error
   ([`AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte]({{< relref "/docs/compared-with-original/new-errors#byte-fraction-operator" >}}),
   [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
+* An AmigaOS function (`Name_`) after a Float calculation in the same
+  expression made the Float operations after it go through that
+  library: `Abs(-2)+FindTask_(0)` crashed and `x*y+IEEESPFix_(i)` gave a
+  wrong value. The Float operations use their own library again; an
+  AmigaOS function before the Float part was not affected
+  ([#1211](https://github.com/fubar-coder/bb2-c/issues/1211)).
 
 ### Names, labels and constants
 
