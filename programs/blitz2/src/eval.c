@@ -1088,11 +1088,23 @@ static UWORD evalbuild(WORD push, UWORD *type, WORD unk)
     return c;
 }
 
+static UWORD evalunit(WORD push, UWORD *type, WORD unk, void (*before)(UWORD type));
+
 /* blitz2.s:8879 maineval2 - d2=type to get, d1=push flag.  Outside an
    expression it begins the unit (exprtree.h): the expression is built,
    then its actions write its code; inside one (a parameter, an index) it
    is built as a part of it. */
 UWORD maineval2(WORD push, UWORD *type, WORD unk)
+{
+    if (exprtree_building())
+        return evalbuild(push, type, unk);
+    return evalunit(push, type, unk, NULL);
+}
+
+/* no asm counterpart; replaces blitz2.s:8879 maineval2 outside an
+   expression - the unit of an expression: built, the code of before (the
+   type got; NULL: none), then the expression's code */
+static UWORD evalunit(WORD push, UWORD *type, WORD unk, void (*before)(UWORD type))
 {
     struct exprunit outer;
     struct exprmark m;
@@ -1101,8 +1113,6 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     BOOL s_bsbase = bsbase;
     UWORD c, rb;
 
-    if (exprtree_building())
-        return evalbuild(push, type, unk);
     m = exprtree_mark();
     bsbase = sbasegot != 0;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
@@ -1111,6 +1121,8 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     c = evalbuild(push, type, unk);
     if (pc != at)
         interr2();                  /* not reached: no code while it is built */
+    if (before)
+        before(*type);
     exprtree_run(exprtree_end(&outer));
     relocdrop(rb);
     exprtree_unwind(m);
@@ -1118,6 +1130,22 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
     codeseq = s_codeseq;
     bsbase = s_bsbase;
     return c;
+}
+
+/* no asm counterpart (eval.h): bakevalu with code before the
+   expression's (doselect) */
+UWORD bakevalubefore(UWORD *type, void (*before)(UWORD type))
+{
+    WORD push = 0;
+
+    bakup();
+    if (exprtree_building())
+        interr2();                  /* not reached: a statement's expression */
+    if (regat >= 6) {               /* maineval */
+        push = -1;
+        regat = 6;
+    }
+    return evalunit(push, type, -1, before);
 }
 
 /* no asm counterpart (eval.h): a constant computed in the middle of an

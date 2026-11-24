@@ -173,6 +173,10 @@ UWORD eval(UWORD *type);        /* 8857  push 0, convert            */
 UWORD bakeval(UWORD *type);     /* 8855  bakup; eval                */
 UWORD evalu(UWORD *type);       /* 8847  push 0, unknown            */
 UWORD bakevalu(UWORD *type);    /* 8845  bakup; evalu               */
+/* no asm counterpart: bakevalu outside an expression, before(type got)
+   writing its code after the expression is built and before the
+   expression's code (doselect) */
+UWORD bakevalubefore(UWORD *type, void (*before)(UWORD type));
 UWORD evalu2(UWORD *type);      /* 8851  push type, unknown         */
 UWORD peval(UWORD *type);       /* 8841  push result, convert       */
 UWORD bakpeval(UWORD *type);    /* 8839  bakup; peval               */

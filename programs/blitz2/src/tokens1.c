@@ -1350,6 +1350,16 @@ void docase(UWORD c)
     pokewd(selbne[0]);                          /* disp placeholder */
 }
 
+/* no asm counterpart; replaces blitz2.s:13183-13192 doselect's pushstart,
+   pushdo, clr and pushput - the code before Select's expression of type
+   type (built whole): for a string the clr.l -(a7) the original put in
+   front of the expression's code it had moved away */
+static void selclr(UWORD type)
+{
+    if (type == T_STRING)
+        pokewd(clrst[0]);
+}
+
 /* blitz2.s:13175 doselect - OK, as in : SELECT opt */
 void doselect(UWORD c)
 {
@@ -1360,13 +1370,8 @@ void doselect(UWORD c)
     if (debugga)
         pokel(tl(pcchk));                       /* move #"sE",-(a7) */
     sellineat = linenumat;
-    pushstart();                                /* we may have to CLR -(a7)! */
     type = 0;
-    bakevalu(&type);                            /* Evaluate */
-    pushdo();
-    if (type == T_STRING)
-        pokewd(clrst[0]);
-    pushput();                                  /* .nos */
+    bakevalubefore(&type, selclr);              /* Evaluate; .nos */
     if (type == T_BYTE) {
         pokecode(selpushb, selpushbf);
     } else if (type == T_WORD) {
