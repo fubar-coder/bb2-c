@@ -16,6 +16,13 @@
 ; case, behind a Goto that skips it; the labels rec1 and rec2 continue the
 ; case after a trap: each restores the stack pointer (the trap left the
 ; library's frames on it) and checks the message.
+; Where the original's branch lands is the head of the library the
+; compiler copies behind screenslib.  The expression WBWidth (library 193)
+; behind the Goto before the FindScreen is never run: it makes the
+; compiler copy library 193 (and the dos library it needs) before
+; screenslib instead of behind it, so that library 161 follows screenslib.
+; Its head is four words of zeros (ORI.b #0,d0) and a MOVE.w and an RTS:
+; the original returns from the Screen as if nothing were wrong.
 DEFTYPE .l
 
 !TestCase{messages}
@@ -25,6 +32,9 @@ DEFTYPE .l
   Poke.l ?ar+8,?rec1
   Poke.l t+50,?th
   LEA sv(pc),a0 : MOVE.l a7,(a0)
+  Goto lk
+  x=WBWidth
+lk:
   FindScreen 0,"bb2-c: no screen has this title"
   Poke.l t+50,o
   !Check{0,"no_error_1"}

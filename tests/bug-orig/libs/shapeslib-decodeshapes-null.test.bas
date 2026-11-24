@@ -12,6 +12,14 @@
 ; the case, behind a Goto that skips it; the label rec continues the case
 ; after a trap: it restores the stack pointer (the trap left the library's
 ; frames on it), checks the message and goes on with the next form.
+; Where the original's branch lands is the code at offset $28 of the
+; library the compiler copies behind shapeslib.  The statements BitMap and
+; Plot behind the Goto before the first DecodeShapes are never run: they
+; make the compiler copy the libraries that shapeslib's calls pull in
+; before it, so that shapeslib is the last library but the one the
+; compiler appends (library 65035): at its offset $28 are MOVEQ #0,d0 and
+; an RTS, so the original returns from both forms as if nothing were
+; wrong.
 DEFTYPE .l
 
 !TestCase{null_address}
@@ -20,6 +28,12 @@ DEFTYPE .l
   Poke.l ?ar+4,o
   Poke.l t+50,?th
   LEA sv(pc),a0 : MOVE.l a7,(a0)
+  Goto lk
+  BitMap 0,320,200,4
+  BLITZ
+  Plot 0,0,1
+  AMIGA
+lk:
   k=1
   DecodeShapes 0,0
   !Check{0,"no_error_1"}

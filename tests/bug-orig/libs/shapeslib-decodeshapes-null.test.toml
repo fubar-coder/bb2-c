@@ -1,11 +1,9 @@
 # shapeslib-decodeshapes-null.test.bas: the trap handler of the program
 # continues at the label rec; the checks behind the faulty statements
 # (no_error_1, no_error_2) are reached only if no error is raised.  The
-# original's branch lands behind the library; where it ends depends on the
-# code behind the library, that is on the layout of the test program: it
-# crashes, hangs or returns without the error (the alternatives below).
-# Every cell with the CD's libraries runs in its own session (a crash ends
-# the session).
+# original's branch lands behind the library, in the library the compiler
+# copies there (see the source): it returns without the error.
+# Every cell with the CD's libraries runs in its own session.
 fixed-orig = 270
 isolate = ["libs=cd"]
 
@@ -14,6 +12,5 @@ isolate = ["libs=cd"]
 "check.null_address.no_error_2" = "== not-run"
 
 [ends."libs=cd"]
-reason = "the original's error branch lands behind the library (#270): a jump into other code, so the end is not defined; what runs there depends on the code layout of the test program: it can crash, hang or return without the error, so that the checks behind the faulty statements run and fail"
-abnormal = ["any"]
+reason = "the original's error branch lands behind the library (#270), at offset $28 of the library the compiler copies there (the layout of the test program: BitMap and Plot behind a Goto make the compiler copy the libraries that shapeslib's calls pull in before shapeslib, so the last library, the one the compiler appends, follows it); there are MOVEQ #0,d0 and an RTS, so both forms return without the error and the checks behind them fail"
 returns = ["session == done", "rc == 0", "end.case exists", "check.null_address.no_error_1 == fail", "check.null_address.no_error_2 == fail"]

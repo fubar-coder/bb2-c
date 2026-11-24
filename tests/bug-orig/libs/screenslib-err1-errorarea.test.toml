@@ -3,11 +3,10 @@
 # statements (no_error_N) are reached only if no error is raised.  The
 # original shows a garbage text for the first error (read from the memory
 # its pointer leads to, so the deviation says that it is not the message)
-# and runs into other code for the second: a crash ("Software Failure", the
-# session runs into its timeout; each cell with the CD's libraries has its
-# own session).
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# and, for the second, runs into the head of the library behind screenslib
+# (each cell with the CD's libraries has its own session).
+# The end is deterministic: the original's branch lands behind the library,
+# in the head of library 161, which returns (see the source).
 fixed-orig = 251
 isolate = ["libs=cd"]
 
@@ -20,5 +19,5 @@ isolate = ["libs=cd"]
 "check.messages.message_1.actual" = "!= \"Can't find Screen\""
 
 [ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#251): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+reason = "the original's branch for the second error lands behind the library (#251), in the head of the library the compiler copies there (the layout of the test program: the expression WBWidth behind a Goto makes the compiler copy library 193 and the dos library before screenslib, so that library 161 follows it); the head is four words of zeros, a MOVE.w and an RTS, so Screen returns without the error and the check no_error_2 fails"
+returns = ["session == done", "rc == 0", "end.case exists", "check.messages.no_error_2 == fail"]

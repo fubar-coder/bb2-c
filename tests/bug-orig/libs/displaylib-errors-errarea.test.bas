@@ -12,6 +12,13 @@
 ; The handler (labels, assembler and the data of its longs) stands in the
 ; case, behind a Goto that skips it; the label rec continues the case
 ; after the trap, checks the message and ends the program.
+; Where the original's branch lands is the head of the library the
+; compiler copies behind displaylib.  The statement DisplayOn (slicelib,
+; Blitz mode) behind the Goto before the InitCopList is never run: it
+; makes the compiler copy the library 65510 that displaylib's calls would
+; pull in behind it before displaylib, so that spriteslib (112) follows
+; displaylib.  Its first instructions only set its variables and return:
+; the original returns from InitCopList as if nothing were wrong.
 DEFTYPE .l
 
 !TestCase{nine_planes}
@@ -19,6 +26,11 @@ DEFTYPE .l
   o=Peek.l(t+50)
   Poke.l ?ar+4,o
   Poke.l t+50,?th
+  Goto lk
+  BLITZ
+  DisplayOn
+  AMIGA
+lk:
   InitCopList 0,$9
   Poke.l t+50,o
   !Check{0,"no_trap"}

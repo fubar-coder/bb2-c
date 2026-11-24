@@ -16,6 +16,14 @@
 ; case, behind a Goto that skips it; the labels rec1 and rec2 continue the
 ; case after a trap: each restores the stack pointer (the trap left the
 ; library's frames on it) and checks the message.
+; Where the original's branch for the second error lands is the code at
+; offset $28 of the library the compiler copies behind animlib.  The
+; expression ReadSerial(0) behind the Goto after rec2 is never run: it
+; makes the compiler copy serial library 90 behind animlib (the last
+; library, the one the compiler appends, follows it).  At its offset $28
+; are ORI.b #2,d4 (the data of a branch), MOVEA.l (a7)+,a6 and an RTS:
+; the saved a4 of the LoadAnim is popped and the original returns from it
+; as if nothing were wrong.
 DEFTYPE .l
 
 !TestCase{messages}
@@ -45,6 +53,7 @@ rec2:
   Poke.l t+50,o
   !CheckStrEq{Peek$(Peek.l(?ar)),"Can't Open Anim File","message_2"}
   Goto fin
+  x=ReadSerial(0)
 
 th:
   CMP.l #32,(a7) : BNE thold

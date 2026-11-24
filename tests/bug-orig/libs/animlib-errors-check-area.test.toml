@@ -3,11 +3,10 @@
 # statements (no_error_N) are reached only if no error is raised.  The
 # original shows a garbage text for the first error (read from the memory its
 # pointer leads to, so the deviation says that it is not the message) and
-# runs into other code for the second: a crash ("Software Failure", the
-# session runs into its timeout; each cell with the CD's libraries has its
-# own session).  The ANIM is staged as CORPUS:op3.anim.
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# runs into the library behind animlib for the second (each cell with the
+# CD's libraries has its own session).  The ANIM is staged as
+# CORPUS:op3.anim.  The end is deterministic: the original returns from the
+# second LoadAnim (see the source).
 fixed-orig = 398
 files = ["op3.anim|@TESTDATA@/animlib-errors-check-area.anim"]
 isolate = ["libs=cd"]
@@ -21,5 +20,5 @@ isolate = ["libs=cd"]
 "check.messages.message_1.actual" = "!= \"Anim format not supported\""
 
 [ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#398): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+reason = "the original's branch for the second error lands behind the library (#398), at offset $28 of the library the compiler copies there (the layout of the test program: the expression ReadSerial(0) behind a Goto makes the compiler copy serial library 90 behind animlib); there are ORI.b #2,d4, MOVEA.l (a7)+,a6 and an RTS, so LoadAnim returns without the error and the check no_error_2 fails"
+returns = ["session == done", "rc == 0", "end.case exists", "check.messages.no_error_2 == fail"]

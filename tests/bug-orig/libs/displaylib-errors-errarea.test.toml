@@ -1,9 +1,9 @@
 # displaylib-errors-errarea.test.bas: the trap handler of the program
 # continues at the label rec, which ends the program, so the case has no end
-# entry and the check behind the InitCopList is not run.  The original runs
-# into other code: how that ends (a crash with the "Software Failure"
-# requester, a hang) is not defined; each cell with the CD's libraries has
-# its own session.
+# entry and the check behind the InitCopList is not run.  The original's
+# branch lands in the library the compiler copies behind displaylib; the
+# test makes that spriteslib (see the source), so the original returns
+# without the error and the case goes on to the check.
 fixed-orig = 412
 isolate = ["libs=cd"]
 
@@ -12,5 +12,5 @@ isolate = ["libs=cd"]
 "check.nine_planes.no_trap" = "== not-run"
 
 [ends."libs=cd"]
-reason = "the original runs into other code (#412): a jump into data, so the end is not defined; it crashes (the Software Failure requester is written more or less before the session ends) or hangs"
-abnormal = ["any"]
+reason = "the original's branch lands behind the library (#412), in the head of spriteslib, the library the compiler copies there (the layout of the test program: DisplayOn behind a Goto makes the compiler copy library 65510, which displaylib's calls pull in, before displaylib, so spriteslib follows it); the head sets spriteslib's variables and returns, so InitCopList returns without the error and the check no_trap fails"
+returns = ["session == done", "rc == 0", "end.case exists", "check.nine_planes.no_trap == fail"]
