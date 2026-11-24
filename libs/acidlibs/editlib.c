@@ -46,10 +46,10 @@
  *     unchanged (an invalid argument).
  *
  * BUG(orig), kept:
- *   - Edit with n = 80 reads up to 81 characters (Read d0+1) into the
- *     80 byte buffer: the 81st overwrites the high byte of pars.length,
- *     which is written again before it is read.  Without the debugger n
- *     is not checked at all. (#131)
+ *   - By design (#131): Edit with n = 80 reads up to 81 characters (Read
+ *     d0+1) into the 80 byte buffer: the 81st overwrites the high byte of
+ *     pars.length, which is written again before it is read.  Without the
+ *     debugger n is not checked at all.
  *
  * Registers: the original changes d0/d1/a0/a1 and whatever the handler
  * changes, Inkey$(n) d6/d7; Edit$ keeps d2, Edit a2/a3/a6.  C keeps

@@ -27,13 +27,15 @@
  *     GadgetStatus of a toggle/non-text gadget: SNE/EXT.w, the upper word
  *     of d0 is that of the GadgetText pointer; ButtonId: the upper word of
  *     d0 is that of the gadget pointer.
- *   - findgadget does not stop at the end of the list (only the error
- *     checks of the debugger do) (#166); TextGadget with an empty text has
- *     IText 0 (allocst of length 0; not a bug: Intuition prints the empty
- *     string at address 0, no effect seen).
- *   - makeintuishape: depth 0 gives PlanePick $FF (DBF 65536 times); the
- *     error checks refuse such a shape at its creation (InitShape, #243),
- *     so it is caught with runtime error checking (#167).
+ *   - By design (#166): findgadget does not stop at the end of the list
+ *     (only the error checks of the debugger do).
+ *   - Not a bug: TextGadget with an empty text has IText 0 (allocst of
+ *     length 0): Intuition prints the empty string at address 0, no
+ *     effect seen.
+ *   - Fixed (#167, #243): makeintuishape with depth 0 gives
+ *     PlanePick $FF (DBF 65536 times); the error checks refuse such a
+ *     shape at its creation (InitShape), so it is caught with runtime
+ *     error checking; the release code is unchanged.
  * Fixed (intended deviation, #952): SelectMode only stored the mode
  *   (selmode), which nothing read; the gadgets got defflags (never set,
  *   0 = GADGHCOMP): SelectMode 1 (box) had no effect.  SelectMode now sets

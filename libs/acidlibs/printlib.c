@@ -66,10 +66,11 @@
  *     the address) (#242); now the result is the string itself.
  *
  * BUG(orig):
- *   - Format with more than 32 characters (no check without the
- *     debugger): the copy runs over formlen/formlead/formtrail/decpos and
- *     further into the conversion buffers (the layout of the variables
- *     below is that of the original so that this goes the same way). (#240)
+ *   - By design (#240): Format with more than 32 characters (no check
+ *     without the debugger): the copy runs over formlen/formlead/
+ *     formtrail/decpos and further into the conversion buffers (the
+ *     layout of the variables below is that of the original so that this
+ *     goes the same way).
  * Not bugs:
  *   - the output style of Blitz 2, the same for Quick and Float: numbers
  *     below 1 have no leading 0 (".5"); 0 is "0".

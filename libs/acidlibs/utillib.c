@@ -22,9 +22,9 @@
  *     name (DBRA on the length's low word).  The length is -4(a2) of the
  *     caller (a2 = the compiler's argument pointer, see memacclib.c).
  *   - On a failed allocation "Failed to allocate memory for Port" (the
- *     port block stays allocated if the name allocation fails).  After
- *     TRAP #0 the original runs into its message text; not reproduced
- *     (DIFF, K: the C version returns 0, #300).
+ *     port block stays allocated if the name allocation fails).
+ *   - Fixed (correction, kind K, #300): after TRAP #0 the original runs
+ *     into its message text; the C version returns 0 (DIFF, K).
  *   - Not a bug (the intended semantics, any allocated signal): Wait waits
  *     for ALL allocated signals of the task (tc_SigAlloc).
  *

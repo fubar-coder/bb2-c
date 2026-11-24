@@ -18,10 +18,11 @@
  * bytes to the write half, which then gets its own port and signal.
  *
  * Kept from the original (BUG(orig)):
- *   - A unit that is not open: runtime error "Serial Device Not Open"
- *     (TRAP #0, also without the debugger; the original then runs into
- *     the message text, the C version returns) (#262).  SerialEvent checks
- *     nothing (not a bug: it tests bit 0 of a cleared slot and returns 0).
+ *   - Fixed (correction, kind K, #262): a unit that is not open: runtime
+ *     error "Serial Device Not Open" (TRAP #0, also without the
+ *     debugger); the original then runs into the message text, the C
+ *     version returns (DIFF, K).  SerialEvent checks nothing (not a bug:
+ *     it tests bit 0 of a cleared slot and returns 0).
  * Fixed (intended deviations, kind F):
  *   - unit index: OpenSerial, WriteSerial, WriteSerialString,
  *     WriteSerialMem, ReadSerialMem, ReadSerial and ReadSerialString use

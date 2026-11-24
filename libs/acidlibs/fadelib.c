@@ -35,8 +35,9 @@
  *   in Slice" (err2).
  *
  * Kept from the original (BUG(orig)):
- *   - Without high/low colours the range is 0..min(colours of the
- *     palette, colours of the slice)-1; with them nothing is clipped. (#136)
+ *   - By design (#136): without high/low colours the range is
+ *     0..min(colours of the palette, colours of the slice)-1; with them
+ *     nothing is clipped.
  *   - Not a bug (both are meant to start at 0): the init clears fadenum and
  *     fadetype together (CLR.l fadenum).
  */

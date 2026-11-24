@@ -20,7 +20,7 @@
  * Covered: every entry; functions without a port and without a current
  * message (0); the error check portchk with a port; RXCreatePort twice;
  * the tokenizer, one command per case (spaces, quotes, empty quotes in a
- * word, a doubled quote: BUG(orig) #535, the character after a closing
+ * word, a doubled quote: fixed #535, the character after a closing
  * quote: #538, an empty word: #536, a closing quote at the end of a
  * command after a longer one: #538, RXQuoteChar), RXTokenise off and
  * "off" with a word whose upper word is set (#547, fixed); RXGetArg 0..17,

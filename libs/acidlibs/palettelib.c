@@ -79,9 +79,10 @@
  *     CyclePalette/Cycle ran behind them into the next object.  Here a
  *     palette that gets its first colour data gets the end mark unless the
  *     table has one.
- *   - ShowPalette/Use Palette in Amiga mode with an empty palette run
- *     into b_showpal (V39: a0 from somewhere; else make4bitrgbs, a0 = the
- *     palette) and write nothing (count 0) - here both simply return (DIFF). (#230)
+ *   - Fixed (correction, kind K, #230): ShowPalette/Use Palette in Amiga
+ *     mode with an empty palette run into b_showpal (V39: a0 from
+ *     somewhere; else make4bitrgbs, a0 = the palette) and write nothing
+ *     (count 0) - here both simply return (DIFF).
  *   - Not a bug (overflows only for palettes of 2731+ colours): sizes with
  *     ADDQ.w #8 (InitPalette), word indices (MULU #12 + LEA 4(a0,d1.w)).
  * DIFF: the original jumps from the normal code into the error check area

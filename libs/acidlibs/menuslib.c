@@ -31,8 +31,8 @@
  *     in afterwards.
  *   - Not a bug (a limitation acknowledged in the original source): MenuTitle
  *     width = 8 * length + 8 ("8 wide font, for now").
- *   - No checks without the debugger: wrong menu/item numbers walk over
- *     the end of the lists. (#416)
+ *   - By design (#416): no checks without the debugger: wrong menu/item
+ *     numbers walk over the end of the lists.
  * Fixed (intended deviation, #981): an empty text of a menu, item or
  *   subitem was copied with allocst, which returns 0 for length 0: the 0
  *   became the MenuName or IText, read at address 0 by IntuiTextLength

@@ -16,10 +16,10 @@
  * serial=on, tests/corpus/runner/serial.h).  Observed with the inputs (other registers =
  * markers): d0 of the functions, the kept registers, INTENAR
  * (InitSerialIO switches TBE/RBF off - called with both on inside
- * Disable(); FinitSerialIO must not change it nor the word at $9A,
- * BUG(orig) (#648, #651)) and the library's state block: mode, numbytes,
+ * Disable(); FinitSerialIO must not change it nor the word at $9A;
+ * the original does, fixed #648, #651) and the library's state block: mode, numbytes,
  * inbuf, outbuf, baud (= the SERPER value written, which cannot be read
- * back), inten ($F01C, BUG(orig) (#651)) and temp.  The C build keeps the
+ * back), inten (the original stores $F01C, fixed #651) and temp.  The C build keeps the
  * original's layout of these 18 bytes; the test finds them in the
  * library after the first InitSerialIO by its inbuf/outbuf values.
  * Covered: CheckSerial (no byte: -1), FlushSerialIO, SetSerialMode,
