@@ -1165,6 +1165,20 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     `expr-tree-4a-emit-after-build`, its decision 4).
   - First count in the corpus how often such expressions occur
     (`Len` of a literal, of a concatenation, of a plain variable).
+- [ ] **`x/2*2` as an even-number operation** (user decision 2026-11-24,
+  expr-tree-5 Q4, F3: a candidate for after the expression tree, #1180
+  step 6): under a wanted Long the quotient of `/` is whole at once
+  (towards zero), so `r.l=i/2*2` with i=7 gives 6. The pair `/2*2` must not
+  become a no-op, but its effect is "the whole number towards zero made
+  even", which blitz2 can compute without the division and the
+  multiplication: for whole values `x - (x Mod 2)` with the remainder
+  towards zero, i.e. for x >= 0 `x AND -2`, for x < 0 `(x+1) AND -2`
+  (branch-free: add the sign bit, then clear bit 0); likewise `/2^n*2^n`
+  clears the low n bits after adding `2^n-1` for a negative x. For a Quick
+  operand the same on its whole part. An optimization with intended byte
+  changes (`-DPREV_INTENDED`) and tests of the results for positive,
+  negative and odd values; first count in the corpus how often `/2^n*2^n`
+  occurs.
 
 ## 3 Only once §1 is done
 
