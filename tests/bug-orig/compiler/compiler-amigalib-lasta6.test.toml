@@ -1,6 +1,17 @@
-# compiler-amigalib-lasta6.test.bas: an open bug (#1211):
-# the port has the same behaviour as the original, so every cell shows
-# the declared deviations
+# compiler-amigalib-lasta6.test.bas: the originals (1.95 and 2.10) leave
+# lasta6 as it was after an OS library function: the FFP calls after
+# IEEESPFix_ go through mathieeesingbas.library's base and compute a wrong
+# value
+fixed-orig = 1211
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+
 [deviations."compiler=orig195"]
+"check.float.after_a_float_operation" = "== fail"
+"check.float.after_a_float_operation.actual" = "== $BF800084"
+
+[deviations."compiler=orig210"]
 "check.float.after_a_float_operation" = "== fail"
 "check.float.after_a_float_operation.actual" = "== $BF800084"

@@ -2956,13 +2956,12 @@ static void osexit(struct exprnode *n)
     }
     if (!a45)                       /* .nopars */
         pokel(L_(libbase));
-    /* BUG(orig) (#1211): libbase loads the OS library's base
-       into a6, but lasta6 still names the base a6 held before (the FFP
-       base after a Float operation, a library's after its function), so
-       an FFP call after this one in the same expression (the conversion
-       of the result, the operation) skips its load and jumps through the
-       OS library's base: Abs(-2)+FindTask_(0) crashes (test
-       compiler-amigalib-lasta6). */
+    /* Fixed (#1211): a6 now holds the OS library's base, so lasta6 is
+       unknown: an FFP call or a library function with a base in a6 after
+       this one in the same expression loads its base again (the original
+       left lasta6 as it was: Abs(-2)+FindTask_(0) jumped through exec's
+       base; test compiler-amigalib-lasta6). */
+    lasta6 = -1;
     pokel(L_(libjsr));
     if (a45)
         pokel(0x4cdf3000UL);        /* fixed (#958): movem.l (a7)+,a4/a5 */
