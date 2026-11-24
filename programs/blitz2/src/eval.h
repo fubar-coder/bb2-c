@@ -187,13 +187,9 @@ void arrszchk(void);            /* 8812  emit cmpi.l #$10000,Dn / bcs / jsr arre
 /* "don't convert" flag of the current maineval (asm: unknown dc 0) */
 extern WORD unknown;
 
-/* constant folding stack (one entry per element, see struct forthent);
-   reset by prepstack.  asm bound: `cmp.l #forthsp,a1` = end of forthstack */
-extern struct forthent forthstack[32];
-extern struct forthent *forthsp;
 
 /* Constant folding (eval5, blitz2.s 9007-9083; eval.c constfold, called by
-   exprtree_emit), DIFF/G: when both operands are constants, the fold
+   binopact), DIFF/G: when both operands are constants (BNF_FOLD), the fold
    appends `move.l Dn,d0 / rts` to the code generated
    for the subexpression and RUNS it at compile time:
        struct m68kregs r;   (d2/a5 of the compiler need no saving in C)
@@ -201,9 +197,9 @@ extern struct forthent *forthsp;
        r.a[5] = (ULONG)&MathBase - ffplib->varoff;       asm: lea maths,a5
                                                             sub 10(ffplib),a5
        flushc();
-       callregs((APTR)left->pc, &r);   value = r.d[0]
-   then rewinds pc to left->pc, emits move.l/move.w #value,Dn and frees the
-   offset nodes added since left->firstoff that lie in the folded code
+       callregs((APTR)start, &r);   value = r.d[0]   (start: the left operand's code)
+   then rewinds pc to start, emits move.l/move.w #value,Dn and frees the
+   offset nodes added since the left operand began that lie in the folded code
    (exec FreeMem, 8 bytes; fixed #1049: those of a library linked in
    meanwhile stay). */
 

@@ -173,7 +173,7 @@ enum {
 enum {
     ELF_POINT = 1,              /* CONST: a literal with a point or an exponent */
     ELF_CUT = 2,                /* CONST: such a literal made a whole number (#1186: litcut) */
-    ELF_FOLD = 4,               /* CONST: a constant of the fold (forthstack's constgot 0) */
+    ELF_FOLD = 4,               /* CONST: a constant of the fold (the forthstack's constgot 0) */
     ELF_BYTE = 8,               /* VAR: a Byte value, extended to a Word (#978: bytevalend) */
     ELF_RAW = 16,               /* VAR: a Quick held raw under a Long (#1178: rawq) */
     ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177: conv) */

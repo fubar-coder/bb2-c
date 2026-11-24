@@ -128,8 +128,6 @@ WORD unknown = 0;           /* 8801 */
    sbtolong reads it, reached through convtable handlers that take no
    parameters; saved/restored by maineval2 like the asm) */
 static WORD thisstuse = 0;
-struct forthent forthstack[32];         /* 9715 ds.b 18*32 */
-struct forthent *forthsp = forthstack;  /* 9716 */
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
 /* Fixed (#978), no asm counterpart: pc after the code of the last byte
@@ -191,14 +189,14 @@ static ULONG letelem = 0;
    that code.  The evaluation that began the unit (maineval2 outside one)
    runs the actions when the whole expression is built.  An action writes
    its code from its node and the emitter's state (pc, lasta6, sbgot,
-   stackuse, forthstack's positions...), with regat, varmode and evaldepth
-   as they were where its part was read (ctx).  What the build decides from
-   the code the original had written by then, it decides from what it has
-   read and recorded: the records below. */
+   stackuse, the facts of the code before it...), with regat, varmode and
+   evaldepth as they were where its part was read (ctx).  What the build
+   decides from the code the original had written by then, it decides from
+   what it has read and recorded: the records below. */
 
-/* the forthstack as the build has it: per pending element whether it is
-   a constant (constgot 0) and a Byte or Word value (#1179); the emitter's
-   forthstack holds where the element's code begins */
+/* the forthstack (blitz2.s:9715) as the build has it: per pending element
+   whether it is a constant (constgot 0) and a Byte or Word value (#1179);
+   the fold runs from the start of its left operand's code (constfold) */
 static struct {
     UWORD constgot;
     UBYTE wordval;
@@ -352,13 +350,14 @@ static void doplus2(UWORD opcode);
 static ULONG cmpownleft(ULONG lstart, ULONG lend);
 /* the operator operate emits has two constants (BNF_FOLD) */
 static BOOL foldnow = FALSE;
+/* where its left operand's code begins (divzerochk) */
+static ULONG foldfrom = 0;
 /* operate is run for the check of a division by zero only (divzerobuild) */
 static BOOL zeroonly = FALSE;
 static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
 static void divzerochk(const struct opentry *op, UWORD type);
 static UWORD getelement(UWORD *type);
 static UWORD getelement2(UWORD *type);
-static void nocando(void);
 static void domylib(UWORD tok);
 static void doflib(WORD lvo);
 static void makesbase(void);
@@ -1191,12 +1190,13 @@ void exprresume(struct exprunit *s)
 
 
 /* blitz2.s:9017 the constant fold of eval5 (exprtree_emit): the code of
-   the last two operands (both constants: forthsp[-2], forthsp[-1]) and
-   their operator is run and replaced by a move of the result (of type
-   `type`) into regat. */
-static void constfold(UWORD type)
+   the operator n's two operands (both constants, BNF_FOLD) and the
+   operation is run and replaced by a move of the result (of type `type`)
+   into regat.  Where the left operand's code begins, the relocations and
+   lasta6 then: its first action s (exprtree_operand's startmark). */
+static void constfold(const struct expract *s, UWORD type)
 {
-    struct forthent *fs = forthsp;
+    ULONG at = ((const struct exprnode *)s->p)->start;
     struct m68kregs r;
     struct offnode *node, *keep, **link;
     ULONG value, foldend;
@@ -1224,8 +1224,8 @@ static void constfold(UWORD type)
        quote, so quoteflag stayed set after the expression and the operands
        evaluated next (earlier lines, insasm prepends) lost their spaces
        inside quotes: #" " gave 0. */
-    lasta6 = fs[-2].lasta6w;
-    pc = fs[-2].pc;
+    lasta6 = (WORD)s->y;
+    pc = at;
     /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
        registers; C runs the code through callregs with a6 = maths and a5
        such that ffplib's var slot is `maths` */
@@ -1245,16 +1245,16 @@ static void constfold(UWORD type)
     }
     fraclitdrop();                  /* #1186 */
     /* .mode - clean up offset stack.  Fixed (#1049): only the offsets
-       inside the folded code (fs[-2].pc up to foldend) are freed.  The
+       inside the folded code (at up to foldend) are freed.  The
        original freed every offset added since the fold began, also the
        relocations of a library that uselib3 linked in meanwhile (its code
        lies in the library area, not in the program code): a constant Mod
        as the first use of modlib left modlib's calls of ldivlib and
        lmullib at their compile-time addresses in the executable. */
-    keep = fs[-2].firstoff;
+    keep = (struct offnode *)s->x;
     link = &firstoff;
     while ((node = *link) != keep) {
-        if (node->offset >= fs[-2].pc - pcat
+        if (node->offset >= at - pcat
             && node->offset < foldend - pcat) {
             *link = node->next;
             numoffs--;
@@ -1329,6 +1329,7 @@ static UWORD operate(struct exprnode *n)
         regat--;
     }
     foldnow = (n->lflags & BNF_FOLD) != 0;
+    foldfrom = ((const struct exprnode *)((const struct expract *)l->value)->p)->start;
     if (d.path == ETP_COMPARE || d.path == ETP_CMPLQ) {
         if (d.rcut)                 /* not reached: the right starts at 0 */
             rawcut(regat + 1);
@@ -1350,12 +1351,10 @@ static UWORD operate(struct exprnode *n)
 
 /* no asm counterpart; replaces blitz2.s:9001-9083 eval5 after doop - the
    code of the operator n: the operation, the constant fold of two
-   constants (BNF_FOLD, not of a result that is no constant: BNF_NOFOLD),
-   the forthstack's entry of the right operand dropped */
+   constants (BNF_FOLD, not of a result that is no constant: BNF_NOFOLD) */
 static void binopact(struct expract *a)
 {
     struct exprnode *n = a->p;
-    struct forthent *fs;
     UWORD t = operate(n);
 
     if (t != n->tafter)
@@ -1363,13 +1362,8 @@ static void binopact(struct expract *a)
     /* O.K., lets check the forth stack to see if last two operators are
        constants!  if so, we can JSR the routine to optimize into a
        constant! */
-    fs = forthsp;
-    if ((n->lflags & (BNF_FOLD | BNF_NOFOLD)) == BNF_FOLD && !nomemleft) {
-        /* YES! We can do it! */
-        constfold(t);
-        fs = forthsp;
-    }
-    forthsp = fs - 1;                           /* .no */
+    if ((n->lflags & (BNF_FOLD | BNF_NOFOLD)) == BNF_FOLD && !nomemleft)
+        constfold((const struct expract *)n->left->value, t);  /* YES! We can do it! */
 }
 
 /* no asm counterpart: the emitter's state, kept around the code written
@@ -1379,10 +1373,8 @@ struct emitsave {
     WORD nomemleft, a6, stackuse, sbgot, thisstuse, pushflag, fuckpos;
     struct offnode *firstoff;
     ULONG numoffs;
-    UWORD forthn;
     BOOL wordop, foldnow;
     struct facts f;
-    struct forthent fs[32];
 };
 
 static void emitkeep(struct emitsave *s)
@@ -1398,11 +1390,9 @@ static void emitkeep(struct emitsave *s)
     s->fuckpos = fuckpos;
     s->firstoff = firstoff;
     s->numoffs = numoffs;
-    s->forthn = (UWORD)(forthsp - forthstack);
     s->wordop = wordop;
     s->foldnow = foldnow;
     getfacts(&s->f);
-    memcpy(s->fs, forthstack, sizeof forthstack);
 }
 
 static void emitback(const struct emitsave *s)
@@ -1424,11 +1414,9 @@ static void emitback(const struct emitsave *s)
     thisstuse = s->thisstuse;
     pushflag = s->pushflag;
     fuckpos = s->fuckpos;
-    forthsp = forthstack + s->forthn;
     wordop = s->wordop;
     foldnow = s->foldnow;
     setfactsact(&(struct expract){ .p = (void *)&s->f });
-    memcpy(forthstack, s->fs, sizeof forthstack);
 }
 
 /* no asm counterpart: the check of a division of two constants by zero
@@ -1683,10 +1671,13 @@ struct evalctx {
 };
 
 /* no asm counterpart: the marks of an operand's code (its start and end
-   in the leaf of the walk) */
+   in the leaf of the walk; the start keeps the relocations and lasta6 of
+   that place in its action, for the fold: constfold, divzerochk) */
 static void startmark(struct expract *a)
 {
     ((struct exprnode *)a->p)->start = pc;
+    a->x = (ULONG)firstoff;         /* for the fold of a constant from here */
+    a->y = (UWORD)lasta6;
 }
 
 static void endmark(struct expract *a)
@@ -1823,9 +1814,10 @@ void exprtree_pre(void *x, struct exprnode *n)
        extends the byte: "a.b=$90 : If a=$90" matches.  The ordering
        comparisons stay mathematical (a<200 is true for every byte).  The
        facts in midact, the rule in exprtype_binop. */
-    if (pre.compare)
+    if (pre.compare) {
         n->flags |= EXF_COMPARE;
-    emitact(midact, n, 0, 0);
+        emitact(midact, n, 0, 0);  /* only a comparison reads what it records */
+    }
 }
 
 /* no asm counterpart; replaces blitz2.s:8990-8992 eval5 .higher after
@@ -1904,21 +1896,13 @@ static void eval4end(void)
     exprtree_release(exprtree_top());
 }
 
-/* no asm counterpart: the forthstack's entry of the expression dropped */
-static void forthpop(struct expract *a)
-{
-    (void)a;
-    forthsp--;                      /* sub.l #18,forthsp */
-}
-
-/* blitz2.s:8968 eval3 */
+/* blitz2.s:8968 eval3 (its sub.l #18,forthsp: the build's forthstack) */
 static UWORD eval3(UWORD *type)
 {
     UWORD c = eval4(type, EXN_EXPR);
 
     eval4end();
     nbforth--;
-    stateact(forthpop, NULL, 0, 0);
     return c;
 }
 
@@ -2086,11 +2070,9 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
     case '*':
         /* floor(l*q): bits 16..47 of the 64 bit product; floor(q*p): bits
            32..63 (lmullib, the port's entries) */
-        nocando();
         domylib(lq && rq ? qqmult : mixmult);
         return;
     case '/':
-        nocando();
         if (rq && !lq) {
             domylib(lqdiv);                     /* trunc((l<<16)/q) */
             return;
@@ -2130,7 +2112,6 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
    doop: pc, bigpc and nomemleft are restored, no code changes. */
 static void divzerochk(const struct opentry *op, UWORD type)
 {
-    struct forthent *fs = forthsp;
     struct m68kregs r;
     ULONG at = pc, big = bigpc, value;
     WORD s_nomemleft = nomemleft;
@@ -2152,7 +2133,7 @@ static void divzerochk(const struct opentry *op, UWORD type)
     r.a[6] = (ULONG)MathBase;
     r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
     flushc();
-    callregs((APTR)fs[-2].pc, &r);
+    callregs((APTR)foldfrom, &r);
     value = r.d[0];
     pc = at;
     bigpc = big;
@@ -2549,15 +2530,8 @@ UWORD dopow(UWORD t)
     regat++;
     convtype(t, T_FLOAT);
     regat--;
-    nocando();
     domylib(mathq * 128 + 1);
     return T_FLOAT;
-}
-
-/* blitz2.s:9441 nocando - can't eval this as a const! */
-static void nocando(void)
-{
-    forthsp[-1].constgot = 0xffff;
 }
 
 /* ------------------------------------------------------------------ MOD */
@@ -2570,7 +2544,6 @@ UWORD domodw(UWORD t) { domylib(modword); return t; }
 /* blitz2.s:9455 domodl - modlib uses an alibjsr here! */
 UWORD domodl(UWORD t)
 {
-    nocando();
     domylib(modlong);
     return t;
 }
@@ -2587,7 +2560,6 @@ UWORD domodq(UWORD t)
 UWORD domodf(UWORD t)
 {
     (void)t;
-    nocando();
     /* result type long ("now a long"): modlib returns a long - no bug */
     domylib(modfloat);
     return T_LONG;
@@ -3007,25 +2979,6 @@ static UWORD getelement2(UWORD *type)
     return element(getchar3(), type);
 }
 
-/* no asm counterpart; replaces blitz2.s:9741-9752 getelement2's push of a
-   forthstack entry - the code of the element begins here (its position,
-   relocations and lasta6, for the constant fold) */
-static void forthpush(struct expract *a)
-{
-    struct forthent *f = forthsp;
-
-    (void)a;
-    /* stack contains..... pc.l,firstoff.l,optat.l,lasta6.w,0,constgot.w! */
-    f->pc = pc;
-    f->firstoff = firstoff;
-    f->lasta6q = L_(lasta6qf);
-    f->lasta6w = lasta6;
-    f->wordval = 0;
-    f->constgot = 0;
-    forthsp = f + 1;
-    conv.end = 0;                   /* Fixed (#1177): no conversion yet */
-}
-
 /* no asm counterpart: AmiBlitz3's report of a token's value (ext_evalvalue,
    a value without a type) */
 static void tokvalact(struct expract *a)
@@ -3067,7 +3020,6 @@ static UWORD element(UWORD c, UWORD *type)
     k = nbforth++;
     bforth[k].constgot = 0;
     bforth[k].wordval = 0;
-    stateact(forthpush, NULL, 0, 0);
 
     /* First, we have stuff which won't fuck constgot */
     litneg = neg;

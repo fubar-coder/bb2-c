@@ -417,24 +417,6 @@ SIZE(resentry, 68);
 
 /* --------------------------------------------------------- expression eval */
 
-/* forth stack entry (eval5, 18 bytes):
-   "pc.l,firstoff.l,optat.l,lasta6.w,0,constgot.w" */
-struct forthent {
-    ULONG pc;               /* 0  code start of the element */
-    struct offnode *firstoff; /* 4 */
-    ULONG lasta6q;          /* 8  long read of lasta6 (= lasta6.w,quoteflag.w);
-                               not read back (#343) */
-    UWORD lasta6w;          /* 12 lasta6 (renamed: lasta6 is a macro in data.h) */
-    UWORD wordval;          /* 14 the asm's 0, never read there.  Fixed
-                               (#1179): != 0 if the element is a Word
-                               value (a Byte or Word variable or function
-                               value, an integer constant 0..32767) and no
-                               operator has made it a result yet (eval.c,
-                               the inline Word * and / of a later index) */
-    UWORD constgot;         /* 16 0 = constant, $ffff = not */
-};
-SIZE(forthent, 18);
-
 /* type conversion routine (convtable entry, chunk 06): converts D(regat) in
    place by emitting code; from/to types are implied by the table slot */
 typedef void convhandler(void);

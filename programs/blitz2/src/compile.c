@@ -1090,7 +1090,6 @@ UWORD createlab(void)
    expression, exprtree.h) */
 void prepstack(void)
 {
-    forthsp = forthstack;
     exprtree_reset();
     exprbuildreset();
     relocreset();
