@@ -1185,9 +1185,10 @@ declaration comparison with a stale entry. The formats of the lists and
 the rule of the instruction comparison, with examples: `docs/development.md`, "Intended differences".
 The token list (`tokens_*`: `bbsrc tokens`
 makes it from a compiler and its libraries the way blitz2 builds it for
-the editor) must equal `tests/data/ted-tokens.txt` – with the CD's
-compiler and libraries (skipped without the CD) and with the ones built
-here; `tokens_broken` checks that a missing library is noticed.
+the editor) must equal `tests/data/ted-tokens.txt` with the CD's compiler and
+libraries (`tokens_cd`, skipped without the CD), and with the ones built here
+it must equal it plus the 127 entries of `tests/data/literallib-tokens.txt`
+(`tokens_port`); `tokens_broken` checks that a missing library is noticed.
 `rwe_residents_check_broken`: the comparison of two residents
 (`tools/blitzres/check.cmake`) notices other contents. The libraries'
 shadow headers of the NDK (`cmake/ndk-calls.cmake`,

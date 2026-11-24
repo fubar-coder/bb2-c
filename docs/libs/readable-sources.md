@@ -43,7 +43,17 @@ by the original TED) or it is made from the compiler and its libraries
 userlibs; library or BigLib files) as blitz2 builds it for TED – for
 sources written with other libraries. `tedsrc tok` takes the same forms.
 `bbsrc tokens` writes such a list as a list file
-(`bbsrc tokens BLITZ2 LIB... > tokens.txt`), for both tools.
+(`bbsrc tokens BLITZ2 LIB... > tokens.txt`), for both tools. The two lists
+for this repository's own compiler differ: `tests/data/ted-tokens.txt` is
+what the original TED got from the CD's blitz2, acidlibs and deflibs (1821
+entries); `bbsrc tokens build/amiga/blitz2/blitz2 build/amiga/blitz2/acidlibs
+build/amiga/blitz2/deflibs` (1948 entries) has the same entries and in
+addition the 127 of `literallib` (`$9081`-`$90FF`, the Blitz Basic 2
+literal characters of `docs/formats.md` §3.2), because the port's deflibs
+include that library (`tests/data/literallib-tokens.txt`, checked by ctest
+`tokens_port`). Use `ted-tokens.txt` to compare with the original
+(`tokens_cd` compares the CD's own files with it); use the list made from
+the port's files for what the port's blitz2 and deflibs themselves number.
 
 ctest `teddetok_*` checks it with small inputs (also broken ones: unknown
 token, token byte at the end of the file, a compiler that is no load file)
@@ -116,6 +126,11 @@ stdout.
   comments are text, their bytes from `$80` ISO 8859-1 characters; in a
   comment a known token number is still a token (a line commented out).
   `--ted`: TED's, every byte from `$80` starts a token.
+  A Blitz Basic 2 literal character (`$90` and the character,
+  `docs/formats.md` §3.2) in a string or a comment is therefore written as
+  the raw two bytes by default; `--ted` and `tedsrc detok` write the
+  character. For Blitz Basic 2 sources with such letters (umlauts, `ß`)
+  use `--ted` or `tedsrc detok`.
 * **Unknown tokens** are written as `{L:N}`: the word is
   `$8000 + L*128 + N`, L the library number, N the entry of a user
   library counted from 1 (`{217:2}` is `$EC82`). The count goes to

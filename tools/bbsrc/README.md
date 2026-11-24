@@ -105,9 +105,12 @@ first entry of a number wins): `--tokens FILE` a token list file,
 `--blitz2` its list that ends with `$XXXX`, `--lib FILE` a library or
 BigLib file. `--ted`: TED's rules (every byte from `$80` a token, also in
 strings and comments), else AmiBlitz's (strings and comments as they
-are). A token not in the list is written as `{L:N}` and counted on
-stderr; `--unknown` lists every such number, `--strict` makes it an
-error.
+are). A Blitz Basic 2 literal character (`$90` and the character) in a
+string or comment is written as these two bytes by default, as the
+character with `--ted` (and `tedsrc detok`); use `--ted` for Blitz Basic 2
+sources with such letters. A token not in the list is written as
+`{L:N}` and counted on stderr; `--unknown` lists every such number,
+`--strict` makes it an error.
 
 ### comment
 
