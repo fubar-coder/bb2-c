@@ -144,9 +144,9 @@ TEST_CASE("exprmatrix expect: a cell per context in its model line", "[exprmatri
     CHECK(!g.has(COR + "i2-i-c-agree-01.test.toml", "isolate"));
     CHECK(g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.bas", "  vv=ia(vq * vw) : !CheckEq{vv,481,\"i1-mul-q-w-I\"}\n"));
     CHECK(!g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.bas", "SetErr"));
-    // the unchecked index cells: every cell in a session of its own
-    CHECK(g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.toml", "\nisolate = \"on\"\n"));
-    CHECK(g.has(COR + "i2-i-u-agree-01.test.toml", "\nisolate = \"on\"\n"));
+    // the unchecked index cells share sessions as the others (bundled)
+    CHECK(!g.has(BUG + "compiler-expr-1178-i1-i-u-01.test.toml", "isolate"));
+    CHECK(!g.has(COR + "i2-i-u-agree-01.test.toml", "isolate"));
     // Print: the lines printed, judged by the output
     CHECK(g.has(COR + "print-a-agree-01.test.bas", "  NPrint \"print-add-w-l-A \",vw + vl\n"));
     CHECK(g.has(COR + "print-a-agree-01.test.toml", "\n[asserts]\noutput = \"== \\\"print-add-w-l-A 101000\\n\\\"\"\n"));

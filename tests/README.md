@@ -1958,7 +1958,7 @@ key as `left-out.txt`, `measured.tsv` and the classify tables; a
   `fixed-orig = N` and the original's values as its deviations; the
   checked index sources (`-c`) run with runtime error checking (a cell
   outside the array is the runtime error, caught by `SetErr`, the check
-  sees -1), the unchecked ones (`-u`) with `isolate = "on"`;
+  sees -1);
 * the bug-orig tests of the open cells,
   `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u|-c]-NN.test.bas`,
   whose header names `BUG(orig) (#N)` and the cells, the original's
@@ -1992,10 +1992,8 @@ key as `left-out.txt`, `measured.tsv` and the classify tables; a
 fixed and open sources share emulator sessions in the bundles of their
 registration (`corpus_exprmatrix_bundle_N`, `bug_orig_bundle_N`;
 [Bundle tests](#bundle-tests)); the `Print` sources (a whole-program
-assertion), the unchecked index sources (`isolate`) and the tests of
-refused cells (data sources) run alone. The side originals runs
-unbundled, the cells of a test in one session (the unchecked index
-sources each in its own).
+assertion) and the tests of refused cells (data sources) run alone. The
+side originals runs unbundled, the cells of a test in one session.
 
 **Left out** (`tests/corpus/tests-exprmatrix/left-out.txt`, with the
 reason): cells without an expected value (a question to the user: a

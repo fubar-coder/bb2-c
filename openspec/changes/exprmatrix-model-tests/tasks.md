@@ -31,7 +31,7 @@ worktree, never in the main checkout; logs in the scratchpad, reports in
 ## 5. Bundles, isolation, equivalence
 
 - [x] 5.1 Bundle membership: `ctest -N` shows which moved tests are bundle members and which run alone (`Print`, `-u`, data sources), listed in `measurement.md`; verify: the counts match design decisions 3, 5 and 6.
-- [ ] 5.2 The `-u` index sources bundled on trial (`isolate` off in a scratch regeneration): two full `all` runs; verify: the same verdicts as isolated, then `isolate` dropped by the generator, else kept with the finding in the report.
+- [x] 5.2 The `-u` index sources bundled on trial (`isolate` off in a scratch regeneration): two full `all` runs; verify: the same verdicts as isolated, then `isolate` dropped by the generator, else kept with the finding in the report.
 - [x] 5.3 (by open question 2, recommended answer) The equivalence passes `ab3_bb2_equivalence` and `_runerr` (`tests/ab3/CMakeLists.txt`) also compile the drivers the build writes (`model-drivers/*.bb2` of every registration with PREV, `basic_test_driver`: the moved tests and the bug-orig and blitz2 model tests moved before) and the matrix's data sources, with the test library in `blitz2:userlibs`; verify: both passes pass, a deliberately differing driver is named; commit (d).
 
 ## 6. Measurement and removal check

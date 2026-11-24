@@ -333,9 +333,9 @@ context the cell's line:
 
 Comparisons in a destination keep their parentheses (`rl=(EXPR)`). An
 element of an index array is `i*16+1`, never 0 or -1. The configuration
-sets `runtime-errors = "on"` for the checked index cells and `isolate =
-"on"` for the unchecked ones (a program reading beyond an array
-disturbed the next ones in the matrix's measurement). Where the value of
+sets `runtime-errors = "on"` for the checked index cells; the unchecked
+ones share sessions as the others (bundled: two full runs on trial gave
+the same verdicts, change `exprmatrix-model-tests`, task 5.2). Where the value of
 a configuration with original material differs from the expected one,
 the configuration declares it as a deviation: `"check.cells.KEY" = "==
 fail"` and `"check.cells.KEY.actual" = "== V"` (the signed decimal Long

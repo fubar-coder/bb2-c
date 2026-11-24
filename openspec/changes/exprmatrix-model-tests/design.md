@@ -273,6 +273,11 @@ The baseline measurement (task 1.2) comes before the first move.
   the C libraries included).
 - **No shared-session failure** (decision 6): the side originals runs the
   cells of a test in one session; no cell failed there.
+- **The unchecked index sources bundled (task 5.2)**: with `isolate` off
+  for the 15 `-u` sources two full `all` runs passed every emulator test,
+  the 15 served from their bundles (the same verdicts as isolated); the
+  generator writes no `isolate`. Matrix session sum 848.4 s and 815.0 s
+  (against 869.4 s and 884.6 s isolated).
 - **Deviation tables.** A check's deviation goes to the table of the
   original compiler when only it differs, to `libs=cd` when only the CD's
   libraries differ, else to the table of each configuration that differs.
@@ -284,8 +289,11 @@ The baseline measurement (task 1.2) comes before the first move.
   (`compiler-expr-1178-dl-b-01`, `-i1-j-c-01`, `-i2-j-c-01`, `-pl-b-01`)
   gave different executables with blitz2 and blitz2-ab3: a linked library
   routine behind the division routines keeps two JSRs with the
-  compiler's addresses (not relocated), as `compiler-maxs-libjsr`; they
-  are left out of the comparison with that reason (not analysed further).
+  compiler's addresses (not relocated). The cause is a port regression,
+  #1215 (after the "Division by Zero" of the `compiler-constdiv-*`
+  sources earlier in the session the compiler writes no operator code and
+  drops modlib's relocations); they are left out of the comparison until
+  #1215 is fixed.
 - **Commits.** The writer of the three groups is one generator, and its
   output must equal the committed files in every commit; the groups
   (decision 11's commits (a) to (c)) are one commit, the equivalence

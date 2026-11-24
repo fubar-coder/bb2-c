@@ -1185,10 +1185,9 @@ static char *output_of(const struct ent *e, size_t n, char which)
  * or T1 bug-orig test, corpus 0; a corpus source, corpus 1): ID.test.bas
  * with the header head and the case of the cells (em_case_text), and
  * ID.test.toml: fixed-orig for a test of fixed issues, runtime error
- * checking for the checked index cells, a session of their own for the
- * unchecked index cells, the output of the Print cells, and the values of
- * the configurations with original material that differ from the
- * expected ones as deviations.
+ * checking for the checked index cells, the output of the Print cells,
+ * and the values of the configurations with original material that
+ * differ from the expected ones as deviations.
  */
 static void emit_model(struct ctx *x, struct group *g, const char *path, struct buf *head, struct ent *e, size_t n,
                        int corpus, const char *fixed)
@@ -1224,10 +1223,6 @@ static void emit_model(struct ctx *x, struct group *g, const char *path, struct 
         put(&conf, "fixed-orig = %s\n", fixed);
     if (g->mode == 'c')
         put(&conf, "runtime-errors = \"on\"\n");
-    if (g->mode == 'u')
-        put(&conf, "# an unchecked index read: every cell in a session of its own (a program reading beyond an\n"
-                   "# array disturbed the next ones in the matrix's measurement)\n"
-                   "isolate = \"on\"\n");
     if (g->ctx == EM_PRINT) {
         char *v[CF_N], *ex = output_of(e, n, 'e');
 
