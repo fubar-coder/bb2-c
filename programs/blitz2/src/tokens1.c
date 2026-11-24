@@ -911,6 +911,8 @@ void doinc2(UWORD namelen)
 struct macbuild {
     UBYTE *at;              /* asm a0: write position in macrobuff */
     WORD got;               /* asm d2: 0 = nothing got yet */
+    ULONG colons;           /* ':' characters put since the last other
+                               item (Fixed (#1206), see .mclean) */
 };
 
 /* the longest macro text: its length is a word (struct macro textlen,
@@ -925,6 +927,7 @@ struct macbuild {
 static void macputb(struct macbuild *mb, UWORD c)
 {
     mb->got = -1;
+    mb->colons = (UBYTE)c == ':' ? mb->colons + 1 : 0;
     *mb->at++ = (UBYTE)c;
     if (mb->at >= macrobufff || mb->at > macrobuff + MACTEXTMAX + 1)
         macbigerr();
@@ -935,6 +938,7 @@ static void macputw(struct macbuild *mb, UWORD c)
 {
     *mb->at++ = (UBYTE)(c >> 8);
     macputb(mb, c);
+    mb->colons = 0;         /* a low byte $3A is no ':' (#1206) */
 }
 
 /* blitz2.s:12849 domacro */
@@ -966,6 +970,7 @@ void domacro(UWORD c)
     m->textlen = 0;
     mb.at = macrobuff;
     mb.got = 0;                                 /* flag for nothing got yet! */
+    mb.colons = 0;
     coolnest = 0;
     ext_macrodef(TRUE);
     for (;;) {                                  /* .gather */
@@ -1037,14 +1042,18 @@ void domacro(UWORD c)
     /* clean up leading and trailing ':'s (only trailing ones here; the
        leading ones are skipped in .gather, Fixed (#942): blitz2.s kept a
        ':' right after the name, Macro a:1:End Macro gave ":1",
-       blitz2.s:12904-12915) */
-    while (n) {                                 /* .mclean */
-        if (*--mb.at != ':')
-            break;
-        if (n != 1 && (BYTE)mb.at[-1] < 0)
-            break;                              /* ':' is a token's low byte */
-        n--;                                    /* .cdo */
-    }
+       blitz2.s:12904-12915).
+       Fixed (#1206): blitz2.s looked back at the byte before each ':'
+       and kept the ':' when that byte had bit 7 set, taking the ':' for
+       the low byte of a token ($3A: BLibJsr $803A, CMove_, ...).  That
+       byte is also the low byte of a whole token whose number has bit 7
+       set (NOT $8089, OR, MOD, Print, Len, ...): a macro whose last line
+       ended in such a token kept the ':' of its line end, and a calling
+       line that went on after the macro was split there ("Syntax
+       Error").  The gathering counts the ':' characters put since the
+       last other item (macputb, macputw), and exactly those are removed:
+       a token's low byte $3A is never cut, a ':' after any token is. */
+    n -= mb.colons;                             /* .mclean */
     /* Fixed (#964): textlen is a word (blitz2.s:12916 move d0,8(a2)), the
        allocation takes the long n: a macro text of 65536 bytes or more
        was cut to n & $ffff and later freed with that size (freemacs,

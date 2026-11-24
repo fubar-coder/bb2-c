@@ -1,0 +1,20 @@
+# compiler-macro-last-token-colon.test.bas: the originals (1.95 and 2.10)
+# keep the ':' behind the NOT of the first macro call; the compile fails
+# with a Syntax Error (nothing runs)
+fixed-orig = 1206
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+
+[deviations."compiler=orig195"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig210"]
+compile = "contains \"Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
