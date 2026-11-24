@@ -8038,6 +8038,22 @@ rows:
     text: "A Quick in a Long computation keeps its fraction: the operation is computed with it and rounded to a whole number, down for `+`, `-`, `*` and a minus sign, towards zero for `/`; the original cut the Quick to a whole number first (`r.l=q*2` 2 for `q=1.5`, `r.l=l/q` 10 for `l=10`, `NPrint q*100000` 100000). `Int(q)` gives the old result."
     page: compiler
     anchor: quick-long-arithmetic
+  - issue: 1209
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "NOT, AND, OR, EOR"
+    text: "`NOT`, `AND`, `OR` and `EOR` (also `&` and `|`) on a Quick or untyped value work on its whole part, the fraction dropped (rounded down), and give a Quick: `h=True : h=NOT h` gives 0, `NOT 3` -4, `1.5 OR 2.5` 3. The original worked on all 32 bits with the fraction: the `NOT` of a whole number was almost 1 too high (`h=-1 : h=NOT h` stayed true, `NOT 3` -3.00002), and fractions were combined (`1.5 OR 2.5` 3.5). `If h OR g` is false for `h=0.5`, `g=0`. The shifts keep the fraction."
+    page: compiler
+    anchor: quick-bit-operators
+  - issue: 1208
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "On, constants"
+    text: "A negative whole constant in a Quick calculation has its exact value: `q.q=On` is -1, `q=#c` with `#c=-3` is -3, `q=1+On` 0; the original gave values just above them (-0.0000153, -2.0000153, 0.99998). `flag=On : flag=NOT flag` toggles as in the original."
+    page: compiler
+    anchor: names-labels-and-constants
   - issue: 1185
     severity: 4
     topic: "Compiler"
@@ -8075,7 +8091,7 @@ rows:
     topic: "Compiler"
     library: "Compiler"
     command: ""
-    text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Quick or Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `If q OR (a<>b)` false for `q=0.5`, `lb+(a=b)` -31073 for `lb=100000`). `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
+    text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `lb+(a=b)` -31073 for `lb=100000`, `fh+(a=b)` -1 for `fh=0.5`). A Quick keeps its fraction in arithmetic (`q+(a=b)` 0.5 for `q=1.5`); `AND`, `OR` and `EOR` take its whole part, so `If q OR (a<>b)` is false for `q=0.5`, as in the original. `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
     page: compiler
     anchor: expressions-and-statements
   - issue: 1188

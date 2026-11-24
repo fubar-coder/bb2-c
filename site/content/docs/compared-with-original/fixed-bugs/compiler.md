@@ -269,6 +269,66 @@ so far, so `NPrint 1+1+1+q` prints 4, not 4.5; the details are in
 
 Issue: [Arithmetic with a Quick operand is done in Long when the context or the left operand is Long: the fraction is cut before the operation (#1178)](https://github.com/fubar-coder/bb2-c/issues/1178).
 
+### `NOT`, `AND`, `OR` and `EOR` on a Quick {#quick-bit-operators}
+
+A variable without a type suffix is a Quick, a number with 16 bits for
+the whole part and 16 bits for the fraction. When an expression is
+computed as a Quick, because a Quick or untyped variable is an operand or
+the destination is a Quick, the original applied `NOT`, `AND`, `OR` and
+`EOR` (also written `&` and `|`) to all 32 bits, the fraction included.
+`NOT` turned the fraction 0 of a whole number into almost 1, so the
+result was nearly 1 too high: the usual way to toggle a flag,
+`flag=NOT flag`, left a flag that was true (-1) still true. `AND`, `OR`
+and `EOR` combined the fractions of both operands.
+
+**What happened**
+
+```blitzbasic
+h=True : h=NOT h : NPrint h
+x=3 : q.q=NOT x : NPrint q
+q=1.5 : p.q=2.5 : NPrint q OR p
+End
+```
+
+The original prints
+
+```
+.99998
+-3.00002
+3.5
+```
+
+**With the port**
+
+A Quick operand of these operators is first made a whole number by
+dropping its fraction, which rounds it down (1.5 becomes 1, -1.5 becomes
+-2), and the result is a Quick again. The program prints
+
+```
+0
+-4
+3
+```
+
+`h=-1`, `h=True` and `h=(a=b)` toggle to 0 and back to -1, as with a
+Word flag. Whole numbers give the same results with `AND`, `OR` and
+`EOR` as in the original, so masks such as `x AND 6` are unchanged. The
+shifts (`LSL`, `LSR`, `ASL`, `ASR`) still work on the whole 32 bits and
+keep the fraction: `x LSR 1` with `x=5` is 2.5. AB3 mode has the same
+fix; AmiBlitz3 itself keeps the original's results.
+
+**What to check in your sources**
+
+A flag toggled with `NOT` works in the port also when it is untyped and
+was set to `True`, -1 or a comparison; a program that worked around the
+bug, for example with `flag=On`, works as before. Look at `AND`, `OR`
+and `EOR` on values that can have a fraction: in the port a condition
+such as `If h OR g` is false for `h=0.5` and `g=0`, because 0.5 counts
+as 0, and true for `h=-0.5`, which counts as -1. Where the fraction matters, compare instead:
+`If h<>0 OR g<>0`.
+
+Issue: [NOT, AND, OR and EOR under a Quick type so far work on the 16.16 bits (#1209)](https://github.com/fubar-coder/bb2-c/issues/1209).
+
 ### A Float value as a condition {#float-condition}
 
 `If`, `While` and `Until` accept any value as their condition: it is
@@ -930,13 +990,17 @@ Each point says first what the original did, then what the port does.
   `lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
   converted the operator's left operand down to Word before the
   operation: a Long lost its high word, a Quick or Float its fraction.
-  `If $10000 AND (a=b)` was false although `a=b` was true, `If q OR (a<>b)`
-  was false for `q=0.5`, and with `lb.l=100000`, `lb+(a=b)` gave -31073.
-  The port converts the comparison's result to the left operand's type
-  and computes the operation in that type: both conditions are true and
-  the sum is 99999. A Byte or Word left operand gives the same result as
-  in the original. A Float has no `AND`, `OR`, `EOR` or shift, so a Float
-  left of one of them with a comparison on the right is a compile error
+  `If $10000 AND (a=b)` was false although `a=b` was true; with
+  `lb.l=100000`, `lb+(a=b)` gave -31073, with `q.q=1.5`, `q+(a=b)` gave 0,
+  and with `fh.f=0.5`, `fh+(a=b)` gave -1. The port converts the
+  comparison's result to the left operand's type and computes the
+  operation in that type: the condition is true, and the results are
+  99999, 0.5 and -0.5. A Byte or Word left operand gives the same result
+  as in the original. `AND`, `OR` and `EOR` take only the whole part of a
+  Quick ([`NOT`, `AND`, `OR` and `EOR` on a Quick](#quick-bit-operators)),
+  so `If q OR (a<>b)` is false for `q=0.5`, as in the original. A Float
+  has no `AND`, `OR`, `EOR` or shift, so a Float left of one of them with
+  a comparison on the right is a compile error
   ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors#float-bit-operator-comparison" >}}),
   [#1182](https://github.com/fubar-coder/bb2-c/issues/1182)).
 * When the type so far was Byte (a Byte destination, parameter, field or
@@ -976,6 +1040,13 @@ Each point says first what the original did, then what the port does.
   was compiled as a floating-point constant and converted while the
   program runs; it is the Quick constant itself (the same value, shorter
   code) ([#13](https://github.com/fubar-coder/bb2-c/issues/13)).
+* A negative whole constant in a Quick calculation, such as `On` (-1) or
+  a constant `#c=-3`, came out just above its value: `q.q=On` gave
+  -0.0000153, `q=#c` -2.0000153 and `q=1+On` 0.99998. It is the exact
+  Quick value: -1, -3 and 0. A minus sign before a number or constant,
+  as in `q=-3`, gave the right value in the original too, and
+  `flag=On : flag=NOT flag` toggles the flag as in the original
+  ([#1208](https://github.com/fubar-coder/bb2-c/issues/1208)).
 
 ### NewTypes
 
