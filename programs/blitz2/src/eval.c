@@ -3590,23 +3590,34 @@ static void makesbase(void)
     tokejsr(workstart);
 }
 
-/* blitz2.s:10391 makelit - put lit string from d3 (data1) into stringbuff */
-static void makelit(void)
+/* no asm counterpart; replaces blitz2.s:10391 makelit - the rest of the
+   code of the string literal's leaf l: the address of its text in the
+   literal area (l->value) into a0 with its relocation, its length
+   pushed, the copy into the work area (copstring) */
+static void litemit(struct exprnode *l)
 {
     pokewd(*numtoa0);
     addoff();
-    pokel(litdata1);
+    pokel(l->value);
     pokewd(*pushlen);
     tokejsr(copstring);
+    l->end = pc;
 }
 
-/* blitz2.s:10327 litstring */
+/* blitz2.s:10327 litstring.  The work area first (makesbase: the first
+   part of the leaf's code, at its moment of before, before the text is
+   read); then the parse part: the text read and written to the literal
+   area as it is read, AmiBlitz3's escapes with it (ext_strescape), its
+   place and length in the leaf (ELK_STRING: value, aux); then the rest
+   of its code (litemit).  A String whatever the type so far. */
 static UWORD litstring(UWORD *type)
 {
+    struct exprnode *l = newleaf(ELK_STRING, *type);
     UWORD len = 0, c;
 
+    l->start = pc;
     makesbase();
-    litdata1 = data1;
+    l->value = litdata1 = data1;
     /* placeholder for the length long (asm pokes whatever d1 holds) */
     pokedata1(0);
     pokedata1(0);
@@ -3631,8 +3642,10 @@ static UWORD litstring(UWORD *type)
        pokedata1b bounds it like the string's bytes. */
     if (data1 & 1)
         pokedata1b(0);
-    makelit();
-    *type = T_STRING;
+    l->aux = len;
+    l->own = l->tafter = T_STRING;
+    litemit(l);
+    leafdone(l, type);
     return getchar3();
 }
 
@@ -3801,13 +3814,13 @@ static UWORD fetchasm(UWORD *type)
 /* blitz2.s:10641 variable2 - get the value of a var into D(regat), from
    the variable's leaf l: l->vtype = calcvar result (asm d2), l->off =
    a5/a4 offset (asm d3) */
-static UWORD stvar(UWORD vartype, WORD off, UWORD *type);
+static void stvar(const struct exprnode *l);
 static void variable2(const struct exprnode *l)
 {
-    UWORD vartype = l->vtype, opcode, t;
+    UWORD vartype = l->vtype, opcode;
 
     if ((vartype & 0xff) == T_STRING) {
-        stvar(vartype, l->off, &t);
+        stvar(l);
         return;
     }
     opcode = regat << 9;
@@ -4068,12 +4081,18 @@ static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen)
     return callcont(n, type);
 }
 
-/* blitz2.s:10617 stvar - handle string variable get! */
-static UWORD stvar(UWORD vartype, WORD off, UWORD *type)
+/* blitz2.s:10617 stvar - handle string variable get!  The code of the
+   string variable's leaf l (l->vtype: calcvar's type, l->off: its a5/a4
+   offset): the work area (makesbase), the variable's address into a2
+   unless its path left it there, its length pushed and its text copied
+   into the work area (copstring).  The type (asm moveq #7,d2) is the
+   leaf's (vartypeof), the char after it is read by variable (asm: bra
+   reget). */
+static void stvar(const struct exprnode *l)
 {
     makesbase();
-    if (!(vartype & TF_ADDRINA2)) {
-        leaa5d3a2[1] = off;
+    if (!(l->vtype & TF_ADDRINA2)) {
+        leaa5d3a2[1] = l->off;
         pokela5s(L_(leaa5d3a2));
     }
     /* .already */
@@ -4082,6 +4101,4 @@ static UWORD stvar(UWORD vartype, WORD off, UWORD *type)
     pokecode(stvarget2, stvarget2f);
     /* NB: the template's beq.w skips exactly the 6 byte jsr from tokejsr */
     tokejsr(copstring);
-    *type = T_STRING;
-    return reget();
 }

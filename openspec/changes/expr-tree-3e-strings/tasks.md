@@ -8,9 +8,9 @@ After `expr-tree-3d-library-calls`. "The check": `expr-tree-1-typing/design.md`,
 
 ## 2. Implementation
 
-- [ ] 2.1 String leaves and string operator nodes, emitted in sequence; verify: the check, `ctest --preset oracle`.
-- [ ] 2.2 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
+- [x] 2.1 String leaves and string operator nodes, emitted in sequence; verify: the check, `ctest --preset oracle`.
+- [x] 2.2 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
 
 ## 3. Commit
 
-- [ ] 3.1 Tests first, then the rework commit; verify: each passes the check.
+- [x] 3.1 Tests first, then the rework commit; verify: each passes the check.

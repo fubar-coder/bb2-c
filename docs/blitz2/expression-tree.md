@@ -331,3 +331,50 @@ the table of step 3a):
 | Kind | Calls | At parse | At emit | Children | Errors |
 |---|---|---|---|---|---|
 | `CLK_LIB` | a library function in an expression, `Name(...)`, `Name.t(...)` (a size specifier), `Name` (no parameters); the intrinsics `Int`, `Frac`, `Len`, `Asc` | right after the lookup (`looktoke`) the library used (`calluse`: `uselib3`, at its first use its code copied into the program, a maximum library's object variable, its variable offset; in a constant expression "Illegal Constant Expression" for a library without constant rules, in direct mode "Library not Available in Direct Mode"); AB3's `ext_newtoken` before the lookup; a size specifier read (`sizespec2`: `usertype`); the brackets counted (`countpees`); the intrinsic found (`intrfind`, `intrstrvar`'s look at the source) | enter: a string result: the string base (`makesbase`: `sbasegot`, `sbgot`, the library routine `workstart` used at its first use); `regat` 0 for the parameters. Exit: the form's code (`libjsrcode`: its `!libs` registers loaded, `toreg`, `uselib` of the libraries they name; with runtime error checking the error check routines; the jsr's relocation; or an intrinsic's code); `regat` back; then `varcont`'s (`callcont`: `wordval`, `bytevalend`, `conv`, `rawq`, a conversion's library use) | each parameter (its expression, compiled into its register or pushed, `stackuse`, `numreps`), between enter and exit; a plain string variable of `Len` or `Asc` read instead (`intrstrvar`, no parameter) | parse: "Token Not Found" (`looktoke`), "Syntax Error" (not a function) after the use; "Type Not Found", "Illegal Type" (a size specifier), "Syntax Error" (no parameters in brackets, no form with that number of them, no `)`), the parameters'; emit: "Only Available in Blitz mode" and "Only Available in Amiga mode" (`libjsrcode`) |
+
+## Step 3e: strings (`expr-tree-3e-strings`)
+
+A string in an expression follows a protocol of its own, which depends on
+the order of the code: the first string element of an evaluation gets the
+work area (`makesbase`: at the first one of a statement the library
+routine `workstart`, `sbasegot`; in a later evaluation of the statement
+a3 saved, `sbgot` 2), each string element copies its text behind a3 and
+pushes its length (`copstring`), `+` adds the two lengths on the stack
+(`addstrings`), a comparison calls `strcomp`, and the end of the
+evaluation ends the string and makes its start the value (`maineval2`,
+`sbtolong`) or restores a3. A string variable is a variable's leaf
+(`ELK_VAR`, step 3a), whose code `stvar` writes from the leaf only; a
+string Function or library function is a call node (steps 3c, 3d) whose
+enter action gets the work area. The string literal is a leaf
+(`ELK_STRING`): its work area is the first part of its code, before its
+text is read, as before; its parse part reads the text and writes it to
+the literal area (`data1`) as it reads it (AmiBlitz3's escapes with it,
+`ext_strescape`), its place there and its length in the leaf; the rest of
+its code (`litemit`) follows. The operators on strings are the operator
+nodes of step 2 (`EXN_BINOP` with the left type String): `operate` emits
+them as every operator, `exprtype_binop`'s handler String is
+`addstrings` or a string comparison. So every part of the protocol keeps
+its moment and the code is the same; step 4a
+(`expr-tree-4a-emit-after-build`) emits the leaves and operators in the
+same order. A literal's leaf lives while its text is read, which makes no
+node: the bound of the arena stays 161. `tests/blitz2/expr-strings.test.bas`
+and `tests/ab3/cli/str_expr.ab3` compile the forms of a string in an
+expression.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 10327 `litstring`'s `bsr makesbase` | the work area | `litstring`, before the text (the leaf's code begins: `start`) |
+| 10328-10347 `litstring` up to `.skip` | the text read and written to `data1`, its length before it, `data1` even | `litstring` (the leaf `ELK_STRING`: `value` the place, `aux` the length) |
+| 10348-10350 `bsr makelit`, `moveq #7,d2`, `bra getchar3` | the code, the type String, the next char | `litemit`; the type: `own` and `tafter` String; `litstring` reads the char |
+| 10391 `makelit` | `move.l #lit,a0` with its relocation, the length pushed, `copstring` | `litemit` (the place from the leaf) |
+| 10617-10639 `stvar` | the work area, the variable's address into a2, the length pushed, `copstring`; `moveq #7,d2`, `bra reget` | `stvar` from the leaf (`vtype`, `off`); the type: `vartypeof`; the char: `variable` |
+
+What a string element and a string operator change besides their code,
+and when (the columns of the table of step 3a):
+
+| Kind | Elements | At parse | At emit | Children | Errors |
+|---|---|---|---|---|---|
+| `ELK_STRING` | a string literal `"..."` (in a constant expression: `"abcd"`, an `ELK_CONST`) | the text written to the literal area (`pokedata1`, `pokedata1b`: its length long, the bytes, the pad byte to even, #969; `litdata1`), in source order: within an expression no other code writes the literal area, and a literal is never folded; AmiBlitz3's escapes (`ext_strescape`: the bytes they stand for, `\\__CODELINE__` and the others) | before the text is read: the work area (`makesbase`: `sbasegot`, `sbgot`, `workstart` used at its first use, or `move.l a3,-(a7)`); after it the relocation of the text's address (`addoff`), the library routine `copstring` used (`tokejsr`); its length on the run-time stack (no `stackuse`: `maineval2` counts the one length left at the end) | none | parse: "No Terminating Quote" (`notqerr`), AmiBlitz3's escapes' (`ext_strescape`); emit, before the text: "Library not Available in Direct Mode" (`workstart`'s library). Change 8, which emits after the build, has the work area after the text: only the order of those two errors can differ |
+| `ELK_VAR` of a string | a string variable, field or array element | as `ELK_VAR` | the work area (`makesbase`), the variable's address into a2 (unless its path left it there: `TF_ADDRINA2`), `copstring` used; its length on the run-time stack; under a numeric type so far its conversion (`stringtolong`: the length dropped, `sbtolong`) | as `ELK_VAR` | as `ELK_VAR` |
+| `EXN_BINOP` of strings | `+`, `=`, `<>`, `<`, `<=`, `>`, `>=` with a String left operand | none (the operator read by `eval2`, as every one) | `+`: the right length popped and added to the left one (`addstrings`; at `regat` 6 the d6 that `getelement` saved dropped instead, #971); a comparison: the library routine `strcomp` used (`tokejsr`; at run time it removes both lengths and moves a3 back to the left string), then `Scc` (`cpoke`); the type so far String (`+`) or Word | its operands (each a string's code with its length pushed) | emit: "Illegal Operator for Type" (`doop`: any other operator on a String) |
+| `EXN_EXPR` with strings | the end of an evaluation of a String, or of one with a string in it | none | a String: `clr.b (a3)+` and the start into `D(regat)` (`sbtolong`: the a3 saved on the stack, which the length then replaces, `sbgot` 2; else the work area's start, the variable of the library 65235, used), `stackuse` 4 up (when the type is pushed, `pushflag` > 0: the length popped, the type word pushed, `stackuse` 2 more, the length pushed again); AmiBlitz3's filler below a procedure's string argument in a register (`ext_strpointer`: `pea 0`, `stackuse` 4 up); another type with a3 saved: the saved a3 dropped (`ststfix`); `sbgot` back | the expression | none |

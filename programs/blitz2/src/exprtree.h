@@ -20,7 +20,13 @@
  * before them and an exit action after them; it then becomes the leaf of
  * the call's value.  So is a library function's call (step 3d: change
  * expr-tree-3d-library-calls), made after its lookup, which has no side
- * effect: its library is used right after the lookup.
+ * effect: its library is used right after the lookup.  A string literal
+ * (step 3e: change expr-tree-3e-strings) is a leaf as well (ELK_STRING),
+ * its text written to the literal area while it is read; a string
+ * variable is a variable's leaf, a string result a call's, and the
+ * operators on strings (+ and the comparisons) are operator nodes of
+ * step 2: the string protocol (the work area, a length on the stack per
+ * string) is kept by emitting each of them at its moment of before.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
@@ -127,7 +133,9 @@ enum {
     ELK_LABEL,                  /* ?label */
     ELK_USED,                   /* Used Object */
     ELK_ADDR,                   /* Addr Object(n) */
-    ELK_ERRNUM                  /* ErrNum ("Ern") */
+    ELK_ERRNUM,                 /* ErrNum ("Ern") */
+    ELK_STRING                  /* a string literal "...": value its place in the literal
+                                   area (data1), aux its length (step 3e) */
 };
 
 /** @brief The flags of a node (exprnode.flags). */

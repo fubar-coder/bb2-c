@@ -638,8 +638,10 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   reset per statement) and the precedence climbing of `eval5` is the walk
   `exprtree_climb`, whose hooks in `eval.c` emit each operator when the
   original did; a simple element (a constant, a variable, `&`, `?`,
-  `Pi`, `Used`, `Addr` ...) is parsed into a leaf node whose code is
-  emitted right after, a variable's path (an array's indexes, fields,
+  `Pi`, `Used`, `Addr`, a string literal ...) is parsed into a leaf node
+  whose code is emitted right after (a string literal's text is written
+  to the literal area as it is read, its work area got before), a
+  variable's path (an array's indexes, fields,
   field arrays, pointers: `varparse`, the parse part of `calcvar`) into a
   node per step whose code is emitted as soon as it is read, a procedure,
   OS or library call into a node that lives while its parameters are read, with

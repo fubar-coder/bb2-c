@@ -64,6 +64,7 @@ static const char *const traces[][2] = {
     { "blitz2_expr_arrays__arrays", "TN:blitz2_expr_arrays__arrays\n" EVAL("1", "0") },
     { "blitz2_expr_calls__results", "TN:blitz2_expr_calls__results\n" EVAL("1", "0") },
     { "blitz2_expr_libcalls__forms", "TN:blitz2_expr_libcalls__forms\n" EVAL("1", "0") },
+    { "blitz2_expr_strings__chains", "TN:blitz2_expr_strings__chains\n" EVAL("1", "0") },
     { "blitz2_expr_leaves__literals", "TN:blitz2_expr_leaves__literals\n" EVAL("1", "0") },
     { "blitz2_intrinsic_asc__calls", "TN:blitz2_intrinsic_asc__calls\n" EVAL("1", "0") },
     { "host/blitz2_exprtree", "TN:host_blitz2_exprtree\n"
@@ -449,6 +450,7 @@ static const char exprtree_tests[] =
     TEST("blitz2_expr_arrays__arrays", "\"emulator\"") ","
     TEST("blitz2_expr_calls__results", "\"emulator\"") ","
     TEST("blitz2_expr_libcalls__forms", "\"emulator\"") ","
+    TEST("blitz2_expr_strings__chains", "\"emulator\"") ","
     TEST("blitz2_expr_leaves__literals", "\"emulator\"") ","
     TEST("blitz2_expr_limits__chain_1000", "\"emulator\"") ","
     TEST("blitz2_intrinsic_asc__calls", "\"emulator\"") ","
@@ -467,9 +469,9 @@ TEST_CASE("covsel: the nodes of an expression", "[covsel]")
     cur_tests = exprtree_tests;
     cur_host_tests = exprtree_host_tests;
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
     r = select_for(real_rules, diff1("programs/blitz2/tests/host/test_exprtree.cpp", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, "host"));
