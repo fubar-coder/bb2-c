@@ -71,6 +71,7 @@
  *   - init sets the state as at the load (slave, not initialised, no
  *     buffers); the original's init was empty, a second run from the
  *     editor started with the state of the run before (#1159).
+ * Kept on purpose (not fixed, decision):
  * BUG(orig) (#655), wontfix: SyncSerial - two machines that start at the
  * same time both become master (each takes the other's sync byte for the
  * echo).  Not changed (R10 decision Q5 (a)): the handshake would need a

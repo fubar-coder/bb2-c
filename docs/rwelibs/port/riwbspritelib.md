@@ -126,10 +126,10 @@ barrier so that GCC does not compute the end pointer with `__mulsi3`.
   without testing it, for an empty entry the words at the addresses 6
   and 8 (the libs test's case "WBSpriteX (no sprite)").
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* finit does not clear the library base: a second finit closes
-  graphics.library again (#919).
+* BUG(orig) (#919): finit does not clear the library base: a second finit closes
+  graphics.library again.
 
 ## Test
 

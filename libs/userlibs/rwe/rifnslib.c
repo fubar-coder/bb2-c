@@ -48,14 +48,13 @@
  * the short forms' prefs and colour in d4/d5) and FNSVersion (an inline
  * routine); everything else is C behind thunks.
  *
- * BUG(orig):
- *   - A depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#658): a depth of 0 (or more than 8) overruns bitstack: 256 (depth) plane
  *     pointers are written over the variables and the font; the 16 pixel
  *     loop draws bitdepthminusone + 1 planes, the word (Flags<<8|Depth) - 1
- *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes
- *     (#658).
- *   - Planes 8 and on take the colour bit of plane & 7 (BTST on memory)
- *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop (#658).
+ *     of the bitmap - with Flags set or depth 0 hundreds or 65536 planes.
+ *   - BUG(orig) (#658): planes 8 and on take the colour bit of plane & 7 (BTST on memory)
+ *     in the 32/48/64 pixel loops, 0 in the 16 pixel loop.
  * Fixed (#665): FNSPrint/FNSShadowPrint before FNSOutput (no bitmap)
  *   return at once (the prefs and the colour stored as on the way without
  *   a font); the original pushed 13 registers and returned with RTS - to

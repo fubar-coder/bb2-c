@@ -34,19 +34,21 @@
  * original; the C version keeps it).
  *
  * BUG(orig), kept:
- *  - ifffind gives up at a "BODY" id (unless it is looking for BODY) and
- *    otherwise reads ahead byte by byte (the ids need not be aligned). (#178)
- *    Won't fix, a limit: chunks behind the BODY are not found, and an
- *    identifier inside chunk data can be taken for a chunk.  A chunk
- *    walker would no longer read the files the original SaveBitmap wrote
- *    with an odd CMAP and no pad byte (#184), and every loader (ILBM,
- *    palette, shape, sound, ANIM with its nested FORMs) depends on the
- *    order in which the byte search finds the chunks.
  *  - Not a bug (all callers ignore d0/a0 after iffread): iffread: when the
  *    buffer position reaches 2048 the rest is read with one dos Read
  *    directly to a0 (d0 = its result, a0 not advanced); the buffer is
  *    refilled by the next iffbyte.  When the data ends inside
  *    the buffer, d0 = the bytes still wanted and a0 = the end.
+ *
+ * Kept on purpose (not fixed, decision):
+ *  - BUG(orig) (#178): ifffind gives up at a "BODY" id (unless it is
+ *    looking for BODY) and otherwise reads ahead byte by byte (the ids
+ *    need not be aligned).  Won't fix, a limit: chunks behind the BODY
+ *    are not found, and an identifier inside chunk data can be taken for
+ *    a chunk.  A chunk walker would no longer read the files the original
+ *    SaveBitmap wrote with an odd CMAP and no pad byte (#184), and every
+ *    loader (ILBM, palette, shape, sound, ANIM with its nested FORMs)
+ *    depends on the order in which the byte search finds the chunks.
  *
  * Fixed (intended deviation, #177): a read error (Read gives -1) is the
  * end of the data (charsleft = 0); the original kept the low word of the

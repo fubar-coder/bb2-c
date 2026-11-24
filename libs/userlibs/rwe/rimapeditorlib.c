@@ -36,8 +36,8 @@
  * pointer); a3 is left as the original leaves it (CreateMap: behind the
  * fields it wrote; the string functions: behind the characters).
  *
- * BUG(orig):
- *   - finit closes graphics.library also if it did not open (#896).
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#896): finit closes graphics.library also if it did not open.
  * Fixed (intended deviations):
  *   - init clears the stencil of SetStencil, the ScanShapes results and
  *     the parse position of M_InitParse, as at the first load; the

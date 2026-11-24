@@ -37,9 +37,10 @@
  *   - By design (#149): a bitmap of depth 0 runs the plane loops 65536
  *     times; such a bitmap is refused at its creation by the error check
  *     (BitMap: _bitmapchk, CludgeBitMap: cludgechk).
- *   - BitMapInput edits an existing (Edit$ padded) buffer and waits for
- *     return without end: at end of file (-1 from the previous handler)
- *     it loops forever. (#151)
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#151): BitMapInput edits an existing (Edit$ padded)
+ *     buffer and waits for return without end: at end of file (-1 from
+ *     the previous handler) it loops forever.
  * Fixed (intended deviation, #150): LoadBlitzFont refused a font that is
  *   not 8x8 or proportional (e.g. one diskfont scaled to 8 points) without
  *   closing it: it stayed open after the program.  Here it is closed

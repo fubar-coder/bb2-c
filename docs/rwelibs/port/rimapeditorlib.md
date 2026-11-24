@@ -180,9 +180,9 @@ and commands before their setup command).
   words and `MapCanDraw` reads at x × 2 as a long, up to 64 KB per row
   behind the data) (#1152; test `rimapeditorlib-createmap-width-word`).
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* finit closes graphics.library also if it did not open (#896).
+* BUG(orig) (#896): finit closes graphics.library also if it did not open.
 
 Original behaviour that is not a defect:
 

@@ -38,9 +38,9 @@
  * Everything is C behind the thunks; dos and intuition through the NDK
  * inlines.
  *
- * BUG(orig), kept:
- *   - EZRequestArgs without arguments reads one type word from a2 (the
- *     count 0 runs the DBRA loop 65536 times) (#746).
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#746): EZRequestArgs without arguments reads one type word from a2 (the
+ *     count 0 runs the DBRA loop 65536 times).
  *
  * Fixed (intended deviation, #748): EZRequest title$,body$,gadget$,var..
  * and EZRequestArgs store their arguments in 16 longs without a limit;

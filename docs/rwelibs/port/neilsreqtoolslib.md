@@ -157,10 +157,10 @@ kind F):
   called the handler with no signals. reqtools' EZ and palette handlers
   ignore the signals, so with reqtools 38 nothing visible changes (#454).
 
-## BUG(orig)
+## Kept on purpose (not fixed, decision)
 
-* RTEZGetString copies the default string into the buffer of MaxChars
-  bytes without a limit (#459).
+* BUG(orig) (#459): RTEZGetString copies the default string into the buffer of MaxChars
+  bytes without a limit.
 
 Original behaviour that is not a defect: RTEZGetString's result and
 RTEZPathRequest's path have no 0 behind them (the usual convention of a

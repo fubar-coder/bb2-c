@@ -55,7 +55,8 @@
  *     / 256 (CMP.b) times; such a bitmap is an invalid argument,
  *     refused in the error check area by BitMap and CludgeBitMap (the
  *     loops stay).
- *   - FreeFill does not clear the buffer pointer. (#394)
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#394): FreeFill does not clear the buffer pointer.
  * Fixed (intended deviation, docs/libs/deviations.md):
  *   - Polyf clips and steps the edges with word arithmetic (the slope is
  *     one DIVS, an edge of 16384 lines gets the slope 0, the clipping

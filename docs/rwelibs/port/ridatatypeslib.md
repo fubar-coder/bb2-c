@@ -43,10 +43,10 @@ result; the original changes a6 everywhere, a0/a1 nearly everywhere,
 d1 in the string functions, d2 (DataTypeOpen), d3 (DataTypesPalette),
 a2 (init, finit, AttachDataType) and d7/a2 (SetDataTypeAttr pairs).
 
-**BUG(orig)** (kept):
+**Kept on purpose (not fixed, decision):**
 
-* SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
-  overflow the buffer (#608).
+* BUG(orig) (#608): SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
+  overflow the buffer.
 
 **Fixed** (intended deviations, `docs/libs/deviations.md` 3a, kind F):
 

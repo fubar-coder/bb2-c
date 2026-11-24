@@ -32,18 +32,20 @@
  * below a2 (read through a copy, a2 stays unchanged: DIFF as in all C
  * ports, docs/libs/cmdlibs-port.md).
  *
- * BUG(orig):
+ * Kept on purpose (not fixed, decision):
  *   - BUG(orig) (#845), wontfix: GetIconObject reads the icon's tool
  *     types from address 0 if the icon has none.  Not observable: the
  *     long at address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, the count
  *     stops at once - test ritooltypeslib-v36-calls; an Enforcer hit only.
- *   - IconDefTool rewinds a3 by the length of its argument + 1 (like
- *     FindToolValue does for its result) and leaves it there. No defect:
- *     it gives back the space of the string argument, which the compiler
- *     does not take back after a library function with a numeric result
- *     (#846, closed).
- *   - IconToShape: the shape is filled before the data is allocated (no
- *     memory: the shape keeps its size and has no data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+ *   - BUG(orig) (#848): IconToShape: the shape is filled before the data
+ *     is allocated (no memory: the shape keeps its size and has no data)
+ *     (not a bug in practice: a failing globalloc never returns, memlib
+ *     ends the program with "Out of Memory!").
+ * No defect (#846, closed): IconDefTool rewinds a3 by the length of its
+ *   argument + 1 (like FindToolValue does for its result) and leaves it
+ *   there; it gives back the space of the string argument, which the
+ *   compiler does not take back after a library function with a numeric
+ *   result.
  * Not a defect in compiled programs: IconToShape calls MakeCookie with
  *   a3 = the shape only if the shape was in use before (freeashape),
  *   otherwise with the caller's a3, and IconToShape shape,shape with a3

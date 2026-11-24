@@ -127,8 +127,12 @@ libraries:
   label (`codeinit`).
 * Original bugs: `BUG(orig) (#NNN)` while not fixed, `Fixed (#NNN)`
   once fixed, `By design (#NNN)` where the original tests the input only
-  with runtime error checking on purpose (issue label `as-designed`);
-  Blitz notation (`#ld0`, `Window#`) is no link.
+  with runtime error checking on purpose (issue label `as-designed`).
+  A bug whose issue is closed as won't fix or not planned keeps
+  `BUG(orig) (#NNN)` and is listed under the heading "Kept on purpose
+  (not fixed, decision)" in the port document and the library header,
+  apart from the bugs still open. Blitz notation (`#ld0`, `Window#`) is
+  no link.
 
 ## Fixing an original bug
 

@@ -106,7 +106,7 @@ d0/d1/a0/a1 that are not the result.
   first run ended as master (#1159; D-019, `libs_emulator` cases
   `[fixed #1159]` of `rwe_rifastseriallib`, the scenario's second init).
 
-**BUG(orig)** (kept):
+**Kept on purpose (not fixed, decision):**
 
 * **BUG(orig) (#655), wontfix:** `SyncSerial` - two machines starting at
   the same time both become master (each takes the other's sync byte for

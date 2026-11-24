@@ -72,20 +72,20 @@ Further assembler: **the stack imbalance.** An allocation that fails in
 readshapes' shape loop or in the cookie returns with a0 still pushed.
 The original returns to that data address; `rs_crash` jumps there.
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* **A failing allocation in readshapes** returns with a0 pushed (#806;
-  see the stack imbalance above).
-* **LELoadShapes:** a failing chunk allocation runs the caller's cleanup
+* **BUG(orig) (#806): a failing allocation in readshapes** returns with a0 pushed
+  (see the stack imbalance above; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* **BUG(orig) (#819), LELoadShapes:** a failing chunk allocation runs the caller's cleanup
   and returns there. The caller then frees the header buffer and closes
   the file a second time if packedsize is 0, and otherwise uses
-  packedsize as the chunk (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-* **read_palette:** the allocation is not checked; a failure writes to
-  address 0 (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-* **LESaveShapes:** when the pack buffer is missing, two runtime errors
+  packedsize as the chunk (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* **BUG(orig) (#821), read_palette:** the allocation is not checked; a failure writes to
+  address 0 (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* **BUG(orig) (#818), LESaveShapes:** when the pack buffer is missing, two runtime errors
   follow (TRAP #0: "Not enough memory to pack shapes", "Shape
   Compression Failed!"), then CreateCookie on the shape, whose RTS
-  returns from `_writeshapes` (#818).
+  returns from `_writeshapes`.
 
 LESaveShapes calls PackPBM with d3 = 12, as the original leaves it.
 RIPackLib's original PackPBM ran on into UnPackPBM on failure, which

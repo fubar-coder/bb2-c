@@ -212,9 +212,9 @@ Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
 65536 on; the number is kept as a byte anyway (named in #514).
 
-**BUG(orig)** (kept):
+**Kept on purpose (not fixed, decision):**
 
-* A run or copy count of 0 is 256 (DBRA on the byte) (#508). Kept on
+* BUG(orig) (#508): a run or copy count of 0 is 256 (DBRA on the byte). Kept on
   purpose (won't fix, user decision W5 Q4 of 2026-11-19): encoders never
   write a count of 0 (the ANIM format and its op 7 appendix do not define
   it; Kent's skip.c writes no run of 0, and the reference decoders -
@@ -222,10 +222,9 @@ bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
   rows), and a test would cost every run and copy op of RINextAnimFrame,
   the game path (D-007). The bug-orig test `rianimlib-delta-count-zero`
   stays REPRODUCED.
-* The ops of a `DLTA`'s columns, and the ANIM7 data they take, are not
+* BUG(orig) (#1120, the part not fixed): the ops of a `DLTA`'s columns, and the ANIM7 data they take, are not
   bounded by the chunk: a corrupt op list reads on behind the `DLTA` and
-  writes its deltas into the planes or behind them (#1120, the part not
-  fixed; user decision "C2 findings" of 2026-11-19: a check per op would
+  writes its deltas into the planes or behind them (user decision "C2 findings" of 2026-11-19: a check per op would
   cost every delta op of RINextAnimFrame, the game path, D-007; bug-orig
   test `rianimlib-delta-ops-past-chunk`, REPRODUCED). The plane offsets
   are checked (above).

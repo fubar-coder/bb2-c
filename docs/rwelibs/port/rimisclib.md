@@ -214,10 +214,10 @@ kind F):
   `tests/bug-orig/rwe/rimisclib-v36-progpath`, a500; the user's decision
   of 2026-11-20).
 
-## BUG(orig)
+## Kept on purpose (not fixed, decision)
 
-* EZRequestArgs without an argument reads one type word from a2 (the
-  count 0 runs the DBRA 65536 times) (#746).
+* BUG(orig) (#746): EZRequestArgs without an argument reads one type word from a2 (the
+  count 0 runs the DBRA 65536 times).
 
 Original behaviour that is no defect:
 

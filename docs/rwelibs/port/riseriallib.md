@@ -205,10 +205,10 @@ kind F):
   10240 bytes by default; test `riseriallib-readstring-limit` with 1000
   bytes: 999 characters).
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* The original puts the old vectors into the code (two `JMP` operands)
-  without clearing the instruction cache (#791, not observable in the
+* BUG(orig) (#791): the original puts the old vectors into the code (two `JMP` operands)
+  without clearing the instruction cache (not observable in the
   emulator; the C port keeps them in variables).
 
 No defects: `SerialProgress` gives the remaining count of the last send

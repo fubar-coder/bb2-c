@@ -81,9 +81,9 @@
  *     channel".  The release code is unchanged (D-005): it reads the
  *     words at the addresses 6 and 8 (#922).
  *
- * BUG(orig):
- *   - finit does not clear the library base: a second finit closes
- *     graphics.library again (#919).
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#919): finit does not clear the library base: a second finit closes
+ *     graphics.library again.
  */
 #include "blitzlib.h"
 #include "blitzobj.h"

@@ -115,20 +115,22 @@ that are not the result.
   "will return either FALSE for failure") (#1149; bug-orig test
   `ritooltypeslib-v36-calls`, a500, a500-204, a1200).
 
-**BUG(orig)** (kept):
+**Kept on purpose (not fixed, decision):**
 
 * BUG(orig) (#845), wontfix: GetIconObject reads the icon's tool types
   from address 0 if the icon has none (not observable - the long at
   address 0 is 0 on Kickstart 1.3, 2.04 and 3.1, so the count stops at
   once and the icon has no tool types, as `ritooltypeslib-v36-calls`
   shows with such an icon; it is an Enforcer hit only).
-* IconDefTool rewinds a3 by the length of its argument + 1 and leaves it
-  there. This is no defect (#846, closed): it gives back the space of the
-  string argument, which the compiler does not take back after a library
-  function with a numeric result. Without it
-  `"ab"+Str$(IconDefTool("tool"))+"cd"` gives `abtool` instead of `ab-1cd`.
-* IconToShape fills the shape before allocating its data (no memory:
-  size without data) (#848; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+* BUG(orig) (#848): IconToShape fills the shape before allocating its
+  data (no memory: size without data) (not a bug in practice: a failing
+  globalloc never returns, memlib ends the program with "Out of Memory!").
+
+No defect: IconDefTool rewinds a3 by the length of its argument + 1 and
+leaves it there (#846, closed): it gives back the space of the string
+argument, which the compiler does not take back after a library function
+with a numeric result. Without it `"ab"+Str$(IconDefTool("tool"))+"cd"`
+gives `abtool` instead of `ab-1cd`.
 
 Not a defect in compiled programs: IconToShape calls MakeCookie with a3 =
 the shape only if it was in use before (freeashape), otherwise with the

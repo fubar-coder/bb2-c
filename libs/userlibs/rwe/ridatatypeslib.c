@@ -35,9 +35,9 @@
  * DataTypeOpen ...), d2 (DataTypeOpen), d3 (DataTypesPalette), a2
  * (init/finit, AttachDataType) and d7/a2 (SetDataTypeAttr with pairs).
  *
- * BUG(orig):
- *   - SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
- *     overflow the 1024 byte buffer (#608).
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#608): SetDataTypeAttr with pairs: 0 pairs are 65536 (DBRA), more than 127
+ *     overflow the 1024 byte buffer.
  *
  * Fixed (intended deviations):
  *   - DataTypeBitmap clears the buffer before GetAttr: an object that has

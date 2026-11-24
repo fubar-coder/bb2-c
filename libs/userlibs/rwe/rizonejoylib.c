@@ -40,6 +40,12 @@
  * zone and "2048 bytes" for table 0 are 8 bytes and 2052 bytes; tables
  * "from 1 to 65536" zones are 1 to 65535; ReadJoyPad's port numbers as
  * above.
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#1153), wontfix: the zone tests square the word
+ *     differences x - x1, y - y1, so a point more than 32767 from a
+ *     circle's centre (far outside any screen) wraps and may hit the
+ *     circle; not changed, long differences would cost an instruction per
+ *     zone in the per-frame loop (test `rwe/rizonejoylib-circle-distance-word`).
  * Fixed (intended deviations):
  *   - NewZoneTable, UseZoneTable and FreeZoneTable compare the table
  *     number unsigned: a negative number is refused (0).  The original
@@ -80,11 +86,6 @@
  *     stored); the original stored the low word of the radius squared,
  *     so radius 256 and more wrapped (256: a circle of radius 0, 300:
  *     radius 156) (#867, W7 decision Q1 (a)).
- *   - BUG(orig) (#1153), wontfix: the zone tests square the word
- *     differences x - x1, y - y1, so a point more than 32767 from a
- *     circle's centre (far outside any screen) wraps and may hit the
- *     circle; not changed, long differences would cost an instruction per
- *     zone in the per-frame loop (test `rwe/rizonejoylib-circle-distance-word`).
  *   - GetZoneX1/Y1/X2/Y2 return -1 without a table and for a zone at or
  *     beyond the table's count (the manual: "If the zone number supplied
  *     goes outside the size of the zonetable, then this command returns

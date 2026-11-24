@@ -248,16 +248,20 @@ kind F):
   `PlayTracker` stayed silent (#1165; library test `rwe_ciatrklib`, the
   cases `init (second run)|...`).
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* `LoadTrackerModule` does not check the chip memory (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
-  The runtime errors after `Lock` leave the lock allocated, and the
-  FileInfoBlock is freed only on success (#441).
-* `DecodeModule` of a module in chip memory keeps the address (length
-  1, flag 0); from other memory it copies to chip memory;
+* BUG(orig) (#440): `LoadTrackerModule` does not check the chip memory
+  (not a bug in practice: a failing globalloc never returns, memlib ends
+  the program with "Out of Memory!").
+* BUG(orig) (#441): the runtime errors of `LoadTrackerModule` after
+  `Lock` leave the lock allocated, and the FileInfoBlock is freed only on
+  success.
+* BUG(orig) (#433): `DecodeModule` of a module in chip memory keeps the
+  address (length 1, flag 0); from other memory it copies to chip memory;
   without memory the slot keeps the old address with flag 2 and the new
   length (a later `FreeTrackerModule` frees memory that was never
-  allocated) (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+  allocated) (not a bug in practice: a failing globalloc never returns,
+  memlib ends the program with "Out of Memory!").
 * `GetTrackerEvent` changes only d0's low byte; it is declared `#byte`,
   so that is no defect. By design (#446): `ModuleToChip` is an RTS that
   returns its argument; the library's documentation says "the command

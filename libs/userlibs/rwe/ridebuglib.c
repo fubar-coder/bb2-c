@@ -36,13 +36,13 @@
  * it at +12 (+1..+11 kept the previous message's bytes, +8..+11 the start
  * of the previous name).
  *
- * BUG(orig):
- *   - AddVarTrace converts the type word with an 8 byte table, indexed
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#609): AddVarTrace converts the type word with an 8 byte table, indexed
  *     without a check (other types read the code behind the table; the C
- *     build reads other bytes there, DIFF) (#609).
- *   - DisAsmWindow searches backwards from the return address for a word
+ *     build reads other bytes there, DIFF).
+ *   - BUG(orig) (#611): DisAsmWindow searches backwards from the return address for a word
  *     $4E41 (TRAP #1, which the debugger's code has before the call) with
- *     no limit (#611).
+ *     no limit.
  */
 #include "blitzlib.h"
 

@@ -29,8 +29,6 @@
  * first frame).
  *
  * BUG(orig), kept:
- *  - LoadShape: "BODY" is not checked (the decoder reads whatever
- *    follows) (#264).
  *  - LoadShape of an ANIM: the ops of a DLTA column (skip rows, unique
  *    bytes, a run) are not bounded by the frame's height: an op past the
  *    last row writes into the next plane, from the last plane on behind
@@ -46,6 +44,10 @@
  *    copied to CHIP memory.
  *  - Not a bug (word results, the compiler uses only d0.w):
  *    ShapeWidth/ShapeHeight load only the low word of d0.
+ *
+ * Kept on purpose (not fixed, decision):
+ *  - BUG(orig) (#264): LoadShape: "BODY" is not checked (the decoder
+ *    reads whatever follows).
  *
  * Fixed (intended deviation, docs/libs/deviations.md):
  *  - freeashape clears +30 of a "cL" shape too; the original left the

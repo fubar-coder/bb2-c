@@ -34,11 +34,12 @@
  * Everything is C; the entries are thunks, the hardware registers
  * volatile accesses of the original's width.
  *
- * BUG(orig), kept:
- *   - LoadTrackerModule: the chip memory is not checked (#440; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!"); the runtime errors after Lock (no FileInfoBlock, Examine
- *     failing) leave the lock allocated (#441).
- *   - DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
- *     the new length (#433; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#440): LoadTrackerModule: the chip memory is not checked (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+ *   - BUG(orig) (#441): LoadTrackerModule: the runtime errors after Lock (no FileInfoBlock, Examine
+ *     failing) leave the lock allocated.
+ *   - BUG(orig) (#433): DecodeModule: when the chip memory for its copy is missing the slot keeps the old address with flag 2 and
+ *     the new length (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The size is computed with mt_init's scan
  *     (below).
  * Not defects: GetTrackerEvent changes only the low byte of d0 (it is
  * declared #byte).  By design (#446): ModuleToChip does nothing and

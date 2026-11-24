@@ -30,15 +30,15 @@
  * rest); the original changes d1, d3, d6, d7 and a2 in RIAnimInit, a0/a2
  * in RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
  *
- * BUG(orig):
- *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508; kept on
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#508): a run or copy count of 0 is 256 (DBRA on the byte) (kept on
  *     purpose: encoders never write a count of 0 - the ANIM format does
  *     not define it, the reference decoders read it as 0 rows - and a
  *     test would cost every run and copy op of RINextAnimFrame, D-007;
  *     user decision W5 Q4 of 2026-11-19).
- *   - The ops of a DLTA's columns (and the ANIM7 data they take) are not
+ *   - BUG(orig) (#1120): the ops of a DLTA's columns (and the ANIM7 data they take) are not
  *     bounded by the chunk: a corrupt op list reads on behind the DLTA and
- *     writes its deltas into the planes or behind them (#1120, the part
+ *     writes its deltas into the planes or behind them (the part
  *     not fixed: a check per op would cost every delta op of
  *     RINextAnimFrame, the game path, D-007; user decision "C2 findings"
  *     of 2026-11-19; test rianimlib-delta-ops-past-chunk).  The plane

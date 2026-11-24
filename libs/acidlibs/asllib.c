@@ -23,10 +23,11 @@
  * ASLScreenRequest(flags) returns a copy of the ScreenModeRequester (fixed
  * #60), 0 on cancel.
  *
- * Kept from the original (BUG(orig)):
- *   - ASLFontRequest: a font name of more than 95 characters overruns the
- *     static buffer (strng+4: 96 bytes including the 0; in the binary the
- *     code of doaslscreen follows at $3B8) (#65); an empty name counts as
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#65): ASLFontRequest: a font name of more than 95
+ *     characters overruns the static buffer (strng+4: 96 bytes including
+ *     the 0; in the binary the code of doaslscreen follows at $3B8); an
+ *     empty name counts as
  *     cancel (not a bug: the ASL font requester returns no empty name with
  *     OK).
  * Fixed (#60): ASLScreenRequest returns a static copy of the requester's

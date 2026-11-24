@@ -32,35 +32,35 @@
  * PPDecrunch start,end,dest: end = end of the packed file (the last long
  * holds the original length and the number of empty bits).
  *
- * Kept from the original (BUG(orig)):
- *   - Implode: the match search reads up to 254 bytes past the end of
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#112), won't fix: Implode: the match search reads up to 254 bytes past the end of
  *     the data (im30: up to 15, the length measurement im32/im33: up to
- *     254 - the two do not add up). (#112), won't fix: with a match
+ *     254 - the two do not add up).  With a match
  *     candidate at the second-to-last byte of the data, the length
  *     measurement compares the byte behind the data, and the output
  *     depends on it; a search that does not read it would change
  *     Implode's output in that case.
- *   - CrMDecrunch with one argument (destination = source) and with
- *     overlapping buffers: the crunched data are moved to MinSecDist
- *     bytes BEFORE the destination - up to MinSecDist bytes of foreign
- *     memory in front of the buffer are overwritten (the BB2 docs only
- *     say "works like the Deplode command"). (#116), won't fix: the
- *     Crunch-Mania format decrunches in place that way (its listing:
+ *   - BUG(orig) (#116), won't fix: CrMDecrunch with one argument
+ *     (destination = source) and with overlapping buffers: the crunched
+ *     data are moved to MinSecDist bytes BEFORE the destination - up to
+ *     MinSecDist bytes of foreign memory in front of the buffer are
+ *     overwritten (the BB2 docs only say "works like the Deplode
+ *     command").  The Crunch-Mania format decrunches in place that way (its listing:
  *     "You need some Memory directly in front of the Destination Area
  *     which has to be as large as the MinSecDist"); moving the data
  *     behind the buffer instead would need a buffer larger than the
  *     original length, which programs do not allocate either.  A program
  *     keeps MinSecDist bytes (header offset 4) free in front of the buffer
  *     or uses the two argument form with buffers that do not overlap.
- *   - Implode crunches in place while it searches: a result of 0 (not
- *     crunchable) after at least 64 bytes, or -1 (break), leaves the
- *     buffer partly overwritten. (#114), won't fix: the Imploder packs
+ *   - BUG(orig) (#114), won't fix: Implode crunches in place while it
+ *     searches: a result of 0 (not crunchable) after at least 64 bytes,
+ *     or -1 (break), leaves the buffer partly overwritten.  The Imploder packs
  *     in place, and knows only at the end that the result is not shorter;
  *     keeping the data would need a second buffer of the data length on
  *     every call.  A program that still needs its data after a result of
  *     0 or -1 implodes a copy.
- *   - No checks of the data: corrupt data write outside the destination.
- *     (#119), won't fix: the header and table values that made a decrunch
+ *   - BUG(orig) (#119), won't fix: no checks of the data: corrupt data
+ *     write outside the destination.  The header and table values that made a decrunch
  *     run away are checked now (#115, #117, #118); what is left would be a
  *     bounds test per unpacked byte in the decrunch loops (a cost on
  *     every byte of valid data), and the commands get no buffer sizes to

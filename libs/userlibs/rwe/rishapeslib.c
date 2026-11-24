@@ -45,18 +45,18 @@
  * register, libcall.c toreg), so the shift gives the numbers back: no
  * defect (#822, #815 as titled; a run of the original confirms it).
  *
- * BUG(orig), kept:
- *   - An allocation that fails in the shape loop or in the cookie of
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#806): an allocation that fails in the shape loop or in the cookie of
  *     readshapes returns with a0 still pushed: it jumps to the data
- *     address (#806; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
- *   - LELoadShapes: a failing
+ *     address (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").  The stack imbalance that C cannot express: see rs_crash.
+ *   - BUG(orig) (#819): LELoadShapes: a failing
  *     chunk allocation frees the header buffer and closes the file twice
  *     (readchunk jumps to the cleanup of its caller and returns there)
- *     (#819; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
- *   - read_palette: no check of the allocation (writes to address 0)
- *     (#821; not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
- *   - LESaveShapes: a failing pack buffer is a
- *     runtime error (TRAP #0) (#818).
+ *     (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+ *   - BUG(orig) (#821): read_palette: no check of the allocation (writes to address 0)
+ *     (not a bug in practice: a failing globalloc never returns, memlib ends the program with "Out of Memory!").
+ *   - BUG(orig) (#818): LESaveShapes: a failing pack buffer is a
+ *     runtime error (TRAP #0).
  *
  * Fixed (intended deviation, docs/libs/deviations.md 3a): init also sets
  * LEAutoCookie on and clears the maxima of LEScanShapes (the original's

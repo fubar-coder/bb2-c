@@ -51,9 +51,9 @@
  * Assembler: the interrupt handlers' entries (RTE, or on to the old
  * vector) and the thunks.
  *
- * BUG(orig):
- *   - The old vectors go into the operands of two JMP instructions in
- *     the code without clearing the instruction cache (#791; the C port
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#791): the old vectors go into the operands of two JMP instructions in
+ *     the code without clearing the instruction cache (the C port
  *     keeps them in variables, the handlers read them).
  *
  * Fixed (intended deviations):

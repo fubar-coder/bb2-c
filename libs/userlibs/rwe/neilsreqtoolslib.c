@@ -41,9 +41,9 @@
  * the Blitz program, set for the call and restored after it, as the
  * original's MOVEM does), maxslib and memlib through BLITZ_ALIBJSR.
  *
- * BUG(orig), kept:
- *   - RTEZGetString copies the default string without a limit into the
- *     buffer of MaxChars bytes (#459).
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#459): RTEZGetString copies the default string without a limit into the
+ *     buffer of MaxChars bytes.
  * Fixed (intended deviation, #461): RTEZLoadFile/RTFileRequest wrote
  * the 0 behind their result with MOVE.b #0,(a3)+ and left a3 behind it,
  * so a string expression went on one byte too far; a3 now ends on the 0.

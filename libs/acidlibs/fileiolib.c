@@ -73,17 +73,19 @@
  *     needs another order in the file lists the fields reversed.
  *   - Exists: the FileInfoBlock comes from memlib globalloc (not checked,
  *     see below).
- *   - Exists of an empty file, won't fix: 0 like a missing file.  Exists
- *     returns the length of the file (the manual: "If 0 the file either
- *     does not exist or is empty"), and programs use the value as the
- *     length (AllocMem, ReadMem, LoadBank); another value for an empty
- *     file would break them.  "Is it there" is ReadFile.  (#143)
  *   - Not a bug (that value is never -1): myseek/myread/mywrite return d0
  *     unchanged when there is nothing to do (length 0, position in the
  *     buffer): FileSeek/Put/Get compare the file number resp. the field
  *     address with -1 then.
  *   - Not a bug (the correct length including buffered data): Lof does not
  *     flush: the larger of the dos length and the end of the buffer.
+ * Kept on purpose (not fixed, decision):
+ *   - BUG(orig) (#143), won't fix: Exists of an empty file gives 0 like a
+ *     missing file.  Exists returns the length of the file (the manual:
+ *     "If 0 the file either does not exist or is empty"), and programs
+ *     use the value as the length (AllocMem, ReadMem, LoadBank); another
+ *     value for an empty file would break them.  "Is it there" is
+ *     ReadFile.
  * Kept from the original, not a bug (no visible effect):
  *   - The dos buffer (memlib globalloc, MEMF_PUBLIC) and the FileInfoBlock
  *     of Exists are not checked: in the original globalloc never returns

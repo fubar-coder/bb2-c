@@ -170,12 +170,12 @@ Intended deviations, `docs/libs/deviations.md` (3a), kind F:
   count: one pixel at xmin (at 0 in the original, which clipped there,
   #667) or at the text's x (#1130).
 
-## BUG(orig), kept
+## Kept on purpose (not fixed, decision)
 
-* A bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
+* BUG(orig) (#658): a bitmap depth of 0 or above 8 overruns `bitstack` (256 / depth plane
   pointers over the variables and the font); the 16-pixel loop draws
   `(Flags<<8 | Depth)` planes, the 32/48/64-pixel loops `Depth` (256 for
-  0), planes from 8 on with the colour bit `plane & 7` (#658).
+  0), planes from 8 on with the colour bit `plane & 7`.
 
 ## The font
 
