@@ -369,7 +369,7 @@ TEST_CASE("exprmatrix model: today's values of the cases of the decision round",
 
 TEST_CASE("exprmatrix model: the spec's scenarios under every candidate", "[exprmatrix][cand]")
 {
-    for (int n = EM_CAND_C1; n < EM_NCAND; n++)
+    for (int n = EM_CAND_C1; n < EM_CAND_C7; n++)  // C7: its own case below
         for (bool b : { false, true }) {
             unsigned r = cand(n, b);
 
@@ -393,7 +393,7 @@ TEST_CASE("exprmatrix model: the count cases of #1183 by candidate and scope", "
     // r.l=(w+v>c) and r.l=(w-(-v)>c) with w=v=20000, c=0: the Word sum
     // wraps unless the left operand keeps the wanted Long (scope b) or the
     // sum is a Long (C3)
-    for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
+    for (int n = EM_CAND_C1; n < EM_CAND_C7; n++) {  // C7: its own case below
         INFO(em_cand_name(n));
         const char *a = n == EM_CAND_C3 ? "-1" : "0";
         CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n)) == a);
@@ -401,7 +401,7 @@ TEST_CASE("exprmatrix model: the count cases of #1183 by candidate and scope", "
         CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n, true)) == "-1");
         // r.l=(q*1000>50000), q=100: the Quick product overflows in both
         // scopes, but for C6's 32.16 product of the Quick and the Word 1000
-        const char *k = n == EM_CAND_C6 ? "-1" : "0";
+        const char *k = n == EM_CAND_C6 || n == EM_CAND_C7 ? "-1" : "0";
         CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n)) == k);
         CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n, true)) == k);
         // rq.q=(l1+1>40000), l1=40000: fixed by scope (a) only
@@ -436,12 +436,13 @@ TEST_CASE("exprmatrix model: what tells the candidates apart", "[exprmatrix][can
     // operation is exact and rounded (C1: a Float)
     CHECK(expr("l/1.5", "l.l=100000").value(EM_PRINT, cand(EM_CAND_C1)) == "66666.66");
     CHECK(expr("l/1.5", "l.l=100000").value(EM_PRINT, cand(EM_CAND_C4)) == "66666");
-    // every candidate rounds each exact operation under a wanted Long, so
-    // a chain of two Quicks and a Long still depends on the order
+    // every candidate but C7 rounds each exact operation under a wanted
+    // Long, so a chain of two Quicks and a Long still depends on the order;
+    // C7 rounds once, at the consumer
     for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
         INFO(em_cand_name(n));
         CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, cand(n)) == "13");
-        CHECK(expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, cand(n)) == "12");
+        CHECK(expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, cand(n)) == (n == EM_CAND_C7 ? "13" : "12"));
     }
 }
 
@@ -452,12 +453,14 @@ TEST_CASE("exprmatrix model: the typing of one operation by a candidate", "[expr
     // a Long and a Quick under no wanted type: today l+q is a rounded Long,
     // q+l a Quick; every candidate gives both the exact Long
     for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
+        int path = n == EM_CAND_C7 ? '3' : 'm';    // C7: a 32.16 operation
+
         em_cand_cell(cand(n), EM_ADD, 0, 3, 4, &t);
         CHECK(t.result == 3);
-        CHECK(t.path == 'm');
+        CHECK(t.path == path);
         em_cand_cell(cand(n), EM_ADD, 0, 4, 3, &t);
         CHECK(t.result == 3);
-        CHECK(t.path == 'm');
+        CHECK(t.path == path);
     }
     // Word+Word: a Long in C1, a Word in C2
     em_cand_cell(cand(EM_CAND_C1), EM_ADD, 0, 2, 2, &t);
@@ -504,4 +507,48 @@ TEST_CASE("exprmatrix model: C6, a whole constant beside a Quick by its value", 
     // a constant with a fraction as in C1, and + as in C1
     CHECK(expr("q*0.5", "q=1.5").typing(EM_PRINT, c6) == expr("q*0.5", "q=1.5").typing(EM_PRINT, cand(EM_CAND_C1)));
     CHECK(expr("q+1000", "q=1.5").typing(EM_PRINT, c6) == expr("q+1000", "q=1.5").typing(EM_PRINT, cand(EM_CAND_C1)));
+}
+
+TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", "[exprmatrix][cand]")
+{
+    unsigned c7 = cand(EM_CAND_C7);
+
+    // the chain clause: rounded once, at the consumer
+    CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, c7) == "13");
+    CHECK(expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, c7) == "13");
+    CHECK(expr("w+v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, c7) == "8.5");
+    CHECK(expr("q+w+v", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, c7) == "8.5");
+    // a Quick keeps its fraction with no wanted type
+    CHECK(expr("w-v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, c7) == ".5");
+    CHECK(expr("l/q", "q=1.5 l.l=10").value(EM_PRINT, c7) == "6.6667");
+    // a wanted Word: 16.16, the Quick product wraps
+    CHECK(expr("q*w", "q=1.5 w.w=30000").value(EM_DW, c7) == "-20536");
+    // a / with a Long under a wanted Quick: 32.16
+    CHECK(expr("l/q", "q=4 l.l=100000").value(EM_DQ, c7) == "61A80000");
+    CHECK(expr("l/q", "q=4 l.l=100000").value(EM_DQ, cand(EM_CAND_C1)) == "E1A80000");  // the Long cut to 16.16 first
+    // without a Quick: today's (C7), or C1's with its left operand by its
+    // own operands (C7+, EM_R_SCOPEB)
+    unsigned c7p = c7 | EM_R_SCOPEB;
+    CHECK(expr("w+v", "w.w=20000 v.w=20000").value(EM_PRINT, c7) == "-25536");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, c7) == "-1");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, c7p) == "0");
+    CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, c7) == "00000000");
+    CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, c7p) == "800000C1");
+    CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, c7p) == "FFFF0000");
+    // with a Quick: a comparison's operands have no wanted type
+    for (unsigned r : { c7, c7p }) {
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, r) == "-1");
+        CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, r) == "-1");
+        CHECK(expr("q+q>2.4", "q=1.25").value(EM_DL, r) == "-1");
+        CHECK(expr("-q<-1.25", "q=1.5").value(EM_DL, r) == "-1");
+        CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, r) == "4.5");
+        CHECK(expr("base+q*4", "base.l=2097152 q=1.5").value(EM_DL, r) == "2097158");
+        CHECK(expr("w+v+q*2", "q=1.5 w.w=3 v.w=4").value(EM_DW, r)
+              == expr("q*2+w+v", "q=1.5 w.w=3 v.w=4").value(EM_DW, r));
+    }
+    // Mod on 32.16: a - b*trunc(a/b)
+    CHECK(expr("q MOD l", "q=-7.5 l.l=2").value(EM_PRINT, c7) == "-1.5");
+    // the typing: a 32.16 and a 16.16 operation
+    CHECK(expr("q*w", "q=1.5 w.w=3").typing(EM_DL, c7) == "mul Q>~ W>~ 3 L;");
+    CHECK(expr("q*p", "q=1.5 p=2").typing(EM_DQ, c7) == "mul Q>Q Q>Q 1 Q;");
 }

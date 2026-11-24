@@ -281,7 +281,7 @@ void cmd_candidates(CLI::App &app, int &status)
         ->type_name("FILE");
     sub->add_option("-v,--values", o->values, "their values under every rule set (written)")->type_name("FILE");
     sub->add_flag("--typing", o->typing, "with the typing and the table cell of each operation beside the values");
-    sub->footer("The rule sets: flow (the port's rules) and each candidate C1 to C6 with the left operand "
+    sub->footer("The rule sets: flow (the port's rules) and each candidate C1 to C7 with the left operand "
                 "of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND). Prints the number of "
                 "cells each one changes, per context, operator group and issue. With --exprs each line "
                 "(tab separated; # starts a comment) is evaluated under each rule set into --values. "

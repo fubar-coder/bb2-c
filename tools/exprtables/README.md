@@ -63,7 +63,7 @@ Usage: exprtables candidate [OPTIONS] NAME
 the tables of a candidate rule of expr-tree-5 beside today's
 
 POSITIONALS:
-  NAME TEXT REQUIRED          the candidate, C1 to C6 (exprmatrix candidates)
+  NAME TEXT REQUIRED          the candidate, C1 to C7 (exprmatrix candidates)
 
 OPTIONS:
   -h,     --help              Print this help message and exit

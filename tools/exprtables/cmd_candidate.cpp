@@ -112,6 +112,15 @@ const char *const about_c[EM_NCAND] = {
     "size, C3's rule; a constant with a fraction as in C1), so `q*1000` is a 32.16 product\n"
     "as `q*w` is. The cells of two variables are C5's; the difference is in the constants.\n"
     "The overflow is cut, or with runtime error checking a runtime error.\n",
+    "**C7, the wanted type sets the intermediate format** (the user, 2026-11-24). In an\n"
+    "expression with a Quick every intermediate result has the format the wanted type\n"
+    "sets, rounded once at the consumer: a wanted Long 32.16 (a register pair), a wanted\n"
+    "Quick, Word or Byte 16.16 (the subtree of a `/` or `Mod` with a Long in it 32.16), no\n"
+    "wanted type 32.16 where a Quick meets a whole value or constant, 16.16 for Quick with\n"
+    "Quick. An expression without a Quick, with a Float or under a wanted Float is today's.\n"
+    "A cell `Q~ L \xe2\x86\x92 L` with a Quick is a 32.16 operation, `Q Q \xe2\x86\x92 Q` a 16.16 one; the result\n"
+    "letter is the format (L for 32.16), not a type the operand keeps: it is converted\n"
+    "once, at the consumer.\n",
 };
 
 const char *const notes =
@@ -254,7 +263,7 @@ void cmd_candidate(CLI::App &app, int &status)
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("candidate", "the tables of a candidate rule of expr-tree-5 beside today's");
-    sub->add_option("NAME", o->name, "the candidate, C1 to C6 (exprmatrix candidates)")->required();
+    sub->add_option("NAME", o->name, "the candidate, C1 to C7 (exprmatrix candidates)")->required();
     sub->add_flag("--scope-b", o->scopeb, "the left operand of a comparison by scope (b), not (a)");
     sub->add_option("--marks", o->marks, "the cells of the CD places to mark: OP WANT LEFT RIGHT per line")
         ->type_name("FILE");

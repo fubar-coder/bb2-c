@@ -149,7 +149,7 @@ OPTIONS:
           --typing            with the typing and the table cell of each operation beside the
                               values
 
-The rule sets: flow (the port's rules) and each candidate C1 to C6 with the left
+The rule sets: flow (the port's rules) and each candidate C1 to C7 with the left
 operand of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND). Prints
 the number of cells each one changes, per context, operator group and issue.
 With --exprs each line (tab separated; # starts a comment) is evaluated under
@@ -162,7 +162,7 @@ OpenSpec change `expr-tree-5-operand-typing` (open question 1, task 2.1;
 `exprmatrix.h`, `EM_R_CAND`, the model's "Candidate rules" in `model.c`):
 operand typing, each operation typed by its operator, its operands' types
 and the wanted type. For every cell of the description it computes the
-value by the port's rules (`flow`) and by each candidate C1 to C6 with the
+value by the port's rules (`flow`) and by each candidate C1 to C7 with the
 left operand of a comparison by scope (a) and (b), and C5 and C6 also with their
 overflow a runtime error (`C5ea`, `C5eb`, `C6ea`, `C6eb`); `--out` lists the cells where
 one differs, and the counts go to stdout. `--exprs` evaluates expressions

@@ -335,16 +335,16 @@ char *em_measured(const struct em_matrix *m, const struct em_table *t);
  * (open question 1, task 2.1; model.c, "Candidate rules"): operand typing,
  * the type of each operation decided by its operator, its two operands
  * and the wanted type, not by the order.  They are not decided: a rule
- * set with EM_R_CAND(n) (n = EM_CAND_C1 .. EM_CAND_C6) computes a cell by
+ * set with EM_R_CAND(n) (n = EM_CAND_C1 .. EM_CAND_C7) computes a cell by
  * candidate n on top of the port's rules; EM_R_SCOPEB gives the left
  * operand of a comparison the scope (b) of the open question (own typing
  * only with a Quick or Float inside or a Long constant under Float;
  * without it scope (a), every left operand typed by its own operands).
  */
-enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5, EM_CAND_C6, EM_NCAND };
+enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5, EM_CAND_C6, EM_CAND_C7, EM_NCAND };
 #define EM_R_CAND(n) ((unsigned)(n) << 9)
 #define EM_R_CANDMASK (7u << 9)
-#define EM_R_SCOPEB (1u << 12)
+#define EM_R_SCOPEB (1u << 12)         /* C7: "C7+", its whole-number expressions by C1, not today's */
 /* C5, C6: a 32.16 product that does not fit its consumer is a runtime error
    (as under runtime error checking), not cut */
 #define EM_R_C5ERR (1u << 13)
