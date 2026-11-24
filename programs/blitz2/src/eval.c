@@ -3908,8 +3908,15 @@ static void fracquick(void)
    (its long is 0) - the length the call gets, which the compiler pushes
    from -4 too (stvarget2) before it copies the characters.  No string
    is copied: the work area, a3 and sbasegot stay as they were.  The
-   library sets a3 to the copy, which begins where a3 was: the same a3.
-   a0 changes, as with the copy (copstring). */
+   original's library call sets a3 to the start of its copy: inside a
+   string expression (sbasegot set) that is where a3 was; as the
+   statement's first string use the original first loads the string base
+   (makesbase, blitz2.s:10305), so a3 is the string base afterwards,
+   where the inline code leaves a3 as the previous statement left it.
+   No BASIC program sees that, since every statement starts its string
+   use at the string base (setsvars, blitz2.s:2927); only inline
+   assembler reading a3 between statements does.  a0 changes, as with
+   the copy (copstring). */
 static void lenvar(void)
 {
     pokewd(0x6706);                 /* beq.s 1f (no memory: 0) */
@@ -3920,7 +3927,8 @@ static void lenvar(void)
 
 /* Asc(a$) of a plain string variable (stringfunclib ascii): the first
    character zero-extended, -1 for the length 0 and for a variable without
-   memory - the library's long; a3 and a0 as Len's */
+   memory - the library's long; a3 (untouched, unlike the original's
+   call, see lenvar) and a0 as Len's */
 static void ascvar(void)
 {
     pokewd(0x670e);                 /* beq.s 2f (no memory) */

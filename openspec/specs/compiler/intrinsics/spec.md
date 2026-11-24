@@ -94,7 +94,10 @@ or local, no index, field, function or operator), the compiler SHALL read
 the length, or the first character, from the variable's memory and SHALL
 NOT copy the string into the work area. `Len` gives the length (0 without
 memory), `Asc` the first character (0 to 255) or -1 for an empty string,
-as the library. a3 SHALL be unchanged by the call.
+as the library. The inline code SHALL NOT change a3. The original's
+library call, as a statement's first string use, leaves a3 at the string
+base; the inline code does not, which no BASIC program sees, because every
+string use of a statement starts from the string base.
 
 #### Scenario: Len of a variable
 - **WHEN** a program has `a$="hello"`, `c=Len(a$)`
@@ -106,7 +109,7 @@ as the library. a3 SHALL be unchanged by the call.
 
 #### Scenario: a3 unchanged
 - **WHEN** a string expression `b$=a$+Chr$(Len(a$))` is evaluated
-- **THEN** `b$` holds the same characters as before this change
+- **THEN** the inline code does not change a3 and `b$` holds the characters the library call gives
 
 ### Requirement: Len and Asc do not use the intrinsic for other arguments
 An expression (`Len(a$+b$)`), a function result (`Len(Left$(a$,2))`), an

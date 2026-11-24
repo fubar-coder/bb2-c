@@ -45,8 +45,17 @@ the library call when their argument allows it (OpenSpec spec
 `compiler/intrinsics`; the table `intrinsics[]` in
 `programs/blitz2/src/eval.c`). The value is the library's, bit for bit,
 with and without runtime error checking; the registers the compiled code
-relies on (a2 to a7, the data registers held around the call) stay as
-they are. Every other use compiles exactly as before.
+relies on (a2, a4 to a7, the data registers held around the call) stay as
+they are. a3 stays as it is too, which differs from the original's
+`Len` and `Asc` call in one case: as the first string use of a statement
+the original loads the string base (`makesbase`, `blitz2.s:10305`) and
+its library leaves a3 at the copy, so a3 is the string base afterwards;
+the inline code leaves a3 as the previous statement left it. Inside a
+string expression both leave a3 where it was. No BASIC program sees the
+difference, because every statement starts its string use at the string
+base (`setsvars` clears `sbasegot` per statement, `blitz2.s:2927`); only
+inline assembler that reads a3 between statements does. Every other use
+compiles exactly as before.
 
 | Function | Condition | Inline code |
 |---|---|---|
