@@ -1,14 +1,14 @@
 # compiler-procend-kind.test.bas: the correct result is a failed compile
 # (Illegal End Procedure at the End Statement line) and nothing runs; the
-# original compiles the Function and the program returns into garbage (a
-# stray return code or a crash, depending on the memory layout)
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# original compiles the Function and the program returns into the string
+# buffer; its text "Nu" (an RTS) returns to the Gosub of the case, so the
+# program ends without the end of the case (tests/README.md, "Alternative
+# ends").
 fixed-orig = 940
 timeout = 30
 
 [asserts]
-compile = "== \"error 10 Illegal End Procedure\""
+compile = "== \"error 13 Illegal End Procedure\""
 "end.case" = "not exists"
 "end.run" = "not exists"
 rc = "not exists"
@@ -17,5 +17,5 @@ rc = "not exists"
 compile = "== ok"
 
 [ends."compiler=orig195"]
-reason = "the original returns to a wrong address (#940): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+reason = "the original returns to a wrong address (#940), the string buffer whose text \"Nu\" is an RTS: the program ends without the end of the case"
+returns = ["session == done", "rc == 0", "end.case not exists", "end.run exists", "output contains \"Nu\"", "check.endstatement_in_function.after_f == not-run"]
