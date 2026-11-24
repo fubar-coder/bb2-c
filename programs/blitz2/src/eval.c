@@ -162,6 +162,17 @@ static BOOL wordop = FALSE;
 static ULONG elemcount = 0;
 static UWORD letdepth = 0;
 static ULONG letelem = 0;
+/* the state of the armed intrinsic (intrcur): INTR_ARMED until getap
+   takes its argument, INTR_ARG while maineval2 compiles it, INTR_QUICK
+   when maineval2 accepted it (no type word), INTR_DONE when
+   intrinsic_code emitted the code.  Nested calls in the argument save and
+   restore it (libfunction). */
+enum { INTR_IDLE, INTR_ARMED, INTR_ARG, INTR_QUICK, INTR_DONE };
+static const struct intrinsic *intrcur = NULL;
+static UWORD intrstate = INTR_IDLE;
+/* Fixed (#1070): the element getelement2 fetches next is negated (an odd
+   number of '-' in front of it); it hands a literal's sign on as litneg */
+static BOOL negnext;
 
 /* ============================================ the build and the emission
    No asm counterpart.  An expression is built before its code is written:
@@ -211,11 +222,18 @@ static struct {
     struct exprnode *leaf;
 } bcst;
 
-/* no asm counterpart: the state of the build reset (prepstack) */
+/* no asm counterpart: the state of the build reset (prepstack).
+   Fixed (#1215): also the states a compile error inside an expression
+   leaves set (the next index, the next element's minus sign, the armed
+   intrinsic), so that they do not reach the next statement or compile. */
 void exprbuildreset(void)
 {
     nbforth = 0;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
+    idxnext = FALSE;
+    negnext = FALSE;
+    intrcur = NULL;
+    intrstate = INTR_IDLE;
 }
 
 /* no asm counterpart: the state an action is written in, recorded where
@@ -2797,10 +2815,6 @@ static UWORD getelement(UWORD *type)
     return c;
 }
 
-/* Fixed (#1070): the element getelement2 fetches next is negated (an odd
-   number of '-' in front of it); it hands a literal's sign on as litneg */
-static BOOL negnext;
-
 /* no asm counterpart; replaces blitz2.s:9667 negate's .doneg - the code of
    the run of minus signs n (op: how many) on a value of type a->y: one
    neg (or SPNeg) per minus sign */
@@ -3951,15 +3965,6 @@ static const struct intrinsic intrinsics[] = {
     { (185 << 7) + 7, T_STRING, T_WORD, NULL, NULL, ascvar },   /* Asc */
     { 0, 0, 0, NULL, NULL, NULL }
 };
-
-/* the state of the armed intrinsic (intrcur): INTR_ARMED until getap
-   takes its argument, INTR_ARG while maineval2 compiles it, INTR_QUICK
-   when maineval2 accepted it (no type word), INTR_DONE when
-   intrinsic_code emitted the code.  Nested calls in the argument save and
-   restore it (libfunction). */
-enum { INTR_IDLE, INTR_ARMED, INTR_ARG, INTR_QUICK, INTR_DONE };
-static const struct intrinsic *intrcur = NULL;
-static UWORD intrstate = INTR_IDLE;
 
 /* the entry of intrinsics[] for the library function token tok (its sub
    from looktoke, called with np parameters), if it may be used here */
