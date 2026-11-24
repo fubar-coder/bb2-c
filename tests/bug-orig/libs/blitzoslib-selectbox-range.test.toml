@@ -1,12 +1,13 @@
 # blitzoslib-selectbox-range.test.bas: with runtime error checking; the
-# original has no check and draws a box from the memory behind the table
+# original has no check and draws a box from the memory behind the table;
+# inject's pad makes that memory a zeroed entry, so it returns on every run
 fixed-orig = 82
 runtime-errors = "on"
+pad = "on"
 
 [asserts]
 "check.box_range.not_refused" = "== not-run"
 
 [ends."libs=cd"]
-reason = "the original draws a box from the memory behind the table of 2 boxes (#82); whether it then returns or hangs depends on that memory, which differs between emulator snapshots"
+reason = "the original draws a box from the memory behind the table of 2 boxes (#82): box 2 is the 32 bytes behind the table, which inject's pad keeps zeroed, so it returns and neither check of the error is met"
 returns = ["session == done", "rc == 0", "end.case exists", "end.run exists", "requester count == 0", "check.box_range.refused == fail", "check.box_range.not_refused == fail"]
-abnormal = ["any", "check.box_range.refused != ok", "check.box_range.not_refused != ok"]

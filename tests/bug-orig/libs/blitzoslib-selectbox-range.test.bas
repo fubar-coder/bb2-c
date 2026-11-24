@@ -2,11 +2,16 @@
 ; box number against the number of boxes (the other box commands raise
 ; "Illegal Box# For Page"): a number behind the table selects and draws
 ; an entry of whatever memory lies there.
+; The boxes are 32 bytes each (the table of 2 boxes is 64 bytes), so box 2
+; is the first entry behind the table; the cell runs with inject's pad
+; (64 zeroed bytes behind every allocation), which makes that entry a
+; zeroed box (the 32 bytes lie inside the 64 of the pad) that the original
+; selects and draws: the end is the same on every run.
 ; Here runtime error checking is on, the page has 2 boxes: SelectBox 1
-; and SelectBox -1 (deselect) are valid, then SelectBox 5 follows.
+; and SelectBox -1 (deselect) are valid, then SelectBox 2 follows.
 ; The statement neverrun is never called: its LoadShape makes blitz2
 ; allocate the shape objects (#335).
-; Correct: the valid numbers pass, the error check refuses 5: "Illegal
+; Correct: the valid numbers pass, the error check refuses 2: "Illegal
 ; Box# For Page".
 DEFTYPE .l
 
@@ -32,7 +37,7 @@ End Statement
   BLITZ
   BitMapOutput 0
   !ExpectError{"Illegal Box# For Page","refused"}
-  SelectBox 5
+  SelectBox 2
   AMIGA
   DefaultOutput
   !Check{0,"not_refused"}
