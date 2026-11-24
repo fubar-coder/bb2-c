@@ -2956,7 +2956,7 @@ static void osexit(struct exprnode *n)
     }
     if (!a45)                       /* .nopars */
         pokel(L_(libbase));
-    /* BUG(orig) (issue to be filed): libbase loads the OS library's base
+    /* BUG(orig) (#1211): libbase loads the OS library's base
        into a6, but lasta6 still names the base a6 held before (the FFP
        base after a Float operation, a library's after its function), so
        an FFP call after this one in the same expression (the conversion

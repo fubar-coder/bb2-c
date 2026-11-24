@@ -1,4 +1,4 @@
-# compiler-amigalib-lasta6.test.bas: an open bug (issue to be filed):
+# compiler-amigalib-lasta6.test.bas: an open bug (#1211):
 # the port has the same behaviour as the original, so every cell shows
 # the declared deviations
 [deviations."compiler=orig195"]
