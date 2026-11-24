@@ -1,0 +1,26 @@
+; escapes in string expressions: literals with escapes in a chain of +,
+; in the six comparisons and as operands of AND and OR, in the string
+; parameters of a Function (in registers: the filler below the length,
+; AmiBlitz3's pea 0) and of a library function, a string Function with
+; escapes in a comparison, and two string expressions in one statement
+OPTIMIZE 4
+Function.s t{a.s,b.s}
+Function Return a+"\\2d"+b
+End Function
+Function.l n{a.s,b.l}
+Function Return Len(a)*10+b
+End Function
+a$="\\41b" : b$="c\\44"
+c$=a$+"\\N"+b$+"|"+"\\\\"+UCase$("\\61x")+"\\5a"
+NPrint c$, " ", Len(c$)
+NPrint a$="Ab", " ", a$<>"\\41b", " ", a$<b$, " ", a$<="\\41b", " ", b$>a$, " ", b$>="cE"
+r.l=a$="\\41b" AND b$="c\\44"
+NPrint r
+r=a$="x" OR b$+"\\21"="cD!"
+NPrint r
+NPrint t{a$+"\\31",b$}
+NPrint t{"\\5b",t{"\\5d","\\7c"}}
+NPrint n{"\\41\\42",3}, " ", 1+(2+n{a$+"\\43",4})
+NPrint t{"x","y"}="x\\2dy"
+NPrint Instr(a$+b$,"\\44"), " ", Left$(b$+"\\45",Len(a$+"\\46"))
+End

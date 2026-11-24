@@ -4,7 +4,7 @@ After `expr-tree-3d-library-calls`. "The check": `expr-tree-1-typing/design.md`,
 
 ## 1. Tests first
 
-- [ ] 1.1 Compile-only and run cases for unreached string forms (coverage build): long chains of `+` with literals and functions, string comparisons as operands of `AND`/`OR`, strings inside procedure parameters, AB3 escapes (`tests/ab3/cli`); verify: pass on main, in `compiler_prev`/`ab3_cli_prev`.
+- [x] 1.1 Compile-only and run cases for unreached string forms (coverage build): long chains of `+` with literals and functions, string comparisons as operands of `AND`/`OR`, strings inside procedure parameters, AB3 escapes (`tests/ab3/cli`); verify: pass on main, in `compiler_prev`/`ab3_cli_prev`.
 
 ## 2. Implementation
 

@@ -1,0 +1,4 @@
+# expr-strings.test.bas: without and with runtime error checking (an
+# array element's index is checked then)
+[matrix]
+runtime-errors = ["off", "on"]

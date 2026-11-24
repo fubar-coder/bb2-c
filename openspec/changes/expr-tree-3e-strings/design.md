@@ -1,0 +1,37 @@
+# Design
+
+## Context
+
+A string in an expression follows a protocol that depends on the order of emission (`eval.c`): the first string element of an evaluation gets the work area (`makesbase`: `jsr workstart` at the first one of the statement, `sbasegot`; in a later evaluation of the statement a3 saved, `sbgot` 2); each string element copies its text behind a3 and pushes its length (`copstring`); `+` adds the two lengths on the stack (`addstrings`), a comparison calls `strcomp`; the end of the evaluation ends the string and makes its start the value (`maineval2`, `sbtolong`; AmiBlitz3's filler `ext_strpointer`) or restores a3 (`ststfix`). A string literal's text is written to the literal area (`data1`) while it is read (`litstring`, AmiBlitz3's escapes `ext_strescape`). The series: `expr-tree-1-typing/design.md`; the leaves: `expr-tree-3a-leaves`; the calls: `expr-tree-3c-calls`, `expr-tree-3d-library-calls`.
+
+Already nodes before this change: a string variable (a variable's leaf, `ELK_VAR`, its code `stvar` through `variable2`), a string Function and a string library function (call nodes, `makesbase` in their enter actions), and every operator (the `EXN_BINOP` nodes of step 2, whose emit `operate` -> `doop` calls `addstrings` or the string comparisons). Left: the string literal, which reads and emits in one routine.
+
+## Goals / Non-Goals
+
+**Goals:** the string literal a leaf; the string variable's code from its leaf only; the side-effect rows of the string elements and the string operators for change 8.
+
+**Non-Goals:** moving any side effect (the work area, the literal area, the lengths) to another moment; the assignment of strings (`dolet2`, change 9); the string library functions' forms (step 3d).
+
+## Decisions
+
+### 1. The string literal is a leaf, its text written at parse
+
+`ELK_STRING`: the parse part reads the text and writes it to the literal area as it is read (its place in `value`, its length in `aux`); the emit part `litemit` writes the code from the leaf (`move.l #lit,a0` with its relocation, the length pushed, `copstring`). The work area (`makesbase`) is the first part of the leaf's code and stays before the text is read, its moment of before. Alternative: the text written at emit (the report's "literals at emit time", `tr-expr-tree-report.md` 3.1) - the parse part would have to keep the text or read the source twice, AmiBlitz3's escapes included. Within an expression only literals write the literal area (`calcstatic` and `calcmaxs` run at the end of the program), and the leaves are emitted in source order (a literal is never folded), so the order of the literals in the area is the same either way.
+
+### 2. The string operators are the operator nodes of step 2
+
+`+` and the six comparisons on strings are `EXN_BINOP` nodes whose left type (`tbefore`) is String; their emit is `operate` as for every operator (`exprtype_binop`'s handler String: `addstrings`, `doeqs` ... `doges`). No node kind or fact of their own: their code needs nothing beyond the node and the emitter's state (`regat`), and their protocol is that of their operands (each pushed a length). The side-effect table names it.
+
+## Risks / Trade-offs
+
+- [The literal's leaf adds a local to `element`'s frame, which every level of brackets holds] -> `litstring` not inlined (as `qmark`); the stack measured.
+- [Change 8 emits after the build: the work area of a literal would come after its text] -> the code and the literal area are apart; what differs is only which of two errors comes first when `workstart`'s library cannot be used (direct mode) and the literal is not closed. Named in the side-effect table for change 8.
+
+## Planning choices (mine, not the user's)
+
+- `Point: no design.md was planned for this change (proposal and tasks only); this file holds the decisions taken while implementing and the findings — L2 Possible / I1 Low / E1 Obvious → Plan`.
+- `Point: the literal's text stays at parse, against the report's "literals at emit time" (decision 1) — L2 Possible / I2 Medium / E2 Reasoned → Plan` (change 8 can revisit; no byte depends on it).
+
+## Findings (implementation)
+
+- Task 1.1's forms: listed from the branches of `litstring`, `makesbase` (the first string of a statement, a later one: `move.l a3,-(a7)`), `stvar` (the address from the path or from a5/a4), `addstrings` (nested to d6 and, through `getelement`'s spill, beyond), the string comparisons (`exprtype_binop`'s compare path with String) and `maineval2`'s end (`sbtolong` with and without a saved a3, with a type word pushed), rather than with a coverage build, as in `expr-tree-3c-calls` and `expr-tree-3d-library-calls`. The new test `tests/blitz2/expr-strings.test.bas` (BASIC test model, without and with runtime error checking, its own prev pass `blitz2_expr_strings_prev`) compiles and runs each of them: literals (empty, odd and even length), variables (simple, a NewType field, an array element, one without memory), chains of `+` with 16 literals, 16 variables and functions, `+` nested to d6 and d7, the six comparisons with each kind of operand on either side, comparisons in arithmetic and as operands of `AND`, `OR` and `NOT` (also in `If`), strings in Function parameters (nested, two, a string expression in a numeric Function's parameter, a call as the right operand), and two string expressions in one statement (`Instr`, `Left$` with `Len`, `Mid$` with `Instr`). Compiled and not run: `NPrint` with string expressions and a comparison (the type word pushed), a string under a numeric type so far. AmiBlitz3's escapes in string expressions: `tests/ab3/cli/str_expr.ab3` (REF), with string parameters of a Function in registers (`ext_strpointer`'s filler) and of library functions.

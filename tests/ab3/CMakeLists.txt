@@ -520,6 +520,10 @@ ab3_cli_case(esc_codeline esc_codeline.ab3 REF)
 ab3_cli_case(esc_codeline_hdr esc_codeline_hdr.ab3 REF)
 ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF REF_EXPECT esc_codeline_join.ref.expect)
 ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
+# escapes in string expressions (change expr-tree-3e-strings): chains of
+# +, the comparisons, AND and OR, string parameters of Functions and
+# library functions
+ab3_cli_case(str_expr str_expr.ab3 REF)
 # Dc.b strings: the date and version escapes in AB3 mode, with or without
 # new syntax, every other \\ as written; BB2 mode as written.  AmiBlitz3
 # compares the names in upper case and by a prefix (esc_dcb_names,
