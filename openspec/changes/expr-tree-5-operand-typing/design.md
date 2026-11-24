@@ -2,7 +2,7 @@
 
 ## Context
 
-After `compare-compound-left` the expression is a typed tree before emission (flow typing at build time, `expr-tree-4a-emit-after-build`); step 1's function decides each operation from (operator, left, right, facts). Variant C of #1178 and its rounding ("Zwischenlösung: / gegen Null (Recommended)") are the value rules of a mixed operation. The series: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`.
+After `expr-tree-4b-lookaheads` the expression is a tree before emission (flow typing at build time, `expr-tree-4a-emit-after-build`); step 1's function decides each operation from (operator, left, right, facts). Variant C of #1178 and its rounding ("Zwischenlösung: / gegen Null (Recommended)") are the value rules of a mixed operation. The series: `openspec/changes/archive/2026-11-24-expr-tree-1-typing/design.md`.
 
 ## Goals / Non-Goals
 
@@ -31,8 +31,15 @@ Decision (user, 2026-11-24, `~/.local/share/bb2-c-work/decisions/rounds/tree/dec
 - **Check**: in the build step that produces the page (a custom command/target of the docs, CLAUDE.md "Code conventions": a failed check means the result is not built, no stamp files); a test with deliberately broken input (a changed cell, a missing note) must fail it.
 - **Q4**: each candidate rule (open question 1, including "constants as integral or fractional numbers") is printed by the same tool as the same tables beside today's, the cells that change and the CD places marked, in the decision report. After the decision the page is regenerated with the chosen rule in the implementation group; the changed cells are the named ones.
 
+### 4. #1183 is a case of the operand typing
+
+Decision (user, 2026-11-24, `~/.local/share/bb2-c-work/decisions/rounds/tree/decisions.md`, "#1183 folded into step 5"): "Fold #1183 into step 5 (Recommended)". Rule: `compare-compound-left` is merged into this change; its test, spec scenarios and the value cases of its count are inputs of this change; the recorded order "#1180 steps 1-4, #1183, step 5" becomes "steps 1-4, step 5 with #1183". Why: the count (`cmp-compound-1-1/report.md`, finding 1) showed that after step 4 the typing is still in reading order (the left operand's conversions, raw-Quick handling and library use are recorded before the comparison operator is read), so a left operand typed by its own operands needs a lookahead, a re-read or bottom-up typing, which is this change's typing pass. The comparison node hands no wanted type to its left subtree (as to the right subtree since #1177); the pass types the left subtree by its own operands, and `compareop`/`cmplq` compare the two operand types exactly. The one-element node rule of #1177 is the special case.
+
+The cases of the count (proposal, open question 1) are inputs of the decision round Q4: each candidate rule shows their values. Findings the round must face: a rule that types a Word sum in its own type changes `r.l=(w+v>c)` when the sum wraps, and a Quick product overflows where the Long context was exact (`q*1000`); the earlier requirement that a comparison with a whole-number compound left operand keeps its result therefore does not go into the spec before Q4. The scope (every compound left operand, or only where a Quick or Float is inside or a Long constant meets a Float context) is part of open question 1; the premise of the old plan, that (b) changes fewer executables, is false on the CD (both change none).
+
 ## Risks / Trade-offs
 
+- [A comparison with a compound left operand changes its value, or a Quick-range overflow appears] -> the value cases of #1183's count are rows of the decision report and test cases (task 3.1a); the CD count is repeated for the decided rule.
 - [The changed set is larger than predicted] -> the matrix's named-cell list is the limit: a cell not on it that changes fails the matrix's test of its source (the check named by the cell's key).
 - [The rule is chosen without seeing the CD impact] -> the 376-place run and a CD count are shown with question 1.
 - An option that changes results not intended and named (e.g. accepting `PREV_INTENDED=ON` without a list) would be I5 Critical; not proposed: the prev run's list is named.
