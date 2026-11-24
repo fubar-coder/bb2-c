@@ -130,9 +130,6 @@ WORD unknown = 0;           /* 8801 */
 static WORD thisstuse = 0;
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
-/* Fixed (#978), no asm counterpart: pc after the code of the last byte
-   value varcont fetched (with its conversion), for exprtree_pre and operate */
-static ULONG bytevalend = 0;
 /* Fixed (#1177), no asm counterpart: the last conversion varcont emitted
    (code at..end, the element's own type from, the wanted type to, the
    relocation list and lasta6 before it, the evaldepth of the element), for
@@ -217,12 +214,19 @@ static struct {
     ULONG seq, before, last;
 } blit;
 static BOOL bsbase = FALSE;
+/* the action of the last value whose code ends in a byte's ext.w, of the
+   last integer constant (the code before it, its leaf), for #978 */
+static ULONG bbyte = 0;
+static struct {
+    ULONG seq, before;
+    struct exprnode *leaf;
+} bcst;
 
 /* no asm counterpart: the state of the build reset (prepstack) */
 void exprbuildreset(void)
 {
     nbforth = 0;
-    bconv.seq = blit.seq = 0;
+    bconv.seq = blit.seq = bcst.seq = bbyte = 0;
 }
 
 /* no asm counterpart: the state an action is written in, recorded where
@@ -985,7 +989,7 @@ UWORD maineval(WORD push, UWORD *type, WORD unk)
    the code after it (#978, #1177, #1178, #1179, #1186) */
 struct facts {
     struct emitfacts c;
-    ULONG bytevalend, rawcutend;
+    ULONG rawcutend;
     UWORD rawcutdepth;
     ULONG convat, convend;
     struct offnode *convoff;
@@ -996,7 +1000,6 @@ struct facts {
 static void getfacts(struct facts *f)
 {
     getemitfacts(&f->c);
-    f->bytevalend = bytevalend;
     f->rawcutend = rawcutend;
     f->rawcutdepth = rawcutdepth;
     f->convat = conv.at;
@@ -1013,7 +1016,6 @@ static void setfactsact(struct expract *a)
     const struct facts *f = a->p;
 
     setemitfacts(&f->c);
-    bytevalend = f->bytevalend;
     rawcutend = f->rawcutend;
     rawcutdepth = f->rawcutdepth;
     conv.at = f->convat;
@@ -1150,7 +1152,7 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
         return evalbuild(push, type, unk);
     m = exprtree_mark();
     bsbase = sbasegot != 0;
-    bconv.seq = blit.seq = 0;
+    bconv.seq = blit.seq = bcst.seq = bbyte = 0;
     rb = relocunit();
     exprtree_begin(&outer);
     c = evalbuild(push, type, unk);
@@ -1182,7 +1184,7 @@ void exprresume(struct exprunit *s)
     exprtree_end(s);
     if (!exprtree_building())
         return;
-    bconv.seq = blit.seq = 0;
+    bconv.seq = blit.seq = bcst.seq = bbyte = 0;
     f = exprtree_alloc(sizeof *f);
     getfacts(f);
     stateact(setfactsact, f, 0, 0);
@@ -1301,18 +1303,10 @@ static UWORD operate(struct exprnode *n)
     f.lraw = (n->lflags & BNF_LRAW) != 0;
     f.rraw = (n->lflags & BNF_RRAW) != 0;
     f.rcmp = (n->lflags & BNF_RCMP) != 0;
-    f.lbyte = (n->flags & EXF_LBYTE) != 0;
-    f.lconst = (n->flags & EXF_LCONST) != 0;
-    f.rbyte = bytevalend == pc && bytevalend > n->start;
-    f.rconst = isbyteconst(n->start, pc);
+    f.lbyte = f.lconst = f.rbyte = f.rconst = 0;   /* #978: binopbuild */
     /* Fixed (#1179): a later index, both operands Word values */
     f.words = (n->lflags & BNF_WORDS) != 0;
     d = exprtype_binop(n->op, left, right, &f);
-    /* Fixed (#978): the constant compared with a byte value */
-    if (d.byteext == ETB_RIGHT)
-        byteconstext(n->start);
-    else if (d.byteext == ETB_LEFT)
-        byteconstext(l->start);
     /* Fixed (#1182): a right operand that a comparison lowered below the
        left operand's type (the comparison's boolean, a Word, or a value
        computed from it) is converted up to the left one's type and the
@@ -1621,7 +1615,7 @@ static void binopprep(unsigned op, const struct exprtype_bin *d)
    operand. */
 static UWORD binopbuild(struct exprnode *n, UWORD right)
 {
-    struct exprnode *l = n->left;
+    struct exprnode *l = n->left, *r = n->right;
     struct exprtype_binfacts f;
     struct exprtype_bin d;
 
@@ -1632,8 +1626,24 @@ static UWORD binopbuild(struct exprnode *n, UWORD right)
     f.rcmp = cmpres;
     /* Fixed (#1179): a later index, both operands Word values */
     f.words = laterindex && bforth[nbforth - 2].wordval && bforth[nbforth - 1].wordval;
+    /* Fixed (#978): an equality comparison of one byte value with one
+       constant from 128 to 255 (exprtree_left's facts) */
+    if (l->kind == EXN_LEAF) {
+        f.lbyte = (l->flags & EXF_BYTEVAL) != 0;
+        f.lconst = (l->flags & EXF_BYTECONST) != 0;
+    }
+    if (r && r->kind == EXN_LEAF) {
+        f.rbyte = (r->flags & EXF_BYTEVAL) != 0;
+        f.rconst = (r->flags & EXF_BYTECONST) != 0;
+    }
     d = exprtype_binop(n->op, n->tbefore, right, &f);
     n->vtype = right;
+    /* the constant takes the byte it stands for, sign-extended as varcont
+       extends the byte: "a.b=$90 : If a=$90" matches */
+    if (d.byteext == ETB_RIGHT)
+        r->right->lflags |= ELF_SIGNEXT;
+    else if (d.byteext == ETB_LEFT)
+        l->right->lflags |= ELF_SIGNEXT;
     if (f.lraw)
         n->lflags |= BNF_LRAW;
     if (f.rraw)
@@ -1703,6 +1713,20 @@ unsigned exprtree_operand(void *x, struct exprnode *l, unsigned *op)
     return eval2(e->type, &e->c, op);
 }
 
+/* no asm counterpart: the constant leaf l is from 128 to 255 as its code
+   holds it (isbyteconst: a move.w's word, a move.l's long, a Quick's
+   whole part) */
+static BOOL byteconst(const struct exprnode *l)
+{
+    ULONG v = l->value;
+
+    if (l->tafter < T_LONG)
+        v = (UWORD)v;
+    else if (!(v & 0xffff))
+        v >>= 16;                   /* q: x.0 */
+    return v >= 128 && v <= 255;
+}
+
 /* no asm counterpart; replaces blitz2.s:8983 eval5 after its bsr eval2 -
    the operand read is the leaf l (its code from its start mark to its
    end mark) */
@@ -1716,6 +1740,15 @@ void exprtree_left(void *x, struct exprnode *l, unsigned consumer)
         l->flags |= EXF_RAW;
     if (cmpres)                     /* Fixed (#1182): the left one lowered */
         l->flags |= EXF_CMP;
+    /* Fixed (#978): the operand is one byte value (its code ends in the
+       byte's ext.w), or one integer constant from 128 to 255 (its code
+       is the constant's, l->right its leaf) */
+    if (bbyte && bbyte == codeseq && bbyte > l->aux)
+        l->flags |= EXF_BYTEVAL;
+    if (bcst.seq && bcst.seq == codeseq && bcst.before == l->aux && byteconst(bcst.leaf)) {
+        l->flags |= EXF_BYTECONST;
+        l->right = bcst.leaf;
+    }
     /* Fixed (#1178): a raw Quick whose consumer (the next operator if it
        binds tighter than the pending one, else the pending one) is a
        shift, a logic operator, Mod or a bit operator is rounded down here,
@@ -1761,18 +1794,12 @@ static BOOL ownleft(const struct exprnode *l, UWORD *type)
 /* no asm counterpart; replaces the code of blitz2.s:8989 eval5 .higher
    before its bsr pushprec - the code between the left and the right
    operand of n: the left one's conversion dropped (BNF_OWNLEFT,
-   cmpownleft), its #978 facts, where the right one begins */
+   cmpownleft) */
 static void midact(struct expract *a)
 {
     struct exprnode *n = a->p, *l = n->left;
 
-    if (n->lflags & BNF_OWNLEFT)
-        l->end = cmpownleft(l->start, l->end);
-    if (l->end && bytevalend == l->end && bytevalend > l->start)
-        n->flags |= EXF_LBYTE;
-    if (l->end && isbyteconst(l->start, l->end))
-        n->flags |= EXF_LCONST;
-    n->start = pc;                  /* the right operand begins */
+    l->end = cmpownleft(l->start, l->end);
 }
 
 /* no asm counterpart; replaces blitz2.s:8989 eval5 .higher before its bsr
@@ -1806,18 +1833,19 @@ void exprtree_pre(void *x, struct exprnode *n)
         l->flags |= EXF_RAW;
     else
         l->flags &= ~EXF_RAW;
-    if (pre.ownleft && l->kind == EXN_LEAF && ownleft(l, e->type))
+    if (pre.ownleft && l->kind == EXN_LEAF && ownleft(l, e->type)) {
         n->lflags |= BNF_OWNLEFT;
+        emitact(midact, n, 0, 0);
+    }
     /* Fixed (#978): an equality comparison (= or <>) of a byte value with
        a constant from 128 to 255 (each operand one element) takes the
        constant as the byte it stands for, sign-extended as varcont
        extends the byte: "a.b=$90 : If a=$90" matches.  The ordering
        comparisons stay mathematical (a<200 is true for every byte).  The
-       facts in midact, the rule in exprtype_binop. */
-    if (pre.compare) {
+       facts are the operands' (exprtree_left), the rule exprtype_binop's
+       (binopbuild). */
+    if (pre.compare)
         n->flags |= EXF_COMPARE;
-        emitact(midact, n, 0, 0);  /* only a comparison reads what it records */
-    }
 }
 
 /* no asm counterpart; replaces blitz2.s:8990-8992 eval5 .higher after
@@ -2222,8 +2250,6 @@ ULONG cmpownleft(ULONG lstart, ULONG lend)
     }
     pc = conv.at;
     lasta6 = conv.a6;
-    if (bytevalend == lend)
-        bytevalend = pc;            /* a byte keeps its ext.w (#978) */
     conv.end = 0;
     return pc;
 }
@@ -3086,16 +3112,25 @@ BOOL elemconst(void)
     return nbforth && !bforth[nbforth - 1].constgot;
 }
 
-/* no asm counterpart: the constant whose code is the action a (the last
-   one recorded) is a literal made a whole number (#1186): the code before
-   it, for ownleft */
-void constlit(struct expract *a)
+/* no asm counterpart: the constant l, whose code is the last action
+   recorded, built: an integer one is the last constant (#978: isbyteconst
+   of its code), a literal made a whole number the last such literal
+   (#1186: fraclitfloat), each with the code before it, for
+   exprtree_left and ownleft */
+void constrec(struct exprnode *l)
 {
-    (void)a;
     if (!exprtree_building())
         return;
-    blit.seq = blit.last = codeseq;
-    blit.before = prevcodeseq;
+    bcst.seq = 0;
+    if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT) {
+        bcst.seq = codeseq;
+        bcst.before = prevcodeseq;
+        bcst.leaf = l;
+    }
+    if (l->lflags & ELF_CUT) {
+        blit.seq = blit.last = codeseq;
+        blit.before = prevcodeseq;
+    }
 }
 
 /* blitz2.s:9801 fetchsize - SizeOf */
@@ -4686,8 +4721,8 @@ static void contcode(struct exprnode *l)
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with
-       "a=$90" never matched (only a=-112 did).  bytevalend tells exprtree_pre
-       where a byte value ends, which then sign-extends the constant. */
+       "a=$90" never matched (only a=-112 did).  The constant it is
+       compared with is sign-extended (binopbuild: ELF_SIGNEXT). */
     if (l->lflags & ELF_BYTE)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
     /* .notabyte */
@@ -4709,8 +4744,6 @@ static void contcode(struct exprnode *l)
         conv.end = pc;
         conv.to = l->tafter;
     }
-    if (l->lflags & ELF_BYTE)
-        bytevalend = pc;
 }
 
 static void contemit(struct expract *a)
@@ -4729,6 +4762,8 @@ static void contrecord(struct exprnode *l, exprtree_actfn *fn)
         convprep(l->own, l->tafter);
     emitact(fn, l, 0, 0);
     bforth[nbforth - 1].wordval = (l->lflags & ELF_WORD) != 0;
+    if (l->lflags & ELF_BYTE)
+        bbyte = codeseq;            /* #978: its code ends in the ext.w */
     if (l->lflags & ELF_RAW)
         rawq = TRUE;
     else if (l->lflags & ELF_CONV) {

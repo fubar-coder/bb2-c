@@ -64,26 +64,12 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data);
    fetchconst, fetchsize, fetchon/off, domaximum, fetchqasm, fetchasm. */
 ULONG fetchnum2(ULONG num, UWORD *type, BOOL data);
 
-/* Fixed (#978), no asm counterpart: TRUE if the code from `from` to `to`
-   is exactly the integer constant the fetch routines emitted last
-   (move.w/.l #x,Dn, type w, l or q) and its value is 128..255. */
-BOOL isbyteconst(ULONG from, ULONG to);
-
 /* Fixed (#1179), no asm counterpart: TRUE if the code from `from` to `to`
    is exactly the integer constant the fetch routines emitted last as a
    Long (move.l #x,Dn, 6 bytes; told by the positions, so a pass without
    stored code decides the same), for the narrowing of a later array
    index (eval.c, arrevalchk) */
 BOOL islongconst(ULONG from, ULONG to);
-
-/* Fixed (#1179), no asm counterpart: islongconst, and the value is
-   0..32767: a Word value for the inline Word * and / of a later array
-   index (eval.c). */
-BOOL iswordconst(ULONG from, ULONG to);
-
-/* Fixed (#978): rewrite the constant isbyteconst accepted at `at` as the
-   sign-extended byte (128..255 -> -128..-1, of the same type). */
-void byteconstext(ULONG at);
 
 /* No asm counterpart (#1186, a port defect of the #1177 fix): if the
    code from `from` to `*to` is the decimal literal with a point or an
@@ -109,7 +95,7 @@ void fraclitdrop(void);
    the negation keeps), else 32767.99998 ($7FFFFFFF). */
 extern BOOL litneg;
 /* Fixed (#1179): the last constant built is a Word value (a move.l of
-   0..32767: iswordconst), for getelement2 */
+   0..32767), for getelement2 */
 extern BOOL constword;
 
 /* blitz2.s:10906 constotype - evalconst, then size the constant to *type
@@ -165,11 +151,11 @@ void tokuse(UWORD token);
 void userjsruse(struct blitzlib *bl, UBYTE *params);
 
 /* no asm counterpart: the facts the code of the last constant leaves
-   (#978 constat, constend, constval; #1186 litat, litend, litffp,
+   (constat, constend; #1186 litat, litend, litffp,
    litint), read and set again around a constant computed in the middle
    of an expression (eval.c maineval2) */
 struct emitfacts {
-    ULONG constat, constend, constval, litat, litend, litffp, litint;
+    ULONG constat, constend, litat, litend, litffp, litint;
 };
 void getemitfacts(struct emitfacts *f);
 void setemitfacts(const struct emitfacts *f);

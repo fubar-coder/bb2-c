@@ -40,11 +40,9 @@ static inline ULONG tl(const UWORD *p)
 static ULONG numval;    /* asm d3: value (int or FFP) */
 static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
-/* Fixed (#978): the integer constant constemit emitted last (move.w/.l
-   #x,Dn from constat to constend; 0: none), for isbyteconst */
+/* Fixed (#1179): the integer constant constemit emitted last (move.w/.l
+   #x,Dn from constat to constend; 0: none), for arrevalchk (islongconst) */
 static ULONG constat, constend;
-/* Fixed (#1179): its value (as emitted), for iswordconst */
-static ULONG constval;
 
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
@@ -267,7 +265,7 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
    .word and .long - the code of the constant's leaf l (the action's p):
    move.w/move.l #value,D(regat).  It uses only the leaf and the emitter's
    state; it leaves the facts of the constant for the code after it (#978
-   constat..constend and constval, #1186 litat..litend) and the code in
+   constat..constend, #1186 litat..litend) and the code in
    l->start..l->end. */
 static void constemit(struct expract *a)
 {
@@ -279,7 +277,14 @@ static void constemit(struct expract *a)
     constat = constend = 0;
     if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT)
         constat = at;
-    constval = val;
+    if (l->lflags & ELF_SIGNEXT) {   /* compared with a byte value (#978) */
+        if (l->tafter < T_LONG)
+            val |= 0xff00;              /* move.w */
+        else if (!(val & 0xffff))
+            val |= 0xff000000UL;        /* q: the integer part */
+        else
+            val |= 0xffffff00UL;        /* l */
+    }
     switch (l->tafter) {
     case T_BYTE:
     case T_WORD:
@@ -309,8 +314,8 @@ static void constemit(struct expract *a)
     l->end = pc;
 }
 
-/* Fixed (#1179): the last constant built is a Word value (iswordconst of
-   its code: a move.l of 0..32767), for getelement2's forthstack */
+/* Fixed (#1179): the last constant built is a Word value (its code a
+   move.l of 0..32767), for the forthstack of the build (getelement2) */
 BOOL constword;
 
 /* blitz2.s:10856 fetchnum3 - return the value (Data), or end the
@@ -322,7 +327,6 @@ BOOL constword;
 static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
 {
     struct exprnode *l;
-    struct expract *a;
 
     if (data) {
         litat = 0;                  /* #1186 */
@@ -344,9 +348,8 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
     if (l->tafter < T_BYTE || l->tafter > T_FLOAT)
         mismatcherr();
     constword = !numfloat && (l->tafter == T_LONG || l->tafter == T_QUICK) && val <= 32767;
-    a = emitact(constemit, l, 0, 0);
-    if (litcut)
-        constlit(a);
+    emitact(constemit, l, 0, 0);
+    constrec(l);
     exprtree_release(l);
     return reget();
 }
@@ -388,7 +391,6 @@ void getemitfacts(struct emitfacts *f)
 {
     f->constat = constat;
     f->constend = constend;
-    f->constval = constval;
     f->litat = litat;
     f->litend = litend;
     f->litffp = litffp;
@@ -399,28 +401,12 @@ void setemitfacts(const struct emitfacts *f)
 {
     constat = f->constat;
     constend = f->constend;
-    constval = f->constval;
     litat = f->litat;
     litend = f->litend;
     litffp = f->litffp;
     litint = f->litint;
 }
 
-BOOL isbyteconst(ULONG from, ULONG to)
-{
-    ULONG v;
-
-    if (!constat || constat != from || constend != to || to > libat)
-        return FALSE;
-    if (to - from == 4)                         /* move.w #x,Dn: w */
-        v = W_(from + 2);
-    else {                                      /* move.l #x,Dn: l or q */
-        v = ((ULONG)W_(from + 2) << 16) | W_(from + 4);
-        if (!(v & 0xffff))
-            v >>= 16;                           /* q: x.0 */
-    }
-    return v >= 128 && v <= 255;
-}
 
 BOOL islongconst(ULONG from, ULONG to)
 {
@@ -429,22 +415,7 @@ BOOL islongconst(ULONG from, ULONG to)
     return constat && constat == from && constend == to && to - from == 6;
 }
 
-BOOL iswordconst(ULONG from, ULONG to)
-{
-    return islongconst(from, to) && constval <= 32767;
-}
 
-void byteconstext(ULONG at)
-{
-    if (W_(at) & 0x1000)                        /* move.w */
-        W_(at + 2) |= 0xff00;
-    else if (!W_(at + 4))                       /* q: integer part */
-        W_(at + 2) |= 0xff00;
-    else {                                      /* l */
-        W_(at + 2) = 0xffff;
-        W_(at + 4) |= 0xff00;
-    }
-}
 
 /* blitz2.s:10892 makeint - *val = numval as integer.  asm: on SPFix
    overflow it drops its return address (addq #4,a7) and jumps to
@@ -612,8 +583,8 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
         /* Byte, Word, Long: the whole number (Fixed (#978): a constant
            from 128 to 255 becomes a positive word ($0090), here as in the
            original; compared with a byte value, which varcont
-           sign-extends ($FF90), operate makes it the sign-extended byte:
-           isbyteconst, byteconstext; every other byte context (a.b=200)
+           sign-extends ($FF90), it is the sign-extended byte (binopbuild:
+           ELF_SIGNEXT, constemit); every other byte context (a.b=200)
            keeps it.  Data reads the '-' of a value itself (fetchdata), so
            "Data.q -32768" sizes the integer 32768 under a Quick and leaves
            as a long; dodata takes it as the Quick -32768 (Fixed (#1074),

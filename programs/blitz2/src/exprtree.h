@@ -161,8 +161,9 @@ enum {
 enum {
     EXF_RAW = 1,                /* LEAF, RESULT: a raw Quick under a Long type so far (#1178) */
     EXF_CMP = 2,                /* LEAF, RESULT: lowered by a comparison (#1182) */
-    EXF_LBYTE = 4,              /* BINOP: the left operand is one byte value (#978) */
-    EXF_LCONST = 8,             /* BINOP: the left operand is one constant from 128 to 255 (#978) */
+    EXF_BYTEVAL = 4,            /* LEAF: the operand is one byte value (#978) */
+    EXF_BYTECONST = 8,          /* LEAF: the operand is one integer constant from 128 to 255
+                                   (#978; right: its leaf) */
     EXF_COMPARE = 16            /* BINOP: a comparison, the right operand starts at type 0 (#1177) */
 };
 
@@ -174,13 +175,15 @@ enum {
     ELF_POINT = 1,              /* CONST: a literal with a point or an exponent */
     ELF_CUT = 2,                /* CONST: such a literal made a whole number (#1186: litcut) */
     ELF_FOLD = 4,               /* CONST: a constant of the fold (the forthstack's constgot 0) */
-    ELF_BYTE = 8,               /* VAR: a Byte value, extended to a Word (#978: bytevalend) */
+    ELF_BYTE = 8,               /* VAR: a Byte value, extended to a Word (#978) */
     ELF_RAW = 16,               /* VAR: a Quick held raw under a Long (#1178: rawq) */
     ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177: conv) */
     ELF_WORD = 64,              /* VAR: a Byte or Word value (#1179: wordval) */
     ELF_REF = 128,              /* LABEL: the reference to the label is made at emit */
-    ELF_LOCAL = 256             /* VAR, ADDROF, the node VAR and a STEP: a local variable
+    ELF_LOCAL = 256,            /* VAR, ADDROF, the node VAR and a STEP: a local variable
                                    (varmode: its a4 offset) */
+    ELF_SIGNEXT = 512           /* CONST: compared with a byte value: the byte it stands
+                                   for, sign-extended (#978) */
 };
 
 /** @brief The limit of the counted nodes (the original's precstack: 64

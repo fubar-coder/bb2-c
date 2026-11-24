@@ -320,7 +320,7 @@ unsigned exprtree_climb(void *ctx, unsigned *op, struct exprnode **last)
         exprtree_enter(ctx, n);
         prec = exprtree_climb(ctx, &nop, &n->right);
         exprtree_emit(ctx, n);
-        flags = (unsigned char)(l->flags & ~EXF_RAW);
+        flags = (unsigned char)(l->flags & EXF_CMP);
         t = n->tafter;
         start = l->value;
         exprtree_release(n);

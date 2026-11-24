@@ -139,10 +139,10 @@ void exprbuildreset(void);
 void exprsuspend(struct exprunit *s);
 void exprresume(struct exprunit *s);
 /* the element being built is a constant of the fold (ELF_FOLD); the
-   constant whose code is the action a is a literal made a whole number
-   (#1186, for the left operand of a comparison) */
+   constant l (its code the last action) built: the facts of #978 and
+   #1186 for the comparison it is an operand of */
 BOOL elemconst(void);
-void constlit(struct expract *a);
+void constrec(struct exprnode *l);
 /* findtoke and uselib for an expression being built: the use now, the
    library's relocations where its code is written (eval.c) */
 UBYTE *findtokeact(UWORD tok, struct blitzlib **libp);
