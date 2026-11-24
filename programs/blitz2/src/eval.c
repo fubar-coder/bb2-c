@@ -1792,8 +1792,10 @@ void exprtree_done(void *x, struct exprnode *l)
    before it (exprtype_ownleft): the conversion is not written
    (ELF_DROP), the relocations of the libraries its routine used first
    are freed, the libraries stay.  Byte/Word to Long is exact and stays;
-   not covered (#1183): a compound left operand (q*2), computed in the
-   wanted type before the comparison operator is read.  *type is the type the
+   not covered, BUG(orig) (#1183): a compound left operand
+   (q*2) and a Long constant under a Float context are evaluated in the
+   wanted type before the comparison operator is read, so a Quick inside
+   is cut (`r.l=(q*2>2.5)` with q=1.5 gives 0).  *type is the type the
    operand has then. */
 static BOOL ownleft(const struct exprnode *l, UWORD *type)
 {
