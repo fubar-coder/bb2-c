@@ -11,8 +11,8 @@ the matrix (task 3.1). The logic is `tools/lib/exprmatrix`
 (`exprmatrix.h`: the description and the sources in `exprmatrix.c`, the
 model in `model.c`, the classes in `classify.c`, the committed tests in
 `expect.c`), tested by
-`tools/tests/test_exprmatrix.cpp`, `test_exprmatrix_model.cpp` and
-`test_exprmatrix_classify.cpp`.
+`tools/tests/test_exprmatrix.cpp`, `test_exprmatrix_model.cpp`,
+`test_exprmatrix_classify.cpp` and `test_exprmatrix_expect.cpp`.
 
 ## Usage
 
@@ -125,8 +125,9 @@ file is written only if its content changes. The target
 `expr-matrix-update` (`tests/corpus/CMakeLists.txt`) runs it on the
 committed description `tests/corpus/tests-exprmatrix/matrix.txt` and
 `measured.tsv` there; the host test `exprmatrix_committed` runs it with
-`--check` (and `exprmatrix_committed_broken` on a copy with an edited and
-an extra file, which must be named).
+`--check` (and `exprmatrix_committed_broken` on a copy with an edited
+configuration, an edited data source and an extra file, which must be
+named).
 
 ## Inputs and outputs
 
@@ -287,7 +288,7 @@ measurement (`mismatches ... N`, then one line per cell).
 A cell is looked at in its modes: once for a destination, parameter,
 `If` or `Print` context; for an index cell unchecked (only where every
 compiler reads an element: design decision 8) and checked (runtime error
-checking on; a cell outside the array prints `KEY !runtime` from a
+checking on; a cell outside the array is the runtime error, caught by a
 `SetErr` handler in front of it, which goes on behind the cell). In a
 mode, the original's value, the expected value and the port's value
 (with both library sets) give its class there: all equal `agree` (or
@@ -296,32 +297,83 @@ covers the cell), the original differing and the port giving the
 expected value `fixed-N`, the port giving the original's value `open-N`;
 anything else is left out. The cells of an issue fixed after the matrix
 was committed (its rule outside `EM_RULES_MATRIX`, `exprmatrix.h`: #1178
-and later; #1177, #1186 and #1187 keep their corpus pairs) stay in their
+and later; #1177, #1186 and #1187 keep their corpus tests) stay in their
 bug-orig tests when the fix comes: the port giving the expected value
-writes the open test again, with the same cells, `.expect` and name,
-and the header line `; @fixed-orig #N` (FIXED in `ctest --preset all`); a
-test of two such issues of which one is fixed stays without `@fixed-orig`
-(DIFFERS) and gets `; @fixed-orig #N` of the last of its issues once both are
-fixed (option T1 of the change `quick-long-arithmetic`, design decision
-13; the user's answer of 2026-11-22, "T1 for all fixes", until the test
-infrastructure is rebuilt). A test of a cell refused after the fix gets
-the same line; its expected error line moves down by one with it. A
-source holds the cells of one context,
-value set, mode and class, at most `cells-per-source` (2000 in the committed
-description: larger than every group, so a group is one source, up to
-3,300 lines and 125 KB, which compiles in both builds); its folded
-constant `MOD` cells (both operands constants, a Byte, Word or Quick
-operation by the original's rules) come last (#1049).
+writes the open test again, with the same cells, checks and name, and
+`fixed-orig = N` in its configuration (FIXED in `ctest --preset all`); a
+test of two such issues of which one is fixed stays without `fixed-orig`
+(it fails: the port shows neither the original nor the expectation) and
+gets `fixed-orig` of the last of its issues once both are fixed (option
+T1 of the change `quick-long-arithmetic`, design decision 13; the user's
+answers of 2026-11-22, "T1 for all fixes", and of 2026-11-24, "Keep
+them"). A test of cells refused after a fix gets the same key. A source
+holds the cells of one context, value set, mode and class, at most
+`cells-per-source` (2000 in the committed description: larger than every
+group, so a group is one source); its folded constant `MOD` cells (both
+operands constants, a Byte, Word or Quick operation by the original's
+rules) come last (#1049).
+
+Every test is a test of the BASIC test model (`tests/README.md`, "Tests
+that judge themselves"; change `exprmatrix-model-tests`): `ID.test.bas`
+with one case, `cells`, that checks each cell with `!CheckEq` named by
+the cell's key, and its `ID.test.toml`. The id is the source name in
+lower case (`dl-a-agree-01`: the model's ids are lower case). Per
+context the cell's line:
+
+| Context | The line |
+|---|---|
+| `db` `dw` `dl` | `rl=EXPR : !CheckEq{rl,V,"KEY"}` |
+| `dq` `df` | `rq=EXPR : !CheckEq{Peek.l(&rq),$BITS,"KEY"}` (the raw bits) |
+| `pl` `pw` | `pl{EXPR} : !CheckEq{gl,V,"KEY"}`: the statement stores its argument in the global `gl` |
+| `pq` `pf` | `pq{EXPR} : !CheckEq{Peek.l(&gq),$BITS,"KEY"}` |
+| `if` | `If EXPR Then t=1 Else t=0`, then `!CheckEq{t,1,"KEY"}` (`0` for false) |
+| `i1` `i2` unchecked | `vv=ia(EXPR) : !CheckEq{vv,V,"KEY"}` |
+| `i1` `i2` checked | `vv=0 : SetErr : vv=-1 : Goto mxN : End SetErr`, `vv=ia(EXPR)`, `mxN:`, `!CheckEq{vv,V,"KEY"}` (`-1` the runtime error); `ClrErr` at the end of the case |
+| `print` | `NPrint "KEY ",EXPR`; the test asserts the whole `output` (`KEY VALUE` per line) |
+
+Comparisons in a destination keep their parentheses (`rl=(EXPR)`). An
+element of an index array is `i*16+1`, never 0 or -1. The configuration
+sets `runtime-errors = "on"` for the checked index cells and `isolate =
+"on"` for the unchecked ones (a program reading beyond an array
+disturbed the next ones in the matrix's measurement). Where the value of
+a configuration with original material differs from the expected one,
+the configuration declares it as a deviation: `"check.cells.KEY" = "==
+fail"` and `"check.cells.KEY.actual" = "== V"` (the signed decimal Long
+the check sees: the raw bits of a Quick or Float, 1 or 0 of an `If`), or
+the `output` of a `Print` test, in the table of the original compiler
+(`compiler=orig195` in `tests/bug-orig/compiler`, `compiler=orig210` in
+`tests/bug-orig/exprmatrix`) when only it differs, of `libs=cd` when
+only the CD's libraries differ (#199, #234, #1189 with a Float base),
+else of each configuration that differs (`compiler=port,libs=cd`, ...).
+The original's values are the model's (1.95 and 2.10 agree on every
+committed cell); 2.10 with the C libraries was never measured, its value
+is the model's of the original compiler with the C libraries, the
+original's where the model does not know one (a Float power, the `If` on
+a Float). A test of fixed cells has `fixed-orig = N`, the issue of its
+fix (the last of two).
+
+The cells the compilers refuse ("Illegal Operator for Type") are data
+sources of the action `basic-compile` (`ID.test/NAME.bas`, the text of
+the old-form source of one representative cell per operator and operand
+classes: `I` a whole number, `Q`, `F`, `C` a constant with a fraction,
+`S`, `x` none; `-c` refused only with runtime error checking, compiled
+with it): one regression test per operator for the cells the originals
+and the port refuse, one bug-orig test per issue set for the cells a fix
+refuses, whose original's compile (`== ok`) is the deviation of
+`compiler=orig195`. The test asserts each data source's error with its
+line (`"data.NAME.bas" = "== \"error N Illegal Operator for Type\""`);
+its case only makes the driver.
 
 The agreement and fixed sources of a destination, parameter, `If` or
 `Print` context and the unchecked index sources are also AmiBlitz3 cases
-(`tests/ab3`, design decision 9 of the change): the same text as `.ab3`
-without the cells AmiBlitz3 refuses (its measured `!noncompile`) and
+(`tests/ab3`, design decision 9 of the change), named by the source name
+(`dl-A-agree-01`): a source that prints `KEY VALUE` per cell
+(`em_source_text`) as `.ab3`, without the cells AmiBlitz3 refuses (its measured `!noncompile`) and
 without the `If` cells AmiBlitz3 folds to a Float constant (arithmetic
 or a unary minus of constants, one with a fraction: AmiBlitz3 tests d1
 there, #1187, and a folded constant leaves d1 as the line before left
 it, so the value depends on the source). The case is compiled with `-r`
-(runtime error checking off, as the corpus source; AB3 mode's own default
+(runtime error checking off, as the corpus test; AB3 mode's own default
 is on, which makes a later index a Long). Its expected output is that of
 blitz2-ab3 in AB3 mode, the port's compiler with AmiBlitz3's libraries:
 the port's value with the CD's libraries (AmiBlitz3's libraries have the
@@ -332,13 +384,12 @@ measured).
 
 | File | What |
 |---|---|
-| `tests/corpus/tests-exprmatrix/CTX-SET[-u\|-c]-TAG-NN.bas` | a corpus source of agreement (`agree`), baseline (`base`) or fixed cells (`fixN`); `-u`/`-c` an index source unchecked/checked |
-| `tests/corpus/expect/corpus_exprmatrix[_runerr]/NAME.out` | its expected output; for fixed cells the pair `NAME.orig.out` / `NAME.fixed-N.out` (an index source whose mode has no differing cell: `NAME.out`) |
-| `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN.bas`, `.expect` | a bug-orig test of open cells (`ISSUES` `1178`, or `1178-1189` for a cell that needs two fixes: DIFFERS between them); the header names `BUG(orig) (#N)` and the cells, and `; @fixed-orig #N` once the issues are fixed (above); the `.orig` is recorded by `bug-orig-record`, not written here |
-| `tests/bug-orig/compiler/compiler-expr-ISSUES-refused-OP-L-R[-c].bas`, `.expect` | a cell the original compiles and a fix refuses: one representative per operator and operand classes (`I` a whole number, `Q`, `F`, `C` a constant with a fraction, `S`, `x` none) |
-| `tests/bug-orig/regression/compiler-expr-refused-OP-L-R[-c].bas`, `.expect` | a cell the originals and the port refuse ("Illegal Operator for Type"): one representative per operator and operand classes; `-c` refused only with runtime error checking |
+| `tests/bug-orig/exprmatrix/CTX-SET[-u\|-c]-TAG-NN.test.bas`, `.test.toml` | a test of agreement (`agree`), baseline (`base`) or fixed cells (`fixN`, `fixed-orig = N`); `-u`/`-c` an index source unchecked/checked; ctest `corpus_exprmatrix_ID__cells` (side port, bundled where the bundle rule allows) and `_originals`; the directory's `tests.toml` (not written here) gives the cells: the port and 2.10, each with the CD's and the C libraries |
+| `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN.test.bas`, `.test.toml` | a bug-orig test of open cells (`ISSUES` `1178`, or `1178-1189` for a cell that needs two fixes); the header names `BUG(orig) (#N)` and the cells; `fixed-orig = N` once the issues are fixed (above) |
+| `tests/bug-orig/compiler/compiler-expr-ISSUES-refused.test.bas`, `.test.toml`, `.test/OP-L-R[-c].bas` | the cells the original compiles and a fix refuses, one data source per operator and operand classes |
+| `tests/bug-orig/regression/compiler-expr-refused-OP.test.bas`, `.test.toml`, `.test/L-R[-c].bas` | the cells of the operator `OP` the originals and the port refuse, one data source per operand classes |
 | `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |
-| `tests/ab3/cli/exprmatrix/NAME.ab3`, `NAME.expect`, `NAME.ref.expect` | the AmiBlitz3 case of a corpus source: its source, the port's output (`ab3_cli_N`) and, where AmiBlitz3 differs, AmiBlitz3's (`ab3_cli_ref_N`, `REF_EXPECT`) |
+| `tests/ab3/cli/exprmatrix/NAME.ab3`, `NAME.expect`, `NAME.ref.expect` | the AmiBlitz3 case of a corpus test: its source, the port's output (`ab3_cli_N`) and, where AmiBlitz3 differs, AmiBlitz3's (`ab3_cli_ref_N`, `REF_EXPECT`) |
 | `tests/ab3/cli/exprmatrix/cases.cmake` | the `ab3_cli_case` lines of the cases, included by `tests/ab3/CMakeLists.txt` |
 
 The measured values (`measured.tsv`, written by `classify -m`): the rows

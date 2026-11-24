@@ -41,9 +41,9 @@ worktree, never in the main checkout; logs in the scratchpad, reports in
 
 ## 7. Documents
 
-- [ ] 7.1 `docs/testing-old-form.md`: section 3 removed (the table row and the counts of the intro; section 2 without "the generated tests (159)"; the stray `EOF` line at the end of section 3 goes with it), `TODO.md` "Tests left in the old form" without the generated tests; verify: the counts match `ls`.
-- [ ] 7.2 `tools/exprmatrix/README.md` ("The committed tests (expect)": the model files, deviations, `fixed-orig`, data sources), `tests/README.md` ("The expression matrix": the tests, bundles, updating without `bug-orig-record`), `docs/ab3/variant.md` (`@fixed-orig #N` of the matrix's tests becomes `fixed-orig = N`); verify: `readme_exprmatrix` passes, links resolve.
-- [ ] 7.3 `expr-tree-5-operand-typing` (proposal "the matrix's expected files", design "fails the matrix pass", task 2.1's regex `exprmatrix|operand-order`) adjusted to the model form with `openspec-update-change`; verify: `openspec validate expr-tree-5-operand-typing --strict`; commit (e) with the docs.
+- [x] 7.1 `docs/testing-old-form.md`: section 3 removed (the table row and the counts of the intro; section 2 without "the generated tests (159)"; the stray `EOF` line at the end of section 3 goes with it), `TODO.md` "Tests left in the old form" without the generated tests; verify: the counts match `ls`.
+- [x] 7.2 `tools/exprmatrix/README.md` ("The committed tests (expect)": the model files, deviations, `fixed-orig`, data sources), `tests/README.md` ("The expression matrix": the tests, bundles, updating without `bug-orig-record`), `docs/ab3/variant.md` (`@fixed-orig #N` of the matrix's tests becomes `fixed-orig = N`); verify: `readme_exprmatrix` passes, links resolve.
+- [x] 7.3 `expr-tree-5-operand-typing` (proposal "the matrix's expected files", design "fails the matrix pass", task 2.1's regex `exprmatrix|operand-order`) adjusted to the model form with `openspec-update-change`; verify: `openspec validate expr-tree-5-operand-typing --strict`; commit (e) with the docs.
 - [ ] 7.4 Acceptance by the agent: `ctest --preset host`, the moved tests in `all` and `originals`, `fix-scope` against main (only the moves, no issue case); verify: the commands pass; the coordinator runs `all`, `bug-orig` and `originals` after the merge (D-010).
 
 ## Workflow follow-up

@@ -16,13 +16,13 @@ Decided by the user, 2026-11-24 (`rounds/tree/decisions.md`, "expr-tree-5: reada
 
 ## 3. Tests first
 
-- [ ] 3.1 The named cells as bug-orig/fixed tests in the matrix's form (REPRODUCED on main); `quick-arith-long` lines 20/21 and the spec scenarios as a bug-orig test; verify: `ctest --preset bug-orig -R exprmatrix|operand-order` REPRODUCED.
+- [ ] 3.1 The named cells as bug-orig tests in the matrix's form (`exprmatrix expect`: tests of the BASIC test model `compiler-expr-ISSUE-CTX-SET[-u|-c]-NN`, open cells without `fixed-orig`, the original's values the deviations; REPRODUCED on main); `quick-arith-long` lines 20/21 and the spec scenarios as a bug-orig test; verify: `ctest --preset bug-orig -R "compiler_expr_ISSUE|operand_order"` REPRODUCED (`ISSUE` the issue of the rule).
 - [ ] 3.2 The type check of `blitz2_exprtype` against the matrix model by types, not only by values: `tools/lib/exprmatrix/model.c` returns the type so far of an evaluated cell (for example a field in `em_value`), and `programs/blitz2/tests/host/test_exprtype.cpp` compares the type of `exprtype_binop` with it for every two-operand cell both define (first with the original rules, before the rule of 2.2 is applied to the function); a planted wrong result type that keeps the value fails; verify: `ctest --preset host -R "blitz2_exprtype|exprmatrix"`, also with `-DHOST_SANITIZE=ON`. Source: rounds/tree/decisions.md 2026-11-23 "Model check: types later, before step 5".
 
 ## 4. Implementation
 
 - [ ] 4.1 The typing pass (design decision 1) and `exprtype.c`'s new decisions; the golden table rows changed and named; verify: `ctest --preset host -R blitz2_exprtype`, the model cross-check passes with the new rule set.
-- [ ] 4.2 The tests FIXED; every other matrix cell unchanged; `ctest --preset oracle` with the marked tests (by open question 2); prev run with the listed executables; `tools/results fix-scope` against main; verify: the commands pass with only the named changes.
+- [ ] 4.2 The tests FIXED (the generator adds `fixed-orig = N`; the deviations of the port with the CD's libraries change with the fix, as that configuration then gives the fixed value); every other matrix cell unchanged; `ctest --preset oracle` with the marked tests (by open question 2); prev run with the listed executables; `tools/results fix-scope` against main; verify: the commands pass with only the named changes.
 
 ## 5. Documents and commit
 

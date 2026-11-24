@@ -33,6 +33,6 @@ Decision (user, 2026-11-24, `~/.local/share/bb2-c-work/decisions/rounds/tree/dec
 
 ## Risks / Trade-offs
 
-- [The changed set is larger than predicted] -> the matrix's named-cell list is the limit: a cell not on it that changes fails the matrix pass.
+- [The changed set is larger than predicted] -> the matrix's named-cell list is the limit: a cell not on it that changes fails the matrix's test of its source (the check named by the cell's key).
 - [The rule is chosen without seeing the CD impact] -> the 376-place run and a CD count are shown with question 1.
 - An option that changes results not intended and named (e.g. accepting `PREV_INTENDED=ON` without a list) would be I5 Critical; not proposed: the prev run's list is named.

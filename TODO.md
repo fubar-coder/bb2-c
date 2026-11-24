@@ -795,16 +795,13 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   and `ID.orig` for now (user decision, `~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`,
   "Group 4: split the two long bug-fix-workflow requirements; the old
   form \"for now\""). Categories, counts, reasons and what would let them
-  move: `docs/testing-old-form.md` (41 TED tests, 71 hand-written and 159
-  generated compile-only tests, 205 generated expression-matrix tests of
-  which 46 with a program run, the self tests of the old runner, two
-  single tests, three runnable tests of round U4 not moved yet). Several
-  tests of the model run in one session for the first set: the bundle
+  move: `docs/testing-old-form.md` (41 TED tests, one hand-written
+  compile-only test, `compiler-checklib-examine`, and the self tests of the
+  old runner). Several tests of the model run in one session: the bundle
   tests (`tests/README.md`, "Bundle tests"; one cell on the side port, a
-  plain session key), started through ctest. Open: the generated tests
-  (generator `tools/lib/exprmatrix`, `corpus_exprmatrix`) move to the new
-  form once they can be bundled the same way, i.e. without a performance
-  loss.
+  plain session key), started through ctest; the expression matrix's
+  generated tests are tests of the model and bundled where the bundle rule
+  allows (change `exprmatrix-model-tests`).
 - [ ] **Bundles with test-local data and runs from the editor** (user
   decision, `~/.local/share/bb2-c-work/decisions/rounds/tb/decisions.md`,
   "K2, R1, Q17" and "K1, K2 follow-up, G1": left out of the first set for

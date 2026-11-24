@@ -23,14 +23,13 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | Category | Tests | Technical reason | Missing to move |
 |---|---|---|---|
 | [1. TED tests](#1-ted-tests) | 41 | the test is a keystroke script played against the editor TED and judged on TED's screen, files and log; the model's program is a compiled Blitz driver | an editor-driving step with its judging (large) |
-| [2. Compile-only tests](#2-compile-only-tests) | 63 hand-written, 159 generated | the result is a refused or unrun compile; the model can judge that, but each source must be rewritten for the driver | the moves (medium in all) |
-| [3. Generated expression-matrix tests](#3-generated-expression-matrix-tests) | 205 (46 with a program run, 159 compile-only) | the generator writes the old form; the cost of the model form is not measured | a generator change and a measurement (medium) |
-| [4. Self tests of the old runner](#4-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
-| [5. Single tests the model does not express](#5-single-tests-the-model-does-not-express) | 0 | — | — |
-| [6. Other suites with `.expect`](#6-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
+| [2. Compile-only tests](#2-compile-only-tests) | 1 hand-written (`compiler-checklib-examine`) | the result is a refused or unrun compile; the model can judge that, but the source must be rewritten for the driver | the move (small) |
+| [3. Self tests of the old runner](#3-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
+| [4. Single tests the model does not express](#4-single-tests-the-model-does-not-express) | 0 | — | — |
+| [5. Other suites with `.expect`](#5-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
 
-`compiler/` has 151 old-form tests and `regression/` 127 (278 in all; the
-Blitz self tests of `selftest/` are in section 4 and not counted there).
+`compiler/` has 1 old-form test and `regression/` none (the Blitz self
+tests of `selftest/` are in section 3 and not counted there).
 
 ## 1. TED tests
 
@@ -103,20 +102,14 @@ Funktionen haben, die die ".drv"-Funktionalität nachbildet und in einer
 **What.** Tests whose correct result is a compile result: an error with a
 line and a message (the compiler refuses the input), or a compile that ends
 without a program to run, judged by the compiler's own output (`[compile]`,
-`[blitz2]`, `[log]`, `[session]`). 63 are hand-written (the probe of the
-round that moved eight tests of this section is described below):
-
-| Area | Judged by | Tests | Example |
-|---|---|---|---|
-| `compiler/` | `[compile]` | 17 | `compiler-compare-right-operand-refused` |
-| `compiler/` | `[compile]` and `[blitz2]` (inject lines) | 5 | `compiler-incbin-leaks` |
-
-(The grouping is by the sections of the `.expect` files; the example is one
-file of the group, to be checked there.) The three `[log]` tests that drove
+`[blitz2]`, `[log]`, `[session]`). One is left, hand-written:
+`compiler/compiler-checklib-examine` (`[compile]`, the error of a token
+that the library check does not find); the others have moved (the probe
+of the round that moved eight tests of this section is described below).
+The three `[log]` tests that drove
 the compiler through the editor (`run=` or `menu=` of tedstub),
 `compiler-createproc-fail`, `compiler-data-pad-byte` and
-`compiler-loaddmod-pointer`, have moved (see "The probe" below). The
-generated compile-only tests (159) are in section 3.
+`compiler-loaddmod-pointer`, have moved (see "The probe" below).
 
 **Technical reason.** A model cell compiles the driver (the test source
 plus generated call code; the lines of the source stay, `tools/lib/testpp/testpp.h`)
@@ -211,17 +204,13 @@ What the probe found:
   least one check for the original's cell to pass something; a check that
   is not reached is "not-run", not a failure.
 - **No new feature or runner change was needed;** nothing is missing for
-  these eight. The other old-form compile-only tests of the same shape need
-  the same rewrite (10 to 20 minutes each, an estimate from the eight; the
-  generated tests of section 3 are not included).
+  these eight. The one left needs the same rewrite (10 to 20 minutes, an
+  estimate from the eight).
 
-**Missing to move.** For the 45 plain `[compile]` tests and, as far as
-checked, the `[blitz2]` ones, no model feature: the move of each (the
-source into `Case` blocks, a toml with the assertions and the original's
-deviations, a check that the verdict stays on both sides); a test that
-judges the log of several jobs takes one query per job
-(`compile.log.NAME`). Size: the number of tests (63 and the 159 of
-section 3) times a small rewrite each (estimate: medium).
+**Missing to move.** No model feature: the move of the one `[compile]`
+test (the source into `Case` blocks, a toml with the assertions and the
+original's deviations, a check that the verdict stays on both sides).
+Size: one small rewrite (estimate: small).
 
 **Proposal (the user's idea, not decided).** "Die Test-Funktion könnte ja
 den Compiler aufrufen und die Compiler-Ausgabe prüfen (hoffentlich,
@@ -252,61 +241,7 @@ zumindest)?" What it would take:
   The test then holds a trivial case so that the driver exists. Small
   (estimate), no feature.
 
-## 3. Generated expression-matrix tests
-
-**What.** The tests written by `exprmatrix expect` (generator
-`tools/lib/exprmatrix`, command `tools/exprmatrix`, description
-`tests/corpus/tests-exprmatrix/matrix.txt`, target `expr-matrix-update`,
-check `exprmatrix_committed`; `tools/exprmatrix/README.md`, "Outputs"):
-
-| Files | Tests | Program run | Example |
-|---|---|---|---|
-| `compiler/compiler-expr-ISSUES-CTX-SET[-u\|-c]-NN` | 46 | yes (`[compile] ok`, `[run]`) | `compiler-expr-1178-1189-dl-B-01` |
-| `compiler/compiler-expr-ISSUES-refused-OP-L-R[-c]` and 3 more of the 82 files that expect an error | 36 | no (`[compile] error`) | `compiler-expr-1179-refused-and-Q-C` |
-| `regression/compiler-expr-refused-OP-L-R[-c]` | 123 | no (`[compile] error`) | `compiler-expr-refused-and-C-C` |
-
-The 82 files of `compiler/compiler-expr-*` are 46 + 36. The three
-`regression/compiler-expr-depth*` tests are hand-written (the generator
-has no depth cells); `compiler-expr-depth` and `compiler-expr-depth-d7` have
-moved to the model, `compiler-expr-depth-prec` (`[compile]` only) is in
-section 2.
-
-**Technical reason.** Two, one per group.
-- The 159 with `[compile] error` are compile-only tests: each is one small
-  source with one expected compile error (the example
-  `compiler-expr-refused-and-C-C` expects one `[compile] error` line);
-  their reason and gaps are those of section 2.
-- The 46 with a run are expressible in the model, but the generator
-  (`tools/lib/exprmatrix`) writes `ID.bas`, `ID.expect` and `ID.orig`.
-  A test is one source of about 28 lines with about 8 cells
-  (`compiler-expr-1178-1189-dl-B-01`: 28 lines, 8 cells, one `[run]`).
-  The model form is one case per source with one named `!Check` per cell
-  (e.g. `!CheckEq{rl,-3,"dl_pow_q_b"}`): one ctest test per source and
-  side, as now, each cell reported by its own check, and the original's
-  per-cell values as deviations (`check.CASE.CELL.actual == …`). Both forms
-  run each generated source in a session of its own today (one ctest test
-  per source); the measured cost of a model session is at most 0.2 s more
-  per test (session median 1.61 s against 1.41 s in the acceptance run of
-  2026-11-23, from the `@stat` lines of `junit-all.xml`).
-  Bundling several sources in one session would be a gain over both: 38
-  generated sources in one session took 3.7 s against about 1.0 s each
-  alone.
-
-**Missing to move.**
-- For the 46 with a run: a measurement that a model test is not slower
-  than its old form (the user's condition: "Sofern die Tests ohne
-  Performance-Nachteile in das neue Format übertragen werden können"),
-  or bundled runs that make up for it (a run of several sources one after
-  another in one session, a mode of `corpusrun`, side port first);
-  then the generator writes `ID.test.bas` and `ID.test.toml` (one case,
-  a check per cell, the original's values as deviations) instead of
-  `ID.bas`, `ID.expect` and `ID.orig`, with its host tests
-  `test_exprmatrix*.cpp`. Medium for the generator (estimate); the
-  bundling of sessions is a runner feature of its own (large, estimate).
-- For the 159 compile-only: the moves of section 2.
-
-EOF
-## 4. Self tests of the old runner
+## 3. Self tests of the old runner
 
 **What.** Tests of the old form's own machinery, with deliberately broken
 input (`tests/bug-orig/selftest/`; the CMake side is
@@ -341,14 +276,14 @@ tools at the top of `tests/bug-orig/` (`inject-*.cmake`, `wbrun-*.cmake`
 with 12 `.expect` files): they compare a helper's output with an expected
 file and have no model counterpart.
 
-## 5. Single tests the model does not express
+## 4. Single tests the model does not express
 
 None. A test whose observation is the compile log of several jobs judges
 the block of each job with `compile.log.NAME` (`tests/README.md`,
 "Assertions"), as `compiler/compiler-racing-stripe-wide` (#980) does with
 its jobs j000 and j001.
 
-## 6. Other suites with `.expect`
+## 5. Other suites with `.expect`
 
 - `tests/blitz2/*.expect`: 13 port tests of the compiler (7 with
   `[run]`, 6 compile-only), next to 10 model tests in the same directory

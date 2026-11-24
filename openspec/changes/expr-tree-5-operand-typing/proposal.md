@@ -32,7 +32,7 @@ Named (rule 3): the expression matrix cells whose expected value under the decid
 
 ## Impact
 
-a new tool (`tools/lib/exprtype_tables/`, `tools/exprtables`, tests in `tools/tests/`) and the generated page `docs/blitz2/expression-type-tables.md` with its build check (first group); `exprtype.c` and its golden table, the typing pass in `exprtree.c`, `eval.c`; `tools/lib/exprmatrix/model.c` (the new rule), the matrix's expected files, the #1178 tests; docs, site; `docs/ab3/variant.md` (AB3 mode by open question 2). After `compare-compound-left`.
+a new tool (`tools/lib/exprtype_tables/`, `tools/exprtables`, tests in `tools/tests/`) and the generated page `docs/blitz2/expression-type-tables.md` with its build check (first group); `exprtype.c` and its golden table, the typing pass in `exprtree.c`, `eval.c`; `tools/lib/exprmatrix/model.c` (the new rule), the matrix's generated tests (tests of the BASIC test model: their checks and declared deviations, `exprmatrix expect`), the #1178 tests; docs, site; `docs/ab3/variant.md` (AB3 mode by open question 2). After `compare-compound-left`.
 
 ## Open questions (all Decide, before group 3; planning report Q4)
 

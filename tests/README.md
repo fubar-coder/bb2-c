@@ -1914,7 +1914,7 @@ Float parameter, `If`, the first or a later array index, `Print`), an
 operator, the operand kinds in order (five variables, four constants,
 a string) and a value set (A: inside every range with a positive
 fraction, B: negative and beyond the Word and Quick ranges); every cell
-is one line of a generated source that prints its key and its value.
+is one line of a generated test that checks its value under its key.
 The description `tests/corpus/tests-exprmatrix/matrix.txt` makes 40,561
 cells. Each was measured with 2.10, 1.95, the port with the CD's and with
 its C libraries and AmiBlitz3 v3.14.0; the expected value comes from the
@@ -1939,42 +1939,63 @@ cell whose value an issue's fix changes is **fixed-N** (the port gives
 the expected value) or **open-N** (the port still gives the original's);
 **noncompile** cells are refused by the originals and the port.
 
-**The tests**, all written by the generator:
+**The tests**, all written by the generator as tests of the BASIC test
+model ([Tests that judge themselves](#tests-that-judge-themselves); the
+form of the lines: [`tools/exprmatrix`](../tools/exprmatrix/README.md),
+"The committed tests"): one case `cells` per source that checks each
+cell with a check named by the cell's key, so a failure names the same
+key as `left-out.txt`, `measured.tsv` and the classify tables; a
+`Print` source prints its cells and the test judges the whole output.
 
-* the corpus passes `corpus_exprmatrix_NAME` (unchecked) and
-  `corpus_exprmatrix_runerr_NAME` (the checked index cells, with a
-  `SetErr` handler in front of every cell, so a runtime error prints
-  `KEY !runtime` and the program goes on): one source of one context,
-  value set, mode and class (`tests/corpus/tests-exprmatrix/CTX-SET[-u|-c]-agree|base|fixN-NN.bas`,
-  at most `cells-per-source` cells, 2000: every group is one source, up to
-  3,300 lines and 125 KB, which the compiler takes in both builds), each
-  a pass and an emulator session of its own (a program can disturb the
-  next one in a session); the expected files are
-  `expect/corpus_exprmatrix[_runerr]/NAME.out`, for fixed cells the pair
-  `NAME.orig.out` / `NAME.fixed-N.out` ([Corpus](#corpus)); the
-  `_originals` runs check them against 2.10;
+* the agreement, baseline and fixed cells,
+  `tests/bug-orig/exprmatrix/CTX-SET[-u|-c]-agree|base|fixN-NN.test.bas`
+  (one source of one context, value set, mode and class, at most
+  `cells-per-source` cells, 2000: every group is one source): ctest
+  `corpus_exprmatrix_ID__cells` (the port with the C libraries, `all`)
+  and `corpus_exprmatrix_ID__cells_originals` (the port with the CD's
+  libraries, 2.10 with the CD's and with the C libraries, `originals`;
+  `tests/bug-orig/exprmatrix/tests.toml`); a fixed source has
+  `fixed-orig = N` and the original's values as its deviations; the
+  checked index sources (`-c`) run with runtime error checking (a cell
+  outside the array is the runtime error, caught by `SetErr`, the check
+  sees -1), the unchecked ones (`-u`) with `isolate = "on"`;
 * the bug-orig tests of the open cells,
-  `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u|-c]-NN`, whose
-  header names `BUG(orig) (#N)` and the cells, with `ID.orig` recorded
-  from 1.95 ([Recorded originals](#recorded-originals)); they come out
-  REPRODUCED until the fix, whose commit adds `; @fixed-orig #N`
-  ([Fixed tests](#fixed-tests)). A test of cells that need two fixes
-  (`compiler-expr-1178-1189-...`) comes out **DIFFERS between the two
-  fixes** - after the first the port neither reproduces 1.95 nor meets the
-  expectation - which is no regression; its header says so, and the
-  commit of the second fix marks it fixed;
-* one test per operator and operand classes for the refused cells
-  (`tests/bug-orig/regression/compiler-expr-refused-OP-L-R`) and for the
-  cells a fix will refuse (`compiler-expr-N-refused-OP-L-R`, bug-orig);
+  `tests/bug-orig/compiler/compiler-expr-ISSUES-CTX-SET[-u|-c]-NN.test.bas`,
+  whose header names `BUG(orig) (#N)` and the cells, the original's
+  values (1.95) their deviations; they come out REPRODUCED until the
+  fix, whose commit adds `fixed-orig = N` ([Fixed tests](#fixed-tests);
+  the generator writes it when the port's rules have the fix). A test of
+  cells that need two fixes (`compiler-expr-1178-1189-...`) fails
+  between the two fixes - after the first the port neither reproduces
+  1.95 nor meets the expectation -, which is no regression; its header
+  says so, and the commit of the second fix marks it fixed;
+* the refused cells as data sources of `basic-compile`
+  (`ID.test/NAME.bas`, one representative per operator and operand
+  classes, each with its error and line asserted): one regression test
+  per operator for the cells the originals and the port refuse
+  (`tests/bug-orig/regression/compiler-expr-refused-OP`), one bug-orig
+  test per issue set for the cells a fix refuses
+  (`compiler-expr-N-refused`, the original's compile `== ok` its
+  deviation);
 * the AmiBlitz3 cases of the agreement and fixed sources without runtime
   error checking (`tests/ab3/cli/exprmatrix/`, in `ab3_cli_N` and the
-  oracle's `ab3_cli_ref_N`): the sources as `.ab3` without the cells
-  AmiBlitz3 refuses (and the `If` cells on a folded Float constant, where
-  AmiBlitz3's d1 depends on the line before), compiled with `-r`; their
-  expectation is the output of blitz2-ab3 in AB3 mode (the port's
-  compiler with AmiBlitz3's libraries), AmiBlitz3's measured output is
-  `REF_EXPECT` where it differs (`docs/ab3/variant.md`, "Differences to
-  AmiBlitz3's compiler").
+  oracle's `ab3_cli_ref_N`): the sources as `.ab3` (a program that
+  prints `KEY VALUE` per cell) without the cells AmiBlitz3 refuses (and
+  the `If` cells on a folded Float constant, where AmiBlitz3's d1 depends
+  on the line before), compiled with `-r`; their expectation is the
+  output of blitz2-ab3 in AB3 mode (the port's compiler with AmiBlitz3's
+  libraries), AmiBlitz3's measured output is `REF_EXPECT` where it
+  differs (`docs/ab3/variant.md`, "Differences to AmiBlitz3's
+  compiler").
+
+**Bundles.** The case tests of the side port of the agreement, baseline,
+fixed and open sources share emulator sessions in the bundles of their
+registration (`corpus_exprmatrix_bundle_N`, `bug_orig_bundle_N`;
+[Bundle tests](#bundle-tests)); the `Print` sources (a whole-program
+assertion), the unchecked index sources (`isolate`) and the tests of
+refused cells (data sources) run alone. The side originals runs
+unbundled, the cells of a test in one session (the unchecked index
+sources each in its own).
 
 **Left out** (`tests/corpus/tests-exprmatrix/left-out.txt`, with the
 reason): cells without an expected value (a question to the user: a
@@ -1987,9 +2008,10 @@ on the libraries (#1187), and cells where the port differs.
 from the description and `measured.tsv` (after a change of the
 description, the model or a fix's rules; review with `git diff`), and
 the host test `exprmatrix_committed` fails when a committed file is not
-the generator's (`exprmatrix_committed_broken`: an edited and an extra
-file are named). A changed bug-orig test needs its `ID.orig` recorded
-again (`-DBUG_ORIG_RECORD_FILTER=ID`, `bug-orig-record`). A new
+the generator's (`exprmatrix_committed_broken`: an edited configuration, an
+edited data source and an extra file are named). The original's values
+are the model's, written as the deviations: nothing is recorded
+(`bug-orig-record` has no test of the matrix). A new
 measurement goes through `exprmatrix classify`: `-m` writes
 `measured.tsv`, `-q` the questions file (one question per class of
 cells no recorded rule covers, with example cells, for the user; not
@@ -2543,10 +2565,9 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `ted_ab:CASE:C5-P5`, `ted_ab:CASE:Cc-Pc` | only that pair |
 | `corpus_cd_prev:PATH`, `corpus_cd_ab3_prev:PATH` | the CD source `PATH` (below `ultimate-blitz-basic-2.1`, as in `tests/data/blitz2-cd.tsv`): its row may differ from the one of `corpus_cd` / `corpus_cd_ab3` in any field |
 | `compiler_prev:ID`, `bug_orig_ID_prev:ID`, `regression_ID_prev:ID`, `blitz2_ID_prev:ID` | the compiler test source `ID` in that compile-only pass (`compiler_prev` for the tests without special needs, else the test's own pass `NAME_prev`): the executable or the compile result of `prev` may differ from `clib`'s |
-| `blitz2_ID_prev:ID`, `blitz2_ID_prev:ID-runerrs` (and `bug_orig_`, `regression_`) for a test of the BASIC test model | its driver of all cases compiled without, with runtime error checking: the executable or the compile result of `prev` may differ from `clib`'s |
-| `blitz2_ID_prev:ID/FILE`, `blitz2_ID_prev:ID/FILE-runerrs` (and `bug_orig_`, `regression_`) | a data source `ID.test/FILE` of the test compiled without, with runtime error checking: the same |
+| `blitz2_ID_prev:ID`, `blitz2_ID_prev:ID-runerrs` (and `bug_orig_`, `regression_`, `corpus_exprmatrix_`) for a test of the BASIC test model | its driver of all cases compiled without, with runtime error checking: the executable or the compile result of `prev` may differ from `clib`'s |
+| `blitz2_ID_prev:ID/FILE`, `blitz2_ID_prev:ID/FILE-runerrs` (and `bug_orig_`, `regression_`, `corpus_exprmatrix_`) | a data source `ID.test/FILE` of the test compiled without, with runtime error checking: the same |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
-| `corpus_exprmatrix_NAME:SOURCE`, `corpus_exprmatrix_runerr_NAME:SOURCE` | the source of a corpus pass of the expression matrix (one pass per source, e.g. `corpus_exprmatrix_dl_A_agree_01:dl-A-agree-01`): its `prev` configuration may differ from `clib` |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
 
 The part before the first colon is the ctest name of the test, so an
