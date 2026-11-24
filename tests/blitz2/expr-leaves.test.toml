@@ -1,0 +1,4 @@
+# expr-leaves.test.bas: without and with runtime error checking (the
+# check code around the elements differs, the elements' own code not)
+[matrix]
+runtime-errors = ["off", "on"]

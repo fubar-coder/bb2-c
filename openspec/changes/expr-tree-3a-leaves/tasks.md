@@ -4,7 +4,7 @@ After `expr-tree-2-operators`. "The check": `expr-tree-1-typing/design.md`, "The
 
 ## 1. Tests first
 
-- [ ] 1.1 Check the coverage of the simple elements in the compared sources: compile-only cases in `tests/blitz2` for each element kind that no compared source reaches (`On`/`Off`, `Used`, `Maximum`, `Addr`, `ErrNum`, `SizeOf` of a NewType field, `?label` forward and back, `#constant` with a fraction, AB3 character literals in `tests/ab3/cli`), found with the coverage build (`testing/coverage`); verify: the new cases pass on main and are in `compiler_prev`.
+- [x] 1.1 Check the coverage of the simple elements in the compared sources: compile-only cases in `tests/blitz2` for each element kind that no compared source reaches (`On`/`Off`, `Used`, `Maximum`, `Addr`, `ErrNum`, `SizeOf` of a NewType field, `?label` forward and back, `#constant` with a fraction, AB3 character literals in `tests/ab3/cli`), found with the coverage build (`testing/coverage`); verify: the new cases pass on main and are in `compiler_prev`.
 
 ## 2. Implementation
 
