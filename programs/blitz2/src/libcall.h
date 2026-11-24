@@ -71,23 +71,6 @@ ULONG fetchnum2(ULONG num, UWORD *type, BOOL data);
    index (eval.c, arrevalchk) */
 BOOL islongconst(ULONG from, ULONG to);
 
-/* No asm counterpart (#1186, a port defect of the #1177 fix): if the
-   code from `from` to `*to` is the decimal literal with a point or an
-   exponent that the fetch routines emitted last as a whole number (the
-   byte sizing of consttype2: since the fix of #1188 only a whole-valued
-   one, 2.0 under a Byte is move.w #2; a literal with a fraction is a
-   Float there),
-   followed only by neg.w Dreg, it is emitted again at `from` as the Float
-   it is (move.l #ffp,Dreg, negated once for every neg.w), *type = Float,
-   *to = the new end of the code, and TRUE is returned; else FALSE with
-   nothing changed.  For the left operand of a comparison (eval5), which
-   is compared with its own value (#1177). */
-BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type);
-
-/* #1186: the code of the last literal was replaced (the constant
-   fold of eval5): fraclitfloat no longer takes it. */
-void fraclitdrop(void);
-
 /* Fixed (#1070), no asm counterpart: TRUE if the decimal literal fetched
    next is negated (a '-' in front of it in an expression, an odd number of
    them, or a negative Data value); consttype2 takes it and clears it.  A
@@ -151,11 +134,10 @@ void tokuse(UWORD token);
 void userjsruse(struct blitzlib *bl, UBYTE *params);
 
 /* no asm counterpart: the facts the code of the last constant leaves
-   (constat, constend; #1186 litat, litend, litffp,
-   litint), read and set again around a constant computed in the middle
-   of an expression (eval.c maineval2) */
+   (constat, constend), read and set again around a constant computed in
+   the middle of an expression (eval.c exprresume) */
 struct emitfacts {
-    ULONG constat, constend, litat, litend, litffp, litint;
+    ULONG constat, constend;
 };
 void getemitfacts(struct emitfacts *f);
 void setemitfacts(const struct emitfacts *f);

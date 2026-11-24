@@ -152,6 +152,8 @@ BOOL reloccapture(struct offnode *n);
 UWORD relocunit(void);
 void relocdrop(UWORD base);
 void relocreset(void);
+UWORD relocpending(void);
+void relocforget(UWORD from);
 /* 6237 use every lib of the dependency list at lib+off+6 except self.
    off == 0: nothing (asm: Z flag from the caller's move.l) */
 void uselib2(struct blitzlib *l, ULONG off, UWORD self);

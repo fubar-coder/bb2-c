@@ -980,6 +980,26 @@ void relocdrop(UWORD base)
     relocbase = base;
 }
 
+/* the number of entries (relocpending); the entries from the one from on
+   freed (relocforget), the code that would take their relocations is not
+   written: the conversion a comparison drops (#1177) */
+UWORD relocpending(void)
+{
+    return npendrelocs;
+}
+
+void relocforget(UWORD from)
+{
+    struct offnode *n, *next;
+
+    while (npendrelocs > from) {
+        for (n = pendrelocs[--npendrelocs].first; n; n = next) {
+            next = n->next;
+            FreeMem(n, 8);
+        }
+    }
+}
+
 /* every entry freed (the reset of a statement, after a compile error in
    the middle of an expression) */
 void relocreset(void)

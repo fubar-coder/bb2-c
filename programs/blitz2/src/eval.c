@@ -130,14 +130,12 @@ WORD unknown = 0;           /* 8801 */
 static WORD thisstuse = 0;
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
-/* Fixed (#1177), no asm counterpart: the last conversion varcont emitted
-   (code at..end, the element's own type from, the wanted type to, the
-   relocation list and lasta6 before it, the evaldepth of the element), for
-   the left operand of a comparison in exprtree_pre */
+/* Fixed (#1179), no asm counterpart: the last conversion varcont emitted
+   (where its code ends, the element's own type from, the wanted type to,
+   the evaldepth of the element), for the narrowing of a later index
+   (arrevalchk) */
 static struct {
-    ULONG at, end;
-    struct offnode *off;
-    WORD a6;
+    ULONG end;
     UWORD from, to, depth;
 } conv;
 /* Fixed (#1178), no asm counterpart: D(regat) holds a raw Quick (16.16)
@@ -202,16 +200,19 @@ static UWORD nbforth = 0;
 
 /* the actions recorded (their number), the last one that writes code;
    the action of the last conversion a value's code ends in (#1177: the
-   conversion cmpownleft drops), the last literal made a whole number and
+   conversion a comparison drops), the last literal made a whole number and
    the minus signs after it (#1186: fraclitfloat), and whether a string
    base is got (sbasegot, set by makesbase's code) */
 static ULONG actseq = 0, codeseq = 0, prevcodeseq = 0;
 static struct {
     ULONG seq;
-    UWORD from, to, depth;
+    UWORD from, to, depth, relocs;
+    struct exprnode *leaf;
 } bconv;
 static struct {
     ULONG seq, before, last;
+    struct exprnode *leaf, *neg;     /* the literal, its last run of minus signs */
+    UWORD negs;                      /* the minus signs */
 } blit;
 static BOOL bsbase = FALSE;
 /* the action of the last value whose code ends in a byte's ext.w, of the
@@ -283,9 +284,12 @@ static struct expract *recordact(exprtree_actfn *fn, void *p, ULONG x, UWORD y, 
         /* #1186: only the minus signs of a Byte or Word may follow the
            literal */
         if (blit.seq) {
-            if (fn == negemit && y < T_LONG)
+            if (fn == negemit && y < T_LONG) {
                 blit.last = codeseq;
-            else
+                ((struct exprnode *)p)->left = blit.neg;
+                blit.neg = p;
+                blit.negs += ((struct exprnode *)p)->op;
+            } else
                 blit.seq = 0;
         }
     }
@@ -351,7 +355,6 @@ static UWORD eval2(UWORD *type, UWORD *c, unsigned *op);
 static UWORD doop(struct opentry *op, UWORD type);
 static void mixedop(struct opentry *op, const struct exprtype_bin *d);
 static void doplus2(UWORD opcode);
-static ULONG cmpownleft(ULONG lstart, ULONG lend);
 /* the operator operate emits has two constants (BNF_FOLD) */
 static BOOL foldnow = FALSE;
 /* where its left operand's code begins (divzerochk) */
@@ -991,9 +994,7 @@ struct facts {
     struct emitfacts c;
     ULONG rawcutend;
     UWORD rawcutdepth;
-    ULONG convat, convend;
-    struct offnode *convoff;
-    WORD conva6;
+    ULONG convend;
     UWORD convfrom, convto, convdepth;
 };
 
@@ -1002,10 +1003,7 @@ static void getfacts(struct facts *f)
     getemitfacts(&f->c);
     f->rawcutend = rawcutend;
     f->rawcutdepth = rawcutdepth;
-    f->convat = conv.at;
     f->convend = conv.end;
-    f->convoff = conv.off;
-    f->conva6 = conv.a6;
     f->convfrom = conv.from;
     f->convto = conv.to;
     f->convdepth = conv.depth;
@@ -1018,10 +1016,7 @@ static void setfactsact(struct expract *a)
     setemitfacts(&f->c);
     rawcutend = f->rawcutend;
     rawcutdepth = f->rawcutdepth;
-    conv.at = f->convat;
     conv.end = f->convend;
-    conv.off = f->convoff;
-    conv.a6 = f->conva6;
     conv.from = f->convfrom;
     conv.to = f->convto;
     conv.depth = f->convdepth;
@@ -1245,7 +1240,6 @@ static void constfold(const struct expract *s, UWORD type)
         pokewd(opcode);
         pokel(value);
     }
-    fraclitdrop();                  /* #1186 */
     /* .mode - clean up offset stack.  Fixed (#1049): only the offsets
        inside the folded code (at up to foldend) are freed.  The
        original freed every offset added since the fold began, also the
@@ -1768,38 +1762,43 @@ void exprtree_done(void *x, struct exprnode *l)
     cmpres = (l->flags & EXF_CMP) != 0;
 }
 
-/* no asm counterpart: does the comparison's left operand l (an element's
-   leaf) get its own type back (#1177; cmpownleft's conditions, decided
-   from the actions recorded since l began, l->aux: the code before it)?
-   A literal made a whole number (#1186) that is the operand, with only
-   its minus signs after it, is a Float again; a value whose code ends in
-   the conversion contemit made gets the type it had before it
-   (exprtype_ownleft).  *type is the type the operand has then. */
+/* no asm counterpart; replaces blitz2.s:8989 eval5 .higher's left operand
+   of a comparison - does the comparison's left operand l (an element's
+   leaf) get its own type back (#1177; decided from the actions recorded
+   since l began, l->aux: the code before it)?  A literal made a whole
+   number (#1186) that is the operand, with only its minus signs after
+   it, is the Float it is: its code the FFP value with the signs in it
+   (ELF_FFP), the minus signs' code none (EXF_ABSORBED).  A value whose
+   code ends in the conversion contemit makes gets the type it had
+   before it (exprtype_ownleft): the conversion is not written
+   (ELF_DROP), the relocations of the libraries its routine used first
+   are freed, the libraries stay.  Byte/Word to Long is exact and stays;
+   not covered (#1183): a compound left operand (q*2), computed in the
+   wanted type before the comparison operator is read.  *type is the type the
+   operand has then. */
 static BOOL ownleft(const struct exprnode *l, UWORD *type)
 {
+    struct exprnode *n;
+
     if (blit.seq && blit.before == l->aux && blit.last == codeseq) {
+        if ((blit.negs & 1) && blit.leaf->aux)
+            blit.leaf->aux ^= 0x80;             /* the FFP sign bit */
+        blit.leaf->lflags |= ELF_FFP;
+        for (n = blit.neg; n; n = n->left)
+            n->flags |= EXF_ABSORBED;
         *type = T_FLOAT;
-        blit.seq = 0;
+        blit.seq = bcst.seq = 0;
         return TRUE;
     }
     if (bconv.seq && bconv.seq == codeseq && bconv.seq > l->aux && bconv.depth == evaldepth
         && exprtype_ownleft(bconv.from, bconv.to)) {
+        bconv.leaf->lflags |= ELF_DROP;
+        relocforget(bconv.relocs);
         *type = bconv.from;
         bconv.seq = 0;
         return TRUE;
     }
     return FALSE;
-}
-
-/* no asm counterpart; replaces the code of blitz2.s:8989 eval5 .higher
-   before its bsr pushprec - the code between the left and the right
-   operand of n: the left one's conversion dropped (BNF_OWNLEFT,
-   cmpownleft) */
-static void midact(struct expract *a)
-{
-    struct exprnode *n = a->p, *l = n->left;
-
-    l->end = cmpownleft(l->start, l->end);
 }
 
 /* no asm counterpart; replaces blitz2.s:8989 eval5 .higher before its bsr
@@ -1825,7 +1824,7 @@ void exprtree_pre(void *x, struct exprnode *n)
        own values, not in the type the expression is wanted in (the
        original handed that type to both, and varcont cut a Quick under a
        Long: r.l=(q>1) was 0 for q=1.5).  A left operand of one element
-       gets its own type back (ownleft, cmpownleft), the right operand
+       gets its own type back (ownleft), the right operand
        starts at type 0, compareop compares the two (exprtype_leftop). */
     pre = exprtype_leftop(n->op, *e->type, (l->flags & EXF_RAW) != 0);
     *e->type = pre.left;            /* Fixed (#1178): a raw left is a Quick */
@@ -1833,10 +1832,8 @@ void exprtree_pre(void *x, struct exprnode *n)
         l->flags |= EXF_RAW;
     else
         l->flags &= ~EXF_RAW;
-    if (pre.ownleft && l->kind == EXN_LEAF && ownleft(l, e->type)) {
+    if (pre.ownleft && l->kind == EXN_LEAF && ownleft(l, e->type))
         n->lflags |= BNF_OWNLEFT;
-        emitact(midact, n, 0, 0);
-    }
     /* Fixed (#978): an equality comparison (= or <>) of a byte value with
        a constant from 128 to 255 (each operand one element) takes the
        constant as the byte it stands for, sign-extended as varcont
@@ -2208,51 +2205,6 @@ static UWORD doltcmp2(UWORD opcode) { cmpit(opcode); return doltcmp(); }
 static UWORD dolecmp2(UWORD opcode) { cmpit(opcode); return dolecmp(); }
 static UWORD dogtcmp2(UWORD opcode) { cmpit(opcode); return dogtcmp(); }
 static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
-
-/* Fixed (#1177), no asm counterpart: the left operand lstart..lend of a
-   comparison, when it is one element (a variable, field, array element,
-   function value) whose code ends in a conversion varcont made to the
-   wanted type, gets its own type back: the conversion is dropped (with its
-   relocations, as constfold frees them, and lasta6 as it was before it) when it
-   changes how the value is held - a whole number to Quick, a whole number
-   or a Quick to Float.  Byte/Word to Long is exact and stays.  A Quick
-   under a Long is not cut any more (#1178): exprtree_pre takes a raw left
-   operand as a Quick, also -q.  #1186 (port): a decimal literal with a
-   point (also negated) that the wanted Byte made a whole number is a
-   Float again (fraclitfloat): before the fix of #1188 rb.b=(1.5=1.5)
-   compared 1 with 1.5; since then only a whole-valued literal (1.0) is
-   such a literal, and the re-emission keeps its code as it was.  Not
-   covered (#1183): a compound left operand (q*2), computed in the wanted
-   type before the comparison operator is read.  The type is decided when
-   the expression is built (ownleft); this is the code, from the
-   operand's code lstart..lend.  Returns the new end of the operand. */
-static __attribute__((noinline))
-ULONG cmpownleft(ULONG lstart, ULONG lend)
-{
-    struct offnode **link = &firstoff, *node;
-    UWORD from = conv.from, to = conv.to, t;
-
-    if (fraclitfloat(lstart, &lend, regat, &t))
-        return lend;
-    if (conv.end != lend || conv.at <= lstart || conv.depth != evaldepth
-        || !exprtype_ownleft(from, to)) {
-        if (!nomemleft)
-            interr2();              /* not reached: ownleft decided it */
-        return lend;
-    }
-    while ((node = *link) != conv.off && node) {
-        if (node->offset >= conv.at - pcat) {
-            *link = node->next;
-            numoffs--;
-            FreeMem(node, 8);
-        } else
-            link = &node->next;
-    }
-    pc = conv.at;
-    lasta6 = conv.a6;
-    conv.end = 0;
-    return pc;
-}
 
 /* Fixed (#1177), no asm counterpart: D(regat) OP D(regat+1), one a Long,
    the other a Quick (raw 16.16), compared exactly: the Long against
@@ -2853,6 +2805,9 @@ static void negemit(struct expract *a)
     const struct exprnode *n = a->p;
     UWORD k;
 
+    if (n->flags & EXF_ABSORBED)
+        return;                     /* in the literal's FFP value (#1186) */
+
     for (k = n->op; k; k--) {
         if (a->y >= 5)
             fdo2(-60);              /* SPNeg */
@@ -3130,6 +3085,9 @@ void constrec(struct exprnode *l)
     if (l->lflags & ELF_CUT) {
         blit.seq = blit.last = codeseq;
         blit.before = prevcodeseq;
+        blit.leaf = l;
+        blit.neg = NULL;
+        blit.negs = 0;
     }
 }
 
@@ -4734,10 +4692,7 @@ static void contcode(struct exprnode *l)
        down, / towards zero), a comparison takes it as a Quick (#1177), a
        shift, logic operator, Mod, Not and the end of the expression round
        it down as the original does. */
-    if (!(l->lflags & ELF_RAW) && (l->lflags & ELF_CONV)) {
-        conv.at = pc;
-        conv.off = firstoff;
-        conv.a6 = lasta6;
+    if ((l->lflags & (ELF_RAW | ELF_CONV | ELF_DROP)) == ELF_CONV) {
         conv.from = l->own;
         conv.depth = evaldepth;
         convtype(l->own, l->tafter);    /* bump up new type to old.... */
@@ -4758,6 +4713,8 @@ static void contemit(struct expract *a)
    (#1178: rawq), the conversion a comparison may drop (#1177: bconv) */
 static void contrecord(struct exprnode *l, exprtree_actfn *fn)
 {
+    UWORD relocs = relocpending();
+
     if (l->lflags & ELF_CONV)
         convprep(l->own, l->tafter);
     emitact(fn, l, 0, 0);
@@ -4771,6 +4728,8 @@ static void contrecord(struct exprnode *l, exprtree_actfn *fn)
         bconv.from = l->own;
         bconv.to = l->tafter;
         bconv.depth = evaldepth;
+        bconv.leaf = l;
+        bconv.relocs = relocs;
     }
 }
 

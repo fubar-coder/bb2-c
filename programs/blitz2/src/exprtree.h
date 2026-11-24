@@ -164,7 +164,8 @@ enum {
     EXF_BYTEVAL = 4,            /* LEAF: the operand is one byte value (#978) */
     EXF_BYTECONST = 8,          /* LEAF: the operand is one integer constant from 128 to 255
                                    (#978; right: its leaf) */
-    EXF_COMPARE = 16            /* BINOP: a comparison, the right operand starts at type 0 (#1177) */
+    EXF_COMPARE = 16,           /* BINOP: a comparison, the right operand starts at type 0 (#1177) */
+    EXF_ABSORBED = 32           /* NEG: its minus signs are in the literal's FFP value (#1186) */
 };
 
 /** @brief The facts of an element's LEAF (exprnode.lflags).
@@ -182,8 +183,12 @@ enum {
     ELF_REF = 128,              /* LABEL: the reference to the label is made at emit */
     ELF_LOCAL = 256,            /* VAR, ADDROF, the node VAR and a STEP: a local variable
                                    (varmode: its a4 offset) */
-    ELF_SIGNEXT = 512           /* CONST: compared with a byte value: the byte it stands
+    ELF_SIGNEXT = 512,          /* CONST: compared with a byte value: the byte it stands
                                    for, sign-extended (#978) */
+    ELF_DROP = 1024,            /* VAR: a comparison's left operand: the conversion not
+                                   written, its own type kept (#1177) */
+    ELF_FFP = 2048              /* CONST: a comparison's left operand made a whole number:
+                                   its FFP value (aux) written (#1186) */
 };
 
 /** @brief The limit of the counted nodes (the original's precstack: 64

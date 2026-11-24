@@ -47,11 +47,9 @@ static ULONG constat, constend;
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
    made a whole number (litcut, set by consttype2; since the fix of #1188
-   only a whole-valued one, 2.0 or 1e2), and where constemit emitted it
-   last (litat..litend, 0: none) with its FFP value litffp and the whole
-   number litint, for fraclitfloat */
+   only a whole-valued one, 2.0 or 1e2): the leaf's ELF_CUT, for the
+   comparison it may be the left operand of (eval.c ownleft) */
 static BOOL litcut;
-static ULONG litat, litend, litffp, litint;
 
 /* Fixed (#1070): the literal consttype2 sizes next is negated (litneg in
    libcall.h); consttype2 takes it and clears it */
@@ -263,17 +261,17 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
 
 /* no asm counterpart; replaces blitz2.s:10860-10888 fetchnum3's .doit,
    .word and .long - the code of the constant's leaf l (the action's p):
-   move.w/move.l #value,D(regat).  It uses only the leaf and the emitter's
-   state; it leaves the facts of the constant for the code after it (#978
-   constat..constend, #1186 litat..litend) and the code in
-   l->start..l->end. */
+   move.w/move.l #value,D(regat): the byte a byte value is compared with
+   sign-extended (#978, ELF_SIGNEXT), the FFP value of a literal made a
+   whole number that is a comparison's left operand (#1186, ELF_FFP).  It
+   uses only the leaf and the emitter's state; it leaves where the
+   integer constant is for the code after it (constat..constend) and the
+   code in l->start..l->end. */
 static void constemit(struct expract *a)
 {
     struct exprnode *l = a->p;
     ULONG at = pc, val = l->value;
 
-    litat = 0;                      /* #1186 */
-    /* Fixed (#978): remember where the last integer constant is */
     constat = constend = 0;
     if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT)
         constat = at;
@@ -284,6 +282,13 @@ static void constemit(struct expract *a)
             val |= 0xff000000UL;        /* q: the integer part */
         else
             val |= 0xffffff00UL;        /* l */
+    }
+    if (l->lflags & ELF_FFP) {      /* #1186: the Float it is */
+        pokewd((UWORD)(regat << 9) | 0x203c);
+        pokel(l->aux);
+        l->start = at;
+        l->end = pc;
+        return;
     }
     switch (l->tafter) {
     case T_BYTE:
@@ -304,12 +309,6 @@ static void constemit(struct expract *a)
     }
     if (constat)
         constend = pc;
-    if (l->lflags & ELF_CUT) {      /* #1186 */
-        litat = at;
-        litend = pc;
-        litffp = l->aux;
-        litint = val;
-    }
     l->start = at;
     l->end = pc;
 }
@@ -328,10 +327,8 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
 {
     struct exprnode *l;
 
-    if (data) {
-        litat = 0;                  /* #1186 */
+    if (data)
         return val;
-    }
     l = exprtree_new(EXN_LEAF);
     l->op = ELK_CONST;
     l->value = val;
@@ -355,56 +352,18 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
 }
 
 
-BOOL fraclitfloat(ULONG from, ULONG *to, UWORD reg, UWORD *type)
-{
-    ULONG end = litend, ffp = litffp;
 
-    if (!litat || litat != from || *to > libat)
-        return FALSE;
-    if (litend - litat == 4 ? W_(from + 2) != (UWORD)litint
-        : (W_(from + 2) != (UWORD)(litint >> 16)
-           || W_(from + 4) != (UWORD)litint))
-        return FALSE;               /* not the literal's code any more */
-    for (; end < *to; end += 2) {
-        if (W_(end) != (0x4440 | reg))  /* neg.w Dreg */
-            return FALSE;
-        if (ffp)
-            ffp ^= 0x80;            /* the FFP sign bit */
-    }
-    if (end != *to)
-        return FALSE;
-    pc = from;
-    pokewd((UWORD)(reg << 9) | 0x203c); /* move.l #ffp,Dreg */
-    pokel(ffp);
-    litat = constat = 0;
-    *type = T_FLOAT;
-    *to = pc;
-    return TRUE;
-}
-
-void fraclitdrop(void)
-{
-    litat = 0;
-}
 
 void getemitfacts(struct emitfacts *f)
 {
     f->constat = constat;
     f->constend = constend;
-    f->litat = litat;
-    f->litend = litend;
-    f->litffp = litffp;
-    f->litint = litint;
 }
 
 void setemitfacts(const struct emitfacts *f)
 {
     constat = f->constat;
     constend = f->constend;
-    litat = f->litat;
-    litend = f->litend;
-    litffp = f->litffp;
-    litint = f->litint;
 }
 
 
