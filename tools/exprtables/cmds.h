@@ -8,5 +8,6 @@
 #include "cli.hpp"
 
 void cmd_page(CLI::App &app, int &status);
+void cmd_candidate(CLI::App &app, int &status);
 
 #endif

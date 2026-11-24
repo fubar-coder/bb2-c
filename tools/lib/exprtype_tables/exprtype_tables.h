@@ -127,12 +127,48 @@ struct ett_stats {
     unsigned rows[ETG_COUNT];           /* their rows (left type, right type) */
     unsigned cells[ETG_COUNT];          /* their cells (with the type so far) */
     unsigned swapped[ETG_COUNT];        /* the cells that differ from the swapped operation */
+    unsigned changed[ETG_COUNT];        /* ett_page_opts: the cells that differ from the base rules */
+    unsigned marked[ETG_COUNT];         /* ett_page_opts: the cells with a mark (a CD place) */
 };
 
 /** @brief The page docs/blitz2/expression-type-tables.md by the rule set
  *         r (malloc'd text).  NULL: r has no decision for a case or out of
  *         memory (*error: the message, malloc'd).  stats may be NULL. */
 char *ett_page(const struct ett_rules *r, struct ett_stats *stats, char **error);
+
+/** @brief The page of another rule set (a candidate of the decision round
+ *         of expr-tree-5, open question 1) beside today's: its own heading
+ *         and text in place of the introduction and of the notes of
+ *         today's exceptions, the cells that differ from base marked
+ *         ◆ (counted in stats->changed), the cells mark() names marked
+ *         ‡ (stats->marked), and with constbeside the table of the
+ *         constants beside an operand of each type. */
+struct ett_pageopts {
+    const char *title;          /* the heading (without "# ") */
+    const char *about;          /* Markdown after it: what the rule set is, how to read its tables */
+    const char *notes;          /* Markdown at the end, in place of the exceptions */
+    const struct ett_rules *base;
+    int (*mark)(void *ctx, unsigned op, unsigned want, unsigned l, unsigned r);
+    void *markctx;
+    /** the type a constant (text) takes beside an operand of type partner
+        under the wanted type want; NULL: no such table */
+    int (*constbeside)(void *ctx, unsigned want, unsigned partner, const char *text);
+    void *constctx;
+};
+char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, struct ett_stats *stats,
+                    char **error);
+
+/** @brief A candidate rule set: the cells of the expression matrix's model
+ *         (tools/lib/exprmatrix, em_cand_cell) by the rules rules
+ *         (EM_R_CAND), a value keeping its own type, a constant alone as
+ *         base gives it; base for what the model does not type (the bit
+ *         test operators, a comparison or a later index as the right
+ *         operand, #978).  c must live as long as r. */
+struct ett_cand {
+    unsigned rules;
+    const struct ett_rules *base;
+};
+void ett_rules_cand(struct ett_rules *r, struct ett_cand *c);
 
 /** @brief Compares the committed page want (name for the messages) with
  *         the generated page got line by line.  Returns 0 equal, 1 they

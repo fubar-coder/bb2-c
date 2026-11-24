@@ -321,3 +321,81 @@ TEST_CASE("exprtables: the comparison of a committed page", "[exprtables]")
     CHECK(std::strstr(report, "p.md:4: not in the generated page: d\n") != nullptr);
     std::free(report);
 }
+
+// ----------------------------------------------------------------------------
+// the candidate rules of expr-tree-5 (task 2.1): the same tables, marked
+
+extern "C" {
+#include "exprmatrix.h"
+}
+
+namespace {
+
+int mark_wmul(void *, unsigned op, unsigned want, unsigned l, unsigned r)
+{
+    return op == ETO_MUL && want == ET_WORD && l == ET_WORD && r == ET_WORD;
+}
+
+int beside(void *ctx, unsigned want, unsigned partner, const char *text)
+{
+    return em_cand_consttype(*static_cast<unsigned *>(ctx), (int)want, (int)partner, text);
+}
+
+std::string candpage(int n, struct ett_stats *st, int (*mark)(void *, unsigned, unsigned, unsigned, unsigned))
+{
+    struct ett_prims p;
+    struct ett_rules base, r;
+    struct ett_cand c;
+    unsigned rules = EM_RULES_CANDBASE | EM_R_CAND(n);
+    char *error = nullptr;
+
+    ett_prims_exprtype(&p);
+    ett_rules_flow(&base, &p);
+    c.rules = rules;
+    c.base = &base;
+    ett_rules_cand(&r, &c);
+    struct ett_pageopts o = { "Candidate", "About.\n", "## Notes\n", &base, mark, nullptr, beside, &rules };
+    char *page = ett_page_opts(&r, &o, st, &error);
+    REQUIRE(page != nullptr);
+    std::string s = page;
+    std::free(page);
+    return s;
+}
+
+}  // namespace
+
+TEST_CASE("exprtables: a candidate's tables beside today's", "[exprtables][cand]")
+{
+    struct ett_stats st, st2;
+    std::string c1 = candpage(EM_CAND_C1, &st, mark_wmul), c2 = candpage(EM_CAND_C2, &st2, nullptr);
+
+    // its own heading and notes, not today's
+    CHECK(c1.rfind("# Candidate\n\nAbout.\n", 0) == 0);
+    CHECK(c1.find("## The exceptions and their issues") == std::string::npos);
+    CHECK(c1.find("## Notes") != std::string::npos);
+    CHECK(c1.find("## Constants beside an operand") != std::string::npos);
+    // order independence: no cell differs from its swapped operation in
+    // the arithmetic and the comparisons
+    CHECK(st.swapped[ETG_ARITH] == 0);
+    CHECK(st.swapped[ETG_COMPARE] == 0);
+    CHECK(st2.swapped[ETG_ARITH] == 0);
+    // today's order-dependent cells are among the changed ones: l+q and q+l
+    // under no wanted type are one exact Long
+    CHECK(st.changed[ETG_ARITH] > 0);
+    CHECK(c1.find("| Q | L | Q~ L \xe2\x86\x92 L \xe2\x97\x86 |") != std::string::npos);
+    // the mark: Word*Word under a wanted Word (W W W, one cell)
+    CHECK(st.marked[ETG_ARITH] == 1);
+    CHECK(st.marked[ETG_COMPARE] == 0);
+    // C2: Word+Word a Word
+    CHECK(c2.find("| W | W | W W \xe2\x86\x92 W") != std::string::npos);
+    // today's page is untouched by the options
+    struct ett_prims p;
+    struct ett_rules r;
+    char *error = nullptr;
+    ett_prims_exprtype(&p);
+    ett_rules_flow(&r, &p);
+    char *today = ett_page(&r, nullptr, &error);
+    REQUIRE(today != nullptr);
+    CHECK(std::string(today).find("\xe2\x97\x86") == std::string::npos);
+    std::free(today);
+}

@@ -16,5 +16,6 @@ int main(int argc, char **argv)
 
     app.require_subcommand(1);
     cmd_page(app, status);
+    cmd_candidate(app, status);
     return cli::run(app, argc, argv, status);
 }

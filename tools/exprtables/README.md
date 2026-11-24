@@ -26,6 +26,7 @@ OPTIONS:
 
 SUBCOMMANDS:
   page                        the page of the tables, written or checked
+  candidate                   the tables of a candidate rule of expr-tree-5 beside today's
 ```
 
 ```
@@ -55,6 +56,40 @@ needs must have its row there). Without `--out` and `--check` the page
 goes to stdout; `--out` writes it to a file; `--check` compares the
 committed page with it line by line and writes `--out` only if they are
 equal.
+
+```
+Usage: exprtables candidate [OPTIONS] NAME
+
+the tables of a candidate rule of expr-tree-5 beside today's
+
+POSITIONALS:
+  NAME TEXT REQUIRED          the candidate, C1 to C5 (exprmatrix candidates)
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+          --scope-b           the left operand of a comparison by scope (b), not (a)
+          --marks FILE        the cells of the CD places to mark: OP WANT LEFT RIGHT per line
+  -o,     --out FILE          write the page to FILE (default: stdout)
+
+With --out prints the cells that differ from today's and the marked ones per
+operator group. A line of --marks is the cell as exprmatrix candidates --typing
+writes it ("mul L W Q"), anything after a tab ignored, # starts a comment. Exit
+status 0, 1 a file cannot be read or written, 2 usage error or no such
+candidate.
+```
+
+`candidate` prints a candidate rule of the decision round of the OpenSpec
+change `expr-tree-5-operand-typing` (open question 1; the rule sets
+`EM_R_CAND` of the expression matrix's model, `tools/lib/exprmatrix`,
+`exprmatrix candidates`) as the same tables as `page`, beside today's: its
+own heading and text in place of the introduction and of today's
+exceptions, a column being the wanted type at the operation; a cell that
+differs from today's is marked ◆, a cell named in `--marks` (the cells of
+the CD operations the candidate retypes, from the count of the decision
+round) ‡, and a table of the constants beside an operand of each type is
+added. With `--scope-b` the left operand of a comparison follows scope (b)
+of the open question (the cells, two variables each, are the same). The
+logic is `ett_rules_cand` (`cand.c`) and `ett_page_opts` (`page.c`).
 
 ## Inputs and outputs
 

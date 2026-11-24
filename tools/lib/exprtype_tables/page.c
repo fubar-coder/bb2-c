@@ -105,6 +105,8 @@ struct gen {
     struct sb *s;
     int fail;                   /* a decision the rule set does not have */
     char what[160];             /* which */
+    const struct ett_pageopts *o;       /* ett_page_opts: another rule set's page (NULL: today's) */
+    struct ett_stats *st;               /* its counts of changed and marked cells */
 };
 
 static int cell(struct gen *g, unsigned op, unsigned tsf, unsigned l, unsigned r, const struct ett_facts *x,
@@ -226,6 +228,24 @@ static void opbody(struct gen *g, struct sb *s, unsigned op, unsigned group, uns
                     goto out;
                 sb_puts(s, " ");
                 celltext(s, &c, l, r);
+                if (g->o && g->o->base) {
+                    struct ett_cell b;
+
+                    if (g->o->base->cell(g->o->base->ctx, op, t, l, r, NULL, &b)) {
+                        g->fail = 1;
+                        snprintf(g->what, sizeof g->what, "no base decision for %s %s %s under %s",
+                                 ett_tname(l), ett_oname(op), ett_tname(r), ett_tname(t));
+                        goto out;
+                    }
+                    if ((c.result || b.result) && !samecell(&c, &b)) {   /* two refusals are the same */
+                        sb_puts(s, " \xe2\x97\x86");     /* a diamond: not today's cell */
+                        g->st->changed[group]++;
+                    }
+                }
+                if (g->o && g->o->mark && g->o->mark(g->o->markctx, op, t, l, r)) {
+                    sb_puts(s, " \xe2\x80\xa1");         /* a double dagger: a CD place */
+                    g->st->marked[group]++;
+                }
                 if (sop != ETO_END) {
                     if (swapped(g, op, t, l, r, &w))
                         goto out;
@@ -376,6 +396,13 @@ static void group(struct gen *g, unsigned grp, const unsigned *ops, unsigned nop
 static void intro(struct gen *g, struct sb *s)
 {
     int any;
+
+    if (g->o) {
+        sb_printf(s, "# %s\n\n", g->o->title);
+        sb_puts(s, g->o->about);
+        sb_puts(s, "\n");
+        return;
+    }
 
     sb_puts(s,
             "# Expression type tables\n"
@@ -605,7 +632,40 @@ static void exceptions(struct sb *s)
             "  far](expression-types.md#bit-operators-under-a-quick-type-so-far-1209)).\n");
 }
 
+/* the constants beside an operand of each type, under no wanted type */
+static void constbeside(struct gen *g, struct sb *s)
+{
+    static const struct {
+        const char *text, *what;
+    } k[] = {
+        { "5", "a whole number of Byte size" },       { "300", "a whole number of Word size" },
+        { "100000", "a whole number of Long size" },  { "1.5", "a fraction that fits a Quick" },
+        { "40000.5", "a fraction beyond the Quick range" }, { "2.0", "a whole value written with a point" },
+    };
+
+    if (!g->o->constbeside)
+        return;
+    sb_puts(s, "## Constants beside an operand\n\n"
+               "A constant beside an operand of the type *other* (the columns), with no wanted\n"
+               "type: the type it takes.\n\n"
+               "| constant | kind | B | W | L | Q | F |\n|---|---|---|---|---|---|---|\n");
+    for (size_t i = 0; i < sizeof k / sizeof k[0]; i++) {
+        sb_printf(s, "| `%s` | %s |", k[i].text, k[i].what);
+        for (size_t j = 0; j < NNUM; j++)
+            sb_printf(s, " %s |",
+                      tletter((unsigned)g->o->constbeside(g->o->constctx, ET_NONE, numtypes[j], k[i].text)));
+        sb_puts(s, "\n");
+    }
+    sb_puts(s, "\n");
+}
+
 char *ett_page(const struct ett_rules *r, struct ett_stats *stats, char **error)
+{
+    return ett_page_opts(r, NULL, stats, error);
+}
+
+char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, struct ett_stats *stats,
+                    char **error)
 {
     static const unsigned arith[] = { ETO_ADD, ETO_SUB, ETO_MUL, ETO_DIV };
     static const unsigned bit[] = { ETO_AMP, ETO_BAR, ETO_AND, ETO_OR, ETO_EOR };
@@ -615,8 +675,8 @@ char *ett_page(const struct ett_rules *r, struct ett_stats *stats, char **error)
     static const unsigned cmp[] = { ETO_EQ, ETO_NE, ETO_LT, ETO_LE, ETO_GT, ETO_GE };
     static const unsigned bitt[] = { ETO_BITTST, ETO_BITSET, ETO_BITCLR, ETO_BITCHG };
     struct sb s = { 0 };
-    struct gen g = { r, &s, 0, "" };
     struct ett_stats st;
+    struct gen g = { r, &s, 0, "", o, &st };
     struct ett_cell c;
     struct ett_facts x = { 0 };
     int any;
@@ -668,7 +728,8 @@ char *ett_page(const struct ett_rules *r, struct ett_stats *stats, char **error)
                     "the Long is not converted to a Quick.");
     sb_puts(&s, "\n\n");
     group(&g, ETG_COMPARE, cmp, 6, &st);
-    sb_puts(&s, "A left operand that is itself an operation (`q*2`, `q+q`) is not one element: it\n"
+    if (!g.o)
+        sb_puts(&s, "A left operand that is itself an operation (`q*2`, `q+q`) is not one element: it\n"
                 "is computed in the type so far, as the left operand of any operator, and only\n"
                 "then compared (#1183, open): `r.l=(q*2>2.4)` with `q=1.25` is 0, as 2.5 is\n"
                 "rounded down to 2 under the Long.\n\n");
@@ -694,7 +755,11 @@ char *ett_page(const struct ett_rules *r, struct ett_stats *stats, char **error)
 
     elements(&g, &s);
     constants(&g, &s);
-    exceptions(&s);
+    if (o) {
+        constbeside(&g, &s);
+        sb_puts(&s, o->notes);
+    } else
+        exceptions(&s);
 
     if (g.fail || s.oom) {
         free(s.p);

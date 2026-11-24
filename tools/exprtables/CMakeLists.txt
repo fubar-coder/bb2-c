@@ -1,6 +1,6 @@
 # exprtables: readable tables of the type rules of an expression (README.md)
-set(EXPRTABLES_SUBCOMMANDS page)
-add_executable(exprtables main.cpp cmd_page.cpp)
+set(EXPRTABLES_SUBCOMMANDS page candidate)
+add_executable(exprtables main.cpp cmd_page.cpp cmd_candidate.cpp)
 target_link_libraries(exprtables PRIVATE lib_cli lib_exprtype_tables)
 set_target_properties(exprtables PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 host_help_test(exprtables ${EXPRTABLES_SUBCOMMANDS})
