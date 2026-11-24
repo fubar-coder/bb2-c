@@ -40,7 +40,7 @@ not as failed.
 | `host` | the tests on your machine: the tools with deliberately broken inputs, the editor's core, the declarations of every library against the original's, the token lists; a few seconds | the build |
 | `emulator` | the tests in the emulator: the libraries, the compiled programs, the editor, AB3 mode, the extensions and the fixed bugs of the original | Amiberry and the emulator setup |
 | `all` | `host` and `emulator`: the run for every change | as `emulator`; without the CD it skips only the compilation of the CD's own sources |
-| `bug-orig` | the bugs of the original that are not fixed yet, and known defects of the port; these tests fail on purpose | as `emulator`; the CD for a few |
+| `bug-orig` | the bugs of the original that are not fixed yet, and known defects of the port; these tests fail on purpose | as `emulator`; the CD for the TED tests, for the configuration `port` and for the tests that mount `BB2:` |
 | `originals` | the same scenarios with the original compiler, editor and libraries, and the checks of the recorded data against them | Amiberry and the CD |
 | `oracle` | AmiBlitz3's own compiler on the test programs of AB3 mode, to check their expected results | Amiberry and the AmiBlitz3 files of the original material |
 | `perf` | the benchmark of the libraries: the cycles each command needs, against a budget | Amiberry |
@@ -111,6 +111,14 @@ ctest --test-dir build/amiga -R 'blitz2_intrinsic_asc__calls$' --output-on-failu
 
 The same works for one benchmark program, for example
 `ctest --preset perf -R '^perf_bcmp$'`.
+
+### Repeat a test that fails now and then
+
+`ctest --repeat until-fail:N -R NAME` repeats a test up to N times. It also
+repeats the setup test a fixture needs, such as `rwe_refbuild`, the
+reference build of the RWE sources, with every run. After one normal run,
+add `-FA '.*'` (fixtures are not added automatically) so that only the named
+test is repeated; the fixture must be in place from that first run.
 
 ### The tests of the host tools
 

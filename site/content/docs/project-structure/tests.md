@@ -29,7 +29,7 @@ All tests run with CTest, from the repository's root, in these presets:
 | `emulator` | the libraries, the corpus, the editor, AB3 mode, the extensions and the fixed tests of the original's bugs, each against its expected data | Amiberry and the emulator setup; the CD only for the compilation of the CD's own sources |
 | `all` | both of the above: the run for every change | both |
 | `originals` | the same scenarios with the original compiler, editor and libraries, against the same expected data, and the recordings | Amiberry and the CD |
-| `bug-orig` | the tests of the original's bugs not fixed yet and of known defects of the port, which fail until the bug is fixed | as `emulator`; the CD for a few |
+| `bug-orig` | the tests of the original's bugs not fixed yet and of known defects of the port, which fail until the bug is fixed | as `emulator`; the CD for the TED tests, for the configuration `port` and for the tests that mount `BB2:` |
 | `oracle` | AmiBlitz3's own compiler, run on the test programs of AB3 mode, to check that their expected results are right | Amiberry and the AmiBlitz3 files of the original material |
 
 ```
