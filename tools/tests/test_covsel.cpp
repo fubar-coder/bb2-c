@@ -50,9 +50,9 @@ static const char *const traces[][2] = {
     { "ab3_cli_ref_broken", "TN:ab3_cli_ref_broken\n" EVAL("4", "1") },
     { "newtest", "TN:newtest\n" EVAL("0", "0") },
     /* the tests of the expression matrix (covsel: the expression matrix) */
-    { "corpus_exprmatrix_dl_A_agree_01", "TN:corpus_exprmatrix_dl_A_agree_01\n" EVAL("1", "0") },
-    { "bug_orig_compiler_expr_1178_dl_A_01", "TN:bug_orig_compiler_expr_1178_dl_A_01\n" EVAL("1", "0") },
-    { "regression_compiler_expr_refused_and_F_I", "TN:regression_compiler_expr_refused_and_F_I\n" EVAL("1", "0") },
+    { "corpus_exprmatrix_dl_a_agree_01__cells", "TN:corpus_exprmatrix_dl_a_agree_01__cells\n" EVAL("1", "0") },
+    { "bug_orig_compiler_expr_1178_dl_a_01__cells", "TN:bug_orig_compiler_expr_1178_dl_a_01__cells\n" EVAL("1", "0") },
+    { "regression_compiler_expr_refused_and__cells", "TN:regression_compiler_expr_refused_and__cells\n" EVAL("1", "0") },
     /* the type decisions of an expression (covsel: the type decisions of an
        expression) */
     { "compiler_prev", "TN:compiler_prev\n" EVAL("1", "0") },
@@ -406,7 +406,7 @@ static const char exprtype_tests[] =
     "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
     TEST("compiler_prev", "\"emulator\"") ","
     TEST("corpus", "\"emulator\"") ","
-    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
+    TEST("corpus_exprmatrix_dl_a_agree_01__cells", "\"emulator\"") ","
     TEST("host", "") "]}";
 static const char exprtype_host_tests[] =
     "{\"kind\": \"ctestInfo\", \"tests\": ["
@@ -420,9 +420,9 @@ TEST_CASE("covsel: the type decisions of an expression", "[covsel]")
     cur_tests = exprtype_tests;
     cur_host_tests = exprtype_host_tests;
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtype.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_a_agree_01__cells host"));
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtype.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "compiler_prev corpus_exprmatrix_dl_a_agree_01__cells host"));
     r = select_for(real_rules, diff1("programs/blitz2/tests/host/exprtype.tsv", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, "host"));
@@ -431,7 +431,7 @@ TEST_CASE("covsel: the type decisions of an expression", "[covsel]")
     CHECK(!strcmp(r, "host"));
     r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
                    0);
-    CHECK(!strcmp(r, "corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "corpus_exprmatrix_dl_a_agree_01__cells host"));
     cur_tests = tests;
     cur_host_tests = host_tests;
 }
@@ -455,7 +455,7 @@ static const char exprtree_tests[] =
     TEST("blitz2_expr_limits__chain_1000", "\"emulator\"") ","
     TEST("blitz2_intrinsic_asc__calls", "\"emulator\"") ","
     TEST("compiler_prev", "\"emulator\"") ","
-    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
+    TEST("corpus_exprmatrix_dl_a_agree_01__cells", "\"emulator\"") ","
     TEST("host", "") "]}";
 static const char exprtree_host_tests[] =
     "{\"kind\": \"ctestInfo\", \"tests\": ["
@@ -469,9 +469,9 @@ TEST_CASE("covsel: the nodes of an expression", "[covsel]")
     cur_tests = exprtree_tests;
     cur_host_tests = exprtree_host_tests;
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.c", "@@ -61 +61 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_a_agree_01__cells host"));
     r = select_for(real_rules, diff1("programs/blitz2/src/exprtree.h", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
-    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_A_agree_01 host"));
+    CHECK(!strcmp(r, "blitz2_expr_arrays__arrays blitz2_expr_calls__results blitz2_expr_leaves__literals blitz2_expr_libcalls__forms blitz2_expr_limits__chain_1000 blitz2_expr_strings__chains compiler_prev corpus_exprmatrix_dl_a_agree_01__cells host"));
     r = select_for(real_rules, diff1("programs/blitz2/tests/host/test_exprtree.cpp", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(!strcmp(r, "host"));
@@ -556,10 +556,10 @@ TEST_CASE("covsel: oracle", "[covsel]")
 static const char matrix_tests[] =
     "{\"kind\": \"ctestInfo\", \"version\": {\"major\": 1, \"minor\": 0}, \"tests\": ["
     TEST("corpus", "\"emulator\"") ","
-    TEST("corpus_exprmatrix_dl_A_agree_01", "\"emulator\"") ","
-    TEST("bug_orig_compiler_expr_1178_dl_A_01", "\"emulator\", \"bug-orig\"") ","
+    TEST("corpus_exprmatrix_dl_a_agree_01__cells", "\"emulator\"") ","
+    TEST("bug_orig_compiler_expr_1178_dl_a_01__cells", "\"emulator\", \"bug-orig\"") ","
     TEST("bug_orig_x", "\"emulator\", \"bug-orig\"") ","
-    TEST("regression_compiler_expr_refused_and_F_I", "\"emulator\"") ","
+    TEST("regression_compiler_expr_refused_and__cells", "\"emulator\"") ","
     TEST("ab3_cli", "\"emulator\"") ","
     TEST("ab3_cli_ref", "\"oracle\"") ","
     TEST("host", "") ","
@@ -578,16 +578,16 @@ TEST_CASE("covsel: the expression matrix", "[covsel]")
     cur_host_tests = matrix_host_tests;
     r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
                    0);
-    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref bug_orig_compiler_expr_1178_dl_A_01 "
-                                        "corpus_exprmatrix_dl_A_agree_01 host newtest "
-                                        "regression_compiler_expr_refused_and_F_I"));
+    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref bug_orig_compiler_expr_1178_dl_a_01__cells "
+                                        "corpus_exprmatrix_dl_a_agree_01__cells host newtest "
+                                        "regression_compiler_expr_refused_and__cells"));
     // an AmiBlitz3 case of the matrix: the blocks and the check
     r = select_for(real_rules, diff1("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3", "@@ -3 +3 @@", "-a\n+b\n"),
                    NULL, 0);
     CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref host newtest"));
-    r = select_for(real_rules, diff1("tests/corpus/expect/corpus_exprmatrix/dl-A-agree-01.out", "@@ -3 +3 @@",
+    r = select_for(real_rules, diff1("tests/bug-orig/regression/compiler-expr-refused-and.test/F-I.bas", "@@ -3 +3 @@",
                                      "-a\n+b\n"), NULL, 0);
-    CHECK(std::string(r) == std::string("corpus_exprmatrix_dl_A_agree_01 host newtest"));
+    CHECK(std::string(r) == std::string("host newtest regression_compiler_expr_refused_and__cells"));
     r = select_for(real_rules, diff1("tools/lib/exprmatrix/model.c", "@@ -3 +3 @@", "-a\n+b\n"), NULL, 0);
     CHECK(std::string(r) == std::string("host newtest"));
     cur_tests = tests;

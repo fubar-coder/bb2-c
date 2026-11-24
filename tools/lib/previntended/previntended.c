@@ -8,9 +8,8 @@ static const char *const tests[] = { "corpus", "corpus_runerr", "corpus_req", "c
 static const char *const pairs[] = { "C5-P5", "Cc-Pc" };
 
 /* the names ending in _prev (the compile-only comparisons: corpus_cd_prev,
-   compiler_prev, bug_orig_ID_prev, ab3_cli_prev ...), the passes of the
-   site examples and the corpus passes of the expression matrix
-   (corpus_exprmatrix_NAME, corpus_exprmatrix_runerr_NAME) are tests too */
+   compiler_prev, bug_orig_ID_prev, ab3_cli_prev ...) and the passes of the
+   site examples are tests too */
 int prevint_known_test(const char *test)
 {
     size_t i, n = strlen(test);
@@ -18,20 +17,21 @@ int prevint_known_test(const char *test)
     for (i = 0; i < sizeof tests / sizeof tests[0]; i++)
         if (!strcmp(test, tests[i]))
             return 1;
-    if (!strncmp(test, "site_examples_", 14) || !strncmp(test, "corpus_exprmatrix_", 18))
+    if (!strncmp(test, "site_examples_", 14))
         return 1;
     return n > 5 && !strcmp(test + n - 5, "_prev");
 }
 
 /* the comparison of a test of the BASIC test model (blitz2_ID_prev,
-   bug_orig_ID_prev, regression_ID_prev): its data sources are named
+   bug_orig_ID_prev, regression_ID_prev, corpus_exprmatrix_ID_prev): its data sources are named
    ID/FILE (change basic-test-local-data) */
 static int model_prev(const char *test)
 {
     size_t n = strlen(test);
 
     return n > 5 && !strcmp(test + n - 5, "_prev")
-           && (!strncmp(test, "blitz2_", 7) || !strncmp(test, "bug_orig_", 9) || !strncmp(test, "regression_", 11));
+           && (!strncmp(test, "blitz2_", 7) || !strncmp(test, "bug_orig_", 9) || !strncmp(test, "regression_", 11)
+               || !strncmp(test, "corpus_exprmatrix_", 18));
 }
 
 static int bad(char *err, size_t errlen, const char *entry, const char *why)
@@ -73,7 +73,7 @@ int prevint_add(struct prevint *pi, const char *entry, char *err, size_t errlen)
         why = "out of memory";
     else if (!prevint_known_test(x.test))
         why = "unknown test (corpus, corpus_runerr, corpus_req, corpus_serial, "
-              "corpus_serial_runerr, ted_ab, site_examples_*, corpus_exprmatrix_* or one ending in _prev)";
+              "corpus_serial_runerr, ted_ab, site_examples_* or one ending in _prev)";
     else if (!name_ok(x.name, !strncmp(x.test, "corpus_cd", 9) || model_prev(x.test)))
         why = "the source or case name is empty or has a character of : ; | / \\ = or a blank";
     else if (x.pair && strcmp(x.test, "ted_ab"))

@@ -36,7 +36,7 @@ worktree, never in the main checkout; logs in the scratchpad, reports in
 
 ## 6. Measurement and removal check
 
-- [ ] 6.1 Grep that nothing names the removed files, passes or options (`tests/`, `cmake/`, `tools/`, `docs/`, `site/`); `tools/testinfo/rules.txt` patterns for the new names and paths; `test_covsel.cpp`'s example names; verify: `testinfo` host tests and `ctest --preset host` pass, a clean rebuild has no warnings.
+- [x] 6.1 Grep that nothing names the removed files, passes or options (`tests/`, `cmake/`, `tools/`, `docs/`, `site/`); `tools/testinfo/rules.txt` patterns for the new names and paths; `test_covsel.cpp`'s example names; verify: `testinfo` host tests and `ctest --preset host` pass, a clean rebuild has no warnings.
 - [ ] 6.2 The measurement after the move as 1.2 (design decision 8) on the branch; verify: `measurement.md` ("after") with both presets; not slower in each preset, else stop and report to the coordinator (open question 3) before group 7.
 
 ## 7. Documents
