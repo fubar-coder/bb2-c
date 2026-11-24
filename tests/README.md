@@ -1096,7 +1096,7 @@ the Aminet archive of the sources): once
 cmake -P cmake/fetch-originals.cmake
 ```
 
-(downloads about 40 MB, see `archive/README.md`; needs no build
+(downloads about 65 MB, 37 MB of it the CD image; see `archive/README.md`; needs no build
 directory). In an already configured build,
 `cmake --build --preset amiga --target fetch-originals` works too. Without
 these data the affected tests are skipped.
