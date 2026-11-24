@@ -8175,3 +8175,11 @@ rows:
     text: "An assignment to an array element whose index calls a library function no longer takes that library as loaded on the right side, which runs first: `a(Abs(-j)) = Abs(-5)` could store -5 or crash."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1213
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Assignment to a string array element"
+    text: "An assignment to a string array element whose index works with strings (`Val`, `Mid$`, `Instr`, a string comparison, a Function with strings) stores the right string; the index overwrote it before: `s$(Val(d$)) = \"ab\"+c$` stored `2`, a zero byte and `cde`."
+    page: compiler
+    anchor: expressions-and-statements

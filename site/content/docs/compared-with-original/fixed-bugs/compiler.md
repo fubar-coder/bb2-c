@@ -1029,6 +1029,14 @@ Each point says first what the original did, then what the port does.
   runs first: `a(Abs(-j)) = Abs(-5)` could store -5 or crash, depending
   on what ran before. The right side loads the library itself
   ([#1212](https://github.com/fubar-coder/bb2-c/issues/1212)).
+* In an assignment to a string array element whose index itself works
+  with strings, the index overwrote the string about to be stored:
+  `s$(Val(d$)) = "ab"+c$` with `d$="2"` stored `2`, a zero byte and
+  `cde` instead of `abcde`. This happened with string functions such as
+  `Val`, `Mid$` or `Instr`, a string comparison, or a Function that
+  works with strings in the index, also for a string field of a NewType
+  array. The string is stored as it was computed
+  ([#1213](https://github.com/fubar-coder/bb2-c/issues/1213)).
 
 ### Names, labels and constants
 
