@@ -244,3 +244,51 @@ The groups move one by one (decision 11); each commit regenerates with
 host`, the moved tests on both sides and the prev comparison. Rollback of a
 group is a revert of its commit (the generator and its files go together).
 The baseline measurement (task 1.2) comes before the first move.
+
+## Findings (implementation, 2026-11-24)
+
+- **Ids in lower case.** The registration of the model refuses an id with
+  an upper-case letter (`tools/lib/testreg/testreg.c`, `id_ok`), and the
+  value sets are upper case (`A`, `B`, `I`, `J`). The tests keep their
+  names in lower case (`compiler-expr-1178-dl-a-01`, `dl-a-agree-01`); the
+  check names keep the cell keys (`dl-mul-q-l-A`). Q1's "same IDs" holds
+  up to the case.
+- **Spike (task 1.1)**: nine sources converted by hand, every cell the old
+  value on the port and in the four cells with original material;
+  `cells-per-source` stays 2000 (the largest source counts about 3.3 s on
+  the port). Report:
+  `~/.local/share/bb2-c-work/exprmatrix-model-tests/spike.md`.
+- **Originals mismatch (task 3.3), fixed in the generator**: the first
+  `originals` run failed the 12 bug-orig tests of #1189 in the integer
+  and index contexts: the port with the CD's libraries gives the
+  original's value there, as #1189's fix is in the C library
+  (mathtranslib's power), while the model applied the fix with both
+  library sets. `EM_RULES_LIBFIX` (`exprmatrix.h`): the port with the CD's
+  libraries keeps the original's rule of such a fix; a power the model
+  does not compute takes the original's value where its operands are the
+  same. The cells of #1189 with a second issue then give a third value in
+  that configuration (`compiler=port,libs=cd` deviations). After the fix
+  every moved test passes on both sides; two more `originals` runs gave
+  the same verdicts (task 4.3: no corpus mismatch, the cell of 2.10 with
+  the C libraries included).
+- **No shared-session failure** (decision 6): the side originals runs the
+  cells of a test in one session; no cell failed there.
+- **Deviation tables.** A check's deviation goes to the table of the
+  original compiler when only it differs, to `libs=cd` when only the CD's
+  libraries differ, else to the table of each configuration that differs.
+  An open test whose port with the CD's libraries still gives the
+  original's value has its deviations under `libs=cd`; with the fix that
+  configuration gives the fixed value, so the fix commit changes the
+  tables as well as adding `fixed-orig` (expr-tree-5's task 4.2 says so).
+- **Equivalence (task 5.3)**: 638 sources per pass. Four drivers
+  (`compiler-expr-1178-dl-b-01`, `-i1-j-c-01`, `-i2-j-c-01`, `-pl-b-01`)
+  gave different executables with blitz2 and blitz2-ab3: a linked library
+  routine behind the division routines keeps two JSRs with the
+  compiler's addresses (not relocated), as `compiler-maxs-libjsr`; they
+  are left out of the comparison with that reason (not analysed further).
+- **Commits.** The writer of the three groups is one generator, and its
+  output must equal the committed files in every commit; the groups
+  (decision 11's commits (a) to (c)) are one commit, the equivalence
+  passes (d) and the documents (e) follow.
+- **AmiBlitz3 cases** byte-identical; their header still names
+  `tests/corpus/tests-exprmatrix/NAME.bas`, the old place of the source.
