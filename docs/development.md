@@ -101,8 +101,16 @@ ccache's default `max_size` of 5 GiB is plenty; keep the cache out of
 
 The functions are documented with Doxygen comments
 (`/** @brief ... @param ... @return ... */`), which clangd shows on
-hover and from which the API reference of the website is made. In the
-libraries:
+hover and from which the API reference of the website is made.
+
+* A `@brief` is one sentence: what the function, type or macro is or
+  does. Everything else (how it works, limits and how they are derived,
+  the original's routine) follows after a blank line as the detailed
+  description. Comments describe the code as it is; which change or
+  measurement produced it belongs in the docs (`docs/`) or the change's
+  design, not in the code.
+
+In the libraries:
 
 * The `@brief` of a routine that implements a Blitz command starts with
   the command's name (`@brief WMouseY - ...`, `@brief GTMenuItem
