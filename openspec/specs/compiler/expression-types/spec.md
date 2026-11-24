@@ -1,7 +1,7 @@
 # compiler/expression-types Specification
 
 ## Purpose
-Says what the compiler's typing of operators and operands gives: comparisons (the type their operands are compared in, the type of the boolean, a comparison as an operand), arithmetic with a Quick operand under a whole-number type, array indexes, constants with a fraction under a Byte type, and `^` with a negative base.
+Says what the compiler's typing of operators and operands gives: comparisons (the type their operands are compared in, the type of the boolean, a comparison as an operand), arithmetic with a Quick operand under a whole-number type, the bit operators on a Quick, negative whole constants under a Quick type, array indexes, constants with a fraction under a Byte type, and `^` with a negative base.
 
 ## Requirements
 
