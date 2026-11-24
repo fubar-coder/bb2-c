@@ -747,6 +747,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   * originals `bug_orig_record_palettelib_stopcycle_cycon` (2026-11-18,
     W1 acceptance): the original's session ended by its limit at 121.8 s
     of 120 (DIFFERS "(the end)"); alone it passed in 41 s.
+  * originals, 2026-11-24 (acceptance runs of round tree, -j by the
+    preset): `bug_orig_rianimlib_chunk_odd_address_68000__odd_address_originals`
+    and `bug_orig_rishapeslib_lecludgeshapes_odd_cmap_68000__odd_cmap_originals`
+    (a600): both cells `end=timeout` at about 11.5 s of a 90 s limit, no
+    result file (by the timing probably the hang check's `hang_after`
+    of 8 s, as with rigtmenulib above, not the limit; not checked);
+    alone each passed twice.
+    `bug_orig_record_ted_freeupa5_allocnull_dangling`: the original's
+    recorded `TIMEOUT` came out `OK` (gate D rescue "FAIL step 6
+    timeout"), DIFFERS; alone it passed three times.
   The ctest `TIMEOUT` of the tests already includes
   `EMULATION_QUEUE_WAIT` (7200 s, `cmake/emulation-queue.cmake`) per
   session; only the session limits (`timeout=` of the runners, `@pass
