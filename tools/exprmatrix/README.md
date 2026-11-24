@@ -150,7 +150,8 @@ OPTIONS:
                               values
 
 The rule sets: flow (the port's rules) and each candidate C1 to C7 with the left
-operand of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND). Prints
+operand of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND), and the
+decided rule P+ with P, its changes 1-6 (EM_RULES_DECIDED, EM_RULES_P). Prints
 the number of cells each one changes, per context, operator group and issue.
 With --exprs each line (tab separated; # starts a comment) is evaluated under
 each rule set into --values. Exit status 0, 1 a file cannot be read or written
@@ -165,7 +166,9 @@ and the wanted type. For every cell of the description it computes the
 value by the port's rules (`flow`) and by each candidate C1 to C7 with the
 left operand of a comparison by scope (a) and (b), and C5 and C6 also with their
 overflow a runtime error (`C5ea`, `C5eb`, `C6ea`, `C6eb`), and C7K (`C7Kown`, `C7Klong`,
-`C7Kdest`, `C7Kx`: C7 with constants by their smallest type); `--out` lists the cells where
+`C7Kdest`, `C7Kx`: C7 with constants by their smallest type), and the decided rule `P+`
+(`EM_RULES_DECIDED`: C7Kx with the parts `EM_R_PTYPED` ... `EM_R_PQDIV`, `exprmatrix.h`)
+beside `P`, its changes 1-6; `--out` lists the cells where
 one differs, and the counts go to stdout. `--exprs` evaluates expressions
 the matrix has no cell for (chains, a compound left operand), one per line:
 an ID, a context (`dl`, `print`, ...: the names of the description), the
@@ -437,6 +440,7 @@ measured).
 | `tests/bug-orig/compiler/compiler-expr-ISSUES-refused.test.bas`, `.test.toml`, `.test/OP-L-R[-c].bas` | the cells the original compiles and a fix refuses, one data source per operator and operand classes |
 | `tests/bug-orig/regression/compiler-expr-refused-OP.test.bas`, `.test.toml`, `.test/L-R[-c].bas` | the cells of the operator `OP` the originals and the port refuse, one data source per operand classes |
 | `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |
+| `tests/corpus/tests-exprmatrix/named-cells.tsv` | the named cells of `expr-tree-5-operand-typing`: every cell whose model value under the decided rule (`EM_RULES_DECIDED`) differs from the port's, with both values; the only matrix cells its implementation may change |
 | `tests/ab3/cli/exprmatrix/NAME.ab3`, `NAME.expect`, `NAME.ref.expect` | the AmiBlitz3 case of a corpus test: its source, the port's output (`ab3_cli_N`) and, where AmiBlitz3 differs, AmiBlitz3's (`ab3_cli_ref_N`, `REF_EXPECT`) |
 | `tests/ab3/cli/exprmatrix/cases.cmake` | the `ab3_cli_case` lines of the cases, included by `tests/ab3/CMakeLists.txt` |
 

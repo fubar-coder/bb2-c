@@ -445,8 +445,10 @@ static uint32_t lib_qmul(uint32_t a, uint32_t b, int cd)
 }
 
 /* bblibsrc/ldivlib divide (ldivide: 32 rounds, qdivide: 48), as the
-   instructions run */
-static uint32_t lib_divide(uint32_t d0, uint32_t d1, int count)
+   instructions run; a divisor 0 gives $7FFFFFFF (cd: the CD's library),
+   in the port's library the largest number with the dividend's sign
+   (#200, libs/acidlibs/ldivlib.c) */
+static uint32_t lib_divide(uint32_t d0, uint32_t d1, int count, int cd)
 {
     uint32_t d3 = 0, d4 = 0;
     uint16_t d2 = 0;
@@ -454,7 +456,7 @@ static uint32_t lib_divide(uint32_t d0, uint32_t d1, int count)
     int d5 = count;
 
     if (!d1)
-        return 0x7fffffff;
+        return cd || (int32_t)d0 >= 0 ? 0x7fffffffu : 0x80000001u;
     if ((int32_t)d1 < 0) {
         d1 = -d1;
         d2 = 0xffff;
@@ -514,7 +516,7 @@ static uint32_t lib_modw(uint32_t d0, uint32_t d1)
 /* domodlong: q = ldivide(a,b), a - lmultiply(q,b), + b if negative */
 static uint32_t lib_modl(uint32_t a, uint32_t b, int cd)
 {
-    uint32_t q = lib_divide(a, b, 31);
+    uint32_t q = lib_divide(a, b, 31, cd);
     uint32_t r = a - lib_lmul(q, b, cd);
 
     if ((int32_t)r < 0)
@@ -989,8 +991,10 @@ byte:
            (makeint); EM_R_1188: it keeps the fraction as the Word path does
            (compiler-byte-fraction-const: "the constant keeps its fraction in
            every context"; ~/.local/share/bb2-c-work/decisions/rounds/quick/coordinator-decisions.md 2026-11-22 "#1186
-           fixed; #1188 found") */
-        if (e->rules & EM_R_1188)
+           fixed; #1188 found"); a whole value written with a point (2.0)
+           stays the whole Byte, as exprtype.c's consttype2 */
+        if ((e->rules & EM_R_1188)
+            && (!rat_isint(a) || rat_cmp(a, rat_int(INT32_MAX)) > 0 || rat_cmp(a, rat_int(INT32_MIN)) < 0))
             goto dofloat;
         iv = ffp_fix(ffp, NULL);
         r->litcut = 1;
@@ -1228,9 +1232,9 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
                 y = (uint32_t)(int32_t)(int16_t)y;
             x = m68k_divs((uint32_t)(int32_t)(int16_t)x, y);
         } else if (t == TL)
-            x = lib_divide(x, y, 31);
+            x = lib_divide(x, y, 31, e->cd);
         else if (t == TQ)
-            x = lib_divide(x, y, 47);
+            x = lib_divide(x, y, 47, e->cd);
         else
             x = ffp_div(x, y);
         id = ideal_op(op, a->id, b->id, rt);
@@ -1425,8 +1429,12 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
    a division towards zero, + - * down ("#1178 rounding rule decided",
    2026-11-21: "Zwischenlösung: / gegen Null (Recommended)"); a Long
    result beyond 32 bits wraps as longmult ("quick-long-arithmetic: first
-   open questions", 2026-11-21: "Wie longmult (Recommended)") */
-static void mixed(struct reg *a, struct reg *b, enum em_op op)
+   open questions", 2026-11-21: "Wie longmult (Recommended)"); a divisor
+   0 as the routines the compiler calls (eval.c, mixedop): lqdiv for l/q
+   and longdiv for q/p the largest number with the dividend's sign
+   (longdiv of the CD's library $7FFFFFFF), q/l longdiv's quotient taken
+   as a Quick, so +-32767 */
+static void mixed(struct ev *e, struct reg *a, struct reg *b, enum em_op op)
 {
     struct rat x = a->raw || a->t == TQ ? rat_make((int32_t)a->v, 65536) : rat_int((int32_t)a->v);
     struct rat y = b->raw || b->t == TQ ? rat_make((int32_t)b->v, 65536) : rat_int((int32_t)b->v);
@@ -1436,7 +1444,17 @@ static void mixed(struct reg *a, struct reg *b, enum em_op op)
     case EM_ADD: r = rat_floor(rat_op(x, y, '+')); break;
     case EM_SUB: r = rat_floor(rat_op(x, y, '-')); break;
     case EM_MUL: r = rat_floor(rat_op(x, y, '*')); break;
-    default: r = rat_trunc(rat_op(x, y, '/')); break;
+    default:
+        if (!rat_sign(y)) {
+            int lq = a->raw || a->t == TQ, rq = b->raw || b->t == TQ;
+            int neg = rat_sign(x) < 0 && (!e->cd || (rq && !lq));
+            int64_t big = lq && !rq ? 32767 : 0x7fffffff;
+
+            e->flags |= EM_F_OVF;
+            r = rat_int(neg ? -big : big);
+        } else
+            r = rat_trunc(rat_op(x, y, '/'));
+        break;
     }
     a->v = (uint32_t)(int64_t)(r.ok ? (int64_t)r.n : (int64_t)r.x);
     a->t = TL;
@@ -1569,7 +1587,7 @@ static int expression(struct ev *e, const struct em_set *s, const struct em_cell
                     conv(e, r, left, TL);
                 if (b.t != TQ && !b.raw && b.t != TL)
                     conv(e, &b, b.t, TL);
-                mixed(r, &b, c->op);
+                mixed(e, r, &b, c->op);
             } else {
                 /* a raw Quick: cut for every other operator (today's value,
                    design decision 3 of quick-long-arithmetic), with its
@@ -2350,7 +2368,7 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
             if (b.t != TQ && !b.raw && b.t != TL)
                 conv(e, &b, b.t, TL);
             trecord(tr, op, lfrom, lq ? TQ : TL, lq, rfrom, rq ? TQ : TL, rq, 'm', TL);
-            mixed(r, &b, op);
+            mixed(e, r, &b, op);
         } else {
             if (op != EM_POW) {
                 if (r->raw && t2 != TF)
@@ -2428,6 +2446,12 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
  *   is a 32.16 product too.
  * C7 (task 2.1a, the user, "C7: the wanted type sets the intermediate
  *   format"): see c7val; otherwise (no Quick, a Float) C1.
+ * P+ the decided rule (task 2.2; exprmatrix.h, EM_RULES_DECIDED): C7Kx
+ *   with the parts EM_R_PTYPED .. EM_R_PQDIV, marked "P" below (the
+ *   analysis's changes 1-8; pconstfloat, pfloat, haslongw, c7regf and the
+ *   P branches of cand, coperands, c7val and c7root).  The model stays an
+ *   oracle of its own: the compiler's typing pass (exprtyping.c) and
+ *   arithmetic (exprarith.c) are checked against it, not built from it.
  */
 
 static const char *const cand_names[EM_NCAND] = { "flow", "C1", "C2", "C3", "C4", "C5", "C6", "C7" };
@@ -2458,6 +2482,18 @@ struct cev {
     int rootw;                  /* the wanted type of the whole expression */
     int cmpmin;                 /* the least width of a whole-number operation here (0: none) */
     int c7kexact;               /* C7Kx: a fraction constant a Quick only if it is exact in 16.16 */
+    /* the parts of the decided rule P+ (exprmatrix.h, EM_RULES_DECIDED) */
+    int ptyped;                 /* EM_R_PTYPED */
+    int pconst;                 /* EM_R_PCONST */
+    int pmod;                   /* EM_R_PMOD */
+    int pnarrow;                /* EM_R_PNARROW */
+    int pdivl;                  /* EM_R_PDIVL */
+    int preach;                 /* EM_R_PREACH */
+    int pcmp;                   /* EM_R_PCMP */
+    int pqdiv;                  /* EM_R_PQDIV */
+    int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
+    int fracwhole;              /* P: a whole-number subtree here is computed in the fractional format */
+    int reachf;                 /* P: the expression is typed under Float (a Float in it, change 7) */
 };
 
 static int tmax(int a, int b)
@@ -2562,6 +2598,30 @@ static struct rat const_ideal(const struct em_tnode *n)
     }
 }
 
+static int has_qvar(const struct em_tnode *n);
+static int pfloat(struct cev *c, const struct em_tnode *n, int W);
+static int c7reg(struct cev *c, const struct em_tnode *n, int W, struct reg *r);
+static int haslong(struct cev *c, const struct em_tnode *n);
+static int haslongw(struct cev *c, const struct em_tnode *n, int W);
+static int c7regf(struct cev *c, const struct em_tnode *n, int W, int frac, struct reg *r);
+static int cpoint(const struct em_tnode *n);
+
+/* P, change 2 (EM_R_PCONST; "expr-tree-5 Q4 (P+ round 2)", F2): is a
+   constant with a point a Float here, as in the original: under a wanted
+   Float, beside a Float or beyond the Quick range always; under a wanted
+   Quick never; under a wanted Long always; else unless a Quick is beside
+   it or in its expression (regionq) */
+static int pconstfloat(struct cev *c, struct rat a, int W, int pt)
+{
+    if (W == TF || pt == TF || !cfits(a, TQ))
+        return 1;
+    if (W == TQ)
+        return 0;
+    if (W == TL)
+        return 1;
+    return !(pt == TQ || c->regionq);
+}
+
 /* a subtree of constants: one constant of its exact value, of the type the
    rule gives it (exprtree's fold; alone, or a fraction folded under a
    whole number, by today's fold in that type) */
@@ -2581,6 +2641,8 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
        Float beside a whole number, as today; beside a Quick a Quick */
     if (c->c7kexact && tt == TQ && pt && pt != TQ && !rat_isint(a) && !rat_isint(rat_op(a, rat_int(65536), '*')))
         tt = TF;
+    if (c->pconst && pt && a.ok && (!rat_isint(a) || cpoint(n)))
+        tt = pconstfloat(c, a, W, pt) ? TF : TQ;
     char text[48];
 
     T = tt;
@@ -2640,6 +2702,27 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
 {
     int lc = is_consttree(n->l), rc = is_consttree(n->r);
 
+    if (em_op_is_compare(n->op) && (c->ptyped || c->pconst)) {
+        int save = c->regionq, k;
+
+        if (lc && !rc) {
+            c->regionq = has_qvar(n->r);
+            k = cand(c, n->r, WR, 0, b);
+            if (!k) {
+                c->regionq = 0;
+                k = cand(c, n->l, WL, b->t, r);
+            }
+        } else {
+            c->regionq = has_qvar(n->l);
+            k = cand(c, n->l, WL, 0, r);
+            if (!k) {
+                c->regionq = has_qvar(n->r);
+                k = cand(c, n->r, WR, rc ? r->t : 0, b);
+            }
+        }
+        c->regionq = save;
+        return k;
+    }
     if (lc && !rc) {
         if (cand(c, n->r, WR, 0, b))
             return 1;
@@ -2676,6 +2759,20 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
 
     if (is_consttree(n))
         return cconst(c, n, W, pt, r);
+    if (c->ptyped && c->cand == EM_CAND_C1 && c->reachf && W == TF && has_qvar(n)
+        && (n->kind == TN_NEG
+            || (n->kind == TN_BIN
+                && (em_op_is_compare(n->op) || n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL
+                    || n->op == EM_DIV || n->op == EM_MOD)))
+        && !pfloat(c, n, 0))
+        return c7regf(c, n, 0, 1, r);
+    if (c->ptyped && c->cand == EM_CAND_C1 && W != TF && W != TS && has_qvar(n)
+        && (n->kind == TN_NEG
+            || (n->kind == TN_BIN
+                && (em_op_is_compare(n->op) || n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL
+                    || n->op == EM_DIV || n->op == EM_MOD)))
+        && !pfloat(c, n, W))
+        return c7reg(c, n, W, r);
     switch (n->kind) {
     case TN_VAR:
         T = 0;
@@ -2716,7 +2813,25 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
             int save = c->cmpmin, k;
 
             c->cmpmin = c7kmin(c);
-            k = coperands(c, n, WL, 0, r, &b);
+            if (c->pcmp && pfloat(c, n, 0)) {
+                /* P: the comparison's common format is Float: it reaches both operands */
+                const struct em_tnode *o[2] = { n->l, n->r };
+                struct reg *rr[2] = { r, &b };
+                int i;
+
+                k = 0;
+                for (i = 0; i < 2 && !k; i++) {
+                    int sq = c->regionq;
+
+                    c->regionq = has_qvar(o[i]);
+                    if (!is_consttree(o[i]) && has_qvar(o[i]) && !pfloat(c, o[i], 0))
+                        k = c7regf(c, o[i], 0, 1, rr[i]);
+                    else
+                        k = cand(c, o[i], TF, is_consttree(o[i]) ? TF : 0, rr[i]);
+                    c->regionq = sq;
+                }
+            } else
+                k = coperands(c, n, WL, 0, r, &b);
             c->cmpmin = save;
             if (k)
                 return 1;
@@ -2829,7 +2944,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
                     conv(e, &b, rt, TL);
                 trecord(c->tr, op, lfrom, lt == TQ ? TQ : TL, lt == TQ, rfrom, rt == TQ ? TQ : TL, rt == TQ, 'm',
                         TL);
-                mixed(r, &b, op);
+                mixed(e, r, &b, op);
                 plainreg(r);
                 return 0;
             }
@@ -2962,6 +3077,12 @@ static struct rat c7wrap(struct ev *e, struct rat x, int bits)
     return x;
 }
 
+/* the bits of a 16.16 value x (on the 1/65536 grid, in the format) */
+static uint32_t q16bits(struct rat x)
+{
+    return (uint32_t)(int32_t)rat_whole(rat_floor(rat_op(x, rat_int(65536), '*')));
+}
+
 static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, struct rat *out, int *fmt);
 
 /* a subtree without a Quick: its value by C1 (a whole number, a constant) */
@@ -2994,14 +3115,17 @@ static int c7whole(struct cev *c, const struct em_tnode *n, int W, struct rat *o
 static int c7other(struct cev *c, const struct em_tnode *n, int W, struct rat *out, int *fmt)
 {
     struct reg r;
-    int save = c->cand;
+    int save = c->cand, sf = c->fracwhole;
 
     c->cand = EM_CAND_C1;
+    c->fracwhole = 0;
     if (cand(c, n, W, 0, &r)) {
         c->cand = save;
+        c->fracwhole = sf;
         return 1;
     }
     c->cand = save;
+    c->fracwhole = sf;
     wideok(c->e, &r);
     if (r.raw)
         cutraw(c->e, &r);
@@ -3012,7 +3136,11 @@ static int c7other(struct cev *c, const struct em_tnode *n, int W, struct rat *o
 
 static int c7side(struct cev *c, const struct em_tnode *n, int W, int force, struct rat *out, int *fmt, int *from)
 {
-    if (has_qvar(n)) {
+    if (has_qvar(n)
+        || (c->fracwhole && !is_consttree(n)
+            && (n->kind == TN_NEG
+                || (n->kind == TN_BIN
+                    && (n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL || n->op == EM_DIV || n->op == EM_MOD))))) {
         *from = TQ;
         return c7val(c, n, W, force, out, fmt);
     }
@@ -3033,7 +3161,7 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         *fmt = 16;
         return 0;
     case TN_NEG:
-        if (c7val(c, n->l, W, force, &x, fmt))
+        if (c->ptyped ? c7side(c, n->l, W, force, &x, fmt, &lf) : c7val(c, n->l, W, force, &x, fmt))
             return 1;
         *out = c7wrap(e, rat_op(rat_int(0), x, '-'), *fmt ? *fmt : 32);
         return 0;
@@ -3050,7 +3178,17 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         int save = c->cmpmin, k;
 
         c->cmpmin = c7kmin(c);
-        k = c7side(c, n->l, 0, 0, &x, &fl, &lf) || c7side(c, n->r, 0, 0, &y, &fr, &rf);
+        {
+            int sq = c->regionq, fc = c->pnarrow ? (haslong(c, n->l) || haslong(c, n->r)) : 0, sf = c->fracwhole;
+
+            c->fracwhole = c->pcmp;
+            c->regionq = has_qvar(n->l);
+            k = c7side(c, n->l, 0, fc, &x, &fl, &lf);
+            c->regionq = has_qvar(n->r);
+            k = k || c7side(c, n->r, 0, fc, &y, &fr, &rf);
+            c->regionq = sq;
+            c->fracwhole = sf;
+        }
         c->cmpmin = save;
         if (k)
             return 1;
@@ -3072,7 +3210,7 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         *fmt = 0;
         return 0;
     }
-    if (W >= TB && W <= TQ && (op == EM_DIV || op == EM_MOD || c->c7kexact) && has_t(n, TL))
+    if (W >= TB && W <= TQ && (op == EM_DIV || op == EM_MOD || c->c7kexact) && (c->ptyped ? haslongw(c, n, W) : has_t(n, TL)))
         force = 1;              /* C7Kx: every operation with a Long in it in 32.16 */
     if (c7side(c, n->l, W, force, &x, &fl, &lf) || c7side(c, n->r, W, force, &y, &fr, &rf))
         return 1;
@@ -3080,7 +3218,14 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         f = 32;
     else if (W >= TB && W <= TQ)
         f = 16;
-    else
+    else if (c->pnarrow)
+        f = 16;                 /* P: no wanted type and no Long in the expression: 16.16 as the original */
+    else if (c->ptyped && !fl && !fr) {
+        /* P: two whole numbers (a boolean and a whole value): Long with a Long */
+        int ll = lf == TL || (lf == -1 && !cfits(x, TW)), rl = rf == TL || (rf == -1 && !cfits(y, TW));
+
+        f = ll || rl ? 32 : 16;
+    } else
         f = fl == 32 || fr == 32 || (fl && !fr) || (!fl && fr) ? 32 : 16;
     /* both operands in the format (a Long beyond it cut into a 16.16) */
     x = c7wrap(e, x, f);
@@ -3090,11 +3235,24 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
     case EM_SUB: v = rat_op(x, y, '-'); break;
     case EM_MUL: v = rat_q16(rat_op(x, y, '*')); break;
     case EM_DIV:
-        if (!rat_sign(y)) {
+        if (c->pqdiv && f == 16) {
+            /* EM_R_PQDIV: qdivide as it runs, its last bit (up to 1/65536
+               above the quotient towards zero) and its $7FFFFFFF for a
+               divisor 0 */
+            uint32_t q = lib_divide(q16bits(x), q16bits(y), 47, e->cd);
+
+            if (!rat_sign(y))
+                e->flags |= EM_F_OVF;
+            v = rat_make((int32_t)q, 65536);
+        } else if (!rat_sign(y)) {
             e->flags |= EM_F_OVF;
-            v = rat_int(0);
+            /* EM_R_PQDIV: the largest number with the dividend's sign, as
+               lqdiv and longdiv (#200); else 0 */
+            v = !c->pqdiv ? rat_int(0) : rat_sign(x) < 0 ? rat_int(-0x7fffffff) : rat_int(0x7fffffff);
         } else
             v = rat_q16(rat_op(x, y, '/'));
+        if (c->pdivl && W == TL)
+            v = rat_trunc(v);   /* P: a / under a wanted Long gives a whole number, as today (#1178) */
         break;
     default:                    /* Mod: a - b*trunc(a/b) */
         if (!rat_sign(y)) {
@@ -3102,12 +3260,173 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
             v = rat_int(0);
         } else
             v = rat_op(x, rat_op(y, rat_trunc(rat_op(x, y, '/')), '*'), '-');
+        if (c->pmod && rat_sign(v) < 0)
+            v = rat_op(v, y, '+');      /* P: as today's Mod (domodlong: + the divisor if negative) */
         break;
     }
     trecord(c->tr, op, is_consttree(n->l) ? -1 : lf, TQ, f == 32, is_consttree(n->r) ? -1 : rf, TQ, f == 32,
             f == 32 ? '3' : '1', f == 32 ? TL : TQ);
     *out = c7wrap(e, v, f);
     *fmt = f;
+    return 0;
+}
+
+static int cpoint(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_VAR: return 0;
+    case TN_CONST: return strchr(n->text, '.') != NULL;
+    case TN_BIN: return cpoint(n->l) || cpoint(n->r);
+    default: return cpoint(n->l);
+    }
+}
+
+/* P: does the subtree under the wanted type W hold a Float value (a Float
+   variable, a ^, a fraction constant that is a Float there) */
+static int pfloat(struct cev *c, const struct em_tnode *n, int W)
+{
+    switch (n->kind) {
+    case TN_VAR: return n->t == TF;
+    case TN_CONST: {
+        struct rat a = rat_text(n->text);
+
+        if (!c->pconst || !a.ok || (rat_isint(a) && !strchr(n->text, 0x2e)))
+            return 0;
+        return pconstfloat(c, a, W, 0);
+    }
+    case TN_BIN:
+        if (n->op == EM_POW)
+            return 1;
+        if (em_op_is_compare(n->op)) {
+            int sq = c->regionq, k;
+
+            c->regionq = has_qvar(n->l);
+            k = pfloat(c, n->l, 0);
+            c->regionq = has_qvar(n->r);
+            k = k || pfloat(c, n->r, 0);
+            c->regionq = sq;
+            /* a constant alone beside the other operand takes its class */
+            if (is_consttree(n->l) && !has_t(n->r, TF) && !has_pow(n->r) && has_qvar(n->r))
+                k = pfloat(c, n->r, 0);
+            if (is_consttree(n->r) && !has_t(n->l, TF) && !has_pow(n->l) && has_qvar(n->l)) {
+                c->regionq = 1;
+                k = pfloat(c, n->l, 0);
+                c->regionq = sq;
+            }
+            return k;
+        }
+        return pfloat(c, n->l, W) || pfloat(c, n->r, W);
+    default: return pfloat(c, n->l, W);
+    }
+}
+
+/* the type of a subtree by a dry run of C1 (no trace, no flags) */
+static int drytype(struct cev *c, const struct em_tnode *n, int W)
+{
+    struct ev save = *c->e;
+    struct trec *tr = c->tr;
+    int cn = c->cand, k, t;
+    struct reg r;
+
+    c->tr = NULL;
+    c->cand = EM_CAND_C1;
+    k = cand(c, n, W, 0, &r);
+    t = k ? 0 : r.t;
+    c->cand = cn;
+    c->tr = tr;
+    *c->e = save;
+    return t;
+}
+
+/* P: a Long value takes part in the arithmetic of the subtree under the
+   wanted type W (a Long variable, a constant beyond a Word, a whole-number
+   or bit-operator subexpression whose type is Long there) */
+static int bigconst(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_VAR: return 0;
+    case TN_CONST: {
+        struct rat a = rat_text(n->text);
+
+        return a.ok && rat_isint(a) && !cfits(a, TW);
+    }
+    case TN_BIN: return bigconst(n->l) || bigconst(n->r);
+    default: return bigconst(n->l);
+    }
+}
+
+static int haslongw(struct cev *c, const struct em_tnode *n, int W)
+{
+    if (is_consttree(n)) {
+        struct rat a = const_ideal(n);
+
+        return a.ok && rat_isint(a) && !cfits(a, TW);
+    }
+    if (!has_qvar(n)) {
+        if (n->kind == TN_VAR)
+            return n->t == TL;
+        if (n->kind == TN_NEG)
+            return haslongw(c, n->l, W);
+        /* Word+Word is a Long only by name (add.w): a Long there only in a
+           comparison, where whole-number operations are at least Long */
+        if (n->kind == TN_BIN && (n->op == EM_ADD || n->op == EM_SUB) && c->cmpmin != TL)
+            return haslongw(c, n->l, W) || haslongw(c, n->r, W);
+        return has_t(n, TL) || bigconst(n) || drytype(c, n, W) == TL;
+    }
+    switch (n->kind) {
+    case TN_VAR: return 0;
+    case TN_NEG: return haslongw(c, n->l, W);
+    case TN_BIN:
+        if (em_op_is_compare(n->op))
+            return 0;
+        if (n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL || n->op == EM_DIV || n->op == EM_MOD)
+            return haslongw(c, n->l, W) || haslongw(c, n->r, W);
+        return drytype(c, n, W) == TL;
+    default: return drytype(c, n, W) == TL;
+    }
+}
+
+static int haslong(struct cev *c, const struct em_tnode *n)
+{
+    return haslongw(c, n, 0);
+}
+
+/* P: a subtree with a Quick and no Float inside a bit operator, a shift, Not
+   or an expression with a Float: by C7 under W, then the Quick it fits or its
+   whole part as a Long */
+static int c7reg(struct cev *c, const struct em_tnode *n, int W, struct reg *r)
+{
+    return c7regf(c, n, W, 0, r);
+}
+
+static int c7regf(struct cev *c, const struct em_tnode *n, int W, int frac, struct reg *r)
+{
+    struct rat v;
+    int fmt, cn = c->cand, k, sf = c->fracwhole;
+
+    c->cand = EM_CAND_C7;
+    c->fracwhole = frac || (c->preach && W != TL && !(n->kind == TN_BIN && em_op_is_compare(n->op)));
+    k = c7val(c, n, W, c->pnarrow && !W && !(n->kind == TN_BIN && em_op_is_compare(n->op)) ? haslong(c, n) : 0, &v, &fmt);
+    c->cand = cn;
+    c->fracwhole = sf;
+    if (k)
+        return 1;
+    memset(r, 0, sizeof *r);
+    if (n->kind == TN_BIN && em_op_is_compare(n->op)) {
+        r->t = TW;
+        r->v = (uint32_t)(int32_t)rat_whole(v);
+        r->id = v;
+    } else if (fits(v, TQ)) {
+        r->t = TQ;
+        r->v = (uint32_t)(int32_t)rat_whole(rat_floor(rat_op(v, rat_int(65536), '*')));
+        r->id = v;
+    } else {
+        v = c7wrap(c->e, rat_floor(v), 32);
+        r->t = TL;
+        r->v = (uint32_t)(int32_t)rat_whole(v);
+        r->id = v;
+    }
+    plainreg(r);
     return 0;
 }
 
@@ -3120,9 +3439,13 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
     int fmt;
 
     c->scopeb = 0;              /* a comparison's operands: no wanted type, both scopes */
-    if (!has_qvar(root) || has_t(root, TF) || has_pow(root) || asked == TF)
+    c->regionq = has_qvar(root);
+    if (!has_qvar(root) || asked == TF)
+        return -1;
+    if (c->ptyped || c->pconst ? pfloat(c, root, asked) : (has_t(root, TF) || has_pow(root)))
         return -1;          /* without a Quick, with a Float or ^ (a Float): today's */
-    if (c7val(c, root, asked, 0, &v, &fmt))
+    c->fracwhole = c->preach && asked != TL && !(root->kind == TN_BIN && em_op_is_compare(root->op));
+    if (c7val(c, root, asked, c->pnarrow && !asked && !(root->kind == TN_BIN && em_op_is_compare(root->op)) ? haslong(c, root) : 0, &v, &fmt))
         return 1;
     memset(r, 0, sizeof *r);
     if (root->kind == TN_BIN && em_op_is_compare(root->op)) {
@@ -3140,7 +3463,7 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
         return 0;
     }
     /* a whole number: once, at the consumer */
-    v = root->kind == TN_BIN && root->op == EM_DIV ? rat_trunc(v) : rat_floor(v);
+    v = root->kind == TN_BIN && root->op == EM_DIV && !(c->ptyped && asked != TL) ? rat_trunc(v) : rat_floor(v);
     v = c7wrap(e, v, 32);
     r->t = TL;
     r->v = (uint32_t)(int32_t)rat_whole(v);
@@ -3164,13 +3487,21 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
 
     if (cn) {
-        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0, 0, 0, asked, 0, 0 };
+        struct cev c = { .e = e, .cand = cn, .scopeb = (rules & EM_R_SCOPEB) != 0, .tr = tr, .rootw = asked };
         int k;
 
         if (cn == EM_CAND_C7 && (rules & EM_R_C7K)) {
             c.c7k = 1;
             c.cmpmode = rules & EM_R_C7KLONG ? 1 : rules & EM_R_C7KDEST ? 2 : 0;
             c.c7kexact = (rules & EM_R_C7KEXACT) != 0;
+            c.ptyped = (rules & EM_R_PTYPED) != 0;
+            c.pconst = (rules & EM_R_PCONST) != 0;
+            c.pmod = (rules & EM_R_PMOD) != 0;
+            c.pnarrow = (rules & EM_R_PNARROW) != 0;
+            c.pdivl = (rules & EM_R_PDIVL) != 0;
+            c.preach = (rules & EM_R_PREACH) != 0;
+            c.pcmp = (rules & EM_R_PCMP) != 0;
+            c.pqdiv = (rules & EM_R_PQDIV) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;
@@ -3191,7 +3522,12 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
                 c.cand = EM_CAND_C1;
                 c.scopeb = 0;
             }
-            if (cand(&c, root, asked, 0, r))
+            if (c.preach && asked != TL && asked != TF && asked != TS && has_qvar(root) && pfloat(&c, root, asked)
+                && !(root->kind == TN_BIN && em_op_is_compare(root->op))) {
+                c.reachf = 1;
+                if (cand(&c, root, TF, 0, r))
+                    return 1;
+            } else if (cand(&c, root, asked, 0, r))
                 return 1;
             wideok(e, r);
         }

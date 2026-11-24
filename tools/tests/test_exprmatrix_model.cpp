@@ -264,7 +264,7 @@ struct expr {
         int r = em_expr_parse(text, vars, &x, &err);
 
         if (r)
-            std::fprintf(stderr, "em_expr_parse %s: %s\n", text, err ? err : "out of memory");
+            std::fprintf(stderr, "em_expr_parse %s: %s\n", text ? text : "", err ? err : "out of memory");
         std::free(err);
     }
     ~expr() { em_expr_free(x); }
@@ -595,4 +595,256 @@ TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatri
         CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, r) == "4.5");
         CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, r) == expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, r));
     }
+}
+
+// ------------------------------------------------- the decided rule P+
+
+// P+ (exprmatrix.h, EM_RULES_DECIDED; task 2.2 of expr-tree-5-operand-typing,
+// the analysis expr-tree-5-analysis/report.md with the user's answers F1-F7)
+static const unsigned DEC = EM_RULES_DECIDED;
+
+// the value of text under ctx by P+ and by today's port (NOW)
+static void same_as_today(const char *text, const char *vars, enum em_ctx ctx)
+{
+    INFO(text, " ", vars);
+    CHECK(expr(text, vars).value(ctx, DEC) == expr(text, vars).value(ctx, NOW));
+}
+
+TEST_CASE("exprmatrix model: P+, the count cases of #1183", "[exprmatrix][cand][decided]")
+{
+    // two of the eight change, both fixes: the Long sum and the Long
+    // constant compared as Longs
+    CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, DEC) == "FFFF0000");
+    CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, NOW) == "00000000");
+    CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, DEC) == "800000C1");
+    CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, NOW) == "00000000");
+    // the other six keep today's value
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, DEC) == "-1");
+    CHECK(expr("w-(-v)>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, DEC) == "-1");
+    CHECK(expr("q*1000>50000", "q=100").value(EM_DL, DEC) == "-1");
+    CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DF, DEC) == "800000C1");
+    CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DQ, DEC) == "FFFF0000");
+    CHECK(expr("b1+b2>150", "b1.b=100 b2.b=100").value(EM_DB, DEC) == "-1");
+    same_as_today("w+v>c", "w.w=20000 v.w=20000 c.w=0", EM_DL);
+    same_as_today("w-(-v)>c", "w.w=20000 v.w=20000 c.w=0", EM_DL);
+    same_as_today("q*1000>50000", "q=100", EM_DL);
+    same_as_today("l1/3>3.2", "l1.l=10", EM_DF);
+    same_as_today("l1/3>3.2", "l1.l=10", EM_DQ);
+    same_as_today("b1+b2>150", "b1.b=100 b2.b=100", EM_DB);
+    // the Word sum in a comparison at least a Long: If and a Word destination too
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_IF, DEC) == "T");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DW, DEC) == "-1");
+    // change 8: the comparison's common format reaches the whole-number
+    // division (today 0 and false)
+    CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DL, DEC) == "-1");
+    CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_IF, DEC) == "T");
+}
+
+TEST_CASE("exprmatrix model: P+, the spec's scenarios", "[exprmatrix][cand][decided]")
+{
+    CHECK(expr("base+q*4", "base.l=2097152 q=1.5").value(EM_DL, DEC) == "2097158");
+    CHECK(expr("q*4+base", "base.l=2097152 q=1.5").value(EM_DL, DEC) == "2097158");
+    CHECK(expr("w+v+q*2", "q=1.5 w.w=3 v.w=4").value(EM_DW, DEC) == "10");
+    CHECK(expr("q*2+w+v", "q=1.5 w.w=3 v.w=4").value(EM_DW, DEC) == "10");
+    CHECK(expr("l+q*2>12", "l.l=10 q=1.5").value(EM_IF, DEC) == "T");
+    CHECK(expr("q*2+l>12", "l.l=10 q=1.5").value(EM_IF, DEC) == "T");
+    CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, DEC) == "-1");
+    CHECK(expr("q+q>2.4", "q=1.25").value(EM_DL, DEC) == "-1");
+    CHECK(expr("-q<-1.25", "q=1.5").value(EM_DL, DEC) == "-1");
+    CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, DEC) == "4.5");
+    CHECK(expr("w+v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, DEC) == "8.5");
+    CHECK(expr("q+w+v", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, DEC) == "8.5");
+    // the If forms change 8 changes (the analysis, section 4)
+    CHECK(expr("w/2>q", "w.w=3 q=1.2").value(EM_IF, DEC) == "T");
+    CHECK(expr("w/2*2<>x", "w.w=3 x=3").value(EM_IF, DEC) == "F");
+    CHECK(expr("w/2*2=q", "w.w=3 q=2").value(EM_IF, DEC) == "F");
+    CHECK(expr("w/2*2=w", "w.w=3").value(EM_IF, DEC) == "F");
+}
+
+TEST_CASE("exprmatrix model: P+ keeps Quick as a whole number (fixed point 3)", "[exprmatrix][cand][decided]")
+{
+    same_as_today("Not h", "h=-1", EM_DQ);
+    same_as_today("Not h", "h=-1", EM_IF);
+    same_as_today("Not h", "h=0", EM_DQ);
+    same_as_today("Not q", "q=0", EM_IF);
+    same_as_today("q=-1", "q=-1", EM_IF);
+    same_as_today("(q AND 1)=1", "q=3", EM_IF);
+    same_as_today("(q AND 1)=1", "q=1.5", EM_IF);
+    same_as_today("h AND g", "h=-1 g=-1", EM_IF);
+    same_as_today("q AND 6", "q=7", EM_DQ);
+    same_as_today("flag=(a>b)", "flag=-1 a=2 b=1", EM_IF);
+    same_as_today("(flag=-1)*5", "flag=-1", EM_DW);
+    same_as_today("x-(a>b)", "x=10 a=2 b=1", EM_DL);
+    same_as_today("x*(y>0)+1", "x=3 y=1", EM_DQ);
+    same_as_today("(x AND 3)=q", "x=7 q=3", EM_IF);
+    same_as_today("q LSL 2", "q=1.5", EM_DL);
+    same_as_today("q ASR 1", "q=-3", EM_DW);
+    same_as_today("q*4+base", "q=3 base.l=100000", EM_DL);
+    same_as_today("q MOD 2=1", "q=7", EM_IF);
+    CHECK(expr("(flag=-1)*5", "flag=-1").value(EM_DW, DEC) == "-5");
+    CHECK(expr("Not h", "h=-1").value(EM_IF, DEC) == "F");
+    // a Long and a Quick under AND: the Long operation in both orders
+    CHECK(expr("q AND l", "l.l=65536 q=-1").value(EM_IF, DEC) == "T");
+    CHECK(expr("l AND q", "l.l=65536 q=-1").value(EM_IF, DEC) == "T");
+}
+
+TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")
+{
+    // 1-4: a / under a wanted Long whole at once (F3), the top-level / of
+    // a Word destination rounded down, Mod by today's sign rule (F4)
+    CHECK(expr("i/2*2", "i=7").value(EM_DL, DEC) == "6");
+    CHECK(expr("q/2+0", "q=-3").value(EM_DL, DEC) == "-1");
+    CHECK(expr("q/2", "q=-3").value(EM_DW, DEC) == "-2");
+    CHECK(expr("q MOD 2", "q=-7").value(EM_DL, DEC) == "1");
+    // 5-8: a constant with a point beside whole numbers or under a wanted
+    // Long a Float as in the original (F2)
+    CHECK(expr("l*0.1", "l.l=100").value(EM_DL, DEC) == "10");
+    CHECK(expr("l*0.001", "l.l=1000000").value(EM_PRINT, DEC) == "1000");
+    CHECK(expr("w*0.1", "w.w=100").value(EM_DW, DEC) == "10");
+    CHECK(expr("q*1.1", "q=10").value(EM_DL, DEC) == "11");
+    CHECK(expr("l*0.5", "l.l=-3").value(EM_DL, DEC) == "-1");
+    CHECK(expr("1.5-l", "l.l=3").value(EM_DL, DEC) == "-1");
+    CHECK(expr("l+0.5", "l.l=-3").value(EM_DL, DEC) == "-2");
+    CHECK(expr("l/1.5", "l.l=-10").value(EM_PRINT, DEC) == "-6.666666");
+    CHECK(expr("l*0.5", "l.l=-3").value(EM_PRINT, DEC) == "-1.5");
+    // 9, 10: a Long in a 16.16 operation under a Word computed wide; the
+    // Quick product of #1178's decision wraps as today
+    CHECK(expr("l*q", "l.l=100000 q=0.25").value(EM_DW, DEC) == "25000");
+    CHECK(expr("q*40000", "q=1.5").value(EM_DQ, DEC) == "EA600000");
+    CHECK(expr("q*40000", "q=1.5").value(EM_DW, DEC) == "-5536");
+    // 11: a boolean times a Long is a Long operation (change 5)
+    CHECK(expr("l*(a>b)", "l.l=100000 a=2 b=1").value(EM_PRINT, DEC) == "-100000");
+    CHECK(expr("(a>b)*100000", "a=2 b=1").value(EM_PRINT, DEC) == "-100000");
+    // 16, change 7: a whole-number subtree in the fractional format of its
+    // expression, in both orders
+    CHECK(expr("q+w/2", "q=0.5 w.w=3").value(EM_PRINT, DEC) == "2");
+    CHECK(expr("w/2+q", "q=0.5 w.w=3").value(EM_PRINT, DEC) == "2");
+    same_as_today("(q LSL 3)+8-w/2", "q=10 w.w=91", EM_DW);
+    // F5: a Quick and a small whole number without a Long in 16.16 as the
+    // original (the product wraps)
+    CHECK(expr("i*300", "i=300").value(EM_PRINT, DEC) == "24464");
+    CHECK(expr("q+20000", "q=20000").value(EM_PRINT, DEC) == "-25536");
+    // under a wanted Quick a constant with a point is a Quick (F2)
+    CHECK(expr("l*1.1", "l.l=10").value(EM_DQ, DEC) == "000AFFFA");
+    // F7: a Quick rounded down before a shift, as today
+    CHECK(expr("q ASL 4", "q=1.5").value(EM_DL, DEC) == "16");
+}
+
+TEST_CASE("exprmatrix model: P+ in both orders of the operands", "[exprmatrix][cand][decided]")
+{
+    // conflicts 12-15 of the analysis: the same value in both orders; at
+    // an overflow the same value as long as no intermediate leaves its
+    // format (the user's reading of fixed point 1)
+    static const struct {
+        const char *a, *b, *vars;
+        enum em_ctx ctx;
+        const char *v;
+    } pairs[] = {
+        { "(l+q+p) AND 255", "(q+p+l) AND 255", "l.l=10 q=1.5 p=1.5", EM_DL, "13" },
+        { "(l+q+p) LSL 1", "(q+p+l) LSL 1", "l.l=10 q=1.5 p=1.5", EM_DL, "26" },
+        { "NOT (l+q+p)", "NOT (q+p+l)", "l.l=10 q=1.5 p=1.5", EM_DL, "-14" },
+        { "l+q+f", "f+q+l", "l.l=10 q=1.5 f.f=0.5", EM_DL, "12" },
+        { "w+v+q", "q+w+v", "w.w=20000 v.w=20000 q=0.5", EM_PRINT, "-25535.5" },
+        { "w+1+q", "q+w+1", "w.w=32767 q=0.5", EM_PRINT, "-32767.5" },
+        { "q*q2*l", "l*q*q2", "q=300 q2=300 l.l=2", EM_PRINT, "180000" },
+        { "base+q*4", "q*4+base", "base.l=2097152 q=1.5", EM_DL, "2097158" },
+        { "q+w/2", "w/2+q", "q=0.5 w.w=3", EM_PRINT, "2" },
+    };
+
+    for (const auto &p : pairs) {
+        INFO(p.a, " / ", p.b);
+        CHECK(expr(p.a, p.vars).value(p.ctx, DEC) == p.v);
+        CHECK(expr(p.b, p.vars).value(p.ctx, DEC) == p.v);
+    }
+}
+
+TEST_CASE("exprmatrix model: P+, a constant with a point is never integral", "[exprmatrix][cand][decided]")
+{
+    // l1/3.0: the fractional division in every context ("3.0 ist nie ein
+    // integraler Typ")
+    CHECK(expr("l1/3.0>3.2", "l1.l=10").value(EM_DL, DEC) == "-1");
+    CHECK(expr("l1/3.0>3.2", "l1.l=10").value(EM_DF, DEC) == "800000C1");
+    CHECK(expr("l1/3.0>3.2", "l1.l=10").value(EM_DQ, DEC) == "FFFF0000");
+    CHECK(expr("l1/3.0>3.2", "l1.l=10").value(EM_IF, DEC) == "T");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_DL, DEC) == "3");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_DF, DEC) == "D5555542");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_PRINT, DEC) == "3.333333");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_DQ, DEC) == "00035555");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_DW, DEC) == "3");
+    CHECK(expr("l1/3.0", "l1.l=10").value(EM_DB, DEC) == "3");
+    // F6: also under a Byte type (today 2.0 is the whole Byte there,
+    // #1188's row): the value stays, the operation is a Float one
+    CHECK(expr("b/2.0", "b.b=3").value(EM_DB, DEC) == "1");
+    CHECK(expr("b/2.0", "b.b=3").typing(EM_DB, NOW) == "div B>B k>B p B;");
+    CHECK(expr("b/2.0", "b.b=3").typing(EM_DB, DEC) == "div B>F k>F p F;");
+    CHECK(expr("b/2", "b.b=3").typing(EM_DB, DEC) == "div B>B k>B p B;");
+    // ... so a bit operator or shift with 2.0 under a Byte type is refused
+    // as with any Float (today it compiles: #1186's whole literal); the
+    // reading the model gives F2 with F6, reported with task 2.2
+    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, NOW) == "2");
+    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, DEC) == "!noncompile");
+    // beside a Quick a Quick
+    CHECK(expr("q*3.0", "q=1.5").value(EM_DQ, DEC) == "00048000");
+    CHECK(expr("q+3.0", "q=1.5").value(EM_PRINT, DEC) == "4.5");
+}
+
+// a 16.16 value of raw bits as decimal text (exact: 1/65536 = 5^16/10^16)
+static std::string q16text(int32_t raw)
+{
+    uint32_t m = raw < 0 ? (uint32_t)-(int64_t)raw : (uint32_t)raw;
+    char s[48];
+
+    std::snprintf(s, sizeof s, "%s%u.%016llu", raw < 0 ? "-" : "", m >> 16,
+                  (unsigned long long)(m & 0xffff) * 152587890625ull);
+    return s;
+}
+
+TEST_CASE("exprmatrix model: P+ computes 16.16 as today's routines, bit for bit", "[exprmatrix][cand][decided]")
+{
+    // qmul and qdivide (its last bit, $7FFFFFFF for a divisor 0 or its
+    // negative for a negative dividend, #200) are today's where P+ keeps
+    // 16.16: the same text as today's port for random Quicks
+    uint32_t seed = 12345;
+    auto next = [&seed] {
+        seed = seed * 1103515245u + 12345u;
+        return seed;
+    };
+    int differ = 0;
+
+    for (int i = 0; i < 400; i++) {
+        int32_t a = (int32_t)next() >> (next() % 16), b = (int32_t)next() >> (next() % 24);
+
+        if (i % 50 == 0)
+            b = 0;
+        std::string vars = "q=" + q16text(a) + " p=" + q16text(b);
+        for (const char *t : { "q/p", "q*p", "q+p", "q-p", "q/p*p", "(q+p)/p" })
+            for (enum em_ctx ctx : { EM_DQ, EM_DW, EM_PRINT }) {
+                std::string x = expr(t, vars.c_str()).value(ctx, DEC), y = expr(t, vars.c_str()).value(ctx, NOW);
+
+                if (x != y && differ++ < 10)
+                    FAIL_CHECK(std::string(t) + " " + vars + ": " + x + ", today " + y);
+            }
+    }
+    CHECK(differ == 0);
+    CHECK(expr("q/p", "q=1 p=0").value(EM_DQ, DEC) == "7FFFFFFF");
+    CHECK(expr("q/p", "q=-1 p=0").value(EM_DQ, DEC) == "80000001");
+    CHECK(expr("q/p", "q=-7.25 p=0.3").value(EM_DQ, DEC) == "FFE7D508");
+    // a wider division by 0 as lqdiv and longdiv: the largest number with
+    // the dividend's sign
+    CHECK(expr("l/q", "l.l=-100 q=0").value(EM_DL, DEC) == "-2147483647");
+    CHECK(expr("l/q", "l.l=-100 q=0").value(EM_DL, NOW) == "-2147483647");
+    CHECK(expr("q/p", "q=1 p=0").value(EM_DL, NOW) == "2147483647");
+}
+
+TEST_CASE("exprmatrix model: today's division by 0 and 2.0 under a Byte", "[exprmatrix][cand]")
+{
+    // the port's libraries: the dividend's sign (#200); the CD's: $7FFFFFFF
+    CHECK(expr("q/p", "q=-1 p=0").value(EM_DQ, NOW) == "80000001");
+    CHECK(expr("q/p", "q=-1 p=0").value(EM_DQ, EM_RULES_ORIG) == "7FFFFFFF");
+    // the mixed routines of #1178 (lqdiv, longdiv): q/l the Quick quotient
+    CHECK(expr("l/q", "l.l=100 q=0").value(EM_DL, NOW) == "2147483647");
+    CHECK(expr("q/l", "l.l=0 q=-1").value(EM_DL, NOW) == "-32767");
+    // 2.0 under a Byte type is the whole Byte (exprtype.c, consttype2)
+    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, NOW) == "2");
+    CHECK(expr("b+1.5", "b.b=3").value(EM_DB, NOW) == "4");
 }

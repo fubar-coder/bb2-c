@@ -2001,6 +2001,11 @@ power whose operands a fix changes, so that its value is not measured),
 `If` cells on a Float whose original value is what d1 holds and depends
 on the libraries (#1187), and cells where the port differs.
 
+**Named cells** (`tests/corpus/tests-exprmatrix/named-cells.tsv`): the
+cells whose value the decided rule of `expr-tree-5-operand-typing` (P+,
+`EM_RULES_DECIDED`) changes against the port's, with both values; the
+only matrix cells its implementation may change.
+
 **Updating.** The generated files are committed;
 `cmake --build --preset amiga --target expr-matrix-update` writes them
 from the description and `measured.tsv` (after a change of the

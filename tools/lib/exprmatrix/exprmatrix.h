@@ -306,7 +306,8 @@ int em_classes(const struct em_matrix *m, const struct em_table *t, struct em_cl
  * cells (and of the cells of an issue fixed after the matrix was
  * committed, EM_RULES_MATRIX, with fixed-orig = N), the tests of the
  * refused cells with their data sources, the AmiBlitz3 cases and the list
- * of the cells left out (README.md, "expect").  *report: the counts.  Returns 0; 1 with the
+ * of the cells left out and the named cells of the decided rule of
+ * expr-tree-5 (README.md, "expect").  *report: the counts.  Returns 0; 1 with the
  * errors in *errors; -1 out of memory.
  */
 struct em_file {
@@ -334,8 +335,9 @@ char *em_measured(const struct em_matrix *m, const struct em_table *t);
  * The candidate rules of the decision round of expr-tree-5-operand-typing
  * (open question 1, task 2.1; model.c, "Candidate rules"): operand typing,
  * the type of each operation decided by its operator, its two operands
- * and the wanted type, not by the order.  They are not decided: a rule
- * set with EM_R_CAND(n) (n = EM_CAND_C1 .. EM_CAND_C7) computes a cell by
+ * and the wanted type, not by the order.  The decided rule is P+
+ * (EM_RULES_DECIDED below, task 2.2); the others stay for the record of
+ * the round.  A rule set with EM_R_CAND(n) (n = EM_CAND_C1 .. EM_CAND_C7) computes a cell by
  * candidate n on top of the port's rules; EM_R_SCOPEB gives the left
  * operand of a comparison the scope (b) of the open question (own typing
  * only with a Quick or Float inside or a Long constant under Float;
@@ -361,7 +363,62 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
    Quick only if a 16.16 holds it exactly or a Quick is beside it, else a
    Float as today */
 #define EM_R_C7KEXACT (1u << 17)
+/*
+ * The decided rule P+ (task 2.2; the analysis
+ * ~/.local/share/bb2-c-work/expr-tree-5-analysis/report.md, section 1, with
+ * the user's answers in rounds/tree/decisions.md of 2026-11-24, "expr-tree-5
+ * Q4 (P+ round 1)" and "(P+ round 2)"): C7Kx with the parts below.  Each
+ * part is a flag of its own so that the model can show what a part
+ * changes; the rule is all of them, EM_RULES_DECIDED.
+ *
+ * EM_R_PTYPED  changes 5 and 6: the operands of bit operators, shifts and
+ *              Not, and a Quick subtree inside an expression with a Float,
+ *              typed by the same rule (rounded once where the operator
+ *              takes them); a comparison's boolean beside a whole number
+ *              is a Long operation only with a Long; Word+Word a Long only
+ *              inside a comparison; a / at the top rounded towards zero
+ *              only under a wanted Long.
+ * EM_R_PCONST  change 2 (F2, "Float wie Original, sonst Quick"): a
+ *              constant with a point is fractional, never integral (also
+ *              3.0, also under a Byte type: F6); a Float beside whole
+ *              numbers only or under a wanted Long, a Quick where a Quick
+ *              is in its expression or wanted.
+ * EM_R_PMOD    change 4 (F4, "Heutige Regel, exakt"): Mod by today's sign
+ *              rule (domodlong: the divisor added to a negative
+ *              remainder), exact with fractions.
+ * EM_R_PNARROW change 1 (F5, "16.16 wie Original"): 48.16 only where a
+ *              Long is wanted or takes part; otherwise 16.16 with the
+ *              original's code and values.
+ * EM_R_PDIVL   change 3 (F3, "Ja, sofort ganzzahlig"): a / under a wanted
+ *              Long gives a whole number towards zero at the operator.
+ * EM_R_PREACH  change 7 (F1, "Ja, außer unter Long-Ziel"): in an
+ *              expression with a Quick or Float not wanted as a Long, a
+ *              whole-number subtree is computed in the expression's
+ *              fractional format.
+ * EM_R_PCMP    change 8 (F1): a comparison's common format, the wider
+ *              class of its two sides, reaches into both operands.
+ * EM_R_PQDIV   the 16.16 routines as today ("expr-tree-5: shared C for
+ *              typing, arithmetic and folding"): a 16.16 division is
+ *              qdivide bit for bit (its last bit, $7FFFFFFF for a divisor
+ *              0); a wider division by 0 gives the largest number with the
+ *              dividend's sign, as lqdiv.
+ *
+ * EM_RULES_P is P (changes 1-6) of the analysis, for the record.
+ */
+#define EM_R_PTYPED (1u << 18)
+#define EM_R_PCONST (1u << 19)
+#define EM_R_PMOD (1u << 20)
+#define EM_R_PNARROW (1u << 21)
+#define EM_R_PDIVL (1u << 22)
+#define EM_R_PREACH (1u << 23)
+#define EM_R_PCMP (1u << 24)
+#define EM_R_PQDIV (1u << 25)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
+#define EM_RULES_C7KX (EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT)
+#define EM_RULES_P                                                                                                    \
+    (EM_RULES_CANDBASE | EM_RULES_C7KX | EM_R_PTYPED | EM_R_PCONST | EM_R_PMOD | EM_R_PNARROW | EM_R_PDIVL            \
+     | EM_R_PQDIV)
+#define EM_RULES_DECIDED (EM_RULES_P | EM_R_PREACH | EM_R_PCMP)
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);

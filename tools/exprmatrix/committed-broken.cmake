@@ -1,9 +1,11 @@
 # committed-broken.cmake - the broken-input test of exprmatrix_committed
 # (CMakeLists.txt here): a copy of the matrix's committed files (the
 # description, the measured values, a corpus test with its configuration,
-# a data source of a test of refused cells) in WORK, checked as a tree by
-# exprmatrix expect --check: the copy lacks the other files, and the edited
-# configuration, the edited data source and an extra file must be named.
+# a data source of a test of refused cells, the named-cell list) in WORK,
+# checked as a tree by exprmatrix expect --check: the copy lacks the other
+# files, and the edited
+# configuration, the edited data source, the edited named-cell list and an
+# extra file must be named.
 #   cmake -DEXPRMATRIX=exprmatrix -DREPO=DIR -DWORK=DIR -P committed-broken.cmake
 foreach(v EXPRMATRIX REPO WORK)
 	if(NOT DEFINED ${v})
@@ -14,13 +16,15 @@ set(src tests/corpus/tests-exprmatrix)
 set(cor tests/bug-orig/exprmatrix)
 set(ref tests/bug-orig/regression/compiler-expr-refused-and.test)
 file(MAKE_DIRECTORY ${WORK}/${src} ${WORK}/${cor} ${WORK}/${ref})
-file(COPY ${REPO}/${src}/matrix.txt ${REPO}/${src}/measured.tsv DESTINATION ${WORK}/${src})
+file(COPY ${REPO}/${src}/matrix.txt ${REPO}/${src}/measured.tsv ${REPO}/${src}/named-cells.tsv
+	DESTINATION ${WORK}/${src})
 file(COPY ${REPO}/${cor}/dl-a-agree-01.test.bas ${REPO}/${cor}/dl-a-agree-01.test.toml DESTINATION ${WORK}/${cor})
 file(COPY ${REPO}/${ref}/F-I.bas DESTINATION ${WORK}/${ref})
-# a configuration and a data source edited by hand, and a file the
-# generator does not write
+# a configuration, a data source and the named-cell list edited by hand,
+# and a file the generator does not write
 file(APPEND ${WORK}/${cor}/dl-a-agree-01.test.toml "isolate = \"on\"\n")
 file(APPEND ${WORK}/${ref}/F-I.bas "NPrint \"edited\"\n")
+file(APPEND ${WORK}/${src}/named-cells.tsv "db-add-b-b-A\tdb\tarith\tvalue\t6\t7\n")
 file(WRITE ${WORK}/${cor}/zz-extra-01.test.bas "!TestCase{cells}\n!EndTestCase\n")
 execute_process(COMMAND ${EXPRMATRIX} expect ${WORK}/${src}/matrix.txt ${WORK}/${src}/measured.tsv
 	-o ${WORK} --check RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE err)
@@ -31,6 +35,7 @@ endif()
 foreach(want
 		"${cor}/dl-a-agree-01.test.toml: differs from the generator's output"
 		"${ref}/F-I.bas: differs from the generator's output"
+		"${src}/named-cells.tsv: differs from the generator's output"
 		"${cor}/zz-extra-01.test.bas: not written by the generator"
 		"${cor}/dw-a-agree-01.test.bas: missing")
 	string(FIND "${out}" "${want}" at)

@@ -72,6 +72,9 @@ std::vector<ruleset> rulesets()
     v.push_back({ "C7Klong", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG });
     v.push_back({ "C7Kdest", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KDEST });
     v.push_back({ "C7Kx", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT });
+    // the analysis's P (changes 1-6) and the decided rule P+ (changes 1-8)
+    v.push_back({ "P", EM_RULES_P });
+    v.push_back({ "P+", EM_RULES_DECIDED });
     return v;
 }
 
@@ -287,7 +290,8 @@ void cmd_candidates(CLI::App &app, int &status)
     sub->add_option("-v,--values", o->values, "their values under every rule set (written)")->type_name("FILE");
     sub->add_flag("--typing", o->typing, "with the typing and the table cell of each operation beside the values");
     sub->footer("The rule sets: flow (the port's rules) and each candidate C1 to C7 with the left operand "
-                "of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND). Prints the number of "
+                "of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND), and the decided rule P+ "
+                "with P, its changes 1-6 (EM_RULES_DECIDED, EM_RULES_P). Prints the number of "
                 "cells each one changes, per context, operator group and issue. With --exprs each line "
                 "(tab separated; # starts a comment) is evaluated under each rule set into --values. "
                 "Exit status 0, 1 a file cannot be read or written or is malformed (one message per "
