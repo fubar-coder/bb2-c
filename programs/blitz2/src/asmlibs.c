@@ -1237,8 +1237,10 @@ struct blitzlib *findlib(UWORD libnum)
     noliberr(libnum);
 }
 
-/* blitz2.s:6277 findtoke - d1=token. return a2.l=lib, a3.l=sub */
-UBYTE *findtoke(UWORD tok, struct blitzlib **libp)
+/* no asm counterpart; replaces blitz2.s:6277-6299 findtoke up to .found
+   and 6307-6316 .userlib, .next - the lookup of the token tok: its lib
+   (*libp) and its sub, without the use of the lib (.found's uselib3) */
+UBYTE *looktoke(UWORD tok, struct blitzlib **libp)
 {
     struct blitzlib *l;
     UBYTE *sub;
@@ -1257,7 +1259,18 @@ UBYTE *findtoke(UWORD tok, struct blitzlib **libp)
         cur--;
         sub = *(UBYTE **)(sub + 2);
     }
-    uselib3(l, l->libnum);              /* set lib# */
+    *libp = l;
+    return sub;
+}
+
+/* blitz2.s:6277 findtoke - d1=token. return a2.l=lib, a3.l=sub.  The
+   lookup is looktoke, .found's use of the lib is here. */
+UBYTE *findtoke(UWORD tok, struct blitzlib **libp)
+{
+    struct blitzlib *l;
+    UBYTE *sub = looktoke(tok, &l);
+
+    uselib3(l, l->libnum);              /* .found: set lib# */
     if (libp)
         *libp = l;
     return sub;

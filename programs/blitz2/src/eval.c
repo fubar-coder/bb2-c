@@ -3425,7 +3425,8 @@ static UWORD function(UWORD c, UWORD *type)
         return doused(type);
     ext_newtoken(c & 0x7fff);
     old = *type;                    /* remember old type! */
-    sub = findtoke(c & 0x7fff, &bl);
+    sub = looktoke(c & 0x7fff, &bl);    /* findtoke: the lookup */
+    uselib3(bl, bl->libnum);        /* and the use of the lib */
     fl = W_(sub);
     if (!(fl & 2))
         syntaxerr();

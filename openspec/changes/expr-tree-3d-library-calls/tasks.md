@@ -8,7 +8,7 @@ After `expr-tree-3c-calls`. "The check": `expr-tree-1-typing/design.md`, "The ch
 
 ## 2. Implementation
 
-- [ ] 2.1 `findtoke` split (design decision 1); verify: the check.
+- [x] 2.1 `findtoke` split (design decision 1); verify: the check.
 - [ ] 2.2 Library call nodes with enter/exit; the intrinsic state stored in the node; verify: the check, `ctest --preset oracle`.
 - [ ] 2.3 Side-effect table rows, comments, `tools/testinfo/rules.txt`; verify: links, selection test.
 

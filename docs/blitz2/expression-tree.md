@@ -266,3 +266,19 @@ step 3a):
 |---|---|---|---|---|---|
 | `CLK_PROC` | a Function in an expression, `f{...}` | the procedure looked up (`findproc`: only the procedures defined so far; a Function used before its definition is "Procedure not found"); AB3: the defaults of left-out parameters (`ext_procdefaults`), the argument list's depth (`ext_procargs`) | enter: `stackuse` less the stack the procedure removes (AB3's `ext_procstackbytes`); a string result: the string base (`makesbase`: `sbasegot`, `sbgot`, the library routine `workstart` used at its first use); in a string expression a3 pushed (`dopusha3`: the library 65235 used); `regat` 0 for the parameters. Exit: with parameters and runtime error checking the library routine `stchk` used (`chkstak`); the jsr's relocation (`addoff`); `regat` back; a3 back (`dopulla3`); AB3's `ext_evalvalue` of the result type; then `varcont`'s (`callcont`: `wordval`, `bytevalend`, `conv`, `rawq`, a conversion's library use) | each parameter (its expression, compiled into its register or pushed), between enter and exit | parse: "Procedure not found", "Illegal Procedure Call" before the node; the parameters' and "Syntax Error" (no `}`) between the exit action's parts |
 | `CLK_OS` | an OS library function, `Name_(...)` | the library used (`uselib`: its base variable made at its first use) | enter: none besides the code; exit: `libbase` and `libjsr` patched in place, `lasta6` -1 (a6 holds the OS library's base; fixed #1211, the original left it as it was); then `varcont`'s (`callcont`) | each parameter (pushed by `peval`, `stackuse` 4 less after it), between enter and exit | parse: the parameters' and "Syntax Error" (`tstbras`: the brackets, a missing parameter) before the exit action |
+
+## Step 3d: library calls (`expr-tree-3d-library-calls`)
+
+A library function in an expression is looked up without a side effect
+(`looktoke`, `asmlibs.c`); its library is used (`uselib3`: copied into
+the program at its first use, its variable offset) right after the
+lookup, before anything of the call is read, at the moment `findtoke`
+used it before, so the order of the libraries in the program and their
+offsets are the same. The other callers of `findtoke` (the statements,
+`tokejsr`, `Used`, `Addr`, `Maximum`, the assembler) keep the lookup
+and the use in one.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 6277-6299 `findtoke` up to `.found`, 6307-6316 `.userlib`, `.next` | the token's library and its entry | `looktoke`; `findtoke` is `looktoke` and the use |
+| 6300-6305 `findtoke` `.found` | the library used (`uselib3`) | `findtoke`; for a library function in an expression `function` (`eval.c`) after `looktoke` |
