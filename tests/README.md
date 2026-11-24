@@ -1115,6 +1115,14 @@ ctest --preset originals  # compare with the originals (writes no file)
 ctest --preset perf       # the benchmark of the libraries: cycles per command against budgets
 ```
 
+**Repeating a test** (`ctest --repeat until-fail:N -R NAME`, for a flaky
+test): CTest repeats the fixture setup tests the test requires with every
+run, for example `rwe_refbuild` (the reference build of the RWE sources;
+`libs/userlibs/rwe/refbuild.cmake`) for the tests that need it. After one normal
+run, which has built the fixture, add `-FA '.*'` (`--fixture-exclude-any`:
+fixtures are not added automatically): only the named tests are repeated.
+The fixture must then be in place from the earlier run.
+
 The preset `oracle` (label `oracle`) holds the tests that run the original
 tool to validate our expectations: `ab3_cli_ref_1` … `ab3_cli_ref_N`
 compile the cases of `tests/ab3` marked REF with AmiBlitz3 v3.14.0's own
