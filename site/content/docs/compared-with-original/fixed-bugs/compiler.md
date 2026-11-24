@@ -1037,6 +1037,13 @@ Each point says first what the original did, then what the port does.
   works with strings in the index, also for a string field of a NewType
   array. The string is stored as it was computed
   ([#1213](https://github.com/fubar-coder/bb2-c/issues/1213)).
+* In an assignment to a number array element whose index works with
+  strings, a right side that builds a string, such as
+  `a(Val(d$)) = Len(c$+"x")`, built it wherever the string pointer
+  happened to point. The value stored was right, but after `Read t$`
+  this overwrote the next `Data` item, and the next `Read` crashed. The
+  right side builds its string in the string work area
+  ([#1214](https://github.com/fubar-coder/bb2-c/issues/1214)).
 
 ### Names, labels and constants
 

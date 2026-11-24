@@ -8183,3 +8183,11 @@ rows:
     text: "An assignment to a string array element whose index works with strings (`Val`, `Mid$`, `Instr`, a string comparison, a Function with strings) stores the right string; the index overwrote it before: `s$(Val(d$)) = \"ab\"+c$` stored `2`, a zero byte and `cde`."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1214
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Assignment to a number array element"
+    text: "An assignment to a number array element whose index works with strings no longer builds a string of its right side at a stray address: after `Read t$`, `a(Val(d$)) = Len(c$+\"x\")` overwrote the next `Data` item and the next `Read` crashed."
+    page: compiler
+    anchor: expressions-and-statements
