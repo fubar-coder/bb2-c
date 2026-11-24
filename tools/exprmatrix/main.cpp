@@ -17,5 +17,6 @@ int main(int argc, char **argv)
     cmd_generate(app, status);
     cmd_classify(app, status);
     cmd_expect(app, status);
+    cmd_candidates(app, status);
     return cli::run(app, argc, argv, status);
 }

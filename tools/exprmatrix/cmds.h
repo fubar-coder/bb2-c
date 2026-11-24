@@ -10,5 +10,6 @@
 void cmd_generate(CLI::App &app, int &status);
 void cmd_classify(CLI::App &app, int &status);
 void cmd_expect(CLI::App &app, int &status);
+void cmd_candidates(CLI::App &app, int &status);
 
 #endif

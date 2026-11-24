@@ -29,6 +29,7 @@ SUBCOMMANDS:
   generate                    the Blitz sources of the cells from the description
   classify                    the class of every measured cell, and the questions
   expect                      the committed tests of the matrix, written or checked
+  candidates                  the candidate rules of expr-tree-5: changed cells and values
 ```
 
 ### generate
@@ -128,6 +129,52 @@ committed description `tests/corpus/tests-exprmatrix/matrix.txt` and
 `--check` (and `exprmatrix_committed_broken` on a copy with an edited
 configuration, an edited data source and an extra file, which must be
 named).
+
+### candidates
+
+```
+Usage: exprmatrix candidates [OPTIONS] DESC
+
+the candidate rules of expr-tree-5: changed cells and values
+
+POSITIONALS:
+  DESC FILE REQUIRED          the description of the matrix
+
+OPTIONS:
+  -h,     --help              Print this help message and exit
+  -o,     --out CELLS         the cells a candidate changes, with every rule set's value
+                              (written)
+  -e,     --exprs FILE        expressions to evaluate: ID, CONTEXT, EXPRESSION, VALUES per line
+  -v,     --values FILE       their values under every rule set (written)
+          --typing            with the typing and the table cell of each operation beside the
+                              values
+
+The rule sets: flow (the port's rules) and each candidate C1 to C5 with the left
+operand of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND). Prints
+the number of cells each one changes, per context, operator group and issue.
+With --exprs each line (tab separated; # starts a comment) is evaluated under
+each rule set into --values. Exit status 0, 1 a file cannot be read or written
+or is malformed (one message per error), 2 usage error.
+```
+
+`candidates` computes the candidate rules of the decision round of the
+OpenSpec change `expr-tree-5-operand-typing` (open question 1, task 2.1;
+`exprmatrix.h`, `EM_R_CAND`, the model's "Candidate rules" in `model.c`):
+operand typing, each operation typed by its operator, its operands' types
+and the wanted type. For every cell of the description it computes the
+value by the port's rules (`flow`) and by each candidate C1 to C5 with the
+left operand of a comparison by scope (a) and (b), and C5 also with its
+overflow a runtime error (`C5ea`, `C5eb`); `--out` lists the cells where
+one differs, and the counts go to stdout. `--exprs` evaluates expressions
+the matrix has no cell for (chains, a compound left operand), one per line:
+an ID, a context (`dl`, `print`, ...: the names of the description), the
+expression in BASIC with blitz2's precedences, and the values of its
+variables (`w.w=3 q=1.5`); `--values` gets one column per rule set (and
+`orig`, the original's rules), a value with `!` where the model sees an
+overflow, and with `--typing` the typing of each operation
+(`OP LFROM>LAS RFROM>RAS PATH RESULT;`, `k` a constant, `~` a Quick with
+its fraction) and its table cell (`OP WANT LEFT RIGHT;`, the keys of
+`exprtables candidate --marks`).
 
 ## Inputs and outputs
 

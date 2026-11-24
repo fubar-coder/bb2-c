@@ -330,6 +330,81 @@ int em_expect_owns(const char *path);
    table with the header line; malloc'd, NULL out of memory. */
 char *em_measured(const struct em_matrix *m, const struct em_table *t);
 
+/*
+ * The candidate rules of the decision round of expr-tree-5-operand-typing
+ * (open question 1, task 2.1; model.c, "Candidate rules"): operand typing,
+ * the type of each operation decided by its operator, its two operands
+ * and the wanted type, not by the order.  They are not decided: a rule
+ * set with EM_R_CAND(n) (n = EM_CAND_C1 .. EM_CAND_C5) computes a cell by
+ * candidate n on top of the port's rules; EM_R_SCOPEB gives the left
+ * operand of a comparison the scope (b) of the open question (own typing
+ * only with a Quick or Float inside or a Long constant under Float;
+ * without it scope (a), every left operand typed by its own operands).
+ */
+enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5, EM_NCAND };
+#define EM_R_CAND(n) ((unsigned)(n) << 9)
+#define EM_R_CANDMASK (7u << 9)
+#define EM_R_SCOPEB (1u << 12)
+/* C5: a 32.16 product that does not fit its consumer is a runtime error
+   (as under runtime error checking), not cut */
+#define EM_R_C5ERR (1u << 13)
+#define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
+
+/* the short name of candidate n ("flow", "C1", ...) and its title */
+const char *em_cand_name(int n);
+const char *em_cand_title(int n);
+
+/*
+ * An expression as a tree, for the expressions the matrix has no cell for
+ * (chains, a compound left operand).  text is BASIC: variables (a name,
+ * its type the suffix .b .w .l .q .f or the one in vars, else Quick),
+ * constants (decimal, with a point, $hex, %bin), the binary operators of
+ * the matrix and & |, with blitz2's precedences (AND OR EOR, comparisons,
+ * + -, * /, & | MOD, shifts, ^; left to right), a minus before an
+ * element, NOT (the rest of the expression), brackets.  vars: blank
+ * separated NAME[.T]=VALUE, the values of the variables.  Returns 0; 1
+ * with the message in *error (malloc'd); -1 out of memory.
+ */
+struct em_expr;
+int em_expr_parse(const char *text, const char *vars, struct em_expr **out, char **error);
+void em_expr_free(struct em_expr *x);
+/* the expression of cell c as a tree (*out, em_expr_free); 1 for a string
+   cell (not typed by the candidates), -1 out of memory */
+int em_cell_expr(const struct em_matrix *m, const struct em_cell *c, struct em_expr **out);
+
+/* the types of one operation as a rule set decides them (ET-like letters:
+   0 none, 1 Byte .. 5 Float as the T* of model.c) */
+struct em_optype {
+    int op;                     /* enum em_op; -1: no operation recorded */
+    int lfrom, las, lraw;       /* the left operand: its own type, the type it is taken in, a raw Quick */
+    int rfrom, ras, rraw;
+    int path;                   /* 'p' plain, 'm' exact with the fraction (#1178), 'x' a Long and a Quick
+                                   compared exactly, 'c' a comparison, the lower one up */
+    int result;                 /* the type after it */
+};
+
+/* the value of an expression under ctx (not an index context) by rules,
+   with the typing of every operation (sig: one entry per operation in
+   post order, "OP LFROM>LAS RFROM>RAS PATH RESULT;") and the one of the
+   last (top) operation */
+struct em_exprval {
+    struct em_value v;
+    char sig[1024];
+    char cells[1024];           /* the cell of each operation: "OP WANT LFROM RFROM;" (k a constant) */
+    struct em_optype top;
+    int nops;
+};
+void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, struct em_exprval *out);
+
+/* the types of one operation a OP b of two variables of the types l and r
+   (1 Byte .. 5 Float) under the wanted type want (0 none) by rules, as
+   the tables of tools/exprtables show it */
+void em_cand_cell(unsigned rules, enum em_op op, int want, int l, int r, struct em_optype *out);
+/* the type a constant (the literal text, no sign) takes beside an operand of
+   type partner (0: alone) under the wanted type want by rules (today's
+   rules: consttype2 under want) */
+int em_cand_consttype(unsigned rules, int want, int partner, const char *text);
+
 #ifdef __cplusplus
 }
 #endif

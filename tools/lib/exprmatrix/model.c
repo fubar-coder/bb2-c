@@ -103,7 +103,10 @@ static struct rat rat_op(struct rat a, struct rat b, char op)
     case '+': return rat_make(a.n * b.d + b.n * a.d, a.d * b.d);
     case '-': return rat_make(a.n * b.d - b.n * a.d, a.d * b.d);
     case '*': return rat_make(a.n * b.n, a.d * b.d);
-    default: return rat_make(a.n * b.d, a.d * b.n);
+    default:
+        if (!b.n)
+            return rat_dbl(a.x / b.x);  /* by zero (an expression's value): not exact */
+        return rat_make(a.n * b.d, a.d * b.n);
     }
 }
 
@@ -791,6 +794,7 @@ struct ev {
     struct rat pow;             /* the ideal of the last ^ */
     uint64_t powsig;            /* its two Float operands */
     int powknown;
+    int c5ovf;                  /* C5: a 32.16 product beyond its consumer (EM_R_C5ERR) */
 };
 
 static int fits(struct rat a, int t)
@@ -1449,6 +1453,9 @@ static int ctx_type(enum em_ctx x, int checked, unsigned rules)
     return t[x];
 }
 
+/* a candidate rule set (exprmatrix.h, EM_R_CAND): the cell as a tree */
+static int cand_expression(struct ev *e, const struct em_set *s, const struct em_cell *c, int asked, struct reg *r);
+
 /* the expression of the cell, its result in *r with its type; 0, or 1
    when the compiler refuses it */
 static int expression(struct ev *e, const struct em_set *s, const struct em_cell *c, int asked, struct reg *r)
@@ -1456,6 +1463,10 @@ static int expression(struct ev *e, const struct em_set *s, const struct em_cell
     int T = asked;
     struct reg b;
 
+    /* the candidates of expr-tree-5 type numbers only: a string cell keeps
+       today's rules */
+    if ((e->rules & EM_R_CANDMASK) && c->left != EM_S && c->right != EM_S)
+        return cand_expression(e, s, c, asked, r);
     if (c->right < 0) {
         fetch(e, c->left, s->value[c->left], &T, r);
         if (c->op == EM_NEG) {
@@ -1731,6 +1742,10 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
         strcpy(out->text, "!noncompile");
         return;
     }
+    if (e.c5ovf && (rules & EM_R_C5ERR)) {
+        strcpy(out->text, "!runtime");  /* C5 with its overflow an error */
+        return;
+    }
     if (e.flags & EM_F_POW) {
         int64_t v = 0;
 
@@ -1782,4 +1797,1237 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
         print_typed(&e, out->text, &r);
         break;
     }
+}
+
+/* ======================================================= expression trees */
+
+/*
+ * Expressions as trees (exprmatrix.h, em_expr_parse): the flow of today's
+ * rules over a whole expression (flow: the type so far from left to
+ * right, as expression() for one operation), and the candidate rules of
+ * the decision round of expr-tree-5-operand-typing (cand: the operand
+ * typing).
+ */
+
+enum { TN_VAR = 1, TN_CONST, TN_BIN, TN_NEG, TN_NOT };
+
+enum { EM_EXPR_NODES = 256 };
+
+struct em_tnode {
+    int kind;
+    enum em_op op;              /* TN_BIN */
+    int t;                      /* TN_VAR: TB..TF */
+    char text[40];              /* TN_VAR: its value; TN_CONST: the literal without a sign */
+    struct em_tnode *l, *r;     /* TN_BIN; TN_NEG, TN_NOT: l */
+};
+
+struct em_expr {
+    struct em_tnode node[EM_EXPR_NODES];
+    int n;
+    struct em_tnode *root;
+};
+
+struct pvar {
+    char name[32];
+    int t;
+    char value[40];
+};
+
+struct parser {
+    const char *p;
+    struct em_expr *x;
+    struct pvar vars[32];
+    int nvars;
+    char err[160];
+};
+
+static struct em_tnode *pnew(struct parser *ps, int kind)
+{
+    struct em_tnode *n;
+
+    if (ps->x->n >= EM_EXPR_NODES) {
+        snprintf(ps->err, sizeof ps->err, "more than %d nodes", EM_EXPR_NODES);
+        return NULL;
+    }
+    n = &ps->x->node[ps->x->n++];
+    memset(n, 0, sizeof *n);
+    n->kind = kind;
+    return n;
+}
+
+static void pskip(struct parser *ps)
+{
+    while (*ps->p == ' ' || *ps->p == '\t')
+        ps->p++;
+}
+
+static int pidc(char c)
+{
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+}
+
+static int ptype(char c)
+{
+    switch (c | 0x20) {
+    case 'b': return TB;
+    case 'w': return TW;
+    case 'l': return TL;
+    case 'q': return TQ;
+    case 'f': return TF;
+    default: return 0;
+    }
+}
+
+/* a keyword at p (any case), not followed by a name character */
+static int pkw(struct parser *ps, const char *kw)
+{
+    size_t n = strlen(kw);
+
+    for (size_t i = 0; i < n; i++)
+        if ((ps->p[i] | 0x20) != (kw[i] | 0x20))
+            return 0;
+    if (pidc(ps->p[n]))
+        return 0;
+    ps->p += n;
+    return 1;
+}
+
+/* the binary operator at p and its precedence (blitz2.s:14704 operators);
+   0 none.  peek: p stays */
+static int pbinop(struct parser *ps, enum em_op *op, int peek)
+{
+    static const struct {
+        const char *t;
+        enum em_op op;
+        int prec;
+        int kw;
+    } ops[] = {
+        { "AND", EM_AND, 1000, 1 }, { "OR", EM_OR, 1000, 1 },   { "EOR", EM_EOR, 1000, 1 },
+        { "MOD", EM_MOD, 5000, 1 }, { "LSL", EM_LSL, 6000, 1 }, { "ASL", EM_ASL, 6000, 1 },
+        { "LSR", EM_LSR, 6000, 1 }, { "ASR", EM_ASR, 6000, 1 }, { "<>", EM_NE, 2000, 0 },
+        { "><", EM_NE, 2000, 0 },   { "<=", EM_LE, 2000, 0 },   { "=<", EM_LE, 2000, 0 },
+        { ">=", EM_GE, 2000, 0 },   { "=>", EM_GE, 2000, 0 },   { "=", EM_EQ, 2000, 0 },
+        { "<", EM_LT, 2000, 0 },    { ">", EM_GT, 2000, 0 },    { "+", EM_ADD, 3000, 0 },
+        { "-", EM_SUB, 3000, 0 },   { "*", EM_MUL, 4000, 0 },   { "/", EM_DIV, 4000, 0 },
+        { "&", EM_AND, 5000, 0 },   { "|", EM_OR, 5000, 0 },    { "^", EM_POW, 7000, 0 },
+    };
+    const char *save;
+
+    pskip(ps);
+    save = ps->p;
+    for (size_t i = 0; i < sizeof ops / sizeof ops[0]; i++) {
+        size_t n = strlen(ops[i].t);
+        int hit = ops[i].kw ? pkw(ps, ops[i].t) : !strncmp(ps->p, ops[i].t, n);
+
+        if (hit) {
+            if (!ops[i].kw)
+                ps->p += n;
+            *op = ops[i].op;
+            if (peek)
+                ps->p = save;
+            return ops[i].prec;
+        }
+    }
+    return 0;
+}
+
+static struct em_tnode *pexpr(struct parser *ps, int minprec);
+
+static struct em_tnode *pnumber(struct parser *ps)
+{
+    struct em_tnode *n = pnew(ps, TN_CONST);
+    size_t k = 0;
+
+    if (!n)
+        return NULL;
+    if (*ps->p == '$' || *ps->p == '%') {
+        int base = *ps->p == '$' ? 16 : 2;
+        char *end;
+        unsigned long v = strtoul(ps->p + 1, &end, base);
+        int32_t s = (int32_t)(uint32_t)v;
+
+        ps->p = end;
+        if (s < 0) {
+            /* bit 31 set: the Long it is, as a negated literal */
+            struct em_tnode *m = pnew(ps, TN_NEG);
+
+            if (!m)
+                return NULL;
+            snprintf(n->text, sizeof n->text, "%lld", -(long long)s);
+            m->l = n;
+            return m;
+        }
+        snprintf(n->text, sizeof n->text, "%ld", (long)s);
+        return n;
+    }
+    if (*ps->p == '.')
+        n->text[k++] = '0';
+    while (((*ps->p >= '0' && *ps->p <= '9') || *ps->p == '.') && k + 1 < sizeof n->text)
+        n->text[k++] = *ps->p++;
+    n->text[k] = 0;
+    return n;
+}
+
+static struct em_tnode *pelement(struct parser *ps)
+{
+    struct em_tnode *n;
+
+    pskip(ps);
+    if (*ps->p == '-') {
+        ps->p++;
+        n = pnew(ps, TN_NEG);
+        if (!n || !(n->l = pelement(ps)))
+            return NULL;
+        return n;
+    }
+    if (pkw(ps, "NOT")) {
+        n = pnew(ps, TN_NOT);
+        if (!n || !(n->l = pexpr(ps, 0)))
+            return NULL;
+        return n;
+    }
+    if (*ps->p == '(') {
+        ps->p++;
+        n = pexpr(ps, 0);
+        if (!n)
+            return NULL;
+        pskip(ps);
+        if (*ps->p != ')') {
+            snprintf(ps->err, sizeof ps->err, "')' expected at \"%.40s\"", ps->p);
+            return NULL;
+        }
+        ps->p++;
+        return n;
+    }
+    if ((*ps->p >= '0' && *ps->p <= '9') || *ps->p == '.' || *ps->p == '$' || *ps->p == '%')
+        return pnumber(ps);
+    if (pidc(*ps->p)) {
+        char name[32];
+        size_t k = 0;
+        int t = 0;
+
+        while (pidc(*ps->p) && k + 1 < sizeof name)
+            name[k++] = *ps->p++;
+        name[k] = 0;
+        if (*ps->p == '.' && ptype(ps->p[1]) && !pidc(ps->p[2])) {
+            t = ptype(ps->p[1]);
+            ps->p += 2;
+        }
+        for (int i = 0; i < ps->nvars; i++)
+            if (!strcmp(ps->vars[i].name, name)) {
+                n = pnew(ps, TN_VAR);
+                if (!n)
+                    return NULL;
+                n->t = t ? t : ps->vars[i].t;
+                snprintf(n->text, sizeof n->text, "%s", ps->vars[i].value);
+                return n;
+            }
+        snprintf(ps->err, sizeof ps->err, "no value for the variable %s", name);
+        return NULL;
+    }
+    snprintf(ps->err, sizeof ps->err, "an element expected at \"%.40s\"", ps->p);
+    return NULL;
+}
+
+/* precedence climbing (exprtree_climb): the operators that bind tighter
+   than minprec; along a chain of one precedence from left to right */
+static struct em_tnode *pexpr(struct parser *ps, int minprec)
+{
+    struct em_tnode *l = pelement(ps);
+    enum em_op op;
+    int prec;
+
+    while (l && (prec = pbinop(ps, &op, 1)) > minprec) {
+        struct em_tnode *n;
+
+        pbinop(ps, &op, 0);
+        n = pnew(ps, TN_BIN);
+        if (!n)
+            return NULL;
+        n->op = op;
+        n->l = l;
+        n->r = pexpr(ps, prec);
+        if (!n->r)
+            return NULL;
+        l = n;
+    }
+    return l;
+}
+
+int em_expr_parse(const char *text, const char *vars, struct em_expr **out, char **error)
+{
+    struct parser ps;
+    struct em_expr *x = calloc(1, sizeof *x);
+    const char *v = vars ? vars : "";
+
+    *out = NULL;
+    *error = NULL;
+    if (!x)
+        return -1;
+    memset(&ps, 0, sizeof ps);
+    ps.x = x;
+    for (;;) {
+        struct pvar *pv;
+        size_t k = 0;
+
+        while (*v == ' ' || *v == '\t')
+            v++;
+        if (!*v)
+            break;
+        if (ps.nvars >= (int)(sizeof ps.vars / sizeof ps.vars[0])) {
+            snprintf(ps.err, sizeof ps.err, "too many variables");
+            goto fail;
+        }
+        pv = &ps.vars[ps.nvars++];
+        pv->t = TQ;
+        while (pidc(*v) && k + 1 < sizeof pv->name)
+            pv->name[k++] = *v++;
+        pv->name[k] = 0;
+        if (*v == '.') {
+            pv->t = ptype(v[1]);
+            v += 2;
+        }
+        if (!k || !pv->t || *v != '=') {
+            snprintf(ps.err, sizeof ps.err, "NAME[.T]=VALUE expected in the values at \"%.40s\"", v);
+            goto fail;
+        }
+        v++;
+        k = 0;
+        while (*v && *v != ' ' && *v != '\t' && k + 1 < sizeof pv->value)
+            pv->value[k++] = *v++;
+        pv->value[k] = 0;
+    }
+    ps.p = text;
+    x->root = pexpr(&ps, 0);
+    if (x->root) {
+        pskip(&ps);
+        if (*ps.p) {
+            snprintf(ps.err, sizeof ps.err, "an operator expected at \"%.40s\"", ps.p);
+            x->root = NULL;
+        }
+    }
+    if (!x->root)
+        goto fail;
+    *out = x;
+    return 0;
+fail:
+    free(x);
+    *error = malloc(strlen(ps.err) + 1);
+    if (!*error)
+        return -1;
+    strcpy(*error, ps.err);
+    return 1;
+}
+
+void em_expr_free(struct em_expr *x)
+{
+    free(x);
+}
+
+/* ------------------------------------------------------------ the typing */
+
+/* the typing of the operations of an expression (em_exprval) */
+struct trec {
+    char *sig;
+    size_t cap, len;
+    struct em_optype top;
+    int nops;
+    char *cells;                /* "OP WANT LFROM RFROM;" per operation */
+    size_t ccap, clen;
+    int curw;                   /* the wanted type (type so far) at the operation */
+};
+
+static char tlet(int t, int raw)
+{
+    if (raw)
+        return '~';
+    if (t < 0)
+        return 'k';             /* a constant */
+    return "-BWLQFAS"[t <= 7 ? t : 0];
+}
+
+static int is_consttree(const struct em_tnode *n);
+
+static void trecord(struct trec *tr, enum em_op op, int lfrom, int las, int lraw, int rfrom, int ras, int rraw,
+                    int path, int result)
+{
+    char b[48];
+    int k;
+
+    if (!tr || (lfrom < 0 && rfrom < 0))
+        return;                 /* two constants: folded, no operation */
+    tr->top.op = (int)op;
+    tr->top.lfrom = lfrom;
+    tr->top.las = las;
+    tr->top.lraw = lraw;
+    tr->top.rfrom = rfrom;
+    tr->top.ras = ras;
+    tr->top.rraw = rraw;
+    tr->top.path = path;
+    tr->top.result = result;
+    tr->nops++;
+    k = snprintf(b, sizeof b, "%s %c>%c %c>%c %c %c;", em_op_name(op), tlet(lfrom, 0), tlet(las, lraw),
+                 tlet(rfrom, 0), tlet(ras, rraw), path, tlet(result, 0));
+    if (k > 0 && tr->sig && tr->len + (size_t)k + 1 < tr->cap) {
+        memcpy(tr->sig + tr->len, b, (size_t)k + 1);
+        tr->len += (size_t)k;
+    }
+    k = snprintf(b, sizeof b, "%s %c %c %c;", em_op_name(op), tlet(tr->curw, 0), tlet(lfrom, 0), tlet(rfrom, 0));
+    if (k > 0 && tr->cells && tr->clen + (size_t)k + 1 < tr->ccap) {
+        memcpy(tr->cells + tr->clen, b, (size_t)k + 1);
+        tr->clen += (size_t)k;
+    }
+}
+
+static enum em_kind tkind(int t)
+{
+    switch (t) {
+    case TB: return EM_B;
+    case TW: return EM_W;
+    case TL: return EM_L;
+    case TQ: return EM_Q;
+    case TF: return EM_F;
+    default: return EM_S;
+    }
+}
+
+/* the own type of an operand register before the operation converts it */
+static int fromtype(const struct reg *r)
+{
+    if (r->isvar && r->conv_from)
+        return r->conv_from;
+    return r->raw ? TQ : r->t;
+}
+
+/* NOT on r (notit, as expression() for the unary NOT); 1 refused */
+static int notop(struct ev *e, struct reg *r, int fraction)
+{
+    if (r->t == TQ || fraction)
+        e->flags |= EM_F_BITQ;
+    if (r->t >= TF)
+        return 1;
+    cutraw(e, r);
+    if (r->t >= TL)
+        r->v = ~r->v;
+    else
+        r->v = (r->v & 0xffff0000u) | (uint16_t)~r->v;
+    if (r->t == TQ && (e->rules & EM_R_1209))
+        r->v &= 0xffff0000u;
+    r->id = rat_op(rat_int(-1), r->id, '-');
+    return 0;
+}
+
+/* a register that is no single element any more */
+static void plainreg(struct reg *r)
+{
+    r->isvar = 0;
+    r->conv_from = r->conv_to = 0;
+    r->litcut = 0;
+}
+
+static int frac_operand(const struct em_tnode *n)
+{
+    return (n->kind == TN_VAR && n->t >= TQ) || (n->kind == TN_CONST && strchr(n->text, '.'));
+}
+
+/* ----------------------------------------------- today's rules: the flow */
+
+/* the node n with the type so far *T (eval5 over the tree: the left
+   operand, then the right one at the type so far after it); 0, 1 refused */
+static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, struct trec *tr)
+{
+    struct reg b;
+    enum em_op op;
+    int cmp, left, lfrom, rfrom, rcmp, w0;
+
+    switch (n->kind) {
+    case TN_VAR:
+        fetch(e, tkind(n->t), n->text, T, r);
+        return 0;
+    case TN_CONST:
+        fetch(e, EM_CB, n->text, T, r);
+        return 0;
+    case TN_NEG:
+        if (n->l->kind == TN_CONST) {
+            char t[48];
+
+            snprintf(t, sizeof t, "-%s", n->l->text);
+            fetch(e, EM_CB, t, T, r);
+            return 0;
+        }
+        if (flow(e, n->l, T, r, tr) || r->t == TS)
+            return 1;
+        negate(r);
+        plainreg(r);
+        return 0;
+    case TN_NOT:
+        if (flow(e, n->l, T, r, tr) || notop(e, r, frac_operand(n->l)))
+            return 1;
+        *T = r->t;
+        plainreg(r);
+        return 0;
+    default:
+        break;
+    }
+    op = n->op;
+    w0 = *T;
+    cmp = em_op_is_compare(op);
+    rcmp = n->r->kind == TN_BIN && em_op_is_compare(n->r->op);
+    if (flow(e, n->l, T, r, tr))
+        return 1;
+    lfrom = is_consttree(n->l) ? -1 : fromtype(r);  /* -1: a constant (its own type is the one it takes) */
+    if (cmp && (e->rules & EM_R_1177) && n->l->kind == TN_VAR) {
+        /* cmpownleft (#1177), as expression() */
+        if (r->isvar && r->conv_to
+            && ((r->conv_from == TQ && r->conv_to == TL) || (r->conv_from <= TL && r->conv_to == TQ)
+                || (r->conv_from <= TQ && r->conv_to == TF))) {
+            r->v = r->conv_v;
+            e->flags = r->conv_flags;
+            r->t = r->conv_from;
+            r->raw = 0;
+            r->id = rat_text(n->l->text);
+            if (r->t == TQ)
+                r->id = rat_make((int32_t)r->v, 65536);
+            *T = r->t;
+        }
+    }
+    if (cmp && (e->rules & EM_R_1177) && r->litcut && (e->rules & EM_R_1186)) {
+        r->v = ffp_of(r->lit);
+        r->t = *T = TF;
+        r->litcut = 0;
+        r->id = r->lit;
+    }
+    left = *T;
+    if (cmp && (e->rules & EM_R_1177))
+        *T = 0;
+    if (flow(e, n->r, T, &b, tr))
+        return 1;
+    rfrom = is_consttree(n->r) ? -1 : fromtype(&b);
+    if (tr)
+        tr->curw = w0;          /* the type so far at the left operand (its cell) */
+    if (cmp && (e->rules & EM_R_1177)) {
+        int right = *T;
+
+        if (r->raw)
+            r->t = left = TQ, r->raw = 0;
+        if ((left == TL && right == TQ) || (left == TQ && right == TL)) {
+            struct rat x = left == TQ ? rat_make((int32_t)r->v, 65536) : rat_int((int32_t)r->v);
+            struct rat y = right == TQ ? rat_make((int32_t)b.v, 65536) : rat_int((int32_t)b.v);
+
+            scc(r, rat_cmp(x, y), op);
+            trecord(tr, op, lfrom, left, 0, rfrom, right, 0, 'x', TW);
+        } else {
+            if (left && right < left) {
+                conv(e, &b, right, left);
+                right = left;
+            }
+            if (left)
+                conv(e, r, left, right);
+            if (right == TS && left != TS)
+                return 1;
+            doop(e, op, r, &b, right);
+            trecord(tr, op, lfrom, right, 0, rfrom, right, 0, 'c', TW);
+        }
+    } else {
+        int t2 = *T;
+        int lr = r->raw, rr = b.raw;
+
+        if (rcmp && left > t2 && t2) {
+            /* #1182 (fixed): the comparison's boolean is converted up to
+               the left operand's type */
+            conv(e, &b, t2, left);
+            t2 = left;
+        }
+        if ((e->rules & EM_R_1178) && t2 == TL && (op == EM_ADD || op == EM_SUB || op == EM_MUL || op == EM_DIV)
+            && (r->raw || b.raw || ((op == EM_MUL || op == EM_DIV) && left == TQ))) {
+            int lq = lr || r->t == TQ, rq = rr || b.t == TQ;
+
+            if (r->t != TQ && !r->raw && left != TL)
+                conv(e, r, left, TL);
+            if (b.t != TQ && !b.raw && b.t != TL)
+                conv(e, &b, b.t, TL);
+            trecord(tr, op, lfrom, lq ? TQ : TL, lq, rfrom, rq ? TQ : TL, rq, 'm', TL);
+            mixed(r, &b, op);
+        } else {
+            if (op != EM_POW) {
+                if (r->raw && t2 != TF)
+                    cutraw(e, r);
+                if (b.raw)
+                    cutraw(e, &b);
+            }
+            if (left && left != t2 && !(r->raw && op == EM_POW))
+                conv(e, r, left, t2);
+            if (is_bitop(op) && (frac_operand(n->l) || frac_operand(n->r)))
+                e->flags |= EM_F_BITQ;
+            if (op == EM_MOD && (frac_operand(n->l) || frac_operand(n->r)))
+                e->flags |= EM_F_MODNF;
+            if (op == EM_POW && !frac_operand(n->l) && !frac_operand(n->r))
+                e->flags |= EM_F_POWINT;
+            doop(e, op, r, &b, t2);
+            if (e->illegal)
+                return 1;
+            trecord(tr, op, lfrom, t2, 0, rfrom, t2, 0, 'p', r->t);
+        }
+    }
+    *T = r->t;
+    plainreg(r);
+    return 0;
+}
+
+/* ------------------------------------------------ the candidate rules (Q4) */
+
+/*
+ * The candidate rules of open question 1 of expr-tree-5-operand-typing
+ * (task 2.1, ~/.local/share/bb2-c-work/expr-tree-5-rules.md): a typing
+ * of each operation by its operator, the types of its two operands and
+ * the wanted type W, which reaches every operand from the top (the
+ * destination's or parameter's type; none for If and Print and for the
+ * operands of a comparison).  Common to all four:
+ *
+ * - A variable or function value keeps its own type until its operation
+ *   converts it; a subtree of constants only is folded into a constant.
+ * - Under a wanted Float or Quick every operation is a Float or Quick one
+ *   (the type so far of today's rules where it starts at the destination).
+ * - Whole-number operands under a whole-number or no W: the operation in
+ *   the highest of W and the two types.
+ * - A Long and a Quick (no Float): computed exactly with the fraction and
+ *   rounded down to a Long at the operator (#1178 variant C, mixed()).
+ * - A comparison compares its two operands, each typed by its own
+ *   operands, exactly (a Long and a Quick) or the lower one up; with
+ *   EM_R_SCOPEB the left one only when a Quick or Float is inside it or it
+ *   is a Long constant under a wanted Float, else under W.
+ *
+ * C1 "symmetric flow": constants take the type the flow would give them
+ *   second (the higher of W and the other operand; a raw Quick under a
+ *   Long leaves it Long); W reaches every Quick as today: under a wanted
+ *   Long every operation with a Quick is exact (variant C), under a
+ *   wanted Byte or Word a Quick operation stays Quick; Word+Word as today
+ *   (add.w, then a Long).
+ * C2 "own types": constants take the other operand's type (a fraction a
+ *   Quick, or a Float beside one); a wanted whole number does not reach a
+ *   Quick (Quick operations stay Quick, only a Long and a Quick are
+ *   exact); Word+Word and Word-Word are a Word, Word*Word a Long.
+ * C3 "value classes": constants by their value (Byte, Word, Long; a
+ *   fraction a Quick, a Float beside a Float or under a wanted Float);
+ *   under a wanted whole number an operation of a Quick and a whole number
+ *   is exact, Quick with Quick stays Quick; + - * of Bytes and Words are
+ *   computed in Long (no wrap).
+ * C4 "integral and fractional numbers" (the user, 2026-11-24): C1 with
+ *   constants as generic numbers: a whole value takes the other operand's
+ *   type if it fits (beside a Quick under a wanted whole number a Long:
+ *   the Quick-times-Long operation), a value with a fraction is a Quick
+ *   (a Float beside a Float or under a wanted Float).
+ */
+
+static const char *const cand_names[EM_NCAND] = { "flow", "C1", "C2", "C3", "C4", "C5" };
+static const char *const cand_titles[EM_NCAND] = {
+    "today's rules (the flow of the type so far)", "symmetric flow", "own types", "value classes",
+    "integral and fractional numbers", "32.16 products",
+};
+
+const char *em_cand_name(int n)
+{
+    return n >= 0 && n < EM_NCAND ? cand_names[n] : "?";
+}
+
+const char *em_cand_title(int n)
+{
+    return n >= 0 && n < EM_NCAND ? cand_titles[n] : "?";
+}
+
+struct cev {
+    struct ev *e;
+    int cand;
+    int scopeb;
+    struct trec *tr;
+};
+
+static int tmax(int a, int b)
+{
+    return a > b ? a : b;
+}
+
+static int is_consttree(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_CONST: return 1;
+    case TN_NEG: return is_consttree(n->l);
+    case TN_BIN: return n->op != EM_POW && is_consttree(n->l) && is_consttree(n->r);
+    default: return 0;
+    }
+}
+
+static int has_qf(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_VAR: return n->t >= TQ;
+    case TN_CONST: return strchr(n->text, '.') != NULL;
+    case TN_BIN: return has_qf(n->l) || has_qf(n->r);
+    default: return has_qf(n->l);
+    }
+}
+
+/* the value fits type t as a constant of it */
+static int cfits(struct rat a, int t)
+{
+    switch (t) {
+    case TB: return rat_cmp(a, rat_int(-128)) >= 0 && rat_cmp(a, rat_int(127)) <= 0;
+    case TW: return rat_cmp(a, rat_int(-32768)) >= 0 && rat_cmp(a, rat_int(32767)) <= 0;
+    case TL: return rat_cmp(a, rat_int(INT32_MIN)) >= 0 && rat_cmp(a, rat_int(INT32_MAX)) <= 0;
+    case TQ: return rat_cmp(a, rat_int(-32768)) >= 0 && rat_cmp(a, rat_int(32767)) <= 0;
+    default: return 1;
+    }
+}
+
+/* the type a constant of value a is fetched under (consttype2 then sizes
+   it) beside an operand of type pt (0: none) under the wanted type W */
+static int consttarget(int cand, struct rat a, int W, int pt)
+{
+    int whole = rat_isint(a);
+
+    if (!pt)
+        return W;
+    switch (cand) {
+    case EM_CAND_C1:
+    case EM_CAND_C5:
+        return W == TL && pt == TQ ? TL : tmax(W, pt);
+    case EM_CAND_C2:
+        if (whole)
+            return pt == TF || cfits(a, pt) ? pt : 0;
+        return pt == TF ? TF : cfits(a, TQ) ? TQ : TF;
+    case EM_CAND_C3:
+        if (whole)
+            return 0;
+        return pt == TF || W == TF ? TF : cfits(a, TQ) ? TQ : TF;
+    default:                    /* C4 */
+        if (whole) {
+            if (pt == TQ && W >= TB && W <= TL)
+                return TL;
+            return pt == TF || cfits(a, pt) ? pt : 0;
+        }
+        return pt == TF || W == TF ? TF : cfits(a, TQ) ? TQ : TF;
+    }
+}
+
+/* a subtree of constants: folded by today's rules under the type it
+   takes (exprtree's fold), its value a constant of that type */
+/* the exact value of a subtree of constants (a whole-number operator on
+   the whole parts; a division by zero: 0) */
+static struct rat const_ideal(const struct em_tnode *n)
+{
+    struct rat a, b;
+
+    if (n->kind == TN_CONST)
+        return rat_text(n->text);
+    if (n->kind == TN_NEG)
+        return rat_op(rat_int(0), const_ideal(n->l), '-');
+    a = const_ideal(n->l);
+    b = const_ideal(n->r);
+    switch (n->op) {
+    case EM_ADD: return rat_op(a, b, '+');
+    case EM_SUB: return rat_op(a, b, '-');
+    case EM_MUL: return rat_op(a, b, '*');
+    case EM_DIV: return rat_sign(b) ? rat_op(a, b, '/') : rat_int(0);
+    default: {
+        int64_t x = rat_whole(rat_floor(a)), y = rat_whole(rat_floor(b));
+
+        switch (n->op) {
+        case EM_AND: return rat_int(x & y);
+        case EM_OR: return rat_int(x | y);
+        case EM_EOR: return rat_int(x ^ y);
+        case EM_MOD: return y ? rat_int(x % y) : rat_int(0);
+        case EM_LSL: case EM_ASL: return rat_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
+        case EM_LSR: case EM_ASR: return rat_int(y >= 0 && y < 32 ? x >> y : 0);
+        default: return rat_int(-1);    /* a comparison: true or false, whole */
+        }
+    }
+    }
+}
+
+/* a subtree of constants: one constant of its exact value, of the type the
+   rule gives it (exprtree's fold; alone, or a fraction folded under a
+   whole number, by today's fold in that type) */
+static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
+{
+    struct rat a = const_ideal(n);
+    int T, tt = consttarget(c->cand, a, W, pt);
+    char text[48];
+
+    T = tt;
+    if (n->kind == TN_CONST || !pt || !a.ok || (!rat_isint(a) && tt != TQ && tt != TF)) {
+        if (flow(c->e, n, &T, r, NULL))
+            return 1;
+    } else {
+        int neg = rat_sign(a) < 0;
+        struct rat m = neg ? rat_op(rat_int(0), a, '-') : a;
+
+        if (rat_isint(m))
+            snprintf(text, sizeof text, "%lld", (long long)rat_whole(m));
+        else {
+            /* the fraction in six decimals (fetchpoint2 reads them) */
+            struct rat f = rat_op(m, rat_floor(m), '-');
+            long long d = (long long)rat_whole(rat_floor(rat_op(f, rat_int(1000000), '*')));
+
+            snprintf(text, sizeof text, "%lld.%06lld", (long long)rat_whole(rat_floor(m)), d);
+        }
+        memset(r, 0, sizeof *r);
+        constant(c->e, text, &T, r);
+        if (neg)
+            negate(r);
+    }
+    plainreg(r);
+    r->isconst = 1;
+    return 0;
+}
+
+static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r);
+
+/* the operands of n: a constant one after the other, which it is typed by */
+static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, struct reg *r, struct reg *b)
+{
+    int lc = is_consttree(n->l), rc = is_consttree(n->r);
+
+    if (lc && !rc) {
+        if (cand(c, n->r, WR, 0, b))
+            return 1;
+        /* a shifted constant is not typed by the count */
+        return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
+    }
+    if (cand(c, n->l, WL, 0, r))
+        return 1;
+    return cand(c, n->r, WR, rc ? r->t : 0, b);
+}
+
+static int cmixed(int cand, int W, int lt, int rt)
+{
+    int wl = W >= TB && W <= TL, lng = lt == TL || rt == TL;
+
+    switch (cand) {
+    case EM_CAND_C1:
+    case EM_CAND_C4:
+    case EM_CAND_C5: return W == TL || lng;
+    case EM_CAND_C2: return lng;
+    default: return (wl && !(lt == TQ && rt == TQ)) || lng;
+    }
+}
+
+static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
+{
+    struct ev *e = c->e;
+    struct reg b;
+    enum em_op op;
+    int lt, rt, T, lfrom, rfrom;
+
+    if (is_consttree(n))
+        return cconst(c, n, W, pt, r);
+    switch (n->kind) {
+    case TN_VAR:
+        T = 0;
+        fetch(e, tkind(n->t), n->text, &T, r);
+        return 0;
+    case TN_NEG:
+        if (cand(c, n->l, W, pt, r) || r->t == TS)
+            return 1;
+        negate(r);
+        plainreg(r);
+        return 0;
+    case TN_NOT:
+        if (cand(c, n->l, W, 0, r))
+            return 1;
+        /* NOT in the higher of W and its operand's type (refused as a
+           Float); a Quick under a wanted Long rounded down, as today */
+        if (r->t == TQ && W == TL && c->cand != EM_CAND_C2)
+            conv(e, r, TQ, TL);
+        else if (W > r->t && W != TS)
+            conv(e, r, r->t, W);
+        if (notop(e, r, frac_operand(n->l)))
+            return 1;
+        plainreg(r);
+        return 0;
+    default:
+        break;
+    }
+    op = n->op;
+    if (em_op_is_compare(op)) {
+        int WL = 0;
+
+        if (c->scopeb && !has_qf(n->l)
+            && !(is_consttree(n->l) && W == TF && n->l->kind == TN_CONST && !cfits(rat_text(n->l->text), TW)))
+            WL = W;
+        if (coperands(c, n, WL, 0, r, &b))
+            return 1;
+        if (c->tr)
+            c->tr->curw = W;    /* the wanted type at the comparison (its cell) */
+        lt = r->t;
+        rt = b.t;
+        if (lt == TS || rt == TS)
+            return 1;
+        if ((lt == TL && rt == TQ) || (lt == TQ && rt == TL)) {
+            struct rat x = reg_value(r), y = reg_value(&b);
+
+            trecord(c->tr, op, is_consttree(n->l) ? -1 : lt, lt, 0, is_consttree(n->r) ? -1 : rt, rt, 0, 'x', TW);
+            scc(r, rat_cmp(x, y), op);
+        } else {
+            T = tmax(lt, rt);
+            conv(e, r, lt, T);
+            conv(e, &b, rt, T);
+            doop(e, op, r, &b, T);
+            trecord(c->tr, op, is_consttree(n->l) ? -1 : lt, T, 0, is_consttree(n->r) ? -1 : rt, T, 0, 'c', TW);
+        }
+        plainreg(r);
+        return 0;
+    }
+    if (coperands(c, n, W, W, r, &b))
+        return 1;
+    if (c->tr)
+        c->tr->curw = W;        /* the wanted type at the operation (its cell) */
+    lt = r->t;
+    lfrom = is_consttree(n->l) ? -1 : lt;
+    rt = b.t;
+    rfrom = is_consttree(n->r) ? -1 : rt;
+    if (lt == TS || rt == TS)
+        return 1;               /* strings are not typed by the candidates */
+    /* a constant too large for a Quick under a wanted Quick is a Long, as
+       today, and the operation then one under a Long */
+    if (W == TQ
+        && ((is_consttree(n->l) && !cfits(const_ideal(n->l), TQ))
+            || (is_consttree(n->r) && !cfits(const_ideal(n->r), TQ))))
+        W = TL;
+    if (c->cand == EM_CAND_C5 && op == EM_MUL && W != TF && lt != TF && rt != TF && (lt == TQ) != (rt == TQ)) {
+        /* C5 ("Q*W and Q*L with a 32.16 result", 2026-11-24): the exact
+           product of a Quick and a whole number as a 32.16 value (48.16
+           for a Long: the overflow of its 32-bit whole part is seen), taken
+           by its consumer: a wanted whole number its whole part (rounded
+           down; a Word its low word), a wanted Quick or none 16.16 (none
+           with a Long operand: the whole part, a Long) */
+        struct rat x = reg_value(r), y = reg_value(&b), p = rat_op(x, y, '*');
+        int ct = W >= TB && W <= TL ? TL : W == TQ ? TQ : (lt == TL || rt == TL) ? TL : TQ;
+        int ovf;
+
+        if (ct == TL) {
+            struct rat f = rat_floor(p);
+
+            ovf = !cfits(f, TL) || (W >= TB && W <= TW && !cfits(f, W));
+            r->v = (uint32_t)(int64_t)rat_whole(f);
+            r->id = f;
+        } else {
+            struct rat q = rat_q16(p);
+
+            ovf = !fits(p, TQ);
+            r->v = (uint32_t)(int64_t)rat_whole(rat_trunc(rat_op(p, rat_int(65536), '*')));
+            r->id = q;
+        }
+        if (ovf) {
+            e->c5ovf = 1;
+            e->flags |= EM_F_OVF;
+        }
+        r->t = ct;
+        r->raw = 0;
+        trecord(c->tr, op, lfrom, lt, lt == TQ, rfrom, rt, rt == TQ, 'w', ct);
+        plainreg(r);
+        return 0;
+    }
+    if (op == EM_ADD || op == EM_SUB || op == EM_MUL || op == EM_DIV) {
+        if (W == TF || lt == TF || rt == TF)
+            T = TF;
+        else if (W == TQ)
+            T = TQ;
+        else if (lt == TQ || rt == TQ) {
+            if (cmixed(c->cand, W, lt, rt)) {
+                if (lt != TQ && lt != TL)
+                    conv(e, r, lt, TL);
+                if (rt != TQ && rt != TL)
+                    conv(e, &b, rt, TL);
+                trecord(c->tr, op, lfrom, lt == TQ ? TQ : TL, lt == TQ, rfrom, rt == TQ ? TQ : TL, rt == TQ, 'm',
+                        TL);
+                mixed(r, &b, op);
+                plainreg(r);
+                return 0;
+            }
+            T = TQ;
+        } else {
+            T = tmax(W, tmax(lt, rt));
+            if (c->cand == EM_CAND_C3 && T <= TW && (op == EM_ADD || op == EM_SUB))
+                T = TL;
+        }
+    } else if (op == EM_POW) {
+        /* dopow: both to Float, through a higher wanted Quick or whole
+           number first as today */
+        int tt = tmax(W, tmax(lt, rt));
+
+        if (tt == TQ && W != TQ && (lt == TL || rt == TL))
+            tt = TF;            /* a Long and a Quick: both straight to Float, as a raw Quick */
+        if (tt > lt) {
+            conv(e, r, lt, tt);
+            lt = tt;
+        }
+        if (tt > rt) {
+            conv(e, &b, rt, tt);
+            rt = tt;
+        }
+        T = TF;
+    } else {
+        /* the bit operators, Mod and the shifts (a Quick count makes the
+           shift a Quick one, as today) */
+        int rr = rt;
+
+        if (op >= EM_LSL && op <= EM_ASR) {
+            /* the count raises a Byte or Word to a Quick, as today; under a
+               Long it is rounded down */
+            rr = rt == TF ? TF : rt == TQ && tmax(W, lt) < TL ? TQ : 0;
+        }
+        if (W == TF)
+            T = TF;             /* refused but for Mod, as today */
+        else if (W != TQ && !(op >= EM_LSL && op <= EM_ASR) && ((lt == TL && rr == TQ) || (lt == TQ && rr == TL)))
+            T = TL;             /* the Quick rounded down, as a Long and a Quick add */
+        else
+            T = tmax(W, tmax(lt, rr));
+        if (T == TQ && W == TL && c->cand != EM_CAND_C2)
+            T = TL;             /* the Quick rounded down, as under today's Long */
+        if (is_bitop(op) && (frac_operand(n->l) || frac_operand(n->r) || lt >= TQ || rt >= TQ))
+            e->flags |= EM_F_BITQ;
+        if (op == EM_MOD && (frac_operand(n->l) || frac_operand(n->r)))
+            e->flags |= EM_F_MODNF;
+    }
+    if (op == EM_POW && !frac_operand(n->l) && !frac_operand(n->r))
+        e->flags |= EM_F_POWINT;
+    /* both in T (^: dopow takes them as Floats) */
+    conv(e, r, lt, T);
+    conv(e, &b, rt, T);
+    doop(e, op, r, &b, T);
+    if (e->illegal)
+        return 1;
+    if (c->cand == EM_CAND_C2 && (op == EM_ADD || op == EM_SUB) && T == TW)
+        r->t = TW;              /* add.w: the Word sum stays a Word */
+    trecord(c->tr, op, lfrom, op == EM_POW ? lt : T, 0, rfrom, op == EM_POW ? rt : T, 0, 'p', r->t);
+    plainreg(r);
+    return 0;
+}
+
+/* ------------------------------------------------------- the evaluation */
+
+static int ctx_want(enum em_ctx x, unsigned rules)
+{
+    if (x == EM_IF || x == EM_PRINT)
+        return 0;
+    return ctx_type(x, 0, rules);
+}
+
+/* the expression root under ctx by rules: its value in *r; 0, 1 refused */
+static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsigned rules, struct reg *r,
+                      struct trec *tr)
+{
+    int cn = (int)((rules & EM_R_CANDMASK) >> 9);
+
+    if (cn) {
+        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr };
+
+        if (cand(&c, root, asked, 0, r))
+            return 1;
+    } else {
+        int T = asked;
+
+        if (flow(e, root, &T, r, tr))
+            return 1;
+    }
+    if (r->raw)
+        cutraw(e, r);
+    if (asked && r->t != asked) {
+        if (r->t == TS || asked == TS)
+            return 1;
+        conv(e, r, r->t, asked);
+    }
+    return 0;
+}
+
+/* the text of the value r of an expression under ctx (em_model's) */
+static void value_text(struct ev *e, enum em_ctx ctx, unsigned rules, int asked, struct reg *r,
+                       struct em_value *out)
+{
+    if (e->flags & EM_F_POW) {
+        int64_t v = 0;
+
+        if (ctx == EM_IF && (rules & EM_R_1187) && e->powknown && fabs(e->pow.x) > 1e-30) {
+            strcpy(out->text, "T");     /* EM_R_1187, as em_model */
+            return;
+        }
+        if (ctx == EM_IF && !(rules & EM_R_1187))
+            out->flags |= EM_F_D1;
+        if (!pow_whole(e, asked, &v)) {
+            strcpy(out->text, e->flags & EM_F_POWSIGN ? "?-" : "?");
+            return;
+        }
+        r->v = (uint32_t)v;
+    }
+    switch (ctx) {
+    case EM_DB: print_long(out->text, (int8_t)r->v); break;
+    case EM_DW: case EM_PW: case EM_I2: print_long(out->text, (int16_t)r->v); break;
+    case EM_DL: case EM_PL: case EM_I1: print_long(out->text, (int32_t)r->v); break;
+    case EM_DQ: case EM_DF: case EM_PQ: case EM_PF:
+        snprintf(out->text, EM_TEXT_MAX, "%08X", (unsigned)r->v);
+        break;
+    case EM_IF: {
+        int t;
+
+        switch (r->t) {
+        case TB: t = (uint8_t)r->v != 0; break;
+        case TW: t = (uint16_t)r->v != 0; break;
+        case TF:
+            if (!(rules & EM_R_1187)) {
+                out->flags |= EM_F_D1;
+                strcpy(out->text, "?");
+                return;
+            }
+            t = !ffp_zero(r->v);
+            break;
+        default: t = r->v != 0; break;
+        }
+        strcpy(out->text, t ? "T" : "F");
+        break;
+    }
+    default:
+        print_typed(e, out->text, r);
+        break;
+    }
+}
+
+void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, struct em_exprval *out)
+{
+    struct ev e = { 0 };
+    struct reg r;
+    struct trec tr = { 0 };
+    int asked = ctx_want(ctx, rules);
+
+    memset(out, 0, sizeof *out);
+    out->top.op = -1;
+    tr.sig = out->sig;
+    tr.cells = out->cells;
+    tr.ccap = sizeof out->cells;
+    tr.cap = sizeof out->sig;
+    e.rules = rules;
+    e.cd = (rules & EM_R_CDLIB) != 0;
+    memset(&r, 0, sizeof r);
+    if (tree_value(&e, x->root, asked, rules, &r, &tr)) {
+        strcpy(out->v.text, "!noncompile");
+        out->v.flags = e.flags;
+    } else if (e.c5ovf && (rules & EM_R_C5ERR)) {
+        strcpy(out->v.text, "!runtime");
+        out->v.flags = e.flags;
+    } else {
+        out->v.flags = e.flags;
+        out->v.sig = e.powsig;
+        value_text(&e, ctx, rules, asked, &r, &out->v);
+    }
+    out->top = tr.top;
+    if (!tr.nops)
+        out->top.op = -1;
+    out->nops = tr.nops;
+}
+
+/* the cell's expression as a tree (a constant with a sign: NEG over it) */
+static void cell_tree(const struct em_set *s, const struct em_cell *c, struct em_expr *x)
+{
+    struct em_tnode *n;
+    int k = 0;
+
+    memset(x, 0, sizeof *x);
+    for (int side = 0; side < (c->right < 0 ? 1 : 2); side++) {
+        enum em_kind kd = side ? (enum em_kind)c->right : c->left;
+        const char *text = side && (c->op == EM_POW || (c->op >= EM_LSL && c->op <= EM_ASR)) ? s->count[kd]
+                                                                                            : s->value[kd];
+        struct em_tnode *leaf = &x->node[k++];
+
+        leaf->kind = kind_type(kd) ? TN_VAR : TN_CONST;
+        leaf->t = kind_type(kd);
+        if (leaf->kind == TN_CONST && text[0] == '-') {
+            snprintf(leaf->text, sizeof leaf->text, "%s", text + 1);
+            n = &x->node[k++];
+            n->kind = TN_NEG;
+            n->l = leaf;
+            leaf = n;
+        } else
+            snprintf(leaf->text, sizeof leaf->text, "%s", text);
+        if (side)
+            x->root->r = leaf;
+        else
+            x->root = leaf;
+        if (!side && c->right >= 0) {
+            n = &x->node[k++];
+            n->kind = TN_BIN;
+            n->op = c->op;
+            n->l = x->root;
+            x->root = n;
+        }
+    }
+    if (c->right < 0) {
+        n = &x->node[k++];
+        n->kind = c->op == EM_NEG ? TN_NEG : TN_NOT;
+        n->l = x->root;
+        x->root = n;
+    }
+    x->n = k;
+}
+
+/* expression() for a candidate rule set: the cell as a tree */
+static int cand_expression(struct ev *e, const struct em_set *s, const struct em_cell *c, int asked, struct reg *r)
+{
+    struct em_expr x;
+
+    cell_tree(s, c, &x);
+    return tree_value(e, x.root, asked, e->rules, r, NULL);
+}
+
+int em_cell_expr(const struct em_matrix *m, const struct em_cell *c, struct em_expr **out)
+{
+    *out = NULL;
+    if (c->left == EM_S || c->right == EM_S)
+        return 1;
+    *out = malloc(sizeof **out);
+    if (!*out)
+        return -1;
+    cell_tree(&m->sets[c->set], c, *out);
+    return 0;
+}
+
+void em_cand_cell(unsigned rules, enum em_op op, int want, int l, int r, struct em_optype *out)
+{
+    static const enum em_ctx ctxof[] = { EM_PRINT, EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF };
+    struct em_expr x;
+    struct ev e = { 0 };
+    struct reg rg;
+    struct trec tr = { 0 };
+
+    memset(&x, 0, sizeof x);
+    x.node[0].kind = TN_VAR;
+    x.node[0].t = l;
+    strcpy(x.node[0].text, "1");
+    x.node[1].kind = TN_VAR;
+    x.node[1].t = r;
+    strcpy(x.node[1].text, op == EM_POW || (op >= EM_LSL && op <= EM_ASR) ? "2" : "1");
+    x.node[2].kind = TN_BIN;
+    x.node[2].op = op;
+    x.node[2].l = &x.node[0];
+    x.node[2].r = &x.node[1];
+    x.root = &x.node[2];
+    e.rules = rules;
+    memset(&rg, 0, sizeof rg);
+    tr.top.op = -1;
+    if (tree_value(&e, x.root, ctx_want(ctxof[want >= 0 && want <= TF ? want : 0], rules), rules, &rg, &tr))
+        tr.top.result = 0;
+    *out = tr.top;
+    if (e.illegal)
+        out->result = 0;
+}
+
+int em_cand_consttype(unsigned rules, int want, int partner, const char *text)
+{
+    struct ev e = { 0 };
+    struct reg r;
+    int cn = (int)((rules & EM_R_CANDMASK) >> 9);
+    int T = cn ? consttarget(cn, rat_text(text), want, partner) : want;
+
+    e.rules = rules;
+    memset(&r, 0, sizeof r);
+    constant(&e, text, &T, &r);
+    return T;
 }

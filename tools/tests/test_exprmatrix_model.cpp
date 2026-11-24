@@ -236,3 +236,251 @@ TEST_CASE("exprmatrix model: the flags of the question classes", "[exprmatrix]")
     CHECK(md.value("dl-mul-q-cb-M", FIXED, 0, &f) == "3");
     CHECK(f == 0);
 }
+
+// ----------------------------------------------------------------------------
+// expression trees and the candidate rules of expr-tree-5 (task 2.1)
+
+// the full product of the committed matrix (tests/corpus/tests-exprmatrix/
+// matrix.txt) without the index blocks: the flow over a tree must give
+// every cell the value of the cell's own model
+static const char *const FULL =
+    "values A b=3 w=1000 l=100000 q=1.5 f=2.5 s=AB cb=3 cw=1000 cl=100000 cf=1.5\n"
+    "counts A b=2 w=2 l=2 q=2 f=2 cb=2 cw=2 cl=2 cf=2.5\n"
+    "values B b=-3 w=-1000 l=-100000 q=-1.5 f=-2.5 cb=-3 cw=-1000 cl=-100000 cf=-1.5\n"
+    "counts B b=3 w=3 l=3 q=3 f=3 cb=3 cw=3 cl=3 cf=3.5\n"
+    "block f\n"
+    "contexts db dw dl dq df pl pw pq pf if print\n"
+    "binary + - * / MOD ^ AND OR EOR LSL LSR ASL ASR = <> < <= > >=\n"
+    "unary - NOT\n"
+    "kinds b w l q f cb cw cl cf\n"
+    "sets A B\n";
+
+struct expr {
+    struct em_expr *x = nullptr;
+
+    expr(const char *text, const char *vars)
+    {
+        char *err = nullptr;
+        int r = em_expr_parse(text, vars, &x, &err);
+
+        if (r)
+            std::fprintf(stderr, "em_expr_parse %s: %s\n", text, err ? err : "out of memory");
+        std::free(err);
+    }
+    ~expr() { em_expr_free(x); }
+
+    std::string value(enum em_ctx ctx, unsigned rules) const
+    {
+        struct em_exprval v;
+
+        if (!x)
+            return "(not parsed)";
+        em_expr_eval(x, ctx, rules, &v);
+        return v.v.text;
+    }
+    std::string typing(enum em_ctx ctx, unsigned rules) const
+    {
+        struct em_exprval v;
+
+        if (!x)
+            return "(not parsed)";
+        em_expr_eval(x, ctx, rules, &v);
+        return v.sig;
+    }
+};
+
+static const unsigned NOW = EM_RULES_CANDBASE;
+
+static unsigned cand(int n, bool scopeb = false)
+{
+    return NOW | EM_R_CAND(n) | (scopeb ? EM_R_SCOPEB : 0);
+}
+
+TEST_CASE("exprmatrix model: the flow over a tree is the model of every cell", "[exprmatrix][cand]")
+{
+    struct em_matrix m;
+    char *errors = nullptr;
+    size_t compared = 0;
+
+    REQUIRE(em_parse(FULL, std::strlen(FULL), "full.txt", &m, &errors) == 0);
+    for (unsigned rules : { (unsigned)EM_RULES_ORIG, NOW }) {
+        for (size_t i = 0; i < m.ncells; i++) {
+            const struct em_cell *c = &m.cells[i];
+            struct em_expr *x = nullptr;
+            struct em_value v;
+            struct em_exprval t;
+
+            if (em_cell_expr(&m, c, &x))
+                continue;
+            em_model(&m, c, rules, 0, &v);
+            em_expr_eval(x, c->ctx, rules, &t);
+            em_expr_free(x);
+            compared++;
+            if (std::strcmp(v.text, t.v.text))
+                FAIL_CHECK(std::string(c->key) + ": cell " + v.text + ", tree " + t.v.text);
+        }
+    }
+    CHECK(compared > 60000);
+    em_free(&m);
+}
+
+TEST_CASE("exprmatrix model: expressions are parsed with blitz2's precedences", "[exprmatrix][cand]")
+{
+    // comparisons below + and *, AND below comparisons, & and MOD above *
+    CHECK(expr("1+2*3", "").value(EM_DL, NOW) == "7");
+    CHECK(expr("10-2-3", "").value(EM_DL, NOW) == "5");
+    CHECK(expr("2*3>5 AND 1<2", "").value(EM_DL, NOW) == "-1");
+    CHECK(expr("2*7 & 3", "").value(EM_DL, NOW) == "6");
+    CHECK(expr("(1+2)*3", "").value(EM_DL, NOW) == "9");
+    CHECK(expr("-a+b", "a.w=3 b.w=5").value(EM_DL, NOW) == "2");
+    CHECK(expr("$10+%11", "").value(EM_DL, NOW) == "19");
+    // the typing of each operation: q raw under the Long, the constant (k) a
+    // Long, a mixed product
+    CHECK(expr("q*2", "q=1.5").typing(EM_DL, NOW) == "mul Q>~ k>L m L;");
+
+    struct em_expr *x = nullptr;
+    char *err = nullptr;
+    CHECK(em_expr_parse("a+", "a=1", &x, &err) == 1);
+    CHECK(std::string(err).find("element expected") != std::string::npos);
+    std::free(err);
+    CHECK(em_expr_parse("a+zz", "a=1", &x, &err) == 1);
+    CHECK(std::string(err) == "no value for the variable zz");
+    std::free(err);
+    CHECK(em_expr_parse("(a", "a=1", &x, &err) == 1);
+    std::free(err);
+}
+
+TEST_CASE("exprmatrix model: today's values of the cases of the decision round", "[exprmatrix][cand]")
+{
+    // the measured port (cmp-compound-1-1/report.md, quick-arith-long.bas)
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, NOW) == "-1");
+    CHECK(expr("q*1000>50000", "q=100").value(EM_DL, NOW) == "-1");
+    CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, NOW) == "00000000");
+    CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DF, NOW) == "800000C1");     // -1.0
+    CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, NOW) == "00000000");
+    CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, NOW) == "0");                // #1183
+    CHECK(expr("-q<-1.25", "q=1.5").value(EM_DL, NOW) == "-1");
+    CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, NOW) == "4");
+    CHECK(expr("1+1+q", "q=1.5").value(EM_PRINT, NOW) == "3.5");
+    CHECK(expr("w+v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, NOW) == "8");
+    CHECK(expr("w-v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, NOW) == ".5");
+    CHECK(expr("base+i*4", "base.l=2097152 i=10000").value(EM_DL, NOW) == "2137152");
+}
+
+TEST_CASE("exprmatrix model: the spec's scenarios under every candidate", "[exprmatrix][cand]")
+{
+    for (int n = EM_CAND_C1; n < EM_NCAND; n++)
+        for (bool b : { false, true }) {
+            unsigned r = cand(n, b);
+
+            INFO(em_cand_name(n), b ? " (b)" : " (a)");
+            CHECK(expr("base+q*4", "base.l=2097152 q=1.5").value(EM_DL, r)
+                  == expr("q*4+base", "base.l=2097152 q=1.5").value(EM_DL, r));
+            CHECK(expr("w+v+q*2", "q=1.5 w.w=3 v.w=4").value(EM_DW, r)
+                  == expr("q*2+w+v", "q=1.5 w.w=3 v.w=4").value(EM_DW, r));
+            CHECK(expr("l+q*2>12", "l.l=10 q=1.5").value(EM_IF, r)
+                  == expr("q*2+l>12", "l.l=10 q=1.5").value(EM_IF, r));
+            CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, r) == "-1");
+            CHECK(expr("q+q>2.4", "q=1.25").value(EM_DL, r) == "-1");
+            CHECK(expr("-q<-1.25", "q=1.5").value(EM_DL, r) == "-1");
+            CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, r) == "800000C1");
+            CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, r) == "4.5");
+        }
+}
+
+TEST_CASE("exprmatrix model: the count cases of #1183 by candidate and scope", "[exprmatrix][cand]")
+{
+    // r.l=(w+v>c) and r.l=(w-(-v)>c) with w=v=20000, c=0: the Word sum
+    // wraps unless the left operand keeps the wanted Long (scope b) or the
+    // sum is a Long (C3)
+    for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
+        INFO(em_cand_name(n));
+        const char *a = n == EM_CAND_C3 ? "-1" : "0";
+        CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n)) == a);
+        CHECK(expr("w-(-v)>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n)) == a);
+        CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n, true)) == "-1");
+        // r.l=(q*1000>50000), q=100: the Quick product overflows in both scopes
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n)) == "0");
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n, true)) == "0");
+        // rq.q=(l1+1>40000), l1=40000: fixed by scope (a) only
+        CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, cand(n)) == "FFFF0000");
+        CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, cand(n, true)) == "00000000");
+        // rf.f=(l1/3>3.2), rq.q=(l1/3>3.2), l1=10: the whole-number division
+        // under (a), as If does
+        CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DF, cand(n)) == "00000000");
+        CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DF, cand(n, true)) == "800000C1");
+        CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DQ, cand(n)) == "00000000");
+        CHECK(expr("l1/3>3.2", "l1.l=10").value(EM_DQ, cand(n, true)) == "FFFF0000");
+        // rb.b=(b1+b2>150): -1 in both
+        CHECK(expr("b1+b2>150", "b1.b=100 b2.b=100").value(EM_DB, cand(n)) == "-1");
+        CHECK(expr("b1+b2>150", "b1.b=100 b2.b=100").value(EM_DB, cand(n, true)) == "-1");
+    }
+}
+
+TEST_CASE("exprmatrix model: what tells the candidates apart", "[exprmatrix][cand]")
+{
+    // C2: a Word sum stays a Word, so w+v+q keeps the fraction as w-v+q
+    // does; no wanted Long reaches a Quick product (it overflows)
+    CHECK(expr("w+v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, cand(EM_CAND_C1)) == "8");
+    CHECK(expr("w+v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, cand(EM_CAND_C2)) == "8.5");
+    CHECK(expr("q*1000", "q=100").value(EM_DL, cand(EM_CAND_C1)) == "100000");
+    CHECK(expr("q*1000", "q=100").value(EM_DL, cand(EM_CAND_C2)) == "-31072");
+    // C3: Bytes and Words are added in Long, no wrap; the Long then takes
+    // a Quick's fraction away
+    CHECK(expr("w+v", "w.w=20000 v.w=20000").value(EM_PRINT, cand(EM_CAND_C3)) == "40000");
+    CHECK(expr("w+v", "w.w=20000 v.w=20000").value(EM_PRINT, cand(EM_CAND_C1)) == "-25536");
+    CHECK(expr("w-v+q", "q=1.5 w.w=3 v.w=4").value(EM_PRINT, cand(EM_CAND_C3)) == "0");
+    // C4: a constant with a fraction is a Quick beside a Long, so the
+    // operation is exact and rounded (C1: a Float)
+    CHECK(expr("l/1.5", "l.l=100000").value(EM_PRINT, cand(EM_CAND_C1)) == "66666.66");
+    CHECK(expr("l/1.5", "l.l=100000").value(EM_PRINT, cand(EM_CAND_C4)) == "66666");
+    // every candidate rounds each exact operation under a wanted Long, so
+    // a chain of two Quicks and a Long still depends on the order
+    for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
+        INFO(em_cand_name(n));
+        CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, cand(n)) == "13");
+        CHECK(expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, cand(n)) == "12");
+    }
+}
+
+TEST_CASE("exprmatrix model: the typing of one operation by a candidate", "[exprmatrix][cand]")
+{
+    struct em_optype t;
+
+    // a Long and a Quick under no wanted type: today l+q is a rounded Long,
+    // q+l a Quick; every candidate gives both the exact Long
+    for (int n = EM_CAND_C1; n < EM_NCAND; n++) {
+        em_cand_cell(cand(n), EM_ADD, 0, 3, 4, &t);
+        CHECK(t.result == 3);
+        CHECK(t.path == 'm');
+        em_cand_cell(cand(n), EM_ADD, 0, 4, 3, &t);
+        CHECK(t.result == 3);
+        CHECK(t.path == 'm');
+    }
+    // Word+Word: a Long in C1, a Word in C2
+    em_cand_cell(cand(EM_CAND_C1), EM_ADD, 0, 2, 2, &t);
+    CHECK(t.result == 3);
+    em_cand_cell(cand(EM_CAND_C2), EM_ADD, 0, 2, 2, &t);
+    CHECK(t.result == 2);
+    // a Float and an AND: refused
+    em_cand_cell(cand(EM_CAND_C1), EM_AND, 0, 5, 2, &t);
+    CHECK(t.result == 0);
+    CHECK(std::string(em_cand_name(EM_CAND_C4)) == "C4");
+}
+
+TEST_CASE("exprmatrix model: C5, the 32.16 product of a Quick and a whole number", "[exprmatrix][cand]")
+{
+    unsigned c5 = cand(EM_CAND_C5), c5e = cand(EM_CAND_C5) | EM_R_C5ERR;
+
+    // cut: the consumer takes the whole part's low word, as the Quick wraps today
+    CHECK(expr("q*w", "q=1.5 w.w=30000").value(EM_DW, c5) == "-20536");
+    CHECK(expr("q*w", "q=1.5 w.w=30000").value(EM_DW, cand(EM_CAND_C1)) == "-20536");
+    // with the overflow an error: the product 45000 fits no Word
+    CHECK(expr("q*w", "q=1.5 w.w=30000").value(EM_DW, c5e) == "!runtime");
+    CHECK(expr("q*w", "q=1.5 w.w=3000").value(EM_DW, c5e) == "4500");
+    // a Long product beyond 32 bits under a wanted Long
+    CHECK(expr("q*l", "q=1.5 l.l=2000000000").value(EM_DL, c5e) == "!runtime");
+    CHECK(expr("q*l", "q=1.5 l.l=1000").value(EM_DL, c5e) == "1500");
+    // the typing: a wide product
+    CHECK(expr("q*w", "q=1.5 w.w=3").typing(EM_DW, c5) == "mul Q>~ W>W w L;");
+}
