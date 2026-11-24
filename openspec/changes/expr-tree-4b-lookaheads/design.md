@@ -24,6 +24,10 @@ The conditions the state machine collects are computed on the node at build time
 
 The left side of `dolet2` is built first (reading order: variables created as today), the right side next; emission is right side, then the address code, then the store: the bytes the copy produces today. Relocations of the address code are added at its emission, so the adjustment `pushput` makes goes away.
 
+### 4. A later array index narrowed on the node
+
+`arrevalchk` narrows a later index of an array (`blitz2.s:8809`); after `expr-tree-4a-emit-after-build` it still patches the code already written for that index (the actions `idxmark` and `idxnarrow`; that change's design, "Findings"). The narrowing is decided on the index's node at build time and the index is emitted in its narrowed form, with the bytes of today.
+
 ## Risks / Trade-offs
 
 - [The copied address code today carries relocations whose order in the LIFO list differs from emission order] -> the check compares executables including their relocation hunks; task 1.1 has assignments with relocated left sides (arrays of a NewType in a global, string arrays).

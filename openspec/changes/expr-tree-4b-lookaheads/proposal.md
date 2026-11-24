@@ -2,13 +2,14 @@
 
 ## Why
 
-Ninth change of the expression-tree series (#1180 step 4, second part; the series: `expr-tree-1-typing/design.md`). With the whole expression built before emission (`expr-tree-4a-emit-after-build`), the remaining single-pass mechanisms have their information in the tree: `countpees` rescans a parameter list in the source to count its commas (`asmlibs.c`; quadratic in the nesting of calls); the intrinsics read the raw text behind the cursor (`fracend`, `intrstrvar`) and count elements (`frachere`, `elemcount`, `letelem`) and thread a state machine through four routines; `dolet2` and `doselect` compile the address of the left side, copy it away and copy it back behind the right side (`pushstart`/`pushdo`/`pushput`, `libcall.c`).
+Ninth change of the expression-tree series (#1180 step 4, second part; the series: `expr-tree-1-typing/design.md`). With the whole expression built before emission (`expr-tree-4a-emit-after-build`), the remaining single-pass mechanisms have their information in the tree: `countpees` rescans a parameter list in the source to count its commas (`asmlibs.c`; quadratic in the nesting of calls); the intrinsics read the raw text behind the cursor (`fracend`, `intrstrvar`) and count elements (`frachere`, `elemcount`, `letelem`) and thread a state machine through four routines; `dolet2` and `doselect` compile the address of the left side, copy it away and copy it back behind the right side (`pushstart`/`pushdo`/`pushput`, `libcall.c`).; `arrevalchk` narrows a later array index by patching the code already written for it.
 
 ## What Changes
 
 - `countpees` replaced by the call node's parameter count; the source is no longer rescanned.
 - The intrinsics decided from node properties ("the argument is a Quick", "this call is the whole right side"); the state machine and the text look-aheads go.
 - `dolet2` and `doselect`: the left side's address and the right side built as trees and emitted in today's order (right side, then the address code where today's copy puts it); the copy buffer goes.
+- `arrevalchk`'s narrowing of a later array index decided on the node; the patch of written code goes.
 
 ## Not in scope
 
