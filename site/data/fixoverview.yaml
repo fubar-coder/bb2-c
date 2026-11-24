@@ -8167,3 +8167,11 @@ rows:
     text: "An OS library function after a Float calculation in the same expression no longer makes the Float operations after it go through that library: `Abs(-2)+FindTask_(0)` crashed, `x*y+IEEESPFix_(i)` gave a wrong value; an OS call before the Float part was not affected."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1212
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Assignment to an array element"
+    text: "An assignment to an array element whose index calls a library function no longer takes that library as loaded on the right side, which runs first: `a(Abs(-j)) = Abs(-5)` could store -5 or crash."
+    page: compiler
+    anchor: expressions-and-statements

@@ -1023,6 +1023,12 @@ Each point says first what the original did, then what the port does.
   wrong value. The Float operations use their own library again; an
   AmigaOS function before the Float part was not affected
   ([#1211](https://github.com/fubar-coder/bb2-c/issues/1211)).
+* In an assignment to an array element whose index calls a library
+  function such as `Abs`, the original assumed on the right side that
+  this function's library was already loaded, although the right side
+  runs first: `a(Abs(-j)) = Abs(-5)` could store -5 or crash, depending
+  on what ran before. The right side loads the library itself
+  ([#1212](https://github.com/fubar-coder/bb2-c/issues/1212)).
 
 ### Names, labels and constants
 
