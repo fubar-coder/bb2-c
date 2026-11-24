@@ -782,6 +782,9 @@ struct reg {
     int litcut;                 /* a fraction literal cut to a whole number (#1188) */
     struct rat lit;             /* the literal */
     int isconst;
+    int wide;                   /* C5/C6: a 32.16 product with no wanted type: exact in a comparison */
+    struct rat wid;             /* its exact value */
+    int wideovf;                /* it does not fit the Quick or Long it is anywhere else */
     char s[16];                 /* a string */
 };
 
@@ -2417,12 +2420,18 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
  *   type if it fits (beside a Quick under a wanted whole number a Long:
  *   the Quick-times-Long operation), a value with a fraction is a Quick
  *   (a Float beside a Float or under a wanted Float).
+ * C5 "32.16 products" (the user, 2026-11-24, "Q*W and Q*L with a 32.16
+ *   result"): C1, and a Quick times a Byte, Word or Long value is an exact
+ *   32.16 product its consumer converts (EM_R_C5ERR: its overflow an error).
+ * C6 (task 2.1a, the planning agent's P2): C5 with a whole constant beside
+ *   a Quick in a * by its value (Byte, Word, Long: C3's rule), so q*1000
+ *   is a 32.16 product too.
  */
 
-static const char *const cand_names[EM_NCAND] = { "flow", "C1", "C2", "C3", "C4", "C5" };
+static const char *const cand_names[EM_NCAND] = { "flow", "C1", "C2", "C3", "C4", "C5", "C6" };
 static const char *const cand_titles[EM_NCAND] = {
     "today's rules (the flow of the type so far)", "symmetric flow", "own types", "value classes",
-    "integral and fractional numbers", "32.16 products",
+    "integral and fractional numbers", "32.16 products", "32.16 products, whole constants by value",
 };
 
 const char *em_cand_name(int n)
@@ -2440,6 +2449,7 @@ struct cev {
     int cand;
     int scopeb;
     struct trec *tr;
+    int inmul;                  /* C6: the constant being typed is an operand of a * */
 };
 
 static int tmax(int a, int b)
@@ -2550,7 +2560,13 @@ static struct rat const_ideal(const struct em_tnode *n)
 static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
 {
     struct rat a = const_ideal(n);
-    int T, tt = consttarget(c->cand, a, W, pt);
+    int cn = c->cand, T, tt;
+
+    /* C6: a whole constant beside a Quick in a * by its value (C3's rule),
+       else C1's */
+    if (cn == EM_CAND_C6)
+        cn = c->inmul && pt == TQ && rat_isint(a) ? EM_CAND_C3 : EM_CAND_C1;
+    tt = consttarget(cn, a, W, pt);
     char text[48];
 
     T = tt;
@@ -2582,6 +2598,16 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
 
 static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r);
 
+/* a 32.16 product (C5, C6) taken as the Quick or Long it is: its overflow */
+static void wideok(struct ev *e, struct reg *r)
+{
+    if (r->wide && r->wideovf) {
+        e->c5ovf = 1;
+        e->flags |= EM_F_OVF;
+    }
+    r->wide = 0;
+}
+
 /* the operands of n: a constant one after the other, which it is typed by */
 static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, struct reg *r, struct reg *b)
 {
@@ -2591,10 +2617,12 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
         if (cand(c, n->r, WR, 0, b))
             return 1;
         /* a shifted constant is not typed by the count */
+        c->inmul = n->op == EM_MUL;
         return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
     }
     if (cand(c, n->l, WL, 0, r))
         return 1;
+    c->inmul = n->op == EM_MUL;
     return cand(c, n->r, WR, rc ? r->t : 0, b);
 }
 
@@ -2605,7 +2633,8 @@ static int cmixed(int cand, int W, int lt, int rt)
     switch (cand) {
     case EM_CAND_C1:
     case EM_CAND_C4:
-    case EM_CAND_C5: return W == TL || lng;
+    case EM_CAND_C5:
+    case EM_CAND_C6: return W == TL || lng;
     case EM_CAND_C2: return lng;
     default: return (wl && !(lt == TQ && rt == TQ)) || lng;
     }
@@ -2628,12 +2657,14 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
     case TN_NEG:
         if (cand(c, n->l, W, pt, r) || r->t == TS)
             return 1;
+        wideok(e, r);
         negate(r);
         plainreg(r);
         return 0;
     case TN_NOT:
         if (cand(c, n->l, W, 0, r))
             return 1;
+        wideok(e, r);
         /* NOT in the higher of W and its operand's type (refused as a
            Float); a Quick under a wanted Long rounded down, as today */
         if (r->t == TQ && W == TL && c->cand != EM_CAND_C2)
@@ -2662,6 +2693,22 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
         rt = b.t;
         if (lt == TS || rt == TS)
             return 1;
+        if (r->wide || b.wide) {
+            /* C5, C6: the 32.16 product compared exactly */
+            struct rat x = r->wide ? r->wid : reg_value(r), y = b.wide ? b.wid : reg_value(&b);
+
+            if (lt == TF || rt == TF) {
+                wideok(e, r);
+                wideok(e, &b);
+            } else {
+                trecord(c->tr, op, is_consttree(n->l) ? -1 : lt, lt, 0, is_consttree(n->r) ? -1 : rt, rt, 0, 'x',
+                        TW);
+                scc(r, rat_cmp(x, y), op);
+                r->wide = 0;
+                plainreg(r);
+                return 0;
+            }
+        }
         if ((lt == TL && rt == TQ) || (lt == TQ && rt == TL)) {
             struct rat x = reg_value(r), y = reg_value(&b);
 
@@ -2679,6 +2726,8 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
     }
     if (coperands(c, n, W, W, r, &b))
         return 1;
+    wideok(e, r);
+    wideok(e, &b);
     if (c->tr)
         c->tr->curw = W;        /* the wanted type at the operation (its cell) */
     lt = r->t;
@@ -2693,7 +2742,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
         && ((is_consttree(n->l) && !cfits(const_ideal(n->l), TQ))
             || (is_consttree(n->r) && !cfits(const_ideal(n->r), TQ))))
         W = TL;
-    if (c->cand == EM_CAND_C5 && op == EM_MUL && W != TF && lt != TF && rt != TF && (lt == TQ) != (rt == TQ)) {
+    if ((c->cand == EM_CAND_C5 || c->cand == EM_CAND_C6) && op == EM_MUL && W != TF && lt != TF && rt != TF && (lt == TQ) != (rt == TQ)) {
         /* C5 ("Q*W and Q*L with a 32.16 result", 2026-11-24): the exact
            product of a Quick and a whole number as a 32.16 value (48.16
            for a Long: the overflow of its 32-bit whole part is seen), taken
@@ -2717,14 +2766,20 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
             r->v = (uint32_t)(int64_t)rat_whole(rat_trunc(rat_op(p, rat_int(65536), '*')));
             r->id = q;
         }
-        if (ovf) {
-            e->c5ovf = 1;
-            e->flags |= EM_F_OVF;
-        }
         r->t = ct;
         r->raw = 0;
         trecord(c->tr, op, lfrom, lt, lt == TQ, rfrom, rt, rt == TQ, 'w', ct);
         plainreg(r);
+        if (!W && cfits(rat_floor(p), TL)) {
+            /* no wanted type: a comparison compares the 32.16 value exactly
+               (its consumer); anywhere else it is the Quick or Long (wideok) */
+            r->wide = 1;
+            r->wid = p;
+            r->wideovf = ovf;
+        } else if (ovf) {
+            e->c5ovf = 1;
+            e->flags |= EM_F_OVF;
+        }
         return 0;
     }
     if (op == EM_ADD || op == EM_SUB || op == EM_MUL || op == EM_DIV) {
@@ -2820,10 +2875,11 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
 
     if (cn) {
-        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr };
+        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0 };
 
         if (cand(&c, root, asked, 0, r))
             return 1;
+        wideok(e, r);
     } else {
         int T = asked;
 
@@ -3024,7 +3080,7 @@ int em_cand_consttype(unsigned rules, int want, int partner, const char *text)
     struct ev e = { 0 };
     struct reg r;
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
-    int T = cn ? consttarget(cn, rat_text(text), want, partner) : want;
+    int T = cn ? consttarget(cn == EM_CAND_C6 ? EM_CAND_C1 : cn, rat_text(text), want, partner) : want;
 
     e.rules = rules;
     memset(&r, 0, sizeof r);

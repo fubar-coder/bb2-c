@@ -399,9 +399,11 @@ TEST_CASE("exprmatrix model: the count cases of #1183 by candidate and scope", "
         CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n)) == a);
         CHECK(expr("w-(-v)>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n)) == a);
         CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, cand(n, true)) == "-1");
-        // r.l=(q*1000>50000), q=100: the Quick product overflows in both scopes
-        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n)) == "0");
-        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n, true)) == "0");
+        // r.l=(q*1000>50000), q=100: the Quick product overflows in both
+        // scopes, but for C6's 32.16 product of the Quick and the Word 1000
+        const char *k = n == EM_CAND_C6 ? "-1" : "0";
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n)) == k);
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, cand(n, true)) == k);
         // rq.q=(l1+1>40000), l1=40000: fixed by scope (a) only
         CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, cand(n)) == "FFFF0000");
         CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, cand(n, true)) == "00000000");
@@ -483,4 +485,23 @@ TEST_CASE("exprmatrix model: C5, the 32.16 product of a Quick and a whole number
     CHECK(expr("q*l", "q=1.5 l.l=1000").value(EM_DL, c5e) == "1500");
     // the typing: a wide product
     CHECK(expr("q*w", "q=1.5 w.w=3").typing(EM_DW, c5) == "mul Q>~ W>W w L;");
+}
+
+TEST_CASE("exprmatrix model: C6, a whole constant beside a Quick by its value", "[exprmatrix][cand]")
+{
+    unsigned c6 = cand(EM_CAND_C6), c6e = cand(EM_CAND_C6) | EM_R_C5ERR;
+
+    // q*1000 is a 32.16 product: exact under a wanted Long, in a comparison
+    CHECK(expr("q*1000", "q=100").value(EM_DL, c6) == "100000");
+    CHECK(expr("q*1000", "q=100").value(EM_DL, cand(EM_CAND_C5)) == "100000");
+    CHECK(expr("q*1000>50000", "q=100").value(EM_DL, c6e) == "-1");
+    // with no wanted type the product is a Quick: 100000 does not fit
+    CHECK(expr("q*1000", "q=100").value(EM_PRINT, c6e) == "!runtime");
+    CHECK(expr("q*1000", "q=10").value(EM_PRINT, c6) == "10000");
+    // the constant is a Word, not a Quick
+    CHECK(expr("q*1000", "q=1.5").typing(EM_PRINT, c6) == "mul Q>~ k>W w Q;");
+    CHECK(expr("q*1000", "q=1.5").typing(EM_PRINT, cand(EM_CAND_C5)) == "mul Q>Q k>Q p Q;");
+    // a constant with a fraction as in C1, and + as in C1
+    CHECK(expr("q*0.5", "q=1.5").typing(EM_PRINT, c6) == expr("q*0.5", "q=1.5").typing(EM_PRINT, cand(EM_CAND_C1)));
+    CHECK(expr("q+1000", "q=1.5").typing(EM_PRINT, c6) == expr("q+1000", "q=1.5").typing(EM_PRINT, cand(EM_CAND_C1)));
 }

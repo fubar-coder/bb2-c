@@ -107,6 +107,11 @@ const char *const about_c[EM_NCAND] = {
     "with a Long operand: the whole part). The cells of such a product show it as\n"
     "`Q~ W \xe2\x86\x92 L` (its result for a whole-number consumer) or `\xe2\x86\x92 Q`. The overflow is cut, or\n"
     "with runtime error checking a runtime error; the tables are the same for both.\n",
+    "**C6, 32.16 products with whole constants by value** (task 2.1a). C5, and a whole\n"
+    "constant beside a Quick in a `*` takes its value class (a Byte, Word or Long by its\n"
+    "size, C3's rule; a constant with a fraction as in C1), so `q*1000` is a 32.16 product\n"
+    "as `q*w` is. The cells of two variables are C5's; the difference is in the constants.\n"
+    "The overflow is cut, or with runtime error checking a runtime error.\n",
 };
 
 const char *const notes =
@@ -249,7 +254,7 @@ void cmd_candidate(CLI::App &app, int &status)
     };
     auto o = std::make_shared<options>();
     CLI::App *sub = app.add_subcommand("candidate", "the tables of a candidate rule of expr-tree-5 beside today's");
-    sub->add_option("NAME", o->name, "the candidate, C1 to C5 (exprmatrix candidates)")->required();
+    sub->add_option("NAME", o->name, "the candidate, C1 to C6 (exprmatrix candidates)")->required();
     sub->add_flag("--scope-b", o->scopeb, "the left operand of a comparison by scope (b), not (a)");
     sub->add_option("--marks", o->marks, "the cells of the CD places to mark: OP WANT LEFT RIGHT per line")
         ->type_name("FILE");
