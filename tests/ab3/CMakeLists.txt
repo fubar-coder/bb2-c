@@ -34,9 +34,11 @@ get_property(exprmatrix_data GLOBAL PROPERTY EXPRMATRIX_DATA_SOURCES)
 #                             into the executable: they depend on its layout
 #   compiler-expr-1178-dl-b-01, compiler-expr-1178-i1-j-c-01,
 #   compiler-expr-1178-i2-j-c-01, compiler-expr-1178-pl-b-01 (the drivers)
-#                             the same: two JSRs of a linked library
-#                             routine (behind the division routines) keep
-#                             the compiler's addresses, not relocated
+#                             #1215: compiled after the compiler-constdiv-*
+#                             sources in the same session, after their
+#                             "Division by Zero" the compiler writes no
+#                             operator code and drops modlib's relocations
+#                             (remove when #1215 is fixed)
 foreach(n compiler-maxs-libjsr compiler-expr-1178-dl-b-01 compiler-expr-1178-i1-j-c-01
 		compiler-expr-1178-i2-j-c-01 compiler-expr-1178-pl-b-01)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
