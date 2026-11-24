@@ -138,7 +138,8 @@ the 68000 (the block of 136: 6256 bytes).
 | 10478 `bsr variable2`, 10641-10682 `variable2` | the value into Dn; the type in d2 (`moveq #3`, `move.b #3`, `and #255`) | `variable2` from the leaf; the type: `vartypeof` at parse |
 | 10479-10500 `varcont` | `ext.w` of a Byte, the conversion up to the type so far | the decisions `contleaf` (`exprtype_element`) at parse, the code `contemit`; `varcont` (both, for the calls of steps 3c and 3d) |
 
-What each element changes besides its code, and when (change 8 relies on
+What each element (and each step of a variable's path, step 3b: the
+`VST_*` rows) changes besides its code, and when (change 8 relies on
 this table: what is at parse happens while the expression is read, in
 source order; what is at emit happens when its code is written):
 
@@ -146,9 +147,70 @@ source order; what is at emit happens when its code is written):
 |---|---|---|---|---|---|
 | `ELK_CONST` | decimal, `$`, `%` literals, `#constants`, `SizeOf`, `On`, `Off`, `Maximum`; in a constant expression a label's value and `"abcd"`; AB3's `@"..."` | `#constant`: AB3's `ext_constant`, the labels (`#__debug`); `Maximum`: the library used (`findtoke`, step 3d); the fold fact (`ELF_FOLD`: `forthstack`'s `constgot` is 0; not for `Maximum` and `@"..."`, which `element` reaches after its test); `asmtype` toggled for a label in a constant expression | `constat`/`constend`/`constval` (#978, #1179), `litat`..`litend` (#1186); `wordval` of the fold stack (`element`, after the code) | none | parse: "Syntax Error", "Numeric Over Flow", "Constant Not Found", "Type Not Found", "Offset not Found", "Type not yet defined", "Illegal Token" (an object without maximum), "Type Mismatch" (`consttype2`), "Can't Convert Types" (`@"..."` under a Quick); emit: "Type Mismatch" for a type without a move (not reached after `consttype2`) |
 | `ELK_PI` | `Pi` | none | none | none | none |
-| `ELK_VAR` | a variable, a NewType field, a pointer, a string variable | the variable made with its offset at first sight (`fetchvar`, in source order; a local one: `ELF_LOCAL`); an array index, a pointer or a path emit their address code in `calcvar` (step 3b) | `varmode` from the leaf; AB3's `ext_evalvalue` after the value's code (as before: in reading order with emit right after parse; change 8 must keep that order); a string's base and `copstring` (`stvar`, step 3e); a conversion's library use (`convtype`: `qtof2` -> `tokejsr`); `wordval`, `bytevalend` (#978), `conv` (#1177), `rawq` (#1178) | `calcvar`'s code before the leaf (step 3b) | parse: `fetchvar`'s and `calcvar`'s ("Mismatched Types", "Array not found" ...) |
+| `ELK_VAR` | a variable, a NewType field, an array element, a pointer, a string variable | the variable made with its offset at first sight (`fetchvar`, in source order; a local one: `ELF_LOCAL`); its path read by `varparse` (step 3b): `lastoffset` (the last field), `flagmask` and `varmode` back after each index, each step emitted when it is read (the `VST_*` rows) | `varmode` from the leaf; AB3's `ext_evalvalue` after the value's code (as before: in reading order with emit right after parse; change 8 must keep that order); a string's base and `copstring` (`stvar`, step 3e); a conversion's library use (`convtype`: `qtof2` -> `tokejsr`); `wordval`, `bytevalend` (#978), `conv` (#1177), `rawq` (#1178) | the steps of its path (`EXN_STEP`), emitted and released before the leaf is made from the variable node | parse: `fetchvar`'s and `varparse`'s ("Mismatched Types", "Array not yet Dim'd", "Array is not a List", "Offset not Found", "Type not yet defined", "Syntax Error" ...) |
 | `ELK_ADDROF` | `&var` | as `ELK_VAR` | `varmode`; AB3's `ext_evalvalue` before the code | as `ELK_VAR` | as `ELK_VAR` |
 | `ELK_LABEL` | `?label` | the label made at first sight (`labfind`: in the label list from then on) | the reference to a label not defined yet (`labref`: its address `pc` + 2, the statement's line and procedure), the relocation (`addoff`) | none | parse: "Syntax Error", "Label has been used as a Constant", "Label reference out of context"; emit: "Out of Memory" (the reference) |
 | `ELK_USED` | `Used Object` | the library used (`findtoke`, step 3d) | `usedcode` patched in place | none | parse: "Syntax Error", "Illegal Token" |
 | `ELK_ADDR` | `Addr Object(n)` | the library used (`findtoke`) | `addrcode` patched in place | the index: its code (with the maximum check of runtime error checking and the shift) before the leaf (`getmaxel`) | parse: "Syntax Error", "Illegal Token", the index's |
 | `ELK_ERRNUM` | `ErrNum` ("Ern": no name in the token list, no source text reaches it) | none | the library routine `ern` used (`tokejsr`) | none | none |
+| `VST_LIST` | `a()`, a List array's current item | none | `listcode1` patched in place; with runtime error checking the library routine `currentchk` used (`tokejsr`) | none | parse, before it: "Array is not a List" |
+| `VST_INDEX` | each index of an array `a(i,j)` | the index read and compiled before the step (`arreval`, `arrevalchk`: the side effects of its elements, at their moments) | after the first index `regat` one up; with runtime error checking the library routines `arrerr` (each index) and the size check's (`arrszchk`) used | the index (its code `aux`..`start`) | parse: the index's; after the step "Syntax Error" (a `,` missing) |
+| `VST_ARRAY` | the end of an array's indexes | none | `regat` one down; `movea5a0` patched in place | none | parse, before it: "Syntax Error" (a `)` missing) |
+| `VST_PFIX` | a pointer array's element followed by `\` | none | none | none | none |
+| `VST_BASE` | a NewType variable followed by `\` or taken as a value | none | `movea5a0` patched in place | none | none |
+| `VST_BROPEN`, `VST_BRCLOSE`, `VST_BRSCALE` | a field array's element `v\f[i]` | the index read and compiled between `VST_BROPEN` and `VST_BRCLOSE` (`eval`), `lastoffset` and `varmode` back after it | `addqa0` or `leaa0a0` patched in place (`VST_BROPEN`), `brchkcode` patched (`VST_BRCLOSE` with runtime error checking) | the index (`VST_BRCLOSE`: its code `aux`..`start`) | parse: "Mismatched Types" (a field that is no array) before `VST_BROPEN`, the index's and "Syntax Error" (a `]` missing) before `VST_BRCLOSE`, "Type not yet defined" (#974) before `VST_BRSCALE` |
+| `VST_DEREF` | a pointer field followed by `\` (a BCPL pointer: `VSF_BCPL`) | none | `movea0a0` patched in place | none | none |
+| `VST_END` | the end of a path | the offset `varparse` returns (`addd0a0d3`) | `addqa0` or `leaa0a0` patched in place | none | none |
+
+## Step 3b: arrays, pointers and paths (`expr-tree-3b-arrays`)
+
+`calcvar` read a variable's path (the indexes of an array, the fields
+after `\`, the index of a field array `[ ]`, the pointers it follows) and
+wrote its address code while it read it. Its parse part is `varparse`
+(`parse.c`): each step of the path is a node (`struct exprnode` of kind
+`EXN_STEP`, `op` its step kind `VST_*`, `exprtree.h`) with what its code
+needs (`value`, `off`, its facts `VSF_*`, `ELF_LOCAL` for `varmode`); the
+emit part `stepemit` writes the code from the step and the emitter's
+state only (`regat`, the templates), and the step is released after it.
+A step is made when its part of the path has been read, after its index:
+the index is compiled into `D(regat)` while it is read, as every
+expression (its code is the step's `aux`..`start`), so the step's code
+follows it at the moment it did before. The path's end is the variable
+node (`EXN_VAR`: the variable or its last field, its type, `calcvar`'s
+type and offset), which `varparse` returns. `variable` and `ampersand2`
+make it their element's leaf (`varleaf`); `calcvar` is the statements'
+entry: it reads the node into its results and releases it. The code and
+its moment are the same as before. A step lives only while it is emitted
+and the variable node only from the end of its path, so they take the
+place of an element's leaf: the bound of the arena stays 129 nodes (63
+arrays nested in their indexes behind minus signs, `-a(-a(... -b))`; the
+host test `blitz2_exprtree` pins it). `tests/blitz2/expr-arrays.test.bas`
+compiles every form of a path.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 8061 `addd0a0` | `addq` or `lea` of the offset d3 to a2; d3 clobbered by the `addq` | `addd0a0` (the code), `addd0a0d3` (the d3 it leaves, which `calcvar` returns as the offset) |
+| 8170-8192 `calcvar` up to the list's code, 8209 `.nolrerr` up to `bra .normalar` | the array's test, `added` ("Array not yet Dim'd"), the `)` of a List array's current item ("Array is not a List") | `varparse` |
+| 8193-8212 `calcvar`'s list code, `.nolrerr` | `listcode1`, `listcode2`, `currentchk`, `listarfix` | `stepemit` (`VST_LIST`) |
+| 8216-8233 `.notalist`, `.knob` | the frame of the array, `arreval` of the first index | `varparse` |
+| 8234-8243 `arrszchk`, `.noszchk`, `.domul` | the size check, the first index times the element size, `regat` up | `stepemit` (`VST_INDEX`, `VSF_FIRST`) |
+| 8244-8263 `.arloop`, `.isglob` | the dimension's offset (a local array's: -8), its check (`zarrchk`, `arrerr`) | the offset: `varparse`; the check: `stepemit` (`VST_INDEX`, `VSF_CHECK`) |
+| 8264-8273 `.noer1` | the next index (`arrevalchk`), `makeamul` | `arrevalchk`: `varparse`; `makeamul`: `stepemit` (`VST_INDEX`) |
+| 8274-8292 `.ardone` | the `)`; `regat` down, the array's base plus the index into a2, a List array's item header skipped | the `)`: `varparse`; the code: `stepemit` (`VST_ARRAY`) |
+| 8293-8312 `.normalar`, `.noppnt`, `.pmskip`, `.pfix` | the char after the array, the type (`$8000`, `$C000`), a pointer array's element followed | `varparse`; the pointer: `stepemit` (`VST_PFIX`) |
+| 8313-8330 `.notarr`, `.notap` | "Array not yet Dim'd" for `(`, a simple variable or pointer, a NewType variable's address into a2 | `varparse`; the address: `stepemit` (`VST_BASE`) |
+| 8331-8352 `.loopm1`, `.loop0` | a field after `\` ("Mismatched Types", "Offset not Found"), its offset added up, the `[` of a field array ("Mismatched Types") | `varparse` |
+| 8353, 8358-8359 | the offset added to a2, a2 saved | `stepemit` (`VST_BROPEN`) |
+| 8355-8357, 8360-8364, 8368-8370 | the frame of the field array, the index (`eval`), the `]` | `varparse` |
+| 8366-8367, 8371-8395 up to `.nobchk` | a2 back, the bound check (`brchkcode`) | `stepemit` (`VST_BRCLOSE`) |
+| 8396-8399 `.nobchk` | the element size (a pointer: 4; "Type not yet defined", #974) | `varparse` |
+| 8400-8403 `.dothemul` | the index times the element size added to a2 | `stepemit` (`VST_BRSCALE`) |
+| 8404-8411, 8427-8430 `.realdone`, `.done3` | the char after `]`, a pointer field taken as a value | `varparse` |
+| 8412-8426 `.pointer`, `.pskip`, `.pmore` | a pointer field followed: its pointer into a2, a BCPL pointer times 4 | `stepemit` (`VST_DEREF`) |
+| 8431-8433 `.done` | the type of the last field | `varparse` |
+| 8434 `.done2` | `bra addd0a0` | `stepemit` (`VST_END`); the offset: `addd0a0d3` |
+| 8436-8441 `.simpvar`, `.simpvar2`, `.nopoint` | a simple variable's type and offset, a pointer's flag | `varparse` |
+| 8170 `calcvar`'s results (d2, d3, a2, a3) | the type, the offset, the variable and its type | the variable node (`EXN_VAR`); `calcvar` for the statements, `varleaf` for `variable` and `ampersand2` |
+
+What each step changes besides its code, and when: the `VST_*` rows of
+the table of step 3a.

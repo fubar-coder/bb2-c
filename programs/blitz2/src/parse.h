@@ -375,8 +375,15 @@ struct var *fetchvar(UWORD len, struct type **type, UWORD *c);
    returns asm d2: TF_ADDRINA2 (bit15: address in a2 generated), TF_POINTER
    (bit14), bit13 (pointer field without flag bit2), low byte = type code
    (T_xxx, 0 = struct).  *offset = asm d3: offset from a5/a4 for a simple
-   var (only valid without TF_ADDRINA2).  Also sets lastoffset. */
+   var (only valid without TF_ADDRINA2).  Also sets lastoffset.
+   calcvar is the statements' entry to its parse part, varparse (issue
+   #1180, step 3b): it reads the path, emitting each step's code as it
+   reads it, and returns the variable node (exprtree.h, EXN_VAR: value
+   the var, aux its type, vtype the asm's d2, off the asm's d3, ELF_LOCAL),
+   the last node of the arena; its caller releases it. */
 #define TF_PTRNOAT 0x2000
+struct exprnode;
+struct exprnode *varparse(struct var *v, struct type *t, UWORD *c);
 UWORD calcvar(struct var **v, struct type **t, UWORD *c, WORD *offset);
 #define calcvar2 calcvar
 

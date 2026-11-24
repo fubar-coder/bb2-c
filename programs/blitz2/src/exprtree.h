@@ -10,7 +10,11 @@
  * pending operators and their left operands.  A simple element (step 3a:
  * change expr-tree-3a-leaves) is parsed into a leaf of its own (op: its
  * ELK_* kind), which its emit part turns into code right after and
- * which is released then.
+ * which is released then.  A variable's path (step 3b: change
+ * expr-tree-3b-arrays: an array's indexes, fields, field arrays,
+ * pointers) is read by calcvar's parse part (varparse, parse.c) into a
+ * node per step, each emitted and released as soon as it is read, and a
+ * variable node at the end, which an element makes its leaf.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
@@ -45,7 +49,42 @@ enum {
     EXN_LEAF,                   /* an operand: the code start..end of what it read;
                                    op: its element kind (ELK_*); 0: the operand of the walk,
                                    or the value of a call (varcont, steps 3c and 3d) */
-    EXN_RESULT                  /* an operand that is the result of an operator now */
+    EXN_RESULT,                 /* an operand that is the result of an operator now */
+    EXN_VAR,                    /* a variable with its path, read by calcvar's parse part
+                                   (varparse, parse.c); an element's leaf in an expression */
+    EXN_STEP                    /* a step of a variable's path (op: its VST_* kind), emitted
+                                   when it is read and released then */
+};
+
+/** @brief The steps of a variable's path (exprnode.op of a STEP; issue
+ *         #1180, step 3b, change expr-tree-3b-arrays): what calcvar's
+ *         parse part read, in the order their code is written.  The index
+ *         of an INDEX and of a BRCLOSE (its subtree) is compiled into
+ *         D(regat) before the step: its code is aux..start. */
+enum {
+    VST_LIST = 1,               /* a List array's current item a(): value the array's offset */
+    VST_INDEX,                  /* an array's index in D(regat): the first one (VSF_FIRST)
+                                   scaled by value (the element size), a later one multiplied
+                                   by the dimension at value (makelmul); off the dimension the
+                                   check (VSF_CHECK) compares with */
+    VST_ARRAY,                  /* the indexes done: the array's base (value its offset) plus
+                                   the index into a2, a List array's item header skipped (VSF_LIST) */
+    VST_PFIX,                   /* a pointer array's element followed: its pointer into a2 */
+    VST_BASE,                   /* a NewType variable's address into a2: value its offset */
+    VST_BROPEN,                 /* [ of a field array: off the offset so far added to a2, a2 saved */
+    VST_BRCLOSE,                /* ] : a2 back, the index checked against value (VSF_CHECK) */
+    VST_BRSCALE,                /* the field array's index scaled by value and added to a2 */
+    VST_DEREF,                  /* a pointer field followed: its pointer at off(a2) into a2,
+                                   a BCPL pointer (VSF_BCPL) times 4 */
+    VST_END                     /* the path done: off the offset so far added to a2 */
+};
+
+/** @brief The facts of a STEP (exprnode.lflags; ELF_LOCAL as for a leaf). */
+enum {
+    VSF_CHECK = 1,              /* INDEX, LIST, BRCLOSE: runtime error checking's check */
+    VSF_FIRST = 2,              /* INDEX: the first index */
+    VSF_LIST = 4,               /* ARRAY: a List array */
+    VSF_BCPL = 8                /* DEREF: a BCPL pointer (@) */
 };
 
 /** @brief The element kinds of a LEAF an element makes (exprnode.op;
@@ -83,7 +122,8 @@ enum {
     ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177: conv) */
     ELF_WORD = 64,              /* VAR: a Byte or Word value (#1179: wordval) */
     ELF_REF = 128,              /* LABEL: the reference to the label is made at emit */
-    ELF_LOCAL = 256             /* VAR, ADDROF: a local variable (varmode: its a4 offset) */
+    ELF_LOCAL = 256             /* VAR, ADDROF, the node VAR and a STEP: a local variable
+                                   (varmode: its a4 offset) */
 };
 
 /** @brief The limit of the counted nodes (the original's precstack: 64
@@ -101,6 +141,10 @@ enum {
  *         makes no node: behind the run of minus signs of the innermost
  *         level it is the 129th (63 times "-(" and "-b", measured in
  *         change expr-tree-3a-leaves), never with the 65th counted node.
+ *         A step of a variable's path and the variable node take the
+ *         leaf's place (made after the index, released before the next
+ *         node: 62 times "-(" and "-a(-c)" 129, change
+ *         expr-tree-3b-arrays).
  *         A margin to 136 (6256 bytes on the 68000). */
 #define EXPRTREE_NODES 136
 
@@ -115,8 +159,15 @@ enum {
  *         tafter the type so far after it, lflags its facts (ELF_*),
  *         value, aux, vtype and off what its kind needs (eval.c,
  *         libcall.c; docs/blitz2/expression-tree.md), start..end the code
- *         its emit part wrote.  The counted ones (EXPR, BRACKET, NOT,
- *         BINOP) are linked by down, the pending one below. */
+ *         its emit part wrote.  VAR (parse.c, varparse): value the
+ *         variable or its last field (struct var *), aux its type
+ *         (struct type *), vtype and off calcvar's type and offset,
+ *         lflags ELF_LOCAL.  STEP (op its VST_*): value, off and lflags
+ *         (VSF_*, ELF_LOCAL) what its kind needs, aux of an INDEX and a
+ *         BRCLOSE where its index's code begins (it ends at start),
+ *         start..end the code stepemit wrote.  The counted ones (EXPR,
+ *         BRACKET, NOT, BINOP) are linked by down, the pending one
+ *         below. */
 struct exprnode {
     struct exprnode *down;
     struct exprnode *left, *right;

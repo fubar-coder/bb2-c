@@ -8,10 +8,10 @@ After `expr-tree-3a-leaves`. "The check": `expr-tree-1-typing/design.md`, "The c
 
 ## 2. Implementation
 
-- [ ] 2.1 The variable node and the parse part (design decision 1); verify: host build, the check.
-- [ ] 2.2 The emit part, `variable` and `calcvar`'s statement entry through it; verify: the check, `corpus_runerr` and `corpus_exprmatrix_runerr_*` with prev.
-- [ ] 2.3 Side-effect table rows, comments (form of `expr-tree-1-typing` open question 1), `tools/testinfo/rules.txt`; verify: links, selection test.
+- [x] 2.1 The variable node and the parse part (design decision 1); verify: host build, the check.
+- [x] 2.2 The emit part, `variable` and `calcvar`'s statement entry through it; verify: the check, `corpus_runerr` and `corpus_exprmatrix_runerr_*` with prev.
+- [x] 2.3 Side-effect table rows, comments (form of `expr-tree-1-typing` open question 1), `tools/testinfo/rules.txt`; verify: links, selection test.
 
 ## 3. Commit
 
-- [ ] 3.1 Tests of 1.1 in their own commit, then the rework commit; verify: each passes the check.
+- [x] 3.1 Tests of 1.1 in their own commit, then the rework commit; verify: each passes the check.

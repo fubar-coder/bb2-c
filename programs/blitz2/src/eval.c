@@ -2594,33 +2594,42 @@ static void addrofemit(struct exprnode *l)
     l->end = pc;
 }
 
+/* no asm counterpart - the variable node l (varparse: calcvar's parse
+   part, which emitted the code of its path) made the leaf of kind kind
+   read under the type so far tsf: value what ext_evalvalue reports (the
+   type's code), aux the flagmask; vtype, off and ELF_LOCAL stay */
+static void varleaf(struct exprnode *l, unsigned kind, UWORD tsf)
+{
+    const struct type *t = (const struct type *)l->aux;
+
+    l->kind = EXN_LEAF;
+    l->op = (UWORD)kind;
+    l->tbefore = tsf;
+    l->value = t ? t->u.code : 0;
+    l->aux = flagmask;
+}
+
 /* blitz2.s:9910 ampersand2.  The parse part finds the variable (fetchvar
-   makes it at first sight) and its offset (calcvar: an array, a pointer
-   or a path still emits its address code here, step 3b); the leaf holds
-   calcvar's type, the offset and what ext_evalvalue reports.  *type is
-   calcvar's type (with its flags). */
+   makes it at first sight) and reads its path (varparse: an array's
+   indexes, a pointer's or a path's address code are emitted as they are
+   read); its variable node becomes the leaf, with calcvar's type, the
+   offset and what ext_evalvalue reports.  *type is calcvar's type (with
+   its flags). */
 UWORD ampersand2(UWORD *type)
 {
     UWORD namelen;          /* asm d2 after getvname */
-    UWORD c, vartype;
+    UWORD c;
     struct var *v;
     struct type *t;
     struct exprnode *l;
-    WORD off = 0;
 
     c = getchar3();
     c = getvname(c, &namelen);
     v = fetchvar(namelen, &t, &c);
-    vartype = calcvar(&v, &t, &c, &off);
-    l = newleaf(ELK_ADDROF, *type);
-    l->vtype = vartype;
-    l->off = off;
-    l->value = t ? t->u.code : 0;
-    l->aux = flagmask;
-    if (varmode)                    /* fetchvar: a local variable */
-        l->lflags |= ELF_LOCAL;
-    l->own = (UBYTE)vartype;
-    l->tafter = vartype;
+    l = varparse(v, t, &c);
+    varleaf(l, ELK_ADDROF, *type);
+    l->own = (UBYTE)l->vtype;
+    l->tafter = l->vtype;
     addrofemit(l);
     leafdone(l, type);
     return c;
@@ -3702,11 +3711,12 @@ static void varemit(struct exprnode *l)
 }
 
 /* blitz2.s:10471 variable.  The parse part finds the variable (fetchvar
-   makes it at first sight, with its offset) and its offset or path
-   (calcvar: an array, a pointer or a path still emits its address code
-   here, step 3b); the leaf holds calcvar's type, the offset, what
-   ext_evalvalue reports, and varcont's decisions (contleaf).  A name
-   with { is a procedure call (afunction, step 3c). */
+   makes it at first sight, with its offset) and reads its path
+   (varparse: an array's indexes, a pointer's or a path's address code are
+   emitted as they are read); its variable node becomes the leaf, with
+   calcvar's type, the offset, what ext_evalvalue reports, and varcont's
+   decisions (contleaf).  A name with { is a procedure call (afunction,
+   step 3c). */
 static UWORD variable(UWORD c, UWORD *type)
 {
     UWORD namelen;          /* asm d2 after getvname */
@@ -3714,22 +3724,14 @@ static UWORD variable(UWORD c, UWORD *type)
     struct var *v;
     struct type *t;
     struct exprnode *l;
-    WORD off = 0;
-    UWORD vartype;
 
     c = getvname(c, &namelen);
     if (c == '{')
         return afunction(old, type, namelen);
     v = fetchvar(namelen, &t, &c);
-    vartype = calcvar(&v, &t, &c, &off);
-    l = newleaf(ELK_VAR, old);
-    l->vtype = vartype;
-    l->off = off;
-    l->value = t ? t->u.code : 0;
-    l->aux = flagmask;
-    if (varmode)                    /* fetchvar: a local variable */
-        l->lflags |= ELF_LOCAL;
-    l->own = (UBYTE)vartypeof(vartype);
+    l = varparse(v, t, &c);
+    varleaf(l, ELK_VAR, old);
+    l->own = (UBYTE)vartypeof(l->vtype);
     contleaf(l);
     varemit(l);
     leafdone(l, type);

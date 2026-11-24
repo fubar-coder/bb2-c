@@ -639,7 +639,10 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   `exprtree_climb`, whose hooks in `eval.c` emit each operator when the
   original did; a simple element (a constant, a variable, `&`, `?`,
   `Pi`, `Used`, `Addr` ...) is parsed into a leaf node whose code is
-  emitted right after; the type of each operation is decided by
+  emitted right after, a variable's path (an array's indexes, fields,
+  field arrays, pointers: `varparse`, the parse part of `calcvar`) into a
+  node per step whose code is emitted as soon as it is read; the type of
+  each operation is decided by
   `exprtype.c` (`docs/blitz2/expression-tree.md`, issue #1180).
 * Code is produced from **templates** (machine code snippets in the data area
   of the compiler, `blitz2.s:914 objects` … `1254`, also in `tokens1`/

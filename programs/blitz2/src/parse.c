@@ -9,6 +9,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include "blitz2.h"
+#include "exprtree.h"
 
 /* long read of a UWORD template (asm move.l label,d1); avoids L_() on
    UWORD arrays (strict aliasing) */
@@ -1256,21 +1257,29 @@ struct var *fetchvar(UWORD len, struct type **type, UWORD *c)
     return fvarback((struct node *)&firstvar, len, type, c);
 }
 
-/* blitz2.s:8061 addd0a0 - emit code adding d3 to a2; returns the (possibly
-   clobbered) d3 like the asm */
-static WORD addd0a0(WORD off)
+/* no asm counterpart; replaces the d3 that blitz2.s:8061 addd0a0 leaves -
+   the offset off, or for an offset from 1 to 8 the data field of its addq
+   (asm: d3 clobbered), which calcvar returns as the offset */
+static WORD addd0a0d3(WORD off)
+{
+    if (off == 0 || (UWORD)off >= 9)
+        return off;
+    return (off & 7) << 9;                  /* addq data field (8 -> 0) */
+}
+
+/* blitz2.s:8061 addd0a0 - emit code adding d3 to a2 (the d3 it leaves:
+   addd0a0d3) */
+static void addd0a0(WORD off)
 {
     if (off == 0)
-        return off;
+        return;
     if ((UWORD)off < 9) {
-        WORD quick = (off & 7) << 9;        /* addq data field (8 -> 0) */
-        *addqa0 = (*addqa0 & 0xf1ff) | quick;
+        *addqa0 = (*addqa0 & 0xf1ff) | addd0a0d3(off);
         pokewd(*addqa0);
-        return quick;                       /* asm: d3 clobbered */
+        return;
     }
     leaa0a0[1] = off;
     pokel(TL(leaa0a0));
-    return off;
 }
 
 /* blitz2.s:8082 makeamul / 8084 makelmul - make long multiply for array
@@ -1299,18 +1308,130 @@ static void makelmul(WORD off)
 }
 #define makeamul makelmul
 
-/* blitz2.s:8170 calcvar / 8172 calcvar2 - use a3 = var, a2 = type,
-   flagmask = flags.
-   if bit 15 of d2 then code has been generated for address of thing in a2.
-   else d3=offset from a5 for simple variable.
-   d2 & ff=type. 0=struct address; bit 14 of d2=1 if result is a pointer */
-UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
+/* no asm counterpart; replaces the code of blitz2.s:8170-8440 calcvar
+   (.notalist, .arloop, .ardone, .normalar, .notap, .loop0 with its [ ]
+   and .pointer, .done2) - the code of the step s of a variable's path,
+   from s and the emitter's state only (issue #1180, step 3b) */
+static void stepemit(struct exprnode *s)
 {
-    struct var *v = *pv;
-    struct type *t = *pt;
+    s->start = pc;
+    varmode = (s->lflags & ELF_LOCAL) ? -1 : 0;   /* pokela5s: a4 or a5 */
+    switch (s->op) {
+    case VST_LIST:                          /* list array: current item */
+        listcode1[1] = (UWORD)s->value;
+        pokela5s(TL(listcode1));
+        pokel(TL(listcode2));
+        if (s->lflags & VSF_CHECK)
+            tokejsr(currentchk);            /* a2=0 error check */
+        pokewd(*listarfix);                 /* addq #8,a2: skip node. */
+        break;
+    case VST_INDEX:
+        if (s->lflags & VSF_FIRST) {
+            if (s->lflags & VSF_CHECK)
+                arrszchk();
+            muld1((UWORD)s->value);
+            regat++;
+        } else
+            makeamul((WORD)s->value);
+        if (s->lflags & VSF_CHECK) {        /* .arloop */
+            pokewda5s(*zarrchk | ((regat - 1) << 9));   /* cmp.l x(a5),D regat */
+            pokewd(s->off);
+            pokel(TL(arrchk2));
+            tokejsr(arrerr);
+        }
+        break;
+    case VST_ARRAY:                         /* .ardone */
+        regat--;
+        movea5a0[1] = (UWORD)s->value;
+        pokela5s(TL(movea5a0));
+        pokewd(regat | 0xd5c0);             /* add.l Dr,a2 */
+        if (s->lflags & VSF_LIST)
+            pokewd(*listarfix);             /* addq #8,a2 to skip node. */
+        break;
+    case VST_PFIX:
+        pokewd(calcvar_pfix);               /* move.l (a2),a2 */
+        break;
+    case VST_BASE:                          /* .notap */
+        movea5a0[1] = (UWORD)s->value;
+        pokela5s(TL(movea5a0));             /* move.l x(a5),a2 */
+        break;
+    case VST_BROPEN:
+        addd0a0(s->off);
+        pokewd(*pusha2);
+        break;
+    case VST_BRCLOSE:
+        pokewd(*pulla2);
+        /* [] error checking: 8(a3) = how many we can handle.
+           special case for 0! */
+        if (s->lflags & VSF_CHECK) {
+            brchkcode[1] = (UWORD)s->value;
+            brchkcode[0] = brchkcode0[0] | (regat << 9);
+            pokel(TL(brchkcode));
+            pokel(TL(brchkcode + 2));
+            pokewd(brchkcode[4]);
+        }
+        break;
+    case VST_BRSCALE:
+        muld1((UWORD)s->value);
+        pokewd(*addrega2 | regat);
+        break;
+    case VST_DEREF:                         /* .pointer */
+        if (s->off == 0)
+            pokewd(*movea0);
+        else {
+            movea0a0[1] = s->off;
+            pokel(TL(movea0a0));
+        }
+        if (s->lflags & VSF_BCPL)
+            pokel(TL(adda0a0));
+        break;
+    case VST_END:                           /* .done2: bra addd0a0 */
+        addd0a0(s->off);
+        break;
+    }
+    s->end = pc;
+}
+
+/* no asm counterpart - a new step op of a variable's path, made right
+   before its code (varmode: a4 or a5 at that moment) */
+static struct exprnode *newstep(unsigned op)
+{
+    struct exprnode *s = exprtree_new(EXN_STEP);
+
+    s->op = (UWORD)op;
+    if (varmode)
+        s->lflags |= ELF_LOCAL;
+    return s;
+}
+
+/* no asm counterpart - the step s emitted and released (the window of
+   exprtree.h) */
+static void stepdone(struct exprnode *s)
+{
+    stepemit(s);
+    exprtree_release(s);
+}
+
+/* blitz2.s:8170 calcvar / 8172 calcvar2, the parse part (issue #1180,
+   step 3b) - use a3 = var, a2 = type, flagmask = flags.
+   Reads the path of the variable v of type t (fetchvar's; *pc0 the char
+   after its name, out: the char after the path): the indexes of an array
+   (compiled into D(regat) as they are read: arreval, arrevalchk), the
+   fields after \, the index of a field array [ ], the pointers followed.
+   Each step is a node (EXN_STEP) that is emitted (stepemit) as soon as it
+   is read and released then, so the code comes at the moments it did.
+   Returns the variable node (EXN_VAR, the last node of the arena): value
+   the variable or the last field, aux its type, vtype the asm's d2 (if
+   bit 15 then code has been generated for address of thing in a2, else
+   off = offset from a5 for simple variable; d2 & ff = type, 0 = struct
+   address; bit 14 = 1 if result is a pointer), ELF_LOCAL.  Also sets
+   lastoffset. */
+struct exprnode *varparse(struct var *v, struct type *t, UWORD *pc0)
+{
     UWORD ch = *pc0;
     UWORD rtype;
     WORD off;
+    struct exprnode *s, *n;
 
     lastoffset = 0;
     if (v->flags & 2) {                     /* btst #1,7(a3): array */
@@ -1321,22 +1442,23 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             /* list array: current item */
             if (!(v->flags & 0x100))        /* btst #0,6(a3) */
                 nolisterr();
-            listcode1[1] = v->offset;
-            pokela5s(TL(listcode1));
-            pokel(TL(listcode2));
+            s = newstep(VST_LIST);
+            s->value = (UWORD)v->offset;
             if (debugga)
-                tokejsr(currentchk);        /* a2=0 error check */
-            pokewd(*listarfix);             /* addq #8,a2: skip node. */
+                s->lflags |= VSF_CHECK;
+            stepdone(s);
         } else {
             /* .notalist */
             struct type *ftype;
-            WORD fvarmode, fndims, foff;
+            WORD fvarmode, fndims, foff, fprev = 0;
             UWORD fmask, elsize, listoff;
+            ULONG at;
+            BOOL first = TRUE;
 
             /* Fixed (#937): the asm kept this in one word in the code
                (.listoff dc 0, blitz2.s:8214-8240), which the calcvar of an
                array element in the index expression (arreval) set for its
-               own array: a(b(1)) of a List array a multiplied the index by
+               own array: a(b(1)) of a List array multiplied the index by
                the bare element size, c(a(1)) of a normal array c by its
                size + 8.  A local, kept across arreval like the asm's
                stack frame. */
@@ -1350,44 +1472,48 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             ftype = t;
             fmask = flagmask;
             bakup();
+            at = pc;
             ch = arreval();
             flagmask = fmask;
             varmode = fvarmode;
-            if (debugga)
-                arrszchk();
             t = ftype;
             elsize = 4;
             if (!(flagmask & 1))            /* pointer? then use 4 byte mul... */
                 elsize = t->size;
-            muld1(elsize + listoff);
-            regat++;
             for (;;) {                      /* .arloop */
                 foff += 4;
                 if (fvarmode)
                     foff -= 8;
-                if (debugga) {
-                    pokewda5s(*zarrchk | ((regat - 1) << 9));   /* cmp.l x(a5),D regat */
-                    pokewd(foff);
-                    pokel(TL(arrchk2));
-                    tokejsr(arrerr);
+                s = newstep(VST_INDEX);
+                s->aux = at;                /* the index's code: at..s->start */
+                s->off = foff;
+                if (!first)
+                    s->value = (UWORD)fprev;
+                else {
+                    s->lflags |= VSF_FIRST;
+                    s->value = (UWORD)(elsize + listoff);
                 }
+                if (debugga)
+                    s->lflags |= VSF_CHECK;
+                stepdone(s);
                 if (--fndims == 0)
                     break;
                 if (ch != ',')
                     syntaxerr();
+                at = pc;
                 ch = arrevalchk();
                 varmode = fvarmode;
-                makeamul(foff);
+                fprev = foff;
+                first = FALSE;
             }
             /* .ardone */
             if (ch != ')')
                 syntaxerr();
-            regat--;
-            movea5a0[1] = v->offset;
-            pokela5s(TL(movea5a0));
-            pokewd(regat | 0xd5c0);         /* add.l Dr,a2 */
+            s = newstep(VST_ARRAY);
+            s->value = (UWORD)v->offset;
             if (v->flags & 0x100)
-                pokewd(*listarfix);         /* addq #8,a2 to skip node. */
+                s->lflags |= VSF_LIST;
+            stepdone(s);
         }
         /* .normalar */
         ch = getchar3();
@@ -1396,7 +1522,7 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             rtype = 0xc000;                 /* .pmskip */
         else {
             if (v->flags & 1)
-                pokewd(calcvar_pfix);       /* move.l (a2),a2 */
+                stepdone(newstep(VST_PFIX));
             rtype = 0x8000;                 /* .noppnt */
         }
     } else {
@@ -1415,8 +1541,9 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
         }
         /* .notap */
         rtype = 0x8000;
-        movea5a0[1] = v->offset;
-        pokela5s(TL(movea5a0));             /* move.l x(a5),a2 */
+        s = newstep(VST_BASE);
+        s->value = (UWORD)v->offset;
+        stepdone(s);
     }
 
     /* .loopm1 */
@@ -1446,36 +1573,35 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
             struct type *st;
             struct var *sv;
             WORD svm;
-            ULONG slo;
+            ULONG slo, at;
             UWORD ty, elsize;
 
             if (!(v->flags & 2))
                 rongtypeerr();
-            addd0a0(off);
+            s = newstep(VST_BROPEN);
+            s->off = off;
+            stepdone(s);
             st = t; sv = v; svm = varmode; slo = lastoffset;
-            pokewd(*pusha2);
             ty = 2;
+            at = pc;
             ch = eval(&ty);
             if (ch != ']')
                 syntaxerr();
-            pokewd(*pulla2);
             lastoffset = slo; varmode = svm; t = st; v = sv;
-            /* [] error checking: 8(a3) = how many we can handle.
-               special case for 0! */
-            if (debugga && v->ndims) {
-                brchkcode[1] = v->ndims;
-                brchkcode[0] = brchkcode0[0] | (regat << 9);
-                pokel(TL(brchkcode));
-                pokel(TL(brchkcode + 2));
-                pokewd(brchkcode[4]);
-            }
+            s = newstep(VST_BRCLOSE);
+            s->aux = at;                    /* the index's code: at..s->start */
+            s->value = (UWORD)v->ndims;
+            if (debugga && v->ndims)
+                s->lflags |= VSF_CHECK;
+            stepdone(s);
             elsize = 4;
             if (!(v->flags & 1)) {
                 chktypesize(t);             /* Fixed (#974) */
                 elsize = t->size;
             }
-            muld1(elsize);
-            pokewd(*addrega2 | regat);
+            s = newstep(VST_BRSCALE);
+            s->value = elsize;
+            stepdone(s);
             ch = getchar3();
             off = 0;
             rtype = 0x8000;
@@ -1491,20 +1617,20 @@ UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
                 rtype |= TF_PTRNOAT;
             break;
         }
-        if (off == 0)
-            pokewd(*movea0);
-        else {
-            movea0a0[1] = off;
-            pokel(TL(movea0a0));
-        }
+        s = newstep(VST_DEREF);
+        s->off = off;
         if (v->flags & 4)
-            pokel(TL(adda0a0));
+            s->lflags |= VSF_BCPL;
+        stepdone(s);
         off = 0;                            /* .loopm1 */
     }
     /* .done */
     if (t->u.code < 256)
         rtype = (rtype & 0xff00) | (UBYTE)TYPE_CODE(t); /* move.b 7(a2),d2 */
-    off = addd0a0(off);                     /* .done2: bra addd0a0 */
+    s = newstep(VST_END);
+    s->off = off;
+    stepdone(s);
+    off = addd0a0d3(off);
     goto out;
 
 simpvar2:
@@ -1512,10 +1638,29 @@ simpvar2:
     if (v->flags & 1)
         rtype |= 0x4000;
 out:
-    *pv = v;
-    *pt = t;
+    n = exprtree_new(EXN_VAR);
+    n->value = (ULONG)v;
+    n->aux = (ULONG)t;
+    n->vtype = rtype;
+    n->off = off;
+    if (varmode)
+        n->lflags |= ELF_LOCAL;
     *pc0 = ch;
+    return n;
+}
+
+/* blitz2.s:8170 calcvar / 8172 calcvar2 - the statements' entry: the
+   variable node of the parse part (varparse, which emits the path) read
+   into *pv, *pt, *offset and the asm's d2, and released */
+UWORD calcvar(struct var **pv, struct type **pt, UWORD *pc0, WORD *offset)
+{
+    struct exprnode *n = varparse(*pv, *pt, pc0);
+    UWORD rtype = n->vtype;
+
+    *pv = (struct var *)n->value;
+    *pt = (struct type *)n->aux;
     if (offset)
-        *offset = off;
+        *offset = n->off;
+    exprtree_release(n);
     return rtype;
 }

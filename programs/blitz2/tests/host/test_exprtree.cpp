@@ -3,7 +3,9 @@
 // expr-tree-2-operators).  The hooks of the walk are a small evaluator of
 // this file over a text: a letter is an operand (a simple element, whose
 // leaf is made, emitted and released as in eval.c: change
-// expr-tree-3a-leaves), + - binary operators of
+// expr-tree-3a-leaves), a capital letter with [ ] an array element (its
+// index, a step of its path and its variable node as in parse.c's
+// varparse: change expr-tree-3b-arrays), + - binary operators of
 // one precedence, * / of a higher one, ^ of a higher one still, ( ) a
 // bracket and ~ NOT (each an expression node of its own, as eval4 makes
 // them), _ a minus sign (a run of them is one node, as eval.c's negate
@@ -87,6 +89,29 @@ void element(ctx *x)
 
         l->op = ELK_VAR;
         note(x);
+        x->out += c;
+        exprtree_release(l);
+    } else if (c >= 'A' && c <= 'Z') {
+        // an array element (parse.c, varparse): its index an expression of
+        // its own, then a step of its path, emitted and released, then the
+        // variable node, which becomes the element's leaf (eval.c:
+        // variable, varleaf)
+        exprnode *s, *l;
+
+        if (*x->p++ != '[')
+            std::longjmp(errjmp, 3);
+        expression(x, EXN_EXPR);
+        exprtree_release(exprtree_top());
+        if (*x->p++ != ']')
+            std::longjmp(errjmp, 3);
+        s = exprtree_new(EXN_STEP);
+        s->op = VST_INDEX;
+        note(x);
+        exprtree_release(s);
+        l = exprtree_new(EXN_VAR);
+        note(x);
+        l->kind = EXN_LEAF;
+        l->op = ELK_VAR;
         x->out += c;
         exprtree_release(l);
     } else
@@ -227,6 +252,8 @@ TEST_CASE("exprtree: the order of the emission", "[exprtree]")
     CHECK(walk("_a+b") == "a_b+");
     CHECK(walk("a*__b") == "ab__*");
     CHECK(walk("_(a+b)") == "ab+_");
+    CHECK(walk("A[b+c]*d") == "bc+Ad*");   // the index before the array
+    CHECK(walk("a+A[B[c]]") == "acBA+");
     CHECK(walk("a+") == "syntax");
     CHECK(walk("(a") == "syntax");
 }
@@ -274,6 +301,13 @@ TEST_CASE("exprtree: 64 counted nodes, the 65th is the overflow", "[exprtree]")
     CHECK(walk(times("_(", 63) + "_a" + times(")", 63), x) == "a" + times("_", 64));
     CHECK(x.maxlive == 129);
     CHECK(x.maxlive <= EXPRTREE_NODES);
+    // arrays nested in their indexes behind minus signs (change
+    // expr-tree-3b-arrays): each index is counted, a step and the
+    // variable node live only at the leaf's place: the bound stays 129
+    CHECK(walk(times("_A[", 63) + "_b" + times("]", 63), x) == "b_" + times("A_", 63));
+    CHECK(x.maxpend == 64);
+    CHECK(x.maxlive == 129);
+    CHECK(walk(times("_A[", 64) + "b" + times("]", 64)) == "overflow");
 }
 
 TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprtree]")
