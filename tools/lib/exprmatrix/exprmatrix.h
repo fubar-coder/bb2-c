@@ -348,6 +348,15 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 /* C5, C6: a 32.16 product that does not fit its consumer is a runtime error
    (as under runtime error checking), not cut */
 #define EM_R_C5ERR (1u << 13)
+/* C7K (task 2.1b, "C7: constants by their smallest type", 2026-11-24): C7
+   with constants by their smallest type (Byte, Word, Long; a fraction a
+   Quick) and the operands of every comparison typed by their own operands;
+   a whole-number operation in them in its own type, at least Long
+   (EM_R_C7KLONG) or at least the destination's whole-number width
+   (EM_R_C7KDEST) */
+#define EM_R_C7K (1u << 14)
+#define EM_R_C7KLONG (1u << 15)
+#define EM_R_C7KDEST (1u << 16)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */

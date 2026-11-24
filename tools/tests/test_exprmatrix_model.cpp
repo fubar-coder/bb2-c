@@ -552,3 +552,27 @@ TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", 
     CHECK(expr("q*w", "q=1.5 w.w=3").typing(EM_DL, c7) == "mul Q>~ W>~ 3 L;");
     CHECK(expr("q*p", "q=1.5 p=2").typing(EM_DQ, c7) == "mul Q>Q Q>Q 1 Q;");
 }
+
+TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatrix][cand]")
+{
+    unsigned k = cand(EM_CAND_C7) | EM_R_C7K, own = k, lng = k | EM_R_C7KLONG, dst = k | EM_R_C7KDEST;
+
+    // the Word sum in a comparison: wraps in its own type, not under at
+    // least a Long, under the destination's width by the destination
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, own) == "0");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, lng) == "-1");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, dst) == "-1");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DW, dst) == "0");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_IF, dst) == "F");
+    CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_IF, lng) == "T");
+    // the comparison's operands by their own: #1183's cases fixed in all three
+    for (unsigned r : { own, lng, dst }) {
+        CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, r) == "800000C1");
+        CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, r) == "FFFF0000");
+        CHECK(expr("q*1000>50000", "q=100").value(EM_DL, r) == "-1");
+        CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, r) == "-1");
+        CHECK(expr("b1+b2>150", "b1.b=100 b2.b=100").value(EM_DB, r) == "-1");
+        CHECK(expr("1+1+1+q", "q=1.5").value(EM_PRINT, r) == "4.5");
+        CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, r) == expr("l+q+p", "q=1.5 p=1.5 l.l=10").value(EM_DL, r));
+    }
+}

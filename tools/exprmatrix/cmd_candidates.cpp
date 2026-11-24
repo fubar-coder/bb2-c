@@ -67,6 +67,10 @@ std::vector<ruleset> rulesets()
     v.push_back({ "C5eb", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C5) | EM_R_C5ERR | EM_R_SCOPEB });
     v.push_back({ "C6ea", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C6) | EM_R_C5ERR });
     v.push_back({ "C6eb", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C6) | EM_R_C5ERR | EM_R_SCOPEB });
+    // C7K: constants by their smallest type, comparisons by their operands
+    v.push_back({ "C7Kown", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K });
+    v.push_back({ "C7Klong", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG });
+    v.push_back({ "C7Kdest", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KDEST });
     return v;
 }
 

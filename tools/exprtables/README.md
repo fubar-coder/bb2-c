@@ -70,6 +70,8 @@ OPTIONS:
           --scope-b           the left operand of a comparison by scope (b), not (a)
           --marks FILE        the cells of the CD places to mark: OP WANT LEFT RIGHT per line
   -o,     --out FILE          write the page to FILE (default: stdout)
+          --c7k VARIANT       C7 as C7K: own, long or dest (a comparison's whole-number
+                              operations)
 
 With --out prints the cells that differ from today's and the marked ones per
 operator group. A line of --marks is the cell as exprmatrix candidates --typing
@@ -88,7 +90,9 @@ differs from today's is marked ◆, a cell named in `--marks` (the cells of
 the CD operations the candidate retypes, from the count of the decision
 round) ‡, and a table of the constants beside an operand of each type is
 added. With `--scope-b` the left operand of a comparison follows scope (b)
-of the open question (the cells, two variables each, are the same). The
+of the open question (the cells, two variables each, are the same); with `--c7k` C7
+is printed as C7K (constants by their smallest type, comparisons typed by their
+operands; `own`, `long`, `dest` the width of a comparison's whole-number operations). The
 logic is `ett_rules_cand` (`cand.c`) and `ett_page_opts` (`page.c`).
 
 ## Inputs and outputs

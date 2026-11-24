@@ -164,7 +164,8 @@ operand typing, each operation typed by its operator, its operands' types
 and the wanted type. For every cell of the description it computes the
 value by the port's rules (`flow`) and by each candidate C1 to C7 with the
 left operand of a comparison by scope (a) and (b), and C5 and C6 also with their
-overflow a runtime error (`C5ea`, `C5eb`, `C6ea`, `C6eb`); `--out` lists the cells where
+overflow a runtime error (`C5ea`, `C5eb`, `C6ea`, `C6eb`), and C7K (`C7Kown`, `C7Klong`,
+`C7Kdest`: C7 with constants by their smallest type); `--out` lists the cells where
 one differs, and the counts go to stdout. `--exprs` evaluates expressions
 the matrix has no cell for (chains, a compound left operand), one per line:
 an ID, a context (`dl`, `print`, ...: the names of the description), the

@@ -181,8 +181,14 @@ int beside(void *ctx, unsigned want, unsigned partner, const char *text)
     return em_cand_consttype(*static_cast<unsigned *>(ctx), (int)want, (int)partner, text);
 }
 
+const char *const about_c7k =
+    "\n**C7K** (task 2.1b, \"C7: constants by their smallest type\", 2026-11-24): C7, with every\n"
+    "constant by its smallest type (Byte, Word, Long; a fraction a Quick), adapted where the\n"
+    "operation needs it, and the operands of every comparison typed by their own operands,\n"
+    "also without a Quick. A whole-number operation in a comparison's operand: ";
+
 int run(const std::string &me, const std::string &name, bool scopeb, const std::string &marksfile,
-        const std::string &out)
+        const std::string &out, const std::string &c7k)
 {
     int n;
     for (n = EM_CAND_C1; n < EM_NCAND; n++)
@@ -212,15 +218,31 @@ int run(const std::string &me, const std::string &name, bool scopeb, const std::
     struct ett_rules base, r;
     struct ett_cand c;
     unsigned rules = EM_RULES_CANDBASE | EM_R_CAND(n) | (scopeb ? EM_R_SCOPEB : 0);
+    std::string k7;
+
+    if (!c7k.empty()) {
+        if (n != EM_CAND_C7 || (c7k != "own" && c7k != "long" && c7k != "dest")) {
+            std::fprintf(stderr, "%s: --c7k own, long or dest, with C7\n", me.c_str());
+            return 2;
+        }
+        rules |= EM_R_C7K | (c7k == "long" ? EM_R_C7KLONG : c7k == "dest" ? EM_R_C7KDEST : 0);
+        k7 = std::string(about_c7k) +
+             (c7k == "own" ? "in its own type (C7K-own).\n"
+              : c7k == "long" ? "at least a Long (C7K-long).\n"
+                              : "at least the destination's whole-number width (r.l a Long, r.w a Word, rb.b a "
+                                "Byte; a Quick or Float destination and none: its own type) (C7K-dest).\n");
+    }
 
     ett_prims_exprtype(&p);
     ett_rules_flow(&base, &p);
     c.rules = rules;
     c.base = &base;
     ett_rules_cand(&r, &c);
-    std::string title = std::string("Candidate ") + em_cand_name(n) + ": " + em_cand_title(n) +
+    std::string title = (c7k.empty() ? std::string("Candidate ") + em_cand_name(n) + ": " + em_cand_title(n)
+                                     : std::string("Candidate C7K-") + c7k + ": " + em_cand_title(n) +
+                                           ", constants by their smallest type") +
                         (scopeb ? ", scope (b)" : "");
-    std::string about = std::string(about_common) + "\n" + about_c[n];
+    std::string about = std::string(about_common) + "\n" + about_c[n] + k7;
     struct ett_pageopts o = { title.c_str(), about.c_str(), notes, &base, marksfile.empty() ? nullptr : mark, &m,
                               beside, &rules };
     struct ett_stats st;
@@ -258,7 +280,7 @@ int run(const std::string &me, const std::string &name, bool scopeb, const std::
 void cmd_candidate(CLI::App &app, int &status)
 {
     struct options {
-        std::string name, marks, out;
+        std::string name, marks, out, c7k;
         bool scopeb = false;
     };
     auto o = std::make_shared<options>();
@@ -268,9 +290,11 @@ void cmd_candidate(CLI::App &app, int &status)
     sub->add_option("--marks", o->marks, "the cells of the CD places to mark: OP WANT LEFT RIGHT per line")
         ->type_name("FILE");
     sub->add_option("-o,--out", o->out, "write the page to FILE (default: stdout)")->type_name("FILE");
+    sub->add_option("--c7k", o->c7k, "C7 as C7K: own, long or dest (a comparison's whole-number operations)")
+        ->type_name("VARIANT");
     sub->footer("With --out prints the cells that differ from today's and the marked ones per operator group. A line of "
                 "--marks is the cell as exprmatrix candidates --typing writes it (\"mul L W Q\"), anything after "
                 "a tab ignored, # starts a comment. Exit status 0, 1 a file cannot be read or written, 2 usage "
                 "error or no such candidate.");
-    sub->callback([sub, o, &status] { status = run(cli::name(*sub), o->name, o->scopeb, o->marks, o->out); });
+    sub->callback([sub, o, &status] { status = run(cli::name(*sub), o->name, o->scopeb, o->marks, o->out, o->c7k); });
 }

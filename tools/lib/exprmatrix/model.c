@@ -2453,6 +2453,10 @@ struct cev {
     int scopeb;
     struct trec *tr;
     int inmul;                  /* C6: the constant being typed is an operand of a * */
+    int c7k;                    /* C7K: constants by their smallest type, comparisons by their operands */
+    int cmpmode;                /* C7K: whole numbers in a comparison: 0 own, 1 at least Long, 2 the destination's */
+    int rootw;                  /* the wanted type of the whole expression */
+    int cmpmin;                 /* the least width of a whole-number operation here (0: none) */
 };
 
 static int tmax(int a, int b)
@@ -2567,7 +2571,9 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
 
     /* C6: a whole constant beside a Quick in a * by its value (C3's rule),
        else C1's */
-    if (cn == EM_CAND_C6)
+    if (c->c7k)
+        cn = EM_CAND_C3;        /* C7K: a whole constant by its smallest type, a fraction a Quick */
+    else if (cn == EM_CAND_C6)
         cn = c->inmul && pt == TQ && rat_isint(a) ? EM_CAND_C3 : EM_CAND_C1;
     tt = consttarget(cn, a, W, pt);
     char text[48];
@@ -2600,6 +2606,19 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
 }
 
 static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r);
+
+/* C7K: the least width of a whole-number operation in the operands of a
+   comparison (with no wanted type there): none, a Long, or the
+   destination's whole-number width (a Quick or Float destination, or none:
+   none) */
+static int c7kmin(const struct cev *c)
+{
+    if (!c->c7k || !c->cmpmode)
+        return 0;
+    if (c->cmpmode == 1)
+        return TL;
+    return c->rootw >= TB && c->rootw <= TL ? c->rootw : 0;
+}
 
 /* a 32.16 product (C5, C6) taken as the Quick or Long it is: its overflow */
 static void wideok(struct ev *e, struct reg *r)
@@ -2688,8 +2707,15 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
         if (c->scopeb && !has_qf(n->l)
             && !(is_consttree(n->l) && W == TF && n->l->kind == TN_CONST && !cfits(rat_text(n->l->text), TW)))
             WL = W;
-        if (coperands(c, n, WL, 0, r, &b))
-            return 1;
+        {
+            int save = c->cmpmin, k;
+
+            c->cmpmin = c7kmin(c);
+            k = coperands(c, n, WL, 0, r, &b);
+            c->cmpmin = save;
+            if (k)
+                return 1;
+        }
         if (c->tr)
             c->tr->curw = W;    /* the wanted type at the comparison (its cell) */
         lt = r->t;
@@ -2807,6 +2833,8 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
             T = tmax(W, tmax(lt, rt));
             if (c->cand == EM_CAND_C3 && T <= TW && (op == EM_ADD || op == EM_SUB))
                 T = TL;
+            if (c->cmpmin > T)
+                T = c->cmpmin;  /* C7K: a whole-number operation in a comparison */
         }
     } else if (op == EM_POW) {
         /* dopow: both to Float, through a higher wanted Quick or whole
@@ -3014,20 +3042,25 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         return c7other(c, n, W, out, fmt);
     if (em_op_is_compare(op)) {
         /* both operands with no wanted type; compared exactly */
-        if (c7side(c, n->l, 0, 0, &x, &fl, &lf) || c7side(c, n->r, 0, 0, &y, &fr, &rf))
+        int save = c->cmpmin, k;
+
+        c->cmpmin = c7kmin(c);
+        k = c7side(c, n->l, 0, 0, &x, &fl, &lf) || c7side(c, n->r, 0, 0, &y, &fr, &rf);
+        c->cmpmin = save;
+        if (k)
             return 1;
         trecord(c->tr, op, is_consttree(n->l) ? -1 : lf, lf, fl == 32, is_consttree(n->r) ? -1 : rf, rf, fr == 32,
                 'x', TW);
         {
-            int k = rat_cmp(x, y), t;
+            int d = rat_cmp(x, y), t;
 
             switch (op) {
-            case EM_EQ: t = k == 0; break;
-            case EM_NE: t = k != 0; break;
-            case EM_LT: t = k < 0; break;
-            case EM_LE: t = k <= 0; break;
-            case EM_GT: t = k > 0; break;
-            default: t = k >= 0; break;
+            case EM_EQ: t = d == 0; break;
+            case EM_NE: t = d != 0; break;
+            case EM_LT: t = d < 0; break;
+            case EM_LE: t = d <= 0; break;
+            case EM_GT: t = d > 0; break;
+            default: t = d >= 0; break;
             }
             *out = rat_int(t ? -1 : 0);
         }
@@ -3123,8 +3156,15 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
 
     if (cn) {
-        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0 };
-        int k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;
+        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0, 0, 0, asked, 0 };
+        int k;
+
+        if (cn == EM_CAND_C7 && (rules & EM_R_C7K)) {
+            c.c7k = 1;
+            c.cmpmode = rules & EM_R_C7KLONG ? 1 : rules & EM_R_C7KDEST ? 2 : 0;
+            rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
+        }
+        k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;
 
         if (k > 0)
             return 1;
