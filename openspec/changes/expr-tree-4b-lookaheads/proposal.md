@@ -6,18 +6,16 @@ Ninth change of the expression-tree series (#1180 step 4, second part; the serie
 
 ## What Changes
 
-- `countpees` replaced by the call node's parameter count; the source is no longer rescanned.
-- The intrinsics decided from node properties ("the argument is a Quick", "this call is the whole right side"); the state machine and the text look-aheads go.
-- `dolet2` and `doselect`: the left side's address and the right side built as trees and emitted in today's order (right side, then the address code where today's copy puts it); the copy buffer goes.
+- `doselect`: the expression written behind its `clr` instead of copied (same bytes). `dolet2`: the right side emitted before the left side's address code, the copy buffer gone; this changes the executables of assignments whose left side has code and is the fix of #1212 (its own fix commit).
 - `arrevalchk`'s narrowing of a later array index decided on the node; the patch of written code goes.
 
 ## Not in scope
 
-Any type change (#1183, step 5); register saving or immediates (step 6, not planned); `evalconst2` (`#c=`, `Dim`, `CNIF`: compiled into a side buffer and run, stays).
+`countpees` (the parameter count chooses the form before the parameters are read) and the intrinsics' state machine and look-aheads (`Len`/`Asc` decide before their argument is built): both stay (design, decisions 1 and 2). Any type change (#1183, step 5); register saving or immediates (step 6, not planned); `evalconst2` (`#c=`, `Dim`, `CNIF`: compiled into a side buffer and run, stays).
 
 ## Results that change
 
-None (rule 3); the check of the series.
+None for the reworks (rule 3; the check of the series). The fix of #1212 changes the executables of assignments whose left side has code (an array index): the right side's code comes before the address code, and a6 is loaded where the right side needs it; named in its commit, checked with `-DPREV_INTENDED`.
 
 ## Capabilities
 
