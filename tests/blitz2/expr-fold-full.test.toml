@@ -1,0 +1,6 @@
+# expr-fold-full.test.bas: the object buffer of 2992 bytes, which the
+# child fills before its last folds
+jobline = ["objbuf=2992"]
+
+[data]
+"child.bas" = "basic-compile"

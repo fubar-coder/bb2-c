@@ -1,0 +1,21 @@
+# expr-errors.test.bas: the data sources with two errors in one
+# expression; each compile ends with the first one
+[data]
+"mismatchname.bas" = "basic-compile"
+"opname.bas" = "basic-compile"
+"opbracket.bas" = "basic-compile"
+"mismatchbracket.bas" = "basic-compile"
+"opparam.bas" = "basic-compile"
+"convparam.bas" = "basic-compile"
+"libparam.bas" = "basic-compile"
+"div0name.bas" = "basic-compile"
+
+[asserts]
+"data.mismatchname.bas" = "== \"error 4 Type Mismatch\""
+"data.opname.bas" = "== \"error 4 Illegal Operator for Type\""
+"data.opbracket.bas" = "== \"error 4 Illegal Operator for Type\""
+"data.mismatchbracket.bas" = "== \"error 3 Type Mismatch\""
+"data.opparam.bas" = "== \"error 7 Illegal Operator for Type\""
+"data.convparam.bas" = "== \"error 7 Can't Convert Types\""
+"data.libparam.bas" = "== \"error 4 Illegal Operator for Type\""
+"data.div0name.bas" = "== \"error 3 Division by Zero\""

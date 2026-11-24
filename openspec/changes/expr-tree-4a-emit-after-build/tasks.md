@@ -4,9 +4,9 @@ After `expr-tree-3e-strings`. Open question 1 answered before 2.5. "The check": 
 
 ## 1. Tests first
 
-- [ ] 1.1 A source (`tests/blitz2`) whose only use of a library is a conversion `cmpownleft` drops (found by an instrumented scratch compiler over the CD, as proposed in `planning-order-tree-vs-fixes.md`, "Evidence"; or built by hand); verify: its executable on main contains the library; in `compiler_prev`.
-- [ ] 1.2 Sources with two errors in one expression (operator error before an unknown name, a type error before a missing bracket, an error inside a parameter before one after it), one per source, message and line recorded from main; verify: pass on main.
-- [ ] 1.3 Constant-fold cases that today's pairwise rule folds and does not fold (`1+2`, `x+1+2`, `-5`, `Not 0`, a folded `Mod` as a library's first use, #1049; a fold while the object buffer is full); verify: pass on main, in `compiler_prev`.
+- [x] 1.1 A source (`tests/blitz2`) whose only use of a library is a conversion `cmpownleft` drops (found by an instrumented scratch compiler over the CD, as proposed in `planning-order-tree-vs-fixes.md`, "Evidence"; or built by hand); verify: its executable on main contains the library; in `compiler_prev`.
+- [x] 1.2 Sources with two errors in one expression (operator error before an unknown name, a type error before a missing bracket, an error inside a parameter before one after it), one per source, message and line recorded from main; verify: pass on main.
+- [x] 1.3 Constant-fold cases that today's pairwise rule folds and does not fold (`1+2`, `x+1+2`, `-5`, `Not 0`, a folded `Mod` as a library's first use, #1049; a fold while the object buffer is full); verify: pass on main, in `compiler_prev`.
 
 ## 2. Implementation
 

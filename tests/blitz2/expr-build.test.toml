@@ -1,0 +1,4 @@
+# expr-build.test.bas: without and with runtime error checking (the index
+# of an array is checked then)
+[matrix]
+runtime-errors = ["off", "on"]
