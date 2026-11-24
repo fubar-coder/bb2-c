@@ -153,6 +153,12 @@ To get the exact result with a fraction, compute in a Quick or Float
 variable first (`t=q*2 : r.l=t`), or start the expression with a Float
 literal (`r.l=2.0*q`). AmiBlitz3 keeps the original's rule.
 
+Under a Quick type so far, such as a Quick destination or a variable
+without a suffix, `NOT`, `AND`, `OR` and `EOR` also take the whole part of
+a Quick (rounded down) and give a Quick, while the shifts keep the
+fraction. The details are in
+[`NOT`, `AND`, `OR` and `EOR` on a Quick]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#quick-bit-operators" >}}).
+
 ### Comparisons
 
 In the original compiler the same cut happens to the operands of a
