@@ -1,0 +1,16 @@
+# compiler-let-left-a6.test.bas: an open bug: the port has the same
+# behaviour as the originals (1.95 and 2.10), so every cell shows the
+# declared deviations: the right side's Abs goes through
+# mathieeesingbas.library's base and gives -5
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+
+[deviations."compiler=orig195"]
+"check.left_a6.right_side" = "== fail"
+"check.left_a6.right_side.actual" = "== -5"
+
+[deviations."compiler=orig210"]
+"check.left_a6.right_side" = "== fail"
+"check.left_a6.right_side.actual" = "== -5"

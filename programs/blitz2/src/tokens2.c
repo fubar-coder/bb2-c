@@ -1256,7 +1256,15 @@ static void letcode(UWORD opcode, UWORD vartype, WORD offset, UWORD *pcodd)
         pokewd(offset);
 }
 
-/* blitz2.s:14340 dolet2 */
+/* blitz2.s:14340 dolet2
+   BUG(orig) (#1212): the code of the left side's address (an array index,
+   regat 1) is compiled before the right side and moved behind it
+   (pushdo, pushput), but lasta6 stays as the left side's code left it:
+   a library function in the index whose base is passed in a6 (Abs of a
+   Word: ffplib's) makes the right side's call of a function with the
+   same base skip its load of a6, and the right side's code runs first,
+   with whatever a6 holds then (a(Abs(-j))=Abs(-5): a wrong value or a
+   crash; test compiler-let-left-a6). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;
