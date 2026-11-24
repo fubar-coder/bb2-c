@@ -14,11 +14,11 @@ After `expr-tree-4b-lookaheads` the expression is a tree before emission (flow t
 
 ### 1. Typing pass after the build, errors still at build time
 
-The flow typing at build time stays for the errors (the first of two errors, spec `compiler/expression-limits`); a second pass over the finished tree (iterative along chains) computes the operand types and the conversions; emission uses them. Where operand typing would make a source that compiled refuse (or the other way), that is a named change of its own (task 2.2 lists such cases; expected none).
+The flow typing at build time stays for the errors (the first of two errors, spec `compiler/expression-limits`); a second pass over the finished tree (iterative along chains) computes the operand types and the conversions; emission uses them. Where operand typing would make a source that compiled refuse (or the other way), that is a named change of its own (task 2.2 lists such cases: decision 10).
 
 ### 2. The model first
 
-The expression matrix's model (`tools/lib/exprmatrix/model.c`) gets the decided rule as a third rule set; the cells whose value changes are the named cells. The 376 places of #1178 are re-run with the same rule. The implementation is done when the compiler gives the model's values for every cell.
+The expression matrix's model (`tools/lib/exprmatrix/model.c`) has the decided rule as a rule set (`EM_RULES_DECIDED`, decision 7); the cells whose value changes are the named cells (`tests/corpus/tests-exprmatrix/named-cells.tsv`). The 376 places of #1178 are re-run with the same rule. The implementation is done when the compiler gives the model's values for every cell.
 
 ### 3. Readable tables of today's rules first, generated and checked
 
@@ -41,6 +41,58 @@ The cases of the count (proposal, open question 1) are inputs of the decision ro
 ### 5. Findings of task 2.1 (measurement, no decision)
 
 The candidates of open question 1 are rule sets of the matrix model (`EM_R_CAND`: C1 symmetric flow, C2 own types, C3 value classes, C4 integral and fractional numbers, C5 32.16 products with the overflow cut or an error, `EM_R_C5ERR`; scope (b) `EM_R_SCOPEB`), computed by `exprmatrix candidates` and printed by `exprtables candidate`; the report is `~/.local/share/bb2-c-work/expr-tree-5-rules.md`. Findings: the model's flow over a tree reproduces the compiler's result type of 27865 of the 27899 CD operations; scope (a) and (b) retype the same CD expressions for every candidate (the scope is decidable on the tree); no candidate meets "the same value wherever it stands in a chain" in full while each exact operation under a wanted Long is rounded at once (`r.l=q+p+l` against `l+q+p`); C5 does not reach a whole constant beside a Quick when constants follow C1 (`q*1000`); the port rounds a shifted raw Quick down, so 4 of the 18 places that variant C was counted to fix (ISOBLASTER.BB) are still cut; an overflow check of a 32.16 product fits overchk's mechanism (runtime error checking and overflow checking, a routine of runerrlib), which today checks conversions only. The CD figure is a count of retyped typings from a throw-away tree-dump prototype, not a byte comparison of emitted code.
+
+### 6. The rule: P+
+
+Decision (user, 2026-11-24, `~/.local/share/bb2-c-work/decisions/rounds/tree/decisions.md`; the analysis `~/.local/share/bb2-c-work/expr-tree-5-analysis/report.md`, section 1). Direction: "C7-Familie (Recommended)" ("expr-tree-5 Q4: direction C7, C7's details, host tests"); skeleton C7K-long ("C7K-long as working assumption; goals and fixed points of the rule": operand typing, the wanted type sets the format, constants without a point by their smallest whole type, whole-number operations in a comparison at least Long, bit operators, shifts and `Not` on whole parts); the fixed points of the same entry (symmetry of operand typing, precision of Quick operations, Quick used as a whole number). The parts, as the model has them (`tools/lib/exprmatrix/exprmatrix.h`, `EM_RULES_DECIDED`, one flag per part):
+
+| Part | Rule | Source (entry, quote) |
+|---|---|---|
+| 1 (`EM_R_PNARROW`) | 48.16 only where a Long is wanted or takes part (a Long variable or function, a constant beyond a Word, a Word*Word product, a shift of a whole number; a whole-number sum only inside a comparison); otherwise 16.16 with the original's code and values, under every wanted type and without one | "(P+ round 1)", F5: "16.16 wie Original (Recommended)"; narrows "32.16, sobald Quick und Ganzzahl (Recommended)" of "C7: the wanted type sets the intermediate format" (a measurement rule) |
+| 2 (`EM_R_PCONST`) | a constant with a point is fractional, never integral, also under a Byte type; a Float as in the original beside whole numbers only or under a wanted Long, a Quick where a Quick is in its expression or wanted | "C7K-long as working assumption": "Nah, `3.0` ist **nie** ein integraler Typ. `3` wäre einer."; "(P+ round 2)", F2: "Float wie Original, sonst Quick (Recommended)", F6: "Neue Regel überall (Recommended)" |
+| 3 (`EM_R_PDIVL`) | `/` under a wanted Long a whole number towards zero at the operator; `+ - *` keep the fraction to the consumer; Byte and Word destinations take the 16.16 result rounded down | "(P+ round 1)", F3: "Option 1: \"Ja, sofort ganzzahlig\", aber diese Berechnung ist ein Kandidat für eine Optimierung" (TODO "`x/2*2` as an even-number operation") |
+| 4 (`EM_R_PMOD`) | `Mod` by today's sign rule (`domodlong`), exact with fractions | "(P+ round 2)", F4: "Heutige Regel, exakt (Recommended)"; #1197/#1198 stay their own issues |
+| 5, 6 (`EM_R_PTYPED`) | a comparison's boolean in arithmetic a whole number (Word -1/0), with a Long a Long operation; the operands of bit operators, shifts and `Not` and the Quick subtrees beside a Float typed by the same rule, rounded once where the operator takes them | the fixed points of "C7K-long as working assumption" ("Quick als Ganzzahlig ... Bit-Operatoren, On/Off \"Boolean\"s"); "Bit operators on a Quick: scope, result type, shifts, order" |
+| 7 (`EM_R_PREACH`) | in an expression with a Quick or Float not wanted as a Long, a whole-number subtree in the expression's fractional format | "(P+ round 1)", F1: "Ja, außer unter Long-Ziel (Recommended)" |
+| 8 (`EM_R_PCMP`) | a comparison's common format, the wider class of its two sides, reaches into both operands | the same answer F1; the user's reading of `l1/3>3.2` ("C7K-long as working assumption") |
+| shifts | a Quick rounded down before a shift, as today | "(P+ round 2)", F7: "Lassen wie entschieden (Recommended)" |
+| 16.16 values (`EM_R_PQDIV`) | where P+ computes in 16.16, today's routines bit for bit: `qmul`, `qdivide` with its last bit, a divisor 0 as today | "expr-tree-5: shared C for typing, arithmetic and folding; task 2.2" ("qdivide's last bit and division by zero pinned as today's") |
+
+The chain clause (fixed point 1) in the user's reading ("(P+ round 1)", symmetry at overflow: "Ja, so lesen (Recommended)"): type and format of an operation never depend on order or place; values agree unless an intermediate leaves its format (a named limit: `x.q=q*q2*r` with 300, 300, 0.25 gives 6116 or 22500 by the order, typed alike).
+
+Superseded details of C7 ("Ja, so übernehmen"): "fraction constants exact on 1/65536" (by F2) and "Mod = a - b*trunc(a/b)" (by F4), as "(P+ round 2)" records; the final rounding of a top-level `/` towards zero holds under a wanted Long only (part 3).
+
+### 7. The model: P+ as the oracle, its artefacts fixed (task 2.2)
+
+`model.c` has P+ as the rule set `EM_RULES_DECIDED` (candidate `P+` of `exprmatrix candidates`, with `P`, changes 1-6, for the record; the analysis's intermediate sets R1, R2, R2g, Pg, Pc, R2c, Pcr1, Pr and its flags `EM_R_PA2`, `EM_R_PNOMOD` are not kept: only a part of P+ has a flag). C1-C7Kx stay as they were. The model stays an independent implementation: the compiler's `exprtyping.c` and `exprarith.c` (decision 8) are checked against it, not derived from it.
+
+Model artefacts fixed in the same task, so that the model gives today's port where P+ keeps today's behaviour:
+
+- the 16.16 division of the C7 path cut towards zero and gave 0 for a divisor 0; it is `qdivide` now (`lib_divide`, 48 steps: its last bit, $7FFFFFFF); this removes 8 named matrix cells (`dq/pq-div-w-q`, `-cw-q`, A and B) and 65 of the analysis's 97 CD expressions with a value change (whole values only: 19 -> 4);
+- today's flow: `lib_divide` gave $7FFFFFFF for a divisor 0 whatever the sign; the port's libraries give the dividend's sign (#200, `$80000001`), the CD's $7FFFFFFF; the mixed routines of #1178 (`mixed`) had no case for a divisor 0 (a C cast of infinity): now `lqdiv`'s and `longdiv`'s result (q/l: +-32767);
+- today's flow: a whole value with a point under a Byte type (`2.0`) was a Float with `EM_R_1188`; `exprtype.c` keeps it the whole Byte (#1186's litcut), and so does the model now (`rb.b=vb AND 2.0` compiles).
+
+None of the three changes a committed matrix test (`exprmatrix_committed` passes). Snitch tests (`test_exprmatrix_model.cpp`, tag `[decided]`): #1183's count cases, the spec's scenarios, fixed point 3, the conflicts 1-16 of the analysis with P+'s values, the order pairs, `l1/3.0`, `3.0` never integral, F2/F4/F5/F6/F7, and 16.16 bit for bit against today's port for random Quicks.
+
+The four numbers of P+ with the fixed model (the analysis's in brackets): matrix cells 199 value / 30 compile now (207 / 30); the 376 places 0 (0); #1183's count cases 2 of 8 (2); CD 8371 retyped expressions in 226 programs, 991 in 96 normalised, 122 in 26 with a new 48.16 operation, 39 of them `If`/`Print` (the same); value changes for some random value set 32 expressions in 14 programs, whole values only 4 in 1 (97 in 46, 19 in 13).
+
+**The named-cell list** is generated by `exprmatrix expect` (`tests/corpus/tests-exprmatrix/named-cells.tsv`, `expect.c`, `named_cells`: every cell whose value under `EM_RULES_DECIDED` differs from the port's, both values, kind value / compiles now / refused now) and checked with the committed tests (`exprmatrix_committed`, its broken-input test edits the list). 229 cells: 199 value (arith 50, mod 141, pow 4 of which the model does not know the value, bit 4), 30 compile now (`cf AND/OR/EOR q`: the fraction constant beside a Quick is a Quick). The committed matrix tests are not regenerated in task 2.2; groups 3-4 change exactly these cells.
+
+### 8. Shared C: typing pass and arithmetic
+
+Decision (user, 2026-11-24, "expr-tree-5: shared C for typing, arithmetic and folding; task 2.2": "ok"). `programs/blitz2/src/exprtyping.c` is the typing pass as a pure function over the tree (task 3.3); `programs/blitz2/src/exprarith.c` the whole, 16.16 and 48.16 arithmetic on `int64_t`, bit-exact with the 68k routines (`qmul`, `qdivide`'s last bit, division by zero, `domodlong`), compiled by blitz2 (compiler only, not the libraries) and by the host tests (task 3.4). Constant folding of whole, Quick and 48.16 operations uses `exprarith.c` instead of running the emitted code, byte-identical (a task before 4.1); Float folding stays as today. The matrix model stays the independent oracle of both.
+
+### 9. The 48.16 format and its routines
+
+A 48.16 value is a register pair: D0 the low 32 bits (a 16.16 value), D1 the high 32 bits ("C7: the wanted type sets the intermediate format", remark: "16.16 in D0 und den oberen 32 Bit in D1 (oder umgekehrt) ... wenn die oberen 32 Bit 0 sind, dann haben wir einen Optimierungsansatz"), with a fast path when the high part is the sign extension of the low part, decided at compile time where the tree knows the operand formats. The routines are the port's own in `libs/compilerlib` (system library 64030, linked in every library set), no libgcc and no libnix (decision "cost and the wide division"); the division is an own routine faster than the prototype's 5912 cycles, aim below libgcc's 3566, measured on the A500 (`tests/perf`). Division and `Mod` follow parts 3 and 4; a 48.16 division by 0 under a wanted Long gives the largest Long with the dividend's sign, as `lqdiv` (the model's choice where P+ keeps today's values; for a 48.16 result that is not wanted as a Long the routine of task 3.4 decides, against the model). The cycles of P+ are accepted; the slower forms are made faster where possible, also by tree optimizations (#1180 step 6 candidates).
+
+### 10. Errors and refused sources
+
+Where P+ makes a source compile that is refused today, or the other way, that is a named change (decision 1). Compile now: the 30 matrix cells of decision 7. Refused now, found in task 2.2 and not in the matrix: a bit operator or shift with a whole value written with a point under a Byte type (`rb.b=vb AND 2.0`, `rb.b=vb LSL 2.0`), by parts 2 and F6; open question 1. Nesting depth: a register pair halves the depth before D6/D7 are saved; "Expression too Complex" must not appear for a source that compiles today (#1185); counted on the CD before 4.1.
+
+## Open questions
+
+1. `rb.b=vb AND 2.0` (`vb.b=3`, today 2; spec "A whole-valued literal stays whole under a Byte type", removed by this change): under P+ refused ("Illegal Operator for Type"), as the model reads F6 ("3.0 ist nie integral" also under a Byte type) with F2 (beside whole numbers only a Float). Options: (a) refused, a named change; (b) a fraction constant with a whole value beside a whole number under a bit operator or shift is its whole value (today's #1186 litcut, an exception to F6); (c) such a constant a Quick there (#1209's whole part). Not decided; the model and its test pin (a) as the literal reading until the answer.
 
 ## Risks / Trade-offs
 
