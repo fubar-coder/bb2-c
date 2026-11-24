@@ -493,7 +493,7 @@ the rules of #978, #1177, #1178, #1179 and #1182 included),
 type so far after it; `varcont` and `consttype2`'s sizing, #1188
 included), and `exprtype_optype` for the type each operator handler
 gives. The evaluator (`exprtree_pre`, `operate`, `doop`, `compareop`, `mixedop`,
-`cmpownleft`, `contleaf`, `consttype2`) asks them and emits what they
+`ownleft`, `binopbuild`, `contleaf`, `consttype2`) asks them and emits what they
 return. Their decisions are pinned by the host test `blitz2_exprtype`
 (`programs/blitz2/tests/host/test_exprtype.cpp`) against the committed
 table `programs/blitz2/tests/host/exprtype.tsv`, which lists every

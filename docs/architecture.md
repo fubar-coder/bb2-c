@@ -632,22 +632,22 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   parser with its own operator/precedence stack; it generates code directly into
   data register `D(regat)` (from d0 upwards; if they are not enough, via the
   stack). Types: 1 byte, 2 word, 3 long, 4 quick (16.16), 5 float (FFP),
-  7 string; the default type is quick. In the port the stack is a window
-  of nodes (`exprtree.c`: a node per pending operator, bracket, `NOT`,
-  run of minus signs and expression, a leaf per operand, in a static arena
-  reset per statement) and the precedence climbing of `eval5` is the walk
-  `exprtree_climb`, whose hooks in `eval.c` emit each operator when the
-  original did; a simple element (a constant, a variable, `&`, `?`,
-  `Pi`, `Used`, `Addr`, a string literal ...) is parsed into a leaf node
-  whose code is emitted right after (a string literal's text is written
-  to the literal area as it is read, its work area got before), a
-  variable's path (an array's indexes, fields,
-  field arrays, pointers: `varparse`, the parse part of `calcvar`) into a
-  node per step whose code is emitted as soon as it is read, a procedure,
-  OS or library call into a node that lives while its parameters are read, with
-  an enter action before them and an exit action after them; the type of
-  each operation is decided by
-  `exprtype.c` (`docs/blitz2/expression-tree.md`, issue #1180).
+  7 string; the default type is quick. In the port an expression is
+  built whole before its code is written: its nodes (`exprtree.c`: a node
+  per operator, bracket, `NOT`, run of minus signs, expression and
+  evaluation, a leaf per operand and element, a node per step of a
+  variable's path and per call, in an arena of a static block and further
+  blocks reset per statement) are made while it is read, the precedence
+  climbing of `eval5` is the walk `exprtree_climb`, the type of each
+  operation is decided by `exprtype.c` in reading order, and each part of
+  the code is an action recorded in the order the original wrote it (the
+  post-order walk of the tree with each node's enter actions before its
+  children and its exit actions after them), which the evaluation that
+  began the expression runs when it is built. Variables, labels, the
+  libraries' use and the texts of string literals are made while it is
+  read, in the original's order; the constant fold, #978's sign-extended
+  constant and the comparison's own left type (#1177) are decided on the
+  nodes (`docs/blitz2/expression-tree.md`, issue #1180).
 * Code is produced from **templates** (machine code snippets in the data area
   of the compiler, `blitz2.s:914 objects` … `1254`, also in `tokens1`/
   `tokens2`), which are copied (`pokecode`) or written as an opcode word with

@@ -1,7 +1,8 @@
 # The expression evaluator restructured: from blitz2.s to the C functions
 
-`blitz2` compiles an expression the way the original does: in one pass,
-emitting each element while it reads it (`docs/blitz2/expression-types.md`).
+The original compiles an expression in one pass, emitting each element
+while it reads it (`docs/blitz2/expression-types.md`); `blitz2` builds it
+whole, typed in reading order, and writes its code after it (step 4a).
 Issue #1180 restructures this evaluator in steps (the OpenSpec changes
 `expr-tree-*`): first the type decisions are collected in one place, later
 the expression becomes a tree that is built and then emitted. The
@@ -379,6 +380,87 @@ and when (the columns of the table of step 3a):
 | `EXN_BINOP` of strings | `+`, `=`, `<>`, `<`, `<=`, `>`, `>=` with a String left operand | none (the operator read by `eval2`, as every one) | `+`: the right length popped and added to the left one (`addstrings`; at `regat` 6 the d6 that `getelement` saved dropped instead, #971); a comparison: the library routine `strcomp` used (`tokejsr`; at run time it removes both lengths and moves a3 back to the left string), then `Scc` (`cpoke`); the type so far String (`+`) or Word | its operands (each a string's code with its length pushed) | emit: "Illegal Operator for Type" (`doop`: any other operator on a String) |
 | `EXN_EXPR` with strings | the end of an evaluation of a String, or of one with a string in it | none | a String: `clr.b (a3)+` and the start into `D(regat)` (`sbtolong`: the a3 saved on the stack, which the length then replaces, `sbgot` 2; else the work area's start, the variable of the library 65235, used), `stackuse` 4 up (when the type is pushed, `pushflag` > 0: the length popped, the type word pushed, `stackuse` 2 more, the length pushed again); AmiBlitz3's filler below a procedure's string argument in a register (`ext_strpointer`: `pea 0`, `stackuse` 4 up); another type with a3 saved: the saved a3 dropped (`ststfix`); `sbgot` back | the expression | none |
 
+## Step 4a: built, then emitted (`expr-tree-4a-emit-after-build`)
+
+An expression is built whole before its code is written. A `maineval2`
+outside an expression begins a unit (`exprtree_begin`): the expression is
+read, typed (in reading order: the type decisions and their errors are
+those of steps 1-3e), its variables and labels are made, its libraries are
+used and its literal texts are written, and every part of its code is an
+action (`struct expract`, `exprtree.h`) appended to the unit's list in the
+order the original wrote that code. When the expression is built, the
+evaluation that began the unit runs the actions (`exprtree_run`); a
+`maineval2` inside an expression (a parameter, an index) adds its part to
+the unit: its enter action (`evalenter`: the stack use, the push flag, no
+string base pushed yet) and its exit action (`evalexit`: the conversion to
+the type asked for, the type word, the end of a string, the push of the
+result). The list is the walk of the tree in post-order with each node's
+enter actions before its children and its exit actions after them; a
+node's actions and those of its children are one stretch of the list. An
+action writes its code from its node and the emitter's state (`pc`,
+`lasta6`, `sbgot`, `stackuse`, the facts the code
+before it left: `constat`, `conv`); `regat`,
+`varmode` and `evaldepth` are set to what they were where its part was
+read. Shared code that a statement calls as well (a parameter pushed:
+`pushap`, a path's step: `stepemit`, a procedure's default arguments,
+`getmaxel`'s index scaling) records its code with `emitact`, which runs it
+at once outside an expression. The nodes of the unit stay in the arena until
+its end (`exprtree_unwind`); outside a unit a released node is free at
+once.
+
+What the original decided from the code it had written, the build decides
+from what it has read and recorded:
+
+| Decision | Original | Now |
+|---|---|---|
+| a constant fold (#1049, #1190) | `forthstack`'s `constgot` of the two operands, `nocando` in `dopow`, `domodl`, `domodf`, `mixedop`; the fold ran from the left operand's `forthstack` entry (its code's position, the relocations and `lasta6` then) | the build's forthstack (`bforth`: `constgot`, `wordval` per pending element) gives the BINOP `BNF_FOLD`, the nocando cases `BNF_NOFOLD`; the value is still computed by running the code when it is written (`constfold`), from the start of the left operand's code, whose first action (`startmark`) keeps the relocations and `lasta6` of that place; the emitter has no forthstack |
+| "Division by Zero" of two constants | `divzerochk` when the operator is emitted | `divzerobuild`: the operands' actions and the operation up to the check are run behind `pc` while the expression is built, at that moment, and everything they changed is set back |
+| a Word value of a later index (#1179) | `forthent.wordval`, set by `varcont` and the constants' code (`iswordconst`) | `bforth.wordval` from `contleaf` (`ELF_WORD`) and `constword` (a `move.l` of 0..32767), the BINOP's `BNF_WORDS` |
+| a raw Quick (#1178), a lowered comparison (#1182) | `rawq` set by `varcont`'s code | `rawq` set when the value's code is recorded (`contrecord`), the BINOP's `BNF_LRAW`, `BNF_RRAW`, `BNF_RCMP` |
+| a comparison's left operand gets its own type back (#1177, #1186) | `cmpownleft`: the operand's code ends in the conversion `varcont` made (`conv.end`): the conversion's code rewound with its relocations, `lasta6` set back; or it is a literal made a whole number with only its `neg.w` after it (`fraclitfloat`): rewritten as its FFP value | `ownleft`: the conversion's action is the last one that writes code since the operand began (`bconv`): the conversion is not written (`ELF_DROP`), the relocations of the libraries its routine used first are freed (`relocforget`), the libraries stay (decision 4); or the literal's is with only minus signs of a Byte or Word after it (`blit`): the literal writes its FFP value with the signs in it (`ELF_FFP`), the minus signs nothing (`EXF_ABSORBED`) |
+| #978: an equality comparison of one byte value with one constant from 128 to 255 | `bytevalend`, `isbyteconst` of the written code, `byteconstext` patched the constant | the operands' facts when they are read (`exprtree_left`: the action of a value ending in the byte's `ext.w`, or of the constant, is the operand's last or only code: `EXF_BYTEVAL`, `EXF_BYTECONST`), `exprtype_binop` in `binopbuild`; the constant writes the sign-extended byte (`ELF_SIGNEXT`, `constemit`) |
+| the string base (`sbasegot`) | set by `makesbase`'s code | `bsbase`: got before the unit, or a `makesbase` recorded in it |
+| an intrinsic compiled inline | `intrinsic_code` in `libjsrcode` (`INTR_DONE`) | `intrstate` is `INTR_QUICK` after the argument is built (`maineval2`, `intrinsic_quick`); `libexit` hands it to `libjsrcode` |
+| the errors of the code | raised where the code was written: "Can't Convert Types" (`noconerr` in `convtable`), "Illegal Operator for Type" (`doop`, `negate`, `notit`), "Type Mismatch" (`constemit`), "Only Available in Blitz mode" and "Only Available in Amiga mode" (`makelsub3`) | raised where the code is recorded, in the same order (`convprep`, `opprep`, `binopprep`, `tokuse`, `userjsruse`) |
+
+The libraries are used while the expression is built, at the moment the
+original used them, because their variables share `varoff` with the
+variables an expression makes at first sight and their code is copied into
+the library area in the order of first use: a library a part of the code
+calls is used where that part is recorded (`tokuse`, `userjsruse`: what
+`tokejsr` and `userjsr` use, with the libraries of their register lists,
+the blitz mode flag and its check routines; `convprep`, `opprep`: the
+routines of a conversion and of an operator's handler), a function's
+library right after its lookup (`calluse`), `Used`, `Addr`, `Maximum`'s
+and an OS library at their reading (`findtokeact`, `uselibact`). A
+library's relocations go into the program's list where its code first
+calls it (`uselib3` keeps them while the expression is built and moves
+them into the list at the library's first `uselib3` while the code is
+written, `asmlibs.c`), which is where the original added them: the list
+has the original's order. The relocations of a library whose calling code
+is never written (the conversion a comparison drops) are freed, as
+the original's `cmpownleft` freed them. A constant computed in the middle of an
+expression (`evalconst`: a `~` constant, `CNIF`) is a unit of its own,
+whose code is written and run at once; the facts its code left are set
+again by an action where it was read.
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 8879-8962 `maineval2` | the evaluation: the saves, `eval3`, the conversion, the pushes, the restores | `maineval2` (a unit outside an expression), `evalbuild`, the actions `evalenter`, `rawcutact`, `evalexit` |
+| 8968 `eval3`'s `sub.l #18,forthsp` | the expression's forthstack entry dropped | `eval3` (the build's forthstack) |
+| 8983-9083 `eval5` | the operand, the operator's conversions and handler, the fold | `exprtree_climb` with the hooks: `exprtree_operand` (`startmark`), `exprtree_left` (`endmark`, `cutact`), `exprtree_pre` (`ownleft`), `exprtree_emit` (`binopbuild`; the action `binopact`: `operate`, `constfold`) |
+| 9741-9752 `getelement2`'s forthstack entry | the element's code position, relocations and `lasta6`; `constgot` | `element` (`bforth`); the position, relocations and `lasta6` of the left operand of a fold: `startmark` |
+| 9643 `getelement`'s spill | `move.x d6,-(a7)` before, `move.x d6,d7`, `move.x (a7)+,d6` after | `pokeact` actions |
+| 9667 `negate`, 9688 `notit` | the `neg`s, the `not` | the actions `negemit`, `notemit` |
+| 10860 `fetchnum3`, 9700 `fetchpi`, 9941 `doern`, 9993 `doused`, 10069 `doaddr`, 9915 `ampersand2`, 10409 `qmark`, 10478 `variable`, 10391 `makelit`, 10617 `stvar` | the elements' code | the actions `constemit`, `piemit`, `errnumemit`, `usedemit`, `addremit`, `addrofemit`, `labelemit`, `varemit`, `litbase` and `litemit`, `contemit` (a call's value) |
+| 10183 `amigalib`, 10112 `libfunction`, 10522 `afunction` | the calls' code | the actions `osenter`, `osexit`, `stackact`; `libenter`, `pokeact` (a size specifier), `stacksave`, `libexit`, `stackrestore`, `libresult`; `procenter`, `procexit`, `procresult` |
+| 8170 `calcvar`'s code | the path's steps | `stepdone` records `stepemit` (regat counted down and up by the build) |
+| 8809 `arrevalchk` | a later index narrowed | the actions `idxmark` and `idxnarrow` |
+| 5679 `pushap`, 5698 `handlevara`, 5742 `sendtype`, 5759 `baseadd`, 5781 `highadd` | a parameter's push | the actions `pushapact`, `ptypeact`, `pokeact`, `highaddact` |
+| 12196 `getmaxel` | the index of an object scaled | the action `maxelact` |
+| 3217 `dolibtoke` (`libparams`) | `stackuse` 0 for the parameters | the action `stackzero` |
+| AmiBlitz3 (`ab3proc.c`) | the defaults of omitted parameters, the argument lists' depth | the actions `defaultsact`, `argsact` |
+
 ## Node bound
 
 `EXPRTREE_NODES` (`programs/blitz2/src/exprtree.h`) is 168 nodes, 7728
@@ -394,6 +476,13 @@ reading the host test's `maxlive`:
 | 3c | a call's node lives beside the run of minus signs of its level while its parameters are read; the compiler nests at most 32 calls (each holds an entry of `forthstack`, the 33rd is "Expression too Complex") | 161 | 32 times `-f{` and 32 times `-(` ("Precedence Stack Overflow") |
 | 3d | a library function's call is such a node and counts among the 32 | 161 | 10 times `-Abs(` and 21 or 22 times `-f{` before 32 times `-(`: 160 and 161 |
 | 3e | a string literal's leaf lives while its text is read and makes no node | 161 | unchanged |
+| 4a | the whole expression stays until its code is written: its nodes and the actions of its code (an action is 24 bytes on the 68000) | grows with the expression | a sum of 1000 terms `kk+kk+...` 280812 bytes (67 further blocks, about 280 bytes per term), a line of 8 KB from macros (2700 terms) 758222 bytes (184 blocks); a usual line's expression fits the static block (`b.l = a(x+1)*3+f{x,y*2}-Abs(q*4)+Len(s$+"cd")`: 4940 bytes); 63 parentheses 9144 bytes, the #1080 case 25768 bytes |
 
 The arena has a margin of 7 nodes to 168 (it was 136 with the 129 of
-step 2).
+step 2). Since step 4a the static block is the first of the arena's
+blocks; what it cannot hold goes into further blocks of 4 KB from the
+system (`EXPRTREE_BLOCK`), kept for the next nodes until the statement
+ends; when the system has none, the compile stops with "Out of Memory"
+(`exprtree_nomem`, TED's notice, #369), without a retry. The figures
+were measured with a throw-away build of `blitz2-ab3` that printed the
+arena's high water.
