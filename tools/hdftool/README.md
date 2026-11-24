@@ -181,7 +181,10 @@ Messages go to stderr as `hdftool: [FILE: ]message`.
   `edit` with `--write`, `--write-hex`, `--replace`, `--copy` and
   `--partition`.
 * Tests: `help_hdftool`, `readme_hdftool` (`tools/hdftool/CMakeLists.txt`);
-  the library: `hdf` (`tools/tests/test_hdf.cpp`).
+  the library: `hdf` (`tools/tests/test_hdf.cpp`). All are host tests,
+  registered only in `build/amiga/host` (in `build/amiga` they run together
+  as the single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

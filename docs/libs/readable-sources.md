@@ -62,6 +62,11 @@ archive); the `*_libs` tests do the same with the list made from the CD's
 compiler and libraries (`tedtok_libs`: the same file as with the list
 file).
 
+The tests `teddetok_*`, `bb22*`, `xtra_*` and `bbdetok*` named in this
+document are host tests: they are registered only in `build/amiga/host` (in
+`build/amiga` they run together as the single test `host`). Run one with
+`ctest --test-dir build/amiga/host -R NAME`.
+
 Some of RWE's library sources (`rwelibsrc/`, 1997) are saved in another
 format, `BB22` (`docs/rwelibs/README.md` §4.1: a header with the cursor,
 a prefix before each line). `bbsrc bb22` converts them into TED's format,

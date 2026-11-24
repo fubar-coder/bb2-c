@@ -108,7 +108,9 @@ library), a file that cannot be read as `hunkcheck SUB: FILE: message`.
 * `stored`: POST_BUILD of `ted` and `ab3cli`.
 * `layout`: `tests/ab3/cli.cmake`, the cases of `tests/ab3/CMakeLists.txt`
   with a hunk layout (`HUNKS`).
-* Tests: `help_hunkcheck`, `readme_hunkcheck`
+* Tests: `help_hunkcheck`, `readme_hunkcheck`: host tests, registered only
+  in `build/amiga/host` (in `build/amiga` they run together as the single
+  test `host`); run one with `ctest --test-dir build/amiga/host -R NAME`.
   (`tools/hunkcheck/CMakeLists.txt`).
 
 ## Example

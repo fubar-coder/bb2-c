@@ -119,7 +119,10 @@ Messages go to stderr: an error of the source as `SOURCE:LINE: message`
   side (`programs/ted/tests/host/CMakeLists.txt`, for the host tests of
   the TED core and the TED A/B runner).
 * Tests: `tedfont` (the library), `tedfont_build_broken` (the build
-  step on a broken source), `help_tedfont`, `readme_tedfont`.
+  step on a broken source), `help_tedfont`, `readme_tedfont`: host tests,
+  registered only in `build/amiga/host` (in `build/amiga` they run
+  together as the single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

@@ -247,7 +247,10 @@ Messages go to stderr as `refcheck SUB: [FILE: ]message`.
 * `listing-map`, `listing-labels`, `listing-verify`: the reference builds
   `ted_ref` (`programs/ted/CMakeLists.txt`) and `blitz2_ref`
   (`programs/blitz2/CMakeLists.txt`), in the step that assembles them.
-* Tests: `help_refcheck`, `readme_refcheck` (`tools/refcheck/CMakeLists.txt`).
+* Tests: `help_refcheck`, `readme_refcheck` (`tools/refcheck/CMakeLists.txt`):
+  host tests, registered only in `build/amiga/host` (in `build/amiga` they
+  run together as the single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

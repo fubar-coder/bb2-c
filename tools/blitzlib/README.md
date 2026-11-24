@@ -335,7 +335,10 @@ Messages go to stderr as `blitzlib SUB: [FILE: ]message`; the findings of
   step that links every library file (on its static library); the tests
   `blitzlib_entrypoints_good`, `blitzlib_entrypoints_broken_a6`, `_call`,
   `_folded` (`libs/CMakeLists.txt`, `cmake/entrypoint/`).
-* Tests: `help_blitzlib`, `readme_blitzlib` (`tools/blitzlib/CMakeLists.txt`).
+* Tests: `help_blitzlib`, `readme_blitzlib` (`tools/blitzlib/CMakeLists.txt`):
+  host tests, registered only in `build/amiga/host` (in `build/amiga` they
+  run together as the single test `host`), like `cmdref_not_a_library`; run
+  one with `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

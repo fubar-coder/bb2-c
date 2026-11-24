@@ -369,6 +369,10 @@ errors of a description or a table as `FILE:LINE: message`.
   library: `exprmatrix`, `exprmatrix_model`, `exprmatrix_classify`,
   `exprmatrix_expect` (`tools/tests/`).
 * The target `expr-matrix-update` (`expect`, `tests/corpus/CMakeLists.txt`).
+
+The tests are host tests: registered only in `build/amiga/host` (in
+`build/amiga` they run together as the single test `host`). Run one with
+`ctest --test-dir build/amiga/host -R NAME`.
 * `tests/ab3/CMakeLists.txt` includes the generated `cases.cmake`.
 * Tasks 2.3 and 2.4 of the change: `classify` on the measurement of task
   1.3 (`-m` wrote `tests/corpus/tests-exprmatrix/measured.tsv`).

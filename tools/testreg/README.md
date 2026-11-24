@@ -63,7 +63,9 @@ one of the sources. The logic is `tools/lib/testreg`,
 tested by `testreg_tool` (`tooltest.cmake`: the include file, the
 depfile, every check with broken input, and sample CMake projects whose
 `ctest -N` lists the tests after the build) and the host test `testreg`
-(`tools/tests/test_testreg.cpp`: the bundle tests).
+(`tools/tests/test_testreg.cpp`: the bundle tests). Both are registered only
+in `build/amiga/host` (in `build/amiga` they run together as the single
+test `host`); run one with `ctest --test-dir build/amiga/host -R NAME`.
 
 Bundle tests (change `basic-test-bundle-registration`; `tests/README.md`,
 "Bundle tests"): unless `--no-bundle` is given, the case tests that may

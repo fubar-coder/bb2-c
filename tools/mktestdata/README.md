@@ -56,7 +56,10 @@ message`.
   (`tests/bug-orig/AREA/NAME.spec`, in the build `testdata/NAME`);
 * `tests/ab3/CMakeLists.txt`: the AmiBlitz3 `.xtra` files of the
   command-line tests (`tests/ab3/cli/ab3xtra.spec`).
-* Tests: `help_mktestdata`, `readme_mktestdata`.
+* Tests: `help_mktestdata`, `readme_mktestdata`: host tests, registered
+  only in `build/amiga/host` (in `build/amiga` they run together as the
+  single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

@@ -247,7 +247,10 @@ Messages go to stderr as `testinfo SUB: [FILE: ]message`.
 * `select`: `cmake/coverage-select.cmake`, with `tools/testinfo/rules.txt`.
 * Tests: `help_testinfo`, `readme_testinfo` (`tools/testinfo/CMakeLists.txt`);
   the libraries: `teststats`, `statline`, `covmap`, `covsel`
-  (`tools/tests`; `covsel` reads `rules.txt` of this directory).
+  (`tools/tests`; `covsel` reads `rules.txt` of this directory). The
+  tests are host tests, registered only in `build/amiga/host` (in
+  `build/amiga` they run together as the single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

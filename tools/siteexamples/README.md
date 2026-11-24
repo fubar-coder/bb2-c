@@ -112,4 +112,7 @@ out.
   (`check`) and the build step that writes the sources (`extract`) for
   the emulator passes.
 * Tests: `siteexamples`, `siteexamples_tool`, `help_siteexamples`,
-  `readme_siteexamples`.
+  `readme_siteexamples`: host tests, registered only in `build/amiga/host`
+  (in `build/amiga` they run together as the single test `host`); run one
+  with `ctest --test-dir build/amiga/host -R NAME`. `site_examples_manifest`
+  is in `build/amiga`.

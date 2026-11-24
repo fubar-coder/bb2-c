@@ -581,8 +581,9 @@ file, a token byte without its second byte or followed by a 0 byte, an LF
 in a line – each is refused with a message (offset, line), nothing is
 written. The converted files are read by tedsrc detok with the tokens of the
 CD's compiler, acidlibs, deflibs and BSS2's `RIPACKLIB` (`Anim-Library3`
-and `RIShapesLib2` call the Pack library, 73): ctest `bb22_rwelibsrc`
-(skipped without the archive or the CD); `NEWAREXXLIB` and `RIShapesLib2`
+and `RIShapesLib2` call the Pack library, 73): host test `bb22_rwelibsrc`
+(`ctest --test-dir build/amiga/host -R bb22_rwelibsrc`; skipped without the
+archive or the CD); `NEWAREXXLIB` and `RIShapesLib2`
 then compile with blitz2 2.10.
 
 AmiBlitz3's `BlitzLibs/tokenlist.txt` (`NAME.obj(NUM):INDEX token`) has

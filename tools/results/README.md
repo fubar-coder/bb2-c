@@ -779,6 +779,11 @@ Messages go to stderr as `results SUB: [FILE: ]message`.
   (`tools/tests/CMakeLists.txt`).
 * Tests: `help_results`, `readme_results` (`tools/results/CMakeLists.txt`).
 
+Of the tests named above, `help_results`, `readme_results`, `libs_sort_*`,
+`fix_scope_*`, `prevcmp_*` and `bug_orig_accept` are host tests: registered
+only in `build/amiga/host` (in `build/amiga` they run together as the
+single test `host`); run one with `ctest --test-dir build/amiga/host -R NAME`.
+
 ## Example
 
 ```

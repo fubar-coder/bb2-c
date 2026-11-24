@@ -106,7 +106,9 @@ The emulator tests that run a script themselves: `libs/tests`
 `inject-datestamp.cmake`), `tests/bug-port` (`run.cmake`), the `-h`
 tests of the Amiga programs (`cmake/check-help-amiga.cmake`). The
 runners (`corpusrun`, `tedab`) use the library directly. Tests:
-`help_amiga_run`, `readme_amiga_run`.
+`help_amiga_run`, `readme_amiga_run`: host tests, registered only in
+`build/amiga/host` (in `build/amiga` they run together as the single test
+`host`); run one with `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

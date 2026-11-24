@@ -130,7 +130,10 @@ Messages go to stderr as `blitzres SUB: [FILE: ]message`.
 * `dump`: `tools/blitzres/check.cmake`, run by the tests `rwe_residents_cd`
   (`libs/userlibs/rwe/residents-cd.cmake`) and
   `rwe_residents_check_broken`.
-* Tests: `help_blitzres`, `readme_blitzres` (`tools/blitzres/CMakeLists.txt`).
+* Tests: `help_blitzres`, `readme_blitzres` (`tools/blitzres/CMakeLists.txt`):
+  host tests, registered only in `build/amiga/host` (in `build/amiga` they
+  run together as the single test `host`); run one with
+  `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

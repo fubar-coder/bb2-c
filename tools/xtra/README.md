@@ -142,7 +142,9 @@ By hand (`docs/libs/readable-sources.md`); the tests `xtra_tool`
 (`originals.cmake`: the CD's and rwelibsrc's `.xtra`, the BB22 sources;
 skipped without them) and `xtra_ab3_examples` (`ab3examples.cmake`:
 AmiBlitz3's sources), all in `CMakeLists.txt` here; `help_xtra`,
-`readme_xtra`.
+`readme_xtra`. These are host tests, registered only in `build/amiga/host`
+(in `build/amiga` they run together as the single test `host`); run one
+with `ctest --test-dir build/amiga/host -R NAME`.
 
 ## Example
 

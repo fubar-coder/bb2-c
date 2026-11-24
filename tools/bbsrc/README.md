@@ -266,6 +266,12 @@ Messages go to stderr as `bbsrc SUB: [FILE: ]message`; the refusals of
   `ab3-cmp` in `ab3_tokenise*` (`tests/ab3/tokenise.cmake`).
 * Tests: `help_bbsrc`, `readme_bbsrc` (`CMakeLists.txt` here).
 
+The tests `bbdetok_tool`, `bb22_rwelibsrc`, `ab3tok_tool`, `bb22`,
+`bbdetok`, `help_bbsrc` and `readme_bbsrc` are host tests: registered only
+in `build/amiga/host` (in `build/amiga` they run together as the single
+test `host`). Run one with `ctest --test-dir build/amiga/host -R NAME`.
+The `tokens*` tests above are in `build/amiga`.
+
 ## Example
 
 ```
