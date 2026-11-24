@@ -580,7 +580,8 @@ ab3_cli_case(macend_bb2 macend_bb2.bb)
 # result from a Function with a string parameter from the 7th on -
 # proc_strfunc).  FAST (locals not cleared, refused with local memory, a
 # procedure named FAST), NewType return types (no check of Function
-# Return - proc_ntret0).  AmiBlitz3's hang at "Not enough parameters"
+# Return - proc_ntret0).  Optional and stack parameters in calls inside
+# expressions (proc_expr).  AmiBlitz3's hang at "Not enough parameters"
 # keeps proc_notenough out of ab3_cli_ref; the error texts are blitz2's.
 # BB2 mode keeps blitz2's procedures
 ab3_cli_case(proc_defaults proc_defaults.ab3 REF)
@@ -603,6 +604,7 @@ ab3_cli_case(proc_types7 proc_types7.ab3 REF)
 ab3_cli_case(proc_nested proc_nested.ab3 REF REF_EXPECT proc_nested.ref.expect)
 ab3_cli_case(proc_stack proc_stack.ab3 REF REF_EXPECT proc_stack.ref.expect)
 ab3_cli_case(proc_strfunc proc_strfunc.ab3 REF REF_EXPECT proc_strfunc.ref.expect)
+ab3_cli_case(proc_expr proc_expr.ab3 REF)
 ab3_cli_case(proc_fast proc_fast.ab3 REF)
 ab3_cli_case(proc_fastkeep proc_fastkeep.ab3 REF)
 ab3_cli_case(proc_faststr proc_faststr.ab3 REF)

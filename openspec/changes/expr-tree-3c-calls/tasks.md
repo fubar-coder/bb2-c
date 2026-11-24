@@ -4,7 +4,7 @@ After `expr-tree-3b-arrays`. "The check": `expr-tree-1-typing/design.md`, "The c
 
 ## 1. Tests first
 
-- [ ] 1.1 Compile-only cases in `tests/blitz2` for what the compared sources do not reach (coverage build): a function call nested in its own parameter, a forward-referenced function, a call at `regat` 5 and 6 (push mode), an OS call twice in a row (no second base load) and after a library call, AB3 procedure forms in `tests/ab3/cli`; verify: pass on main, in `compiler_prev`/`ab3_cli_prev`.
+- [x] 1.1 Compile-only cases in `tests/blitz2` for what the compared sources do not reach (coverage build): a function call nested in its own parameter, a forward-referenced function, a call at `regat` 5 and 6 (push mode), an OS call twice in a row (no second base load) and after a library call, AB3 procedure forms in `tests/ab3/cli`; verify: pass on main, in `compiler_prev`/`ab3_cli_prev`.
 
 ## 2. Implementation
 

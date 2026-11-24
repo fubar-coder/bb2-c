@@ -1,0 +1,22 @@
+; AB3 procedure calls in expressions: left-out optional parameters and
+; parameters on the stack (7 and 8) in a call that is the right operand
+; of an operator (regat above 0), and a string Function with a default
+; in a string expression
+OPTIMIZE 4
+Function.l o{a.l,@b.l,@c.w}
+Function Return a*100+b*10+c
+End Function
+Function.l s{a.l,b.l,c.l,d.l,e.l,f.l,g.l,@h.l}
+Function Return a+g*10+h*100
+End Function
+Function.s t{a.s,@n.l}
+Function Return a+Str$(n)
+End Function
+x.l=2
+NPrint 1+(2+o{x})
+NPrint 1+(2+o{x,3}+o{x,3,4})
+NPrint 5+(6+s{1,0,0,0,0,0,x})
+NPrint 5+(6+s{1,0,0,0,0,0,x,3})
+a$="<"+t{"a"}+t{"b",x}+">"
+NPrint a$
+End

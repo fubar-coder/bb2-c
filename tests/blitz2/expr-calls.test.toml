@@ -1,0 +1,4 @@
+# expr-calls.test.bas: without and with runtime error checking (a call
+# with parameters checks the stack then: chkstak)
+[matrix]
+runtime-errors = ["off", "on"]
