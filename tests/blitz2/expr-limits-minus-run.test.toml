@@ -1,0 +1,2 @@
+# expr-limits-minus-run.test.bas: no assertions of its own, the checks of the cases decide
+fixed = 1205
