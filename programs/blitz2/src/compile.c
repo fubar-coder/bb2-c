@@ -407,7 +407,7 @@ void expandmax(void)
         UBYTE *start = srcptr;  /* asm: move.l a5,-(a7) */
         UBYTE *p = srcptr;
         UBYTE ch;
-        UBYTE *bang, *args, *out, *in, *end, *text;
+        UBYTE *bang, *args, *out, *in, *end, *text, *rest, *blanks;
         struct macro *m;
         WORD narg;
         UWORD left;
@@ -454,6 +454,17 @@ void expandmax(void)
                 nomacerr();
         }
 
+        /* Fixed (#1207): makename skips the blanks after the name, and the
+           original copies the rest of the line from the first character
+           after them: the blank between the call and what follows was
+           lost, a macro text ending in a name character was glued to a
+           following name or digit (!mw b with the text !mq gave !mqb).
+           The blanks are kept when no parameters follow. */
+        rest = srcptr;
+        blanks = rest;
+        while (blanks > bang && blanks[-1] == ' ')
+            blanks--;
+
         args = srcptr;          /* start of parameters! */
         narg = 0;               /* narg=0 */
         if (ext_macargs(m, &args, &narg)) {
@@ -473,6 +484,8 @@ void expandmax(void)
             srcptr = args;
         }
         numarg = narg;
+        if (srcptr == rest)     /* Fixed (#1207): no parameters */
+            srcptr = blanks;
 
         {
             /* out of memory: myline stays the buffer freembuff frees */

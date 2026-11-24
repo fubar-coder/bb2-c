@@ -1,0 +1,28 @@
+# compiler-macro-call-blank.test.bas: the originals (1.95 and 2.10) glue
+# the macro text !mq to the name or digit after the call (!mqb, !mq2,
+# !mnb): the other macros' values
+fixed-orig = 1207
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+
+[deviations."compiler=orig195"]
+"check.glue.name" = "== fail"
+"check.glue.name.actual" = "== 100"
+"check.glue.digit" = "== fail"
+"check.glue.digit.actual" = "== 200"
+"check.glue.blanks" = "== fail"
+"check.glue.blanks.actual" = "== 100"
+"check.glue.statement" = "== fail"
+"check.glue.statement.actual" = "== 100"
+
+[deviations."compiler=orig210"]
+"check.glue.name" = "== fail"
+"check.glue.name.actual" = "== 100"
+"check.glue.digit" = "== fail"
+"check.glue.digit.actual" = "== 200"
+"check.glue.blanks" = "== fail"
+"check.glue.blanks.actual" = "== 100"
+"check.glue.statement" = "== fail"
+"check.glue.statement.actual" = "== 100"
