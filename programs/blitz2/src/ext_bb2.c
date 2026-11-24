@@ -28,6 +28,11 @@ void ext_freelibs(void)
 {
 }
 
+BOOL ext_libsmissing(void)
+{
+    return FALSE;
+}
+
 void ext_resbegin(void)
 {
 }

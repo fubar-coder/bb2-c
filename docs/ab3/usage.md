@@ -51,7 +51,8 @@ tokenised include of the other mode is refused. Relative names
 directory. Errors go to the console – a compile error as
 `FILE:LINE: MESSAGE`, inside an include with the include's name and
 line – and the return code is 0 (compiled without warnings), 5
-(compiled with warnings), 10 (compile error, or a warning that is an
+(compiled with warnings), 10 (compile error, also a missing library
+file or resident of AB3 mode, or a warning that is an
 error; also when warnings came before it) or 20 (argument or set-up
 error). AmiBlitz3's other options
 (`-d`, `-run`, `-dump`, `-PED`, `-save`, …) are refused with 20.

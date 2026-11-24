@@ -178,7 +178,7 @@ foreach(pair wclash1|1 wclash2|2)
 endforeach()
 add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 
-# ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-userlib]
+# ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-nobase|Blitz3-userlib|none]
 #              [ARGS ARG...] [REF] [REF_EXPECT FILE] [REF_NORUN] [DIR SUBDIR]
 #              [NORUN] [SAME CASE] [HUNKS LAYOUT] [DATESTAMP ISO-DATE]
 #              [RUN_DATESTAMP ISO-DATE]): a case of the suite; DATESTAMP: the
@@ -293,6 +293,11 @@ ab3_cli_case(incitwice incitwice.ab3 REF)
 # BigLib (task 4.2)
 ab3_cli_case(userlib userlib.ab3 TREE Blitz3-userlib REF)
 ab3_cli_case(nolib trim.ab3 TREE Blitz3-nolib)
+# a missing baseLibs, no Blitz3: assign: the same error with the file's
+# name, not "Library not Found : $FFFA" (rc 20) of the start-up lookup of
+# memlib and ffplib (fixed #1210)
+ab3_cli_case(nobase trim.ab3 TREE Blitz3-nobase)
+ab3_cli_case(noassign trim.ab3 TREE none)
 # errors (task 5.3): tokenised includes of the other mode, a missing
 # resident, an unsupported option, a compile error; errors inside an
 # include of text and a tokenised one (task 3.6)

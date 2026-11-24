@@ -118,9 +118,12 @@ struct ab3job {
  * @brief The return code at the end of a compile (design D6 of the change
  *        compiler-warnings), what ab3cli leaves in the job.
  *
- * A set-up error (outside the compile: loading libraries or residents)
- * gives AB3JOB_RC_FAIL, unless all of them were warnings that are errors
- * (AB3JOB_RC_ERROR); a compile error AB3JOB_RC_ERROR; no executable
+ * A set-up error (an error the compiler reports outside the compile, e.g.
+ * BB2 mode's start-up lookup of memlib without deflibs: "Library not
+ * Found : $FFFA") gives AB3JOB_RC_FAIL, unless all of them were warnings
+ * that are errors (AB3JOB_RC_ERROR); a compile error AB3JOB_RC_ERROR -
+ * also a library file or a resident of AB3 mode that could not be loaded,
+ * which the compile reports at its start (ext_compilestart); no executable
  * written AB3JOB_RC_FAIL; otherwise AB3JOB_RC_WARN after a warning, else
  * AB3JOB_RC_OK.
  *

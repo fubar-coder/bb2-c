@@ -1594,6 +1594,12 @@ void fixlibs(void)
                 l->lasttoken = o->firsttoken;
     }
 
+    /* a library file of the mode is missing: the compile reports it
+       (ext_compilestart) before memlib or ffplib are used */
+    if (ext_libsmissing()) {
+        memlib = ffplib = NULL;
+        return;
+    }
     /* asm: errstack=a7, errcont=.cont, ezerr=-1: a missing memlib/ffplib
        resumes at .cont (rts) */
     olderr = errjmp;

@@ -188,8 +188,7 @@ build/amiga/host/tools/amiga_run/amiga_run --mount-ro BB2C=build/amiga/blitz2 \
 
 | Message | Cause |
 |---|---|
-| `blitz2-ab3: Library not Found : $FFFA.` (return code 20) | `Blitz3:` is not assigned, or not to the directory that holds `BlitzLibs` |
-| `trim.ab3: Library file not found: Blitz3:BlitzLibs/csLibs` | one of AmiBlitz3's four library files is missing in `Blitz3:BlitzLibs/` |
+| `trim.ab3: Library file not found: Blitz3:BlitzLibs/csLibs` (return code 10) | one of AmiBlitz3's four library files is missing in `Blitz3:BlitzLibs/`, or `Blitz3:` is not assigned, or not to the directory that holds `BlitzLibs` (then the first file, `baseLibs`, is named) |
 | `trimtest.bas:2: Array not yet Dim'd` at a command of AmiBlitz3 | the source was compiled in BB2 mode: add `-mode ab3` |
 | `blitz2-ab3: cannot read the source NAME` | the source does not exist; a relative name is relative to the Shell's current directory |
 

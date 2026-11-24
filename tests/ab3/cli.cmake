@@ -13,11 +13,12 @@
 # TEST:src holds SOURCES and AmiBlitz3's test programs (AB3/Sourcecodes/
 # Amiblitz3/Tests, and int_tests_nostop.ab3: int_tests.ab3 without its Stop
 # line); AmiBlitz3's includes (AB3/Sourcecodes/Includes) are in
-# Blitz3:Sourcecodes/Includes.  Blitz3: is one of three trees, built from AB3: Blitz3
+# Blitz3:Sourcecodes/Includes.  Blitz3: is one of four trees, built from AB3: Blitz3
 # (BlitzLibs/ with baseLibs, utilLibs, OsLibs, csLibs, Residents/all.res
 # and an empty UserLibs/; an empty Libs/; for ref the compiler
-# Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-userlib (USERLIB in
-# UserLibs/).
+# Amiblitz3), Blitz3-nolib (without csLibs), Blitz3-nobase (without
+# baseLibs), Blitz3-userlib (USERLIB in UserLibs/); or the tree "none":
+# Blitz3: is not assigned.
 # CASES: one line per case, NAME|TREE|SOURCE|ARGS|EXPECT[|REFEXPECT[|norun]]
 # (norun: the executable is kept but not run; in configuration exe
 # REFEXPECT is not read), and after EXPECT,
@@ -85,14 +86,15 @@ file(COPY_FILE ${INJECT} ${test}/inject)
 # blitz2-ab3 under inject (datestamp=): its PROGDIR: is inject's
 file(COPY_FILE ${BLITZ2_DIR}/ab3cli ${test}/ab3cli)
 file(GLOB ab3_includes ${AB3}/Sourcecodes/Includes/*.ab3)
-foreach(tree Blitz3 Blitz3-nolib Blitz3-userlib)
+foreach(tree Blitz3 Blitz3-nolib Blitz3-nobase Blitz3-userlib)
 	set(libs ${test}/${tree}/BlitzLibs)
 	# Libs/: AmiBlitz3 adds Blitz3:Libs to LIBS: without checking the lock
 	# (docs/ab3/variant.md); without the directory an entry is left in
 	# LIBS: after every compile
 	file(MAKE_DIRECTORY ${libs}/Residents ${libs}/UserLibs ${test}/${tree}/Libs)
 	foreach(f IN LISTS biglibs)
-		if(NOT (tree STREQUAL "Blitz3-nolib" AND f STREQUAL "csLibs"))
+		if(NOT (tree STREQUAL "Blitz3-nolib" AND f STREQUAL "csLibs")
+				AND NOT (tree STREQUAL "Blitz3-nobase" AND f STREQUAL "baseLibs"))
 			file(COPY_FILE ${AB3}/BlitzLibs/${f} ${libs}/${f})
 		endif()
 	endforeach()
@@ -173,7 +175,12 @@ foreach(c IN LISTS cases)
 		string(REGEX REPLACE "^datestamp=" "" datestamp "${datestamp}")
 		set(cmd "TEST:inject datestamp=${datestamp} ${cmd}")
 	endif()
-	string(APPEND script "Assign Blitz3: TEST:${tree}\n"
+	if(tree STREQUAL "none")
+		string(APPEND script "Assign >NIL: Blitz3:\n")
+	else()
+		string(APPEND script "Assign Blitz3: TEST:${tree}\n")
+	endif()
+	string(APPEND script
 		"Echo \"[compile]\" >${out}\n${cmd}\nEcho \"rc=$RC\" >>${out}\n"
 		"Echo \"[run]\" >>${out}\n"
 		"If EXISTS RAM:${name}\n${run}"

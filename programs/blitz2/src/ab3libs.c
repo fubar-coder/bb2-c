@@ -135,3 +135,13 @@ void ext_freelibs(void)
             FreeMem(p, ab3libs[i]);
         }
 }
+
+/* Fixed (#1210): a missing library file is the error of the compile
+   (ext_compilestart), also when it is baseLibs, which holds memlib and
+   ffplib: fixlibs does not look for them then, its findlib gave
+   "Library not Found : $FFFA" outside the compile (ab3cli: a set-up
+   error, rc 20) */
+BOOL ext_libsmissing(void)
+{
+    return progmode == XTRA_MODE_AB3 && ab3liberr != NULL;
+}

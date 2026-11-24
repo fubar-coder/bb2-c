@@ -347,7 +347,8 @@ other options (`-d`/`-debug`, `-run`, `-dump`, `-setcom`, `-setdbg`,
 starting with `-`, `blitz2-ab3` starts the editor exactly as `blitz2`
 (BB2 mode). Return codes: 0 compiled (or `-h`), 5 compiled with
 warnings (AmigaDOS `RETURN_WARN`, change `compiler-warnings`), 10
-compile error, 20 argument or set-up error (assumption, AmiBlitz3's own
+compile error (also a missing library file or resident of AB3 mode),
+20 argument or set-up error (assumption, AmiBlitz3's own
 are not documented).
 
 How it works (`shared/ab3job`, `programs/blitz2/src/ab3main.c` and
@@ -411,9 +412,10 @@ Amiberry or the fetched AmiBlitz3 files): `ab3_cli` compiles the cases
 of `tests/ab3/cli/` with `blitz2-ab3 -s … -e …` in sessions of at most
 `AB3_CLI_BLOCK` cases, the tests `ab3_cli_1` … `ab3_cli_N` (blocks:
 `tests/README.md`, "Original material and presets"; `tests/ab3/cli.cmake`:
-`blitz2:`, three `Blitz3:` trees - the full
-one, one without `csLibs`, one with a userlib of number 152 replacing
-`baseLibs`' freqlib), runs each program through `reqtrap` and compares
+`blitz2:`, four `Blitz3:` trees - the full one, one without `csLibs`,
+one without `baseLibs`, one with a userlib of number 152 replacing
+`baseLibs`' freqlib - or no `Blitz3:` assign), runs each program through
+`reqtrap` and compares
 the compiler's console output, its return code, the program's output and
 return code with `NAME.expect` (`results match`, `tools/results`: literal lines, `~`/`+`
 patterns for memory sizes, timing and the system's language). The cases:
@@ -421,8 +423,8 @@ AmiBlitz3's ten test programs of the spike (`memoryleak_test` with its
 `OPTIMIZE 13` line since G2) and the ten G2 makes compile (below), `^`
 (library 44), header residents with and without a
 path, includes of text in both modes, the userlib, and the errors - a
-missing BigLib, a missing resident, tokenised includes of the other mode
-(both ways), `-d`, a syntax error, errors in an include of text and in a
+missing BigLib (`csLibs`; `baseLibs` and no `Blitz3:` assign, #1210), a
+missing resident, tokenised includes of the other mode (both ways), `-d`, a syntax error, errors in an include of text and in a
 tokenised one. `ab3_cli_ref` compiles the AB3 cases with AmiBlitz3
 v3.14.0's own compiler (`Blitz3:Amiblitz3 -s … -e …`, CLI mode, the
 fetched binary; no further setup) and compares the programs' outputs with
@@ -827,6 +829,7 @@ machine); recorded, not changed in G1:
 | Case | AmiBlitz3 v3.14.0 | blitz2-ab3 | For |
 |---|---|---|---|
 | `exec_data` | return code 0 after a compile error ("A unknow error happend!") | 10 (design D6) | none: ours is the documented convention |
+| `nolib`, `nobase`, `noassign` (no `.ref.expect`) | a missing BigLib is a warning, `NAMELIBS [PATH] not found, none of the stored functions will be available.` (e.g. `CSLIBS [Blitz3:BlitzLibs/CsLibs] …`), and the compile goes on without its libraries: return code 0; without `baseLibs` also `Library not found: $FFFA.` and compile errors (measured 2026-11-24) | the compile stops: `SOURCE: Library file not found: Blitz3:BlitzLibs/NAME`, return code 10, no executable (spec `ab3-compat/libraries`; for `baseLibs` since #1210) | none: kept (user decision 2026-11-24, #1210) |
 | text include without a final line end | its last line is lost: a last `NPrint` is not compiled, a last `INCLUDE` never done (measured 2026-11-01; guess: `read_includeline`'s scan stops before the 0 at the data end) | the last line is compiled | none: kept (silently losing code is not reproduced; user decision 2026-11-01) |
 | `opt_fpu` | `OPTIMIZE 7` compiles on the reference machine (Amiberry's A1200 has a 68882, `fpu_model` of `default.uae`: `_checkfpu` finds it) and the program runs | refused: "Not supported: OPTIMIZE 2 (FPU)" (spec `ab3-compat/directives`) | G6: FPU code |
 | `runerrs` | in CLI mode without its debugger (`Defaultdbug`, not fetched) the executable has no runtime error checking: the array index out of range at the end is not seen | checked: blitz2's runtime error requester | none: the runtime part of AB3 mode |

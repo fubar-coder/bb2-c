@@ -66,6 +66,14 @@ BOOL ext_loaduserlibs(struct node *tail);
 /** @brief freelibs (asmlibs.c): free what ext_loadlibs loaded. */
 void ext_freelibs(void);
 
+/**
+ * @brief fixlibs (asmlibs.c): the libraries are loaded; is a library
+ *        file of the mode missing (makelibs)?
+ * @return TRUE: memlib and ffplib are not looked for (NULL; the compile
+ *         stops in ext_compilestart before they are used)
+ */
+BOOL ext_libsmissing(void);
+
 /* ======================================================== residents */
 
 /** @brief loadres (stmts.c) starts loading resbuff's residents. */
