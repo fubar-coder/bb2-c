@@ -1933,13 +1933,33 @@ UWORD dodivf(UWORD t) { doflib(-84); return t; }
 
 /* ----------------------------------------------------------- AND / OR */
 
-/* blitz2.s:9492-9506 */
+/* Fixed (#1209), no asm counterpart: AND, OR and EOR (also & and |) and
+   Not under a Quick type so far work on the whole parts of their Quick
+   operands, the 16 fraction bits dropped (rounded down, -1.5 is -2, as
+   quicktoword); the result stays a Quick.  The operation on the 16.16
+   values followed by clr.w Dn is bit for bit "the operands to Word, the
+   operation, back to Quick": its integer part is the operation of the
+   integer parts, its fraction 0.  The original operated on the 16.16
+   values (the Long handlers in the Quick column of operators[], not.l in
+   notit): Not of a whole number had the fraction $FFFF (h=True : h=NOT h
+   gave 0.99998, true; NOT 3 -3.0000153), AND, OR and EOR combined the
+   fractions (1.5 OR 2.5 gave 3.5).  The shifts keep the 16.16 value, as
+   the original does on purpose (blitz2.s:9555).  Under a Long type so far
+   a raw Quick is rounded down before these operators already (#1178). */
+static void quickwhole(UWORD t)
+{
+    if (t == T_QUICK)
+        pokewd(0x4240 | regat);     /* clr.w Dn */
+}
+
+/* blitz2.s:9492-9506; doandl and doorl are the Long and the Quick
+   handler (Fixed (#1209): quickwhole for a Quick) */
 UWORD doandb(UWORD t) { doplus2(0xc000); return t; }
 UWORD doandw(UWORD t) { doplus2(0xc040); return t; }
-UWORD doandl(UWORD t) { doplus2(0xc080); return t; }
+UWORD doandl(UWORD t) { doplus2(0xc080); quickwhole(t); return t; }
 UWORD doorb(UWORD t) { doplus2(0x8000); return t; }
 UWORD doorw(UWORD t) { doplus2(0x8040); return t; }
-UWORD doorl(UWORD t) { doplus2(0x8080); return t; }
+UWORD doorl(UWORD t) { doplus2(0x8080); quickwhole(t); return t; }
 
 /* ------------------------------------------------------------------ EOR */
 
@@ -1956,8 +1976,9 @@ static void doeor2(UWORD opcode)
 UWORD doeorb(UWORD t) { doeor2(0xb100); return t; }
 /* blitz2.s:9519 doeorw */
 UWORD doeorw(UWORD t) { doeor2(0xb140); return t; }
-/* blitz2.s:9521 doeorl */
-UWORD doeorl(UWORD t) { doeor2(0xb180); return t; }
+/* blitz2.s:9521 doeorl - the Long and the Quick handler (Fixed (#1209):
+   quickwhole for a Quick) */
+UWORD doeorl(UWORD t) { doeor2(0xb180); quickwhole(t); return t; }
 
 /* -------------------------------------------------------------- shifts */
 
@@ -2191,6 +2212,7 @@ static UWORD notit(UWORD *type)
     if (*type >= 3)
         opcode ^= 0xc0;             /* not.l */
     pokewd(opcode);
+    quickwhole(*type);              /* Fixed (#1209): Not of floor(q) */
     eval4end();
     return c;
 }

@@ -10,7 +10,9 @@
 ; done in that type (in brackets, bound by precedence, nested, after Not
 ; or a minus); a Byte or Word left operand, a comparison on the left and
 ; one passed through a function are as before (spec
-; compiler/expression-types).
+; compiler/expression-types).  AND, OR and EOR of a Quick take its whole
+; part (#1209): If qh OR (l1<>l1) is false for qh=0.5 (c33, c34, c44), as
+; in the original.
 Function.f tf{x.f}
   Function Return x
 End Function
@@ -84,9 +86,9 @@ End Function
   rl=lb+-(l1=l1)
   !CheckEq{rl,100001,"c32"}   ; rl.l=lb+-(l1=l1)
   rl=0 : If qh OR (l1<>l1) Then rl=-1
-  !CheckEq{rl,-1,"c33"}   ; If qh OR (l1<>l1)
+  !CheckEq{rl,0,"c33"}   ; If qh OR (l1<>l1)
   rl=0 : If qh EOR (l1<>l1) Then rl=-1
-  !CheckEq{rl,-1,"c34"}   ; If qh EOR (l1<>l1)
+  !CheckEq{rl,0,"c34"}   ; If qh EOR (l1<>l1)
   flag=1 : rl=0 : If flag AND x=5 Then rl=-1
   !CheckEq{rl,-1,"c35"}   ; flag=1 : If flag AND x=5
   flag=1.5 : rl=0 : If flag AND x=5 Then rl=-1
@@ -106,5 +108,5 @@ End Function
   rf=fh+(l1=l1)*100000
   !CheckFltNear{rf,-99999.5,0.001,"c43"}   ; rf.f=fh+(l1=l1)*100000
   rq=qh OR (l1<>l1)
-  !CheckQEq{rq,0.5,"c44"}   ; rq.q=qh OR (l1<>l1)
+  !CheckQEq{rq,0,"c44"}   ; rq.q=qh OR (l1<>l1)
 !EndTestCase

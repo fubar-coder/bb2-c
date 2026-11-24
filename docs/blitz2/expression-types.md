@@ -7,8 +7,10 @@ in 16.16 format) meets a Long. This page describes what the original
 compiler does, measured with blitz2 1.95 and the CD's libraries with
 runtime error checking off (AmiBlitz3 v3.14.0 has the same code), and
 where the port differs: comparisons (#1177), the arithmetic of a
-Quick under a Long (#1178), the later array index (#1179) and a constant
-with a fraction under a Byte (#1188), original bugs fixed in the port.
+Quick under a Long (#1178), the later array index (#1179), a constant
+with a fraction under a Byte (#1188), the power with a negative base
+(#1189) and the bit operators under a Quick type so far (#1209), original
+bugs fixed in the port.
 
 ## The types and the "type so far"
 
@@ -169,6 +171,53 @@ saturated value: `rl.l=vl^3` with `vl=-100000` is -2147483648, 0 as a
 Word. AB3 mode takes `^` from AmiBlitz3's library 44 and keeps its value,
 the original's (`docs/ab3/variant.md`).
 
+## Bit operators under a Quick type so far (#1209)
+
+When the type so far is Quick (a Quick or default-typed variable as an
+operand, a Quick destination or parameter), the original compiles `NOT`,
+`AND`, `OR`, `EOR`, `&` and `|` as the Long operation on the 16.16 value
+(`notit` emits `not.l`, the Quick column of the operator table has the
+Long handlers, `blitz2.s:9688-9698`, `:9496-9521`, `:14725-14745`): the
+fraction bits take part. `NOT` inverts them, so the `NOT` of a whole
+number has the fraction $FFFF and is almost 1 too high, and the usual
+toggle of a default-typed flag does not work; `AND`, `OR` and `EOR`
+combine the fractions of both operands.
+
+In the port (original bug #1209, fixed; test
+`compiler-quick-bit-operators`) a Quick operand of these operators is converted to a whole number first
+by dropping its 16 fraction bits (rounded down, `-1.5` is `-2`, as a
+Quick converted to a Word); the result stays a Quick. The code is the
+operation on the 16.16 values followed by `clr.w` (`quickwhole`,
+`programs/blitz2/src/eval.c`), bit for bit the same as "the operands to
+Word, the operation, back to Quick". The type so far flows as before.
+With `x=3`, `q.q=1.5`, `p.q=2.5`, `w.w=3`, `l.l=5`:
+
+| Expression | Original | Port |
+|---|---|---|
+| `h=-1 : h=NOT h`, also `h=True`, `h=(l=5)` | 0.9999847 ($0000FFFF, true) | 0 |
+| `h=On : h=NOT h` | 0 | 0 |
+| `h=0 : h=NOT h` | -0.0000153 ($FFFFFFFF) | -1 |
+| `q2.q=NOT x`, `NOT 3` | -3.0000153 ($FFFCFFFF) | -4 |
+| `q2.q=NOT q`, `NOT 1.5` | -1.5000153 ($FFFE7FFF) | -2 |
+| `q2.q=NOT -1.5` | 1.4999847 ($00017FFF) | 1 |
+| `q2.q=q AND p` | 0.5 | 0 |
+| `q2.q=q OR p` | 3.5 | 3 |
+| `q2.q=q EOR w` | 2.5 | 2 |
+| `If h OR g` with `h=0.5`, `g=0` | true | false |
+| `If h OR g` with `h=-0.5`, `g=0` | true | true |
+| `q2.q=x AND 6` with `x=13`, `q2.q=y OR 8` with `y=7` | 4, 15 | 4, 15 |
+
+For `AND`, `OR` and `EOR` this is a rule change rather than the repair of
+a visibly wrong result: whole operands give the original's value, and
+only a fraction differs. A truth test on a fraction between 0 and 1 with
+one of these operators is false now (`If h OR g` for `h=0.5`), one on a
+fraction between -1 and 0 true (it rounds down to -1). Under a Long type
+so far a raw Quick is rounded down before these operators already (#1178,
+above). The shifts (`LSL`, `LSR`, `ASL`, `ASR`) keep working on the 16.16
+value, as the original does on purpose (`blitz2.s:9555`): `x LSR 1` with
+`x=5` is 2.5. AB3 mode has the same rule; AmiBlitz3 v3.14.0 has the
+original's (`docs/ab3/variant.md`).
+
 ## Converting to a whole number: Float and Quick differ
 
 A Float is converted to a Byte, Word or Long by the mathffp routine
@@ -272,15 +321,16 @@ through a function are as before. With `lw.l=65537`, `lb.l=100000`,
 | `If $10000 AND (l1=l1)` | false | true |
 | `rf.f=fh+(l1=l1)` | -1 | -0.5 |
 | `rq.q=q+(l1=l1)` | 0 | 0.5 |
-| `If qh OR (l1<>l1)` | false | true |
+| `If qh OR (l1<>l1)` | false | false (#1209: the whole part of `qh`) |
 | `rl.l=q*(l1=l1)` | -1 | -2 (#1178: rounded down) |
 | `rf.f=fh AND (l1=l1)` | 0 | "Illegal Operator for Type" |
 
 `If flag AND x=5` with a default-typed (Quick) `flag` has the same truth
 value as in the original for every `flag`: the boolean becomes the Quick
--1.0 and the `AND` keeps the whole part of `flag`. A Float has no `AND`,
-`OR`, `EOR` or shift, so a Float left operand of one of them with a
-comparison on the right is refused, as any Float there. A Long right
+-1.0 and the `AND` takes the whole part of `flag` (as `OR` and `EOR`
+do, #1209). A Float has no `AND`, `OR`, `EOR` or shift, so a Float left
+operand of one of them with a comparison on the right is refused, as any
+Float there. A Long right
 operand computed from a comparison under a Quick left one
 (`q+(l1=l1)*100000`) keeps the late cut of the Quick (#1178): the Long
 may lie beyond the Quick range.
@@ -419,12 +469,18 @@ the four give the same results, except for `Dim a(65535)` with checking
   the port (above, "The power with a negative base"): in the original
   `(-2.5)^3` is 15.625, so an odd power of a negative number has the
   wrong sign.
+* **Bit operators under a Quick type so far** were original bug #1209,
+  fixed in the port (above, "Bit operators under a Quick type so far"):
+  in the original `h=True : h=NOT h` leaves `h` true (0.9999847), so the
+  usual toggle of a default-typed flag does not work, and `NOT 3` is
+  -3.0000153.
 
 The comments `Fixed (#1178)` and `Fixed (#1179)` in
 `programs/blitz2/src/eval.c` (`varcont`, `mixedop`, `arrevalchk`) and
 `Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) and
 `Fixed (#1189)` in `programs/blitz2/src/eval.c` (`dopow`) and
-`libs/acidlibs/mathtranslib.c` point here.
+`libs/acidlibs/mathtranslib.c` and `Fixed (#1209)` in
+`programs/blitz2/src/eval.c` (`quickwhole`, `notit`) point here.
 
 ## Where the rules are in the code
 

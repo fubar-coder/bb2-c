@@ -1,0 +1,43 @@
+# the original blitz2 1.95 (the build of blitz2.s) with the CD's libraries
+[session]
+done
+[compile]
+ok
+[run]
+print-not-q-A -1.5
+print-and-q-q-A 1.5
+print-and-q-cf-A 1.5
+print-or-b-q-A 3.5
+print-or-w-q-A 1001.5
+print-or-q-b-A 3.5
+print-or-q-w-A 1001.5
+print-or-q-l-A -31070.5
+print-or-q-q-A 1.5
+print-or-q-cb-A 3.5
+print-or-q-cw-A 1001.5
+print-or-q-cf-A 1.5
+print-or-cb-q-A 3.5
+print-or-cw-q-A 1001.5
+print-eor-b-q-A 2.5
+print-eor-w-q-A 1001.5
+print-eor-q-b-A 2.5
+print-eor-q-w-A 1001.5
+print-eor-q-l-A -31070.5
+print-eor-q-cb-A 2.5
+print-eor-q-cw-A 1001.5
+print-eor-cb-q-A 2.5
+print-eor-cw-q-A 1001.5
+rc=0
+[blitz2]
+rc=0
+[log]
+openreq "Blitz Basic 2 Version N.NN"
+getinput "Blitz Basic 2 Version N.NN" -> gadget 1 " OKEE DOKEE " (version requester)
+BATCH	start
+JOB	j000	CORPUS:src/compiler-expr-1209-print-A-01.bb2
+XTRA	j000	defaults
+ezfreq "Name of Executable to create" -> CORPUS:out/compiler-expr-1209-print-A-01
+openreq "***** COMPILING *****"
+openreq "***** COMPILING *****"
+RESULT	j000	ok
+BATCH	end

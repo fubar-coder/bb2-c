@@ -165,17 +165,18 @@ enum {
     EM_R_1179 = 1 << 4,         /* every array index a Long (#1179) */
     EM_R_1187 = 1 << 5,         /* a Float condition tests the value (#1187) */
     EM_R_1188 = 1 << 6,         /* a fraction constant keeps its fraction under a Byte type (#1188) */
-    EM_R_1189 = 1 << 7          /* ^ with a negative base and a whole exponent keeps the sign (#1189) */
+    EM_R_1189 = 1 << 7,         /* ^ with a negative base and a whole exponent keeps the sign (#1189) */
+    EM_R_1209 = 1 << 8          /* AND OR EOR NOT under a Quick type so far on the whole parts (#1209) */
 };
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
-#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189)  /* the port of this commit, C libraries */
+#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)  /* the port of this commit, C libraries */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
    get "; @fixed-orig #N" (expect.c, option T1) */
 #define EM_RULES_MATRIX (EM_R_1177 | EM_R_1186 | EM_R_1187)
-#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189)
+#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)
 
 /* what keeps a value from being exact or known (the question classes of
    design decision 7) */

@@ -425,6 +425,7 @@ static const struct {
     { "1187", "a Float condition tests d1, what the code before left there, not the value" },
     { "1188", "a constant with a fraction is cut to a whole number when the type so far is Byte" },
     { "1189", "^ with a negative base drops the sign of the power" },
+    { "1209", "NOT, AND, OR and EOR under a Quick type so far work on the 16.16 bits, the fraction included" },
     { "199", "the CD's quickmult adds the high words' product beyond the Quick range" },
     { "234", "the CD's printlib prints a Quick that rounds to 0 as \"-.\"" },
 };
@@ -445,7 +446,7 @@ static unsigned issue_rule(const char *issue)
         unsigned rule;
     } rules[] = {
         { "1177", EM_R_1177 }, { "1178", EM_R_1178 }, { "1179", EM_R_1179 },
-        { "1187", EM_R_1187 }, { "1188", EM_R_1188 }, { "1189", EM_R_1189 },
+        { "1187", EM_R_1187 }, { "1188", EM_R_1188 }, { "1189", EM_R_1189 }, { "1209", EM_R_1209 },
     };
 
     for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++)

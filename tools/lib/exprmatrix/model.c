@@ -1264,6 +1264,14 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
 
             x = (x & ~mask) | (r & mask);
         }
+        /* EM_R_1209: under a Quick type so far on the whole parts, the
+           fraction bits dropped, the result a Quick (quickwhole: clr.w
+           after the operation; "Bit operators on a Quick: Word by
+           dropping the fraction" and "... scope, result type, shifts,
+           order", 2026-11-24: "(1) Drop the fraction bits", "Q: stays
+           Quick") */
+        if (t == TQ && (e->rules & EM_R_1209))
+            x &= 0xffff0000u;
         /* whole operands, also as Quicks (their low words 0): exact */
         if (rat_isint(a->id) && rat_isint(b->id)) {
             int64_t p = rat_whole(a->id), q = rat_whole(b->id);
@@ -1466,6 +1474,10 @@ static int expression(struct ev *e, const struct em_set *s, const struct em_cell
                 r->v = ~r->v;
             else
                 r->v = (r->v & 0xffff0000u) | (uint16_t)~r->v;
+            /* EM_R_1209: Not of the whole part of a Quick (as AND, OR
+               and EOR in doop) */
+            if (r->t == TQ && (e->rules & EM_R_1209))
+                r->v &= 0xffff0000u;
             r->id = rat_op(rat_int(-1), r->id, '-');
         }
     } else {

@@ -223,6 +223,7 @@ static const struct {
     { EM_R_1187, "1187" },
     { EM_R_1188, "1188" },
     { EM_R_1189, "1189" },
+    { EM_R_1209, "1209" },
     { 0, "lib" },               /* the C libraries: EM_R_CDLIB off */
 };
 enum { NSTEPS = sizeof steps / sizeof steps[0] };
