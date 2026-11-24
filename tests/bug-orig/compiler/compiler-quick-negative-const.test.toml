@@ -1,4 +1,4 @@
-# compiler-quick-negative-const.test.bas: an open bug (issue to be filed):
+# compiler-quick-negative-const.test.bas: an open bug (#1208):
 # the port has the same behaviour as the original, so every cell shows
 # the declared deviations
 [deviations."compiler=orig195"]

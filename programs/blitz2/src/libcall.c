@@ -561,7 +561,7 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
         val = numval;
         break;
     case T_QUICK:
-        /* .quick2, or .qint: swap d0.  BUG(orig) (issue to be filed): the
+        /* .quick2, or .qint: swap d0.  BUG(orig) (#1208): the
            swap is a Quick of the whole number only for 0 to 32767; a
            negative one keeps $FFFF in the half that becomes the
            fraction, so On (-1) is $FFFFFFFF and #c=-3 is $FFFDFFFF
