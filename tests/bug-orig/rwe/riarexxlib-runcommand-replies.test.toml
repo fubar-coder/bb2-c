@@ -1,8 +1,9 @@
 # riarexxlib-runcommand-replies.test.bas: through inject (track, guard) the
 # strings and messages left allocated show; the correct report is the track
 # line alone (no guard line: nothing written behind a block).  The result of
-# RXRunCommand is the d0 PutMsg leaves (#543): one of the 40 sends reads as
-# not sent
+# RXRunCommand is the d0 PutMsg leaves (#543): the receiving task's pending
+# signals, never -1, so none of the 40 sends reads as sent (a pending
+# SIGF_DOS made the count vary when any non-zero result counted)
 fixed-orig = 531
 rwe = ["riarexxlib"]
 runwrap = "@INJECT@|track guard"
@@ -13,4 +14,4 @@ inject = "== \"inject: rc=0\ninject: track: 0 allocations left, 0 bytes\n\""
 [deviations."compiler=orig210"]
 inject = "matches \"inject: track: # allocations left, # bytes\""
 "check.forty_commands.sent" = "== fail"
-"check.forty_commands.sent.actual" = "< 40"
+"check.forty_commands.sent.actual" = "== 0"

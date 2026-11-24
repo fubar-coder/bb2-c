@@ -17,7 +17,7 @@ DEFTYPE .l
   s=0
   For i=1 To 40
     r=RXRunCommand("BUGORIG","cmd "+Str$(i))
-    If r Then s+1
+    If r=-1 Then s+1
     m=RXReadPort
     If m Then RXReplyMsg 0
     m=RXReadPort
