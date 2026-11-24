@@ -2,8 +2,6 @@
 # check behind the Peeks$ must not run.  The original has no error check and
 # copies ~4 GB: the program does not come back (the hang check ends the
 # session), the announcement is never answered
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
 fixed-orig = 214
 runtime-errors = "on"
 
@@ -12,7 +10,7 @@ runtime-errors = "on"
 
 [deviations."libs=cd"]
 "check.negative_length.refused" = "== fail"
-
-[ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#214): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

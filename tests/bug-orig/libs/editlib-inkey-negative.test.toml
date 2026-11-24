@@ -1,8 +1,6 @@
 # editlib-inkey-negative.test.bas: with runtime error checking; the file goes
 # to CORPUS:; the port refuses the negative count, the CD's libraries do
 # not come back (the run is ended as a hang)
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
 fixed-orig = 1031
 runtime-errors = "on"
 timeout = 30
@@ -12,7 +10,7 @@ timeout = 30
 
 [deviations."libs=cd"]
 "check.negative_count.refused" = "== fail"
-
-[ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#1031): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
