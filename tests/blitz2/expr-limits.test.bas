@@ -9,8 +9,8 @@
 ; d7: "Expression too Complex", #1185).  A chain of one precedence and a
 ; run of minus signs have no limit of their own, and a minus sign is not
 ; counted (64 times "-(" fail at the 64th parenthesis).  The long lines
-; are built with macros (a TED line holds 128 characters; a macro ending
-; in NOT keeps a ":", #1206, so NOT stands in the line itself).
+; are built with macros (a TED line holds 128 characters); the NOTs stand
+; in the line itself.
 ; Correct: every case compiles and gives the values of its checks.
 Macro o
 ((((((((
