@@ -1,6 +1,5 @@
 /*
- * exprtype.h - the type decisions of an expression (issue #1180, step 1 of
- * the expression tree: OpenSpec change expr-tree-1-typing): for a binary
+ * exprtype.h - the type decisions of an expression (issue #1180): for a binary
  * operator the conversions of its operands, the type whose handler
  * computes it and the type so far after it; for an element (a variable,
  * a function value, a constant) the type so far after it.  The evaluator
@@ -29,9 +28,11 @@ enum {
     ET_FLOAT = 5, ET_ADDR = 6, ET_STRING = 7, ET_NTYPES = 8
 };
 
-/** @brief The operators: the index of their entry in operators[] (eval.c,
- *         blitz2.s:14704), ETO_END for none (the end of the expression, the
- *         sentinel of the operator stack). */
+/** @brief The operators, numbered by the index of their entry in operators[].
+ *
+ * operators[] is in eval.c (the original's table: blitz2.s:14704); ETO_END
+ * is for none (the end of the expression, the sentinel of the operator
+ * stack). */
 enum exprtype_op {
     ETO_ADD, ETO_SUB, ETO_MUL, ETO_DIV,
     ETO_AMP,                    /* '&': AND */
@@ -70,9 +71,10 @@ struct exprtype_binfacts {
     unsigned char rconst;       /* #978: the right operand is one constant from 128 to 255 */
 };
 
-/** @brief The decision for a binary operator.  A conversion is from -> to
- *         (from 0: none); the emitter does them in the order of its path
- *         (eval.c, operate). */
+/** @brief The decision for a binary operator.
+ *
+ * A conversion is from -> to (from 0: none); the emitter does them in the
+ * order of its path (eval.c, operate). */
 struct exprtype_bin {
     unsigned char path;         /* ETP_* */
     unsigned char rup_from, rup_to;     /* the right operand up to the left one's type (#1182; a comparison) */
@@ -140,9 +142,11 @@ int exprtype_ownleft(unsigned from, unsigned to);
  *         type so far right. */
 struct exprtype_bin exprtype_binop(unsigned op, unsigned left, unsigned right, const struct exprtype_binfacts *f);
 
-/** @brief An element of its own type own under the type so far tsf; c is
- *         NULL for a value (varcont), else the facts of a constant
- *         (consttype2; own is then ignored). */
+/** @brief The decision for an element of its own type own under the type
+ *         so far tsf.
+ *
+ * c is NULL for a value (varcont), else the facts of a constant
+ * (consttype2; own is then ignored). */
 struct exprtype_elem exprtype_element(unsigned tsf, unsigned own, const struct exprtype_constfacts *c);
 
 #ifdef __cplusplus

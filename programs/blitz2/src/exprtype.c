@@ -1,13 +1,12 @@
 /*
  * exprtype.c - the type decisions of an expression (exprtype.h; issue
- * #1180, step 1).  No asm counterpart: the rules the original took in
+ * #1180).  No asm counterpart: the rules the original took in
  * eval5 (blitz2.s:8983), the operator handlers (blitz2.s:9142-9606),
  * varcont (blitz2.s:10479) and consttype2 (blitz2.s:10913) at the moment
  * of emission, with the port's fixes #978, #1177, #1178, #1179, #1182 and
  * #1188, collected in one place; which routine each rule comes from:
- * docs/blitz2/expression-tree.md.  The decisions are those of the code
- * before (every result byte-identical), pinned by the host test's table
- * (programs/blitz2/tests/host/exprtype.tsv).
+ * docs/blitz2/expression-tree.md.  The decisions are pinned by the host
+ * test's table (programs/blitz2/tests/host/exprtype.tsv).
  */
 #include <stddef.h>
 #include "exprtype.h"

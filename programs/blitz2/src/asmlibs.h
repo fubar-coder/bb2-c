@@ -171,8 +171,7 @@ struct blitzlib *findlib(UWORD libnum);
    used (uselib3).  notokerr if none.  asm d1 is changed (first token of
    the lib) - no caller uses it.  It is looktoke and uselib3. */
 UBYTE *findtoke(UWORD tok, struct blitzlib **libp);
-/* findtoke without its uselib3 (no asm counterpart; issue #1180, change
-   expr-tree-3d-library-calls): token -> sub node of lib (*libp, not
+/* findtoke without its uselib3 (no asm counterpart): token -> sub node of lib (*libp, not
    NULL), notokerr if none; no side effect besides that error.  A library
    function in an expression is looked up with it; its call uses the
    library (eval.c, function). */

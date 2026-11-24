@@ -378,3 +378,22 @@ and when (the columns of the table of step 3a):
 | `ELK_VAR` of a string | a string variable, field or array element | as `ELK_VAR` | the work area (`makesbase`), the variable's address into a2 (unless its path left it there: `TF_ADDRINA2`), `copstring` used; its length on the run-time stack; under a numeric type so far its conversion (`stringtolong`: the length dropped, `sbtolong`) | as `ELK_VAR` | as `ELK_VAR` |
 | `EXN_BINOP` of strings | `+`, `=`, `<>`, `<`, `<=`, `>`, `>=` with a String left operand | none (the operator read by `eval2`, as every one) | `+`: the right length popped and added to the left one (`addstrings`; at `regat` 6 the d6 that `getelement` saved dropped instead, #971); a comparison: the library routine `strcomp` used (`tokejsr`; at run time it removes both lengths and moves a3 back to the left string), then `Scc` (`cpoke`); the type so far String (`+`) or Word | its operands (each a string's code with its length pushed) | emit: "Illegal Operator for Type" (`doop`: any other operator on a String) |
 | `EXN_EXPR` with strings | the end of an evaluation of a String, or of one with a string in it | none | a String: `clr.b (a3)+` and the start into `D(regat)` (`sbtolong`: the a3 saved on the stack, which the length then replaces, `sbgot` 2; else the work area's start, the variable of the library 65235, used), `stackuse` 4 up (when the type is pushed, `pushflag` > 0: the length popped, the type word pushed, `stackuse` 2 more, the length pushed again); AmiBlitz3's filler below a procedure's string argument in a register (`ext_strpointer`: `pea 0`, `stackuse` 4 up); another type with a3 saved: the saved a3 dropped (`ststfix`); `sbgot` back | the expression | none |
+
+## Node bound
+
+`EXPRTREE_NODES` (`programs/blitz2/src/exprtree.h`) is 168 nodes, 7728
+bytes on the 68000 (a node is 46 bytes). The bound of the nodes live at
+once grew with the steps, each measured by compiling nested forms and
+reading the host test's `maxlive`:
+
+| Step | What lives besides the counted nodes | Bound | Reached by |
+|---|---|---|---|
+| 2 | the 64 counted nodes, the 65th (made before it is counted), one leaf or one run of minus signs per level | 129 | 64 times `-(` ("Precedence Stack Overflow"); 63 times `-(` compile with 128 nodes live |
+| 3a | an element's leaf lives only while it is emitted: behind the run of minus signs of the innermost level it is the 129th, never with the 65th counted node | 129 | 63 times `-(` and `-b` |
+| 3b | a step of a variable's path and the variable node take the leaf's place (made after the index, released before the next node) | 129 | 62 times `-(` and `-a(-c)`; 63 arrays nested in their indexes, `-a(-a(... -b))` |
+| 3c | a call's node lives beside the run of minus signs of its level while its parameters are read; the compiler nests at most 32 calls (each holds an entry of `forthstack`, the 33rd is "Expression too Complex") | 161 | 32 times `-f{` and 32 times `-(` ("Precedence Stack Overflow") |
+| 3d | a library function's call is such a node and counts among the 32 | 161 | 10 times `-Abs(` and 21 or 22 times `-f{` before 32 times `-(`: 160 and 161 |
+| 3e | a string literal's leaf lives while its text is read and makes no node | 161 | unchanged |
+
+The arena has a margin of 7 nodes to 168 (it was 136 with the 129 of
+step 2).

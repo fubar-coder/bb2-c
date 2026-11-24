@@ -1,13 +1,13 @@
 // test_exprtree - the nodes of an expression and the walk over them
-// (programs/blitz2/src/exprtree.c; issue #1180, change
-// expr-tree-2-operators).  The hooks of the walk are a small evaluator of
+// (programs/blitz2/src/exprtree.c; issue #1180).  The hooks of the walk
+// are a small evaluator of
 // this file over a text: a letter is an operand (a simple element, whose
-// leaf is made, emitted and released as in eval.c: change
-// expr-tree-3a-leaves), a capital letter with [ ] an array element (its
+// leaf is made, emitted and released as in eval.c), a capital letter with
+// [ ] an array element (its
 // index, a step of its path and its variable node as in parse.c's
-// varparse: change expr-tree-3b-arrays), a capital letter with { } a call
+// varparse), a capital letter with { } a call
 // (its node live while its parameters, separated by commas, are read, as
-// eval.c's afunction and amigalib: change expr-tree-3c-calls), + -
+// eval.c's afunction and amigalib), + -
 // binary operators of one precedence, * / of a higher one, ^ of a higher
 // one still, ( ) a
 // bracket and ~ NOT (each an expression node of its own, as eval4 makes
@@ -95,8 +95,7 @@ void element(ctx *x)
         x->out += c;
         exprtree_release(l);
     } else if (c >= 'A' && c <= 'Z' && *x->p == '{') {
-        // a call (eval.c: afunction, amigalib, libfunction; changes
-        // expr-tree-3c-calls and expr-tree-3d-library-calls, all of one
+        // a call (eval.c: afunction, amigalib, libfunction, all of one
         // shape): its node lives while its parameters are read, each an
         // expression of its own, and is then the leaf of its value
         // (callcont)
@@ -333,15 +332,13 @@ TEST_CASE("exprtree: 64 counted nodes, the 65th is the overflow", "[exprtree]")
     CHECK(walk(times("_(", 63) + "_a" + times(")", 63), x) == "a" + times("_", 64));
     CHECK(x.maxlive == 129);
     CHECK(x.maxlive <= EXPRTREE_NODES);
-    // arrays nested in their indexes behind minus signs (change
-    // expr-tree-3b-arrays): each index is counted, a step and the
+    // arrays nested in their indexes behind minus signs: each index is counted, a step and the
     // variable node live only at the leaf's place: the bound stays 129
     CHECK(walk(times("_A[", 63) + "_b" + times("]", 63), x) == "b_" + times("A_", 63));
     CHECK(x.maxpend == 64);
     CHECK(x.maxlive == 129);
     CHECK(walk(times("_A[", 64) + "b" + times("]", 64)) == "overflow");
-    // calls nested in their parameters behind minus signs (change
-    // expr-tree-3c-calls): a call's node lives beside the run of minus
+    // calls nested in their parameters behind minus signs: a call's node lives beside the run of minus
     // signs of its level while its parameter is read.  The compiler nests
     // at most 32 calls (each holds an entry of forthstack, the 33rd is
     // "Expression too Complex"), so the bound is 64 counted nodes, the

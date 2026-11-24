@@ -1,6 +1,6 @@
 /*
  * exprtree.c - the nodes of an expression and the walk over them
- * (exprtree.h; issue #1180, step 2).  The arena replaces the original's
+ * (exprtree.h; issue #1180).  The arena replaces the original's
  * precedence stack (blitz2.s:9171 precsp, 9173 precstack, 9153 pushprec,
  * 9161 popprec); the walk is eval5's control (blitz2.s:8983-9083); which
  * routine went where: docs/blitz2/expression-tree.md.

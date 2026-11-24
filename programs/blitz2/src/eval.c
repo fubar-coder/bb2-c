@@ -2216,15 +2216,13 @@ static UWORD notit(UWORD *type)
     return c;
 }
 
-/* The elements as leaves (issue #1180, step 3a: change
-   expr-tree-3a-leaves).  The parse part of an element reads it and makes
+/* The elements as leaves.  The parse part of an element reads it and makes
    its leaf (exprtree.h: kind LEAF, op its ELK_*), with the type so far it
    was read under, its own type, the type so far after it and its facts;
    the emit part writes its code from the leaf and the emitter's state
    (regat, lasta6, ...) only.  The emit part runs right after the parse
-   part and the leaf is released after it (the window of step 2), so the
-   code and its moment are the same as before; the char after the element
-   is read after its code, as before.  What each one changes besides the
+   part and the leaf is released after it, so the code and its moment are
+   the same as before; the char after the element is read after its code, as before.  What each one changes besides the
    code, and when: docs/blitz2/expression-tree.md. */
 
 /* no asm counterpart: a new leaf of the element kind kind, read under the
@@ -2862,7 +2860,7 @@ static void amigasave(const UBYTE *regs, ULONG *push, ULONG *pull)
     }
 }
 
-/* The calls as nodes (issue #1180, step 3c: change expr-tree-3c-calls).
+/* The calls as nodes.
    A procedure call (afunction) or an OS call (amigalib) in an expression
    is a node (exprtree.h: kind CALL, op CLK_PROC or CLK_OS), made when the
    call has been looked up.  It lives while its parameters are read: each
@@ -3169,8 +3167,8 @@ static void fracquick(void)
    (its long is 0) - the length the call gets, which the compiler pushes
    from -4 too (stvarget2) before it copies the characters.  No string
    is copied: the work area, a3 and sbasegot stay as they were.  The
-   library sets a3 to the copy, which begins where a3 was: the same a3
-   (design.md Decision 4).  a0 changes, as with the copy (copstring). */
+   library sets a3 to the copy, which begins where a3 was: the same a3.
+   a0 changes, as with the copy (copstring). */
 static void lenvar(void)
 {
     pokewd(0x6706);                 /* beq.s 1f (no memory: 0) */
@@ -3319,8 +3317,7 @@ BOOL intrinsic_code(void)
     return TRUE;
 }
 
-/* The library calls as nodes (issue #1180, step 3d: change
-   expr-tree-3d-library-calls).  A library function in an expression is a
+/* The library calls as nodes.  A library function in an expression is a
    call node as a procedure call (exprtree.h: kind CALL, op CLK_LIB), made
    when its token has been looked up (looktoke, no side effect).  Its
    enter action begins with the use of its library (calluse, right after

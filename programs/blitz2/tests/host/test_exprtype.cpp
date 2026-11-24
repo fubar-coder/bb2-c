@@ -1,7 +1,7 @@
 // test_exprtype - the type decisions of an expression (programs/blitz2/src/
-// exprtype.c; issue #1180, change expr-tree-1-typing): every decision of
+// exprtype.c; issue #1180): every decision of
 // the functions against the committed table exprtype.tsv (written by this
-// program's generator mode after the byte-identity check of the change had
+// program's generator mode after a byte-identity check had
 // passed, so it records the compiler's behaviour as proved on all sources),
 // the same table with one row changed (must fail), a few decisions named in
 // docs/blitz2/expression-types.md, and the two-operand cells of the

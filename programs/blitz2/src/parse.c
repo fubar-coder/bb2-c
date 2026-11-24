@@ -1311,7 +1311,7 @@ static void makelmul(WORD off)
 /* no asm counterpart; replaces the code of blitz2.s:8170-8440 calcvar
    (.notalist, .arloop, .ardone, .normalar, .notap, .loop0 with its [ ]
    and .pointer, .done2) - the code of the step s of a variable's path,
-   from s and the emitter's state only (issue #1180, step 3b) */
+   from s and the emitter's state only */
 static void stepemit(struct exprnode *s)
 {
     s->start = pc;
@@ -1412,8 +1412,7 @@ static void stepdone(struct exprnode *s)
     exprtree_release(s);
 }
 
-/* blitz2.s:8170 calcvar / 8172 calcvar2, the parse part (issue #1180,
-   step 3b) - use a3 = var, a2 = type, flagmask = flags.
+/* blitz2.s:8170 calcvar / 8172 calcvar2, the parse part - use a3 = var, a2 = type, flagmask = flags.
    Reads the path of the variable v of type t (fetchvar's; *pc0 the char
    after its name, out: the char after the path): the indexes of an array
    (compiled into D(regat) as they are read: arreval, arrevalchk), the

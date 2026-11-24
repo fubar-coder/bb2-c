@@ -376,8 +376,7 @@ struct var *fetchvar(UWORD len, struct type **type, UWORD *c);
    (bit14), bit13 (pointer field without flag bit2), low byte = type code
    (T_xxx, 0 = struct).  *offset = asm d3: offset from a5/a4 for a simple
    var (only valid without TF_ADDRINA2).  Also sets lastoffset.
-   calcvar is the statements' entry to its parse part, varparse (issue
-   #1180, step 3b): it reads the path, emitting each step's code as it
+   calcvar is the statements' entry to its parse part, varparse: it reads the path, emitting each step's code as it
    reads it, and returns the variable node (exprtree.h, EXN_VAR: value
    the var, aux its type, vtype the asm's d2, off the asm's d3, ELF_LOCAL),
    the last node of the arena; its caller releases it. */
