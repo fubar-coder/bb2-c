@@ -1,7 +1,9 @@
 // test_exprtree - the nodes of an expression and the walk over them
 // (programs/blitz2/src/exprtree.c; issue #1180, change
 // expr-tree-2-operators).  The hooks of the walk are a small evaluator of
-// this file over a text: a letter is an operand, + - binary operators of
+// this file over a text: a letter is an operand (a simple element, whose
+// leaf is made, emitted and released as in eval.c: change
+// expr-tree-3a-leaves), + - binary operators of
 // one precedence, * / of a higher one, ^ of a higher one still, ( ) a
 // bracket and ~ NOT (each an expression node of its own, as eval4 makes
 // them), _ a minus sign (a run of them is one node, as eval.c's negate
@@ -78,9 +80,16 @@ void element(ctx *x)
         expression(x, EXN_NOT);
         x->out += '~';
         exprtree_release(exprtree_top());
-    } else if (c >= 'a' && c <= 'z')
+    } else if (c >= 'a' && c <= 'z') {
+        // a simple element: its leaf, emitted at once and released (eval.c:
+        // newleaf ... leafdone)
+        exprnode *l = exprtree_new(EXN_LEAF);
+
+        l->op = ELK_VAR;
+        note(x);
         x->out += c;
-    else
+        exprtree_release(l);
+    } else
         std::longjmp(errjmp, 3);
 }
 
@@ -260,6 +269,11 @@ TEST_CASE("exprtree: 64 counted nodes, the 65th is the overflow", "[exprtree]")
     CHECK(x.maxpend == 64);
     CHECK(x.maxlive == 128);
     CHECK(walk(times("_(", 64) + "a" + times(")", 64)) == "overflow");
+    // an element's leaf behind the run of minus signs of the innermost
+    // level: the other way to the bound (129)
+    CHECK(walk(times("_(", 63) + "_a" + times(")", 63), x) == "a" + times("_", 64));
+    CHECK(x.maxlive == 129);
+    CHECK(x.maxlive <= EXPRTREE_NODES);
 }
 
 TEST_CASE("exprtree: a chain of one precedence does not grow the stack", "[exprtree]")

@@ -6,6 +6,7 @@
  */
 #include "blitz2.h"
 #include "exprtype.h"
+#include "exprtree.h"
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <string.h>
@@ -39,7 +40,7 @@ static inline ULONG tl(const UWORD *p)
 static ULONG numval;    /* asm d3: value (int or FFP) */
 static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
-/* Fixed (#978): the integer constant fetchnum3 emitted last (move.w/.l
+/* Fixed (#978): the integer constant constemit emitted last (move.w/.l
    #x,Dn from constat to constend; 0: none), for isbyteconst */
 static ULONG constat, constend;
 /* Fixed (#1179): its value (as emitted), for iswordconst */
@@ -48,7 +49,7 @@ static ULONG constval;
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
    made a whole number (litcut, set by consttype2; since the fix of #1188
-   only a whole-valued one, 2.0 or 1e2), and where fetchnum3 emitted it
+   only a whole-valued one, 2.0 or 1e2), and where constemit emitted it
    last (litat..litend, 0: none) with its FFP value litffp and the whole
    number litint, for fraclitfloat */
 static BOOL litcut;
@@ -59,7 +60,7 @@ static ULONG litat, litend, litffp, litint;
 BOOL litneg;
 
 
-static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data);
+static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val, BOOL data);
 static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac);
 static void dothee(void);
@@ -118,6 +119,7 @@ ULONG fetchfrac(UWORD c, UWORD *type, BOOL data)
 ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
 {
     ULONG divisor, val;
+    UWORD tsf;
 
     numval = 0;
     c = fetchdec(c, &divisor);
@@ -136,8 +138,9 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
     numval = ffpcall(SPFlt, numval, 0, NULL);     /* int to ffp */
     dothee();
     c = reget();
+    tsf = *type;
     val = consttype2(type, c, data);
-    return fetchnum3(val, type, data);
+    return fetchnum3(val, tsf, type, data);
 }
 
 /* blitz2.s:10737 fetchpoint2 - now a float.  in: numval = whole part;
@@ -145,7 +148,7 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data)
 static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
 {
     ULONG whole, divisor, val, t;
-    UWORD c;
+    UWORD c, tsf;
 
     numfloat = -1;
     whole = ffpcall(SPFlt, numval, 0, NULL);     /* save whole number */
@@ -180,8 +183,9 @@ static ULONG fetchpoint2(UWORD *type, BOOL data, BOOL frac)
         dothee();                   /* E Something! */
 pskip2:
     c = reget();
+    tsf = *type;
     val = consttype2(type, c, data);
-    return fetchnum3(val, type, data);
+    return fetchnum3(val, tsf, type, data);
 }
 
 /* blitz2.s:10822 facts - FFP 10^0 .. 10^18 */
@@ -259,23 +263,22 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
     return c;
 }
 
-/* blitz2.s:10856 fetchnum3 - return the value (Data) or emit
-   move.w/move.l #val,D(regat) and return the next char.  data: the asm
-   flag dfetch (10854), set by fetchdata and cleared here; C passes it
-   down the fetch routines. */
-static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
+/* no asm counterpart; replaces blitz2.s:10860-10888 fetchnum3's .doit,
+   .word and .long - the code of the constant's leaf l: move.w/move.l
+   #value,D(regat).  It uses only the leaf and the emitter's state; it
+   leaves the facts of the constant for the code after it (#978
+   constat..constend and constval, #1186 litat..litend) and the code in
+   l->start..l->end. */
+static void constemit(struct exprnode *l)
 {
-    ULONG at = pc;
+    ULONG at = pc, val = l->value;
 
-    litat = 0;                      /* #1186 */
-    if (data)
-        return val;
     /* Fixed (#978): remember where the last integer constant is */
     constat = constend = 0;
-    if (!numfloat && *type != T_FLOAT)
+    if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT)
         constat = at;
     constval = val;
-    switch (*type) {
+    switch (l->tafter) {
     case T_BYTE:
     case T_WORD:
         /* .word */
@@ -294,12 +297,44 @@ static ULONG fetchnum3(ULONG val, UWORD *type, BOOL data)
     }
     if (constat)
         constend = pc;
-    if (litcut) {                   /* #1186 */
+    if (l->lflags & ELF_CUT) {      /* #1186 */
         litat = at;
         litend = pc;
-        litffp = numval;
+        litffp = l->aux;
         litint = val;
     }
+    l->start = at;
+    l->end = pc;
+}
+
+/* blitz2.s:10856 fetchnum3 - return the value (Data), or end the
+   constant's parse part: its leaf (the value, the type so far tsf it was
+   read under, the type it is now and its facts) emitted at once
+   (constemit) and released (the window of exprtree.h); returns the next
+   char.  data: the asm flag dfetch (10854), set by fetchdata and cleared
+   here; C passes it down the fetch routines. */
+static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
+{
+    struct exprnode *l;
+
+    litat = 0;                      /* #1186 */
+    if (data)
+        return val;
+    l = exprtree_new(EXN_LEAF);
+    l->op = ELK_CONST;
+    l->value = val;
+    l->aux = numval;                /* the FFP value of a literal with a point */
+    l->tbefore = tsf;
+    l->own = (UBYTE)*type;
+    l->tafter = *type;
+    if (numfloat)
+        l->lflags |= ELF_POINT;
+    if (litcut)
+        l->lflags |= ELF_CUT;
+    if (!forthsp[-1].constgot)
+        l->lflags |= ELF_FOLD;
+    constemit(l);
+    exprtree_release(l);
     return reget();
 }
 
@@ -396,12 +431,13 @@ static BOOL makeint(ULONG *val)
 ULONG fetchnum2(ULONG num, UWORD *type, BOOL data)
 {
     ULONG val;
+    UWORD tsf = *type;
 
     numval = num;
     numfloat = 0;
     /* d0 only matters on consttype2's float paths (numfloat != 0) */
     val = consttype2(type, lastchar, data);
-    return fetchnum3(val, type, data);
+    return fetchnum3(val, tsf, type, data);
 }
 
 /* blitz2.s:10906 constotype - fetch a constant of type d2, return new

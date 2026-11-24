@@ -8,11 +8,11 @@ After `expr-tree-2-operators`. "The check": `expr-tree-1-typing/design.md`, "The
 
 ## 2. Implementation
 
-- [ ] 2.1 Constants and `#constants` (with `ext_constant`): parse/emit split; verify: the check.
-- [ ] 2.2 Scalar variables and fields (`variable`, `varcont` with the facts of #978, #1177, #1178, #1186); verify: the check.
-- [ ] 2.3 `&var`, `?label`, `SizeOf`, `Pi`, `On`/`Off`, `Used`, `Maximum`, `Addr`, `ErrNum`, `ext_element`; verify: the check, `ctest --preset oracle` for the AB3 cases.
-- [ ] 2.4 `docs/blitz2/expression-tree.md` with the side-effect table for these kinds; comments in the form answered for `expr-tree-1-typing` open question 1; `tools/testinfo/rules.txt`; verify: links resolve, selection test.
+- [x] 2.1 Constants and `#constants` (with `ext_constant`): parse/emit split; verify: the check.
+- [x] 2.2 Scalar variables and fields (`variable`, `varcont` with the facts of #978, #1177, #1178, #1186); verify: the check.
+- [x] 2.3 `&var`, `?label`, `SizeOf`, `Pi`, `On`/`Off`, `Used`, `Maximum`, `Addr`, `ErrNum`, `ext_element`; verify: the check, `ctest --preset oracle` for the AB3 cases.
+- [x] 2.4 `docs/blitz2/expression-tree.md` with the side-effect table for these kinds; comments in the form answered for `expr-tree-1-typing` open question 1; `tools/testinfo/rules.txt`; verify: links resolve, selection test.
 
 ## 3. Commit
 
-- [ ] 3.1 Tests of 1.1 in a commit of their own; then one rework commit per task 2.1-2.3 or one for all (each passes the check alone); verify: every commit builds and passes the check.
+- [x] 3.1 Tests of 1.1 in a commit of their own; then one rework commit per task 2.1-2.3 or one for all (each passes the check alone); verify: every commit builds and passes the check.

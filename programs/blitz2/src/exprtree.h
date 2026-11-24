@@ -7,7 +7,10 @@
  * its code begins and ends).  The nodes live in a static arena that
  * prepstack resets for every statement; a node is released when its
  * operator has been emitted, so the arena holds only the window of the
- * pending operators and their left operands.
+ * pending operators and their left operands.  A simple element (step 3a:
+ * change expr-tree-3a-leaves) is parsed into a leaf of its own (op: its
+ * ELK_* kind), which its emit part turns into code right after and
+ * which is released then.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the
@@ -39,8 +42,24 @@ enum {
     EXN_NOT,                    /* NOT and the rest of its expression */
     EXN_NEG,                    /* a run of minus signs before an element (op: how many) */
     EXN_BINOP,                  /* a binary operator */
-    EXN_LEAF,                   /* an operand: the code start..end of what it read */
+    EXN_LEAF,                   /* an operand: the code start..end of what it read;
+                                   op: its element kind (ELK_*); 0: the operand of the walk,
+                                   or the value of a call (varcont, steps 3c and 3d) */
     EXN_RESULT                  /* an operand that is the result of an operator now */
+};
+
+/** @brief The element kinds of a LEAF an element makes (exprnode.op;
+ *         issue #1180, step 3a, change expr-tree-3a-leaves): the element
+ *         is parsed into its leaf, and the leaf emitted right after. */
+enum {
+    ELK_CONST = 1,              /* a number: a literal, #constant, SizeOf, On, Off, Maximum... */
+    ELK_PI,                     /* Pi */
+    ELK_VAR,                    /* the value of a variable or a field */
+    ELK_ADDROF,                 /* &var */
+    ELK_LABEL,                  /* ?label */
+    ELK_USED,                   /* Used Object */
+    ELK_ADDR,                   /* Addr Object(n) */
+    ELK_ERRNUM                  /* ErrNum ("Ern") */
 };
 
 /** @brief The flags of a node (exprnode.flags). */
@@ -50,6 +69,21 @@ enum {
     EXF_LBYTE = 4,              /* BINOP: the left operand is one byte value (#978) */
     EXF_LCONST = 8,             /* BINOP: the left operand is one constant from 128 to 255 (#978) */
     EXF_COMPARE = 16            /* BINOP: a comparison, the right operand starts at type 0 (#1177) */
+};
+
+/** @brief The facts of an element's LEAF (exprnode.lflags): what its
+ *         parse part found for its emit part, and what the emitted code
+ *         is for the code after it. */
+enum {
+    ELF_POINT = 1,              /* CONST: a literal with a point or an exponent */
+    ELF_CUT = 2,                /* CONST: such a literal made a whole number (#1186: litcut) */
+    ELF_FOLD = 4,               /* CONST: a constant of the fold (forthstack's constgot 0) */
+    ELF_BYTE = 8,               /* VAR: a Byte value, extended to a Word (#978: bytevalend) */
+    ELF_RAW = 16,               /* VAR: a Quick held raw under a Long (#1178: rawq) */
+    ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177: conv) */
+    ELF_WORD = 64,              /* VAR: a Byte or Word value (#1179: wordval) */
+    ELF_REF = 128,              /* LABEL: the reference to the label is made at emit */
+    ELF_LOCAL = 256             /* VAR, ADDROF: a local variable (varmode: its a4 offset) */
 };
 
 /** @brief The limit of the counted nodes (the original's precstack: 64
@@ -62,26 +96,39 @@ enum {
  *         signs per level of the walk, of which there is one per counted
  *         node: 129, reached by 64 times "-(" ("Precedence Stack
  *         Overflow"; 63 times compile with 128 nodes live: the
- *         measurement of change expr-tree-2-operators, design.md); a
- *         margin to 136 (4352 bytes on the 68000). */
+ *         measurement of change expr-tree-2-operators, design.md).  An
+ *         element's leaf lives only while its element is emitted, which
+ *         makes no node: behind the run of minus signs of the innermost
+ *         level it is the 129th (63 times "-(" and "-b", measured in
+ *         change expr-tree-3a-leaves), never with the 65th counted node.
+ *         A margin to 136 (6256 bytes on the 68000). */
 #define EXPRTREE_NODES 136
 
 /** @brief A node.  BINOP: op the operator (exprtype.h's ETO_*), prec its
  *         precedence, left the operand before it (a LEAF or a RESULT),
  *         right the one after it (once read), start where the right
  *         operand's code begins, reg the register of the left operand,
- *         tbefore the left operand's type, tafter the result's.  LEAF:
- *         start..end the code it emitted (end 0: none to look at),
- *         tbefore its type.  The counted ones (EXPR, BRACKET, NOT, BINOP)
- *         are linked by down, the pending one below. */
+ *         tbefore the left operand's type, tafter the result's.  LEAF of
+ *         the walk (op 0): start..end the code it emitted (end 0: none to
+ *         look at), tbefore its type.  LEAF of an element (op its ELK_*):
+ *         tbefore the type so far it was read under, own its own type,
+ *         tafter the type so far after it, lflags its facts (ELF_*),
+ *         value, aux, vtype and off what its kind needs (eval.c,
+ *         libcall.c; docs/blitz2/expression-tree.md), start..end the code
+ *         its emit part wrote.  The counted ones (EXPR, BRACKET, NOT,
+ *         BINOP) are linked by down, the pending one below. */
 struct exprnode {
     struct exprnode *down;
     struct exprnode *left, *right;
     unsigned long start, end;
+    unsigned long value, aux;
     unsigned short prec;
     unsigned short op;
     unsigned short tbefore, tafter;
-    unsigned char kind, reg, flags;
+    unsigned short vtype;
+    short off;
+    unsigned char kind, reg, flags, own;
+    unsigned short lflags;
 };
 
 /** @brief The hooks of the walk, defined by the caller (eval.c; the host

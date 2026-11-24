@@ -637,8 +637,10 @@ Statement handlers are jumped to via the jump table `atokens` (92 entries,
   run of minus signs and expression, a leaf per operand, in a static arena
   reset per statement) and the precedence climbing of `eval5` is the walk
   `exprtree_climb`, whose hooks in `eval.c` emit each operator when the
-  original did; the type of each operation is decided by `exprtype.c`
-  (`docs/blitz2/expression-tree.md`, issue #1180).
+  original did; a simple element (a constant, a variable, `&`, `?`,
+  `Pi`, `Used`, `Addr` ...) is parsed into a leaf node whose code is
+  emitted right after; the type of each operation is decided by
+  `exprtype.c` (`docs/blitz2/expression-tree.md`, issue #1180).
 * Code is produced from **templates** (machine code snippets in the data area
   of the compiler, `blitz2.s:914 objects` … `1254`, also in `tokens1`/
   `tokens2`), which are copied (`pokecode`) or written as an opcode word with

@@ -2195,12 +2195,55 @@ static UWORD notit(UWORD *type)
     return c;
 }
 
-/* blitz2.s:9700 fetchpi - return Pi.f */
-static UWORD fetchpi(UWORD *type)
+/* The elements as leaves (issue #1180, step 3a: change
+   expr-tree-3a-leaves).  The parse part of an element reads it and makes
+   its leaf (exprtree.h: kind LEAF, op its ELK_*), with the type so far it
+   was read under, its own type, the type so far after it and its facts;
+   the emit part writes its code from the leaf and the emitter's state
+   (regat, lasta6, ...) only.  The emit part runs right after the parse
+   part and the leaf is released after it (the window of step 2), so the
+   code and its moment are the same as before; the char after the element
+   is read after its code, as before.  What each one changes besides the
+   code, and when: docs/blitz2/expression-tree.md. */
+
+/* no asm counterpart: a new leaf of the element kind kind, read under the
+   type so far tsf */
+static struct exprnode *newleaf(unsigned kind, UWORD tsf)
 {
-    *type = T_FLOAT;
+    struct exprnode *l = exprtree_new(EXN_LEAF);
+
+    l->op = (UWORD)kind;
+    l->tbefore = tsf;
+    return l;
+}
+
+/* no asm counterpart: the leaf l emitted (its code l->start..l->end) and
+   released; *type is the type so far after it */
+static void leafdone(struct exprnode *l, UWORD *type)
+{
+    *type = l->tafter;
+    exprtree_release(l);
+}
+
+/* no asm counterpart; replaces blitz2.s:9700 fetchpi's code - move.l
+   #Pi,D(regat) */
+static void piemit(struct exprnode *l)
+{
+    l->start = pc;
     pokewd((regat << 9) | 0x203c);  /* move.l #x,dn */
     pokel(0xc90fda42);
+    l->end = pc;
+}
+
+/* blitz2.s:9700 fetchpi - return Pi.f (a Float whatever the type so
+   far: no conversion here) */
+static UWORD fetchpi(UWORD *type)
+{
+    struct exprnode *l = newleaf(ELK_PI, *type);
+
+    l->own = l->tafter = T_FLOAT;
+    piemit(l);
+    leafdone(l, type);
     return getchar3();
 }
 
@@ -2524,34 +2567,62 @@ static UWORD ampersand(UWORD *type)
     return c;
 }
 
-/* blitz2.s:9910 ampersand2 */
+/* no asm counterpart; replaces blitz2.s:9915-9939 ampersand2 after its
+   bsr calcvar - the variable's type reported (ext_evalvalue), then the
+   code of its address into D(regat): a string's from its pointer, a
+   simple variable's lea x(a5); an address calcvar left in a2 as it is */
+static void addrofemit(struct exprnode *l)
+{
+    UWORD vartype = l->vtype;
+
+    l->start = pc;
+    varmode = (l->lflags & ELF_LOCAL) ? -1 : 0;   /* pokela5s: a4 or a5 */
+    ext_evalvalue(l->value, (UWORD)l->aux);         /* the variable's type */
+    if ((vartype & 0xff) == T_STRING) {
+        if (vartype & 0x8000) {                     /* .algot2 */
+            pokewd((regat << 9) | *stamp);          /* move.l (a2),Dn */
+            l->end = pc;
+            return;
+        }
+        stamp2[1] = l->off;                         /* move d3,stamp2+2 */
+        pokela5s(L_(stamp2));                       /* move.l x(a5),a2 */
+    } else if (!(vartype & 0x8000)) {               /* .notst */
+        leaamp[1] = l->off;
+        pokela5s(L_(leaamp));                       /* lea x(a5),a2 */
+    }
+    pokewd((regat << 9) | *leaamp2);                /* .algot: move.l a2,Dn */
+    l->end = pc;
+}
+
+/* blitz2.s:9910 ampersand2.  The parse part finds the variable (fetchvar
+   makes it at first sight) and its offset (calcvar: an array, a pointer
+   or a path still emits its address code here, step 3b); the leaf holds
+   calcvar's type, the offset and what ext_evalvalue reports.  *type is
+   calcvar's type (with its flags). */
 UWORD ampersand2(UWORD *type)
 {
     UWORD namelen;          /* asm d2 after getvname */
     UWORD c, vartype;
     struct var *v;
     struct type *t;
+    struct exprnode *l;
     WORD off = 0;
 
     c = getchar3();
     c = getvname(c, &namelen);
     v = fetchvar(namelen, &t, &c);
     vartype = calcvar(&v, &t, &c, &off);
-    *type = vartype;
-    ext_evalvalue(t ? t->u.code : 0, flagmask);    /* the variable's type */
-
-    if ((vartype & 0xff) == T_STRING) {
-        if (vartype & 0x8000) {                     /* .algot2 */
-            pokewd((regat << 9) | *stamp);          /* move.l (a2),Dn */
-            return c;
-        }
-        stamp2[1] = off;                            /* move d3,stamp2+2 */
-        pokela5s(L_(stamp2));                       /* move.l x(a5),a2 */
-    } else if (!(vartype & 0x8000)) {               /* .notst */
-        leaamp[1] = off;
-        pokela5s(L_(leaamp));                       /* lea x(a5),a2 */
-    }
-    pokewd((regat << 9) | *leaamp2);                /* .algot: move.l a2,Dn */
+    l = newleaf(ELK_ADDROF, *type);
+    l->vtype = vartype;
+    l->off = off;
+    l->value = t ? t->u.code : 0;
+    l->aux = flagmask;
+    if (varmode)                    /* fetchvar: a local variable */
+        l->lflags |= ELF_LOCAL;
+    l->own = (UBYTE)vartype;
+    l->tafter = vartype;
+    addrofemit(l);
+    leafdone(l, type);
     return c;
 }
 
@@ -2559,8 +2630,13 @@ UWORD ampersand2(UWORD *type)
    NB(orig): no getchar; the current char stays the token. */
 static UWORD doern(UWORD c, UWORD *type)
 {
+    struct exprnode *l = newleaf(ELK_ERRNUM, *type);
+
+    l->own = l->tafter = T_LONG;
+    l->start = pc;                  /* emit: the call (the library used here) */
     tokejsr(ern);
-    *type = T_LONG;
+    l->end = pc;
+    leafdone(l, type);
     return c;
 }
 
@@ -2592,16 +2668,36 @@ static UWORD revmask(UWORD mask)
     return rev;
 }
 
-/* blitz2.s:9989 doused - return 'used' object.
+static void usedemit(struct exprnode *l);
+
+/* blitz2.s:9989 doused - return 'used' object.  The parse part is fetchit
+   (the object's library: its leaf's value), the code usedemit's. */
+static UWORD doused(UWORD *type)
+{
+    struct exprnode *l;
+    struct blitzlib *bl = fetchit();
+
+    l = newleaf(ELK_USED, *type);
+    l->value = (ULONG)bl;
+    l->own = l->tafter = T_WORD;    /* .skip4: moveq #2,d2 */
+    usedemit(l);
+    leafdone(l, type);
+    return getchar3();
+}
+
+/* no asm counterpart; replaces blitz2.s:9993-10037 doused after its bsr
+   fetchit - the code of Used: usedcode (or usedcode2) patched for the
+   library's shift and its used pointer, with d0 saved around it when
+   regat > 0.
    Fixed (#998): the number is (used pointer - table base) >> shift; the
    asm shifts with lsr.w (also both shifts of usedcode2), so from
    n << shift = $10000 on the high word of the difference was lost (Used
    BitMap after Use BitMap 1025 gave 1).  Where objlong (tokens1.c) says
    the object offset is a long, the shifts are lsr.l; with smaller maxima
    (all defaults) the code is unchanged. */
-static UWORD doused(UWORD *type)
+static void usedemit(struct exprnode *l)
 {
-    struct blitzlib *bl = fetchit();
+    struct blitzlib *bl = (struct blitzlib *)l->value;
     UWORD shift = LIBMAX_SHIFT(bl);
     UWORD *start, *end, maxoff;
     UWORD lsr = objlong(LIBMAX_E(bl)) ? 0xE088 : 0xE048; /* lsr.l / lsr.w #8,d0 */
@@ -2624,6 +2720,7 @@ static UWORD doused(UWORD *type)
     maxoff = LIBMAX_VAROFF(bl);     /* .skip2 */
     start[(ucodeskip - usedcode) + 1] = maxoff;
     start[1] = maxoff + 4;
+    l->start = pc;
     if (regat)
         pokewd(*usedprep);
     pokecode(start, end);           /* .skip3 */
@@ -2631,8 +2728,7 @@ static UWORD doused(UWORD *type)
         pokewd((regat << 9) | *usedfix);
         pokewd(*useddone);
     }
-    *type = T_WORD;                 /* .skip4 */
-    return getchar3();
+    l->end = pc;
 }
 
 /* blitz2.s:10042 domaximum - number of maximums, eg a=Maximum Shape */
@@ -2645,11 +2741,30 @@ static UWORD domaximum(UWORD *type)
     return (UWORD)fetchnum2(count, type, FALSE);
 }
 
-/* blitz2.s:10053 doaddr - address of something, eg a.l=Addr Window(0).
+/* no asm counterpart; replaces blitz2.s:10069-10083 doaddr's code -
+   addrcode patched for the object table's offset and regat: the table
+   plus the object's offset (in D(regat), from the index) into D(regat).
    Fixed (#939): the offset is added as a long where objlong (tokens1.c)
    says so; Addr Shape(1025) was 32 KB before the shape table. */
+static void addremit(struct exprnode *l)
+{
+    UBYTE *e = (UBYTE *)l->value;
+
+    l->start = pc;
+    addrcode[1] = *(UWORD *)(e - 6);                    /* x(a5) */
+    addrcode[2] = (objlong(e) ? 0xD1C0 : 0xD0C0) | regat; /* add(.l) Dregat,a0 */
+    addrcode[3] = (addrcode[3] & 0xf1ff) | (regat << 9);/* move.l a0,Dregat */
+    pokecode(addrcode, addrcodef);
+    l->end = pc;
+}
+
+/* blitz2.s:10053 doaddr - address of something, eg a.l=Addr Window(0).
+   The parse part reads the object's token and its index, whose code
+   getmaxel emits (the index times the object size, before the element's
+   own code: its child); the leaf holds the object's maximum entry. */
 static UWORD doaddr(UWORD *type)
 {
+    struct exprnode *l;
     UWORD tok, c;
     UBYTE *e;
 
@@ -2662,11 +2777,11 @@ static UWORD doaddr(UWORD *type)
     if (c != ')')
         syntaxerr();
     /* OK, now a2=lib it's from */
-    addrcode[1] = *(UWORD *)(e - 6);                    /* x(a5) */
-    addrcode[2] = (objlong(e) ? 0xD1C0 : 0xD0C0) | regat; /* add(.l) Dregat,a0 */
-    addrcode[3] = (addrcode[3] & 0xf1ff) | (regat << 9);/* move.l a0,Dregat */
-    pokecode(addrcode, addrcodef);
-    *type = T_LONG;                 /* now a long */
+    l = newleaf(ELK_ADDR, *type);
+    l->value = (ULONG)e;
+    l->own = l->tafter = T_LONG;    /* now a long */
+    addremit(l);
+    leafdone(l, type);
     return getchar3();
 }
 
@@ -3314,14 +3429,30 @@ struct label *makealab(UWORD *c)
     return makealab2(len, c);
 }
 
-/* blitz2.s:10353 makealab2 */
-struct label *makealab2(UWORD len, UWORD *c)
+/* no asm counterpart; replaces blitz2.s:10368-10380 makealab2's .makeit - an
+   outstanding reference to the label l at pc + 2 (the long of the
+   instruction about to be written) */
+static void labref(struct label *l)
+{
+    struct labref *r = doallocerr(12, MEMF_PUBLIC);
+
+    r->next = l->refs;
+    l->refs = r;
+    r->addr = pc + 2;
+    r->procnum = procnum;
+    r->line = linenumat;
+}
+
+/* no asm counterpart; replaces blitz2.s:10353-10364 and 10382-10389
+   makealab2 without .makeit - the label named namebuff (len), made if
+   there is none (a label not defined yet, in the label list from now
+   on); *ref: a reference to it is needed (it is not defined yet) */
+static struct label *labfind(UWORD len, BOOL *ref)
 {
     struct node *last;
     struct label *l = findadd(len, &last);
-    struct labref *r;
 
-    (void)c;
+    *ref = FALSE;
     if (l) {
         /* Fixed (#977): a constant (refs & 1) goes to gotit and illlaberr
            whatever its value.  blitz2.s decides "made" by the value alone:
@@ -3337,13 +3468,8 @@ struct label *makealab2(UWORD len, UWORD *c)
         l->data = 0;                /* no data label */
         l->procnum = linenumat;     /* context - NB(orig): line, not procnum */
     }
-    /* .makeit: create an oustanding reference to this label! */
-    r = doallocerr(12, MEMF_PUBLIC);
-    r->next = l->refs;
-    l->refs = r;
-    r->addr = pc + 2;
-    r->procnum = procnum;
-    r->line = linenumat;
+    /* .makeit: create an oustanding reference to this label! (labref) */
+    *ref = TRUE;
     return l;
 gotit:
     if ((ULONG)l->refs & 1)
@@ -3353,17 +3479,59 @@ gotit:
     return l;
 }
 
-/* blitz2.s:10406 qmark - ?label */
-static UWORD qmark(UWORD *type)
+/* blitz2.s:10353 makealab2 - the label, and the reference to it if it is
+   not defined yet (labfind, labref) */
+struct label *makealab2(UWORD len, UWORD *c)
 {
-    struct label *l;
+    BOOL ref;
+    struct label *l = labfind(len, &ref);
 
-    getchar3();
-    l = makealab(NULL);
+    (void)c;
+    if (ref)
+        labref(l);
+    return l;
+}
+
+/* no asm counterpart; replaces blitz2.s:10409-10416 qmark's code - the
+   reference to the label if it is not defined yet, then move.l
+   #label,D(regat) with its relocation */
+static void labelemit(struct exprnode *l)
+{
+    struct label *lab = (struct label *)l->value;
+
+    l->start = pc;
+    if (l->lflags & ELF_REF)
+        labref(lab);
     pokewd((regat << 9) | 0x203c);  /* create move.l #loc,dn */
     addoff();
-    pokel(l->pc);
-    *type = T_LONG;
+    pokel(lab->pc);
+    l->end = pc;
+}
+
+/* blitz2.s:10406 qmark - ?label.  The parse part finds the label (or
+   makes it: in the label list at first sight); the reference and the
+   relocation are made by its code (labelemit).  Not inlined: its locals
+   (two of them in memory) would be part of element's frame, which every
+   level of brackets holds. */
+static __attribute__((noinline)) UWORD qmark(UWORD *type)
+{
+    struct exprnode *l;
+    struct label *lab;
+    UWORD ch, len;
+    BOOL ref;
+
+    getchar3();
+    len = makename2(&ch);           /* makealab */
+    if (!len)                       /* Fixed (#30): Z not tested in the asm */
+        syntaxerr();
+    lab = labfind(len, &ref);
+    l = newleaf(ELK_LABEL, *type);
+    l->value = (ULONG)lab;
+    if (ref)
+        l->lflags |= ELF_REF;
+    l->own = l->tafter = T_LONG;
+    labelemit(l);
+    leafdone(l, type);
     return reget();
 }
 
@@ -3411,22 +3579,22 @@ static UWORD fetchasm(UWORD *type)
 
 /* ------------------------------------------------------------- variables */
 
-/* blitz2.s:10641 variable2 - get the value of a var into D(regat).
-   vartype = calcvar result (asm d2), off = a5/a4 offset (asm d3) */
+/* blitz2.s:10641 variable2 - get the value of a var into D(regat), from
+   the variable's leaf l: l->vtype = calcvar result (asm d2), l->off =
+   a5/a4 offset (asm d3) */
 static UWORD stvar(UWORD vartype, WORD off, UWORD *type);
-static void variable2(UWORD vartype, WORD off, UWORD *type)
+static void variable2(const struct exprnode *l)
 {
-    UWORD opcode;
+    UWORD vartype = l->vtype, opcode, t;
 
     if ((vartype & 0xff) == T_STRING) {
-        stvar(vartype, off, type);
+        stvar(vartype, l->off, &t);
         return;
     }
     opcode = regat << 9;
     if (vartype & TF_POINTER)
         vartype = (vartype & 0xff00) | 3; /* .pointer: move.b #3,d2 */
     else if (!(vartype & 0xff)) {
-        *type = T_LONG;
         pokewd(opcode | 0x200a);    /* move.l a2,Dn */
         return;
     }
@@ -3445,48 +3613,56 @@ static void variable2(UWORD vartype, WORD off, UWORD *type)
         pokewd(opcode);
     else {
         pokewda5s(opcode);
-        pokewd(off);
+        pokewd(l->off);
     }
-    *type = vartype & 255;          /* .more */
 }
 
-/* blitz2.s:10471 variable */
-static UWORD variable(UWORD c, UWORD *type)
+/* no asm counterpart; replaces the type variable2 leaves in d2
+   (blitz2.s:10641-10660: moveq #3 for the address of a NewType variable,
+   move.b #3 for a pointer, .more: and #255) - the own type of the value
+   of a variable whose calcvar type is vartype */
+static UWORD vartypeof(UWORD vartype)
 {
-    UWORD namelen;          /* asm d2 after getvname */
-    UWORD old = *type;              /* remember old type */
-    struct var *v;
-    struct type *t;
-    WORD off = 0;
-    UWORD vartype;
-
-    c = getvname(c, &namelen);
-    if (c == '{')
-        return afunction(old, type, namelen);
-    v = fetchvar(namelen, &t, &c);
-    vartype = calcvar(&v, &t, &c, &off);
-    variable2(vartype, off, type);
-    ext_evalvalue(t ? t->u.code : 0, flagmask);
-    return varcont(old, type);
+    if ((vartype & 0xff) == T_STRING)
+        return T_STRING;
+    if ((vartype & TF_POINTER) || !(vartype & 0xff))
+        return T_LONG;
+    return vartype & 0xff;
 }
 
-/* blitz2.s:10479 varcont - common tail after a variable / function
-   value: ext byte to word, bump the type up to the old one.  The type
-   so far after the value is exprtype_element's (exprtype.c). */
-static UWORD varcont(UWORD oldtype, UWORD *type)
+/* no asm counterpart; replaces the decisions of blitz2.s:10479-10498
+   varcont - the value of own type l->own under the type so far
+   l->tbefore: its facts and the type so far after it, in the leaf
+   (exprtype_element) */
+static void contleaf(struct exprnode *l)
 {
-    struct exprtype_elem e = exprtype_element(oldtype, *type, NULL);
-    BOOL byte = e.ext;
+    struct exprtype_elem e = exprtype_element(l->tbefore, l->own, NULL);
 
+    if (e.wordval)
+        l->lflags |= ELF_WORD;
+    if (e.ext)
+        l->lflags |= ELF_BYTE;
+    if (e.raw)
+        l->lflags |= ELF_RAW;
+    else if (e.conv_from)           /* from own to the result */
+        l->lflags |= ELF_CONV;
+    l->tafter = e.result;
+}
+
+/* no asm counterpart; replaces the code of blitz2.s:10479-10499 varcont -
+   after a value in D(regat): a Byte extended, the value converted to the
+   type so far, from the leaf l (contleaf) */
+static void contemit(struct exprnode *l)
+{
     /* Fixed (#1179): a Byte or Word value (for operate's inline Word * and
        / of a later index) */
-    forthsp[-1].wordval = e.wordval;
+    forthsp[-1].wordval = (l->lflags & ELF_WORD) != 0;
     /* Fixed (#978): a byte value is fetched sign-extended ($90 ->
        $FF90), while consttype2 takes a constant from 128 to 255 as a
        positive word ($0090): the original's compare of "a.b=$90" with
        "a=$90" never matched (only a=-112 did).  bytevalend tells exprtree_pre
        where a byte value ends, which then sign-extends the constant. */
-    if (byte)
+    if (l->lflags & ELF_BYTE)
         pokewd(regat | 0x4880);     /* ALWAYS CONVERT BYTE TO WORD. ext.w Dn */
     /* .notabyte */
     /* Fixed (#1178): a Quick under a Long type so far is not cut to a
@@ -3496,21 +3672,82 @@ static UWORD varcont(UWORD oldtype, UWORD *type)
        fraction and rounds (operate, mixedop: + - * down, / towards zero),
        a comparison takes it as a Quick (#1177), a shift, logic operator,
        Mod, Not and the end of the expression round it down as before. */
-    if (e.raw)
+    if (l->lflags & ELF_RAW)
         rawq = TRUE;
-    else if (e.conv_from) {
+    else if (l->lflags & ELF_CONV) {
         conv.at = pc;
         conv.off = firstoff;
         conv.a6 = lasta6;
-        conv.from = e.conv_from;
+        conv.from = l->own;
         conv.depth = evaldepth;
-        convtype(e.conv_from, e.conv_to);   /* bump up new type to old.... */
+        convtype(l->own, l->tafter);    /* bump up new type to old.... */
         conv.end = pc;
-        conv.to = e.conv_to;
+        conv.to = l->tafter;
     }
-    *type = e.result;
-    if (byte)
+    if (l->lflags & ELF_BYTE)
         bytevalend = pc;
+}
+
+/* no asm counterpart; replaces blitz2.s:10478 variable's bsr variable2
+   and the code of varcont - the code of the variable's leaf l: its value
+   into D(regat), its type reported (ext_evalvalue), then varcont's code */
+static void varemit(struct exprnode *l)
+{
+    l->start = pc;
+    varmode = (l->lflags & ELF_LOCAL) ? -1 : 0;   /* pokewda5s: a4 or a5 */
+    variable2(l);
+    ext_evalvalue(l->value, (UWORD)l->aux);
+    contemit(l);
+    l->end = pc;
+}
+
+/* blitz2.s:10471 variable.  The parse part finds the variable (fetchvar
+   makes it at first sight, with its offset) and its offset or path
+   (calcvar: an array, a pointer or a path still emits its address code
+   here, step 3b); the leaf holds calcvar's type, the offset, what
+   ext_evalvalue reports, and varcont's decisions (contleaf).  A name
+   with { is a procedure call (afunction, step 3c). */
+static UWORD variable(UWORD c, UWORD *type)
+{
+    UWORD namelen;          /* asm d2 after getvname */
+    UWORD old = *type;              /* remember old type */
+    struct var *v;
+    struct type *t;
+    struct exprnode *l;
+    WORD off = 0;
+    UWORD vartype;
+
+    c = getvname(c, &namelen);
+    if (c == '{')
+        return afunction(old, type, namelen);
+    v = fetchvar(namelen, &t, &c);
+    vartype = calcvar(&v, &t, &c, &off);
+    l = newleaf(ELK_VAR, old);
+    l->vtype = vartype;
+    l->off = off;
+    l->value = t ? t->u.code : 0;
+    l->aux = flagmask;
+    if (varmode)                    /* fetchvar: a local variable */
+        l->lflags |= ELF_LOCAL;
+    l->own = (UBYTE)vartypeof(vartype);
+    contleaf(l);
+    varemit(l);
+    leafdone(l, type);
+    return reget();                 /* varcont .done */
+}
+
+/* blitz2.s:10479 varcont - common tail after a function value of type
+   *type (afunction, libfunction, amigalib: steps 3c, 3d): ext byte to
+   word, bump the type up to the old one.  Its facts in a leaf of no
+   element kind, emitted at once (contleaf, contemit). */
+static UWORD varcont(UWORD oldtype, UWORD *type)
+{
+    struct exprnode *l = newleaf(0, oldtype);
+
+    l->own = (UBYTE)*type;
+    contleaf(l);
+    contemit(l);
+    leafdone(l, type);
     return reget();                 /* .done */
 }
 
