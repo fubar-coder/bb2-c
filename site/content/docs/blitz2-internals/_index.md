@@ -2,7 +2,7 @@
 title: blitz2 internals
 weight: 10
 description: Writing libraries in C, library variants, the RWE userlibs, and reading the compiler's source.
-prev: /docs/how-to/readable-source
+prev: /docs/how-to/run-tests
 next: /docs/blitz2-internals/library-anatomy
 ---
 

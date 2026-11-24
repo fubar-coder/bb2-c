@@ -1,9 +1,7 @@
 ---
 title: Make a tokenised source readable
-weight: 1
+weight: 4
 description: Turn a tokenised Blitz Basic 2 or AmiBlitz source into plain text on your own machine with bbsrc or tedsrc - which tool, which libraries, and how to find the user libraries a source needs.
-prev: /docs/how-to
-next: /docs/blitz2-internals
 ---
 
 A Blitz Basic 2 source file is not plain text: the editor stores every
