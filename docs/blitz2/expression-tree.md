@@ -462,6 +462,24 @@ elements start again behind it.
 | 3217 `dolibtoke` (`libparams`) | `stackuse` 0 for the parameters | the action `stackzero` |
 | AmiBlitz3 (`ab3proc.c`) | the defaults of omitted parameters, the argument lists' depth | the actions `defaultsact`, `argsact` |
 
+## Step 4b: decisions on the nodes (`expr-tree-4b-lookaheads`)
+
+The narrowing of a later array index is decided when the index is built
+(`idxnarrow`, table of step 4a); the code of `Select`'s expression is
+written in its place:
+
+| Original (`blitz2.s`) | What it did | Now |
+|---|---|---|
+| 13183-13192 `doselect`'s `pushstart`, `pushdo`, `clr`, `pushput` | the expression's code cut out, the `clr.l -(a7)` of a string written, the code put back behind it and its relocations moved | `bakevalubefore`: the expression built (`evalunit`), the `clr` written (`selclr`), then the expression's code |
+
+Not decided on the nodes: `countpees` counts the parameters of a library
+function in the source before they are read (its form, chosen by their
+number, gives each parameter the type it is read in); the intrinsics
+`Frac` and `Len`/`Asc` look at the source behind the call and at the
+argument (`fracend`, `intrstrvar`); `dolet2` moves the code of the left
+side's address behind the right side (`pushstart`, `pushdo`,
+`pushput`; the open original bug `compiler-let-left-a6`).
+
 ## Node bound
 
 `EXPRTREE_NODES` (`programs/blitz2/src/exprtree.h`) is 168 nodes, 7728
