@@ -1325,7 +1325,15 @@ static void letaddrstr(struct stmtunit *u, WORD sb, WORD sg)
    strings at the same place and overwrote it, and a Function with a
    local string left a3 elsewhere: the element got the right length with
    the wrong characters (blitz2.s:14358-14375, .nextcom; test
-   compiler-let-left-string). */
+   compiler-let-left-string).
+   Fixed (#1214, with #1212's unit): the right side of an assignment to a
+   numeric element is compiled with the string state of the statement's
+   start, not the index's.  In the original the numeric path (.notstring,
+   blitz2.s:14397-14416) had no setsvars: when the index used the string
+   work area the right side's first string did not load the string base
+   (makesbase, blitz2.s:10305, emitted only move.l a3,-(a7)) and was built
+   at whatever a3 held, overwriting that memory (after Read t$ the next
+   Data item; test compiler-let-left-a3). */
 UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
 {
     struct var *v;

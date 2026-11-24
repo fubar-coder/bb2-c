@@ -1,0 +1,47 @@
+# compiler-let-left-a3.test.bas: the originals (1.95 and 2.10) build the
+# right side's string at the a3 the index left, so they overwrite the
+# memory at a3 (after Read the next Data item, with the right side's
+# characters and a NUL); the value stored is right.  Runtime error
+# checking only for the port.  Fixed by the fix of #1212.
+fixed-orig = 1214
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib", "compiler=orig195,runtime-errors=on", "compiler=orig210,runtime-errors=on"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+runtime-errors = ["off", "on"]
+
+[deviations."compiler=orig195"]
+"check.after_read.data" = "== fail"
+"check.after_read.data.actual" = "== \"74,75,76,0,99,100,101,120,121,122,0,80,\""
+"check.after_read_instr.data" = "== fail"
+"check.after_read_instr.data.actual" = "== \"74,75,76,0,90,99,100,101,0,78,79,80,\""
+"check.filled.memory" = "== fail"
+"check.filled.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.instr_right.memory" = "== fail"
+"check.instr_right.memory.actual" = "== \"99,100,101,121,0,121,0,46,46,46,46,46,\""
+"check.compare_index.memory" = "== fail"
+"check.compare_index.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.parameter_index.memory" = "== fail"
+"check.parameter_index.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.field.memory" = "== fail"
+"check.field.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.two_dims.memory" = "== fail"
+"check.two_dims.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+
+[deviations."compiler=orig210"]
+"check.after_read.data" = "== fail"
+"check.after_read.data.actual" = "== \"74,75,76,0,99,100,101,120,121,122,0,80,\""
+"check.after_read_instr.data" = "== fail"
+"check.after_read_instr.data.actual" = "== \"74,75,76,0,90,99,100,101,0,78,79,80,\""
+"check.filled.memory" = "== fail"
+"check.filled.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.instr_right.memory" = "== fail"
+"check.instr_right.memory.actual" = "== \"99,100,101,121,0,121,0,46,46,46,46,46,\""
+"check.compare_index.memory" = "== fail"
+"check.compare_index.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.parameter_index.memory" = "== fail"
+"check.parameter_index.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.field.memory" = "== fail"
+"check.field.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
+"check.two_dims.memory" = "== fail"
+"check.two_dims.memory.actual" = "== \"99,100,101,120,0,46,46,46,46,46,46,46,\""
