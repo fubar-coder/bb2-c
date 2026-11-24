@@ -32,15 +32,7 @@ get_property(exprmatrix_data GLOBAL PROPERTY EXPRMATRIX_DATA_SOURCES)
 #   compiler-maxs-libjsr      the unresolved JSRs inside linked library code
 #                             (#335) put addresses of the compiler's memory
 #                             into the executable: they depend on its layout
-#   compiler-expr-1178-dl-b-01, compiler-expr-1178-i1-j-c-01,
-#   compiler-expr-1178-i2-j-c-01, compiler-expr-1178-pl-b-01 (the drivers)
-#                             #1215: compiled after the compiler-constdiv-*
-#                             sources in the same session, after their
-#                             "Division by Zero" the compiler writes no
-#                             operator code and drops modlib's relocations
-#                             (remove when #1215 is fixed)
-foreach(n compiler-maxs-libjsr compiler-expr-1178-dl-b-01 compiler-expr-1178-i1-j-c-01
-		compiler-expr-1178-i2-j-c-01 compiler-expr-1178-pl-b-01)
+foreach(n compiler-maxs-libjsr)
 	list(FILTER bug_orig_sources EXCLUDE REGEX "/${n}\\.bb2$")
 	list(FILTER model_drivers EXCLUDE REGEX "/${n}\\.bb2\\|")
 endforeach()
