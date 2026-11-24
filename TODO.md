@@ -1136,6 +1136,28 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     host tests, `corpusrun` and `tools/exprmatrix` without the emulator.
     It would need the computing part separated from the Amiga calls, as
     `shared/` does for some files; `tedsrc tok` is a start.
+- [ ] **String functions folded on the expression tree** (user decision
+  2026-11-24: a candidate for after the expression tree, #1180 step 5):
+  with the whole expression built before its code is written, blitz2 can
+  compute string functions of known arguments and rewrite lengths of
+  concatenations, as an optimization with intended byte changes
+  (`-DPREV_INTENDED`) and tests of the results:
+  - `Len` and `Asc` of a string literal at compile time (`Len("abc")` = 3;
+    `Asc("")` = -1, the library's value); further constant string
+    expressions such as `Chr$(65)` or `"a"+"b"`.
+  - `Len` of a concatenation as the sum of the lengths:
+    `Len(a$+b$)` = `Len(a$)+Len(b$)`, `Len("a"+a$+"c")` = `Len(a$)+2`.
+    String functions in the argument are still evaluated once, in their
+    order; only the copy into the string work area goes. The original
+    copies without a bound: a concatenation longer than the string buffer
+    (10240 bytes by default) overwrites the memory behind it, the
+    rewritten form gives the length (a deviation for `deviations.md`).
+  - The argument's reading has already used the string work area's
+    library and written the literal: decided on the node, the code goes
+    but the library stays linked (as the dropped conversion of #1177 in
+    `expr-tree-4a-emit-after-build`, its decision 4).
+  - First count in the corpus how often such expressions occur
+    (`Len` of a literal, of a concatenation, of a plain variable).
 
 ## 3 Only once §1 is done
 
