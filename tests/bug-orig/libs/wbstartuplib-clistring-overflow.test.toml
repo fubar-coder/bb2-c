@@ -8,11 +8,14 @@
 # its start, before the first check; with another neighbour (the old test's
 # child) it kept 288 characters. A change of the link layout of the model
 # program (testlib, driver) needs the deviations declared again.
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# The crash ends the session of the cell in its time limit (measured 4 of 4).
 fixed-orig = 308
+isolate = ["libs=cd"]
 runargs = "abcxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyz"
 
-[ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#308): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+[deviations."libs=cd"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+requester = "contains \"Software Failure\""

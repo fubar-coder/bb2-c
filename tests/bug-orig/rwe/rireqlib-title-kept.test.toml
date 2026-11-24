@@ -1,9 +1,7 @@
 # rireqlib-title-kept.test.bas: the real req.library 2.8 staged in
 # CORPUS:libs, which inject's libs= puts into LIBS:; both requesters are
 # ended by a click on their cancel gadget; the reference library stops the
-# CPU at the second call (the session ends in a timeout)
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# CPU at the second call (the session of its own ends in a timeout, on every run measured)
 fixed-orig = 789
 rwe = ["rireqlib"]
 files = ["libs/req.library|@REQLIB@"]
@@ -16,7 +14,7 @@ inject = "contains \"inject: click */Forget_it: answered\ninject: click window: 
 
 [deviations."compiler=orig210"]
 inject = "not exists"
-
-[ends."compiler=orig210"]
-reason = "the original's faulty part corrupts memory (#789): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

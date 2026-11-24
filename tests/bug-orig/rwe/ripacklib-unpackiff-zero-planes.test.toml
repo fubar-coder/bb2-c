@@ -1,12 +1,17 @@
-# ripacklib-unpackiff-zero-planes.test.bas: the reference library overwrites
-# the code behind its plane table and ends in a Software Failure
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# ripacklib-unpackiff-zero-planes.test.bas: the reference library copies 256
+# plane pointers over the variables and the code behind its plane table
+# (tests/README.md "The original's end follows the link layout"): the
+# program ends in a Software Failure and the session of its own runs into
+# its time limit (measured 8 of 8, a change of the driver or of the
+# libraries behind the table can change it)
 fixed-orig = 777
 rwe = ["ripacklib", "riamosfunclib"]
 # the hang ends the session: the original's cell has one of its own
 isolate = ["compiler=orig210"]
 
-[ends."compiler=orig210"]
-reason = "the original's faulty part corrupts memory (#777): its end is not defined, it may crash, hang or halt"
-abnormal = ["any"]
+[deviations."compiler=orig210"]
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+requester = "contains \"Software Failure\""

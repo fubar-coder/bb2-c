@@ -2,19 +2,18 @@
 # the overwritten code (an illegal instruction, caught by the handler,
 # which fails the check "illegal_instruction" and ends the program, so the
 # case has no end entry) and the program's end then runs into the
-# overwritten code too: a crash with the "Software Failure" requester (the
-# session runs into its timeout; each cell with the CD's libraries has its
-# own session).  The old recording noted that more or less of the requester
-# (even none) is written before the session ends; both cells showed it
-# here.
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# overwritten code too: a crash with the "Software Failure" requester, the
+# session of its own (each cell with the CD's libraries has one) runs into
+# its time limit.  The code behind the buffer is the code of the libraries
+# the test program links after screenslib (tests/README.md "The original's
+# end follows the link layout"): a change of testlib or the driver can
+# change this end.
 fixed-orig = 249
 isolate = ["libs=cd"]
 
 [deviations."libs=cd"]
 "check.taglist_overflow.illegal_instruction" = "== fail"
-
-[ends."libs=cd"]
-reason = "the original's faulty part corrupts memory (#249): its end is not defined, it may crash, hang or halt"
-abnormal = ["any", "check.taglist_overflow.screen_x != ok"]
+session = "== timeout"
+"end.case" = "not exists"
+rc = "not exists"
+requester = "contains \"Software Failure\""

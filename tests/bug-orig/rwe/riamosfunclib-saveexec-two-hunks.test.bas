@@ -3,7 +3,9 @@
 ; all code sizes) and writes one HUNK_END behind all hunks: a list with two
 ; code items gives a file LoadSeg cannot load (in the emulator the
 ; LoadSeg of it crashes: the session halts).
-; Correct: the file loads (LoadSeg gives a segment).
+; The program does not call LoadSeg: it reads the header of the file back
+; and checks the last hunk number (the fifth long of the HUNK_HEADER).
+; Correct: the header says last hunk 1 (and the file loads).
 DEFTYPE .l
 NEWTYPE .hunk
   hunktype.w
@@ -17,6 +19,7 @@ End NEWTYPE
 !TestCase{saveexec_two_hunks}
   Dim List h.hunk(4)
   Dim c.l(1)
+  Dim hd.l(7)
   c(0)=0 : c(1)=$4E754E75
   If AddItem(h())
     h()\hunktype=$3E9 : h()\hunkloc=&c(0) : h()\hunklen=8
@@ -25,10 +28,12 @@ End NEWTYPE
     h()\hunktype=$3E9 : h()\hunkloc=&c(0) : h()\hunklen=8
   EndIf
   r=SaveExec("CORPUS:riamosfunclib-two.exe",h())
-  s=LoadSeg_("CORPUS:riamosfunclib-two.exe")
-  ok=(s<>0)
-  If s Then UnLoadSeg_ s
-  !Check{ok,"loaded"}
+  ok=ReadFile(0,"CORPUS:riamosfunclib-two.exe")
+  !Require{ok,"file_read"}
+  ReadMem 0,&hd(0),20
+  CloseFile 0
+  !CheckEq{hd(0),$3F3,"header"}
+  !CheckEq{hd(4),1,"last_hunk"}
 !EndTestCase
 
 !TestBatchCleanup
