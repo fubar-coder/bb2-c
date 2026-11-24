@@ -130,14 +130,6 @@ WORD unknown = 0;           /* 8801 */
 static WORD thisstuse = 0;
 WORD fuckpos = 0;           /* 10303 */
 UWORD evaldepth = 0;        /* no asm counterpart (eval.h) */
-/* Fixed (#1179), no asm counterpart: the last conversion varcont emitted
-   (where its code ends, the element's own type from, the wanted type to,
-   the evaldepth of the element), for the narrowing of a later index
-   (arrevalchk) */
-static struct {
-    ULONG end;
-    UWORD from, to, depth;
-} conv;
 /* Fixed (#1178), no asm counterpart: D(regat) holds a raw Quick (16.16)
    while the type so far is Long.  varcont sets it instead of cutting the
    Quick to a whole number at fetch; every consumer of the value takes
@@ -163,11 +155,6 @@ static BOOL cmpres = FALSE;
 static BOOL idxnext = FALSE;
 static BOOL laterindex = FALSE;
 static BOOL wordop = FALSE;
-/* Fixed (#1179), no asm counterpart: pc after the rounding of a raw Quick
-   that ended an evaluation (maineval2), and that evaluation's evaldepth:
-   its last instruction is the ext.l arrevalchk drops */
-static ULONG rawcutend = 0;
-static UWORD rawcutdepth = 0;
 /* the intrinsics (no asm counterpart, see intrinsics[]): the number of
    elements getelement2 has begun, and where the right side of the last
    assignment began (intrinsic_let: its evaldepth and the number of its
@@ -260,8 +247,8 @@ static struct expract *recordact(exprtree_actfn *fn, void *p, ULONG x, UWORD y, 
     struct expract *a;
 
     if (!exprtree_building()) {
-        /* outside an expression the code is written at once (an action
-           kept in the arena until the statement ends: arrevalchk's mark) */
+        /* outside an expression the code is written at once (the action
+           kept in the arena until the statement ends, as one recorded) */
         a = exprtree_alloc(sizeof *a);
         memset(a, 0, sizeof *a);
         a->fn = fn;
@@ -827,42 +814,13 @@ void sbtolong(void)
    dodivl), in both builds.
    The size check (arrszchk) stays the checked build's.  Without it only
    the low word of a later index is read (makelmul, parse.c: mulu.w), so
-   the upper word is not built: a constant index is loaded with move.w,
-   and the final ext.l of an index that is one Byte, Word or Quick element
-   (its conversion to Long at this evaldepth) is left out - the code of
-   a(i,j), b(i,j,k), a(5,7) stays the original's byte for byte.  A change
-   of makelmul that reads the whole Long (indexes above 65535) must drop
+   the upper word is not built (idxnarrow, decided while the index is
+   built): a constant index is loaded with move.w, and the final ext.l of
+   an index that is one Byte, Word or Quick element (its conversion to
+   Long at the index's evaldepth) is left out - the code of a(i,j),
+   b(i,j,k), a(5,7) stays the original's byte for byte.  A change of
+   makelmul that reads the whole Long (indexes above 65535) must drop
    this narrowing. */
-/* no asm counterpart: arrevalchk's mark (in its action: where the index
-   begins, the relocations then) and the narrowing after the index (a->p
-   the mark) */
-static void idxmark(struct expract *a)
-{
-    a->x = pc;
-    a->p = firstoff;
-}
-
-static void idxnarrow(struct expract *a)
-{
-    const struct expract *m = a->p;
-    ULONG at = m->x;
-
-    /* decided by the positions the code was emitted at, not by reading
-       it: a pass whose code is not stored (nomemleft) gets the same size */
-    if (firstoff == (struct offnode *)m->p && islongconst(at, pc)) {
-        if (!nomemleft) {           /* move.l #x,Dn -> move.w #x,Dn */
-            W_(at) |= 0x1000;
-            W_(at + 2) = W_(at + 4);
-        }
-        pc = at + 4;
-    } else if ((conv.end == pc && conv.to == T_LONG && conv.depth == evaldepth + 1
-                && (conv.from == T_BYTE || conv.from == T_WORD || conv.from == T_QUICK))
-               || (rawcutend == pc && rawcutdepth == evaldepth + 1)) {
-        pc -= 2;                    /* the element's ext.l */
-        conv.end = rawcutend = 0;
-    }
-}
-
 static void szchkact(struct expract *a)
 {
     (void)a;
@@ -871,7 +829,6 @@ static void szchkact(struct expract *a)
 
 UWORD arrevalchk(void)
 {
-    struct expract *m = stateact(idxmark, NULL, 0, 0);
     UWORD c;
 
     idxnext = TRUE;
@@ -879,9 +836,7 @@ UWORD arrevalchk(void)
     if (debugga >> 8) {
         tokuse(arrerr);
         emitact(szchkact, NULL, 0, 0);
-        return c;
     }
-    emitact(idxnarrow, m, 0, 0);
     return c;
 }
 
@@ -988,40 +943,6 @@ UWORD maineval(WORD push, UWORD *type, WORD unk)
 }
 
 
-/* no asm counterpart: the facts the code of the last elements leaves for
-   the code after it (#978, #1177, #1178, #1179, #1186) */
-struct facts {
-    struct emitfacts c;
-    ULONG rawcutend;
-    UWORD rawcutdepth;
-    ULONG convend;
-    UWORD convfrom, convto, convdepth;
-};
-
-static void getfacts(struct facts *f)
-{
-    getemitfacts(&f->c);
-    f->rawcutend = rawcutend;
-    f->rawcutdepth = rawcutdepth;
-    f->convend = conv.end;
-    f->convfrom = conv.from;
-    f->convto = conv.to;
-    f->convdepth = conv.depth;
-}
-
-static void setfactsact(struct expract *a)
-{
-    const struct facts *f = a->p;
-
-    setemitfacts(&f->c);
-    rawcutend = f->rawcutend;
-    rawcutdepth = f->rawcutdepth;
-    conv.end = f->convend;
-    conv.from = f->convfrom;
-    conv.to = f->convto;
-    conv.depth = f->convdepth;
-}
-
 /* no asm counterpart; replaces blitz2.s:8879-8886 maineval2's saves - the
    enter action of the evaluation e (EVAL): the stack use at its start,
    the push flag a->y, no string base pushed for it yet; what they were in
@@ -1039,13 +960,45 @@ static void evalenter(struct expract *a)
 }
 
 /* no asm counterpart; replaces blitz2.s:8879 maineval2's rawq cut (Fixed
-   (#1178), #1179) - a raw Quick at the end rounded down */
+   (#1178), #1179) - a raw Quick at the end rounded down; a->y: the end of
+   a narrowed later index, its ext.l left out (idxnarrow) */
 static void rawcutact(struct expract *a)
 {
-    (void)a;
-    quicktolong();
-    rawcutend = pc;                 /* Fixed (#1179), for arrevalchk */
-    rawcutdepth = evaldepth;
+    if (a->y)
+        quicktob2();
+    else
+        quicktolong();
+}
+
+/* Fixed (#1179), no asm counterpart; replaces the decisions of
+   arrevalchk's narrowing after the index (the original's sharreval
+   evaluated a later index as a Word) - is the later index just built
+   (its code recorded after the action number from, rawq: it ends in a
+   raw Quick) narrowed to its low word?  The index's last code is the
+   one narrowed: one integer constant that is its only code (a move.l:
+   ELF_NARROW, written as a move.w), the conversion to Long of one Byte,
+   Word or Quick element at the index's evaldepth (ELF_NARROW: without
+   its ext.l), or the rounding of a raw Quick (TRUE: rawcutact without
+   its ext.l).  Not with runtime error checking (arrszchk reads the whole
+   Long). */
+static BOOL idxnarrow(ULONG from, BOOL raw)
+{
+    struct exprnode *l;
+
+    if (debugga >> 8)
+        return FALSE;
+    l = bcst.leaf;
+    if (bcst.seq && bcst.seq == codeseq && bcst.before == from
+        && (l->tafter == T_LONG || l->tafter == T_QUICK) && !(l->lflags & ELF_FFP)) {
+        l->lflags |= ELF_NARROW;
+        return FALSE;
+    }
+    if (raw)
+        return TRUE;
+    if (bconv.seq && bconv.seq == codeseq && bconv.depth == evaldepth && bconv.to == T_LONG
+        && (bconv.from == T_BYTE || bconv.from == T_WORD || bconv.from == T_QUICK))
+        bconv.leaf->lflags |= ELF_NARROW;
+    return FALSE;
 }
 
 /* no asm counterpart; replaces blitz2.s:8893-8962 maineval2 after eval3
@@ -1103,15 +1056,20 @@ static UWORD evalbuild(WORD push, UWORD *type, WORD unk)
     BOOL s_rawq = rawq;
     BOOL s_cmpres = cmpres;
     BOOL s_laterindex = laterindex;
+    ULONG from;
+    BOOL narrow = FALSE;
 
     laterindex = idxnext;           /* Fixed (#1179) */
     idxnext = FALSE;
     stateact(evalenter, e, 0, (UWORD)push);
     evaldepth++;
     rawq = FALSE;
+    from = codeseq;
     c = eval3(&t);
+    if (laterindex)                 /* Fixed (#1179): narrowed? */
+        narrow = idxnarrow(from, rawq);
     if (rawq)                       /* Fixed (#1178): a raw Quick, floor */
-        emitact(rawcutact, NULL, 0, 0);
+        emitact(rawcutact, NULL, 0, (UWORD)narrow);
     rawq = s_rawq;
     cmpres = s_cmpres;              /* Fixed (#1182) */
     evaldepth--;
@@ -1164,9 +1122,8 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
 
 /* no asm counterpart (eval.h): a constant computed in the middle of an
    expression (evalconst2: a ~ constant, CNIF) is a unit of its own, the
-   expression being built is set aside meanwhile; its code left the facts
-   of its last elements, which the code after it in the expression finds
-   (an action where it was read) */
+   expression being built is set aside meanwhile; the build's records of
+   the last elements start again behind it */
 void exprsuspend(struct exprunit *s)
 {
     exprtree_suspend(s);
@@ -1174,15 +1131,10 @@ void exprsuspend(struct exprunit *s)
 
 void exprresume(struct exprunit *s)
 {
-    struct facts *f;
-
     exprtree_end(s);
     if (!exprtree_building())
         return;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
-    f = exprtree_alloc(sizeof *f);
-    getfacts(f);
-    stateact(setfactsact, f, 0, 0);
 }
 
 
@@ -1362,7 +1314,6 @@ struct emitsave {
     struct offnode *firstoff;
     ULONG numoffs;
     BOOL wordop, foldnow;
-    struct facts f;
 };
 
 static void emitkeep(struct emitsave *s)
@@ -1380,7 +1331,6 @@ static void emitkeep(struct emitsave *s)
     s->numoffs = numoffs;
     s->wordop = wordop;
     s->foldnow = foldnow;
-    getfacts(&s->f);
 }
 
 static void emitback(const struct emitsave *s)
@@ -1404,7 +1354,6 @@ static void emitback(const struct emitsave *s)
     fuckpos = s->fuckpos;
     wordop = s->wordop;
     foldnow = s->foldnow;
-    setfactsact(&(struct expract){ .p = (void *)&s->f });
 }
 
 /* no asm counterpart: the check of a division of two constants by zero
@@ -4692,13 +4641,17 @@ static void contcode(struct exprnode *l)
        down, / towards zero), a comparison takes it as a Quick (#1177), a
        shift, logic operator, Mod, Not and the end of the expression round
        it down as the original does. */
-    if ((l->lflags & (ELF_RAW | ELF_CONV | ELF_DROP)) == ELF_CONV) {
-        conv.from = l->own;
-        conv.depth = evaldepth;
-        convtype(l->own, l->tafter);    /* bump up new type to old.... */
-        conv.end = pc;
-        conv.to = l->tafter;
+    if ((l->lflags & (ELF_RAW | ELF_CONV | ELF_DROP)) != ELF_CONV)
+        return;
+    /* Fixed (#1179): the conversion that ends a narrowed later index
+       (idxnarrow) leaves out the ext.l of a Byte's, Word's or Quick's
+       conversion to Long (bytetolong, wordtolong, quicktolong) */
+    if (l->lflags & ELF_NARROW) {
+        if (l->own == T_QUICK)
+            quicktob2();
+        return;
     }
+    convtype(l->own, l->tafter);    /* bump up new type to old.... */
 }
 
 static void contemit(struct expract *a)

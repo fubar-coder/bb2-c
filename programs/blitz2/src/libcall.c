@@ -40,10 +40,6 @@ static inline ULONG tl(const UWORD *p)
 static ULONG numval;    /* asm d3: value (int or FFP) */
 static WORD numfloat;   /* asm d6: 0 int, != 0 float */
 
-/* Fixed (#1179): the integer constant constemit emitted last (move.w/.l
-   #x,Dn from constat to constend; 0: none), for arrevalchk (islongconst) */
-static ULONG constat, constend;
-
 /* No asm counterpart (#1186, a port defect of the #1177 fix): a decimal
    literal with a point or an exponent that the byte sizing of consttype2
    made a whole number (litcut, set by consttype2; since the fix of #1188
@@ -263,18 +259,15 @@ static UWORD fetchdec(UWORD c, ULONG *divisorp)
    .word and .long - the code of the constant's leaf l (the action's p):
    move.w/move.l #value,D(regat): the byte a byte value is compared with
    sign-extended (#978, ELF_SIGNEXT), the FFP value of a literal made a
-   whole number that is a comparison's left operand (#1186, ELF_FFP).  It
-   uses only the leaf and the emitter's state; it leaves where the
-   integer constant is for the code after it (constat..constend) and the
-   code in l->start..l->end. */
+   whole number that is a comparison's left operand (#1186, ELF_FFP), the
+   low word of a later array index (#1179, ELF_NARROW: move.w).  It uses
+   only the leaf and the emitter's state; it leaves the code in
+   l->start..l->end. */
 static void constemit(struct expract *a)
 {
     struct exprnode *l = a->p;
     ULONG at = pc, val = l->value;
 
-    constat = constend = 0;
-    if (!(l->lflags & ELF_POINT) && l->tafter != T_FLOAT)
-        constat = at;
     if (l->lflags & ELF_SIGNEXT) {   /* compared with a byte value (#978) */
         if (l->tafter < T_LONG)
             val |= 0xff00;              /* move.w */
@@ -299,6 +292,12 @@ static void constemit(struct expract *a)
         break;
     case T_LONG:
     case T_QUICK:
+        if (l->lflags & ELF_NARROW) {   /* a later index: its low word */
+            pokewd((UWORD)(regat << 9) | 0x303c);
+            pokewd((UWORD)val);
+            break;
+        }
+        /* fall through */
     case T_FLOAT:
         /* .long */
         pokewd((UWORD)(regat << 9) | 0x203c);
@@ -307,8 +306,6 @@ static void constemit(struct expract *a)
     default:
         mismatcherr();
     }
-    if (constat)
-        constend = pc;
     l->start = at;
     l->end = pc;
 }
@@ -349,29 +346,6 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
     constrec(l);
     exprtree_release(l);
     return reget();
-}
-
-
-
-
-void getemitfacts(struct emitfacts *f)
-{
-    f->constat = constat;
-    f->constend = constend;
-}
-
-void setemitfacts(const struct emitfacts *f)
-{
-    constat = f->constat;
-    constend = f->constend;
-}
-
-
-BOOL islongconst(ULONG from, ULONG to)
-{
-    /* by the positions, not the code: the same in a pass whose code is
-       not stored (nomemleft) */
-    return constat && constat == from && constend == to && to - from == 6;
 }
 
 

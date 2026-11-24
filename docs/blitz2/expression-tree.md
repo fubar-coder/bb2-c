@@ -420,6 +420,7 @@ from what it has read and recorded:
 | a comparison's left operand gets its own type back (#1177, #1186) | `cmpownleft`: the operand's code ends in the conversion `varcont` made (`conv.end`): the conversion's code rewound with its relocations, `lasta6` set back; or it is a literal made a whole number with only its `neg.w` after it (`fraclitfloat`): rewritten as its FFP value | `ownleft`: the conversion's action is the last one that writes code since the operand began (`bconv`): the conversion is not written (`ELF_DROP`), the relocations of the libraries its routine used first are freed (`relocforget`), the libraries stay (decision 4); or the literal's is with only minus signs of a Byte or Word after it (`blit`): the literal writes its FFP value with the signs in it (`ELF_FFP`), the minus signs nothing (`EXF_ABSORBED`) |
 | #978: an equality comparison of one byte value with one constant from 128 to 255 | `bytevalend`, `isbyteconst` of the written code, `byteconstext` patched the constant | the operands' facts when they are read (`exprtree_left`: the action of a value ending in the byte's `ext.w`, or of the constant, is the operand's last or only code: `EXF_BYTEVAL`, `EXF_BYTECONST`), `exprtype_binop` in `binopbuild`; the constant writes the sign-extended byte (`ELF_SIGNEXT`, `constemit`) |
 | the string base (`sbasegot`) | set by `makesbase`'s code | `bsbase`: got before the unit, or a `makesbase` recorded in it |
+| a later array index without runtime error checking (#1179) | evaluated as a Word (`sharreval`): a constant is a `move.w`, one Byte or Word element has no `ext.l` | evaluated as a Long and narrowed to its low word where its code is the original's: `idxnarrow` in `evalbuild` decides when the index is built, from the build's records: the constant that is the index's only code (`bcst`) gets `ELF_NARROW` (`constemit` writes the `move.w`), the conversion of one Byte, Word or Quick element that is its last code (`bconv`) gets `ELF_NARROW` (`contcode` writes it without the `ext.l`), the rounding of a raw Quick (`rawq`) is recorded without it (`rawcutact`) |
 | an intrinsic compiled inline | `intrinsic_code` in `libjsrcode` (`INTR_DONE`) | `intrstate` is `INTR_QUICK` after the argument is built (`maineval2`, `intrinsic_quick`); `libexit` hands it to `libjsrcode` |
 | the errors of the code | raised where the code was written: "Can't Convert Types" (`noconerr` in `convtable`), "Illegal Operator for Type" (`doop`, `negate`, `notit`), "Type Mismatch" (`constemit`), "Only Available in Blitz mode" and "Only Available in Amiga mode" (`makelsub3`) | raised where the code is recorded, in the same order (`convprep`, `opprep`, `binopprep`, `tokuse`, `userjsruse`) |
 
@@ -441,8 +442,8 @@ has the original's order. The relocations of a library whose calling code
 is never written (the conversion a comparison drops) are freed, as
 the original's `cmpownleft` freed them. A constant computed in the middle of an
 expression (`evalconst`: a `~` constant, `CNIF`) is a unit of its own,
-whose code is written and run at once; the facts its code left are set
-again by an action where it was read.
+whose code is written and run at once; the build's records of the last
+elements start again behind it.
 
 | Original (`blitz2.s`) | What it did | Now |
 |---|---|---|
@@ -455,7 +456,7 @@ again by an action where it was read.
 | 10860 `fetchnum3`, 9700 `fetchpi`, 9941 `doern`, 9993 `doused`, 10069 `doaddr`, 9915 `ampersand2`, 10409 `qmark`, 10478 `variable`, 10391 `makelit`, 10617 `stvar` | the elements' code | the actions `constemit`, `piemit`, `errnumemit`, `usedemit`, `addremit`, `addrofemit`, `labelemit`, `varemit`, `litbase` and `litemit`, `contemit` (a call's value) |
 | 10183 `amigalib`, 10112 `libfunction`, 10522 `afunction` | the calls' code | the actions `osenter`, `osexit`, `stackact`; `libenter`, `pokeact` (a size specifier), `stacksave`, `libexit`, `stackrestore`, `libresult`; `procenter`, `procexit`, `procresult` |
 | 8170 `calcvar`'s code | the path's steps | `stepdone` records `stepemit` (regat counted down and up by the build) |
-| 8809 `arrevalchk` | a later index narrowed | the actions `idxmark` and `idxnarrow` |
+| 8809 `arrevalchk` | a later index narrowed | `idxnarrow` (`evalbuild`), the leaves' `ELF_NARROW`, `rawcutact` |
 | 5679 `pushap`, 5698 `handlevara`, 5742 `sendtype`, 5759 `baseadd`, 5781 `highadd` | a parameter's push | the actions `pushapact`, `ptypeact`, `pokeact`, `highaddact` |
 | 12196 `getmaxel` | the index of an object scaled | the action `maxelact` |
 | 3217 `dolibtoke` (`libparams`) | `stackuse` 0 for the parameters | the action `stackzero` |

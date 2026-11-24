@@ -64,13 +64,6 @@ ULONG fetchnum(UWORD c, UWORD *type, BOOL data);
    fetchconst, fetchsize, fetchon/off, domaximum, fetchqasm, fetchasm. */
 ULONG fetchnum2(ULONG num, UWORD *type, BOOL data);
 
-/* Fixed (#1179), no asm counterpart: TRUE if the code from `from` to `to`
-   is exactly the integer constant the fetch routines emitted last as a
-   Long (move.l #x,Dn, 6 bytes; told by the positions, so a pass without
-   stored code decides the same), for the narrowing of a later array
-   index (eval.c, arrevalchk) */
-BOOL islongconst(ULONG from, ULONG to);
-
 /* Fixed (#1070), no asm counterpart: TRUE if the decimal literal fetched
    next is negated (a '-' in front of it in an expression, an odd number of
    them, or a negative Data value); consttype2 takes it and clears it.  A
@@ -132,15 +125,6 @@ struct blitzlib *tokejsr2(UWORD token);
    built (exprtree.h), its code is written after */
 void tokuse(UWORD token);
 void userjsruse(struct blitzlib *bl, UBYTE *params);
-
-/* no asm counterpart: the facts the code of the last constant leaves
-   (constat, constend), read and set again around a constant computed in
-   the middle of an expression (eval.c exprresume) */
-struct emitfacts {
-    ULONG constat, constend;
-};
-void getemitfacts(struct emitfacts *f);
-void setemitfacts(const struct emitfacts *f);
 
 /* blitz2.s:11466 makelibsub - generate a call of lib sub `off` (entry =
    (UBYTE*)lib + 6 + off): parameter register loads (fetchregs/toreg),

@@ -178,7 +178,7 @@ enum {
     ELF_FOLD = 4,               /* CONST: a constant of the fold (the forthstack's constgot 0) */
     ELF_BYTE = 8,               /* VAR: a Byte value, extended to a Word (#978) */
     ELF_RAW = 16,               /* VAR: a Quick held raw under a Long (#1178: rawq) */
-    ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177: conv) */
+    ELF_CONV = 32,              /* VAR: converted from own to tafter (#1177, #1179: bconv) */
     ELF_WORD = 64,              /* VAR: a Byte or Word value (#1179: wordval) */
     ELF_REF = 128,              /* LABEL: the reference to the label is made at emit */
     ELF_LOCAL = 256,            /* VAR, ADDROF, the node VAR and a STEP: a local variable
@@ -187,8 +187,11 @@ enum {
                                    for, sign-extended (#978) */
     ELF_DROP = 1024,            /* VAR: a comparison's left operand: the conversion not
                                    written, its own type kept (#1177) */
-    ELF_FFP = 2048              /* CONST: a comparison's left operand made a whole number:
+    ELF_FFP = 2048,             /* CONST: a comparison's left operand made a whole number:
                                    its FFP value (aux) written (#1186) */
+    ELF_NARROW = 4096           /* CONST, VAR: the last code of a later array index, only
+                                   its low word built: a constant's move.w, a conversion
+                                   to Long without its ext.l (#1179, arrevalchk) */
 };
 
 /** @brief The limit of the counted nodes (the original's precstack: 64
