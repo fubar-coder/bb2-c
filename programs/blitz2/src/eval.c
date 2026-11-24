@@ -1106,30 +1106,51 @@ UWORD maineval2(WORD push, UWORD *type, WORD unk)
    type got; NULL: none), then the expression's code */
 static UWORD evalunit(WORD push, UWORD *type, WORD unk, void (*before)(UWORD type))
 {
-    struct exprunit outer;
-    struct exprmark m;
-    ULONG at = pc;
-    ULONG s_actseq = actseq, s_codeseq = codeseq;
-    BOOL s_bsbase = bsbase;
-    UWORD c, rb;
+    struct stmtunit u;
+    UWORD c;
 
-    m = exprtree_mark();
-    bsbase = sbasegot != 0;
-    bconv.seq = blit.seq = bcst.seq = bbyte = 0;
-    rb = relocunit();
-    exprtree_begin(&outer);
+    unitbegin(&u);
     c = evalbuild(push, type, unk);
-    if (pc != at)
-        interr2();                  /* not reached: no code while it is built */
+    unitbuilt(&u);
     if (before)
         before(*type);
-    exprtree_run(exprtree_end(&outer));
-    relocdrop(rb);
-    exprtree_unwind(m);
-    actseq = s_actseq;
-    codeseq = s_codeseq;
-    bsbase = s_bsbase;
+    unitwrite(&u);
     return c;
+}
+
+/* no asm counterpart (eval.h): a unit of a statement begun - the arena's
+   place, the build's records and the libraries' relocations of the unit
+   from here on */
+void unitbegin(struct stmtunit *u)
+{
+    u->m = exprtree_mark();
+    u->at = pc;
+    u->actseq = actseq;
+    u->codeseq = codeseq;
+    u->bsbase = bsbase;
+    bsbase = sbasegot != 0;
+    bconv.seq = blit.seq = bcst.seq = bbyte = 0;
+    u->rb = relocunit();
+    exprtree_begin(&u->outer);
+}
+
+/* no asm counterpart (eval.h): the unit built, its actions kept */
+void unitbuilt(struct stmtunit *u)
+{
+    if (pc != u->at)
+        interr2();                  /* not reached: no code while it is built */
+    u->acts = exprtree_end(&u->outer);
+}
+
+/* no asm counterpart (eval.h): the unit's code written, the unit ended */
+void unitwrite(struct stmtunit *u)
+{
+    exprtree_run(u->acts);
+    relocdrop(u->rb);
+    exprtree_unwind(u->m);
+    actseq = u->actseq;
+    codeseq = u->codeseq;
+    bsbase = u->bsbase;
 }
 
 /* no asm counterpart (eval.h): bakevalu with code before the

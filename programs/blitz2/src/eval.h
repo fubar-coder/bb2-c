@@ -138,6 +138,22 @@ void exprbuildreset(void);
    (evalconst2): the expression set aside, then back */
 void exprsuspend(struct exprunit *s);
 void exprresume(struct exprunit *s);
+/* A unit of a statement (no asm counterpart; exprtree.h): what is read
+   between unitbegin and unitbuilt is built, its code is written by
+   unitwrite, which ends the unit; code written in between is in front of
+   it.  Outside an expression being built.  struct stmtunit holds the
+   unit's actions and what its end gives back. */
+struct stmtunit {
+    struct exprunit outer;
+    struct exprmark m;
+    struct expract *acts;
+    ULONG at, actseq, codeseq;
+    UWORD rb;
+    BOOL bsbase;
+};
+void unitbegin(struct stmtunit *u);
+void unitbuilt(struct stmtunit *u);
+void unitwrite(struct stmtunit *u);
 /* the element being built is a constant of the fold (ELF_FOLD); the
    constant l (its code the last action) built: the facts of #978 and
    #1186 for the comparison it is an operand of */

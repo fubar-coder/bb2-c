@@ -1256,6 +1256,20 @@ static void letcode(UWORD opcode, UWORD vartype, WORD offset, UWORD *pcodd)
         pokewd(offset);
 }
 
+/* no asm counterpart: the code of the left side's address (calcvar's path,
+   built in the unit u) written; regat, varmode and evaldepth stay as
+   they are */
+static void letaddr(struct stmtunit *u)
+{
+    UWORD r = regat, d = evaldepth;
+    WORD m = varmode;
+
+    unitwrite(u);
+    regat = r;
+    varmode = m;
+    evaldepth = d;
+}
+
 /* blitz2.s:14340 dolet2
    BUG(orig) (#1212): the code of the left side's address (an array index,
    regat 1) is compiled before the right side and moved behind it
@@ -1273,10 +1287,15 @@ UWORD dolet2(UWORD c, UWORD len, UWORD *type, WORD *offset)
     UWORD pcodd;            /* asm: global pcodd (14509), add 1 for bytes */
     WORD voff;
 
+    struct stmtunit left;
+
     pushstart();
     regat = 1;              /* don't disturb this reg! */
     v = fetchvar(len, &t, &c);              /* var in a3, type in a2 */
+    unitbegin(&left);
     vartype = calcvar(&v, &t, &c, &voff);   /* get offset stuff */
+    unitbuilt(&left);
+    letaddr(&left);
     regat = 0;
     pushdo();
     commode = 0;
