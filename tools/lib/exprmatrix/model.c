@@ -2491,6 +2491,8 @@ struct cev {
     int preach;                 /* EM_R_PREACH */
     int pcmp;                   /* EM_R_PCMP */
     int pqdiv;                  /* EM_R_PQDIV */
+    int pbitwhole, pbitq;       /* EM_R_PBITWHOLE, EM_R_PBITQ (analysis of design open question 1) */
+    int inbit;                  /* the constant being typed is an operand of a bit operator or shift */
     int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
     int fracwhole;              /* P: a whole-number subtree here is computed in the fractional format */
     int reachf;                 /* P: the expression is typed under Float (a Float in it, change 7) */
@@ -2644,10 +2646,26 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
         tt = TF;
     if (c->pconst && pt && a.ok && (!rat_isint(a) || cpoint(n)))
         tt = pconstfloat(c, a, W, pt) ? TF : TQ;
+    /* the analysis of design open question 1 (rb.b=vb AND 2.0): a
+       constant with a point as the operand of a bit operator or shift;
+       EM_R_PBITWHOLE: a whole value is the whole number of its smallest
+       type (option 2); EM_R_PBITQ: a value in the Quick range is a Quick,
+       the operator takes its whole part as for a Quick operand (option 3) */
+    int bitwhole = 0, inbit = c->inbit;
+
+    c->inbit = 0;
+
+    if (inbit && a.ok && cpoint(n)) {
+        if (c->pbitwhole && rat_isint(a) && cfits(a, TL)) {
+            tt = cfits(a, TB) ? TB : cfits(a, TW) ? TW : TL;
+            bitwhole = 1;
+        } else if (c->pbitq && cfits(a, TQ))
+            tt = TQ;
+    }
     char text[48];
 
     T = tt;
-    if (n->kind == TN_CONST || !pt || !a.ok || (!rat_isint(a) && tt != TQ && tt != TF)) {
+    if (!bitwhole && (n->kind == TN_CONST || !pt || !a.ok || (!rat_isint(a) && tt != TQ && tt != TF))) {
         if (flow(c->e, n, &T, r, NULL))
             return 1;
     } else {
@@ -2702,7 +2720,9 @@ static void wideok(struct ev *e, struct reg *r)
 static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, struct reg *r, struct reg *b)
 {
     int lc = is_consttree(n->l), rc = is_consttree(n->r);
+    int bit = is_bitop(n->op) || (n->op >= EM_LSL && n->op <= EM_ASR);
 
+    c->inbit = 0;
     if (em_op_is_compare(n->op) && (c->ptyped || c->pconst)) {
         int save = c->regionq, k;
 
@@ -2729,11 +2749,13 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
             return 1;
         /* a shifted constant is not typed by the count */
         c->inmul = n->op == EM_MUL;
+        c->inbit = bit;
         return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
     }
     if (cand(c, n->l, WL, 0, r))
         return 1;
     c->inmul = n->op == EM_MUL;
+    c->inbit = bit && rc;
     return cand(c, n->r, WR, rc ? r->t : 0, b);
 }
 
@@ -3532,6 +3554,8 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
             c.preach = (rules & EM_R_PREACH) != 0;
             c.pcmp = (rules & EM_R_PCMP) != 0;
             c.pqdiv = (rules & EM_R_PQDIV) != 0;
+            c.pbitwhole = (rules & EM_R_PBITWHOLE) != 0;
+            c.pbitq = (rules & EM_R_PBITQ) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

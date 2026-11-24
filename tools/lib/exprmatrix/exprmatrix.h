@@ -413,6 +413,13 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 #define EM_R_PREACH (1u << 23)
 #define EM_R_PCMP (1u << 24)
 #define EM_R_PQDIV (1u << 25)
+/* analysis only (design open question 1, rb.b=vb AND 2.0), not part of P+:
+   a constant with a point as the operand of a bit operator or shift is
+   the whole number of its smallest type when its value is whole (option 2,
+   EM_R_PBITWHOLE), or a Quick, whose whole part the operator takes
+   (option 3, EM_R_PBITQ) */
+#define EM_R_PBITWHOLE (1u << 26)
+#define EM_R_PBITQ (1u << 27)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 #define EM_RULES_C7KX (EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT)
 #define EM_RULES_P                                                                                                    \

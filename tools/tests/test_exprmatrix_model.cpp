@@ -864,3 +864,24 @@ TEST_CASE("exprmatrix model: P+, a bit operator inside a comparison with a Float
     CHECK(expr("b AND 1", "b.b=3").value(EM_DF, DEC) == "!noncompile");
 }
 
+TEST_CASE("exprmatrix model: the options of a constant with a point under a bit operator", "[exprmatrix][cand]")
+{
+    // analysis only (design open question 1): option 2 a whole value its
+    // whole number, option 3 a Quick whose whole part the operator takes
+    const unsigned o2 = DEC | EM_R_PBITWHOLE, o3 = DEC | EM_R_PBITQ;
+
+    for (unsigned r : { o2, o3 }) {
+        CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, r) == "2");
+        CHECK(expr("2.0 AND b", "b.b=3").value(EM_DB, r) == "2");
+        CHECK(expr("b LSL 2.0", "b.b=3").value(EM_DB, r) == "12");
+        CHECK(expr("l LSL 2.0", "l.l=5").value(EM_DL, r) == "20");
+        CHECK(expr("w AND 2.0", "w.w=3").value(EM_DW, r) == "2");
+        CHECK(expr("q AND 2.0", "q=3.5").value(EM_DQ, r) == "00020000");
+    }
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, o2) == "!noncompile");
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, o3) == "1");
+    CHECK(expr("b AND 2.5", "b.b=3").value(EM_DB, o3) == "2");
+    CHECK(expr("2.5 AND b", "b.b=3").value(EM_DB, o3) == "2");
+    CHECK(expr("l LSL 2.5", "l.l=5").value(EM_DL, o3) == "20");
+    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, DEC) == "!noncompile");
+}
