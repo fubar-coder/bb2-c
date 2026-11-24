@@ -1306,7 +1306,7 @@ static UWORD doop(struct opentry *op, UWORD type)
    (quick-long-arithmetic, design decision 3): + - * down, / towards zero
    as BB2's divisions.  A Float type so far (the right side made it one)
    takes the Quick with its fraction (quicktofloat), ^ both operands with
-   theirs; the other operators take the Quick rounded down, as before.
+   theirs; the other operators take the Quick rounded down, as the original does.
    d: exprtype_binop's decision (ETP_MIXED); the operation computes in
    d->result. */
 static __attribute__((noinline))
@@ -1404,7 +1404,7 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
     }
     /* not reached: exprtype_binop gives every other operator a handler
        (Mod with a whole-number divisor, a shift or a logic operator: the
-       Quick rounded down, as before; exprtype_cutsraw cut a left operand
+       Quick rounded down, as the original does; exprtype_cutsraw cut a left operand
        at fetch already) */
 }
 
@@ -1498,7 +1498,7 @@ static UWORD dogecmp2(UWORD opcode) { cmpit(opcode); return dogecmp(); }
    comparison, when it is one element (a variable, field, array element,
    function value) whose code ends in a conversion varcont made to the
    wanted type, gets its own type back: the conversion is dropped (with its
-   relocations, as constfold frees them, and lasta6 as before it) when it
+   relocations, as constfold frees them, and lasta6 as it was before it) when it
    changes how the value is held - a whole number to Quick, a whole number
    or a Quick to Float.  Byte/Word to Long is exact and stays.  A Quick
    under a Long is not cut any more (#1178): exprtree_pre takes a raw left
@@ -2222,8 +2222,9 @@ static UWORD notit(UWORD *type)
    the emit part writes its code from the leaf and the emitter's state
    (regat, lasta6, ...) only.  The emit part runs right after the parse
    part and the leaf is released after it, so the code and its moment are
-   the same as before; the char after the element is read after its code, as before.  What each one changes besides the
-   code, and when: docs/blitz2/expression-tree.md. */
+   those of the original; the char after the element is read after its
+   code, as the original does.  What each one changes besides the code,
+   and when: docs/blitz2/expression-tree.md. */
 
 /* no asm counterpart: a new leaf of the element kind kind, read under the
    type so far tsf */
@@ -2865,7 +2866,7 @@ static void amigasave(const UBYTE *regs, ULONG *push, ULONG *pull)
    is a node (exprtree.h: kind CALL, op CLK_PROC or CLK_OS), made when the
    call has been looked up.  It lives while its parameters are read: each
    one is an expression of its own (its node EXPR), compiled into its
-   register or pushed as it is read, with the push protocol of before
+   register or pushed as it is read, with the push protocol of the original
    (fetchprocps, peval): the node's children.  Its code has two parts:
    the enter action before the parameters (the registers saved, the
    string base) and the exit action after them (the call, the result
@@ -3062,7 +3063,7 @@ static BOOL liba3(const UBYTE *sub)
    another form (the original vallib's Frac takes a Float) is called as
    before.  A string entry does not take the way below: libfunction asks
    intrstrvar before libcallnode, which compiles the argument and the call
-   as before unless it is a plain string variable.
+   as the original does unless it is a plain string variable.
 
    The way through the shared code: libfunction arms the entry (its
    call node holds it) before libcallnode; libparams compiles the
@@ -3076,7 +3077,7 @@ static BOOL liba3(const UBYTE *sub)
    Everything before (libenter's movem of the registers below regat)
    and after (libresult's move.l d0,D(regat), the movem back, callcont) is the
    call's.  For every other type the argument and the call are compiled
-   exactly as before.  Not in constant evaluation (cfetchmode: the code
+   exactly as the original does.  Not in constant evaluation (cfetchmode: the code
    runs in the compiler, with the library's constant rules) and not in
    direct mode (dirmode). */
 struct intrinsic {
@@ -3243,7 +3244,7 @@ static const struct intrinsic *intrfind(UWORD tok, const UBYTE *sub, UWORD np,
    does (getvname, fetchvar, calcvar: a name with '$' and no '(' is never
    an array or a pointer, so calcvar emits nothing) and the entry's code
    is emitted on its long; TRUE, *c the ')' (as dolibtoke's reget).
-   Else FALSE: nothing is read, the call is compiled as before. */
+   Else FALSE: nothing is read, the call is compiled as the original does. */
 static BOOL intrstrvar(const struct intrinsic *in, UWORD *c)
 {
     const UBYTE *p = srcptr;
@@ -3449,7 +3450,7 @@ static UWORD libcallnode(struct exprnode *n, UWORD np)
    call.  The original saves only the registers below regat: the rest of
    the expression wrote its characters from the object on (BlitColl's
    Shape, PeekSound's Sound).  A function returning a string leaves its
-   result at a3 and is compiled as before, as is every call outside a
+   result at a3 and is compiled as the original does, as is every call outside a
    string expression.
    tok: the library token (function), for the intrinsics: an entry of
    intrinsics[] is armed for the argument (no asm counterpart); the node
@@ -3602,7 +3603,7 @@ static void litemit(struct exprnode *l)
 }
 
 /* blitz2.s:10327 litstring.  The work area first (makesbase: the first
-   part of the leaf's code, at its moment of before, before the text is
+   part of the leaf's code, at the original's moment, before the text is
    read); then the parse part: the text read and written to the literal
    area as it is read, AmiBlitz3's escapes with it (ext_strescape), its
    place and length in the leaf (ELK_STRING: value, aux); then the rest
@@ -3900,7 +3901,7 @@ static void contemit(struct exprnode *l)
        so far stays Long and rawq says so: the operator computes with the
        fraction and rounds (operate, mixedop: + - * down, / towards zero),
        a comparison takes it as a Quick (#1177), a shift, logic operator,
-       Mod, Not and the end of the expression round it down as before. */
+       Mod, Not and the end of the expression round it down as the original does. */
     if (l->lflags & ELF_RAW)
         rawq = TRUE;
     else if (l->lflags & ELF_CONV) {

@@ -22,7 +22,7 @@
  * its library is used right after the lookup.  The operators on strings (+
  * and the comparisons) are operator nodes like the others: the string
  * protocol (the work area, a length on the stack per string) is kept by
- * emitting each of them at its moment of before.
+ * emitting each of them at the original's moment.
  *
  * exprtree_climb is the evaluator's walk (blitz2.s:8983 eval5's control):
  * it reads an operand, and while the next operator binds tighter than the

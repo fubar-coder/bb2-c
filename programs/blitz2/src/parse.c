@@ -260,7 +260,7 @@ void savefile(void)
        65535 AmigaOS 3.2's LoadSeg refuses the executable (Kickstart 1.3
        loads it).  Here groups of at most 65535 offsets (count, hunk 0,
        offsets), as AmiBlitz3 does; up to 65535 relocations the block is
-       the same as before. */
+       the same as the original's. */
     *tstsize3 = numoffs;
     if (numoffs) {
         ULONG skip = noinits, left = numoffs, n = 0;
@@ -1418,7 +1418,7 @@ static void stepdone(struct exprnode *s)
    (compiled into D(regat) as they are read: arreval, arrevalchk), the
    fields after \, the index of a field array [ ], the pointers followed.
    Each step is a node (EXN_STEP) that is emitted (stepemit) as soon as it
-   is read and released then, so the code comes at the moments it did.
+   is read and released then, so the code comes at the moments the original did.
    Returns the variable node (EXN_VAR, the last node of the arena): value
    the variable or the last field, aux its type, vtype the asm's d2 (if
    bit 15 then code has been generated for address of thing in a2, else

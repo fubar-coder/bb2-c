@@ -38,7 +38,7 @@ struct exprnode *exprtree_new(unsigned kind)
 
 /* no asm counterpart; replaces blitz2.s:9153 pushprec - n pending.  The
    original checked the limit only in popprec, after the write past the
-   end of precstack; this stops before (as the port's pushprec did) */
+   end of precstack; this stops before it */
 void exprtree_push(struct exprnode *n, unsigned op, unsigned prec)
 {
     if (npend >= EXPRTREE_PENDING)
@@ -92,7 +92,7 @@ unsigned exprtree_pending(void)
    than the pending one with its right operand (one level deeper: the
    recursion of the original, once per higher precedence) and its
    emission; a chain of one precedence is the loop.  The hooks do the
-   rest of eval5 at the moments it did it. */
+   rest of eval5 at the moments the original did. */
 unsigned exprtree_climb(void *ctx, unsigned *op)
 {
     unsigned prec = exprtree_operand(ctx, op);

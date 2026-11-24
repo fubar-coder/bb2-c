@@ -198,7 +198,7 @@ struct exprtype_bin exprtype_binop(unsigned op, unsigned left, unsigned right, c
             d.result = ET_LONG;     /* inline, rounded at the operator */
         } else {
             /* Mod with a whole-number divisor, a shift or a logic
-               operator: the Quick rounded down, as before */
+               operator: the Quick rounded down, as the original does */
             d.lcut = (unsigned char)lq;
             d.rcut = (unsigned char)rq;
             d.handler = ET_LONG;
