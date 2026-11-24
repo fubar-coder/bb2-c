@@ -525,7 +525,12 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
         val = numval;
         break;
     case T_QUICK:
-        /* .quick2, or .qint: swap d0 */
+        /* .quick2, or .qint: swap d0.  BUG(orig) (issue to be filed): the
+           swap is a Quick of the whole number only for 0 to 32767; a
+           negative one keeps $FFFF in the half that becomes the
+           fraction, so On (-1) is $FFFFFFFF and #c=-3 is $FFFDFFFF
+           (test compiler-quick-negative-const).  A literal is not
+           affected: its minus sign is a neg of the positive Quick. */
         val = k.point ? q : (numval << 16) | (numval >> 16);
         break;
     default:

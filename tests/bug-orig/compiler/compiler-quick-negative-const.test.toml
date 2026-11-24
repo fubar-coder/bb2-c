@@ -1,0 +1,10 @@
+# compiler-quick-negative-const.test.bas: an open bug (issue to be filed):
+# the port has the same behaviour as the original, so every cell shows
+# the declared deviations
+[deviations."compiler=orig195"]
+"check.negative.on" = "== fail"
+"check.negative.on.actual" = "== $FFFFFFFF"
+"check.negative.constant" = "== fail"
+"check.negative.constant.actual" = "== $FFFDFFFF"
+"check.negative.sum" = "== fail"
+"check.negative.sum.actual" = "== $0000FFFF"
