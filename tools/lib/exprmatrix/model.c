@@ -2457,6 +2457,7 @@ struct cev {
     int cmpmode;                /* C7K: whole numbers in a comparison: 0 own, 1 at least Long, 2 the destination's */
     int rootw;                  /* the wanted type of the whole expression */
     int cmpmin;                 /* the least width of a whole-number operation here (0: none) */
+    int c7kexact;               /* C7Kx: a fraction constant a Quick only if it is exact in 16.16 */
 };
 
 static int tmax(int a, int b)
@@ -2576,6 +2577,10 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
     else if (cn == EM_CAND_C6)
         cn = c->inmul && pt == TQ && rat_isint(a) ? EM_CAND_C3 : EM_CAND_C1;
     tt = consttarget(cn, a, W, pt);
+    /* C7Kx: a fraction that a Quick cannot hold exactly (0.1, 0.001) stays a
+       Float beside a whole number, as today; beside a Quick a Quick */
+    if (c->c7kexact && tt == TQ && pt && pt != TQ && !rat_isint(a) && !rat_isint(rat_op(a, rat_int(65536), '*')))
+        tt = TF;
     char text[48];
 
     T = tt;
@@ -3067,8 +3072,8 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         *fmt = 0;
         return 0;
     }
-    if (W >= TB && W <= TQ && (op == EM_DIV || op == EM_MOD) && has_t(n, TL))
-        force = 1;
+    if (W >= TB && W <= TQ && (op == EM_DIV || op == EM_MOD || c->c7kexact) && has_t(n, TL))
+        force = 1;              /* C7Kx: every operation with a Long in it in 32.16 */
     if (c7side(c, n->l, W, force, &x, &fl, &lf) || c7side(c, n->r, W, force, &y, &fr, &rf))
         return 1;
     if (force || W == TL)
@@ -3077,6 +3082,9 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         f = 16;
     else
         f = fl == 32 || fr == 32 || (fl && !fr) || (!fl && fr) ? 32 : 16;
+    /* both operands in the format (a Long beyond it cut into a 16.16) */
+    x = c7wrap(e, x, f);
+    y = c7wrap(e, y, f);
     switch (op) {
     case EM_ADD: v = rat_op(x, y, '+'); break;
     case EM_SUB: v = rat_op(x, y, '-'); break;
@@ -3156,12 +3164,13 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
 
     if (cn) {
-        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0, 0, 0, asked, 0 };
+        struct cev c = { e, cn, (rules & EM_R_SCOPEB) != 0, tr, 0, 0, 0, asked, 0, 0 };
         int k;
 
         if (cn == EM_CAND_C7 && (rules & EM_R_C7K)) {
             c.c7k = 1;
             c.cmpmode = rules & EM_R_C7KLONG ? 1 : rules & EM_R_C7KDEST ? 2 : 0;
+            c.c7kexact = (rules & EM_R_C7KEXACT) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

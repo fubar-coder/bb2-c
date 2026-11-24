@@ -71,6 +71,7 @@ std::vector<ruleset> rulesets()
     v.push_back({ "C7Kown", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K });
     v.push_back({ "C7Klong", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG });
     v.push_back({ "C7Kdest", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KDEST });
+    v.push_back({ "C7Kx", EM_RULES_CANDBASE | EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT });
     return v;
 }
 

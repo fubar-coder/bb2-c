@@ -553,6 +553,26 @@ TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", 
     CHECK(expr("q*p", "q=1.5 p=2").typing(EM_DQ, c7) == "mul Q>Q Q>Q 1 Q;");
 }
 
+TEST_CASE("exprmatrix model: C7Kx, a fraction constant a Quick only when exact", "[exprmatrix][cand]")
+{
+    unsigned lng = cand(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG, x = lng | EM_R_C7KEXACT;
+
+    // 0.001 and 0.1 in 16.16 lose precision beside a Long; kept as Floats
+    CHECK(expr("l*0.001", "l.l=1000000").value(EM_PRINT, lng) == "991");
+    CHECK(expr("l*0.001", "l.l=1000000").value(EM_PRINT, x) == "1000");
+    CHECK(expr("l*0.1", "l.l=1000000").value(EM_DL, x) == "100000");
+    // 0.75 is exact in 16.16: a Quick, as in C7K-long
+    CHECK(expr("l*0.75", "l.l=1000").typing(EM_DL, x) == expr("l*0.75", "l.l=1000").typing(EM_DL, lng));
+    // beside a Quick a Quick, as today
+    CHECK(expr("q*0.1", "q=10").value(EM_DQ, x) == expr("q*0.1", "q=10").value(EM_DQ, lng));
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, x) == "1");
+    // a Long in a 16.16 operation under a wanted Word is cut first in C7 and
+    // C7K-long; C7Kx computes every operation with a Long in 32.16
+    CHECK(expr("l*q", "l.l=100000 q=0.25").value(EM_DW, lng) == "-7768");
+    CHECK(expr("l*q", "l.l=100000 q=0.25").value(EM_DW, x) == "25000");
+    CHECK(expr("l*q", "l.l=100000 q=0.25").value(EM_DW, NOW) == "25000");
+}
+
 TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatrix][cand]")
 {
     unsigned k = cand(EM_CAND_C7) | EM_R_C7K, own = k, lng = k | EM_R_C7KLONG, dst = k | EM_R_C7KDEST;

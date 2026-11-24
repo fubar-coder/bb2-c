@@ -357,6 +357,10 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 #define EM_R_C7K (1u << 14)
 #define EM_R_C7KLONG (1u << 15)
 #define EM_R_C7KDEST (1u << 16)
+/* C7Kx (task 2.1b, a refinement): with C7K, a constant with a fraction is a
+   Quick only if a 16.16 holds it exactly or a Quick is beside it, else a
+   Float as today */
+#define EM_R_C7KEXACT (1u << 17)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */

@@ -221,14 +221,19 @@ int run(const std::string &me, const std::string &name, bool scopeb, const std::
     std::string k7;
 
     if (!c7k.empty()) {
-        if (n != EM_CAND_C7 || (c7k != "own" && c7k != "long" && c7k != "dest")) {
-            std::fprintf(stderr, "%s: --c7k own, long or dest, with C7\n", me.c_str());
+        if (n != EM_CAND_C7 || (c7k != "own" && c7k != "long" && c7k != "dest" && c7k != "x")) {
+            std::fprintf(stderr, "%s: --c7k own, long, dest or x, with C7\n", me.c_str());
             return 2;
         }
-        rules |= EM_R_C7K | (c7k == "long" ? EM_R_C7KLONG : c7k == "dest" ? EM_R_C7KDEST : 0);
+        rules |= EM_R_C7K | (c7k == "long"   ? EM_R_C7KLONG
+                             : c7k == "dest" ? EM_R_C7KDEST
+                             : c7k == "x"    ? EM_R_C7KLONG | EM_R_C7KEXACT
+                                             : 0);
         k7 = std::string(about_c7k) +
              (c7k == "own" ? "in its own type (C7K-own).\n"
               : c7k == "long" ? "at least a Long (C7K-long).\n"
+              : c7k == "x"    ? "at least a Long; and a constant with a fraction is a Quick only if a 16.16 holds "
+                                "it exactly or a Quick is beside it, else a Float as today (C7Kx, the refinement).\n"
                               : "at least the destination's whole-number width (r.l a Long, r.w a Word, rb.b a "
                                 "Byte; a Quick or Float destination and none: its own type) (C7K-dest).\n");
     }
@@ -290,7 +295,7 @@ void cmd_candidate(CLI::App &app, int &status)
     sub->add_option("--marks", o->marks, "the cells of the CD places to mark: OP WANT LEFT RIGHT per line")
         ->type_name("FILE");
     sub->add_option("-o,--out", o->out, "write the page to FILE (default: stdout)")->type_name("FILE");
-    sub->add_option("--c7k", o->c7k, "C7 as C7K: own, long or dest (a comparison's whole-number operations)")
+    sub->add_option("--c7k", o->c7k, "C7 as C7K: own, long, dest or x (a comparison's whole-number operations)")
         ->type_name("VARIANT");
     sub->footer("With --out prints the cells that differ from today's and the marked ones per operator group. A line of "
                 "--marks is the cell as exprmatrix candidates --typing writes it (\"mul L W Q\"), anything after "
