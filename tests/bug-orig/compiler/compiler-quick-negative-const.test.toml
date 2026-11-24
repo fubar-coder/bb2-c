@@ -1,6 +1,12 @@
-# compiler-quick-negative-const.test.bas: an open bug (#1208):
-# the port has the same behaviour as the original, so every cell shows
-# the declared deviations
+# compiler-quick-negative-const.test.bas: the originals (1.95 and 2.10)
+# make a negative whole constant under a Quick type so far a Quick by
+# swapping its words: the integer part one too high, the fraction $FFFF
+fixed-orig = 1208
+exclude = ["compiler=orig195,libs=clib", "compiler=orig210,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195", "orig210"]
+
 [deviations."compiler=orig195"]
 "check.negative.on" = "== fail"
 "check.negative.on.actual" = "== $FFFFFFFF"
@@ -8,3 +14,23 @@
 "check.negative.constant.actual" = "== $FFFDFFFF"
 "check.negative.sum" = "== fail"
 "check.negative.sum.actual" = "== $0000FFFF"
+"check.negative.half" = "== fail"
+"check.negative.half.actual" = "== $FFFE7FFF"
+"check.negative.product" = "== fail"
+"check.negative.product.actual" = "== $FFFF0000"
+"check.negative.lowest" = "== fail"
+"check.negative.lowest.actual" = "== $8000FFFF"
+
+[deviations."compiler=orig210"]
+"check.negative.on" = "== fail"
+"check.negative.on.actual" = "== $FFFFFFFF"
+"check.negative.constant" = "== fail"
+"check.negative.constant.actual" = "== $FFFDFFFF"
+"check.negative.sum" = "== fail"
+"check.negative.sum.actual" = "== $0000FFFF"
+"check.negative.half" = "== fail"
+"check.negative.half.actual" = "== $FFFE7FFF"
+"check.negative.product" = "== fail"
+"check.negative.product.actual" = "== $FFFF0000"
+"check.negative.lowest" = "== fail"
+"check.negative.lowest.actual" = "== $8000FFFF"

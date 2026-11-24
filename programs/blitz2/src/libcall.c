@@ -561,13 +561,16 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
         val = numval;
         break;
     case T_QUICK:
-        /* .quick2, or .qint: swap d0.  BUG(orig) (#1208): the
-           swap is a Quick of the whole number only for 0 to 32767; a
-           negative one keeps $FFFF in the half that becomes the
-           fraction, so On (-1) is $FFFFFFFF and #c=-3 is $FFFDFFFF
-           (test compiler-quick-negative-const).  A literal is not
-           affected: its minus sign is a neg of the positive Quick. */
-        val = k.point ? q : (numval << 16) | (numval >> 16);
+        /* .quick2, or .qint: swap d0.  Fixed (#1208): the whole number
+           is the integer part of the Quick (numval << 16), its fraction
+           0.  The original swapped the words, which is that only for 0
+           to 32767: a negative number kept $FFFF in the half that
+           became the fraction, so On (-1) was $FFFFFFFF and #c=-3 was
+           $FFFDFFFF (test compiler-quick-negative-const).  A number
+           outside -32768..32767 stays a Long, as in the original (.qint
+           to .byte2: exprtype_element).  A literal was not affected:
+           its minus sign is a neg of the positive Quick. */
+        val = k.point ? q : numval << 16;
         break;
     default:
         /* Byte, Word, Long: the whole number (Fixed (#978): a constant
