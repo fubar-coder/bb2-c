@@ -105,9 +105,12 @@ and presets".
    declared deviations being what the original does instead.
 5. **Testing an agent's work:** agents run the tests their brief names,
    the tests of what they touched and `ctest --preset host`, in the
-   foreground; the coordinator runs `all`, `bug-orig` and `originals` once
-   after merging (D-010). Why: a full run takes up to 20 minutes; once
-   per round is enough to catch what the targeted tests miss.
+   foreground; the coordinator runs the targeted checks after each merge
+   (the agent's check, fix-scope again for a fix, the affected tests) and
+   `all`, `bug-orig` and `originals` with a clean rebuild once for
+   everything merged since the last push, before the user pushes (D-010,
+   D-026). Why: a full run takes 20 to 25 minutes; once per batch is
+   enough to catch what the targeted tests miss.
 6. **Only C/C++ and CMake** in the project infrastructure (build, tests,
    tools): what compiler and linker can do themselves without a tool
    (`#embed` + `static_assert`, `strip`); text and control in CMake;
