@@ -1,0 +1,13 @@
+# divzero-next-compile.test.bas: the data sources, compiled after the
+# driver by the cell's compiler process in this order; the first two end
+# with "Division by Zero"
+fixed = 1215
+
+[data]
+"div0.bas" = "basic-compile"
+"div0index.bas" = "basic-compile"
+"sum.bas" = "basic-compile"
+
+[asserts]
+"data.div0.bas" = "== \"error 3 Division by Zero\""
+"data.div0index.bas" = "== \"error 4 Division by Zero\""

@@ -150,7 +150,7 @@ static BOOL cmpres = FALSE;
    array index (idxnext, set by arrevalchk), the current one does
    (laterindex, saved by maineval2: a nested evaluation, a function
    argument or the index of an index, starts without it), and the
-   operator doop runs has two Word values (wordop, operate: both
+   operator doop runs has two Word values (wordop, set by doop: both
    forthent.wordval): dotimesl and dodivl compute it inline */
 static BOOL idxnext = FALSE;
 static BOOL laterindex = FALSE;
@@ -340,15 +340,13 @@ static UWORD eval4(UWORD *type, unsigned kind);
 static UWORD element(UWORD c, UWORD *type);
 static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, unsigned *op);
-static UWORD doop(struct opentry *op, UWORD type);
-static void mixedop(struct opentry *op, const struct exprtype_bin *d);
+static UWORD doop(struct opentry *op, UWORD type, BOOL words);
+static void mixedop(struct opentry *op, const struct exprtype_bin *d, BOOL zeroonly);
 static void doplus2(UWORD opcode);
 /* the operator operate emits has two constants (BNF_FOLD) */
 static BOOL foldnow = FALSE;
 /* where its left operand's code begins (divzerochk) */
 static ULONG foldfrom = 0;
-/* operate is run for the check of a division by zero only (divzerobuild) */
-static BOOL zeroonly = FALSE;
 static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
 static void divzerochk(const struct opentry *op, UWORD type);
 static UWORD getelement(UWORD *type);
@@ -1294,8 +1292,11 @@ static unsigned opindex(const struct opentry *op)
    n->vtype, in D(regat+1) (n->left->start, n->start: where their code
    begins; the facts of the build in n->lflags, those of the code before
    it in n->flags and the emitter's state).  exprtype_binop decides, this
-   emits what it returns.  Returns the type so far. */
-static UWORD operate(struct exprnode *n)
+   emits what it returns; zeroonly: only the code up to the check of a
+   division by zero (divzerobuild).  Returns the type so far.
+   Fixed (#1215): zeroonly is a parameter, so that a "Division by Zero"
+   the check raises leaves nothing set for the next compile. */
+static UWORD operate(struct exprnode *n, BOOL zeroonly)
 {
     struct exprnode *l = n->left;
     struct opentry *op = &operators[n->op];
@@ -1332,16 +1333,14 @@ static UWORD operate(struct exprnode *n)
             rawcut(regat + 1);
         compareop(op, left, &d);
     } else if (d.path == ETP_MIXED)
-        mixedop(op, &d);
+        mixedop(op, &d, zeroonly);
     else {
         if (d.lconv_from)
             convtypef(d.lconv_from, d.lconv_to); /* could possibly fuck regat+1 ! */
         divzerochk(op, d.handler);
         if (zeroonly)
             return d.result;
-        wordop = d.wordop;
-        doop(op, d.handler);
-        wordop = FALSE;
+        doop(op, d.handler, d.wordop);
     }
     return d.result;
 }
@@ -1352,7 +1351,7 @@ static UWORD operate(struct exprnode *n)
 static void binopact(struct expract *a)
 {
     struct exprnode *n = a->p;
-    UWORD t = operate(n);
+    UWORD t = operate(n, FALSE);
 
     if (t != n->tafter)
         interr2();                  /* not reached: typed when it was built */
@@ -1370,7 +1369,7 @@ struct emitsave {
     WORD nomemleft, a6, stackuse, sbgot, thisstuse, pushflag, fuckpos;
     struct offnode *firstoff;
     ULONG numoffs;
-    BOOL wordop, foldnow;
+    BOOL foldnow;
 };
 
 static void emitkeep(struct emitsave *s)
@@ -1386,7 +1385,6 @@ static void emitkeep(struct emitsave *s)
     s->fuckpos = fuckpos;
     s->firstoff = firstoff;
     s->numoffs = numoffs;
-    s->wordop = wordop;
     s->foldnow = foldnow;
 }
 
@@ -1409,7 +1407,6 @@ static void emitback(const struct emitsave *s)
     thisstuse = s->thisstuse;
     pushflag = s->pushflag;
     fuckpos = s->fuckpos;
-    wordop = s->wordop;
     foldnow = s->foldnow;
 }
 
@@ -1440,9 +1437,7 @@ static void divzerobuild(struct exprnode *n, const struct exprtype_bin *d)
             break;
     }
     regat = n->reg;
-    zeroonly = TRUE;
-    operate(n);
-    zeroonly = FALSE;
+    operate(n, TRUE);
     exprtree_end(&outer);
     emitback(&s);
     regat = s_regat;
@@ -1998,9 +1993,10 @@ found2:
 
 /* blitz2.s:9142 doop - a0=operator,d2=type.  Whether op has a handler
    for type, and the type it gives, is exprtype_optype's (exprtype.c);
-   operators[] has a handler wherever that table has a type.  Returns the
-   type. */
-static UWORD doop(struct opentry *op, UWORD type)
+   operators[] has a handler wherever that table has a type; words: the
+   operands are two Word values in a later index (wordop, set for the
+   handler only).  Returns the type. */
+static UWORD doop(struct opentry *op, UWORD type, BOOL words)
 {
     ophandler *h;
     UWORD t = exprtype_optype(opindex(op), type);
@@ -2010,7 +2006,9 @@ static UWORD doop(struct opentry *op, UWORD type)
     h = op->h[type - 1];
     if (!h)
         illoperr();                 /* not reached: the table agrees */
+    wordop = words;
     h(type);                        /* jmp (a0) */
+    wordop = FALSE;
     return t;
 }
 
@@ -2027,9 +2025,9 @@ static UWORD doop(struct opentry *op, UWORD type)
    takes the Quick with its fraction (quicktofloat), ^ both operands with
    theirs; the other operators take the Quick rounded down, as the original does.
    d: exprtype_binop's decision (ETP_MIXED); the operation computes in
-   d->result. */
+   d->result; zeroonly: as operate's. */
 static __attribute__((noinline))
-void mixedop(struct opentry *op, const struct exprtype_bin *d)
+void mixedop(struct opentry *op, const struct exprtype_bin *d, BOOL zeroonly)
 {
     UWORD r = regat;
     BOOL lq = d->lq, rq = d->rq;
@@ -2054,7 +2052,7 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d)
         divzerochk(op, d->handler);
         if (zeroonly)
             return;
-        doop(op, d->handler);
+        doop(op, d->handler, FALSE);
         return;
     }
     switch (op->op) {
@@ -2276,7 +2274,7 @@ void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d)
     }
     if (d->lconv_from)
         convtypef(d->lconv_from, d->lconv_to);  /* could possibly fuck regat+1 ! */
-    doop(op, d->handler);
+    doop(op, d->handler, FALSE);
 }
 
 /* blitz2.s:9189-9226 byte/word/long compares */
@@ -2469,7 +2467,7 @@ UWORD dotimesq(UWORD t)
 /* blitz2.s:9413 dotimesl - falls through into domylib */
 UWORD dotimesl(UWORD t)
 {
-    /* Fixed (#1179): two Word values in a later index (wordop, operate):
+    /* Fixed (#1179): two Word values in a later index (wordop, doop):
        muls.w D(regat+1),D(regat), the exact 32-bit product, instead of
        lmullib */
     if (wordop) {
@@ -2571,7 +2569,7 @@ UWORD dodivw(UWORD t)
 /* blitz2.s:9483 dodivl */
 UWORD dodivl(UWORD t)
 {
-    /* Fixed (#1179): two Word values in a later index (wordop, operate):
+    /* Fixed (#1179): two Word values in a later index (wordop, doop):
        divs.w instead of ldivlib.  The quotient of two sign-extended Words
        fits in a Word except -32768 / -1 (V set, the dividend unchanged),
        whose Long quotient 32768 is the dividend negated:
