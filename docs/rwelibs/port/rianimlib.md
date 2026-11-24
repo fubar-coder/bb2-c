@@ -200,16 +200,20 @@ C code (a count of 0 is 256, #508).
   `rianimlib-nextframe-odd-x-anim7-68000` and
   `rianimlib-nextframe-odd-offset-anim7-68000` on the A600).
 
+* InitFindChunk on data that is not a FORM but has the wanted ID at +8
+  (a chunk pointed at directly, such as an IFF LIST of type ANIM) pushed
+  a1 and returned without popping it: the RTS jumped to the caller's a1,
+  and the original crashes. A return through a1 cannot be written in C
+  (correction, technically unavoidable): the C build returns -1 as if a1
+  had been popped and the search goes on with the chunk (#513; bug-orig
+  test `rianimlib-initfindchunk-stack`, `fixed-orig = 513`).
+
 Kept, without effect: the `DIVU.w #64` that undoes the compiler's
 bitmap# × 64 in RIAnimInit's x,y form overflows (no change) from 64 ×
 65536 on; the number is kept as a byte anyway (named in #514).
 
 **BUG(orig)** (kept):
 
-* InitFindChunk on data that is not a FORM but has the wanted ID at +8
-  pushes a1 and returns without popping it: the RTS jumps to the
-  caller's a1. **DIFF:** the C build returns -1 as if a1 had been popped
-  (the original crashes; not reproducible in C) (#513).
 * A run or copy count of 0 is 256 (DBRA on the byte) (#508). Kept on
   purpose (won't fix, user decision W5 Q4 of 2026-11-19): encoders never
   write a count of 0 (the ANIM format and its op 7 appendix do not define

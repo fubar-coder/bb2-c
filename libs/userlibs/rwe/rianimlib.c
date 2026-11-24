@@ -31,11 +31,6 @@
  * in RIAnimDepth/Width/Height, a0/a1 in RIAnimFrameCount.
  *
  * BUG(orig):
- *   - InitFindChunk on data that is not a FORM but has the ID at +8 (a
- *     chunk "pointed at directly") pushes a1 and returns without popping
- *     it: the RTS jumps to the caller's a1 (DIFF: the C build returns
- *     -1 as if a1 had been popped - a crash in the original, not
- *     reproducible) (#513).
  *   - A run or copy count of 0 is 256 (DBRA on the byte) (#508; kept on
  *     purpose: encoders never write a count of 0 - the ANIM format does
  *     not define it, the reference decoders read it as 0 rows - and a
@@ -49,6 +44,12 @@
  *     of 2026-11-19; test rianimlib-delta-ops-past-chunk).  The plane
  *     offsets are checked (fixed, below).
  * Fixed (intended deviations, docs/libs/deviations.md):
+ *   - InitFindChunk on data that is not a FORM but has the ID at +8 (a
+ *     chunk "pointed at directly") pushed a1 and returned without popping
+ *     it: the RTS jumped to the caller's a1, a crash in the original.
+ *     The C build returns -1 as if a1 had been popped (correction,
+ *     technically unavoidable: a return through a1 cannot be written in
+ *     C) (#513).
  *   - RIAnimInit searches the BMHD in the first frame only; the original
  *     searched up to the end of the ANIM and took a BMHD chunk of the
  *     ANIM behind the first frame (#511).
@@ -303,7 +304,7 @@ static LONG initfindchunk(UBYTE *chunk, ULONG id)
     }
     if (LG(chunk + 8) != id)
         return 0;
-    /* DIFF: the original returns to the caller's a1 here (BUG(orig), #513) */
+    /* the original returns to the caller's a1 here (fixed, #513) */
     firstchunk = lastfoundchunk = chunk;
     endoffile = chunk + LG(chunk + 4) + 8;
     return -1;
@@ -478,7 +479,7 @@ void BLITZ_ROUTINE c_AnimLoop(UBYTE on BL_REG(d0))
  * RINextAnimFrame return 0 (fixed #512: the original kept the ANIM's
  * address and end, and the frame pointers of the animation before).  The
  * original returns to the caller's a1 for a chunk "pointed at directly"
- * (#513, DIFF: -1 here).
+ * (fixed #513: -1 here).
  * @param address  d0: the ANIM file in memory
  * @param bm       d1: bitmap# (its low byte is kept)
  * @param pal      d2: palette# (its low byte is kept)

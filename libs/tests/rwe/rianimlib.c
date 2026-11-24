@@ -33,7 +33,7 @@
  * before RIAnimInit, the AnimLoop of the run before.
  * Not covered: a frame with other chunks before its DLTA (fixed #515; the
  * original returns through its saved d1 - a crash), a chunk with the ID at +8 that is no
- * FORM (BUG(orig) #513: returns through a1; DIFF), odd chunk lengths (fixed #505), depth 0
+ * FORM (fixed #513: -1 instead of a return through a1), odd chunk lengths (fixed #505), depth 0
  * (256 planes), runs of 0 (256 rows), widths below 8 (ANIM5, fixed #507)
  * or 32 (ANIM7: 65536 columns in the original, fixed #1115; bug-orig tests
  * rianimlib-delta-columns and rianimlib-anim7-long-columns).
