@@ -212,7 +212,7 @@ themselves"](../tests/README.md#tests-that-judge-themselves).
 | `emulator` | tests in the Amiga emulator | Amiberry |
 | `all` | `host` and `emulator`: the acceptance run. It starts no session of the original | Amiberry; the CD only for a few tests that read its sources (skipped without it) |
 | `originals` | everything that compares with the original, and recordings | Amiberry and the CD (some also the reference build of the RWE sources) |
-| `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry |
+| `bug-orig` | open original bugs (and cases closed as `as-designed`, which keep their test: it documents the behaviour without runtime error checking); they fail on purpose | Amiberry; the CD for the TED tests, for the configuration `port` and for the tests that mount `BB2:` |
 | `oracle` | the compiler checks of the AmiBlitz3 tests | Amiberry and the fetched AmiBlitz3 files |
 | `perf` | the benchmark of the libraries: the cycles each command costs, against a budget per command; eight sessions side by side, about 15 s | Amiberry |
 
