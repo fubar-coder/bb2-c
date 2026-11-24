@@ -1,10 +1,10 @@
 # riarexxlib-defaultport-no-limit.test.bas: the reference library overwrites
-# rexxbase; the next message crashes (the session halts)
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# rexxbase with an address the program built; the next message jumps to rec
+# (the check "library_base" fails with 1, "received" is not run)
 fixed-orig = 529
 rwe = ["riarexxlib"]
 
-[ends."compiler=orig210"]
-reason = "the original's faulty part corrupts memory (#529): its end is not defined, it may crash, hang or halt"
-abnormal = ["any", "check.long_name.received != ok"]
+[deviations."compiler=orig210"]
+"check.long_name.library_base" = "== fail"
+"check.long_name.library_base.actual" = "== 1"
+"check.long_name.received" = "== not-run"

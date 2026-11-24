@@ -10,13 +10,25 @@
 ; call.  The program checks the length and the characters of
 ; "ab"+Str$(AddAppIcon(...))+"cd", then a local after AddAppIcon inside a
 ; Statement.
+; To give the wrong a4 a defined end the Statement saves a4 in sv (a long
+; in its own code, behind a Goto) before the call and puts it back after
+; the check of the local, so its UNLK a4 returns although the original
+; leaves a4 changed.  This relies on a4 being the base of the locals in a
+; Statement (details of the code generator, not of the bug); the failed
+; checks of the local and of the string show the bug.
 ; Correct: "ab", the result, "cd"; the local is 7; the Statement returns.
 DEFTYPE .l
 
 Statement appicon{}
   a.l=7
+  LEA sv(pc),a0 : MOVE.l a4,(a0)
   r.l=AddAppIcon(2,"T","SYS:Disk")
   !CheckEq{a,7,"local"}
+  LEA sv(pc),a0 : MOVE.l (a0),a4
+  Goto fin
+sv:
+  Dc.l 0
+fin:
 End Statement
 
 !TestCase{icon_registers}

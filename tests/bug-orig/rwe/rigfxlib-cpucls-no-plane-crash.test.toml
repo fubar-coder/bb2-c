@@ -1,9 +1,13 @@
-# rigfxlib-cpucls-no-plane-crash.test.bas: the original crashes
+# rigfxlib-cpucls-no-plane-crash.test.bas: the original returns into rec, the
+# address the program pushed (the wrong return is defined by the program's
+# stack): the check "return_address" fails with 1
 fixed-orig = 680
 rwe = ["rigfxlib", "riamosfunclib"]
-# the original hangs: a session of its own for its cell
+# the original's wrong return: a session of its own for its cell
 isolate = ["compiler=orig210"]
 
-[ends."compiler=orig210"]
-reason = "the original pops the caller's return address into a4-a6 and returns into the next long (#680); whether the crash shows the Software Failure requester depends on the memory layout"
-abnormal = ["any"]
+# the original pops the caller's return address into a4 and returns into the
+# next long (#680), the long the test pushed: rec sets w = 1
+[deviations."compiler=orig210"]
+"check.no_plane.return_address" = "== fail"
+"check.no_plane.return_address.actual" = "== 1"

@@ -1,9 +1,7 @@
 # riapplib-addappicon-a3-a4.test.bas: the reference library leaves a3 and a4
-# changed: the string expression is written into the DiskObject, the local
-# of the Statement reads as 0 and its return loads the stack pointer from 0
-# (the program never returns)
-# The end is not defined (memory corruption): the general alternatives of
-# tests/README.md, "Alternative ends".
+# changed: the string expression is written into the DiskObject and the local
+# of the Statement reads as 0; the Statement puts a4 back before it returns,
+# so the program ends the same way on every run
 fixed-orig = 516
 rwe = ["riapplib"]
 
@@ -11,7 +9,3 @@ rwe = ["riapplib"]
 "check.icon_registers.string" = "== fail"
 "check.appicon.local" = "== fail"
 "check.appicon.local.actual" = "== 0"
-
-[ends."compiler=orig210"]
-reason = "the original's faulty part corrupts memory (#516): its end is not defined, it may crash, hang or halt"
-abnormal = ["any", "check.icon_registers.statement_returned != ok"]
