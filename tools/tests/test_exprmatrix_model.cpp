@@ -848,3 +848,19 @@ TEST_CASE("exprmatrix model: today's division by 0 and 2.0 under a Byte", "[expr
     CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, NOW) == "2");
     CHECK(expr("b+1.5", "b.b=3").value(EM_DB, NOW) == "4");
 }
+
+TEST_CASE("exprmatrix model: P+, a bit operator inside a comparison with a Float", "[exprmatrix][cand][decided]")
+{
+    // change 8 reaches the Float format into both sides; a bit operator,
+    // shift or Not there is typed by its own operands and its whole result
+    // taken as a Float, so what compiles today still compiles
+    CHECK(expr("(b AND 1)>f", "b.b=3 f.f=0.5").value(EM_IF, DEC) == "T");
+    CHECK(expr("(b AND 1)=2.5", "b.b=3").value(EM_DB, DEC) == "0");
+    CHECK(expr("2.0=(b AND 1)", "b.b=3").value(EM_IF, DEC) == "F");
+    CHECK(expr("(l LSL 1)>2.5", "l.l=3").value(EM_IF, DEC) == "T");
+    CHECK(expr("(NOT b)<1.5", "b.b=3").value(EM_IF, DEC) == "T");
+    CHECK(expr("(b AND 1)+0.5>1", "b.b=3").value(EM_IF, DEC) == "T");
+    // a wanted Float stays refused, as today
+    CHECK(expr("b AND 1", "b.b=3").value(EM_DF, DEC) == "!noncompile");
+}
+

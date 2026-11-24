@@ -2494,6 +2494,7 @@ struct cev {
     int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
     int fracwhole;              /* P: a whole-number subtree here is computed in the fractional format */
     int reachf;                 /* P: the expression is typed under Float (a Float in it, change 7) */
+    int fmtf;                   /* P: the Float typed under is a reached format (changes 7, 8), not a wanted type */
 };
 
 static int tmax(int a, int b)
@@ -2759,6 +2760,30 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
 
     if (is_consttree(n))
         return cconst(c, n, W, pt, r);
+    if (W == TF && c->fmtf
+        && (n->kind == TN_NOT
+            || (n->kind == TN_BIN && (is_bitop(n->op) || (n->op >= EM_LSL && n->op <= EM_ASR))))) {
+        /* P (changes 5-8): a Float format reached from a comparison or an
+           expression with a Float is no wanted Float for a bit operator,
+           shift or Not: its operands are typed by their own (rounded down
+           where it takes them, as today) and its whole result is taken
+           into the Float format; a wanted Float (rf.f=b AND 1) stays
+           refused */
+        int save = c->fmtf, k;
+
+        c->fmtf = 0;
+        k = cand(c, n, 0, pt, r);
+        c->fmtf = save;
+        if (k || r->t == TS)
+            return 1;
+        wideok(e, r);
+        if (r->raw)
+            cutraw(e, r);
+        if (r->t != TF)
+            conv(e, r, r->t, TF);
+        plainreg(r);
+        return 0;
+    }
     if (c->ptyped && c->cand == EM_CAND_C1 && c->reachf && W == TF && has_qvar(n)
         && (n->kind == TN_NEG
             || (n->kind == TN_BIN
@@ -2826,8 +2851,13 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
                     c->regionq = has_qvar(o[i]);
                     if (!is_consttree(o[i]) && has_qvar(o[i]) && !pfloat(c, o[i], 0))
                         k = c7regf(c, o[i], 0, 1, rr[i]);
-                    else
+                    else {
+                        int sf = c->fmtf;
+
+                        c->fmtf = 1;
                         k = cand(c, o[i], TF, is_consttree(o[i]) ? TF : 0, rr[i]);
+                        c->fmtf = sf;
+                    }
                     c->regionq = sq;
                 }
             } else
@@ -3525,6 +3555,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
             if (c.preach && asked != TL && asked != TF && asked != TS && has_qvar(root) && pfloat(&c, root, asked)
                 && !(root->kind == TN_BIN && em_op_is_compare(root->op))) {
                 c.reachf = 1;
+                c.fmtf = 1;
                 if (cand(&c, root, TF, 0, r))
                     return 1;
             } else if (cand(&c, root, asked, 0, r))
