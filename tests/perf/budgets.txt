@@ -396,6 +396,17 @@
 # qgtl 111.0/111.0 (105.0), leqq 115.0/115.0 (107.0), inteq 1162.0/1162.0
 # (1150.0), qgtconst 95.0/95.0 (90.5), lgtconst 91.0/91.0 (91.0),
 # whilelq 20.5/20.5 (16.5).
+# bcompilerlib (new, expr-tree-5-operand-typing task 3.5, 2026-11-25): the
+# 48.16 routines of compilerlib ($D603-$D60E), which no compiled code calls
+# yet, from two runs on main b421a6c0c + the routines: load 32.5/32.6,
+# q48add 86.5/86.6, q48mul 524.5/524.6, q48mulw 404.5/404.6, q48mulx
+# 937.0/937.1, q48mulxx 1348.0/1348.1, q48div 1773.5/1773.6, q48divx
+# 2073.0/2073.1, q48divl 1833.5/1833.6, q48divw 1077.5/1077.1, q48divxx
+# 3215.5/3215.6, q48mod 1433.0/1433.1, l2q48 71.0/71.1, q2q48 69.0/69.1,
+# q48floor 62.5/62.6, q48trunc 95.5/95.1. A routine alone is its value
+# minus load's (q48div 1.5/2.5: 1741, the JSR and RTS included; libgcc's
+# __divdi3 3566 and the prototype's 5912 for the same division, the call
+# excluded). No target: the original has no such routines.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -422,6 +433,23 @@ bchunky.raycast10             583      561.7  RaycastSky 0,100,10,37,tx (height 
 bchunky.raycast100           4141     4090.7  RaycastSky 0,100,100,37,tx (height 100)
 bchunky.raycast200           8100     8006.7  RaycastSky 0,100,200,37,tx (height 200)
 bchunky.c2p320            6304549  6366624.2  ChunkyToPlanar 0,0 (320 x 256 chunky into 320 x 256 x 8, contiguous planes)
+bcompilerlib.emptylong          3          -  the empty loop again, 150000 iterations (the subtraction)
+bcompilerlib.load              36          -  MOVE.l #$18000,d0 : MOVEQ #0,d1 : MOVE.l #$28000,d2 : MOVEQ #0,d3 (the loads of the other loops alone)
+bcompilerlib.q48add            91          -  1.5+2.5: SysJsr $D603 (add.l, addx.l)
+bcompilerlib.q48mul           533          -  1.5*2.5: SysJsr $D605 (both below 2^32: four MULU)
+bcompilerlib.q48mulw          412          -  1.5*3.0: q48mul, a factor without a fraction (two MULU)
+bcompilerlib.q48mulx          950          -  100000.5*2.5: q48mul, one wide factor (eight MULU)
+bcompilerlib.q48mulxx        1365          -  100000.5*100000.5: q48mul, both wide (13 MULU)
+bcompilerlib.q48div          1795          -  1.5/2.5: SysJsr $D606 (two divisor digits, two quotient digits)
+bcompilerlib.q48divx         2097          -  100000.5/2.5: q48div (three quotient digits)
+bcompilerlib.q48divl         1855          -  100000.5/100000: q48div (the divisor's low word 0 dropped, two divisor digits)
+bcompilerlib.q48divw         1092          -  1.5/3.0: q48div (a divisor below $10000 after the drop: one DIVU per digit)
+bcompilerlib.q48divxx        3251          -  100000.5/100000.5: q48div (a divisor beyond 32 bits: bit by bit)
+bcompilerlib.q48mod          1451          -  7.5 Mod 2.0: SysJsr $D60A
+bcompilerlib.l2q48             75          -  100000 as 48.16: SysJsr $D60B
+bcompilerlib.q2q48             73          -  -1.5 as 48.16: SysJsr $D60C
+bcompilerlib.q48floor          67          -  100000.5 rounded down: SysJsr $D60D
+bcompilerlib.q48trunc         100          -  -1.5 towards zero: SysJsr $D60E
 bcmp.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
 bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)
