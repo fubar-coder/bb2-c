@@ -5,14 +5,47 @@ Defines one model for the tests of this repository that compare program
 behaviour with an expectation: a test is a list of cases, each case has a
 key, an input and an expected output, and the verdict per case is the diff
 of the actual output against the expected one. The model is written for
-all suites (library tests, blitz2 corpus, bug-orig tests, TED); it is
-implemented for the library tests, the bug-orig tests (change
-bug-orig-test-model) and the corpus (change corpus-test-model). TED already
-splits fixed tests this way (the `; @fixed #N` tests run with combination
-Cc in `all` and with C5 in `originals`, task 9.9 of the archived change
-`2026-11-12-expected-results-testing`). Blitz programs that judge themselves
-with the test library (`testing/basic-testlib`) are tests of the model too:
-their checks are the cases, their expectation is in the source and the
+all such suites; it is implemented for the library tests, the bug-orig tests (change
+bug-orig-test-model), the corpus (change corpus-test-model) and the site
+examples (one expected file per example, in the machinery of the corpus).
+TED already splits fixed tests this way (the `; @fixed #N` tests run with
+combination Cc in `all` and with C5 in `originals`, task 9.9 of the
+archived change `2026-11-12-expected-results-testing`).
+
+The model has a table form: a table with one row per case, in which a note
+row with `#NNN` is the deviation of a fixed original bug. The CD table
+`tests/data/blitz2-cd.tsv` (`corpus_cd`, `corpus_cd_ab3`) and the TED
+oracle are tests of this form; the table of `ab3_examples` (change
+ab3-mode-g5) will be one. No move of them into case files is planned.
+
+Not yet moved, each for a technical reason:
+- `tests/ab3` (`ab3_cli`, `ab3_cli_ref`): a cell compiles a generated
+  driver through tedstub with blitz2 and the BB2 library sets and observes
+  the compile result only (`compiler` is `port`, `orig195` or `orig210`,
+  `libs` is `cd` or `clib`); a case of `tests/ab3` is compiled from the
+  command line by blitz2-ab3 in AB3 mode or by AmiBlitz3 v3.14.0 with
+  AmiBlitz3's libraries, and is judged on the compiler's console output and
+  return code, on byte-identical executables and on the hunk layout; the
+  differences of AmiBlitz3 (`NAME.ref.expect`) mostly have no issue. Missing:
+  a spike decides the route (whether the test library loads and runs under
+  AmiBlitz3 and under blitz2-ab3 in AB3 mode, and the time of bundled
+  cases); a move only after the change ab3-mode-g5.
+- the expect tests of `tests/blitz2` (`NAME.bas` with `NAME.expect`): no
+  feature is missing, only the rewrite; the move comes after the change
+  expr-tree-5.
+- TED A/B (`tests/ted-ab`): the program under test is the editor, driven by
+  scripts and judged on dumps, files and logs, and `ted_ab_originals`
+  compares runs of the original and the port with each other at test time.
+  Missing: a cell that drives TED; it moves with the TED bug-orig tests.
+
+Outside the model, as they do not compare a program's output with a case's
+expectation: the host tests, the perf budgets, the comparisons of build
+results and data (declarations, asmcmp, tokens, checkdata, rwe numbers and
+residents, `ab3_tokens`, `ab3_tokenise`, `ab3_bb2_equivalence`), the self
+tests of the test tools and the `lsclear` checker of `tests/bug-port`.
+
+Blitz programs that judge themselves with the test library
+(`testing/basic-testlib`) are tests of the model too: their checks are the cases, their expectation is in the source and the
 configuration.
 
 ## Requirements
@@ -40,7 +73,7 @@ A case on which the original and the port agree SHALL be one case with an unqual
 - **THEN** the test has one case for it and both runs are judged against it
 
 ### Requirement: A fixed original bug is two cases
-A fixed original bug SHALL be two cases whose keys differ in a qualifier: `KEY [orig]` holds the original's behaviour and SHALL be run only against the original (label `originals`); `KEY [fixed #N]` holds the port's behaviour after the fix and SHALL be run only against the port (every run of `all`). `#N` is the issue of the fix. The expected value of a `[fixed #N]` case SHALL be written by an update from the port and reviewed, or written by hand in the same format. No separate note or exception table SHALL exist for it, and staleness needs no special rule: a port that regresses fails `[fixed #N]`, a changed original fails `[orig]`. A case that exists only in the port or only in the original (a fix that adds or removes a case) SHALL have only `KEY [fixed #N]` or only `KEY [orig]` (in the library expected data `KEY [orig #N]`, naming the fix that removes it, `testing/library-capture`). In a test that judges itself, a fixed original bug SHALL instead follow the requirement "A fixed original bug in a test that judges itself".
+A fixed original bug SHALL be two cases whose keys differ in a qualifier: `KEY [orig]` holds the original's behaviour and SHALL be run only against the original (label `originals`); `KEY [fixed #N]` holds the port's behaviour after the fix and SHALL be run only against the port (every run of `all`). `#N` is the issue of the fix. The expected value of a `[fixed #N]` case SHALL be written by an update from the port and reviewed, or written by hand in the same format. No note or exception table separate from the cases SHALL exist for it (in a test of the table form described in the Purpose, the note row is the deviation), and staleness needs no special rule: a port that regresses fails `[fixed #N]`, a changed original fails `[orig]`. A case that exists only in the port or only in the original (a fix that adds or removes a case) SHALL have only `KEY [fixed #N]` or only `KEY [orig]` (in the library expected data `KEY [orig #N]`, naming the fix that removes it, `testing/library-capture`). In a test that judges itself, a fixed original bug SHALL instead follow the requirement "A fixed original bug in a test that judges itself".
 
 #### Scenario: A fix changes a result
 - **WHEN** a fix changes the port's output of a case
