@@ -507,9 +507,20 @@ const chain CHAINS[] = {
     { "1+1+1+q", "q=1.5" },
     { "l+q+p", "l.l=10 q=1.5 p=1.5" },
     { "q+l-l", "l.l=10 q=1.5" },
-    // (a base beyond the Quick range: the model narrows the right side by
-    // its value under a wanted Float, the pass to a Quick)
-    { "base<i*4+base", "base.l=10 i=3" },
+    { "base<i*4+base", "base.l=100000 i=3" },
+    // the four rule points of "expr-tree-5 group 3 findings"
+    { "(q+40000) AND b", "q=1.5 b.b=3" },
+    { "(l+q) LSL 1", "l.l=100000 q=1.5" },
+    { "NOT (l+q)", "l.l=100000 q=1.5" },
+    { "(l+q)*f", "l.l=100000 q=1.5 f.f=2" },
+    { "b MOD 1.5", "b.b=4" },
+    { "f MOD g", "f.f=7.5 g.f=2" },
+    { "w MOD 0.5", "w.w=7" },
+    { "1.5 AND 3", "" },
+    { "(1.5 AND 3)+b", "b.b=1" },
+    { "(1.5 AND 3)+0.5", "" },
+    { "2.5 OR 1.5", "" },
+    { "l*q/l2", "l.l=2000000000 q=2 l2.l=4" },
     { "q=0.1", "q=0.1" },
     { "q MOD 2", "q=7.5" },
     { "w/2>q", "w.w=3 q=1.2" },
@@ -730,15 +741,11 @@ TEST_CASE("exprtyping: the fast path of a 48.16 operation", "[exprtyping]")
 TEST_CASE("exprtyping: every chain of two operators as the model types it", "[exprtyping]")
 {
     // a OP1 b OP2 c and a OP1 (b OP2 c) for the operators and operand
-    // kinds below, in every context.  The values are small: the model
-    // takes a 48.16 subtree inside an operation of the operand typing (a
-    // bit operator, a shift, a comparison under a wanted Float, beside a
-    // Float) as a Quick when its value fits one and else as a Long (c7regf),
-    // the pass as a Quick; with a constant beyond a Word (q+40000 AND b)
-    // the two differ in that operand's type only
+    // kinds below, in every context, with values beyond a Word and a Quick
+    // too (a 48.16 subtree is taken by the operation, not by its value)
     static const char *const ops[] = { "+", "-", "*", "/", " MOD ", " AND ", " LSL ", "=", "<", "^" };
-    static const char *const kinds[] = { "b", "w", "l", "q", "f", "-q", "3", "1000", "1.5", "-1.5", "0.1" };
-    const char *vars = "b.b=3 w.w=5 l.l=7 q=1.5 f.f=2.5";
+    static const char *const kinds[] = { "b", "w", "l", "q", "f", "-q", "3", "1000", "40000", "1.5", "-1.5", "0.1" };
+    const char *vars = "b.b=3 w.w=30000 l.l=100000 q=1.5 f.f=2.5";
     std::vector<std::string> d;
     size_t n = 0;
 

@@ -1021,3 +1021,37 @@ TEST_CASE("exprmatrix model: the type so far of an evaluated cell", "[exprmatrix
         CHECK(v.type == w.type);
     }
 }
+
+TEST_CASE("exprmatrix model: P+, the four rule points of group 3", "[exprmatrix][cand][decided]")
+{
+    // "expr-tree-5 group 3 findings: four rule points of P+" (2026-11-25)
+    // 1, "Ganzer Teil als Long": a 48.16 subtree under a bit operator,
+    // shift or Not its whole part as a Long, by the operation, not by the
+    // value; under a comparison with a wanted Float or beside a Float
+    // straight to Float
+    CHECK(expr("(q+40000) AND b", "q=1.5 b.b=3").typing(EM_DL, DEC) == "add Q>~ k>~ 3 L;and L>L B>L p L;");
+    CHECK(expr("(q+4) AND b", "q=1.5 b.b=3").typing(EM_DL, DEC) == "add Q>~ k>~ 3 L;and L>L B>L p L;");
+    CHECK(expr("(q+4) AND b", "q=1.5 b.b=3").typing(EM_PRINT, DEC) == "add Q>Q k>Q 1 Q;and Q>Q B>Q p Q;");
+    CHECK(expr("(q+40000) AND b", "q=1.5 b.b=3").value(EM_DL, DEC) == "1");
+    CHECK(expr("(l+q) LSL 1", "l.l=100000 q=1.5").value(EM_DL, DEC) == "200002");
+    CHECK(expr("base<i*4+base", "base.l=100000 i=3").typing(EM_DF, DEC)
+          == "mul Q>~ k>~ 3 L;add Q>~ L>~ 3 L;lt L>F F>F c W;");
+    CHECK(expr("(l+q)*f", "l.l=100000 q=1.5 f.f=2").value(EM_PRINT, DEC) == "200003");
+    // 2, "Exakt bei jedem Bruch": Mod exact whenever an operand has a
+    // fraction
+    CHECK(expr("b MOD 1.5", "b.b=4").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("b MOD 1.5", "b.b=4").value(EM_PRINT, DEC) == "1");
+    CHECK(expr("b MOD 1.5", "b.b=4").value(EM_DQ, NOW) == "00000000");
+    CHECK(expr("f MOD g", "f.f=7.5 g.f=2").value(EM_PRINT, DEC) == "1.5");
+    CHECK(expr("w MOD v", "w.w=-7 v.w=2").value(EM_DQ, DEC) == expr("w MOD v", "w.w=-7 v.w=2").value(EM_DQ, NOW));
+    // 3, "Wie mit Variable": a bit operator on constants with a fraction
+    for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_PRINT, EM_IF }) {
+        INFO(em_ctx_name(ctx));
+        CHECK(expr("1.5 AND 3", "").value(ctx, DEC) == expr("b AND 1.5", "b.b=3").value(ctx, DEC));
+    }
+    CHECK(expr("1.5 AND 3", "").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("1.5 AND 3", "").value(EM_DF, DEC) == "!noncompile");   // as b AND 1.5
+    CHECK(expr("(1.5 AND 3)+b", "b.b=1").value(EM_DL, DEC) == "2");
+    // 4, "Modell auf 48 Bit": a 48-bit whole part
+    CHECK(expr("l*q/l2", "l.l=2000000000 q=2 l2.l=4").value(EM_DL, DEC) == "1000000000");
+}

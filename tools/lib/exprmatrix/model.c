@@ -2501,6 +2501,12 @@ struct cev {
     int pcmp;                   /* EM_R_PCMP */
     int pqdiv;                  /* EM_R_PQDIV */
     int pbits;                  /* EM_R_PBITS */
+    int ptake;                  /* EM_R_PTAKE */
+    int pmodx;                  /* EM_R_PMODX */
+    int pbitk;                  /* EM_R_PBITK */
+    int p48;                    /* EM_R_P48 */
+    int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
+                                   shift or Not */
     int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
                                    2 the count of a shift, 3 the shifted operand (EM_R_PBITS) */
     int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
@@ -2617,6 +2623,8 @@ static int c7reg(struct cev *c, const struct em_tnode *n, int W, struct reg *r);
 static int haslong(struct cev *c, const struct em_tnode *n);
 static int haslongw(struct cev *c, const struct em_tnode *n, int W);
 static int c7regf(struct cev *c, const struct em_tnode *n, int W, int frac, struct reg *r);
+static struct rat c7wrap(struct ev *e, struct rat x, int bits);
+static uint32_t q16bits(struct rat x);
 static int cpoint(const struct em_tnode *n);
 
 /* P, change 2 (EM_R_PCONST; "expr-tree-5 Q4 (P+ round 2)", F2): is a
@@ -2633,6 +2641,36 @@ static int pconstfloat(struct cev *c, struct rat a, int W, int pt)
     if (W == TL)
         return 1;
     return !(pt == TQ || c->regionq);
+}
+
+/* EM_R_PBITK: a subtree of constants with AND, OR or EOR on an operand with
+   a point or a fraction, and no comparison (whose fold const_ideal does not
+   know) */
+static int hascmp(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_BIN: return em_op_is_compare(n->op) || hascmp(n->l) || hascmp(n->r);
+    case TN_NEG: return hascmp(n->l);
+    default: return 0;
+    }
+}
+
+static int bitfrac1(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_BIN:
+        if ((n->op == EM_AND || n->op == EM_OR || n->op == EM_EOR)
+            && (cpoint(n->l) || cpoint(n->r) || !rat_isint(const_ideal(n->l)) || !rat_isint(const_ideal(n->r))))
+            return 1;
+        return bitfrac1(n->l) || bitfrac1(n->r);
+    case TN_NEG: return bitfrac1(n->l);
+    default: return 0;
+    }
+}
+
+static int bitfrac(const struct em_tnode *n)
+{
+    return bitfrac1(n) && !hascmp(n);
 }
 
 /* a subtree of constants: one constant of its exact value, of the type the
@@ -2683,6 +2721,20 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
             tt = cfits(a, TB) ? TB : cfits(a, TW) ? TW : TL;
             bitwhole = 1;
         }
+    }
+    if (c->pbitk && !bitwhole && inbit != 3 && bitfrac(n)) {
+        /* EM_R_PBITK ("Wie mit Variable", "expr-tree-5 group 3 findings:
+           four rule points of P+"): a bit operator of constants with a
+           fraction folds as b AND 1.5 takes it, the fraction cut (the
+           whole parts in const_ideal); refused under a wanted Float as the
+           bit operator with a variable is */
+        if (W == TF && !c->fmtf) {
+            c->e->illegal = 1;
+            return 1;
+        }
+        a = const_ideal(n);
+        tt = !pt ? W : rat_isint(a) ? 0 : pconstfloat(c, a, W, pt) ? TF : TQ;
+        bitwhole = 1;
     }
     char text[48];
 
@@ -2762,6 +2814,7 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
     int shift = n->op >= EM_LSL && n->op <= EM_ASR, bit = is_bitop(n->op) && !shift;
 
     c->inbit = 0;
+    c->bittaker = 0;           /* EM_R_PTAKE: set for the operands of a bit operator or shift */
     if (em_op_is_compare(n->op) && (c->ptyped || c->pconst)) {
         int save = c->regionq, k;
 
@@ -2770,6 +2823,7 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
             k = cand(c, n->r, WR, 0, b);
             if (!k) {
                 c->regionq = 0;
+                c->bittaker = 0;
                 k = cand(c, n->l, WL, b->t, r);
             }
         } else {
@@ -2777,6 +2831,7 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
             k = cand(c, n->l, WL, 0, r);
             if (!k) {
                 c->regionq = has_qvar(n->r);
+                c->bittaker = 0;
                 k = cand(c, n->r, WR, rc ? r->t : 0, b);
             }
         }
@@ -2784,18 +2839,22 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
         return k;
     }
     if (lc && !rc) {
+        c->bittaker = is_bitop(n->op);
         if (cand(c, n->r, WR, 0, b))
             return 1;
         /* a shifted constant is not typed by the count */
         c->inmul = n->op == EM_MUL;
         c->inbit = shift ? 3 : bit;     /* a shifted constant: EM_R_PBITS */
+        c->bittaker = is_bitop(n->op);
         return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
     }
     c->inbit = shift && lc ? 3 : 0;
+    c->bittaker = is_bitop(n->op);
     if (cand(c, n->l, WL, 0, r))
         return 1;
     c->inmul = n->op == EM_MUL;
     c->inbit = rc ? (shift ? 2 : bit) : 0;
+    c->bittaker = is_bitop(n->op);
     return cand(c, n->r, WR, rc ? r->t : 0, b);
 }
 
@@ -2874,6 +2933,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
         return 0;
     case TN_NOT:
         c->inbit = is_consttree(n->l);
+        c->bittaker = 1;
         if (cand(c, n->l, W, 0, r))
             return 1;
         wideok(e, r);
@@ -2912,6 +2972,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
                     int sq = c->regionq;
 
                     c->regionq = has_qvar(o[i]);
+                    c->bittaker = 0;
                     if (!is_consttree(o[i]) && has_qvar(o[i]) && !pfloat(c, o[i], 0))
                         k = c7regf(c, o[i], 0, 1, rr[i]);
                     else {
@@ -3093,7 +3154,34 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
     /* both in T (^: dopow takes them as Floats) */
     conv(e, r, lt, T);
     conv(e, &b, rt, T);
-    doop(e, op, r, &b, T);
+    if (c->pmodx && op == EM_MOD && (T == TQ || T == TF)
+        && ((lt >= TQ && lt <= TF) || (rt >= TQ && rt <= TF))) {
+        /* EM_R_PMODX ("Exakt bei jedem Bruch", "expr-tree-5 group 3
+           findings: four rule points of P+"): an operand with a fraction
+           makes Mod exact with today's sign rule, in the Quick or Float it
+           is computed in; a divisor 0 as today per type (a Quick traps, a
+           Float gives the dividend) */
+        struct rat x = reg_value(r), y = reg_value(&b), v;
+
+        if (!rat_sign(y)) {
+            e->flags |= EM_F_OVF;
+            if (T == TQ)
+                e->divtrap = 1;
+            v = x;
+        } else
+            v = rat_op(x, rat_op(y, rat_trunc(rat_op(x, y, '/')), '*'), '-');
+        if (rat_sign(v) < 0)
+            v = rat_op(v, y, '+');
+        if (T == TQ) {
+            v = c7wrap(e, v, 16);
+            r->v = q16bits(v);
+        } else
+            r->v = ffp_of(v);
+        r->id = v;
+        r->t = T;
+        r->raw = 0;
+    } else
+        doop(e, op, r, &b, T);
     if (e->illegal)
         return 1;
     if (c->cand == EM_CAND_C2 && (op == EM_ADD || op == EM_SUB) && T == TW)
@@ -3168,6 +3256,14 @@ static struct rat c7wrap(struct ev *e, struct rat x, int bits)
         e->flags |= EM_F_OVF;
     }
     return x;
+}
+
+/* the whole-part bits of the format f of c7val (16: 16.16; 32: the wide
+   format, 32.16, with EM_R_P48 48.16 as design decision 9: "Modell auf 48
+   Bit", "expr-tree-5 group 3 findings: four rule points of P+") */
+static int c7bits(const struct cev *c, int f)
+{
+    return f == 32 && c->p48 ? 48 : f;
 }
 
 /* the bits of a 16.16 value x (on the 1/65536 grid, in the format) */
@@ -3256,7 +3352,7 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
     case TN_NEG:
         if (c->ptyped ? c7side(c, n->l, W, force, &x, fmt, &lf) : c7val(c, n->l, W, force, &x, fmt))
             return 1;
-        *out = c7wrap(e, rat_op(rat_int(0), x, '-'), *fmt ? *fmt : 32);
+        *out = c7wrap(e, rat_op(rat_int(0), x, '-'), *fmt ? c7bits(c, *fmt) : 32);
         return 0;
     case TN_NOT:
         return c7other(c, n, W, out, fmt);
@@ -3321,8 +3417,8 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
     } else
         f = fl == 32 || fr == 32 || (fl && !fr) || (!fl && fr) ? 32 : 16;
     /* both operands in the format (a Long beyond it cut into a 16.16) */
-    x = c7wrap(e, x, f);
-    y = c7wrap(e, y, f);
+    x = c7wrap(e, x, c7bits(c, f));
+    y = c7wrap(e, y, c7bits(c, f));
     switch (op) {
     case EM_ADD: v = rat_op(x, y, '+'); break;
     case EM_SUB: v = rat_op(x, y, '-'); break;
@@ -3379,7 +3475,7 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
     }
     trecord(c->tr, op, is_consttree(n->l) ? -1 : lf, TQ, f == 32, is_consttree(n->r) ? -1 : rf, TQ, f == 32,
             f == 32 ? '3' : '1', f == 32 ? TL : TQ);
-    *out = c7wrap(e, v, f);
+    *out = c7wrap(e, v, c7bits(c, f));
     *fmt = f;
     return 0;
 }
@@ -3506,7 +3602,9 @@ static int haslong(struct cev *c, const struct em_tnode *n)
 
 /* P: a subtree with a Quick and no Float inside a bit operator, a shift, Not
    or an expression with a Float: by C7 under W, then the Quick it fits or its
-   whole part as a Long */
+   whole part as a Long; EM_R_PTAKE: a 16.16 value the Quick, a 48.16 one
+   its whole part as a Long under a bit operator, shift or Not (bittaker),
+   else the value as a Float */
 static int c7reg(struct cev *c, const struct em_tnode *n, int W, struct reg *r)
 {
     return c7regf(c, n, W, 0, r);
@@ -3515,7 +3613,7 @@ static int c7reg(struct cev *c, const struct em_tnode *n, int W, struct reg *r)
 static int c7regf(struct cev *c, const struct em_tnode *n, int W, int frac, struct reg *r)
 {
     struct rat v;
-    int fmt, cn = c->cand, k, sf = c->fracwhole;
+    int fmt, cn = c->cand, k, sf = c->fracwhole, bit = c->bittaker;
 
     c->cand = EM_CAND_C7;
     c->fracwhole = frac || (c->preach && W != TL && !(n->kind == TN_BIN && em_op_is_compare(n->op)));
@@ -3529,7 +3627,16 @@ static int c7regf(struct cev *c, const struct em_tnode *n, int W, int frac, stru
         r->t = TW;
         r->v = (uint32_t)(int32_t)rat_whole(v);
         r->id = v;
-    } else if (fits(v, TQ)) {
+    } else if (c->ptake && fmt == 32 && !bit) {
+        /* EM_R_PTAKE ("Ganzer Teil als Long"): a 48.16 value taken by a
+           comparison under a wanted Float or beside a Float: straight to
+           Float, by the operation, not by the value */
+        r->t = TF;
+        r->v = ffp_of(v);
+        r->id = v;
+    } else if (c->ptake ? fmt != 32 : fits(v, TQ)) {
+        /* a 16.16 value stays the Quick it is; without EM_R_PTAKE a 48.16
+           one too when it fits a Quick */
         r->t = TQ;
         r->v = (uint32_t)(int32_t)rat_whole(rat_floor(rat_op(v, rat_int(65536), '*')));
         r->id = v;
@@ -3621,6 +3728,10 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
             c.pcmp = (rules & EM_R_PCMP) != 0;
             c.pqdiv = (rules & EM_R_PQDIV) != 0;
             c.pbits = (rules & EM_R_PBITS) != 0;
+            c.ptake = (rules & EM_R_PTAKE) != 0;
+            c.pmodx = (rules & EM_R_PMODX) != 0;
+            c.pbitk = (rules & EM_R_PBITK) != 0;
+            c.p48 = (rules & EM_R_P48) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

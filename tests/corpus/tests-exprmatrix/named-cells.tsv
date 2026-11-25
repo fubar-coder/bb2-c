@@ -4,31 +4,58 @@
 key	context	group	kind	port	decided
 db-not-cf-A	db	bit	compiles now	!noncompile	-2
 db-div-q-l-A	db	arith	value	-1	0
+db-mod-b-f-A	db	mod	value	1	0
 db-mod-w-q-A	db	mod	value	0	1
+db-mod-w-cf-A	db	mod	value	0	1
 db-mod-l-q-A	db	mod	value	0	1
+db-mod-l-cf-A	db	mod	value	0	1
+db-mod-f-q-A	db	mod	value	0	1
+db-mod-f-cf-A	db	mod	value	0	1
+db-mod-cb-f-A	db	mod	value	1	0
 db-mod-cw-q-A	db	mod	value	0	1
 db-mod-cl-q-A	db	mod	value	0	1
 db-and-b-cf-A	db	bit	compiles now	!noncompile	1
 db-and-w-cf-A	db	bit	compiles now	!noncompile	0
 db-and-l-cf-A	db	bit	compiles now	!noncompile	0
+db-and-cb-cf-A	db	bit	compiles now	!noncompile	1
+db-and-cw-cf-A	db	bit	compiles now	!noncompile	0
+db-and-cl-cf-A	db	bit	compiles now	!noncompile	0
 db-and-cf-b-A	db	bit	compiles now	!noncompile	1
 db-and-cf-w-A	db	bit	compiles now	!noncompile	0
 db-and-cf-l-A	db	bit	compiles now	!noncompile	0
 db-and-cf-q-A	db	bit	compiles now	!noncompile	1
+db-and-cf-cb-A	db	bit	compiles now	!noncompile	1
+db-and-cf-cw-A	db	bit	compiles now	!noncompile	0
+db-and-cf-cl-A	db	bit	compiles now	!noncompile	0
+db-and-cf-cf-A	db	bit	compiles now	!noncompile	1
 db-or-b-cf-A	db	bit	compiles now	!noncompile	3
 db-or-w-cf-A	db	bit	compiles now	!noncompile	-23
 db-or-l-cf-A	db	bit	compiles now	!noncompile	-95
+db-or-cb-cf-A	db	bit	compiles now	!noncompile	3
+db-or-cw-cf-A	db	bit	compiles now	!noncompile	-23
+db-or-cl-cf-A	db	bit	compiles now	!noncompile	-95
 db-or-cf-b-A	db	bit	compiles now	!noncompile	3
 db-or-cf-w-A	db	bit	compiles now	!noncompile	-23
 db-or-cf-l-A	db	bit	compiles now	!noncompile	-95
 db-or-cf-q-A	db	bit	compiles now	!noncompile	1
+db-or-cf-cb-A	db	bit	compiles now	!noncompile	3
+db-or-cf-cw-A	db	bit	compiles now	!noncompile	-23
+db-or-cf-cl-A	db	bit	compiles now	!noncompile	-95
+db-or-cf-cf-A	db	bit	compiles now	!noncompile	1
 db-eor-b-cf-A	db	bit	compiles now	!noncompile	2
 db-eor-w-cf-A	db	bit	compiles now	!noncompile	-23
 db-eor-l-cf-A	db	bit	compiles now	!noncompile	-95
+db-eor-cb-cf-A	db	bit	compiles now	!noncompile	2
+db-eor-cw-cf-A	db	bit	compiles now	!noncompile	-23
+db-eor-cl-cf-A	db	bit	compiles now	!noncompile	-95
 db-eor-cf-b-A	db	bit	compiles now	!noncompile	2
 db-eor-cf-w-A	db	bit	compiles now	!noncompile	-23
 db-eor-cf-l-A	db	bit	compiles now	!noncompile	-95
 db-eor-cf-q-A	db	bit	compiles now	!noncompile	0
+db-eor-cf-cb-A	db	bit	compiles now	!noncompile	2
+db-eor-cf-cw-A	db	bit	compiles now	!noncompile	-23
+db-eor-cf-cl-A	db	bit	compiles now	!noncompile	-95
+db-eor-cf-cf-A	db	bit	compiles now	!noncompile	0
 db-lsl-q-cf-A	db	shift	refused now	6	!noncompile
 db-lsl-cf-b-A	db	shift	compiles now	!noncompile	6
 db-lsl-cf-w-A	db	shift	compiles now	!noncompile	6
@@ -63,31 +90,58 @@ db-asr-cf-cw-A	db	shift	compiles now	!noncompile	0
 db-asr-cf-cl-A	db	shift	compiles now	!noncompile	0
 dw-not-cf-A	dw	bit	compiles now	!noncompile	-2
 dw-div-q-l-A	dw	arith	value	-1	0
+dw-mod-b-f-A	dw	mod	value	1	0
 dw-mod-w-q-A	dw	mod	value	0	1
+dw-mod-w-cf-A	dw	mod	value	0	1
 dw-mod-l-q-A	dw	mod	value	0	1
+dw-mod-l-cf-A	dw	mod	value	0	1
+dw-mod-f-q-A	dw	mod	value	0	1
+dw-mod-f-cf-A	dw	mod	value	0	1
+dw-mod-cb-f-A	dw	mod	value	1	0
 dw-mod-cw-q-A	dw	mod	value	0	1
 dw-mod-cl-q-A	dw	mod	value	0	1
 dw-and-b-cf-A	dw	bit	compiles now	!noncompile	1
 dw-and-w-cf-A	dw	bit	compiles now	!noncompile	0
 dw-and-l-cf-A	dw	bit	compiles now	!noncompile	0
+dw-and-cb-cf-A	dw	bit	compiles now	!noncompile	1
+dw-and-cw-cf-A	dw	bit	compiles now	!noncompile	0
+dw-and-cl-cf-A	dw	bit	compiles now	!noncompile	0
 dw-and-cf-b-A	dw	bit	compiles now	!noncompile	1
 dw-and-cf-w-A	dw	bit	compiles now	!noncompile	0
 dw-and-cf-l-A	dw	bit	compiles now	!noncompile	0
 dw-and-cf-q-A	dw	bit	compiles now	!noncompile	1
+dw-and-cf-cb-A	dw	bit	compiles now	!noncompile	1
+dw-and-cf-cw-A	dw	bit	compiles now	!noncompile	0
+dw-and-cf-cl-A	dw	bit	compiles now	!noncompile	0
+dw-and-cf-cf-A	dw	bit	compiles now	!noncompile	1
 dw-or-b-cf-A	dw	bit	compiles now	!noncompile	3
 dw-or-w-cf-A	dw	bit	compiles now	!noncompile	1001
 dw-or-l-cf-A	dw	bit	compiles now	!noncompile	-31071
+dw-or-cb-cf-A	dw	bit	compiles now	!noncompile	3
+dw-or-cw-cf-A	dw	bit	compiles now	!noncompile	1001
+dw-or-cl-cf-A	dw	bit	compiles now	!noncompile	-31071
 dw-or-cf-b-A	dw	bit	compiles now	!noncompile	3
 dw-or-cf-w-A	dw	bit	compiles now	!noncompile	1001
 dw-or-cf-l-A	dw	bit	compiles now	!noncompile	-31071
 dw-or-cf-q-A	dw	bit	compiles now	!noncompile	1
+dw-or-cf-cb-A	dw	bit	compiles now	!noncompile	3
+dw-or-cf-cw-A	dw	bit	compiles now	!noncompile	1001
+dw-or-cf-cl-A	dw	bit	compiles now	!noncompile	-31071
+dw-or-cf-cf-A	dw	bit	compiles now	!noncompile	1
 dw-eor-b-cf-A	dw	bit	compiles now	!noncompile	2
 dw-eor-w-cf-A	dw	bit	compiles now	!noncompile	1001
 dw-eor-l-cf-A	dw	bit	compiles now	!noncompile	-31071
+dw-eor-cb-cf-A	dw	bit	compiles now	!noncompile	2
+dw-eor-cw-cf-A	dw	bit	compiles now	!noncompile	1001
+dw-eor-cl-cf-A	dw	bit	compiles now	!noncompile	-31071
 dw-eor-cf-b-A	dw	bit	compiles now	!noncompile	2
 dw-eor-cf-w-A	dw	bit	compiles now	!noncompile	1001
 dw-eor-cf-l-A	dw	bit	compiles now	!noncompile	-31071
 dw-eor-cf-q-A	dw	bit	compiles now	!noncompile	0
+dw-eor-cf-cb-A	dw	bit	compiles now	!noncompile	2
+dw-eor-cf-cw-A	dw	bit	compiles now	!noncompile	1001
+dw-eor-cf-cl-A	dw	bit	compiles now	!noncompile	-31071
+dw-eor-cf-cf-A	dw	bit	compiles now	!noncompile	0
 dw-lsl-q-cf-A	dw	shift	refused now	6	!noncompile
 dw-lsl-cf-b-A	dw	shift	compiles now	!noncompile	6
 dw-lsl-cf-w-A	dw	shift	compiles now	!noncompile	6
@@ -121,34 +175,61 @@ dw-asr-cf-cb-A	dw	shift	compiles now	!noncompile	0
 dw-asr-cf-cw-A	dw	shift	compiles now	!noncompile	0
 dw-asr-cf-cl-A	dw	shift	compiles now	!noncompile	0
 dl-not-cf-A	dl	bit	compiles now	!noncompile	-2
+dl-mod-b-f-A	dl	mod	value	1	0
 dl-mod-w-q-A	dl	mod	value	0	1
+dl-mod-w-cf-A	dl	mod	value	0	1
 dl-mod-l-q-A	dl	mod	value	0	1
+dl-mod-l-cf-A	dl	mod	value	0	1
+dl-mod-f-q-A	dl	mod	value	0	1
+dl-mod-f-cf-A	dl	mod	value	0	1
+dl-mod-cb-f-A	dl	mod	value	1	0
 dl-mod-cw-q-A	dl	mod	value	0	1
 dl-mod-cl-q-A	dl	mod	value	0	1
 dl-and-b-cf-A	dl	bit	compiles now	!noncompile	1
 dl-and-w-cf-A	dl	bit	compiles now	!noncompile	0
 dl-and-l-cf-A	dl	bit	compiles now	!noncompile	0
 dl-and-q-cf-A	dl	bit	compiles now	!noncompile	1
+dl-and-cb-cf-A	dl	bit	compiles now	!noncompile	1
+dl-and-cw-cf-A	dl	bit	compiles now	!noncompile	0
+dl-and-cl-cf-A	dl	bit	compiles now	!noncompile	0
 dl-and-cf-b-A	dl	bit	compiles now	!noncompile	1
 dl-and-cf-w-A	dl	bit	compiles now	!noncompile	0
 dl-and-cf-l-A	dl	bit	compiles now	!noncompile	0
 dl-and-cf-q-A	dl	bit	compiles now	!noncompile	1
+dl-and-cf-cb-A	dl	bit	compiles now	!noncompile	1
+dl-and-cf-cw-A	dl	bit	compiles now	!noncompile	0
+dl-and-cf-cl-A	dl	bit	compiles now	!noncompile	0
+dl-and-cf-cf-A	dl	bit	compiles now	!noncompile	1
 dl-or-b-cf-A	dl	bit	compiles now	!noncompile	3
 dl-or-w-cf-A	dl	bit	compiles now	!noncompile	1001
 dl-or-l-cf-A	dl	bit	compiles now	!noncompile	100001
 dl-or-q-cf-A	dl	bit	compiles now	!noncompile	1
+dl-or-cb-cf-A	dl	bit	compiles now	!noncompile	3
+dl-or-cw-cf-A	dl	bit	compiles now	!noncompile	1001
+dl-or-cl-cf-A	dl	bit	compiles now	!noncompile	100001
 dl-or-cf-b-A	dl	bit	compiles now	!noncompile	3
 dl-or-cf-w-A	dl	bit	compiles now	!noncompile	1001
 dl-or-cf-l-A	dl	bit	compiles now	!noncompile	100001
 dl-or-cf-q-A	dl	bit	compiles now	!noncompile	1
+dl-or-cf-cb-A	dl	bit	compiles now	!noncompile	3
+dl-or-cf-cw-A	dl	bit	compiles now	!noncompile	1001
+dl-or-cf-cl-A	dl	bit	compiles now	!noncompile	100001
+dl-or-cf-cf-A	dl	bit	compiles now	!noncompile	1
 dl-eor-b-cf-A	dl	bit	compiles now	!noncompile	2
 dl-eor-w-cf-A	dl	bit	compiles now	!noncompile	1001
 dl-eor-l-cf-A	dl	bit	compiles now	!noncompile	100001
 dl-eor-q-cf-A	dl	bit	compiles now	!noncompile	0
+dl-eor-cb-cf-A	dl	bit	compiles now	!noncompile	2
+dl-eor-cw-cf-A	dl	bit	compiles now	!noncompile	1001
+dl-eor-cl-cf-A	dl	bit	compiles now	!noncompile	100001
 dl-eor-cf-b-A	dl	bit	compiles now	!noncompile	2
 dl-eor-cf-w-A	dl	bit	compiles now	!noncompile	1001
 dl-eor-cf-l-A	dl	bit	compiles now	!noncompile	100001
 dl-eor-cf-q-A	dl	bit	compiles now	!noncompile	0
+dl-eor-cf-cb-A	dl	bit	compiles now	!noncompile	2
+dl-eor-cf-cw-A	dl	bit	compiles now	!noncompile	1001
+dl-eor-cf-cl-A	dl	bit	compiles now	!noncompile	100001
+dl-eor-cf-cf-A	dl	bit	compiles now	!noncompile	0
 dl-lsl-cf-b-A	dl	shift	compiles now	!noncompile	4
 dl-lsl-cf-w-A	dl	shift	compiles now	!noncompile	4
 dl-lsl-cf-l-A	dl	shift	compiles now	!noncompile	4
@@ -186,17 +267,37 @@ dq-div-l-f-A	dq	arith	value	CF733340	9C400000
 dq-div-l-cl-A	dq	arith	value	00000000	00010000
 dq-div-q-l-A	dq	arith	value	FFFFFFFD	00000000
 dq-div-cl-q-A	dq	arith	value	046A0000	046AAAAA
+dq-mod-b-f-A	dq	mod	value	00010000	00008000
 dq-mod-w-q-A	dq	mod	value	00000000	00010000
+dq-mod-w-cf-A	dq	mod	value	00000000	00010000
 dq-mod-l-q-A	dq	mod	value	00000000	00010000
 dq-mod-l-cl-A	dq	mod	value	0D400000	00000000
+dq-mod-l-cf-A	dq	mod	value	00000000	00008000
 dq-mod-q-b-A	dq	mod	value	00010000	00018000
 dq-mod-q-w-A	dq	mod	value	00010000	00018000
 dq-mod-q-l-A	dq	mod	value	00010000	00018000
+dq-mod-q-f-A	dq	mod	value	00010000	00018000
 dq-mod-q-cb-A	dq	mod	value	00010000	00018000
 dq-mod-q-cw-A	dq	mod	value	00010000	00018000
 dq-mod-q-cl-A	dq	mod	value	00010000	00018000
+dq-mod-f-b-A	dq	mod	value	00020000	00028000
+dq-mod-f-w-A	dq	mod	value	00020000	00028000
+dq-mod-f-l-A	dq	mod	value	00020000	00028000
+dq-mod-f-q-A	dq	mod	value	00000000	00010000
+dq-mod-f-cb-A	dq	mod	value	00020000	00028000
+dq-mod-f-cw-A	dq	mod	value	00020000	00028000
+dq-mod-f-cl-A	dq	mod	value	00020000	00028000
+dq-mod-f-cf-A	dq	mod	value	00000000	00010000
+dq-mod-cb-f-A	dq	mod	value	00010000	00008000
 dq-mod-cw-q-A	dq	mod	value	00000000	00010000
 dq-mod-cl-q-A	dq	mod	value	00000000	00010000
+dq-mod-cf-b-A	dq	mod	value	00010000	00018000
+dq-mod-cf-w-A	dq	mod	value	00010000	00018000
+dq-mod-cf-l-A	dq	mod	value	00010000	00018000
+dq-mod-cf-f-A	dq	mod	value	00010000	00018000
+dq-and-cl-cf-A	dq	bit	compiles now	!noncompile	00000000
+dq-or-cl-cf-A	dq	bit	compiles now	!noncompile	86A10000
+dq-eor-cl-cf-A	dq	bit	compiles now	!noncompile	86A10000
 dq-lsl-b-cf-A	dq	shift	refused now	000C0000	!noncompile
 dq-lsl-w-cf-A	dq	shift	refused now	0FA00000	!noncompile
 dq-lsl-l-cf-A	dq	shift	refused now	1A800000	!noncompile
@@ -217,35 +318,89 @@ dq-asr-w-cf-A	dq	shift	refused now	00FA0000	!noncompile
 dq-asr-l-cf-A	dq	shift	refused now	E1A80000	!noncompile
 dq-asr-q-cf-A	dq	shift	refused now	00006000	!noncompile
 dq-asr-cf-cf-A	dq	shift	refused now	00006000	!noncompile
+df-mod-b-f-A	df	mod	value	80000041	80000040
+df-mod-w-q-A	df	mod	value	00000000	80000041
+df-mod-w-cf-A	df	mod	value	00000000	80000041
+df-mod-l-q-A	df	mod	value	00000000	80000041
+df-mod-l-cf-A	df	mod	value	00000000	80000041
+df-mod-q-b-A	df	mod	value	80000041	C0000041
+df-mod-q-w-A	df	mod	value	80000041	C0000041
+df-mod-q-l-A	df	mod	value	80000041	C0000041
+df-mod-q-f-A	df	mod	value	80000041	C0000041
+df-mod-q-cb-A	df	mod	value	80000041	C0000041
+df-mod-q-cw-A	df	mod	value	80000041	C0000041
+df-mod-q-cl-A	df	mod	value	80000041	C0000041
+df-mod-f-b-A	df	mod	value	80000042	A0000042
+df-mod-f-w-A	df	mod	value	80000042	A0000042
+df-mod-f-l-A	df	mod	value	80000042	A0000042
+df-mod-f-q-A	df	mod	value	00000000	80000041
+df-mod-f-cb-A	df	mod	value	80000042	A0000042
+df-mod-f-cw-A	df	mod	value	80000042	A0000042
+df-mod-f-cl-A	df	mod	value	80000042	A0000042
+df-mod-f-cf-A	df	mod	value	00000000	80000041
+df-mod-cb-f-A	df	mod	value	80000041	80000040
+df-mod-cw-q-A	df	mod	value	00000000	80000041
+df-mod-cl-q-A	df	mod	value	00000000	80000041
+df-mod-cf-b-A	df	mod	value	80000041	C0000041
+df-mod-cf-w-A	df	mod	value	80000041	C0000041
+df-mod-cf-l-A	df	mod	value	80000041	C0000041
+df-mod-cf-f-A	df	mod	value	80000041	C0000041
 pl-not-cf-A	pl	bit	compiles now	!noncompile	-2
+pl-mod-b-f-A	pl	mod	value	1	0
 pl-mod-w-q-A	pl	mod	value	0	1
+pl-mod-w-cf-A	pl	mod	value	0	1
 pl-mod-l-q-A	pl	mod	value	0	1
+pl-mod-l-cf-A	pl	mod	value	0	1
+pl-mod-f-q-A	pl	mod	value	0	1
+pl-mod-f-cf-A	pl	mod	value	0	1
+pl-mod-cb-f-A	pl	mod	value	1	0
 pl-mod-cw-q-A	pl	mod	value	0	1
 pl-mod-cl-q-A	pl	mod	value	0	1
 pl-and-b-cf-A	pl	bit	compiles now	!noncompile	1
 pl-and-w-cf-A	pl	bit	compiles now	!noncompile	0
 pl-and-l-cf-A	pl	bit	compiles now	!noncompile	0
 pl-and-q-cf-A	pl	bit	compiles now	!noncompile	1
+pl-and-cb-cf-A	pl	bit	compiles now	!noncompile	1
+pl-and-cw-cf-A	pl	bit	compiles now	!noncompile	0
+pl-and-cl-cf-A	pl	bit	compiles now	!noncompile	0
 pl-and-cf-b-A	pl	bit	compiles now	!noncompile	1
 pl-and-cf-w-A	pl	bit	compiles now	!noncompile	0
 pl-and-cf-l-A	pl	bit	compiles now	!noncompile	0
 pl-and-cf-q-A	pl	bit	compiles now	!noncompile	1
+pl-and-cf-cb-A	pl	bit	compiles now	!noncompile	1
+pl-and-cf-cw-A	pl	bit	compiles now	!noncompile	0
+pl-and-cf-cl-A	pl	bit	compiles now	!noncompile	0
+pl-and-cf-cf-A	pl	bit	compiles now	!noncompile	1
 pl-or-b-cf-A	pl	bit	compiles now	!noncompile	3
 pl-or-w-cf-A	pl	bit	compiles now	!noncompile	1001
 pl-or-l-cf-A	pl	bit	compiles now	!noncompile	100001
 pl-or-q-cf-A	pl	bit	compiles now	!noncompile	1
+pl-or-cb-cf-A	pl	bit	compiles now	!noncompile	3
+pl-or-cw-cf-A	pl	bit	compiles now	!noncompile	1001
+pl-or-cl-cf-A	pl	bit	compiles now	!noncompile	100001
 pl-or-cf-b-A	pl	bit	compiles now	!noncompile	3
 pl-or-cf-w-A	pl	bit	compiles now	!noncompile	1001
 pl-or-cf-l-A	pl	bit	compiles now	!noncompile	100001
 pl-or-cf-q-A	pl	bit	compiles now	!noncompile	1
+pl-or-cf-cb-A	pl	bit	compiles now	!noncompile	3
+pl-or-cf-cw-A	pl	bit	compiles now	!noncompile	1001
+pl-or-cf-cl-A	pl	bit	compiles now	!noncompile	100001
+pl-or-cf-cf-A	pl	bit	compiles now	!noncompile	1
 pl-eor-b-cf-A	pl	bit	compiles now	!noncompile	2
 pl-eor-w-cf-A	pl	bit	compiles now	!noncompile	1001
 pl-eor-l-cf-A	pl	bit	compiles now	!noncompile	100001
 pl-eor-q-cf-A	pl	bit	compiles now	!noncompile	0
+pl-eor-cb-cf-A	pl	bit	compiles now	!noncompile	2
+pl-eor-cw-cf-A	pl	bit	compiles now	!noncompile	1001
+pl-eor-cl-cf-A	pl	bit	compiles now	!noncompile	100001
 pl-eor-cf-b-A	pl	bit	compiles now	!noncompile	2
 pl-eor-cf-w-A	pl	bit	compiles now	!noncompile	1001
 pl-eor-cf-l-A	pl	bit	compiles now	!noncompile	100001
 pl-eor-cf-q-A	pl	bit	compiles now	!noncompile	0
+pl-eor-cf-cb-A	pl	bit	compiles now	!noncompile	2
+pl-eor-cf-cw-A	pl	bit	compiles now	!noncompile	1001
+pl-eor-cf-cl-A	pl	bit	compiles now	!noncompile	100001
+pl-eor-cf-cf-A	pl	bit	compiles now	!noncompile	0
 pl-lsl-cf-b-A	pl	shift	compiles now	!noncompile	4
 pl-lsl-cf-w-A	pl	shift	compiles now	!noncompile	4
 pl-lsl-cf-l-A	pl	shift	compiles now	!noncompile	4
@@ -276,31 +431,58 @@ pl-asr-cf-cw-A	pl	shift	compiles now	!noncompile	0
 pl-asr-cf-cl-A	pl	shift	compiles now	!noncompile	0
 pw-not-cf-A	pw	bit	compiles now	!noncompile	-2
 pw-div-q-l-A	pw	arith	value	-1	0
+pw-mod-b-f-A	pw	mod	value	1	0
 pw-mod-w-q-A	pw	mod	value	0	1
+pw-mod-w-cf-A	pw	mod	value	0	1
 pw-mod-l-q-A	pw	mod	value	0	1
+pw-mod-l-cf-A	pw	mod	value	0	1
+pw-mod-f-q-A	pw	mod	value	0	1
+pw-mod-f-cf-A	pw	mod	value	0	1
+pw-mod-cb-f-A	pw	mod	value	1	0
 pw-mod-cw-q-A	pw	mod	value	0	1
 pw-mod-cl-q-A	pw	mod	value	0	1
 pw-and-b-cf-A	pw	bit	compiles now	!noncompile	1
 pw-and-w-cf-A	pw	bit	compiles now	!noncompile	0
 pw-and-l-cf-A	pw	bit	compiles now	!noncompile	0
+pw-and-cb-cf-A	pw	bit	compiles now	!noncompile	1
+pw-and-cw-cf-A	pw	bit	compiles now	!noncompile	0
+pw-and-cl-cf-A	pw	bit	compiles now	!noncompile	0
 pw-and-cf-b-A	pw	bit	compiles now	!noncompile	1
 pw-and-cf-w-A	pw	bit	compiles now	!noncompile	0
 pw-and-cf-l-A	pw	bit	compiles now	!noncompile	0
 pw-and-cf-q-A	pw	bit	compiles now	!noncompile	1
+pw-and-cf-cb-A	pw	bit	compiles now	!noncompile	1
+pw-and-cf-cw-A	pw	bit	compiles now	!noncompile	0
+pw-and-cf-cl-A	pw	bit	compiles now	!noncompile	0
+pw-and-cf-cf-A	pw	bit	compiles now	!noncompile	1
 pw-or-b-cf-A	pw	bit	compiles now	!noncompile	3
 pw-or-w-cf-A	pw	bit	compiles now	!noncompile	1001
 pw-or-l-cf-A	pw	bit	compiles now	!noncompile	-31071
+pw-or-cb-cf-A	pw	bit	compiles now	!noncompile	3
+pw-or-cw-cf-A	pw	bit	compiles now	!noncompile	1001
+pw-or-cl-cf-A	pw	bit	compiles now	!noncompile	-31071
 pw-or-cf-b-A	pw	bit	compiles now	!noncompile	3
 pw-or-cf-w-A	pw	bit	compiles now	!noncompile	1001
 pw-or-cf-l-A	pw	bit	compiles now	!noncompile	-31071
 pw-or-cf-q-A	pw	bit	compiles now	!noncompile	1
+pw-or-cf-cb-A	pw	bit	compiles now	!noncompile	3
+pw-or-cf-cw-A	pw	bit	compiles now	!noncompile	1001
+pw-or-cf-cl-A	pw	bit	compiles now	!noncompile	-31071
+pw-or-cf-cf-A	pw	bit	compiles now	!noncompile	1
 pw-eor-b-cf-A	pw	bit	compiles now	!noncompile	2
 pw-eor-w-cf-A	pw	bit	compiles now	!noncompile	1001
 pw-eor-l-cf-A	pw	bit	compiles now	!noncompile	-31071
+pw-eor-cb-cf-A	pw	bit	compiles now	!noncompile	2
+pw-eor-cw-cf-A	pw	bit	compiles now	!noncompile	1001
+pw-eor-cl-cf-A	pw	bit	compiles now	!noncompile	-31071
 pw-eor-cf-b-A	pw	bit	compiles now	!noncompile	2
 pw-eor-cf-w-A	pw	bit	compiles now	!noncompile	1001
 pw-eor-cf-l-A	pw	bit	compiles now	!noncompile	-31071
 pw-eor-cf-q-A	pw	bit	compiles now	!noncompile	0
+pw-eor-cf-cb-A	pw	bit	compiles now	!noncompile	2
+pw-eor-cf-cw-A	pw	bit	compiles now	!noncompile	1001
+pw-eor-cf-cl-A	pw	bit	compiles now	!noncompile	-31071
+pw-eor-cf-cf-A	pw	bit	compiles now	!noncompile	0
 pw-lsl-q-cf-A	pw	shift	refused now	6	!noncompile
 pw-lsl-cf-b-A	pw	shift	compiles now	!noncompile	6
 pw-lsl-cf-w-A	pw	shift	compiles now	!noncompile	6
@@ -342,17 +524,37 @@ pq-div-l-f-A	pq	arith	value	CF733340	9C400000
 pq-div-l-cl-A	pq	arith	value	00000000	00010000
 pq-div-q-l-A	pq	arith	value	FFFFFFFD	00000000
 pq-div-cl-q-A	pq	arith	value	046A0000	046AAAAA
+pq-mod-b-f-A	pq	mod	value	00010000	00008000
 pq-mod-w-q-A	pq	mod	value	00000000	00010000
+pq-mod-w-cf-A	pq	mod	value	00000000	00010000
 pq-mod-l-q-A	pq	mod	value	00000000	00010000
 pq-mod-l-cl-A	pq	mod	value	0D400000	00000000
+pq-mod-l-cf-A	pq	mod	value	00000000	00008000
 pq-mod-q-b-A	pq	mod	value	00010000	00018000
 pq-mod-q-w-A	pq	mod	value	00010000	00018000
 pq-mod-q-l-A	pq	mod	value	00010000	00018000
+pq-mod-q-f-A	pq	mod	value	00010000	00018000
 pq-mod-q-cb-A	pq	mod	value	00010000	00018000
 pq-mod-q-cw-A	pq	mod	value	00010000	00018000
 pq-mod-q-cl-A	pq	mod	value	00010000	00018000
+pq-mod-f-b-A	pq	mod	value	00020000	00028000
+pq-mod-f-w-A	pq	mod	value	00020000	00028000
+pq-mod-f-l-A	pq	mod	value	00020000	00028000
+pq-mod-f-q-A	pq	mod	value	00000000	00010000
+pq-mod-f-cb-A	pq	mod	value	00020000	00028000
+pq-mod-f-cw-A	pq	mod	value	00020000	00028000
+pq-mod-f-cl-A	pq	mod	value	00020000	00028000
+pq-mod-f-cf-A	pq	mod	value	00000000	00010000
+pq-mod-cb-f-A	pq	mod	value	00010000	00008000
 pq-mod-cw-q-A	pq	mod	value	00000000	00010000
 pq-mod-cl-q-A	pq	mod	value	00000000	00010000
+pq-mod-cf-b-A	pq	mod	value	00010000	00018000
+pq-mod-cf-w-A	pq	mod	value	00010000	00018000
+pq-mod-cf-l-A	pq	mod	value	00010000	00018000
+pq-mod-cf-f-A	pq	mod	value	00010000	00018000
+pq-and-cl-cf-A	pq	bit	compiles now	!noncompile	00000000
+pq-or-cl-cf-A	pq	bit	compiles now	!noncompile	86A10000
+pq-eor-cl-cf-A	pq	bit	compiles now	!noncompile	86A10000
 pq-lsl-b-cf-A	pq	shift	refused now	000C0000	!noncompile
 pq-lsl-w-cf-A	pq	shift	refused now	0FA00000	!noncompile
 pq-lsl-l-cf-A	pq	shift	refused now	1A800000	!noncompile
@@ -373,33 +575,85 @@ pq-asr-w-cf-A	pq	shift	refused now	00FA0000	!noncompile
 pq-asr-l-cf-A	pq	shift	refused now	E1A80000	!noncompile
 pq-asr-q-cf-A	pq	shift	refused now	00006000	!noncompile
 pq-asr-cf-cf-A	pq	shift	refused now	00006000	!noncompile
+pf-mod-b-f-A	pf	mod	value	80000041	80000040
+pf-mod-w-q-A	pf	mod	value	00000000	80000041
+pf-mod-w-cf-A	pf	mod	value	00000000	80000041
+pf-mod-l-q-A	pf	mod	value	00000000	80000041
+pf-mod-l-cf-A	pf	mod	value	00000000	80000041
+pf-mod-q-b-A	pf	mod	value	80000041	C0000041
+pf-mod-q-w-A	pf	mod	value	80000041	C0000041
+pf-mod-q-l-A	pf	mod	value	80000041	C0000041
+pf-mod-q-f-A	pf	mod	value	80000041	C0000041
+pf-mod-q-cb-A	pf	mod	value	80000041	C0000041
+pf-mod-q-cw-A	pf	mod	value	80000041	C0000041
+pf-mod-q-cl-A	pf	mod	value	80000041	C0000041
+pf-mod-f-b-A	pf	mod	value	80000042	A0000042
+pf-mod-f-w-A	pf	mod	value	80000042	A0000042
+pf-mod-f-l-A	pf	mod	value	80000042	A0000042
+pf-mod-f-q-A	pf	mod	value	00000000	80000041
+pf-mod-f-cb-A	pf	mod	value	80000042	A0000042
+pf-mod-f-cw-A	pf	mod	value	80000042	A0000042
+pf-mod-f-cl-A	pf	mod	value	80000042	A0000042
+pf-mod-f-cf-A	pf	mod	value	00000000	80000041
+pf-mod-cb-f-A	pf	mod	value	80000041	80000040
+pf-mod-cw-q-A	pf	mod	value	00000000	80000041
+pf-mod-cl-q-A	pf	mod	value	00000000	80000041
+pf-mod-cf-b-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-w-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-l-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-f-A	pf	mod	value	80000041	C0000041
 if-not-cf-A	if	bit	compiles now	!noncompile	T
 if-div-q-l-A	if	arith	value	T	F
 if-mod-w-q-A	if	mod	value	F	T
+if-mod-w-cf-A	if	mod	value	F	T
 if-mod-l-q-A	if	mod	value	F	T
+if-mod-l-cf-A	if	mod	value	F	T
+if-mod-f-q-A	if	mod	value	F	T
+if-mod-f-cf-A	if	mod	value	F	T
 if-mod-cw-q-A	if	mod	value	F	T
 if-mod-cl-q-A	if	mod	value	F	T
 if-and-b-cf-A	if	bit	compiles now	!noncompile	T
 if-and-w-cf-A	if	bit	compiles now	!noncompile	F
 if-and-l-cf-A	if	bit	compiles now	!noncompile	F
+if-and-cb-cf-A	if	bit	compiles now	!noncompile	T
+if-and-cw-cf-A	if	bit	compiles now	!noncompile	F
+if-and-cl-cf-A	if	bit	compiles now	!noncompile	F
 if-and-cf-b-A	if	bit	compiles now	!noncompile	T
 if-and-cf-w-A	if	bit	compiles now	!noncompile	F
 if-and-cf-l-A	if	bit	compiles now	!noncompile	F
 if-and-cf-q-A	if	bit	compiles now	!noncompile	T
+if-and-cf-cb-A	if	bit	compiles now	!noncompile	T
+if-and-cf-cw-A	if	bit	compiles now	!noncompile	F
+if-and-cf-cl-A	if	bit	compiles now	!noncompile	F
+if-and-cf-cf-A	if	bit	compiles now	!noncompile	T
 if-or-b-cf-A	if	bit	compiles now	!noncompile	T
 if-or-w-cf-A	if	bit	compiles now	!noncompile	T
 if-or-l-cf-A	if	bit	compiles now	!noncompile	T
+if-or-cb-cf-A	if	bit	compiles now	!noncompile	T
+if-or-cw-cf-A	if	bit	compiles now	!noncompile	T
+if-or-cl-cf-A	if	bit	compiles now	!noncompile	T
 if-or-cf-b-A	if	bit	compiles now	!noncompile	T
 if-or-cf-w-A	if	bit	compiles now	!noncompile	T
 if-or-cf-l-A	if	bit	compiles now	!noncompile	T
 if-or-cf-q-A	if	bit	compiles now	!noncompile	T
+if-or-cf-cb-A	if	bit	compiles now	!noncompile	T
+if-or-cf-cw-A	if	bit	compiles now	!noncompile	T
+if-or-cf-cl-A	if	bit	compiles now	!noncompile	T
+if-or-cf-cf-A	if	bit	compiles now	!noncompile	T
 if-eor-b-cf-A	if	bit	compiles now	!noncompile	T
 if-eor-w-cf-A	if	bit	compiles now	!noncompile	T
 if-eor-l-cf-A	if	bit	compiles now	!noncompile	T
+if-eor-cb-cf-A	if	bit	compiles now	!noncompile	T
+if-eor-cw-cf-A	if	bit	compiles now	!noncompile	T
+if-eor-cl-cf-A	if	bit	compiles now	!noncompile	T
 if-eor-cf-b-A	if	bit	compiles now	!noncompile	T
 if-eor-cf-w-A	if	bit	compiles now	!noncompile	T
 if-eor-cf-l-A	if	bit	compiles now	!noncompile	T
 if-eor-cf-q-A	if	bit	compiles now	!noncompile	F
+if-eor-cf-cb-A	if	bit	compiles now	!noncompile	T
+if-eor-cf-cw-A	if	bit	compiles now	!noncompile	T
+if-eor-cf-cl-A	if	bit	compiles now	!noncompile	T
+if-eor-cf-cf-A	if	bit	compiles now	!noncompile	F
 if-lsl-q-cf-A	if	shift	refused now	T	!noncompile
 if-lsl-cf-b-A	if	shift	compiles now	!noncompile	T
 if-lsl-cf-w-A	if	shift	compiles now	!noncompile	T
@@ -436,39 +690,77 @@ print-not-cf-A	print	bit	compiles now	!noncompile	-2
 print-add-q-l-A	print	arith	value	-31070.5	100001
 print-sub-q-l-A	print	arith	value	31073.5	-99999
 print-mul-q-l-A	print	arith	value	18928	150000
+print-mod-b-f-A	print	mod	value	1	.5
 print-mod-w-q-A	print	mod	value	0	1
+print-mod-w-cf-A	print	mod	value	0	1
 print-mod-l-q-A	print	mod	value	0	1
+print-mod-l-cf-A	print	mod	value	0	1
 print-mod-q-b-A	print	mod	value	1	1.5
 print-mod-q-w-A	print	mod	value	1	1.5
 print-mod-q-l-A	print	mod	value	1	1.5
+print-mod-q-f-A	print	mod	value	1	1.5
 print-mod-q-cb-A	print	mod	value	1	1.5
 print-mod-q-cw-A	print	mod	value	1	1.5
 print-mod-q-cl-A	print	mod	value	1	1.5
+print-mod-f-b-A	print	mod	value	2	2.5
+print-mod-f-w-A	print	mod	value	2	2.5
+print-mod-f-l-A	print	mod	value	2	2.5
+print-mod-f-q-A	print	mod	value	0	1
+print-mod-f-cb-A	print	mod	value	2	2.5
+print-mod-f-cw-A	print	mod	value	2	2.5
+print-mod-f-cl-A	print	mod	value	2	2.5
+print-mod-f-cf-A	print	mod	value	0	1
+print-mod-cb-f-A	print	mod	value	1	.5
 print-mod-cw-q-A	print	mod	value	0	1
 print-mod-cl-q-A	print	mod	value	0	1
+print-mod-cf-b-A	print	mod	value	1	1.5
+print-mod-cf-w-A	print	mod	value	1	1.5
+print-mod-cf-l-A	print	mod	value	1	1.5
+print-mod-cf-f-A	print	mod	value	1	1.5
 print-and-b-cf-A	print	bit	compiles now	!noncompile	1
 print-and-w-cf-A	print	bit	compiles now	!noncompile	0
 print-and-l-cf-A	print	bit	compiles now	!noncompile	0
+print-and-cb-cf-A	print	bit	compiles now	!noncompile	1
+print-and-cw-cf-A	print	bit	compiles now	!noncompile	0
+print-and-cl-cf-A	print	bit	compiles now	!noncompile	0
 print-and-cf-b-A	print	bit	compiles now	!noncompile	1
 print-and-cf-w-A	print	bit	compiles now	!noncompile	0
 print-and-cf-l-A	print	bit	compiles now	!noncompile	0
 print-and-cf-q-A	print	bit	compiles now	!noncompile	1
+print-and-cf-cb-A	print	bit	compiles now	!noncompile	1
+print-and-cf-cw-A	print	bit	compiles now	!noncompile	0
+print-and-cf-cl-A	print	bit	compiles now	!noncompile	0
+print-and-cf-cf-A	print	bit	compiles now	!noncompile	1
 print-or-b-cf-A	print	bit	compiles now	!noncompile	3
 print-or-w-cf-A	print	bit	compiles now	!noncompile	1001
 print-or-l-cf-A	print	bit	compiles now	!noncompile	100001
 print-or-q-l-A	print	bit	value	-31071	100001
+print-or-cb-cf-A	print	bit	compiles now	!noncompile	3
+print-or-cw-cf-A	print	bit	compiles now	!noncompile	1001
+print-or-cl-cf-A	print	bit	compiles now	!noncompile	100001
 print-or-cf-b-A	print	bit	compiles now	!noncompile	3
 print-or-cf-w-A	print	bit	compiles now	!noncompile	1001
 print-or-cf-l-A	print	bit	compiles now	!noncompile	100001
 print-or-cf-q-A	print	bit	compiles now	!noncompile	1
+print-or-cf-cb-A	print	bit	compiles now	!noncompile	3
+print-or-cf-cw-A	print	bit	compiles now	!noncompile	1001
+print-or-cf-cl-A	print	bit	compiles now	!noncompile	100001
+print-or-cf-cf-A	print	bit	compiles now	!noncompile	1
 print-eor-b-cf-A	print	bit	compiles now	!noncompile	2
 print-eor-w-cf-A	print	bit	compiles now	!noncompile	1001
 print-eor-l-cf-A	print	bit	compiles now	!noncompile	100001
 print-eor-q-l-A	print	bit	value	-31071	100001
+print-eor-cb-cf-A	print	bit	compiles now	!noncompile	2
+print-eor-cw-cf-A	print	bit	compiles now	!noncompile	1001
+print-eor-cl-cf-A	print	bit	compiles now	!noncompile	100001
 print-eor-cf-b-A	print	bit	compiles now	!noncompile	2
 print-eor-cf-w-A	print	bit	compiles now	!noncompile	1001
 print-eor-cf-l-A	print	bit	compiles now	!noncompile	100001
 print-eor-cf-q-A	print	bit	compiles now	!noncompile	0
+print-eor-cf-cb-A	print	bit	compiles now	!noncompile	2
+print-eor-cf-cw-A	print	bit	compiles now	!noncompile	1001
+print-eor-cf-cl-A	print	bit	compiles now	!noncompile	100001
+print-eor-cf-cf-A	print	bit	compiles now	!noncompile	0
 print-lsl-q-cf-A	print	shift	refused now	6	!noncompile
 print-lsl-cf-b-A	print	shift	compiles now	!noncompile	6
 print-lsl-cf-w-A	print	shift	compiles now	!noncompile	6
@@ -505,31 +797,58 @@ db-not-cf-B	db	bit	compiles now	!noncompile	1
 db-div-q-l-B	db	arith	value	-1	0
 db-mod-b-q-B	db	mod	value	-3	0
 db-mod-w-q-B	db	mod	value	0	-3
+db-mod-w-cf-B	db	mod	value	0	-2
 db-mod-l-q-B	db	mod	value	0	-3
+db-mod-l-cf-B	db	mod	value	0	-2
+db-mod-q-f-B	db	mod	value	-3	-4
+db-mod-f-q-B	db	mod	value	0	-2
+db-mod-f-cf-B	db	mod	value	0	-2
 db-mod-cb-q-B	db	mod	value	-3	0
 db-mod-cw-q-B	db	mod	value	0	-3
 db-mod-cl-q-B	db	mod	value	0	-3
+db-mod-cf-f-B	db	mod	value	-3	-4
 db-and-b-cf-B	db	bit	compiles now	!noncompile	-4
 db-and-w-cf-B	db	bit	compiles now	!noncompile	24
 db-and-l-cf-B	db	bit	compiles now	!noncompile	96
+db-and-cb-cf-B	db	bit	compiles now	!noncompile	-4
+db-and-cw-cf-B	db	bit	compiles now	!noncompile	24
+db-and-cl-cf-B	db	bit	compiles now	!noncompile	96
 db-and-cf-b-B	db	bit	compiles now	!noncompile	-4
 db-and-cf-w-B	db	bit	compiles now	!noncompile	24
 db-and-cf-l-B	db	bit	compiles now	!noncompile	96
 db-and-cf-q-B	db	bit	compiles now	!noncompile	-2
+db-and-cf-cb-B	db	bit	compiles now	!noncompile	-4
+db-and-cf-cw-B	db	bit	compiles now	!noncompile	24
+db-and-cf-cl-B	db	bit	compiles now	!noncompile	96
+db-and-cf-cf-B	db	bit	compiles now	!noncompile	-2
 db-or-b-cf-B	db	bit	compiles now	!noncompile	-1
 db-or-w-cf-B	db	bit	compiles now	!noncompile	-2
 db-or-l-cf-B	db	bit	compiles now	!noncompile	-2
+db-or-cb-cf-B	db	bit	compiles now	!noncompile	-1
+db-or-cw-cf-B	db	bit	compiles now	!noncompile	-2
+db-or-cl-cf-B	db	bit	compiles now	!noncompile	-2
 db-or-cf-b-B	db	bit	compiles now	!noncompile	-1
 db-or-cf-w-B	db	bit	compiles now	!noncompile	-2
 db-or-cf-l-B	db	bit	compiles now	!noncompile	-2
 db-or-cf-q-B	db	bit	compiles now	!noncompile	-2
+db-or-cf-cb-B	db	bit	compiles now	!noncompile	-1
+db-or-cf-cw-B	db	bit	compiles now	!noncompile	-2
+db-or-cf-cl-B	db	bit	compiles now	!noncompile	-2
+db-or-cf-cf-B	db	bit	compiles now	!noncompile	-2
 db-eor-b-cf-B	db	bit	compiles now	!noncompile	3
 db-eor-w-cf-B	db	bit	compiles now	!noncompile	-26
 db-eor-l-cf-B	db	bit	compiles now	!noncompile	-98
+db-eor-cb-cf-B	db	bit	compiles now	!noncompile	3
+db-eor-cw-cf-B	db	bit	compiles now	!noncompile	-26
+db-eor-cl-cf-B	db	bit	compiles now	!noncompile	-98
 db-eor-cf-b-B	db	bit	compiles now	!noncompile	3
 db-eor-cf-w-B	db	bit	compiles now	!noncompile	-26
 db-eor-cf-l-B	db	bit	compiles now	!noncompile	-98
 db-eor-cf-q-B	db	bit	compiles now	!noncompile	0
+db-eor-cf-cb-B	db	bit	compiles now	!noncompile	3
+db-eor-cf-cw-B	db	bit	compiles now	!noncompile	-26
+db-eor-cf-cl-B	db	bit	compiles now	!noncompile	-98
+db-eor-cf-cf-B	db	bit	compiles now	!noncompile	0
 db-lsl-q-cf-B	db	shift	refused now	-12	!noncompile
 db-lsl-cf-b-B	db	shift	compiles now	!noncompile	-12
 db-lsl-cf-w-B	db	shift	compiles now	!noncompile	-12
@@ -566,31 +885,58 @@ dw-not-cf-B	dw	bit	compiles now	!noncompile	1
 dw-div-q-l-B	dw	arith	value	-1	0
 dw-mod-b-q-B	dw	mod	value	-3	0
 dw-mod-w-q-B	dw	mod	value	0	-3
+dw-mod-w-cf-B	dw	mod	value	0	-2
 dw-mod-l-q-B	dw	mod	value	0	-3
+dw-mod-l-cf-B	dw	mod	value	0	-2
+dw-mod-q-f-B	dw	mod	value	-3	-4
+dw-mod-f-q-B	dw	mod	value	0	-2
+dw-mod-f-cf-B	dw	mod	value	0	-2
 dw-mod-cb-q-B	dw	mod	value	-3	0
 dw-mod-cw-q-B	dw	mod	value	0	-3
 dw-mod-cl-q-B	dw	mod	value	0	-3
+dw-mod-cf-f-B	dw	mod	value	-3	-4
 dw-and-b-cf-B	dw	bit	compiles now	!noncompile	-4
 dw-and-w-cf-B	dw	bit	compiles now	!noncompile	-1000
 dw-and-l-cf-B	dw	bit	compiles now	!noncompile	31072
+dw-and-cb-cf-B	dw	bit	compiles now	!noncompile	-4
+dw-and-cw-cf-B	dw	bit	compiles now	!noncompile	-1000
+dw-and-cl-cf-B	dw	bit	compiles now	!noncompile	31072
 dw-and-cf-b-B	dw	bit	compiles now	!noncompile	-4
 dw-and-cf-w-B	dw	bit	compiles now	!noncompile	-1000
 dw-and-cf-l-B	dw	bit	compiles now	!noncompile	31072
 dw-and-cf-q-B	dw	bit	compiles now	!noncompile	-2
+dw-and-cf-cb-B	dw	bit	compiles now	!noncompile	-4
+dw-and-cf-cw-B	dw	bit	compiles now	!noncompile	-1000
+dw-and-cf-cl-B	dw	bit	compiles now	!noncompile	31072
+dw-and-cf-cf-B	dw	bit	compiles now	!noncompile	-2
 dw-or-b-cf-B	dw	bit	compiles now	!noncompile	-1
 dw-or-w-cf-B	dw	bit	compiles now	!noncompile	-2
 dw-or-l-cf-B	dw	bit	compiles now	!noncompile	-2
+dw-or-cb-cf-B	dw	bit	compiles now	!noncompile	-1
+dw-or-cw-cf-B	dw	bit	compiles now	!noncompile	-2
+dw-or-cl-cf-B	dw	bit	compiles now	!noncompile	-2
 dw-or-cf-b-B	dw	bit	compiles now	!noncompile	-1
 dw-or-cf-w-B	dw	bit	compiles now	!noncompile	-2
 dw-or-cf-l-B	dw	bit	compiles now	!noncompile	-2
 dw-or-cf-q-B	dw	bit	compiles now	!noncompile	-2
+dw-or-cf-cb-B	dw	bit	compiles now	!noncompile	-1
+dw-or-cf-cw-B	dw	bit	compiles now	!noncompile	-2
+dw-or-cf-cl-B	dw	bit	compiles now	!noncompile	-2
+dw-or-cf-cf-B	dw	bit	compiles now	!noncompile	-2
 dw-eor-b-cf-B	dw	bit	compiles now	!noncompile	3
 dw-eor-w-cf-B	dw	bit	compiles now	!noncompile	998
 dw-eor-l-cf-B	dw	bit	compiles now	!noncompile	-31074
+dw-eor-cb-cf-B	dw	bit	compiles now	!noncompile	3
+dw-eor-cw-cf-B	dw	bit	compiles now	!noncompile	998
+dw-eor-cl-cf-B	dw	bit	compiles now	!noncompile	-31074
 dw-eor-cf-b-B	dw	bit	compiles now	!noncompile	3
 dw-eor-cf-w-B	dw	bit	compiles now	!noncompile	998
 dw-eor-cf-l-B	dw	bit	compiles now	!noncompile	-31074
 dw-eor-cf-q-B	dw	bit	compiles now	!noncompile	0
+dw-eor-cf-cb-B	dw	bit	compiles now	!noncompile	3
+dw-eor-cf-cw-B	dw	bit	compiles now	!noncompile	998
+dw-eor-cf-cl-B	dw	bit	compiles now	!noncompile	-31074
+dw-eor-cf-cf-B	dw	bit	compiles now	!noncompile	0
 dw-lsl-q-cf-B	dw	shift	refused now	-12	!noncompile
 dw-lsl-cf-b-B	dw	shift	compiles now	!noncompile	-12
 dw-lsl-cf-w-B	dw	shift	compiles now	!noncompile	-12
@@ -626,34 +972,61 @@ dw-asr-cf-cl-B	dw	shift	compiles now	!noncompile	-1
 dl-not-cf-B	dl	bit	compiles now	!noncompile	1
 dl-mod-b-q-B	dl	mod	value	-3	0
 dl-mod-w-q-B	dl	mod	value	0	-3
+dl-mod-w-cf-B	dl	mod	value	0	-2
 dl-mod-l-q-B	dl	mod	value	0	-3
+dl-mod-l-cf-B	dl	mod	value	0	-2
+dl-mod-q-f-B	dl	mod	value	-3	-4
+dl-mod-f-q-B	dl	mod	value	0	-2
+dl-mod-f-cf-B	dl	mod	value	0	-2
 dl-mod-cb-q-B	dl	mod	value	-3	0
 dl-mod-cw-q-B	dl	mod	value	0	-3
 dl-mod-cl-q-B	dl	mod	value	0	-3
+dl-mod-cf-f-B	dl	mod	value	-3	-4
 dl-and-b-cf-B	dl	bit	compiles now	!noncompile	-4
 dl-and-w-cf-B	dl	bit	compiles now	!noncompile	-1000
 dl-and-l-cf-B	dl	bit	compiles now	!noncompile	-100000
 dl-and-q-cf-B	dl	bit	compiles now	!noncompile	-2
+dl-and-cb-cf-B	dl	bit	compiles now	!noncompile	-4
+dl-and-cw-cf-B	dl	bit	compiles now	!noncompile	-1000
+dl-and-cl-cf-B	dl	bit	compiles now	!noncompile	-100000
 dl-and-cf-b-B	dl	bit	compiles now	!noncompile	-4
 dl-and-cf-w-B	dl	bit	compiles now	!noncompile	-1000
 dl-and-cf-l-B	dl	bit	compiles now	!noncompile	-100000
 dl-and-cf-q-B	dl	bit	compiles now	!noncompile	-2
+dl-and-cf-cb-B	dl	bit	compiles now	!noncompile	-4
+dl-and-cf-cw-B	dl	bit	compiles now	!noncompile	-1000
+dl-and-cf-cl-B	dl	bit	compiles now	!noncompile	-100000
+dl-and-cf-cf-B	dl	bit	compiles now	!noncompile	-2
 dl-or-b-cf-B	dl	bit	compiles now	!noncompile	-1
 dl-or-w-cf-B	dl	bit	compiles now	!noncompile	-2
 dl-or-l-cf-B	dl	bit	compiles now	!noncompile	-2
 dl-or-q-cf-B	dl	bit	compiles now	!noncompile	-2
+dl-or-cb-cf-B	dl	bit	compiles now	!noncompile	-1
+dl-or-cw-cf-B	dl	bit	compiles now	!noncompile	-2
+dl-or-cl-cf-B	dl	bit	compiles now	!noncompile	-2
 dl-or-cf-b-B	dl	bit	compiles now	!noncompile	-1
 dl-or-cf-w-B	dl	bit	compiles now	!noncompile	-2
 dl-or-cf-l-B	dl	bit	compiles now	!noncompile	-2
 dl-or-cf-q-B	dl	bit	compiles now	!noncompile	-2
+dl-or-cf-cb-B	dl	bit	compiles now	!noncompile	-1
+dl-or-cf-cw-B	dl	bit	compiles now	!noncompile	-2
+dl-or-cf-cl-B	dl	bit	compiles now	!noncompile	-2
+dl-or-cf-cf-B	dl	bit	compiles now	!noncompile	-2
 dl-eor-b-cf-B	dl	bit	compiles now	!noncompile	3
 dl-eor-w-cf-B	dl	bit	compiles now	!noncompile	998
 dl-eor-l-cf-B	dl	bit	compiles now	!noncompile	99998
 dl-eor-q-cf-B	dl	bit	compiles now	!noncompile	0
+dl-eor-cb-cf-B	dl	bit	compiles now	!noncompile	3
+dl-eor-cw-cf-B	dl	bit	compiles now	!noncompile	998
+dl-eor-cl-cf-B	dl	bit	compiles now	!noncompile	99998
 dl-eor-cf-b-B	dl	bit	compiles now	!noncompile	3
 dl-eor-cf-w-B	dl	bit	compiles now	!noncompile	998
 dl-eor-cf-l-B	dl	bit	compiles now	!noncompile	99998
 dl-eor-cf-q-B	dl	bit	compiles now	!noncompile	0
+dl-eor-cf-cb-B	dl	bit	compiles now	!noncompile	3
+dl-eor-cf-cw-B	dl	bit	compiles now	!noncompile	998
+dl-eor-cf-cl-B	dl	bit	compiles now	!noncompile	99998
+dl-eor-cf-cf-B	dl	bit	compiles now	!noncompile	0
 dl-lsl-cf-b-B	dl	shift	compiles now	!noncompile	-16
 dl-lsl-cf-w-B	dl	shift	compiles now	!noncompile	-16
 dl-lsl-cf-l-B	dl	shift	compiles now	!noncompile	-16
@@ -692,20 +1065,39 @@ dq-div-l-cl-B	dq	arith	value	00000000	00010000
 dq-div-q-l-B	dq	arith	value	FFFFFFFD	00000000
 dq-div-cl-q-B	dq	arith	value	046A0000	046AAAAA
 dq-mod-b-q-B	dq	mod	value	FFFD0000	00000000
+dq-mod-b-cf-B	dq	mod	value	FFFD0000	00000000
 dq-mod-w-q-B	dq	mod	value	00000000	FFFD8000
+dq-mod-w-cf-B	dq	mod	value	00000000	FFFD8000
 dq-mod-l-q-B	dq	mod	value	00000000	FFFD8000
 dq-mod-l-cl-B	dq	mod	value	79600000	00000000
+dq-mod-l-cf-B	dq	mod	value	00000000	00010000
 dq-mod-q-b-B	dq	mod	value	FFFB0000	FFFB8000
 dq-mod-q-w-B	dq	mod	value	FC160000	FC168000
 dq-mod-q-l-B	dq	mod	value	795E0000	795E8000
+dq-mod-q-f-B	dq	mod	value	FFFD0000	FFFC0000
 dq-mod-q-cb-B	dq	mod	value	FFFB0000	FFFB8000
 dq-mod-q-cw-B	dq	mod	value	FC160000	FC168000
 dq-mod-q-cl-B	dq	mod	value	795E0000	795E8000
+dq-mod-f-b-B	dq	mod	value	FFFB0000	FFFA8000
+dq-mod-f-w-B	dq	mod	value	FC160000	FC158000
+dq-mod-f-l-B	dq	mod	value	795E0000	795D8000
+dq-mod-f-q-B	dq	mod	value	00000000	FFFD8000
+dq-mod-f-cb-B	dq	mod	value	FFFB0000	FFFA8000
+dq-mod-f-cw-B	dq	mod	value	FC160000	FC158000
+dq-mod-f-cl-B	dq	mod	value	795E0000	795D8000
+dq-mod-f-cf-B	dq	mod	value	00000000	FFFD8000
 dq-mod-cb-q-B	dq	mod	value	FFFD0000	00000000
 dq-mod-cw-q-B	dq	mod	value	00000000	FFFD8000
 dq-mod-cl-q-B	dq	mod	value	00000000	FFFD8000
+dq-mod-cf-b-B	dq	mod	value	FFFB0000	FFFB8000
+dq-mod-cf-w-B	dq	mod	value	FC160000	FC168000
+dq-mod-cf-l-B	dq	mod	value	795E0000	795E8000
+dq-mod-cf-f-B	dq	mod	value	FFFD0000	FFFC0000
 dq-pow-l-q-B	dq	pow	value	?	?-
 dq-pow-l-f-B	dq	pow	value	?	?-
+dq-and-cl-cf-B	dq	bit	compiles now	!noncompile	79600000
+dq-or-cl-cf-B	dq	bit	compiles now	!noncompile	FFFE0000
+dq-eor-cl-cf-B	dq	bit	compiles now	!noncompile	869E0000
 dq-lsl-b-cf-B	dq	shift	refused now	FFE80000	!noncompile
 dq-lsl-w-cf-B	dq	shift	refused now	E0C00000	!noncompile
 dq-lsl-l-cf-B	dq	shift	refused now	CB000000	!noncompile
@@ -726,37 +1118,89 @@ dq-asr-w-cf-B	dq	shift	refused now	FF830000	!noncompile
 dq-asr-l-cf-B	dq	shift	refused now	0F2C0000	!noncompile
 dq-asr-q-cf-B	dq	shift	refused now	FFFFD000	!noncompile
 dq-asr-cf-cf-B	dq	shift	refused now	FFFFD000	!noncompile
+df-mod-w-q-B	df	mod	value	00000000	A00000C2
+df-mod-w-cf-B	df	mod	value	00000000	A00000C2
+df-mod-l-q-B	df	mod	value	00000000	A00000C2
+df-mod-l-cf-B	df	mod	value	00000000	A00000C2
+df-mod-q-b-B	df	mod	value	800000C3	900000C3
+df-mod-q-w-B	df	mod	value	FA4000CA	FA6000CA
+df-mod-q-l-B	df	mod	value	C35080D1	C350C0D1
+df-mod-q-f-B	df	mod	value	C00000C2	800000C3
+df-mod-q-cb-B	df	mod	value	800000C3	900000C3
+df-mod-q-cw-B	df	mod	value	FA4000CA	FA6000CA
+df-mod-q-cl-B	df	mod	value	C35080D1	C350C0D1
+df-mod-f-b-B	df	mod	value	A00000C3	B00000C3
+df-mod-f-w-B	df	mod	value	FA8000CA	FAA000CA
+df-mod-f-l-B	df	mod	value	C35100D1	C35140D1
+df-mod-f-q-B	df	mod	value	00000000	A00000C2
+df-mod-f-cb-B	df	mod	value	A00000C3	B00000C3
+df-mod-f-cw-B	df	mod	value	FA8000CA	FAA000CA
+df-mod-f-cl-B	df	mod	value	C35100D1	C35140D1
+df-mod-f-cf-B	df	mod	value	00000000	A00000C2
+df-mod-cw-q-B	df	mod	value	00000000	A00000C2
+df-mod-cl-q-B	df	mod	value	00000000	A00000C2
+df-mod-cf-b-B	df	mod	value	800000C3	900000C3
+df-mod-cf-w-B	df	mod	value	FA4000CA	FA6000CA
+df-mod-cf-l-B	df	mod	value	C35080D1	C350C0D1
+df-mod-cf-f-B	df	mod	value	C00000C2	800000C3
 pl-not-cf-B	pl	bit	compiles now	!noncompile	1
 pl-mod-b-q-B	pl	mod	value	-3	0
 pl-mod-w-q-B	pl	mod	value	0	-3
+pl-mod-w-cf-B	pl	mod	value	0	-2
 pl-mod-l-q-B	pl	mod	value	0	-3
+pl-mod-l-cf-B	pl	mod	value	0	-2
+pl-mod-q-f-B	pl	mod	value	-3	-4
+pl-mod-f-q-B	pl	mod	value	0	-2
+pl-mod-f-cf-B	pl	mod	value	0	-2
 pl-mod-cb-q-B	pl	mod	value	-3	0
 pl-mod-cw-q-B	pl	mod	value	0	-3
 pl-mod-cl-q-B	pl	mod	value	0	-3
+pl-mod-cf-f-B	pl	mod	value	-3	-4
 pl-and-b-cf-B	pl	bit	compiles now	!noncompile	-4
 pl-and-w-cf-B	pl	bit	compiles now	!noncompile	-1000
 pl-and-l-cf-B	pl	bit	compiles now	!noncompile	-100000
 pl-and-q-cf-B	pl	bit	compiles now	!noncompile	-2
+pl-and-cb-cf-B	pl	bit	compiles now	!noncompile	-4
+pl-and-cw-cf-B	pl	bit	compiles now	!noncompile	-1000
+pl-and-cl-cf-B	pl	bit	compiles now	!noncompile	-100000
 pl-and-cf-b-B	pl	bit	compiles now	!noncompile	-4
 pl-and-cf-w-B	pl	bit	compiles now	!noncompile	-1000
 pl-and-cf-l-B	pl	bit	compiles now	!noncompile	-100000
 pl-and-cf-q-B	pl	bit	compiles now	!noncompile	-2
+pl-and-cf-cb-B	pl	bit	compiles now	!noncompile	-4
+pl-and-cf-cw-B	pl	bit	compiles now	!noncompile	-1000
+pl-and-cf-cl-B	pl	bit	compiles now	!noncompile	-100000
+pl-and-cf-cf-B	pl	bit	compiles now	!noncompile	-2
 pl-or-b-cf-B	pl	bit	compiles now	!noncompile	-1
 pl-or-w-cf-B	pl	bit	compiles now	!noncompile	-2
 pl-or-l-cf-B	pl	bit	compiles now	!noncompile	-2
 pl-or-q-cf-B	pl	bit	compiles now	!noncompile	-2
+pl-or-cb-cf-B	pl	bit	compiles now	!noncompile	-1
+pl-or-cw-cf-B	pl	bit	compiles now	!noncompile	-2
+pl-or-cl-cf-B	pl	bit	compiles now	!noncompile	-2
 pl-or-cf-b-B	pl	bit	compiles now	!noncompile	-1
 pl-or-cf-w-B	pl	bit	compiles now	!noncompile	-2
 pl-or-cf-l-B	pl	bit	compiles now	!noncompile	-2
 pl-or-cf-q-B	pl	bit	compiles now	!noncompile	-2
+pl-or-cf-cb-B	pl	bit	compiles now	!noncompile	-1
+pl-or-cf-cw-B	pl	bit	compiles now	!noncompile	-2
+pl-or-cf-cl-B	pl	bit	compiles now	!noncompile	-2
+pl-or-cf-cf-B	pl	bit	compiles now	!noncompile	-2
 pl-eor-b-cf-B	pl	bit	compiles now	!noncompile	3
 pl-eor-w-cf-B	pl	bit	compiles now	!noncompile	998
 pl-eor-l-cf-B	pl	bit	compiles now	!noncompile	99998
 pl-eor-q-cf-B	pl	bit	compiles now	!noncompile	0
+pl-eor-cb-cf-B	pl	bit	compiles now	!noncompile	3
+pl-eor-cw-cf-B	pl	bit	compiles now	!noncompile	998
+pl-eor-cl-cf-B	pl	bit	compiles now	!noncompile	99998
 pl-eor-cf-b-B	pl	bit	compiles now	!noncompile	3
 pl-eor-cf-w-B	pl	bit	compiles now	!noncompile	998
 pl-eor-cf-l-B	pl	bit	compiles now	!noncompile	99998
 pl-eor-cf-q-B	pl	bit	compiles now	!noncompile	0
+pl-eor-cf-cb-B	pl	bit	compiles now	!noncompile	3
+pl-eor-cf-cw-B	pl	bit	compiles now	!noncompile	998
+pl-eor-cf-cl-B	pl	bit	compiles now	!noncompile	99998
+pl-eor-cf-cf-B	pl	bit	compiles now	!noncompile	0
 pl-lsl-cf-b-B	pl	shift	compiles now	!noncompile	-16
 pl-lsl-cf-w-B	pl	shift	compiles now	!noncompile	-16
 pl-lsl-cf-l-B	pl	shift	compiles now	!noncompile	-16
@@ -789,31 +1233,58 @@ pw-not-cf-B	pw	bit	compiles now	!noncompile	1
 pw-div-q-l-B	pw	arith	value	-1	0
 pw-mod-b-q-B	pw	mod	value	-3	0
 pw-mod-w-q-B	pw	mod	value	0	-3
+pw-mod-w-cf-B	pw	mod	value	0	-2
 pw-mod-l-q-B	pw	mod	value	0	-3
+pw-mod-l-cf-B	pw	mod	value	0	-2
+pw-mod-q-f-B	pw	mod	value	-3	-4
+pw-mod-f-q-B	pw	mod	value	0	-2
+pw-mod-f-cf-B	pw	mod	value	0	-2
 pw-mod-cb-q-B	pw	mod	value	-3	0
 pw-mod-cw-q-B	pw	mod	value	0	-3
 pw-mod-cl-q-B	pw	mod	value	0	-3
+pw-mod-cf-f-B	pw	mod	value	-3	-4
 pw-and-b-cf-B	pw	bit	compiles now	!noncompile	-4
 pw-and-w-cf-B	pw	bit	compiles now	!noncompile	-1000
 pw-and-l-cf-B	pw	bit	compiles now	!noncompile	31072
+pw-and-cb-cf-B	pw	bit	compiles now	!noncompile	-4
+pw-and-cw-cf-B	pw	bit	compiles now	!noncompile	-1000
+pw-and-cl-cf-B	pw	bit	compiles now	!noncompile	31072
 pw-and-cf-b-B	pw	bit	compiles now	!noncompile	-4
 pw-and-cf-w-B	pw	bit	compiles now	!noncompile	-1000
 pw-and-cf-l-B	pw	bit	compiles now	!noncompile	31072
 pw-and-cf-q-B	pw	bit	compiles now	!noncompile	-2
+pw-and-cf-cb-B	pw	bit	compiles now	!noncompile	-4
+pw-and-cf-cw-B	pw	bit	compiles now	!noncompile	-1000
+pw-and-cf-cl-B	pw	bit	compiles now	!noncompile	31072
+pw-and-cf-cf-B	pw	bit	compiles now	!noncompile	-2
 pw-or-b-cf-B	pw	bit	compiles now	!noncompile	-1
 pw-or-w-cf-B	pw	bit	compiles now	!noncompile	-2
 pw-or-l-cf-B	pw	bit	compiles now	!noncompile	-2
+pw-or-cb-cf-B	pw	bit	compiles now	!noncompile	-1
+pw-or-cw-cf-B	pw	bit	compiles now	!noncompile	-2
+pw-or-cl-cf-B	pw	bit	compiles now	!noncompile	-2
 pw-or-cf-b-B	pw	bit	compiles now	!noncompile	-1
 pw-or-cf-w-B	pw	bit	compiles now	!noncompile	-2
 pw-or-cf-l-B	pw	bit	compiles now	!noncompile	-2
 pw-or-cf-q-B	pw	bit	compiles now	!noncompile	-2
+pw-or-cf-cb-B	pw	bit	compiles now	!noncompile	-1
+pw-or-cf-cw-B	pw	bit	compiles now	!noncompile	-2
+pw-or-cf-cl-B	pw	bit	compiles now	!noncompile	-2
+pw-or-cf-cf-B	pw	bit	compiles now	!noncompile	-2
 pw-eor-b-cf-B	pw	bit	compiles now	!noncompile	3
 pw-eor-w-cf-B	pw	bit	compiles now	!noncompile	998
 pw-eor-l-cf-B	pw	bit	compiles now	!noncompile	-31074
+pw-eor-cb-cf-B	pw	bit	compiles now	!noncompile	3
+pw-eor-cw-cf-B	pw	bit	compiles now	!noncompile	998
+pw-eor-cl-cf-B	pw	bit	compiles now	!noncompile	-31074
 pw-eor-cf-b-B	pw	bit	compiles now	!noncompile	3
 pw-eor-cf-w-B	pw	bit	compiles now	!noncompile	998
 pw-eor-cf-l-B	pw	bit	compiles now	!noncompile	-31074
 pw-eor-cf-q-B	pw	bit	compiles now	!noncompile	0
+pw-eor-cf-cb-B	pw	bit	compiles now	!noncompile	3
+pw-eor-cf-cw-B	pw	bit	compiles now	!noncompile	998
+pw-eor-cf-cl-B	pw	bit	compiles now	!noncompile	-31074
+pw-eor-cf-cf-B	pw	bit	compiles now	!noncompile	0
 pw-lsl-q-cf-B	pw	shift	refused now	-12	!noncompile
 pw-lsl-cf-b-B	pw	shift	compiles now	!noncompile	-12
 pw-lsl-cf-w-B	pw	shift	compiles now	!noncompile	-12
@@ -856,20 +1327,39 @@ pq-div-l-cl-B	pq	arith	value	00000000	00010000
 pq-div-q-l-B	pq	arith	value	FFFFFFFD	00000000
 pq-div-cl-q-B	pq	arith	value	046A0000	046AAAAA
 pq-mod-b-q-B	pq	mod	value	FFFD0000	00000000
+pq-mod-b-cf-B	pq	mod	value	FFFD0000	00000000
 pq-mod-w-q-B	pq	mod	value	00000000	FFFD8000
+pq-mod-w-cf-B	pq	mod	value	00000000	FFFD8000
 pq-mod-l-q-B	pq	mod	value	00000000	FFFD8000
 pq-mod-l-cl-B	pq	mod	value	79600000	00000000
+pq-mod-l-cf-B	pq	mod	value	00000000	00010000
 pq-mod-q-b-B	pq	mod	value	FFFB0000	FFFB8000
 pq-mod-q-w-B	pq	mod	value	FC160000	FC168000
 pq-mod-q-l-B	pq	mod	value	795E0000	795E8000
+pq-mod-q-f-B	pq	mod	value	FFFD0000	FFFC0000
 pq-mod-q-cb-B	pq	mod	value	FFFB0000	FFFB8000
 pq-mod-q-cw-B	pq	mod	value	FC160000	FC168000
 pq-mod-q-cl-B	pq	mod	value	795E0000	795E8000
+pq-mod-f-b-B	pq	mod	value	FFFB0000	FFFA8000
+pq-mod-f-w-B	pq	mod	value	FC160000	FC158000
+pq-mod-f-l-B	pq	mod	value	795E0000	795D8000
+pq-mod-f-q-B	pq	mod	value	00000000	FFFD8000
+pq-mod-f-cb-B	pq	mod	value	FFFB0000	FFFA8000
+pq-mod-f-cw-B	pq	mod	value	FC160000	FC158000
+pq-mod-f-cl-B	pq	mod	value	795E0000	795D8000
+pq-mod-f-cf-B	pq	mod	value	00000000	FFFD8000
 pq-mod-cb-q-B	pq	mod	value	FFFD0000	00000000
 pq-mod-cw-q-B	pq	mod	value	00000000	FFFD8000
 pq-mod-cl-q-B	pq	mod	value	00000000	FFFD8000
+pq-mod-cf-b-B	pq	mod	value	FFFB0000	FFFB8000
+pq-mod-cf-w-B	pq	mod	value	FC160000	FC168000
+pq-mod-cf-l-B	pq	mod	value	795E0000	795E8000
+pq-mod-cf-f-B	pq	mod	value	FFFD0000	FFFC0000
 pq-pow-l-q-B	pq	pow	value	?	?-
 pq-pow-l-f-B	pq	pow	value	?	?-
+pq-and-cl-cf-B	pq	bit	compiles now	!noncompile	79600000
+pq-or-cl-cf-B	pq	bit	compiles now	!noncompile	FFFE0000
+pq-eor-cl-cf-B	pq	bit	compiles now	!noncompile	869E0000
 pq-lsl-b-cf-B	pq	shift	refused now	FFE80000	!noncompile
 pq-lsl-w-cf-B	pq	shift	refused now	E0C00000	!noncompile
 pq-lsl-l-cf-B	pq	shift	refused now	CB000000	!noncompile
@@ -890,35 +1380,85 @@ pq-asr-w-cf-B	pq	shift	refused now	FF830000	!noncompile
 pq-asr-l-cf-B	pq	shift	refused now	0F2C0000	!noncompile
 pq-asr-q-cf-B	pq	shift	refused now	FFFFD000	!noncompile
 pq-asr-cf-cf-B	pq	shift	refused now	FFFFD000	!noncompile
+pf-mod-w-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-w-cf-B	pf	mod	value	00000000	A00000C2
+pf-mod-l-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-l-cf-B	pf	mod	value	00000000	A00000C2
+pf-mod-q-b-B	pf	mod	value	800000C3	900000C3
+pf-mod-q-w-B	pf	mod	value	FA4000CA	FA6000CA
+pf-mod-q-l-B	pf	mod	value	C35080D1	C350C0D1
+pf-mod-q-f-B	pf	mod	value	C00000C2	800000C3
+pf-mod-q-cb-B	pf	mod	value	800000C3	900000C3
+pf-mod-q-cw-B	pf	mod	value	FA4000CA	FA6000CA
+pf-mod-q-cl-B	pf	mod	value	C35080D1	C350C0D1
+pf-mod-f-b-B	pf	mod	value	A00000C3	B00000C3
+pf-mod-f-w-B	pf	mod	value	FA8000CA	FAA000CA
+pf-mod-f-l-B	pf	mod	value	C35100D1	C35140D1
+pf-mod-f-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-f-cb-B	pf	mod	value	A00000C3	B00000C3
+pf-mod-f-cw-B	pf	mod	value	FA8000CA	FAA000CA
+pf-mod-f-cl-B	pf	mod	value	C35100D1	C35140D1
+pf-mod-f-cf-B	pf	mod	value	00000000	A00000C2
+pf-mod-cw-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-cl-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-cf-b-B	pf	mod	value	800000C3	900000C3
+pf-mod-cf-w-B	pf	mod	value	FA4000CA	FA6000CA
+pf-mod-cf-l-B	pf	mod	value	C35080D1	C350C0D1
+pf-mod-cf-f-B	pf	mod	value	C00000C2	800000C3
 if-not-cf-B	if	bit	compiles now	!noncompile	T
 if-div-q-l-B	if	arith	value	T	F
 if-mod-b-q-B	if	mod	value	T	F
 if-mod-w-q-B	if	mod	value	F	T
+if-mod-w-cf-B	if	mod	value	F	T
 if-mod-l-q-B	if	mod	value	F	T
+if-mod-l-cf-B	if	mod	value	F	T
+if-mod-f-q-B	if	mod	value	F	T
+if-mod-f-cf-B	if	mod	value	F	T
 if-mod-cb-q-B	if	mod	value	T	F
 if-mod-cw-q-B	if	mod	value	F	T
 if-mod-cl-q-B	if	mod	value	F	T
 if-and-b-cf-B	if	bit	compiles now	!noncompile	T
 if-and-w-cf-B	if	bit	compiles now	!noncompile	T
 if-and-l-cf-B	if	bit	compiles now	!noncompile	T
+if-and-cb-cf-B	if	bit	compiles now	!noncompile	T
+if-and-cw-cf-B	if	bit	compiles now	!noncompile	T
+if-and-cl-cf-B	if	bit	compiles now	!noncompile	T
 if-and-cf-b-B	if	bit	compiles now	!noncompile	T
 if-and-cf-w-B	if	bit	compiles now	!noncompile	T
 if-and-cf-l-B	if	bit	compiles now	!noncompile	T
 if-and-cf-q-B	if	bit	compiles now	!noncompile	T
+if-and-cf-cb-B	if	bit	compiles now	!noncompile	T
+if-and-cf-cw-B	if	bit	compiles now	!noncompile	T
+if-and-cf-cl-B	if	bit	compiles now	!noncompile	T
+if-and-cf-cf-B	if	bit	compiles now	!noncompile	T
 if-or-b-cf-B	if	bit	compiles now	!noncompile	T
 if-or-w-cf-B	if	bit	compiles now	!noncompile	T
 if-or-l-cf-B	if	bit	compiles now	!noncompile	T
+if-or-cb-cf-B	if	bit	compiles now	!noncompile	T
+if-or-cw-cf-B	if	bit	compiles now	!noncompile	T
+if-or-cl-cf-B	if	bit	compiles now	!noncompile	T
 if-or-cf-b-B	if	bit	compiles now	!noncompile	T
 if-or-cf-w-B	if	bit	compiles now	!noncompile	T
 if-or-cf-l-B	if	bit	compiles now	!noncompile	T
 if-or-cf-q-B	if	bit	compiles now	!noncompile	T
+if-or-cf-cb-B	if	bit	compiles now	!noncompile	T
+if-or-cf-cw-B	if	bit	compiles now	!noncompile	T
+if-or-cf-cl-B	if	bit	compiles now	!noncompile	T
+if-or-cf-cf-B	if	bit	compiles now	!noncompile	T
 if-eor-b-cf-B	if	bit	compiles now	!noncompile	T
 if-eor-w-cf-B	if	bit	compiles now	!noncompile	T
 if-eor-l-cf-B	if	bit	compiles now	!noncompile	T
+if-eor-cb-cf-B	if	bit	compiles now	!noncompile	T
+if-eor-cw-cf-B	if	bit	compiles now	!noncompile	T
+if-eor-cl-cf-B	if	bit	compiles now	!noncompile	T
 if-eor-cf-b-B	if	bit	compiles now	!noncompile	T
 if-eor-cf-w-B	if	bit	compiles now	!noncompile	T
 if-eor-cf-l-B	if	bit	compiles now	!noncompile	T
 if-eor-cf-q-B	if	bit	compiles now	!noncompile	F
+if-eor-cf-cb-B	if	bit	compiles now	!noncompile	T
+if-eor-cf-cw-B	if	bit	compiles now	!noncompile	T
+if-eor-cf-cl-B	if	bit	compiles now	!noncompile	T
+if-eor-cf-cf-B	if	bit	compiles now	!noncompile	F
 if-lsl-q-cf-B	if	shift	refused now	T	!noncompile
 if-lsl-cf-b-B	if	shift	compiles now	!noncompile	T
 if-lsl-cf-w-B	if	shift	compiles now	!noncompile	T
@@ -957,38 +1497,74 @@ print-sub-q-l-B	print	arith	value	-31073.5	99998
 print-mul-q-l-B	print	arith	value	18928	150000
 print-mod-b-q-B	print	mod	value	-3	0
 print-mod-w-q-B	print	mod	value	0	-2.5
+print-mod-w-cf-B	print	mod	value	0	-2.5
 print-mod-l-q-B	print	mod	value	0	-2.5
+print-mod-l-cf-B	print	mod	value	0	-2.5
 print-mod-q-b-B	print	mod	value	-5	-4.5
 print-mod-q-w-B	print	mod	value	-1002	-1001.5
 print-mod-q-l-B	print	mod	value	31070	-100002
+print-mod-q-f-B	print	mod	value	-3	-4
 print-mod-q-cb-B	print	mod	value	-5	-4.5
 print-mod-q-cw-B	print	mod	value	-1002	-1001.5
+print-mod-f-b-B	print	mod	value	-5	-5.5
+print-mod-f-w-B	print	mod	value	-1002	-1002.5
+print-mod-f-l-B	print	mod	value	-100002	-100002.5
+print-mod-f-q-B	print	mod	value	0	-2.5
+print-mod-f-cb-B	print	mod	value	-5	-5.5
+print-mod-f-cw-B	print	mod	value	-1002	-1002.5
+print-mod-f-cl-B	print	mod	value	-100002	-100002.5
+print-mod-f-cf-B	print	mod	value	0	-2.5
 print-mod-cb-q-B	print	mod	value	-3	0
 print-mod-cw-q-B	print	mod	value	0	-2.5
 print-mod-cl-q-B	print	mod	value	0	-2.5
+print-mod-cf-b-B	print	mod	value	-4	-4.5
+print-mod-cf-w-B	print	mod	value	-1001	-1001.5
+print-mod-cf-l-B	print	mod	value	-100001	-100001.5
+print-mod-cf-f-B	print	mod	value	-3	-4
 print-and-b-cf-B	print	bit	compiles now	!noncompile	-4
 print-and-w-cf-B	print	bit	compiles now	!noncompile	-1000
 print-and-l-cf-B	print	bit	compiles now	!noncompile	-100000
 print-and-q-l-B	print	bit	value	31072	-100000
+print-and-cb-cf-B	print	bit	compiles now	!noncompile	-4
+print-and-cw-cf-B	print	bit	compiles now	!noncompile	-1000
+print-and-cl-cf-B	print	bit	compiles now	!noncompile	-100000
 print-and-cf-b-B	print	bit	compiles now	!noncompile	-4
 print-and-cf-w-B	print	bit	compiles now	!noncompile	-1000
 print-and-cf-l-B	print	bit	compiles now	!noncompile	-100000
 print-and-cf-q-B	print	bit	compiles now	!noncompile	-2
+print-and-cf-cb-B	print	bit	compiles now	!noncompile	-4
+print-and-cf-cw-B	print	bit	compiles now	!noncompile	-1000
+print-and-cf-cl-B	print	bit	compiles now	!noncompile	-100000
+print-and-cf-cf-B	print	bit	compiles now	!noncompile	-2
 print-or-b-cf-B	print	bit	compiles now	!noncompile	-1
 print-or-w-cf-B	print	bit	compiles now	!noncompile	-2
 print-or-l-cf-B	print	bit	compiles now	!noncompile	-2
+print-or-cb-cf-B	print	bit	compiles now	!noncompile	-1
+print-or-cw-cf-B	print	bit	compiles now	!noncompile	-2
+print-or-cl-cf-B	print	bit	compiles now	!noncompile	-2
 print-or-cf-b-B	print	bit	compiles now	!noncompile	-1
 print-or-cf-w-B	print	bit	compiles now	!noncompile	-2
 print-or-cf-l-B	print	bit	compiles now	!noncompile	-2
 print-or-cf-q-B	print	bit	compiles now	!noncompile	-2
+print-or-cf-cb-B	print	bit	compiles now	!noncompile	-1
+print-or-cf-cw-B	print	bit	compiles now	!noncompile	-2
+print-or-cf-cl-B	print	bit	compiles now	!noncompile	-2
+print-or-cf-cf-B	print	bit	compiles now	!noncompile	-2
 print-eor-b-cf-B	print	bit	compiles now	!noncompile	3
 print-eor-w-cf-B	print	bit	compiles now	!noncompile	998
 print-eor-l-cf-B	print	bit	compiles now	!noncompile	99998
 print-eor-q-l-B	print	bit	value	-31074	99998
+print-eor-cb-cf-B	print	bit	compiles now	!noncompile	3
+print-eor-cw-cf-B	print	bit	compiles now	!noncompile	998
+print-eor-cl-cf-B	print	bit	compiles now	!noncompile	99998
 print-eor-cf-b-B	print	bit	compiles now	!noncompile	3
 print-eor-cf-w-B	print	bit	compiles now	!noncompile	998
 print-eor-cf-l-B	print	bit	compiles now	!noncompile	99998
 print-eor-cf-q-B	print	bit	compiles now	!noncompile	0
+print-eor-cf-cb-B	print	bit	compiles now	!noncompile	3
+print-eor-cf-cw-B	print	bit	compiles now	!noncompile	998
+print-eor-cf-cl-B	print	bit	compiles now	!noncompile	99998
+print-eor-cf-cf-B	print	bit	compiles now	!noncompile	0
 print-lsl-q-cf-B	print	shift	refused now	-12	!noncompile
 print-lsl-cf-b-B	print	shift	compiles now	!noncompile	-12
 print-lsl-cf-w-B	print	shift	compiles now	!noncompile	-12
@@ -1022,31 +1598,56 @@ print-asr-cf-cb-B	print	shift	compiles now	!noncompile	-.1875
 print-asr-cf-cw-B	print	shift	compiles now	!noncompile	-.1875
 print-asr-cf-cl-B	print	shift	compiles now	!noncompile	-.1875
 i1-not-cf-I	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-mod-b-f-I	i1	mod	value	17/17	1/1
+i1-mod-f-q-I	i1	mod	value	1/1	17/17
+i1-mod-f-cf-I	i1	mod	value	1/1	17/17
+i1-mod-cb-f-I	i1	mod	value	17/17	1/1
 i1-mod-cl-q-I	i1	mod	value	1/1	17/17
 i1-and-b-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-and-w-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-l-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-q-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-and-cb-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-and-cw-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-and-cl-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-cf-b-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-and-cf-w-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-cf-l-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-cf-q-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-and-cf-cb-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-and-cf-cw-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-and-cf-cl-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-and-cf-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-or-b-cf-I	i1	bit	compiles now	!noncompile/!noncompile	49/49
 i1-or-w-cf-I	i1	bit	compiles now	!noncompile/!noncompile	337/337
 i1-or-l-cf-I	i1	bit	compiles now	!noncompile/!noncompile	497/497
 i1-or-q-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-or-cb-cf-I	i1	bit	compiles now	!noncompile/!noncompile	49/49
+i1-or-cw-cf-I	i1	bit	compiles now	!noncompile/!noncompile	3217/3217
+i1-or-cl-cf-I	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-cf-b-I	i1	bit	compiles now	!noncompile/!noncompile	49/49
 i1-or-cf-w-I	i1	bit	compiles now	!noncompile/!noncompile	337/337
 i1-or-cf-l-I	i1	bit	compiles now	!noncompile/!noncompile	497/497
 i1-or-cf-q-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
+i1-or-cf-cb-I	i1	bit	compiles now	!noncompile/!noncompile	49/49
+i1-or-cf-cw-I	i1	bit	compiles now	!noncompile/!noncompile	3217/3217
+i1-or-cf-cl-I	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cf-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-eor-b-cf-I	i1	bit	compiles now	!noncompile/!noncompile	33/33
 i1-eor-w-cf-I	i1	bit	compiles now	!noncompile/!noncompile	337/337
 i1-eor-l-cf-I	i1	bit	compiles now	!noncompile/!noncompile	497/497
 i1-eor-q-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-eor-cb-cf-I	i1	bit	compiles now	!noncompile/!noncompile	33/33
+i1-eor-cw-cf-I	i1	bit	compiles now	!noncompile/!noncompile	3217/3217
+i1-eor-cl-cf-I	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-eor-cf-b-I	i1	bit	compiles now	!noncompile/!noncompile	33/33
 i1-eor-cf-w-I	i1	bit	compiles now	!noncompile/!noncompile	337/337
 i1-eor-cf-l-I	i1	bit	compiles now	!noncompile/!noncompile	497/497
 i1-eor-cf-q-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-eor-cf-cb-I	i1	bit	compiles now	!noncompile/!noncompile	33/33
+i1-eor-cf-cw-I	i1	bit	compiles now	!noncompile/!noncompile	3217/3217
+i1-eor-cf-cl-I	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-eor-cf-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-lsl-cf-b-I	i1	shift	compiles now	!noncompile/!noncompile	65/65
 i1-lsl-cf-w-I	i1	shift	compiles now	!noncompile/!noncompile	65/65
 i1-lsl-cf-l-I	i1	shift	compiles now	!noncompile/!noncompile	65/65
@@ -1076,31 +1677,56 @@ i1-asr-cf-cb-I	i1	shift	compiles now	!noncompile/!noncompile	1/1
 i1-asr-cf-cw-I	i1	shift	compiles now	!noncompile/!noncompile	1/1
 i1-asr-cf-cl-I	i1	shift	compiles now	!noncompile/!noncompile	1/1
 i2-not-cf-I	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-mod-b-f-I	i2	mod	value	17/17	1/1
+i2-mod-f-q-I	i2	mod	value	1/1	17/17
+i2-mod-f-cf-I	i2	mod	value	1/1	17/17
+i2-mod-cb-f-I	i2	mod	value	17/17	1/1
 i2-mod-cl-q-I	i2	mod	value	1/1	17/17
 i2-and-b-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-and-w-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-l-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-q-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-and-cb-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-and-cw-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-and-cl-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-cf-b-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-and-cf-w-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-cf-l-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-cf-q-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-and-cf-cb-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-and-cf-cw-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-and-cf-cl-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-and-cf-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-or-b-cf-I	i2	bit	compiles now	!noncompile/!noncompile	49/49
 i2-or-w-cf-I	i2	bit	compiles now	!noncompile/!noncompile	337/337
 i2-or-l-cf-I	i2	bit	compiles now	!noncompile/!noncompile	497/497
 i2-or-q-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-or-cb-cf-I	i2	bit	compiles now	!noncompile/!noncompile	49/49
+i2-or-cw-cf-I	i2	bit	compiles now	!noncompile/!noncompile	3217/3217
+i2-or-cl-cf-I	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-cf-b-I	i2	bit	compiles now	!noncompile/!noncompile	49/49
 i2-or-cf-w-I	i2	bit	compiles now	!noncompile/!noncompile	337/337
 i2-or-cf-l-I	i2	bit	compiles now	!noncompile/!noncompile	497/497
 i2-or-cf-q-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
+i2-or-cf-cb-I	i2	bit	compiles now	!noncompile/!noncompile	49/49
+i2-or-cf-cw-I	i2	bit	compiles now	!noncompile/!noncompile	3217/3217
+i2-or-cf-cl-I	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cf-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-eor-b-cf-I	i2	bit	compiles now	!noncompile/!noncompile	33/33
 i2-eor-w-cf-I	i2	bit	compiles now	!noncompile/!noncompile	337/337
 i2-eor-l-cf-I	i2	bit	compiles now	!noncompile/!noncompile	497/497
 i2-eor-q-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-eor-cb-cf-I	i2	bit	compiles now	!noncompile/!noncompile	33/33
+i2-eor-cw-cf-I	i2	bit	compiles now	!noncompile/!noncompile	3217/3217
+i2-eor-cl-cf-I	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-eor-cf-b-I	i2	bit	compiles now	!noncompile/!noncompile	33/33
 i2-eor-cf-w-I	i2	bit	compiles now	!noncompile/!noncompile	337/337
 i2-eor-cf-l-I	i2	bit	compiles now	!noncompile/!noncompile	497/497
 i2-eor-cf-q-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-eor-cf-cb-I	i2	bit	compiles now	!noncompile/!noncompile	33/33
+i2-eor-cf-cw-I	i2	bit	compiles now	!noncompile/!noncompile	3217/3217
+i2-eor-cf-cl-I	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-eor-cf-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-lsl-cf-b-I	i2	shift	compiles now	!noncompile/!noncompile	65/65
 i2-lsl-cf-w-I	i2	shift	compiles now	!noncompile/!noncompile	65/65
 i2-lsl-cf-l-I	i2	shift	compiles now	!noncompile/!noncompile	65/65
@@ -1132,6 +1758,9 @@ i2-asr-cf-cl-I	i2	shift	compiles now	!noncompile/!noncompile	1/1
 i1-not-cf-J	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-mod-b-q-J	i1	mod	value	!outside/!runtime	1/1
 i1-mod-w-q-J	i1	mod	value	1/1	!outside/!runtime
+i1-mod-w-cf-J	i1	mod	value	1/1	!outside/!runtime
+i1-mod-f-q-J	i1	mod	value	1/1	!outside/!runtime
+i1-mod-f-cf-J	i1	mod	value	1/1	!outside/!runtime
 i1-mod-cb-q-J	i1	mod	value	!outside/!runtime	1/1
 i1-mod-cw-q-J	i1	mod	value	1/1	!outside/!runtime
 i1-mod-cl-q-J	i1	mod	value	1/1	!outside/!runtime
@@ -1139,26 +1768,47 @@ i1-and-b-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-w-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-l-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-q-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cb-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cw-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cl-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-cf-b-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-cf-w-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-cf-l-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-cf-q-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cf-cb-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cf-cw-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cf-cl-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-and-cf-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-b-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-w-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-l-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-q-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cb-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cw-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cl-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-cf-b-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-cf-w-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-cf-l-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-or-cf-q-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cf-cb-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cf-cw-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cf-cl-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-or-cf-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-eor-b-cf-J	i1	bit	compiles now	!noncompile/!noncompile	49/49
 i1-eor-w-cf-J	i1	bit	compiles now	!noncompile/!noncompile	289/289
 i1-eor-l-cf-J	i1	bit	compiles now	!noncompile/!noncompile	449/449
 i1-eor-q-cf-J	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-eor-cb-cf-J	i1	bit	compiles now	!noncompile/!noncompile	49/49
+i1-eor-cw-cf-J	i1	bit	compiles now	!noncompile/!noncompile	3169/3169
+i1-eor-cl-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-eor-cf-b-J	i1	bit	compiles now	!noncompile/!noncompile	49/49
 i1-eor-cf-w-J	i1	bit	compiles now	!noncompile/!noncompile	289/289
 i1-eor-cf-l-J	i1	bit	compiles now	!noncompile/!noncompile	449/449
 i1-eor-cf-q-J	i1	bit	compiles now	!noncompile/!noncompile	1/1
+i1-eor-cf-cb-J	i1	bit	compiles now	!noncompile/!noncompile	49/49
+i1-eor-cf-cw-J	i1	bit	compiles now	!noncompile/!noncompile	3169/3169
+i1-eor-cf-cl-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i1-eor-cf-cf-J	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-lsl-cf-b-J	i1	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-lsl-cf-w-J	i1	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-lsl-cf-l-J	i1	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
@@ -1190,6 +1840,9 @@ i1-asr-cf-cl-J	i1	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-not-cf-J	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-mod-b-q-J	i2	mod	value	!outside/!runtime	1/1
 i2-mod-w-q-J	i2	mod	value	1/1	!outside/!runtime
+i2-mod-w-cf-J	i2	mod	value	1/1	!outside/!runtime
+i2-mod-f-q-J	i2	mod	value	1/1	!outside/!runtime
+i2-mod-f-cf-J	i2	mod	value	1/1	!outside/!runtime
 i2-mod-cb-q-J	i2	mod	value	!outside/!runtime	1/1
 i2-mod-cw-q-J	i2	mod	value	1/1	!outside/!runtime
 i2-mod-cl-q-J	i2	mod	value	1/1	!outside/!runtime
@@ -1197,26 +1850,47 @@ i2-and-b-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-w-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-l-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-q-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cb-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cw-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cl-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-cf-b-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-cf-w-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-cf-l-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-cf-q-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cf-cb-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cf-cw-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cf-cl-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-and-cf-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-b-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-w-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-l-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-q-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cb-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cw-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cl-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-cf-b-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-cf-w-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-cf-l-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-or-cf-q-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cf-cb-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cf-cw-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cf-cl-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-or-cf-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-eor-b-cf-J	i2	bit	compiles now	!noncompile/!noncompile	49/49
 i2-eor-w-cf-J	i2	bit	compiles now	!noncompile/!noncompile	289/289
 i2-eor-l-cf-J	i2	bit	compiles now	!noncompile/!noncompile	449/449
 i2-eor-q-cf-J	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-eor-cb-cf-J	i2	bit	compiles now	!noncompile/!noncompile	49/49
+i2-eor-cw-cf-J	i2	bit	compiles now	!noncompile/!noncompile	3169/3169
+i2-eor-cl-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-eor-cf-b-J	i2	bit	compiles now	!noncompile/!noncompile	49/49
 i2-eor-cf-w-J	i2	bit	compiles now	!noncompile/!noncompile	289/289
 i2-eor-cf-l-J	i2	bit	compiles now	!noncompile/!noncompile	449/449
 i2-eor-cf-q-J	i2	bit	compiles now	!noncompile/!noncompile	1/1
+i2-eor-cf-cb-J	i2	bit	compiles now	!noncompile/!noncompile	49/49
+i2-eor-cf-cw-J	i2	bit	compiles now	!noncompile/!noncompile	3169/3169
+i2-eor-cf-cl-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
+i2-eor-cf-cf-J	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-lsl-cf-b-J	i2	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-lsl-cf-w-J	i2	shift	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-lsl-cf-l-J	i2	shift	compiles now	!noncompile/!noncompile	!outside/!runtime

@@ -81,7 +81,9 @@ enum {
 
 /** @brief The path of an operation's code (exprtyping_op.path). */
 enum {
-    ETY_PLAIN = 'p',            /* both operands in las = ras, today's handler of that type */
+    ETY_PLAIN = 'p',            /* both operands in las = ras, today's handler of that type; a
+                                   Mod with the result Quick or Float is the exact Mod (an operand
+                                   with a fraction) */
     ETY_COMPARE = 'c',          /* a comparison in the common type las = ras, the lower operand up */
     ETY_EXACT = 'x',            /* a comparison of two values in their own formats, exactly (a Long
                                    with a Quick, or the two sides of a fractional comparison) */

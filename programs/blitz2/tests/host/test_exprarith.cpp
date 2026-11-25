@@ -239,6 +239,68 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
     CHECK(f == 0);
 }
 
+TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]")
+{
+    // "expr-tree-5 group 3 findings: four rule points of P+", 4: an
+    // intermediate beyond 32 bits keeps its whole part; the chains with a
+    // Long and Quicks under a wanted Long (a / towards zero at the
+    // operator), Word and Quick (computed 48.16: a Long takes part)
+    rng g;
+    int differ = 0, compared = 0;
+
+    for (int i = 0; i < 1500; i++) {
+        int32_t l = g.whole(1 + (int)(g.next() % 31)), l2 = g.whole(1 + (int)(g.next() % 20)), q = g.quick(i),
+                p = g.quick(i + 5);
+
+        if (i % 47 == 0)
+            l2 = 0;
+        std::string vars = "l.l=" + dec(l) + " l2.l=" + dec(l2) + " q=" + q16text(q) + " p=" + q16text(p);
+        for (enum em_ctx ctx : { EM_DL, EM_DW, EM_DQ }) {
+            unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DW ? ET_WORD : ET_QUICK;
+            int64_t L = exprarith_whole_q48(l), L2 = exprarith_whole_q48(l2), Q = exprarith_q16_q48(q),
+                    P = exprarith_q16_q48(p), d0 = exprarith_div0(want);
+            unsigned f = 0;
+            // a / under a wanted Long: a whole number at once
+            auto div = [&](int64_t a, int64_t b) {
+                int64_t v = exprarith_q48(ETO_DIV, a, b, d0, &f);
+                return want == ET_LONG ? exprarith_whole_q48(exprarith_q48_trunc(v, ET_LONG, &f)) : v;
+            };
+            auto take = [&](int64_t v, bool topdiv) {
+                if (want == ET_QUICK)
+                    return exprarith_q48_q16(v, &f);
+                return topdiv && want == ET_LONG ? exprarith_q48_trunc(v, ET_LONG, &f)
+                                                 : exprarith_q48_floor(v, ET_LONG, &f);
+            };
+            const struct {
+                const char *text;
+                int32_t r;
+            } forms[] = {
+                { "l*q/l2", take(div(exprarith_q48(ETO_MUL, L, Q, 0, &f), L2), true) },
+                { "l*q*p", take(exprarith_q48(ETO_MUL, exprarith_q48(ETO_MUL, L, Q, 0, &f), P, 0, &f), false) },
+                { "l*q-l2*p",
+                  take(exprarith_q48(ETO_SUB, exprarith_q48(ETO_MUL, L, Q, 0, &f), exprarith_q48(ETO_MUL, L2, P, 0, &f),
+                                     0, &f),
+                       false) },
+                { "(l+q)*p", take(exprarith_q48(ETO_MUL, exprarith_q48(ETO_ADD, L, Q, 0, &f), P, 0, &f), false) },
+                { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q), L2, 0, &f), false) },
+                { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, exprarith_q48(ETO_MUL, L, Q, 0, &f), L2, 0, &f), false) },
+            };
+
+            for (const auto &fm : forms) {
+                std::string m = model(fm.text, vars, ctx, DEC), mine = dest(ctx, fm.r, 0);
+
+                compared++;
+                if (m != mine && differ++ < 10)
+                    FAIL_CHECK(std::string(fm.text) + " " + vars + " " + em_ctx_name(ctx) + ": the model " + m
+                               + ", exprarith " + mine);
+            }
+        }
+    }
+    CHECK(differ == 0);
+    CHECK(compared > 25000);
+    CHECK(model("l*q/l2", "l.l=2000000000 q=2 l2.l=4", EM_DL, DEC) == "1000000000");
+}
+
 TEST_CASE("exprarith: no wanted type takes a Quick when it fits, else the whole part", "[exprarith]")
 {
     unsigned f = 0;

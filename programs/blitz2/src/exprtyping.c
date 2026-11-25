@@ -275,6 +275,7 @@ struct ctx {
     int cmplong;                /* in a comparison's operands: whole-number operations at least Long */
     int reachedf;               /* the expression is typed under Float as a reached format (part 7) */
     int fmtfloat;               /* the Float typed under is a reached format, no wanted type */
+    int bittaker;               /* the operand typed is taken by a bit operator, shift or NOT */
 };
 
 static unsigned tmax(unsigned a, unsigned b)
@@ -402,6 +403,32 @@ static int const_isfloat(const struct ctx *c, struct rq a, unsigned want, unsign
 
 enum { BIT_NONE, BIT_OPERAND, BIT_COUNT, BIT_SHIFTED };
 
+/* a comparison in a constant subtree */
+static int has_compare(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_BIN: return exprtype_iscompare(n->op) || has_compare(n->l) || has_compare(n->r);
+    case ETN_NEG: return has_compare(n->l);
+    default: return 0;
+    }
+}
+
+/* AND, OR or EOR in a constant subtree on an operand with a point or a
+   fraction */
+static int bit_fraction(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_BIN:
+        if ((n->op == ETO_AND || n->op == ETO_OR || n->op == ETO_EOR || n->op == ETO_AMP || n->op == ETO_BAR)
+            && (has_point(n->l) || has_point(n->r) || !rq_isint(const_value(n->l))
+                || !rq_isint(const_value(n->r))))
+            return 1;
+        return bit_fraction(n->l) || bit_fraction(n->r);
+    case ETN_NEG: return bit_fraction(n->l);
+    default: return 0;
+    }
+}
+
 /* the type of the constant subtree n beside an operand of type beside (0:
    none) under the wanted type want; role: BIT_* (an operand of AND, OR,
    EOR or NOT, a shift count, the shifted operand) */
@@ -435,6 +462,17 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
             tt = rq_fits(a, ET_BYTE) ? ET_BYTE : rq_fits(a, ET_WORD) ? ET_WORD : ET_LONG;
             bitwhole = 1;
         }
+    }
+    if (!bitwhole && role != BIT_SHIFTED && bit_fraction(n) && !has_compare(n)) {
+        /* "expr-tree-5 group 3 findings: four rule points of P+", 3: a bit
+           operator of constants with a fraction folds as b AND 1.5 takes
+           it, the fraction cut (const_value: the whole parts); refused
+           under a wanted Float, as the bit operator with a variable is */
+        if (want == ET_FLOAT && !c->fmtfloat)
+            return refuse(c);
+        a = const_value(n);
+        tt = !beside ? want : rq_isint(a) ? 0 : const_isfloat(c, a, want, beside) ? ET_FLOAT : ET_QUICK;
+        bitwhole = 1;
     }
     if (!bitwhole && (n->kind == ETN_CONST || !beside || !a.ok || (!whole && tt != ET_QUICK && tt != ET_FLOAT)))
         return const_flow(c, n, tt);
@@ -643,25 +681,25 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
 /* a fractional subtree inside an operation of the operand typing (a bit
    operator, a shift, NOT, an expression with a Float: part 6) or the
    operand of a Float comparison (whole set, part 8): computed by the
-   fractional world under want, then taken as a Quick (a comparison: its
-   Word) */
+   fractional world under want, then taken by the operation ("expr-tree-5
+   group 3 findings: four rule points of P+", 1): a 16.16 value as the
+   Quick it is; a 48.16 value by a bit operator, shift or NOT as its whole
+   part, a Long (rounded down), anywhere else straight as a Float; a
+   comparison as its Word */
 static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned want, int whole)
 {
-    unsigned from, f;
-    int force = !want && !is_cmp(n) ? has_long(c, n, 0) : 0;
+    unsigned from, f, t;
+    int force = !want && !is_cmp(n) ? has_long(c, n, 0) : 0, bit = c->bittaker;
 
     f = frac_value(c, n, want, force, whole || (want != ET_LONG && !is_cmp(n)), &from);
     if (is_cmp(n))
         return ET_WORD;
-    /* a 48.16 value is narrowed to a Quick (its low 32 bits): the operation
-       that takes it is typed now, not by the value (the matrix model takes
-       it as a Quick when it fits and else as its whole part, a Long; open
-       point of task 3.3) */
+    t = f != FW_48 ? ET_QUICK : bit ? ET_LONG : ET_FLOAT;
     if (!c->dry) {
-        n->t = ET_QUICK;
+        n->t = (unsigned char)t;
         n->fmt = f == FW_48 ? ETF_Q48 : ETF_Q16;
     }
-    return ET_QUICK;
+    return t;
 }
 
 /* ---------------------------------------------- the operand typing */
@@ -688,15 +726,19 @@ static int operands(struct ctx *c, struct exprtyping_node *n, unsigned want, uns
     int lc = isconst(n->l), rc = isconst(n->r), shift = is_shift(n->op), bit = is_bit(n->op) && !shift;
 
     if (lc && !rc) {
+        c->bittaker = bit || shift;
         *rt = typed(c, n->r, want, 0, BIT_NONE);
         if (c->refused)
             return 1;
+        c->bittaker = bit || shift;
         *lt = typed(c, n->l, want, shift ? 0 : *rt, shift ? BIT_SHIFTED : bit ? BIT_OPERAND : BIT_NONE);
         return c->refused;
     }
+    c->bittaker = bit || shift;
     *lt = typed(c, n->l, want, 0, shift && lc ? BIT_SHIFTED : BIT_NONE);
     if (c->refused)
         return 1;
+    c->bittaker = bit || shift;
     *rt = typed(c, n->r, want, rc ? *lt : 0, rc ? (shift ? BIT_COUNT : bit ? BIT_OPERAND : BIT_NONE) : BIT_NONE);
     return c->refused;
 }
@@ -720,6 +762,7 @@ static unsigned typed_compare(struct ctx *c, struct exprtyping_node *n)
         t[1] = &rt;
         for (i = 0; i < 2 && !c->refused; i++) {
             c->quickhere = has_quick(o[i]);
+            c->bittaker = 0;
             if (!isconst(o[i]) && has_quick(o[i]) && !is_floaty(c, o[i], 0))
                 *t[i] = frac_operand(c, o[i], 0, 1);
             else {
@@ -732,17 +775,21 @@ static unsigned typed_compare(struct ctx *c, struct exprtyping_node *n)
             c->quickhere = sq;
         }
     } else if (isconst(n->l) && !isconst(n->r)) {
+        c->bittaker = 0;
         c->quickhere = has_quick(n->r);
         rt = typed(c, n->r, 0, 0, BIT_NONE);
         if (!c->refused) {
             c->quickhere = 0;
+            c->bittaker = 0;
             lt = typed(c, n->l, 0, rt, BIT_NONE);
         }
     } else {
+        c->bittaker = 0;
         c->quickhere = has_quick(n->l);
         lt = typed(c, n->l, 0, 0, BIT_NONE);
         if (!c->refused) {
             c->quickhere = has_quick(n->r);
+            c->bittaker = 0;
             rt = typed(c, n->r, 0, isconst(n->r) ? lt : 0, BIT_NONE);
         }
     }
@@ -812,6 +859,7 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         mark(c, n, T, ETF_TYPE);
         return T;
     case ETN_NOT:
+        c->bittaker = 1;
         T = typed(c, n->l, want, 0, isconst(n->l) ? BIT_OPERAND : BIT_NONE);
         if (c->refused)
             return 0;
@@ -892,6 +940,16 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
             T = ET_LONG;        /* the Quick rounded down, as under today's Long */
         if ((is_bit(op) || is_shift(op)) && T == ET_FLOAT)
             return refuse(c);
+        if (op == ETO_MOD && (T == ET_QUICK || T == ET_FLOAT)
+            && ((lt >= ET_QUICK && lt <= ET_FLOAT) || (rt >= ET_QUICK && rt <= ET_FLOAT))) {
+            /* "expr-tree-5 group 3 findings: four rule points of P+", 2:
+               an operand with a fraction makes Mod exact with today's sign
+               rule, in the Quick or Float it is computed in (result that
+               type, not today's handler's Word or Long) */
+            record(c, n, ETY_PLAIN, lc ? ETY_CONST : lt, T, 0, rc ? ETY_CONST : rt, T, 0, T);
+            mark(c, n, T, ETF_TYPE);
+            return T;
+        }
     }
     record(c, n, ETY_PLAIN, lc ? ETY_CONST : lt, T, 0, rc ? ETY_CONST : rt, T, 0, handler_result(op, T));
     mark(c, n, handler_result(op, T), ETF_TYPE);

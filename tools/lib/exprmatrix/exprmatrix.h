@@ -412,6 +412,24 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
  *              0); a wider division by 0 gives the largest number with the
  *              dividend's sign, as lqdiv.
  *
+ * The four rule points of "expr-tree-5 group 3 findings: four rule points
+ * of P+" (2026-11-25):
+ * EM_R_PTAKE   "Ganzer Teil als Long": a 48.16 subtree taken by a bit
+ *              operator, shift or Not is its whole part as a Long, taken
+ *              anywhere else in the operand typing (a comparison under a
+ *              wanted Float, beside a Float) the 48.16 value straight to
+ *              Float; decided by the operation, not by the value (a 16.16
+ *              subtree stays the Quick it is).
+ * EM_R_PMODX   "Exakt bei jedem Bruch": Mod is exact with today's sign
+ *              rule whenever an operand has a fraction (a Quick or Float
+ *              operand, a constant with a point), not only beside a Quick
+ *              variable.
+ * EM_R_PBITK   "Wie mit Variable": a bit operator on constants only with
+ *              a fraction (1.5 AND 3) folds as b AND 1.5 takes it, the
+ *              fraction cut.
+ * EM_R_P48     "Modell auf 48 Bit": a 48.16 value keeps a 48-bit whole
+ *              part (design decision 9), not 32 bits.
+ *
  * EM_RULES_P is P (changes 1-6) of the analysis, for the record.
  */
 #define EM_R_PTYPED (1u << 18)
@@ -423,12 +441,17 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 #define EM_R_PCMP (1u << 24)
 #define EM_R_PQDIV (1u << 25)
 #define EM_R_PBITS (1u << 26)
+#define EM_R_PTAKE (1u << 27)
+#define EM_R_PMODX (1u << 28)
+#define EM_R_PBITK (1u << 29)
+#define EM_R_P48 (1u << 30)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 #define EM_RULES_C7KX (EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT)
 #define EM_RULES_P                                                                                                    \
     (EM_RULES_CANDBASE | EM_RULES_C7KX | EM_R_PTYPED | EM_R_PCONST | EM_R_PMOD | EM_R_PNARROW | EM_R_PDIVL            \
      | EM_R_PQDIV)
-#define EM_RULES_DECIDED (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS)
+#define EM_RULES_DECIDED                                                                                              \
+    (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48)
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);
