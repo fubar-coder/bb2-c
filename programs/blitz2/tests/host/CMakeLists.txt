@@ -102,3 +102,25 @@ target_compile_options(test_exprtyping PRIVATE -Wall -Wextra)
 own_warnings(test_exprtyping)
 set_target_properties(test_exprtyping PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME blitz2_exprtyping COMMAND test_exprtyping)
+
+#   exprfold the constant folding of whole-number and Quick operations in C
+#            (src/exprfold.c, change expr-tree-5-operand-typing, task 3.6):
+#            single operations against the values of the 68000 code, what
+#            is not folded there, and the matrix's cells of two constants
+#            in the Print context against the expression matrix's model
+#            (EM_RULES_PORTNOW), with a planted wrong fold.
+add_library(blitz2_exprfold_host STATIC ${BLITZ2_SRC}/exprfold.c)
+set_target_properties(blitz2_exprfold_host PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
+target_compile_options(blitz2_exprfold_host PRIVATE -Wall -Wextra -pedantic)
+own_warnings(blitz2_exprfold_host)
+target_include_directories(blitz2_exprfold_host PUBLIC ${BLITZ2_SRC})
+target_link_libraries(blitz2_exprfold_host PUBLIC blitz2_exprarith_host blitz2_exprtype_host)
+
+add_executable(test_exprfold test_exprfold.cpp)
+target_link_libraries(test_exprfold PRIVATE blitz2_exprfold_host lib_exprmatrix snitch::snitch)
+target_compile_definitions(test_exprfold PRIVATE
+	EXPRMATRIX_TXT="${exprtype_repo}/tests/corpus/tests-exprmatrix/matrix.txt")
+target_compile_options(test_exprfold PRIVATE -Wall -Wextra)
+own_warnings(test_exprfold)
+set_target_properties(test_exprfold PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME blitz2_exprfold COMMAND test_exprfold)

@@ -15,6 +15,7 @@
 #include "blitz2.h"
 #include "exprtype.h"
 #include "exprtree.h"
+#include "exprfold.h"
 #include <proto/exec.h>
 #include <string.h>
 
@@ -564,6 +565,7 @@ void overchk(UWORD token)
         return;
     if (cfetchmode)
         return;
+    overchks++;                                     /* no fold in C over it */
     if (regat) {
         pokewd(overchk_code[0]);                    /* move.l d0,-(a7) */
         pokewd(regat | overchk_code[2]);            /* move.l Dn,d0 */
@@ -715,8 +717,14 @@ void convtype(UWORD from, UWORD to)
     if (idx < 0 || idx >= 49)
         return;
     h = convtable[idx];
-    if (h)
+    if (h) {
+        ULONG at = foldat();
+        UWORD checks = overchks;
+
         h();                        /* jmp (a0) */
+        if (overchks == checks)     /* the code of the conversion only */
+            foldnote(FN_CONV, from, to, 0, at);
+    }
 }
 
 /* blitz2.s:14693 routines for type conversion */
@@ -1211,18 +1219,151 @@ void exprresume(struct exprunit *s)
 }
 
 
+/* ===================================================== the fold in C
+   No asm counterpart (task 3.6 of expr-tree-5-operand-typing; exprfold.h):
+   the code a constant's value goes through on its way to an operator (the
+   constant's move, a fold's move, the minus signs, Not, the conversions,
+   getelement's push and pull of d6) is noted when it is written, with what it does to its register.  The
+   fold of two constants computes the operation from them in C
+   (exprfold_binop with exprtype_binop's decision): when the notes cover
+   the code from the left operand's start to the operation without a gap
+   and that code is still the one noted.  Otherwise (a Float, code that is
+   not noted, an overflow check of the debugger in the operation's code,
+   the CPU's trap of a Quick Mod by a divisor below 1, a Long or Quick *
+   of lmullib, whose overflow depends on the library loaded:
+   exprfold_libdep) the code is run, as the original did. */
+#define FOLDNOTES 32                /* the notes kept: the operands of one fold need a few */
+#define FOLDCODE 8                  /* the longest code noted, in words */
+struct foldnote {
+    ULONG from, to;                 /* the code */
+    ULONG v;                        /* FN_SETL, FN_SETW: the value */
+    UBYTE kind, reg, a, b;          /* FN_*, its register, its types or count */
+    UWORD code[FOLDCODE];
+};
+static struct foldnote foldnotes[FOLDNOTES];
+static UWORD nfoldnotes;
+/* the overflow checks written (overchk): code the fold in C does not run */
+UWORD overchks;
+/* the operation operate writes: its decision, where its code begins */
+static struct exprtype_bin foldd;
+static UWORD foldop, foldleft, foldchecks;
+static ULONG foldopat;
+
+/* no asm counterpart: where the code written next begins (pokewd's
+   alignment) */
+ULONG foldat(void)
+{
+    return (pc + 1) & ~1UL;
+}
+
+/* no asm counterpart: the code from at to pc is of kind kind on D(regat)
+   (a and b its types or its count, v its value).  The notes of code at or
+   behind at are gone (written over). */
+void foldnote(UWORD kind, UWORD a, UWORD b, ULONG v, ULONG at)
+{
+    struct foldnote *n;
+    UWORD i, k = 0;
+
+    for (i = 0; i < nfoldnotes; i++)
+        if (foldnotes[i].to <= at)
+            foldnotes[k++] = foldnotes[i];
+    nfoldnotes = k;
+    if (nomemleft || pc <= at || pc - at > 2 * FOLDCODE)
+        return;
+    if (nfoldnotes == FOLDNOTES) {  /* the oldest goes */
+        memmove(foldnotes, foldnotes + 1, sizeof foldnotes - sizeof foldnotes[0]);
+        nfoldnotes--;
+    }
+    n = &foldnotes[nfoldnotes++];
+    n->from = at;
+    n->to = pc;
+    n->v = v;
+    n->kind = (UBYTE)kind;
+    n->reg = (UBYTE)regat;
+    n->a = (UBYTE)a;
+    n->b = (UBYTE)b;
+    for (i = 0; at + 2 * i < pc; i++)
+        n->code[i] = W_(at + 2 * i);
+}
+
+/* no asm counterpart: the registers after the code from at to end, by the
+   notes (FALSE: not all of it noted, or not as noted) */
+static BOOL foldregs(ULONG at, ULONG end, struct exprfold_reg *reg)
+{
+    const struct foldnote *n;
+    struct exprfold_reg saved[4];   /* getelement's pushes of d6 */
+    UWORD i, nsaved = 0;
+    int ok;
+
+    memset(reg, 0, 8 * sizeof *reg);   /* nothing known */
+    while (at < end) {
+        for (i = nfoldnotes; i && foldnotes[i - 1].from != at; i--)
+            ;
+        if (!i)
+            return FALSE;
+        n = &foldnotes[i - 1];
+        if (n->to > end)
+            return FALSE;
+        for (i = 0; n->from + 2 * i < n->to; i++)
+            if (W_(n->from + 2 * i) != n->code[i])
+                return FALSE;
+        switch (n->kind) {
+        case FN_SETL: exprfold_setl(&reg[n->reg], n->v); ok = 1; break;
+        case FN_SETW: exprfold_setw(&reg[n->reg], (UWORD)n->v); ok = 1; break;
+        case FN_NEG: ok = exprfold_neg(&reg[n->reg], n->a, n->b); break;
+        case FN_NOT: ok = exprfold_not(&reg[n->reg], n->a); break;
+        case FN_PUSH:               /* move.x d6,-(a7) */
+            ok = nsaved < 4;
+            if (ok)
+                saved[nsaved++] = reg[6];
+            break;
+        case FN_PULL:               /* move.x d6,d7, move.x (a7)+,d6 */
+            ok = nsaved > 0;
+            if (!ok)
+                break;
+            exprfold_move(&reg[7], &reg[6], n->a);
+            exprfold_move(&reg[6], &saved[--nsaved], n->b);
+            break;
+        default: ok = exprfold_conv(&reg[n->reg], n->a, n->b); break;
+        }
+        if (!ok)
+            return FALSE;
+        at = n->to;
+    }
+    return at == end;
+}
+
+/* no asm counterpart: the operands of the operation operate writes, from
+   at (its left operand's code) in D(regat) and D(regat+1), by the notes */
+static BOOL foldoperands(ULONG at, struct exprfold_reg *l, struct exprfold_reg *r)
+{
+    struct exprfold_reg reg[8];
+
+    if (regat >= 7 || overchks != foldchecks || !foldregs(at, foldopat, reg))
+        return FALSE;
+    *l = reg[regat];
+    *r = reg[regat + 1];
+    return TRUE;
+}
+
 /* blitz2.s:9017 the constant fold of eval5 (exprtree_emit): the code of
    the operator n's two operands (both constants, BNF_FOLD) and the
-   operation is run and replaced by a move of the result (of type `type`)
-   into regat.  Where the left operand's code begins, the relocations and
-   lasta6 then: its first action s (exprtree_operand's startmark). */
+   operation is replaced by a move of the result (of type `type`) into
+   regat.  Where the left operand's code begins, the relocations and
+   lasta6 then: its first action s (exprtree_operand's startmark).
+   DIFF: the result is computed in C from the notes of the operands' code
+   (the fold in C, above); only where they do not cover it (a Float, code
+   not noted, lmullib's * and the other cases named there) the code is
+   run, as the original did. */
 static void constfold(const struct expract *s, UWORD type)
 {
     ULONG at = ((const struct exprnode *)s->p)->start;
     struct m68kregs r;
     struct offnode *node, *keep, **link;
-    ULONG value, foldend;
+    struct exprfold_reg left, right;
+    ULONG value = 0, foldend;
     UWORD opcode;
+    BOOL inc;
 
     /* Set up MOVE.l regat,d0 */
     pokewd(0x2000 | regat);
@@ -1247,16 +1388,20 @@ static void constfold(const struct expract *s, UWORD type)
        evaluated next (earlier lines, insasm prepends) lost their spaces
        inside quotes: #" " gave 0. */
     lasta6 = (WORD)s->y;
+    inc = !exprfold_libdep(foldop, &foldd) && foldoperands(at, &left, &right)
+          && exprfold_binop(foldop, &foldd, foldleft, &left, &right) && exprfold_value(&left, type, &value);
     pc = at;
-    /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
-       registers; C runs the code through callregs with a6 = maths and a5
-       such that ffplib's var slot is `maths` */
-    memset(&r, 0, sizeof(r));
-    r.a[6] = (ULONG)MathBase;
-    r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
-    flushc();
-    callregs((APTR)pc, &r);
-    value = r.d[0];                         /* d0 has got constant! */
+    if (!inc) {
+        /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
+           registers; C runs the code through callregs with a6 = maths and a5
+           such that ffplib's var slot is `maths` */
+        memset(&r, 0, sizeof(r));
+        r.a[6] = (ULONG)MathBase;
+        r.a[5] = (ULONG)&MathBase - (LONG)ffplib->varoff;
+        flushc();
+        callregs((APTR)pc, &r);
+        value = r.d[0];                     /* d0 has got constant! */
+    }
     opcode = (regat << 9) | 0x203c;         /* move.l #x,dn */
     if (type < 3) {
         pokewd(opcode | 0x1000);
@@ -1265,6 +1410,7 @@ static void constfold(const struct expract *s, UWORD type)
         pokewd(opcode);
         pokel(value);
     }
+    foldnote(type < 3 ? FN_SETW : FN_SETL, 0, 0, value, at);
     /* .mode - clean up offset stack.  Fixed (#1049): only the offsets
        inside the folded code (at up to foldend) are freed.  The
        original freed every offset added since the fold began, also the
@@ -1329,6 +1475,11 @@ static UWORD operate(struct exprnode *n, BOOL zeroonly)
     /* Fixed (#1179): a later index, both operands Word values */
     f.words = (n->lflags & BNF_WORDS) != 0;
     d = exprtype_binop(n->op, left, right, &f);
+    foldd = d;                      /* for the fold in C */
+    foldop = n->op;
+    foldleft = left;
+    foldopat = pc;
+    foldchecks = overchks;
     /* Fixed (#1182): a right operand that a comparison lowered below the
        left operand's type (the comparison's boolean, a Word, or a value
        computed from it) is converted up to the left one's type and the
@@ -1710,8 +1861,11 @@ static void endmark(struct expract *a)
 
 static void cutact(struct expract *a)
 {
+    ULONG at = foldat();
+
     (void)a;
     quicktolong();
+    foldnote(FN_CONV, T_QUICK, T_LONG, 0, at);
 }
 
 /* no asm counterpart; replaces blitz2.s:8983 eval5's bsr eval2 - the
@@ -2170,6 +2324,19 @@ static void divzerochk(const struct opentry *op, UWORD type)
         return;                     /* doop refuses the other types */
     if (!foldnow || nomemleft)
         return;                     /* not folded: the program divides */
+    {
+        /* DIFF: the divisor computed in C from the notes of the operands'
+           code (the fold in C), where they cover it */
+        struct exprfold_reg left, right;
+        int isnull;
+
+        if (foldoperands(foldfrom, &left, &right) && exprfold_prepare(foldop, &foldd, &left, &right)
+            && (isnull = exprfold_divzero(foldop, &foldd, &right)) >= 0) {
+            if (isnull)
+                divzeroerr();
+            return;
+        }
+    }
     pokewd(0x2000 | (regat + 1));   /* move.l D(regat+1),d0 */
     pokewd(0x4e75);                 /* rts */
     if (nomemleft) {                /* doop's code reaches as far */
@@ -2803,6 +2970,20 @@ void ritefromd0(void)
 
 /* ============================================================== elements */
 
+/* no asm counterpart: pokeact for getelement's code around an element in
+   d6, noted for the fold in C: the push of d6 (x: its opcode), the move
+   to d7 and the pull (x with ACT_TWO, y) */
+static void spillact(struct expract *a)
+{
+    ULONG at = foldat();
+
+    pokeact(a);
+    if (a->x & ACT_TWO)
+        foldnote(FN_PULL, a->x & 0x1000 ? 2 : 4, a->y & 0x1000 ? 2 : 4, 0, at);
+    else
+        foldnote(FN_PUSH, a->x & 0x1000 ? 2 : 4, 0, 0, at);
+}
+
 /* blitz2.s:9643 getelement - out of registers (regat >= 7): use d6 and
    keep the old d6 on the stack.  Only regat 7 comes here: exprtree_pre refuses an
    operand beyond d7 (Fixed (#1185)). */
@@ -2816,11 +2997,11 @@ static UWORD getelement(UWORD *type)
        comparison) saves the long; the element may be a Long or Quick and
        a move.w would bring back only the low word of the old d6 */
     opcode = *type && *type < 3 ? 0x3f06 : 0x2f06;  /* move.x d6,-(a7) */
-    emitact(pokeact, NULL, opcode, 0);
+    emitact(spillact, NULL, opcode, 0);
     regat--;
     c = getelement2(type);
     regat++;
-    emitact(pokeact, NULL, ACT_TWO | (*type < 3 ? 0x3e06 : 0x2e06), /* move.x d6,d7 */
+    emitact(spillact, NULL, ACT_TWO | (*type < 3 ? 0x3e06 : 0x2e06), /* move.x d6,d7 */
             (opcode & 0xf000) | 0x0c1f);                         /* move.x (a7)+,d6 */
     return c;
 }
@@ -2832,16 +3013,19 @@ static void negemit(struct expract *a)
 {
     const struct exprnode *n = a->p;
     UWORD k;
+    ULONG at;
 
     if (n->flags & EXF_ABSORBED)
         return;                     /* in the literal's FFP value (#1186) */
 
+    at = foldat();
     for (k = n->op; k; k--) {
         if (a->y >= 5)
             fdo2(-60);              /* SPNeg */
         else
             pokewd((a->y >= 3 ? 0x4480 : 0x4440) | regat);  /* neg.l / neg.w */
     }
+    foldnote(FN_NEG, a->y, n->op, 0, at);
 }
 
 /* no asm counterpart; replaces blitz2.s:9667 negate and its recursion
@@ -2896,11 +3080,13 @@ static UWORD bracket(UWORD *type)
 static void notemit(struct expract *a)
 {
     UWORD opcode = regat | 0x4640;  /* not.w */
+    ULONG at = foldat();
 
     if (a->y >= 3)
         opcode ^= 0xc0;             /* not.l */
     pokewd(opcode);
     quickwhole(a->y);               /* Fixed (#1209): Not of floor(q) */
+    foldnote(FN_NOT, a->y, 0, 0, at);
 }
 
 /* blitz2.s:9688 notit - do NOT. (applies to the whole rest of the

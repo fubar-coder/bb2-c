@@ -41,9 +41,11 @@ endfunction()
 # handled), blitz2-ab3 with the AB3 modules src/ab3*.c.
 # src/exprtype.c: the type decisions of an expression, src/exprtree.c:
 # the nodes of an expression and the walk over them, src/exprarith.c: the
-# arithmetic of whole numbers, 16.16 and 48.16 for the constant folding
+# arithmetic of whole numbers, 16.16 and 48.16 for the constant folding,
+# src/exprfold.c: the constant folding of whole and Quick operations in C
 # (no chunk of blitz2.s; pure C, also compiled by the host test tests/host)
-add_library(blitz2_core OBJECT ${chunk_sources} src/exprtype.c src/exprtree.c src/exprarith.c ${glue_sources})
+add_library(blitz2_core OBJECT ${chunk_sources} src/exprtype.c src/exprtree.c src/exprarith.c src/exprfold.c
+	${glue_sources})
 blitz2_compile(blitz2_core)
 # the compiler's own library (libs/compilerlib, #1178), embedded in
 # asmlibs.c (#embed "compilerlib.big")

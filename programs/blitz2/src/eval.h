@@ -212,7 +212,9 @@ extern WORD unknown;
 
 /* Constant folding (eval5, blitz2.s 9007-9083; eval.c constfold, called by
    binopact), DIFF/G: when both operands are constants (BNF_FOLD), the fold
-   appends `move.l Dn,d0 / rts` to the code generated
+   computes the operation in C (the fold in C, below) where the operands'
+   code is noted; otherwise (a Float, code not noted) it appends
+   `move.l Dn,d0 / rts` to the code generated
    for the subexpression and RUNS it at compile time:
        struct m68kregs r;   (d2/a5 of the compiler need no saving in C)
        r.a[6] = (ULONG)MathBase;                         asm: maths
@@ -224,6 +226,20 @@ extern WORD unknown;
    offset nodes added since the left operand began that lie in the folded code
    (exec FreeMem, 8 bytes; fixed #1049: those of a library linked in
    meanwhile stay). */
+
+/* The fold in C (eval.c, task 3.6 of expr-tree-5-operand-typing): the code
+   of a constant's way to an operator is noted where it is written, so that
+   constfold and divzerochk compute from the notes instead of running the
+   code (exprfold.h).  foldat is where the code written next begins;
+   foldnote notes the code from at to pc on D(regat): a move.l or move.w of
+   v, b minus signs on a value of type a, Not of a value of type a, the
+   conversion a -> b, getelement's push of d6 (a bytes) and its move of d6
+   to d7 (a bytes) with the pull of d6 (b bytes).  overchks counts the
+   overflow checks written (code the fold in C does not run). */
+enum { FN_SETL, FN_SETW, FN_NEG, FN_NOT, FN_CONV, FN_PUSH, FN_PULL };
+ULONG foldat(void);
+void foldnote(UWORD kind, UWORD a, UWORD b, ULONG v, ULONG at);
+extern UWORD overchks;
 
 /* ================================================ operator code generators
    blitz2.s:14704 operators - 0-terminated table (moved here from chunk 10's

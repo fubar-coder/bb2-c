@@ -289,12 +289,14 @@ static void constemit(struct expract *a)
         /* .word */
         pokewd((UWORD)(regat << 9) | 0x303c);
         pokewd((UWORD)val);
+        foldnote(FN_SETW, 0, 0, val, at);   /* for the fold in C */
         break;
     case T_LONG:
     case T_QUICK:
         if (l->lflags & ELF_NARROW) {   /* a later index: its low word */
             pokewd((UWORD)(regat << 9) | 0x303c);
             pokewd((UWORD)val);
+            foldnote(FN_SETW, 0, 0, val, at);
             break;
         }
         /* fall through */
@@ -302,6 +304,7 @@ static void constemit(struct expract *a)
         /* .long */
         pokewd((UWORD)(regat << 9) | 0x203c);
         pokel(val);
+        foldnote(FN_SETL, 0, 0, val, at);
         break;
     default:
         mismatcherr();
