@@ -152,7 +152,7 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 - **THEN** the first is true and the other two false (today false, true, true); `If w/2*2=w` stays false
 
 ### Requirement: Mod keeps today's sign rule, exact with fractions
-`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap ("GURU! - Division by Zero" with runtime error checking), a Long or Float `Mod` gives the dividend.
+`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands whenever an operand has a fraction (a Quick, a Float, a constant with a point), not only beside a Quick variable. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap ("GURU! - Division by Zero" with runtime error checking), a Long or Float `Mod` gives the dividend.
 
 #### Scenario: Negative dividend
 - **WHEN** a program evaluates `x.l=q Mod 2` with `q=-7`
@@ -170,6 +170,10 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 - **WHEN** a program evaluates `x.q=q Mod p` with `q=7.5`, `p=0.5`
 - **THEN** x is 0 (today the whole part of `p`, 0, makes it trap)
 
+#### Scenario: A constant with a point beside whole numbers
+- **WHEN** a program evaluates `x.q=b Mod 1.5` and `NPrint b Mod 1.5` with `b.b=4`
+- **THEN** x is 1 and it prints 1 (today 0 and 0: the whole parts)
+
 ### Requirement: A Quick used as a whole number keeps working
 Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's values: the operands of bit operators, shifts and `Not` are typed by the same rule as any operand and rounded down once where the operator takes them; a comparison's boolean in arithmetic is a whole number (Word -1 or 0), and with a Long the operation is a Long one.
 
@@ -185,6 +189,10 @@ Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's
 - **WHEN** a program executes `NPrint l*(a>b)` and `NPrint (a>b)*100000` with `l.l=100000`, `a=2`, `b=1`
 - **THEN** both print -100000
 
+#### Scenario: A 48.16 operand of a bit operator or shift
+- **WHEN** a program evaluates `r.l=(q+40000) AND b` with `q=1.5`, `b.b=3`, and `r.l=(l+q) LSL 1` with `l.l=100000`, `q=1.5`
+- **THEN** it gets 1 and 200002: the 48.16 value's whole part as a Long, whatever its value
+
 #### Scenario: A Long and a Quick under AND in both orders
 - **WHEN** a program evaluates `If q AND l` and `If l AND q` with `l.l=65536`, `q=-1`
 - **THEN** both conditions are true (today the first is false)
@@ -199,6 +207,10 @@ Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's
 #### Scenario: Other types and constants
 - **WHEN** a program evaluates `x.w=w OR 2.5` with `w.w=4`, `r.l=2.5 EOR l` with `l.l=7`, `r.l=b AND -1.5` with `b.b=7`, `NPrint b AND 2.0` with `b.b=3` and `rb.b=Not 1.5`
 - **THEN** it gets 6, 5, 6, 2 and -2
+
+#### Scenario: Constants only
+- **WHEN** a program evaluates `rb.b=1.5 AND 3`, `NPrint 1.5 AND 3` and `r.l=(1.5 AND 3)+b` with `b.b=1`
+- **THEN** it gets 1, 1 and 2, as `b AND 1.5` takes the fraction (before the change the first two were refused)
 
 #### Scenario: Later index
 - **WHEN** a program compiled with and without runtime error checking contains `ja(1,vq AND 1.5)` with `vq.q=3`
