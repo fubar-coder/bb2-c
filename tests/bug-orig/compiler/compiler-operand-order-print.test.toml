@@ -1,0 +1,9 @@
+# compiler-operand-order-print.test.bas: an open bug (#1216): the port has
+# the same behaviour as the original for these lines (the lines where the
+# original differs, q*100000, are #1178's fixed tests), so every cell shows
+# the declared deviation
+[asserts]
+output = "== \"01 1+1+1+q 4.5\n02 w+v+q 8.5\n03 q+w+v 8.5\n04 w*v+q 13.5\n05 q+&l-&l 1.5\n06 Int(q)*100000 100000\n07 q+w/2 2\n08 w/2+q 2\n09 w+v+q -25535.5\n10 q+w+v -25535.5\n\""
+
+[deviations."compiler=orig195"]
+output = "== \"01 1+1+1+q 4\n02 w+v+q 8\n03 q+w+v 8.5\n04 w*v+q 13\n05 q+&l-&l 1\n06 Int(q)*100000 100000\n07 q+w/2 2\n08 w/2+q 1.5\n09 w+v+q -25536\n10 q+w+v -25535.5\n\""

@@ -1,0 +1,27 @@
+# compiler-operand-order.test.bas: an open bug (#1216): the port has the same
+# behaviour as the original for these checks, so every cell shows the
+# declared deviations; the checks that pass (float_quick_long, the limit of
+# both orders, float_dest, quick_dest, if_word_half_twice_word) have none
+[deviations."compiler=orig195"]
+"check.order.long_quick_quick" = "== fail"
+"check.order.long_quick_quick.actual" = "== 13"
+"check.order.long_quick_float" = "== fail"
+"check.order.long_quick_float.actual" = "== 11"
+"check.bits.and_long_first" = "== fail"
+"check.bits.and_long_first.actual" = "== 12"
+"check.bits.lsl_long_first" = "== fail"
+"check.bits.lsl_long_first.actual" = "== 24"
+"check.bits.not_long_first" = "== fail"
+"check.bits.not_long_first.actual" = "== -13"
+"check.if_forms.long_dest" = "== fail"
+"check.if_forms.long_dest.actual" = "== 0"
+"check.if_forms.if_quotient" = "== fail"
+"check.if_forms.if_quotient.actual" = "== 0"
+"check.if_forms.if_word_half_greater" = "== fail"
+"check.if_forms.if_word_half_greater.actual" = "== 0"
+"check.if_forms.if_word_half_twice_differs" = "== fail"
+"check.if_forms.if_word_half_twice_differs.actual" = "== -1"
+"check.if_forms.if_word_half_twice_equals" = "== fail"
+"check.if_forms.if_word_half_twice_equals.actual" = "== -1"
+"check.mod_fraction.quick_mod" = "== fail"
+"check.mod_fraction.quick_mod.actual" = "== $00010000"
