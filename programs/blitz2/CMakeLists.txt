@@ -40,9 +40,10 @@ endfunction()
 # each program implements: blitz2 with src/ext_bb2.c (BB2 only, nothing
 # handled), blitz2-ab3 with the AB3 modules src/ab3*.c.
 # src/exprtype.c: the type decisions of an expression, src/exprtree.c:
-# the nodes of an expression and the walk over them (no chunk of
-# blitz2.s; pure C, also compiled by the host test tests/host)
-add_library(blitz2_core OBJECT ${chunk_sources} src/exprtype.c src/exprtree.c ${glue_sources})
+# the nodes of an expression and the walk over them, src/exprarith.c: the
+# arithmetic of whole numbers, 16.16 and 48.16 for the constant folding
+# (no chunk of blitz2.s; pure C, also compiled by the host test tests/host)
+add_library(blitz2_core OBJECT ${chunk_sources} src/exprtype.c src/exprtree.c src/exprarith.c ${glue_sources})
 blitz2_compile(blitz2_core)
 # the compiler's own library (libs/compilerlib, #1178), embedded in
 # asmlibs.c (#embed "compilerlib.big")
