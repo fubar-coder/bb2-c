@@ -145,7 +145,7 @@ the test logic itself is C:
 | Test case (tag) | File | Libraries | Checks |
 |---|---|---|---|
 | `libtest ldivlib`/`lmullib` `[libtest]` | `libtest.c` | ldivlib, lmullib | 20 729 cases per routine |
-| `libtest compilerlib` `[libtest]` | `libtest.c` | compilerlib (the C set only: no original; cases `[fixed #1178]`) | 20 729 cases per routine, the limits of ldivlib's inputs, the kept registers |
+| `libtest compilerlib` `[libtest]` | `libtest.c` | compilerlib (the C set only: no original; cases `[fixed #1178]`) | 20 729 cases per routine of `$D600`-`$D602`, the limits of ldivlib's inputs, the kept registers; the 48.16 routines (`libtest_q48.c`) against `exprarith.c` for 5309 operand pairs, with their kept registers |
 | `[sys]` | `systest.c` | memlib, datalib, chipbaselib, strings1lib, staticslib, varslib, exitslib, clrlib | 48 |
 | `[mathstr]` | `systest_mathstr.c` | strings2lib, ffplib, strcomplib, floatquicklib, modlib, maxlenlib | 56 864 |
 | `[runtime]` | `systest_runtime.c` | arrayslib, maxslib, errtraplib, rundebuglib | 113 |
@@ -282,7 +282,7 @@ run with AmiBlitz3's compiler).
 ### compilerlib: the compiler's own library (#1178)
 
 `libs/compilerlib/compilerlib.c`, system library 64030 with the tokens
-`$D600`-`$D602` (free in the port's, the CD's and AmiBlitz3's library
+`$D600`-`$D60E` (free in the port's, the CD's and AmiBlitz3's library
 sets; `blitzlib numbers` checks it against acidlibs and deflibs), is not
 part of `blitz2:acidlibs`: it is a BigLib of its own
 (`build/amiga/libs/compilerlib/compilerlib.big`) that `blitz2` and
@@ -292,10 +292,20 @@ whatever library set they load. It holds the routines of generated code
 that no library set has: `mixmult` (`$D600`, floor(l*q)), `qqmult`
 (`$D601`, floor(q*p)) and `lqdiv` (`$D602`, trunc(l/q), with its error
 check), the arithmetic of a Quick under a Long type so far
-(`docs/blitz2/expression-types.md`). Like every library it is copied into
-a program only when the program uses one of its routines (354 bytes, 362
-with runtime error checking). Register contract as longmult and longdiv:
-d0/d1 in, d0 out, d1 changed, d2-d7 and a0-a6 kept.
+(`docs/blitz2/expression-types.md`), and the 48.16 routines of rule P+
+(OpenSpec change `expr-tree-5-operand-typing`, design decision 9): `q48add`,
+`q48sub`, `q48mul` (`$D603`-`$D605`), the division `q48div` with a divisor 0
+giving the largest value of a Long, a Quick, a Word or a Byte (`q48div`,
+`q48divq`, `q48divw`, `q48divb`, `$D606`-`$D609`, with their error check),
+`q48mod` (`$D60A`) and the casts `l2q48`, `q2q48`, `q48floor`, `q48trunc`
+(`$D60B`-`$D60E`); their values are those of
+`programs/blitz2/src/exprarith.c`, bit for bit. Like every library it is
+copied into a program only when the program uses one of its routines, and
+then whole (1202 bytes, 1222 with runtime error checking). Register
+contract of `$D600`-`$D602` as longmult and longdiv: d0/d1 in, d0 out, d1
+changed, d2-d7 and a0-a6 kept; of the 48.16 routines: a in d0 (low) and d1
+(high), b in d2/d3, the result in d0/d1 (`q48floor`, `q48trunc`: d0), d2/d3
+changed by the routines with two operands, every other register kept.
 
 ## State: command libraries (acidlibs)
 

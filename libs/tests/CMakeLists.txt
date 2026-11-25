@@ -56,9 +56,14 @@ add_library(libs_capture OBJECT capture.c capture_amiga.c)
 target_compile_options(libs_capture PRIVATE -Wall -Wextra -fomit-frame-pointer)
 own_warnings(libs_capture)
 
+# libtest_q48.c: compilerlib's 48.16 routines against the compiler's
+# arithmetic (programs/blitz2/src/exprarith.c, the oracle), compiled here
+# for the m68k
+set(EXPRARITH_DIR ${PROJECT_SOURCE_DIR}/programs/blitz2/src)
 add_executable(libs_tests libs_tests.cpp callregs.c bugorig.c selftest_keeps.c selftest_mem.c ${c_sources}
-	${rwe_tests})
-target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+	libtest_q48.c ${EXPRARITH_DIR}/exprarith.c ${rwe_tests})
+target_include_directories(libs_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+	${EXPRARITH_DIR})
 set_source_files_properties(bugorig.c selftest_keeps.c selftest_mem.c PROPERTIES COMPILE_DEFINITIONS BL_SNITCH)
 set_target_properties(libs_tests PROPERTIES SUFFIX "" CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 target_compile_options(libs_tests PRIVATE -Wall -fomit-frame-pointer

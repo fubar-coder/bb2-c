@@ -20,17 +20,68 @@
  * d1 the operands, d0 the result, d1 changed, d2-d7 and a0-a6 kept; the
  * CCR is no result.  Results modulo 2^32 (a product or quotient beyond 32
  * bits wraps, as longmult; user decision 7 of quick-long-arithmetic).
+ *
+ * The 48.16 routines of rule P+ (OpenSpec change expr-tree-5-operand-typing,
+ * design decision 9; #1216): a 48.16 value is a register pair, the low 32
+ * bits (a 16.16 value) in the first register, the high 32 bits in the
+ * second; the value is the pair's 64 bits / 65536.  Their values are
+ * programs/blitz2/src/exprarith.c's bit for bit (exprarith_q48 and the
+ * casts), the oracle of their emulator test (libs/tests/libtest_q48.c).
+ *
+ *   $D603 q48add    a + b                 modulo 2^64
+ *   $D604 q48sub    a - b                 modulo 2^64
+ *   $D605 q48mul    a * b                 cut towards zero to 1/65536
+ *   $D606 q48div    a / b                 cut towards zero to 1/65536;
+ *   $D607 q48divq   a / b                 a divisor 0 gives the largest
+ *   $D608 q48divw   a / b                 value of the wanted type with
+ *   $D609 q48divb   a / b                 the dividend's sign: a Long or
+ *                                         none (q48div) +-$7FFFFFFF, a
+ *                                         Quick (q48divq) +-$7FFFFFFF as
+ *                                         16.16 bits, a Word (q48divw)
+ *                                         +-32767, a Byte (q48divb) +-127
+ *   $D60A q48mod    a Mod b               the exact remainder, a negative
+ *                                         one plus b (domodlong's rule); a
+ *                                         divisor 0 gives a
+ *   $D60B l2q48     a Long as 48.16       exact
+ *   $D60C q2q48     a Quick as 48.16      exact
+ *   $D60D q48floor  48.16 to a Long       rounded down, modulo 2^32
+ *   $D60E q48trunc  48.16 to a Long       towards zero, modulo 2^32
+ *
+ * The other casts need no routine: 48.16 to 16.16 is the low register
+ * itself (exprarith_q48_q16), 48.16 to a Word or a Byte is the low word of
+ * q48floor's or q48trunc's Long, sign-extended (ext.l; exprarith_q48_floor
+ * and exprarith_q48_trunc with ET_WORD and ET_BYTE).
+ *
+ * Registers of the 48.16 routines: a in d0 (low) and d1 (high), b in d2
+ * and d3; the result in d0 and d1 (q48floor, q48trunc: d0); d2 and d3
+ * changed by the routines with two operands, every other register kept;
+ * the CCR is no result.
  */
 #include "blitzlib.h"
 
 void mixmult(void), qqmult(void), lqdivide(void);
-void lqdivchk(void);
+void q48add(void), q48sub(void), q48mul(void);
+void q48div(void), q48divq(void), q48divw(void), q48divb(void), q48mod(void);
+void l2q48(void), q2q48(void), q48floor(void), q48trunc(void);
+void lqdivchk(void), q48divchk(void);
 
-/* !syslibheader{64030,$d600,$d603,0,0,0,errors,$4000} */
-BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd603, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
+/* !syslibheader{64030,$d600,$d60f,0,0,0,errors,$4000} */
+BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd60f, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
 BLITZ_NULLSUB(mixmult, 0, 0);           /* $D600 mixmult */
 BLITZ_NULLSUB(qqmult, 0, 0);            /* $D601 qqmult */
 BLITZ_NULLSUB(lqdivide, lqdivchk, 0);   /* $D602 lqdiv */
+BLITZ_NULLSUB(q48add, 0, 0);            /* $D603 q48add */
+BLITZ_NULLSUB(q48sub, 0, 0);            /* $D604 q48sub */
+BLITZ_NULLSUB(q48mul, 0, 0);            /* $D605 q48mul */
+BLITZ_NULLSUB(q48div, q48divchk, 0);    /* $D606 q48div */
+BLITZ_NULLSUB(q48divq, q48divchk, 0);   /* $D607 q48divq */
+BLITZ_NULLSUB(q48divw, q48divchk, 0);   /* $D608 q48divw */
+BLITZ_NULLSUB(q48divb, q48divchk, 0);   /* $D609 q48divb */
+BLITZ_NULLSUB(q48mod, 0, 0);            /* $D60A q48mod */
+BLITZ_NULLSUB(l2q48, 0, 0);             /* $D60B l2q48 */
+BLITZ_NULLSUB(q2q48, 0, 0);             /* $D60C q2q48 */
+BLITZ_NULLSUB(q48floor, 0, 0);          /* $D60D q48floor */
+BLITZ_NULLSUB(q48trunc, 0, 0);          /* $D60E q48trunc */
 BLITZ_LIBFIN();
 
 /**
@@ -293,6 +344,537 @@ BLITZ_ASM_BLOCK(lqdivide,
         "9: movem.l (sp)+,d2-d5\n"
         "   rts");
 
+/**
+ * @brief q48add ($D603) and q48sub ($D604): d1:d0 = a + b and a - b,
+ * modulo 2^64 (exprarith_q48 ETO_ADD, ETO_SUB).
+ *
+ * @arg d0/d1 a (low, high)
+ * @arg d2/d3 b (low, high)
+ * @par Result
+ * d0/d1: the sum or difference
+ */
+BLITZ_ASM_BLOCK(q48add,
+        "   .globl  _q48add\n"
+        "_q48add:\n"
+        "   add.l   d2,d0\n"
+        "   addx.l  d3,d1\n"
+        "   rts\n"
+        "   .globl  _q48sub\n"
+        "_q48sub:\n"
+        "   sub.l   d2,d0\n"
+        "   subx.l  d3,d1\n"
+        "   rts");
+
+/**
+ * @brief q48mul ($D605): d1:d0 = a * b, the product of the magnitudes
+ * shifted right by 16 (cut towards zero to 1/65536), the sign applied,
+ * modulo 2^64 (exprarith_q48 ETO_MUL).
+ *
+ * The magnitudes A = Ah * 2^32 + Al and B = Bh * 2^32 + Bl; the result is
+ * (Al * Bl >> 16) + (Ah * Bl + Al * Bh) * 2^16 + Ah * Bh * 2^48.  The fast
+ * path, both magnitudes below 2^32 (a 16.16 value, a whole number below
+ * 65536 as 48.16, any narrow pair: high register the sign extension of the
+ * low one): only Al * Bl >> 16, with two MULU when a factor has no
+ * fraction (its low word 0: Al * h(B)), else four (as qqmult's 64 bit
+ * product, its bits 16..79 taken).  Else (a wide operand) the cross
+ * products Ah * Bl and Al * Bh, four MULU each, their low 48 bits needed,
+ * and the low word of Ah * Bh: 13 MULU at most.
+ *
+ * @arg d0/d1 a (low, high)
+ * @arg d2/d3 b (low, high)
+ * @par Result
+ * d0/d1: the product
+ */
+BLITZ_ASM_BLOCK(q48mul,
+        "   .globl  _q48mul\n"
+        "_q48mul:\n"
+        "   movem.l d4-d6,-(sp)\n"
+        "   move.l  d1,d6\n"
+        "   eor.l   d3,d6\n"                /* bit 31: the sign of the product */
+        "   clr.w   d6\n"                   /* d6.w 0: both magnitudes below 2^32 */
+        "   tst.l   d1\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d0\n"
+        "   negx.l  d1\n"
+        "1: tst.l   d3\n"
+        "   bpl.s   2f\n"
+        "   neg.l   d2\n"
+        "   negx.l  d3\n"
+        "2: tst.l   d1\n"
+        "   bne.s   3f\n"
+        "   tst.l   d3\n"
+        "   beq.s   .Lm32\n"
+        "3: movem.l d0-d3,-(sp)\n"          /* Al, Ah, Bl, Bh */
+        "   addq.w  #1,d6\n"
+        /* d1:d0 = Al * Bl >> 16, d0 = Al, d2 = Bl; d2-d5 changed */
+        ".Lm32:\n"
+        "   tst.w   d2\n"
+        "   beq.s   .Lmwhole\n"
+        "   tst.w   d0\n"
+        "   bne.s   .Lmfour\n"
+        "   exg     d0,d2\n"
+        /* d2 = [y1 : 0]: d0 * y1, two MULU */
+        ".Lmwhole:\n"
+        "   swap    d2\n"
+        "   move.l  d0,d1\n"
+        "   swap    d1\n"
+        "   mulu.w  d2,d1\n"                /* x1 * y1 */
+        "   mulu.w  d2,d0\n"                /* x0 * y1 */
+        "   move.l  d1,d4\n"
+        "   swap    d4\n"
+        "   clr.w   d4\n"                   /* x1 * y1 << 16 */
+        "   clr.w   d1\n"
+        "   swap    d1\n"                   /* x1 * y1 >> 16 */
+        "   add.l   d4,d0\n"
+        "   moveq   #0,d4\n"
+        "   addx.l  d4,d1\n"
+        "   bra.s   .Lmdone\n"
+        ".Lmfour:\n"
+        "   move.l  d2,d3\n"
+        "   swap    d3\n"                   /* d3.w = y1 */
+        "   move.l  d0,d1\n"
+        "   swap    d1\n"                   /* d1.w = x1 */
+        "   move.l  d1,d4\n"
+        "   mulu.w  d3,d4\n"                /* x1 * y1 */
+        "   mulu.w  d2,d1\n"                /* x1 * y0 */
+        "   mulu.w  d0,d3\n"                /* x0 * y1 */
+        "   mulu.w  d2,d0\n"                /* x0 * y0 */
+        "   clr.w   d0\n"
+        "   swap    d0\n"                   /* x0 * y0 >> 16 */
+        "   add.l   d3,d0\n"                /* no carry: below 2^32 */
+        "   add.l   d1,d0\n"                /* X: bit 32 */
+        "   moveq   #0,d1\n"
+        "   addx.l  d1,d1\n"
+        "   move.l  d4,d5\n"
+        "   clr.w   d5\n"
+        "   swap    d5\n"                   /* x1 * y1 >> 16 */
+        "   swap    d4\n"
+        "   clr.w   d4\n"                   /* x1 * y1 << 16 */
+        "   add.l   d4,d0\n"
+        "   addx.l  d5,d1\n"
+        ".Lmdone:\n"
+        "   tst.w   d6\n"
+        "   bne.s   .Lmwide\n"
+        ".Lmsign:\n"
+        "   tst.l   d6\n"
+        "   bpl.s   4f\n"
+        "   neg.l   d0\n"
+        "   negx.l  d1\n"
+        "4: movem.l (sp)+,d4-d6\n"
+        "   rts\n"
+        /* a wide operand: the stack holds Al, Ah, Bl, Bh */
+        ".Lmwide:\n"
+        "   move.l  4(sp),d4\n"
+        "   beq.s   5f\n"
+        "   move.l  8(sp),d5\n"
+        "   bsr.s   .Lmcross\n"             /* + Ah * Bl << 16 */
+        "5: move.l  12(sp),d5\n"
+        "   beq.s   6f\n"
+        "   move.l  (sp),d4\n"
+        "   bsr.s   .Lmcross\n"             /* + Al * Bh << 16 */
+        "   move.l  4(sp),d4\n"
+        "   beq.s   6f\n"
+        "   mulu.w  14(sp),d4\n"            /* the low word of Ah * Bh, at bit 48 */
+        "   swap    d4\n"
+        "   clr.w   d4\n"
+        "   add.l   d4,d1\n"
+        "6: lea     16(sp),sp\n"
+        "   bra.s   .Lmsign\n"
+        /* d1:d0 += (d4 * d5) << 16 modulo 2^64; d2-d5 changed */
+        ".Lmcross:\n"
+        "   move.l  d4,d3\n"
+        "   swap    d3\n"                   /* d3.w = x1 */
+        "   move.l  d3,d2\n"
+        "   mulu.w  d5,d2\n"                /* x1 * y0 */
+        "   swap    d5\n"
+        "   mulu.w  d5,d3\n"                /* x1 * y1, its low word at bit 48 */
+        "   swap    d3\n"
+        "   clr.w   d3\n"
+        "   add.l   d2,d3\n"
+        "   move.l  d4,d2\n"
+        "   mulu.w  d5,d2\n"                /* x0 * y1 */
+        "   add.l   d2,d3\n"
+        "   swap    d5\n"
+        "   mulu.w  d5,d4\n"                /* x0 * y0 */
+        "   moveq   #0,d2\n"
+        "   swap    d4\n"
+        "   move.w  d4,d2\n"
+        "   add.l   d2,d3\n"                /* the high long */
+        "   clr.w   d4\n"                   /* the low long */
+        "   add.l   d4,d0\n"
+        "   addx.l  d3,d1\n"
+        "   rts");
+
+/**
+ * @brief q48div ($D606), q48divq ($D607), q48divw ($D608), q48divb
+ * ($D609): d1:d0 = a / b, (|a| << 16) / |b| cut towards zero, the sign
+ * applied, modulo 2^64 (exprarith_q48 ETO_DIV); and q48mod ($D60A): d1:d0
+ * = a Mod b (ETO_MOD), |a| modulo |b| with a's sign, a negative remainder
+ * plus b (domodlong's rule).
+ *
+ * A divisor 0: the division gives the largest value of the wanted type
+ * with the dividend's sign (exprarith_div0: q48div a Long or none
+ * +-$7FFFFFFF, q48divq a Quick +-$7FFFFFFF as 16.16 bits, q48divw a Word
+ * +-32767, q48divb a Byte +-127; design decision 9), with runtime error
+ * checking q48divchk reports it first; Mod gives the dividend, as
+ * domodlong.
+ *
+ * The dividend N as 16 bit digits on the stack (|a| and, for the
+ * division, a 0 digit for the << 16), the divisor D = |b|.  The division
+ * first drops the low digits of D that are 0 and as many of N (the
+ * quotient of N / 65536 by D / 65536 is the same), then (.Lqcore) skips
+ * N's leading 0 digits and takes the first path that fits:
+ * - D below $10000: one DIVU per digit of N;
+ * - D below 2^32: the quotient digit by digit (Knuth's algorithm D with
+ *   two divisor digits): D and N shifted left until D's top bit is set,
+ *   each digit estimated by a DIVU of the remainder's top 32 bits by D's
+ *   high word and corrected by the exact test with D's low word (at most
+ *   twice), so no digit needs to be added back;
+ * - else (a wide divisor with a fraction, at least 65536.0) bit by bit,
+ *   the 64 bit remainder preloaded with N's top 32 bits: at most 48 steps.
+ *
+ * @arg d0/d1 a, the dividend (low, high)
+ * @arg d2/d3 b, the divisor (low, high)
+ * @par Result
+ * d0/d1: the quotient or the remainder
+ */
+BLITZ_ASM_BLOCK(q48div,
+        "   .globl  _q48divb\n"
+        "_q48divb:\n"
+        "   tst.l   d2\n"
+        "   bne.s   .Ldiv\n"
+        "   tst.l   d3\n"
+        "   bne.s   .Ldiv\n"
+        "   move.l  #0x007f0000,d2\n"       /* 127.0 */
+        "   bra.s   .Ldiv0\n"
+        "   .globl  _q48divw\n"
+        "_q48divw:\n"
+        "   tst.l   d2\n"
+        "   bne.s   .Ldiv\n"
+        "   tst.l   d3\n"
+        "   bne.s   .Ldiv\n"
+        "   move.l  #0x7fff0000,d2\n"       /* 32767.0 */
+        "   bra.s   .Ldiv0\n"
+        "   .globl  _q48divq\n"
+        "_q48divq:\n"
+        "   tst.l   d2\n"
+        "   bne.s   .Ldiv\n"
+        "   tst.l   d3\n"
+        "   bne.s   .Ldiv\n"
+        "   move.l  #0x7fffffff,d2\n"       /* the largest Quick */
+        "   bra.s   .Ldiv0\n"
+        "   .globl  _q48div\n"
+        "_q48div:\n"
+        "   tst.l   d2\n"
+        "   bne.s   .Ldiv\n"
+        "   tst.l   d3\n"
+        "   bne.s   .Ldiv\n"
+        "   move.l  #0xffff0000,d2\n"       /* $7FFFFFFF.0 */
+        "   move.w  #0x7fff,d3\n"
+        /* d3:d2 the largest value, the dividend's sign */
+        ".Ldiv0:\n"
+        "   tst.l   d1\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d2\n"
+        "   negx.l  d3\n"
+        "1: move.l  d2,d0\n"
+        "   move.l  d3,d1\n"
+        "   rts\n"
+        ".Ldiv:\n"
+        "   movem.l d4-d7/a0-a1,-(sp)\n"
+        "   move.l  d1,-(sp)\n"
+        "   eor.l   d3,(sp)\n"              /* bit 31: the sign of the quotient */
+        "   bsr.w   .Lqmag\n"
+        "   clr.w   -(sp)\n"                /* the pad digit of .Lqcore */
+        "   clr.w   -(sp)\n"                /* N = |a| << 16 */
+        "   bsr.w   .Lqpush\n"
+        "   moveq   #5,d6\n"
+        "2: tst.w   d2\n"
+        "   bne.s   3f\n"
+        "   move.w  d3,d2\n"                /* D >> 16, a digit of N less */
+        "   swap    d2\n"
+        "   clr.w   d3\n"
+        "   swap    d3\n"
+        "   subq.w  #1,d6\n"
+        "   bra.s   2b\n"
+        "3: bsr     .Lqcore\n"
+        "   lea     14(sp),sp\n"
+        "   tst.l   (sp)+\n"
+        "   bpl.s   4f\n"
+        "   neg.l   d0\n"
+        "   negx.l  d1\n"
+        "4: movem.l (sp)+,d4-d7/a0-a1\n"
+        "   rts\n"
+        "   .globl  _q48mod\n"
+        "_q48mod:\n"
+        "   tst.l   d2\n"
+        "   bne.s   1f\n"
+        "   tst.l   d3\n"
+        "   bne.s   1f\n"
+        "   rts\n"                          /* Mod 0: the dividend */
+        "1: movem.l d4-d7/a0-a1,-(sp)\n"
+        "   move.l  d3,-(sp)\n"
+        "   move.l  d2,-(sp)\n"             /* b */
+        "   move.l  d1,-(sp)\n"             /* bit 31: a's sign */
+        "   bsr.w   .Lqmag\n"
+        "   clr.w   -(sp)\n"                /* the pad digit */
+        "   bsr.w   .Lqpush\n"              /* N = |a| */
+        "   moveq   #4,d6\n"
+        "   bsr     .Lqcore\n"
+        "   lea     12(sp),sp\n"
+        "   move.l  d2,d0\n"
+        "   move.l  d3,d1\n"
+        "   tst.l   (sp)+\n"
+        "   bpl.s   2f\n"                   /* a >= 0: the remainder */
+        "   or.l    d3,d2\n"
+        "   beq.s   2f\n"                   /* 0 */
+        "   move.l  (sp),d2\n"
+        "   move.l  4(sp),d3\n"
+        "   sub.l   d0,d2\n"                /* b - remainder */
+        "   subx.l  d1,d3\n"
+        "   move.l  d2,d0\n"
+        "   move.l  d3,d1\n"
+        "2: addq.l  #8,sp\n"
+        "   movem.l (sp)+,d4-d7/a0-a1\n"
+        "   rts\n"
+        /* the magnitudes of a (d1:d0) and b (d3:d2) */
+        ".Lqmag:\n"
+        "   tst.l   d1\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d0\n"
+        "   negx.l  d1\n"
+        "1: tst.l   d3\n"
+        "   bpl.s   2f\n"
+        "   neg.l   d2\n"
+        "   negx.l  d3\n"
+        "2: rts\n"
+        /* the four digits of |a| (d1:d0) onto the caller's stack, the
+           highest at the lowest address, a 0 digit in front of them;
+           a0 = the highest digit */
+        ".Lqpush:\n"
+        "   move.l  (sp)+,a1\n"
+        "   move.w  d0,-(sp)\n"
+        "   swap    d0\n"
+        "   move.w  d0,-(sp)\n"
+        "   move.w  d1,-(sp)\n"
+        "   swap    d1\n"
+        "   move.w  d1,-(sp)\n"
+        "   clr.w   -(sp)\n"
+        "   lea     2(sp),a0\n"
+        "   jmp     (a1)\n"
+        /* d1:d0 = N / D modulo 2^64, d3:d2 = N modulo D: N the d6.w digits
+           from a0 (a 0 digit in front of them, one more behind them for
+           the pad), D = d3:d2, not 0; d4-d7, a0, a1 changed */
+        ".Lqcore:\n"
+        "1: tst.w   (a0)\n"
+        "   bne.s   2f\n"
+        "   addq.l  #2,a0\n"                /* a leading 0 digit */
+        "   subq.w  #1,d6\n"
+        "   bne.s   1b\n"
+        "   moveq   #0,d0\n"                /* N = 0 */
+        "   moveq   #0,d1\n"
+        "   moveq   #0,d2\n"
+        "   moveq   #0,d3\n"
+        "   rts\n"
+        "2: tst.l   d3\n"
+        "   bne     .Lqwide\n"
+        "   cmp.l   #0xffff,d2\n"
+        "   bhi.s   .Lqknuth\n"
+        /* D below $10000: one DIVU per digit (the remainder below D, so
+           no overflow) */
+        "   moveq   #0,d0\n"
+        "   moveq   #0,d1\n"
+        "   moveq   #0,d4\n"
+        "   subq.w  #1,d6\n"
+        "3: move.w  (a0)+,d4\n"             /* [remainder : digit] */
+        "   divu.w  d2,d4\n"                /* [remainder : quotient digit] */
+        "   swap    d1\n"
+        "   swap    d0\n"
+        "   move.w  d0,d1\n"
+        "   move.w  d4,d0\n"                /* Q = Q << 16 | digit */
+        "   dbra    d6,3b\n"
+        "   clr.w   d4\n"
+        "   swap    d4\n"
+        "   move.l  d4,d2\n"
+        "   rts\n"
+        /* D below 2^32: the digits of N << s by D << s (s: D's top bit
+           set), d2 = [v1 : v0], d3 the remainder r (below D), d5 = s,
+           a0 the next digit, a1 behind the last one */
+        ".Lqknuth:\n"
+        "   move.w  d6,d4\n"
+        "   add.w   d4,d4\n"
+        "   lea     0(a0,d4.w),a1\n"
+        "   clr.w   (a1)\n"                 /* the pad: N's shifted last digit */
+        "   moveq   #0,d5\n"
+        "   cmp.l   #0x00ffffff,d2\n"
+        "   bhi.s   4f\n"
+        "   lsl.l   #8,d2\n"
+        "   moveq   #8,d5\n"
+        "4: tst.l   d2\n"
+        "   bmi.s   6f\n"
+        "5: addq.w  #1,d5\n"
+        "   add.l   d2,d2\n"
+        "   bpl.s   5b\n"
+        "6: subq.l  #2,a0\n"                /* the 0 digit in front */
+        "   moveq   #0,d0\n"
+        "   moveq   #0,d1\n"
+        "   move.l  (a0),d3\n"
+        "   addq.l  #2,a0\n"
+        "   lsl.l   d5,d3\n"
+        "   move.l  (a0),d7\n"
+        "   addq.l  #2,a0\n"
+        "   lsl.l   d5,d7\n"
+        "   swap    d7\n"
+        "   move.w  d7,d3\n"                /* r: the top two digits of N << s */
+        ".Lqkloop:\n"
+        "   cmpa.l  a1,a0\n"
+        "   beq.s   .Lqkdone\n"
+        "   move.l  (a0),d7\n"
+        "   addq.l  #2,a0\n"
+        "   lsl.l   d5,d7\n"
+        "   swap    d7\n"                   /* d7.w = u, the next digit */
+        "   swap    d1\n"
+        "   swap    d0\n"
+        "   move.w  d0,d1\n"                /* Q << 16, the digit in d0.w */
+        "   move.l  d3,d4\n"
+        "   swap    d4\n"
+        "   swap    d2\n"                   /* d2.w = v1 */
+        "   cmp.w   d2,d4\n"
+        "   beq.s   .Lqkmax\n"
+        "   move.l  d3,d4\n"
+        "   divu.w  d2,d4\n"                /* [rhat : qhat] = r / v1 */
+        "   swap    d2\n"
+        "   move.w  d4,d0\n"
+        "   move.w  d0,d6\n"
+        "   mulu.w  d2,d6\n"                /* qhat * v0 */
+        "   move.w  d7,d4\n"                /* [rhat : u] */
+        ".Lqktest:\n"
+        "   cmp.l   d6,d4\n"
+        "   bcc.s   .Lqkok\n"               /* qhat * v0 <= rhat : u */
+        "   subq.w  #1,d0\n"
+        "   moveq   #0,d7\n"
+        "   move.w  d2,d7\n"
+        "   sub.l   d7,d6\n"
+        "   move.l  d2,d7\n"
+        "   clr.w   d7\n"
+        "   add.l   d7,d4\n"                /* rhat + v1 */
+        "   bcc.s   .Lqktest\n"             /* rhat 65536 or more: qhat holds */
+        ".Lqkok:\n"
+        "   sub.l   d6,d4\n"
+        "   move.l  d4,d3\n"                /* r = rhat : u - qhat * v0 */
+        "   bra.s   .Lqkloop\n"
+        /* r's high word v1: qhat = $FFFF, rhat = r's low word + v1 */
+        ".Lqkmax:\n"
+        "   swap    d2\n"
+        "   move.w  #-1,d0\n"
+        "   move.w  d3,d4\n"
+        "   swap    d4\n"
+        "   move.w  d7,d4\n"
+        "   move.l  d2,d7\n"
+        "   clr.w   d7\n"
+        "   add.l   d7,d4\n"
+        "   bcs.s   7f\n"
+        "   move.w  d0,d6\n"
+        "   mulu.w  d2,d6\n"
+        "   bra.s   .Lqktest\n"
+        "7: move.w  d0,d6\n"
+        "   mulu.w  d2,d6\n"
+        "   bra.s   .Lqkok\n"
+        ".Lqkdone:\n"
+        "   move.l  d3,d2\n"
+        "   lsr.l   d5,d2\n"                /* the remainder of N by D */
+        "   moveq   #0,d3\n"
+        "   rts\n"
+        /* D 2^32 or more: the remainder d5:d4 preloaded with N's top two
+           digits, the others top-aligned in d1:d0, one step per bit of
+           them; the quotient bits come into d0 from the right */
+        ".Lqwide:\n"
+        "   moveq   #0,d4\n"
+        "   moveq   #0,d5\n"
+        "   moveq   #0,d0\n"
+        "   moveq   #0,d1\n"
+        "   move.w  (a0)+,d4\n"
+        "   subq.w  #1,d6\n"
+        "   beq.s   .Lqwdone\n"
+        "   swap    d4\n"
+        "   move.w  (a0)+,d4\n"
+        "   subq.w  #1,d6\n"
+        "   beq.s   .Lqwdone\n"
+        "   move.w  d6,d7\n"
+        "   lsl.w   #4,d7\n"
+        "   subq.w  #1,d7\n"                /* 16 steps per digit, dbra */
+        "   move.w  (a0)+,d1\n"
+        "   swap    d1\n"
+        "   subq.w  #1,d6\n"
+        "   beq.s   .Lqwloop\n"
+        "   move.w  (a0)+,d1\n"
+        "   subq.w  #1,d6\n"
+        "   beq.s   .Lqwloop\n"
+        "   move.w  (a0)+,d0\n"
+        "   swap    d0\n"
+        ".Lqwloop:\n"
+        "   add.l   d0,d0\n"
+        "   addx.l  d1,d1\n"
+        "   addx.l  d4,d4\n"
+        "   addx.l  d5,d5\n"
+        "   bcs.s   8f\n"                   /* 2^64 or more: above D */
+        "   cmp.l   d3,d5\n"
+        "   bhi.s   8f\n"
+        "   bcs.s   9f\n"
+        "   cmp.l   d2,d4\n"
+        "   bcs.s   9f\n"
+        "8: sub.l   d2,d4\n"
+        "   subx.l  d3,d5\n"
+        "   addq.l  #1,d0\n"
+        "9: dbra    d7,.Lqwloop\n"
+        ".Lqwdone:\n"
+        "   move.l  d4,d2\n"
+        "   move.l  d5,d3\n"
+        "   rts");
+
+/**
+ * @brief The casts of a 48.16 value (exprarith_whole_q48, exprarith_q16_q48,
+ * exprarith_q48_floor and exprarith_q48_trunc with ET_LONG):
+ * l2q48 ($D60B) d1:d0 = the Long d0 as 48.16, q2q48 ($D60C) d1:d0 = the
+ * Quick d0 as 48.16, q48floor ($D60D) d0 = d1:d0 rounded down, q48trunc
+ * ($D60E) d0 = d1:d0 towards zero, the Long's 32 bits (a whole part beyond
+ * a Long wraps).
+ *
+ * @arg d0 (l2q48, q2q48) or d0/d1 (q48floor, q48trunc) the value
+ * @par Result
+ * d0/d1 (l2q48, q2q48) or d0 (q48floor, q48trunc)
+ */
+BLITZ_ASM_BLOCK(q48casts,
+        "   .globl  _l2q48\n"
+        "_l2q48:\n"
+        "   move.l  d0,d1\n"
+        "   swap    d1\n"
+        "   ext.l   d1\n"                   /* the Long >> 16 */
+        "   swap    d0\n"
+        "   clr.w   d0\n"                   /* the Long << 16 */
+        "   rts\n"
+        "   .globl  _q2q48\n"
+        "_q2q48:\n"
+        "   move.l  d0,d1\n"
+        "   add.l   d1,d1\n"
+        "   subx.l  d1,d1\n"                /* the sign extension */
+        "   rts\n"
+        "   .globl  _q48trunc\n"
+        "_q48trunc:\n"
+        "   tst.l   d1\n"
+        "   bpl.s   _q48floor\n"
+        "   tst.w   d0\n"
+        "   beq.s   _q48floor\n"
+        "   move.w  d1,d0\n"                /* negative with a fraction: */
+        "   swap    d0\n"
+        "   addq.l  #1,d0\n"                /* the floor + 1 */
+        "   rts\n"
+        "   .globl  _q48floor\n"
+        "_q48floor:\n"
+        "   move.w  d1,d0\n"
+        "   swap    d0\n"                   /* bits 16..47 */
+        "   rts");
+
 /* ------------------------------------------- error checks (debugger only) */
 
 /*
@@ -307,4 +889,19 @@ BLITZ_ERRCHK_ASM(lqdivchk,
         "   tst.l   d1\n"
         "   bne.s   1f\n"
         "   divu.w  d1,d0\n"
+        "1: rts");
+
+/*
+ * q48divchk - the check of the 48.16 divisions, d3:d2 the divisor, as
+ * lqdivchk: a divisor 0 executes DIVU.W with d2 (0), the CPU's division
+ * trap; the registers stay as they are.
+ */
+BLITZ_ERRCHK_ASM(q48divchk,
+        "   .globl  _q48divchk\n"
+        "_q48divchk:\n"
+        "   tst.l   d2\n"
+        "   bne.s   1f\n"
+        "   tst.l   d3\n"
+        "   bne.s   1f\n"
+        "   divu.w  d2,d0\n"
         "1: rts");

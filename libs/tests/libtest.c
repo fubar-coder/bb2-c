@@ -16,8 +16,10 @@
  * (default 20000) pseudo random pairs (fixed seed, reproducible), as
  * block cases; for ldivlib then the limits of its paths as plain cases
  * (check "limit d0") and the steps of its normalisation ("norm d0").
- * Output: one line per routine; exit 0 if the library loads and its
- * cases are written.
+ * compilerlib's 48.16 routines (from $D603: two register pairs) are not
+ * in these cases: libtest_q48.c checks them against exprarith.c.
+ * Output: one line per routine; exit 0 if the library loads, its cases
+ * are written and (compilerlib) the 48.16 routines agree.
  */
 #include <proto/exec.h>
 #include <proto/dos.h>
@@ -31,8 +33,11 @@ struct regs { ULONG d[8]; ULONG a[7]; };
    stores them back.  Library routines may change every register except
    a4/a5/a7. */
 extern UWORD callregs(APTR fn, struct regs *r, ULONG arg, ULONG pusharg);
+/* compilerlib's 48.16 routines (libtest_q48.c) */
+int libtest_q48(APTR const *code, const UWORD *tok, int n);
 
 #define MAXR 64
+#define Q48_FIRST 0xd603        /* compilerlib's first 48.16 routine */
 
 struct lib {
     BPTR seg;
@@ -40,6 +45,7 @@ struct lib {
     int n;                      /* routines found */
     APTR code[MAXR];            /* routine address per entry/form */
     char what[MAXR][24];
+    UWORD tok[MAXR];            /* a nullsub's token (else 0) */
     ULONG lost[MAXR];           /* compilerlib: the registers changed */
 };
 
@@ -65,6 +71,7 @@ static int scan(struct lib *l)
             p += 2;
             if (l->n < MAXR && L(p + 4)) {
                 l->code[l->n] = (APTR)L(p + 4);
+                l->tok[l->n] = first + tok;
                 sprintf(l->what[l->n++], "$%04X", first + tok);
             }
             p += 12;
@@ -76,6 +83,7 @@ static int scan(struct lib *l)
                 p += 2;
                 if (l->n < MAXR && L(p + 4)) {
                     l->code[l->n] = (APTR)L(p + 4);
+                    l->tok[l->n] = 0;
                     sprintf(l->what[l->n++], "#%d form %d", tok, form);
                 }
                 p += 12;
@@ -186,7 +194,7 @@ int main(int argc, char **argv)
     static struct lib a;
     long rounds = argc > 4 ? atol(argv[4]) : 20000;
     char vec[24];
-    int i;
+    int i, q48 = 0;
 
     if (argc < 4) {
         printf("usage: libtest LIB DIR NAME [ROUNDS]\n");
@@ -196,6 +204,14 @@ int main(int argc, char **argv)
         return 20;
     seed = 0x1234567;           /* the same inputs in every run */
     marks = W(a.base + 0x0e) == 0xd600;
+    if (marks) {
+        /* compilerlib: the 48.16 routines first (their own inputs), then
+           the cases of the others */
+        q48 = libtest_q48(a.code, a.tok, a.n);
+        for (i = 0; i < a.n && a.tok[i] < Q48_FIRST; i++)
+            ;
+        a.n = i;
+    }
     cap_begin(argv[2], argv[3]);
     cap_num("routine count", NULL, a.n);
     cap_blocks(1);
@@ -258,5 +274,5 @@ int main(int argc, char **argv)
         }
     }
     UnLoadSeg(a.seg);
-    return cap_end() ? 5 : 0;
+    return cap_end() || q48 ? 5 : 0;
 }
