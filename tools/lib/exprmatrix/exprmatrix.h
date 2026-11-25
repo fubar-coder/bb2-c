@@ -47,6 +47,7 @@
 #define EXPRMATRIX_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -185,10 +186,13 @@ enum {
     EM_R_1189 = 1 << 7,         /* ^ with a negative base and a whole exponent keeps the sign (#1189) */
     EM_R_1209 = 1 << 8          /* AND OR EOR NOT under a Quick type so far on the whole parts (#1209) */
 };
+/* a Byte AND, OR, EOR is a Word operation, so it leaves no stale upper
+   byte (#1218, #1217); beyond the 32 bits that the rules below use */
+#define EM_R_1218 (1ull << 32)
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
-#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)  /* the port of this commit, C libraries */
+#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209 | EM_R_1218)  /* the port of this commit, C libraries */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
    get fixed-orig = N (expect.c, option T1) */
@@ -196,7 +200,7 @@ enum {
 /* the fixes made in the C libraries (#1189: mathtranslib's power): the
    port with the CD's libraries keeps the original's rule there */
 #define EM_RULES_LIBFIX EM_R_1189
-#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209)
+#define EM_RULES_FIXED (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209 | EM_R_1218)
 
 /* what keeps a value from being exact or known (the question classes of
    design decision 7) */
@@ -231,7 +235,7 @@ struct em_value {
  * The value of cell c by the rules; checked: runtime error checking on (an
  * index cell's value with it, else without, design decision 8).
  */
-void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules, int checked, struct em_value *out);
+void em_model(const struct em_matrix *m, const struct em_cell *c, uint64_t rules, int checked, struct em_value *out);
 
 /*
  * The measured cell table (classify.c): one line per cell, tab separated,
@@ -321,7 +325,7 @@ int em_expect(const struct em_matrix *m, const char *desc, const struct em_table
               size_t *nfiles, char **report, char **errors);
 /* as em_expect, with the port's rules port in place of EM_RULES_PORTNOW
    (the tests of a rule set in which an issue is fixed) */
-int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_table *meas, unsigned port,
+int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_table *meas, uint64_t port,
                    struct em_file **files, size_t *nfiles, char **report, char **errors);
 void em_files_free(struct em_file *f, size_t n);
 
@@ -510,16 +514,16 @@ struct em_exprval {
        't' towards zero (a / at the top under a wanted Long); 0 none */
     int consumer;
 };
-void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, struct em_exprval *out);
+void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, uint64_t rules, struct em_exprval *out);
 
 /* the types of one operation a OP b of two variables of the types l and r
    (1 Byte .. 5 Float) under the wanted type want (0 none) by rules, as
    the tables of tools/exprtables show it */
-void em_cand_cell(unsigned rules, enum em_op op, int want, int l, int r, struct em_optype *out);
+void em_cand_cell(uint64_t rules, enum em_op op, int want, int l, int r, struct em_optype *out);
 /* the type a constant (the literal text, no sign) takes beside an operand of
    type partner (0: alone) under the wanted type want by rules (today's
    rules: consttype2 under want) */
-int em_cand_consttype(unsigned rules, int want, int partner, const char *text);
+int em_cand_consttype(uint64_t rules, int want, int partner, const char *text);
 
 #ifdef __cplusplus
 }

@@ -74,7 +74,7 @@ struct model {
     }
 
     // the value of key by rules (checked: runtime error checking on)
-    std::string value(const char *key, unsigned rules, int checked = 0, unsigned *flags = nullptr) const
+    std::string value(const char *key, uint64_t rules, int checked = 0, unsigned *flags = nullptr) const
     {
         const struct em_cell *c = cell(key);
         struct em_value v;
@@ -88,14 +88,14 @@ struct model {
     }
 };
 
-static const unsigned ORIG = EM_RULES_ORIG, FIXED = EM_RULES_FIXED;
+static const uint64_t ORIG = EM_RULES_ORIG, FIXED = EM_RULES_FIXED;
 
 TEST_CASE("exprmatrix model: Float to whole numbers (SPFix, towards zero)", "[exprmatrix]")
 {
     model md;
 
     // expression-types.md, "Converting to a whole number", the Float column
-    for (unsigned rules : { ORIG, FIXED }) {
+    for (uint64_t rules : { ORIG, FIXED }) {
         CHECK(md.value("dl-neg-f-F", rules) == "1");
         CHECK(md.value("dw-neg-f-F", rules) == "1");
         CHECK(md.value("dl-mul-f-cb-F", rules) == "-3");
@@ -270,7 +270,7 @@ struct expr {
     }
     ~expr() { em_expr_free(x); }
 
-    std::string value(enum em_ctx ctx, unsigned rules) const
+    std::string value(enum em_ctx ctx, uint64_t rules) const
     {
         struct em_exprval v;
 
@@ -279,7 +279,7 @@ struct expr {
         em_expr_eval(x, ctx, rules, &v);
         return v.v.text;
     }
-    std::string typing(enum em_ctx ctx, unsigned rules) const
+    std::string typing(enum em_ctx ctx, uint64_t rules) const
     {
         struct em_exprval v;
 
@@ -290,9 +290,9 @@ struct expr {
     }
 };
 
-static const unsigned NOW = EM_RULES_CANDBASE;
+static const uint64_t NOW = EM_RULES_CANDBASE;
 
-static unsigned cand(int n, bool scopeb = false)
+static uint64_t cand(int n, bool scopeb = false)
 {
     return NOW | EM_R_CAND(n) | (scopeb ? EM_R_SCOPEB : 0);
 }
@@ -304,7 +304,7 @@ TEST_CASE("exprmatrix model: the flow over a tree is the model of every cell", "
     size_t compared = 0;
 
     REQUIRE(em_parse(FULL, std::strlen(FULL), "full.txt", &m, &errors) == 0);
-    for (unsigned rules : { (unsigned)EM_RULES_ORIG, NOW }) {
+    for (uint64_t rules : { (uint64_t)EM_RULES_ORIG, NOW }) {
         for (size_t i = 0; i < m.ncells; i++) {
             const struct em_cell *c = &m.cells[i];
             struct em_expr *x = nullptr;
@@ -323,6 +323,30 @@ TEST_CASE("exprmatrix model: the flow over a tree is the model of every cell", "
     }
     CHECK(compared > 60000);
     em_free(&m);
+}
+
+// #1218, #1217: a Byte AND, OR, EOR of operands of different sign leaves bits
+// 8-15 of its left operand (-2 AND 0 is $FF00) in the original; a Word
+// operation leaves none
+TEST_CASE("exprmatrix model: a Byte bit operation has no stale upper byte (#1218)", "[exprmatrix]")
+{
+    const char *vars = "mb.b=-2 zb.b=0 tb.b=3 ob.b=1 zw.w=0 mw.w=-1";
+    const struct {
+        const char *text, *orig;
+    } cases[] = {
+        { "(mb AND zb)=zw", "F" }, { "(-2 AND 0)=zw", "F" }, { "(tb OR mb)=mw", "F" },
+        { "(ob EOR mb)=mw", "F" }, { "(mb AND zb)+zw=0", "F" }, { "((-2 AND 0) LSL 1)=0", "F" },
+    };
+
+    for (const auto &c : cases) {
+        INFO(c.text);
+        CHECK(expr(c.text, vars).value(EM_IF, EM_RULES_ORIG) == c.orig);
+        CHECK(expr(c.text, vars).value(EM_IF, EM_RULES_FIXED) == "T");
+    }
+    // the same operands in one sign, and Word operands: no stale byte
+    CHECK(expr("(mb AND mb)=mb", vars).value(EM_IF, EM_RULES_ORIG) == "T");
+    CHECK(expr("(mb AND zb)=zb", vars).value(EM_IF, EM_RULES_ORIG) == "T");
+    CHECK(expr("(mw AND zw)=zw", vars).value(EM_IF, EM_RULES_ORIG) == "T");
 }
 
 TEST_CASE("exprmatrix model: expressions are parsed with blitz2's precedences", "[exprmatrix][cand]")
@@ -372,7 +396,7 @@ TEST_CASE("exprmatrix model: the spec's scenarios under every candidate", "[expr
 {
     for (int n = EM_CAND_C1; n < EM_CAND_C7; n++)  // C7: its own case below
         for (bool b : { false, true }) {
-            unsigned r = cand(n, b);
+            uint64_t r = cand(n, b);
 
             INFO(em_cand_name(n), b ? " (b)" : " (a)");
             CHECK(expr("base+q*4", "base.l=2097152 q=1.5").value(EM_DL, r)
@@ -476,7 +500,7 @@ TEST_CASE("exprmatrix model: the typing of one operation by a candidate", "[expr
 
 TEST_CASE("exprmatrix model: C5, the 32.16 product of a Quick and a whole number", "[exprmatrix][cand]")
 {
-    unsigned c5 = cand(EM_CAND_C5), c5e = cand(EM_CAND_C5) | EM_R_C5ERR;
+    uint64_t c5 = cand(EM_CAND_C5), c5e = cand(EM_CAND_C5) | EM_R_C5ERR;
 
     // cut: the consumer takes the whole part's low word, as the Quick wraps today
     CHECK(expr("q*w", "q=1.5 w.w=30000").value(EM_DW, c5) == "-20536");
@@ -493,7 +517,7 @@ TEST_CASE("exprmatrix model: C5, the 32.16 product of a Quick and a whole number
 
 TEST_CASE("exprmatrix model: C6, a whole constant beside a Quick by its value", "[exprmatrix][cand]")
 {
-    unsigned c6 = cand(EM_CAND_C6), c6e = cand(EM_CAND_C6) | EM_R_C5ERR;
+    uint64_t c6 = cand(EM_CAND_C6), c6e = cand(EM_CAND_C6) | EM_R_C5ERR;
 
     // q*1000 is a 32.16 product: exact under a wanted Long, in a comparison
     CHECK(expr("q*1000", "q=100").value(EM_DL, c6) == "100000");
@@ -512,7 +536,7 @@ TEST_CASE("exprmatrix model: C6, a whole constant beside a Quick by its value", 
 
 TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", "[exprmatrix][cand]")
 {
-    unsigned c7 = cand(EM_CAND_C7);
+    uint64_t c7 = cand(EM_CAND_C7);
 
     // the chain clause: rounded once, at the consumer
     CHECK(expr("q+p+l", "q=1.5 p=1.5 l.l=10").value(EM_DL, c7) == "13");
@@ -529,7 +553,7 @@ TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", 
     CHECK(expr("l/q", "q=4 l.l=100000").value(EM_DQ, cand(EM_CAND_C1)) == "E1A80000");  // the Long cut to 16.16 first
     // without a Quick: today's (C7), or C1's with its left operand by its
     // own operands (C7+, EM_R_SCOPEB)
-    unsigned c7p = c7 | EM_R_SCOPEB;
+    uint64_t c7p = c7 | EM_R_SCOPEB;
     CHECK(expr("w+v", "w.w=20000 v.w=20000").value(EM_PRINT, c7) == "-25536");
     CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, c7) == "-1");
     CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_DL, c7p) == "0");
@@ -537,7 +561,7 @@ TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", 
     CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, c7p) == "800000C1");
     CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, c7p) == "FFFF0000");
     // with a Quick: a comparison's operands have no wanted type
-    for (unsigned r : { c7, c7p }) {
+    for (uint64_t r : { c7, c7p }) {
         CHECK(expr("q*1000>50000", "q=100").value(EM_DL, r) == "-1");
         CHECK(expr("q*2>2.4", "q=1.25").value(EM_DL, r) == "-1");
         CHECK(expr("q+q>2.4", "q=1.25").value(EM_DL, r) == "-1");
@@ -556,7 +580,7 @@ TEST_CASE("exprmatrix model: C7, the wanted type sets the intermediate format", 
 
 TEST_CASE("exprmatrix model: C7Kx, a fraction constant a Quick only when exact", "[exprmatrix][cand]")
 {
-    unsigned lng = cand(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG, x = lng | EM_R_C7KEXACT;
+    uint64_t lng = cand(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG, x = lng | EM_R_C7KEXACT;
 
     // 0.001 and 0.1 in 16.16 lose precision beside a Long; kept as Floats
     CHECK(expr("l*0.001", "l.l=1000000").value(EM_PRINT, lng) == "991");
@@ -576,7 +600,7 @@ TEST_CASE("exprmatrix model: C7Kx, a fraction constant a Quick only when exact",
 
 TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatrix][cand]")
 {
-    unsigned k = cand(EM_CAND_C7) | EM_R_C7K, own = k, lng = k | EM_R_C7KLONG, dst = k | EM_R_C7KDEST;
+    uint64_t k = cand(EM_CAND_C7) | EM_R_C7K, own = k, lng = k | EM_R_C7KLONG, dst = k | EM_R_C7KDEST;
 
     // the Word sum in a comparison: wraps in its own type, not under at
     // least a Long, under the destination's width by the destination
@@ -587,7 +611,7 @@ TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatri
     CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_IF, dst) == "F");
     CHECK(expr("w+v>c", "w.w=20000 v.w=20000 c.w=0").value(EM_IF, lng) == "T");
     // the comparison's operands by their own: #1183's cases fixed in all three
-    for (unsigned r : { own, lng, dst }) {
+    for (uint64_t r : { own, lng, dst }) {
         CHECK(expr("100000001>l3", "l3.l=100000000").value(EM_DF, r) == "800000C1");
         CHECK(expr("l1+1>40000", "l1.l=40000").value(EM_DQ, r) == "FFFF0000");
         CHECK(expr("q*1000>50000", "q=100").value(EM_DL, r) == "-1");
@@ -602,7 +626,7 @@ TEST_CASE("exprmatrix model: C7K, constants by their smallest type", "[exprmatri
 
 // P+ (exprmatrix.h, EM_RULES_DECIDED; task 2.2 of expr-tree-5-operand-typing,
 // the analysis expr-tree-5-analysis/report.md with the user's answers F1-F7)
-static const unsigned DEC = EM_RULES_DECIDED;
+static const uint64_t DEC = EM_RULES_DECIDED;
 
 // the value of text under ctx by P+ and by today's port (NOW)
 static void same_as_today(const char *text, const char *vars, enum em_ctx ctx)
@@ -951,7 +975,7 @@ TEST_CASE("exprmatrix model: Mod by 0 as today per type", "[exprmatrix][cand][de
     // "Wie heute je Typ": Byte, Word and Quick trap (DIVS.W by 0), Long and
     // Float give the dividend; P+ keeps it (a 16.16 Mod traps, a 48.16 one
     // gives the dividend)
-    for (unsigned r : { NOW, DEC }) {
+    for (uint64_t r : { NOW, DEC }) {
         CHECK(expr("b MOD z", "b.b=7 z.b=0").value(EM_DB, r) == "!trap");
         CHECK(expr("w MOD z", "w.w=7 z.w=0").value(EM_DW, r) == "!trap");
         CHECK(expr("q MOD p", "q=7.5 p=0").value(EM_DQ, r) == "!trap");

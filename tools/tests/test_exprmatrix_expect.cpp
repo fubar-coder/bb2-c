@@ -46,7 +46,7 @@ struct gen {
     std::string report, errors;
     int rc = -9;
 
-    explicit gen(const std::string &measured, unsigned port = EM_RULES_PORTNOW)
+    explicit gen(const std::string &measured, uint64_t port = EM_RULES_PORTNOW)
     {
         char *e = nullptr, *rep = nullptr;
         struct em_table t;

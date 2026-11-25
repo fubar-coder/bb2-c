@@ -1,6 +1,6 @@
 ; if-B-agree-01 - expression matrix, AmiBlitz3 case of
-; tests/corpus/tests-exprmatrix/if-B-agree-01.bas: 921 of its 1033
-; cells, the 108 AmiBlitz3 refuses left out, 4 If on a folded Float
+; tests/corpus/tests-exprmatrix/if-B-agree-01.bas: 924 of its 1037
+; cells, the 109 AmiBlitz3 refuses left out, 4 If on a folded Float
 ; constant left out (AmiBlitz3 tests d1, #1187)
 ; if-B-agree-01.expect: the output of blitz2-ab3 -r in AB3 mode (the
 ; port's compiler with AmiBlitz3's libraries)
@@ -339,8 +339,11 @@ If -1000 OR -100000 Then NPrint "if-or-cw-cl-B T" Else NPrint "if-or-cw-cl-B F"
 If -100000 OR -3 Then NPrint "if-or-cl-cb-B T" Else NPrint "if-or-cl-cb-B F"
 If -100000 OR -1000 Then NPrint "if-or-cl-cw-B T" Else NPrint "if-or-cl-cw-B F"
 If -100000 OR -100000 Then NPrint "if-or-cl-cl-B T" Else NPrint "if-or-cl-cl-B F"
+If vb EOR vb Then NPrint "if-eor-b-b-B T" Else NPrint "if-eor-b-b-B F"
 If vb EOR vw Then NPrint "if-eor-b-w-B T" Else NPrint "if-eor-b-w-B F"
 If vb EOR vl Then NPrint "if-eor-b-l-B T" Else NPrint "if-eor-b-l-B F"
+If vb EOR -3 Then NPrint "if-eor-b-cb-B T" Else NPrint "if-eor-b-cb-B F"
+If -3 EOR -3 Then NPrint "if-eor-cb-cb-B T" Else NPrint "if-eor-cb-cb-B F"
 If -3 EOR -1000 Then NPrint "if-eor-cb-cw-B T" Else NPrint "if-eor-cb-cw-B F"
 If -3 EOR -100000 Then NPrint "if-eor-cb-cl-B T" Else NPrint "if-eor-cb-cl-B F"
 If -1000 EOR vb Then NPrint "if-eor-cw-b-B T" Else NPrint "if-eor-cw-b-B F"

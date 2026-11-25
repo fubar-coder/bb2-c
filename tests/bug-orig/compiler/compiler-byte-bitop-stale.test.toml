@@ -1,0 +1,23 @@
+# compiler-byte-bitop-stale.test.bas: the original widens the stale upper byte of a Byte AND, OR
+# or EOR as part of the value, so every condition is false
+fixed-orig = 1218
+
+[deviations."compiler=orig195"]
+"check.bitop_stale.and_variable" = "== fail"
+"check.bitop_stale.and_variable.actual" = "== 0"
+"check.bitop_stale.and_constant" = "== fail"
+"check.bitop_stale.and_constant.actual" = "== 0"
+"check.bitop_stale.and_sum" = "== fail"
+"check.bitop_stale.and_sum.actual" = "== 0"
+"check.bitop_stale.and_shift" = "== fail"
+"check.bitop_stale.and_shift.actual" = "== 0"
+"check.bitop_stale.or_variable" = "== fail"
+"check.bitop_stale.or_variable.actual" = "== 0"
+"check.bitop_stale.or_constant" = "== fail"
+"check.bitop_stale.or_constant.actual" = "== 0"
+"check.bitop_stale.eor_variable" = "== fail"
+"check.bitop_stale.eor_variable.actual" = "== 0"
+"check.bitop_stale.ampersand" = "== fail"
+"check.bitop_stale.ampersand.actual" = "== 0"
+"check.bitop_stale.bar" = "== fail"
+"check.bitop_stale.bar.actual" = "== 0"

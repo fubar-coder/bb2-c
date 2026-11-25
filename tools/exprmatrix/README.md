@@ -284,8 +284,9 @@ CD's libraries and of the port's C libraries (`lmullib`, `ldivlib`,
 Rule sets (flags in `exprmatrix.h`): the original's (`EM_RULES_ORIG`),
 the port as measured (`EM_RULES_PORT`, `EM_RULES_PORTCD`) and the fixed
 rules (`EM_RULES_FIXED`: #1177, #1186, #1178 variant C, #1179, #1187,
-#1188, #1189, #1209, the C libraries); each rule in `model.c` names its entry
-in `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md` (#1209:
+#1188, #1189, #1209, #1218 (a Byte `AND`, `OR` and `EOR` is a Word operation), the C
+libraries); each rule in `model.c` names its entry
+in `~/.local/share/bb2-c-work/decisions/rounds/quick/decisions.md` (#1209 and #1218:
 `rounds/tree/decisions.md`). Not modelled: mathtrans SPPow (`^`) where its
 bits matter, and the original's `If` on a Float, which tests d1 (#1187);
 those values are `?` (`?-`: the negation of the original's SPPow result,

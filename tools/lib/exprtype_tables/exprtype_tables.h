@@ -19,6 +19,7 @@
 #define EXPRTYPE_TABLES_H
 
 #include <stddef.h>
+#include <stdint.h>
 #include "exprtype.h"
 
 #ifdef __cplusplus
@@ -165,7 +166,7 @@ char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, str
  *         test operators, a comparison or a later index as the right
  *         operand, #978).  c must live as long as r. */
 struct ett_cand {
-    unsigned rules;
+    uint64_t rules;
     const struct ett_rules *base;
 };
 void ett_rules_cand(struct ett_rules *r, struct ett_cand *c);

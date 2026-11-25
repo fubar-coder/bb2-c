@@ -171,7 +171,7 @@ static int has_checked(const struct em_cell *c)
 }
 
 /* the rule sets whose value a row of the measured table may have to give */
-static const unsigned want_rules[] = { EM_RULES_ORIG, EM_RULES_FIXED, EM_RULES_PORTNOW,
+static const uint64_t want_rules[] = { EM_RULES_ORIG, EM_RULES_FIXED, EM_RULES_PORTNOW,
                                        (EM_RULES_PORTNOW & ~EM_RULES_LIBFIX) | EM_R_CDLIB };
 
 static int model_unknown(const struct em_matrix *m, const struct em_cell *c)
@@ -459,6 +459,7 @@ static const struct {
     { "1188", "a constant with a fraction is cut to a whole number when the type so far is Byte" },
     { "1189", "^ with a negative base drops the sign of the power" },
     { "1209", "NOT, AND, OR and EOR under a Quick type so far work on the 16.16 bits, the fraction included" },
+    { "1218", "a Byte AND, OR and EOR keeps bits 8-15 of its left operand, so widened it is a wrong Word or Long" },
     { "1216", "an operand is typed by the type so far and its place in the chain, not by its own type and the wanted type" },
     { "199", "the CD's quickmult adds the high words' product beyond the Quick range" },
     { "234", "the CD's printlib prints a Quick that rounds to 0 as \"-.\"" },
@@ -473,14 +474,15 @@ static const char *bug_text(const char *issue)
 }
 
 /* the rule of an issue of the model (0: none, a library issue) */
-static unsigned issue_rule(const char *issue)
+static uint64_t issue_rule(const char *issue)
 {
     static const struct {
         const char *issue;
-        unsigned rule;
+        uint64_t rule;
     } rules[] = {
         { "1177", EM_R_1177 }, { "1178", EM_R_1178 }, { "1179", EM_R_1179 },
         { "1187", EM_R_1187 }, { "1188", EM_R_1188 }, { "1189", EM_R_1189 }, { "1209", EM_R_1209 },
+        { "1218", EM_R_1218 },
     };
 
     for (size_t i = 0; i < sizeof rules / sizeof rules[0]; i++)
@@ -490,11 +492,11 @@ static unsigned issue_rule(const char *issue)
 }
 
 /* the rules of the issues "1178+1189" */
-static unsigned issue_rules(const char *issues)
+static uint64_t issue_rules(const char *issues)
 {
     char tmp[32];
     char *p, *save = NULL;
-    unsigned r = 0;
+    uint64_t r = 0;
 
     snprintf(tmp, sizeof tmp, "%s", issues);
     for (p = strtok_r(tmp, "+", &save); p; p = strtok_r(NULL, "+", &save))
@@ -505,7 +507,7 @@ static unsigned issue_rules(const char *issues)
 /* issues ("1178+1189") all fixed after the matrix was committed (their
    rules outside EM_RULES_MATRIX): returns 1 with *nfixed the number of
    them in the port's rules port and *n their number; 0 otherwise */
-static int late_issues(const char *issues, unsigned port, int *nfixed, int *n)
+static int late_issues(const char *issues, uint64_t port, int *nfixed, int *n)
 {
     char tmp[32];
     char *p, *save = NULL;
@@ -515,7 +517,7 @@ static int late_issues(const char *issues, unsigned port, int *nfixed, int *n)
         return 0;
     snprintf(tmp, sizeof tmp, "%s", issues);
     for (p = strtok_r(tmp, "+", &save); p; p = strtok_r(NULL, "+", &save)) {
-        unsigned r = issue_rule(p);
+        uint64_t r = issue_rule(p);
 
         if (!r || (r & EM_RULES_MATRIX))
             return 0;
@@ -529,7 +531,7 @@ static int late_issues(const char *issues, unsigned port, int *nfixed, int *n)
 /* the issue of "fixed-orig = N" of a test of issues fixed after the matrix,
    all of them in the port's rules port: N the last of them (the order of
    the model's steps, the order the fixes are planned in); NULL: none */
-static const char *fixed_issue(const char *issues, unsigned port)
+static const char *fixed_issue(const char *issues, uint64_t port)
 {
     int nf, n;
     const char *last;
@@ -590,7 +592,7 @@ static const char *mode_text(char mode)
 struct ctx {
     const struct em_matrix *m;
     const char *desc;
-    unsigned port;              /* the port's rules (EM_RULES_PORTNOW) */
+    uint64_t port;              /* the port's rules (EM_RULES_PORTNOW) */
     struct out out;
     struct buf left, rep, err;
     size_t nerr;
@@ -1491,7 +1493,7 @@ static void emit_group(struct ctx *x, struct group *g)
 
 /* the value of cell c by rules as the named-cell list shows it: an index
    cell unchecked/checked */
-static void named_value(const struct em_matrix *m, const struct em_cell *c, unsigned rules, char *out, size_t n)
+static void named_value(const struct em_matrix *m, const struct em_cell *c, uint64_t rules, char *out, size_t n)
 {
     struct em_value v, vc;
 
@@ -1520,7 +1522,7 @@ static const char *named_group(enum em_op op)
 /* the named cells of expr-tree-5-operand-typing (task 2.2): every cell
    whose model value under the decided rule (EM_RULES_DECIDED) differs from
    the port's (port), the only cells its implementation may change */
-static char *named_cells(const struct em_matrix *m, const char *desc, unsigned port, size_t *count)
+static char *named_cells(const struct em_matrix *m, const char *desc, uint64_t port, size_t *count)
 {
     struct buf b = { 0 };
 
@@ -1561,7 +1563,7 @@ int em_expect(const struct em_matrix *m, const char *desc, const struct em_table
     return em_expect_port(m, desc, meas, EM_RULES_PORTNOW, files, nfiles, report, errors);
 }
 
-int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_table *meas, unsigned port,
+int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_table *meas, uint64_t port,
                    struct em_file **files, size_t *nfiles, char **report, char **errors)
 {
     struct ctx x;

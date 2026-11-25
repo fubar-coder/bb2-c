@@ -178,7 +178,7 @@ int mark(void *ctx, unsigned op, unsigned want, unsigned l, unsigned r)
 
 int beside(void *ctx, unsigned want, unsigned partner, const char *text)
 {
-    return em_cand_consttype(*static_cast<unsigned *>(ctx), (int)want, (int)partner, text);
+    return em_cand_consttype(*static_cast<uint64_t *>(ctx), (int)want, (int)partner, text);
 }
 
 const char *const about_c7k =
@@ -217,7 +217,7 @@ int run(const std::string &me, const std::string &name, bool scopeb, const std::
     struct ett_prims p;
     struct ett_rules base, r;
     struct ett_cand c;
-    unsigned rules = EM_RULES_CANDBASE | EM_R_CAND(n) | (scopeb ? EM_R_SCOPEB : 0);
+    uint64_t rules = EM_RULES_CANDBASE | EM_R_CAND(n) | (scopeb ? EM_R_SCOPEB : 0);
     std::string k7;
 
     if (!c7k.empty()) {

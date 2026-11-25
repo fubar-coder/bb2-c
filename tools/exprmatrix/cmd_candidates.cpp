@@ -50,7 +50,7 @@ bool write_file(const std::string &path, const std::string &text)
 // a rule set of the comparison: candidate n with scope (a) or (b)
 struct ruleset {
     std::string name;
-    unsigned rules;
+    uint64_t rules;
 };
 
 std::vector<ruleset> rulesets()
@@ -91,7 +91,7 @@ const char *group_of(enum em_op op)
     }
 }
 
-std::string value_of(const struct em_matrix *m, const struct em_cell *c, unsigned rules)
+std::string value_of(const struct em_matrix *m, const struct em_cell *c, uint64_t rules)
 {
     struct em_value v, vc;
 

@@ -35,7 +35,7 @@ extern "C" {
 
 namespace {
 
-const unsigned DEC = EM_RULES_DECIDED;
+const uint64_t DEC = EM_RULES_DECIDED;
 
 const enum em_ctx CONTEXTS[] = { EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PL, EM_PW, EM_PQ, EM_PF, EM_IF, EM_PRINT };
 

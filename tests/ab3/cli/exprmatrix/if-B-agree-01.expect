@@ -331,8 +331,11 @@ if-or-cw-cl-B T
 if-or-cl-cb-B T
 if-or-cl-cw-B T
 if-or-cl-cl-B T
+if-eor-b-b-B F
 if-eor-b-w-B T
 if-eor-b-l-B T
+if-eor-b-cb-B F
+if-eor-cb-cb-B F
 if-eor-cb-cw-B T
 if-eor-cb-cl-B T
 if-eor-cw-b-B T

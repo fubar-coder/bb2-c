@@ -179,10 +179,11 @@ int exprtyping_isconst(const struct exprtyping_node *n);
  *         comparison -1 or 0, a division by 0 0) in *num / *den (den > 0).
  *
  * The exact value: where the rule keeps today's types (no fraction under a
- * bit operator), today's fold in those types can differ from it (a Byte
- * AND's register word, matrix model `flow`); task 3.6 folds those as
- * today.  Returns 0, or 1 when the value is beyond the exact range of the
- * pass (int64_t numerator and denominator). */
+ * bit operator), today's fold in those types keeps the register's width
+ * (the low word of a type below Long), so it differs from it for a value
+ * that does not fit the type; task 3.6 folds those as today.  Returns 0,
+ * or 1 when the value is beyond the exact range of the pass (int64_t
+ * numerator and denominator). */
 int exprtyping_constvalue(const struct exprtyping_node *n, int64_t *num, int64_t *den);
 
 #ifdef __cplusplus

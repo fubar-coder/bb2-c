@@ -389,8 +389,10 @@ print-or-cl-l-B -100000
 print-or-cl-cb-B -3
 print-or-cl-cw-B -648
 print-or-cl-cl-B -100000
+print-eor-b-b-B 0
 print-eor-b-w-B 997
 print-eor-b-l-B 99997
+print-eor-b-cb-B 0
 print-eor-b-cw-B 997
 print-eor-b-cl-B 99997
 print-eor-w-b-B 997
@@ -405,8 +407,10 @@ print-eor-l-l-B 0
 print-eor-l-cb-B 99997
 print-eor-l-cw-B 99704
 print-eor-l-cl-B 0
+print-eor-cb-b-B 0
 print-eor-cb-w-B 997
 print-eor-cb-l-B 99997
+print-eor-cb-cb-B 0
 print-eor-cb-cw-B 997
 print-eor-cb-cl-B 99997
 print-eor-cw-b-B 997

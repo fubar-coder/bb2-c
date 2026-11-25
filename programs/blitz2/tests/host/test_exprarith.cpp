@@ -21,10 +21,10 @@ extern "C" {
 
 namespace {
 
-const unsigned DEC = EM_RULES_DECIDED, NOW = EM_RULES_CANDBASE;
+const uint64_t DEC = EM_RULES_DECIDED, NOW = EM_RULES_CANDBASE;
 
 // the value text the model gives for text under ctx by rules
-std::string model(const char *text, const std::string &vars, enum em_ctx ctx, unsigned rules)
+std::string model(const char *text, const std::string &vars, enum em_ctx ctx, uint64_t rules)
 {
     struct em_expr *x = nullptr;
     char *err = nullptr;
@@ -129,7 +129,7 @@ TEST_CASE("exprarith: 16.16 as today's routines (qmul, qdivide, + -)", "[exprari
             unsigned f = 0;
             std::string mine = hex(exprarith_q16(op, a, b, &f));
 
-            for (unsigned rules : { DEC, NOW }) {
+            for (uint64_t rules : { DEC, NOW }) {
                 std::string m = model(text.c_str(), vars, EM_DQ, rules);
 
                 if (m != mine && differ++ < 10)
@@ -388,7 +388,7 @@ TEST_CASE("exprarith: whole numbers as today's code", "[exprarith]")
                                    : (f & EXA_TRAP) ? "!trap"
                                                     : dec(byte ? (int8_t)r : r);
 
-                for (unsigned rules : { DEC, NOW }) {
+                for (uint64_t rules : { DEC, NOW }) {
                     std::string m = model(text.c_str(), vars, k.ctx, rules);
 
                     if (m != mine && differ++ < 10)

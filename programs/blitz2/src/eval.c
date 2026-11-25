@@ -2634,11 +2634,19 @@ static void quickwhole(UWORD t)
 }
 
 /* blitz2.s:9492-9506; doandl and doorl are the Long and the Quick
-   handler (Fixed (#1209): quickwhole for a Quick) */
-UWORD doandb(UWORD t) { doplus2(0xc000); return t; }
+   handler (Fixed (#1209): quickwhole for a Quick).
+   Fixed (#1218, #1217): doandb, doorb and doeorb write the Word opcodes
+   (and.w, or.w, eor.w; blitz2.s:9492, :9501, :9510 write and.b, or.b,
+   eor.b, the same size).  A Byte lies in a register as a sign-extended
+   Word, and the byte operation keeps bits 8-15 of the left operand
+   (-2 AND 0 is $FF00, 3 OR -2 is $00FF); a widening writes no ext.w
+   (bytetoword), so it took that stale upper byte as part of the value.
+   Two sign-extended words combined bitwise give a sign-extended word
+   with the same low byte. */
+UWORD doandb(UWORD t) { doplus2(0xc040); return t; }
 UWORD doandw(UWORD t) { doplus2(0xc040); return t; }
 UWORD doandl(UWORD t) { doplus2(0xc080); quickwhole(t); return t; }
-UWORD doorb(UWORD t) { doplus2(0x8000); return t; }
+UWORD doorb(UWORD t) { doplus2(0x8040); return t; }
 UWORD doorw(UWORD t) { doplus2(0x8040); return t; }
 UWORD doorl(UWORD t) { doplus2(0x8080); quickwhole(t); return t; }
 
@@ -2653,8 +2661,8 @@ static void doeor2(UWORD opcode)
     pokewd(opcode);
 }
 
-/* blitz2.s:9510 doeorb - falls through into doeor2 */
-UWORD doeorb(UWORD t) { doeor2(0xb100); return t; }
+/* blitz2.s:9510 doeorb - falls through into doeor2; the Word opcode: Fixed (#1218, #1217), see doandb */
+UWORD doeorb(UWORD t) { doeor2(0xb140); return t; }
 /* blitz2.s:9519 doeorw */
 UWORD doeorw(UWORD t) { doeor2(0xb140); return t; }
 /* blitz2.s:9521 doeorl - the Long and the Quick handler (Fixed (#1209):

@@ -338,7 +338,7 @@ int mark_wmul(void *, unsigned op, unsigned want, unsigned l, unsigned r)
 
 int beside(void *ctx, unsigned want, unsigned partner, const char *text)
 {
-    return em_cand_consttype(*static_cast<unsigned *>(ctx), (int)want, (int)partner, text);
+    return em_cand_consttype(*static_cast<uint64_t *>(ctx), (int)want, (int)partner, text);
 }
 
 std::string candpage(int n, struct ett_stats *st, int (*mark)(void *, unsigned, unsigned, unsigned, unsigned))
@@ -346,7 +346,7 @@ std::string candpage(int n, struct ett_stats *st, int (*mark)(void *, unsigned, 
     struct ett_prims p;
     struct ett_rules base, r;
     struct ett_cand c;
-    unsigned rules = EM_RULES_CANDBASE | EM_R_CAND(n);
+    uint64_t rules = EM_RULES_CANDBASE | EM_R_CAND(n);
     char *error = nullptr;
 
     ett_prims_exprtype(&p);

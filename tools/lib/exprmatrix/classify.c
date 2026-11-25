@@ -214,7 +214,7 @@ oom:
 /* the steps from the original's rules to the fixed ones, in the order the
    fixes come; a step that changes the value names its issue */
 static const struct {
-    unsigned rules;
+    uint64_t rules;
     const char *issue;
 } steps[] = {
     { EM_R_1177 | EM_R_1186, "1177" },
@@ -224,6 +224,7 @@ static const struct {
     { EM_R_1188, "1188" },
     { EM_R_1189, "1189" },
     { EM_R_1209, "1209" },
+    { EM_R_1218, "1218" },
     { 0, "lib" },               /* the C libraries: EM_R_CDLIB off */
 };
 enum { NSTEPS = sizeof steps / sizeof steps[0] };
@@ -261,7 +262,7 @@ static int same_k(const struct cls *k, const char *model, const char *meas)
     return same(model, meas);
 }
 
-static void value(const struct em_matrix *m, const struct em_cell *c, unsigned rules, int checked,
+static void value(const struct em_matrix *m, const struct em_cell *c, uint64_t rules, int checked,
                   struct em_value *v)
 {
     em_model(m, c, rules, checked, v);
@@ -269,7 +270,7 @@ static void value(const struct em_matrix *m, const struct em_cell *c, unsigned r
 
 /* the value of the cell by rules as one text (unchecked|checked for an
    index cell) */
-static void both(const struct em_matrix *m, const struct em_cell *c, int idx, unsigned rules, char *out, size_t n)
+static void both(const struct em_matrix *m, const struct em_cell *c, int idx, uint64_t rules, char *out, size_t n)
 {
     struct em_value u, k;
 
@@ -283,7 +284,7 @@ static void both(const struct em_matrix *m, const struct em_cell *c, int idx, un
 
 /* the same with the operands of an unknown power (a step that changes
    what ^ is computed from changes the value) */
-static void both_sig(const struct em_matrix *m, const struct em_cell *c, int idx, unsigned rules, char *out,
+static void both_sig(const struct em_matrix *m, const struct em_cell *c, int idx, uint64_t rules, char *out,
                      size_t n)
 {
     struct em_value u;
@@ -376,7 +377,7 @@ static void classify_cell(const struct em_matrix *m, struct cls *k)
     const struct em_row *r = &rr;
     char vals[NSTEPS + 1][2 * EM_TEXT_MAX + 2], port[2 * EM_TEXT_MAX + 2], portcd[2 * EM_TEXT_MAX + 2];
     char o[2 * EM_TEXT_MAX + 2], exp[2 * EM_TEXT_MAX + 2];
-    unsigned rules = EM_RULES_ORIG;
+    uint64_t rules = EM_RULES_ORIG;
     int idx = k->chk;
     unsigned f;
 

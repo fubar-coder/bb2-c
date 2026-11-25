@@ -791,7 +791,7 @@ struct reg {
 };
 
 struct ev {
-    unsigned rules;
+    uint64_t rules;
     int checked;
     unsigned flags;
     int illegal;
@@ -1278,7 +1278,11 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
         }
         {
             uint32_t r = op == EM_AND ? x & y : op == EM_OR ? x | y : x ^ y;
-            uint32_t mask = t == TB ? 0xff : t == TW ? 0xffff : 0xffffffffu;
+            /* a Byte lies in a register as a sign-extended Word: the original's
+               byte operation (and.b, or.b, eor.b) keeps bits 8-15 of the left
+               operand (-2 AND 0 is $FF00), which a widening takes as part of
+               the value; EM_R_1218: the Word operation (#1218, #1217) */
+            uint32_t mask = t == TB && !(e->rules & EM_R_1218) ? 0xff : t <= TW ? 0xffff : 0xffffffffu;
 
             x = (x & ~mask) | (r & mask);
         }
@@ -1469,7 +1473,7 @@ static void mixed(struct ev *e, struct reg *a, struct reg *b, enum em_op op)
     a->id = r;
 }
 
-static int ctx_type(enum em_ctx x, int checked, unsigned rules)
+static int ctx_type(enum em_ctx x, int checked, uint64_t rules)
 {
     static const int t[] = { TB, TW, TL, TQ, TF, TL, TW, TQ, TF, 0, TL, TW, 0 };
 
@@ -1705,7 +1709,7 @@ static int index_value(struct ev *e, const struct em_set *s, const struct em_cel
     return 0;
 }
 
-void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules, int checked, struct em_value *out)
+void em_model(const struct em_matrix *m, const struct em_cell *c, uint64_t rules, int checked, struct em_value *out)
 {
     const struct em_set *s = &m->sets[c->set];
     struct ev e = { 0 };
@@ -3720,7 +3724,7 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
 
 /* ------------------------------------------------------- the evaluation */
 
-static int ctx_want(enum em_ctx x, unsigned rules)
+static int ctx_want(enum em_ctx x, uint64_t rules)
 {
     if (x == EM_IF || x == EM_PRINT)
         return 0;
@@ -3728,7 +3732,7 @@ static int ctx_want(enum em_ctx x, unsigned rules)
 }
 
 /* the expression root under ctx by rules: its value in *r; 0, 1 refused */
-static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsigned rules, struct reg *r,
+static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint64_t rules, struct reg *r,
                       struct trec *tr)
 {
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
@@ -3802,7 +3806,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
 }
 
 /* the text of the value r of an expression under ctx (em_model's) */
-static void value_text(struct ev *e, enum em_ctx ctx, unsigned rules, int asked, struct reg *r,
+static void value_text(struct ev *e, enum em_ctx ctx, uint64_t rules, int asked, struct reg *r,
                        struct em_value *out)
 {
     if (e->flags & EM_F_POW) {
@@ -3852,7 +3856,7 @@ static void value_text(struct ev *e, enum em_ctx ctx, unsigned rules, int asked,
     }
 }
 
-void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, struct em_exprval *out)
+void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, uint64_t rules, struct em_exprval *out)
 {
     struct ev e = { 0 };
     struct reg r;
@@ -3954,7 +3958,7 @@ int em_cell_expr(const struct em_matrix *m, const struct em_cell *c, struct em_e
     return 0;
 }
 
-void em_cand_cell(unsigned rules, enum em_op op, int want, int l, int r, struct em_optype *out)
+void em_cand_cell(uint64_t rules, enum em_op op, int want, int l, int r, struct em_optype *out)
 {
     static const enum em_ctx ctxof[] = { EM_PRINT, EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF };
     struct em_expr x;
@@ -3984,7 +3988,7 @@ void em_cand_cell(unsigned rules, enum em_op op, int want, int l, int r, struct 
         out->result = 0;
 }
 
-int em_cand_consttype(unsigned rules, int want, int partner, const char *text)
+int em_cand_consttype(uint64_t rules, int want, int partner, const char *text)
 {
     struct ev e = { 0 };
     struct reg r;

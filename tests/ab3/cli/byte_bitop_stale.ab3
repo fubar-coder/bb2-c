@@ -1,0 +1,18 @@
+; a Byte AND, OR or EOR of operands of different sign (#1218, #1217): the
+; port's byte operation is a Word operation, so no stale upper byte
+; (-2 AND 0 is $FF00, 3 OR -2 is $00FF in the original's and.b, or.b) is
+; widened as part of the value; every line prints 1 (true).  AmiBlitz3
+; v3.14.0 keeps the stale byte of the variable forms (the outputs 1, 3, 5 and 6
+; print 0 there, tests/ab3/cli/byte_bitop_stale.ref.expect)
+mb.b=-2 : zb.b=0 : tb.b=3 : ob.b=1
+zw.w=0 : mw.w=-1 : z.l=0 : r.l=0
+If (mb AND zb)=zw Then NPrint 1 Else NPrint 0
+If (-2 AND 0)=zw Then NPrint 1 Else NPrint 0
+If (mb AND zb)+zw=0 Then NPrint 1 Else NPrint 0
+If ((-2 AND 0) LSL 1)=0 Then NPrint 1 Else NPrint 0
+If (tb OR mb)=mw Then NPrint 1 Else NPrint 0
+If (ob EOR mb)=mw Then NPrint 1 Else NPrint 0
+r=(0=(-2 AND 0)) : NPrint r+2
+r=(z=(mb AND zb)) : NPrint r+2
+r=(3<(3 OR -2)) : NPrint r+1
+End
