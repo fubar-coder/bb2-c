@@ -148,7 +148,7 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 - **THEN** the first is true and the other two false (today false, true, true); `If w/2*2=w` stays false
 
 ### Requirement: Mod keeps today's sign rule, exact with fractions
-`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands.
+`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap ("GURU! - Division by Zero" with runtime error checking), a Long or Float `Mod` gives the dividend.
 
 #### Scenario: Negative dividend
 - **WHEN** a program evaluates `x.l=q Mod 2` with `q=-7`
@@ -157,6 +157,14 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 #### Scenario: Fraction
 - **WHEN** a program evaluates `x.q=q Mod 2` with `q=7.5`
 - **THEN** x is 1.5 (today 1)
+
+#### Scenario: Divisor 0
+- **WHEN** a program evaluates `r.l=l Mod z` with `l.l=-7`, `z.l=0`, and `x.w=w Mod z` with `w.w=7`, `z.w=0`
+- **THEN** r is -7, and the second raises the division trap, as today
+
+#### Scenario: A Quick divisor below 1
+- **WHEN** a program evaluates `x.q=q Mod p` with `q=7.5`, `p=0.5`
+- **THEN** x is 0 (today the whole part of `p`, 0, makes it trap)
 
 ### Requirement: A Quick used as a whole number keeps working
 Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's values: the operands of bit operators, shifts and `Not` are typed by the same rule as any operand and rounded down once where the operator takes them; a comparison's boolean in arithmetic is a whole number (Word -1 or 0), and with a Long the operation is a Long one.
@@ -177,8 +185,42 @@ Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's
 - **WHEN** a program evaluates `If q AND l` and `If l AND q` with `l.l=65536`, `q=-1`
 - **THEN** both conditions are true (today the first is false)
 
+### Requirement: Bit operators take the whole part of a fraction
+`AND`, `OR`, `EOR` and `NOT` SHALL accept a Quick operand or a constant with a point or a fraction on either side, under every wanted type and in an index, with its fraction cut (the whole part rounded down, as for a Quick under a Quick type so far). A Float variable SHALL be refused as before.
+
+#### Scenario: Both sides
+- **WHEN** a program evaluates `rb.b=b AND 1.5`, `rb.b=1.5 AND b` and `rb.b=b AND 1` with `b.b=3`
+- **THEN** all three give 1 (before the change the first two were refused)
+
+#### Scenario: Other types and constants
+- **WHEN** a program evaluates `x.w=w OR 2.5` with `w.w=4`, `r.l=2.5 EOR l` with `l.l=7`, `r.l=b AND -1.5` with `b.b=7`, `NPrint b AND 2.0` with `b.b=3` and `rb.b=Not 1.5`
+- **THEN** it gets 6, 5, 6, 2 and -2
+
+#### Scenario: Later index
+- **WHEN** a program compiled with and without runtime error checking contains `ja(1,vq AND 1.5)` with `vq.q=3`
+- **THEN** it compiles and reads `ja(1,1)` in both builds
+
+#### Scenario: Float variable
+- **WHEN** a program contains `r.l=l AND f` with `f.f=1.5`
+- **THEN** compiling it gives "Illegal Operator for Type", as before
+
+### Requirement: A shift count is a whole number
+The count of `LSL`, `ASL`, `LSR` and `ASR` SHALL be a constant without a point or a variable or expression of a Byte, Word, Long or Quick type; a Quick count SHALL be its whole part, rounded down, as in the original. A constant with a point as a count SHALL be refused with "Illegal Operator for Type", whatever its value. The left operand of a shift is taken as before.
+
+#### Scenario: A constant with a point as count
+- **WHEN** a program contains `rb.b=b LSL 2.0`, `NPrint q LSL 2.5` or `x.w=x LSL 2.0`
+- **THEN** compiling it gives "Illegal Operator for Type" (before the change the first two compiled, as in the original)
+
+#### Scenario: Quick variables as count
+- **WHEN** a program executes `NPrint x LSL q2`, `NPrint x LSL qh` and `NPrint x LSL qn` with `x.w=3`, `q2=2.0`, `qh=2.5`, `qn=2.99`
+- **THEN** it prints 12, 12 and 12, as today and the original
+
+#### Scenario: A Quick count beside a whole or Quick left operand
+- **WHEN** a program executes `NPrint x LSR qh` with `x.w=3`, `qh=2.5` and evaluates `rl.l=q LSL qh` with `q=1.5`
+- **THEN** it prints .75 (the Word is shifted as a 16.16 value) and rl is 4, as today
+
 ### Requirement: 16.16 operations give today's values
-Where the rule computes in 16.16, the compiler SHALL give today's values bit for bit: the products of `qmul`, the quotients of `qdivide` with its last bit (up to 1/65536 above the quotient towards zero), and for a divisor 0 the largest number with the dividend's sign ($7FFFFFFF, for a negative dividend $80000001); a 48.16 division by 0 SHALL give the largest value with the dividend's sign, as `lqdiv` ($7FFFFFFF or -$7FFFFFFF as its whole part).
+Where the rule computes in 16.16, the compiler SHALL give today's values bit for bit: the products of `qmul`, the quotients of `qdivide` with its last bit (up to 1/65536 above the quotient towards zero), and for a divisor 0 the largest number with the dividend's sign ($7FFFFFFF, for a negative dividend $80000001).
 
 #### Scenario: qdivide's last bit
 - **WHEN** a program evaluates `x.q=q/p` with `q=-7.25`, `p=0.3`
@@ -188,9 +230,16 @@ Where the rule computes in 16.16, the compiler SHALL give today's values bit for
 - **WHEN** a program evaluates `x.q=q/p` with `p=0` and `q=1`, and with `q=-1`, and `r.l=l/q` with `l.l=-100`, `q=0`
 - **THEN** x is $7FFFFFFF and $80000001, r is -2147483647, as today
 
+### Requirement: A 48.16 division by 0 gives the largest value of the wanted type
+A 48.16 division by 0 SHALL give the largest value in the format of the wanted type with the dividend's sign: a Quick $7FFFFFFF ($80000001), a Word 32767, a Byte 127, a Long or no wanted type $7FFFFFFF, as `lqdiv`.
+
 #### Scenario: 48.16 division by zero without a wanted Long
 - **WHEN** a program executes `NPrint l/q` with `l.l=-100`, `q=0`
 - **THEN** it prints -2147483647, as today
+
+#### Scenario: 48.16 division by zero under a Quick, Word or Byte destination
+- **WHEN** a program evaluates `x.q=l/q`, `x.w=l/q` and `x.b=l/q` with `l.l=100`, `q=0`
+- **THEN** x is $7FFFFFFF as today, 32767 and 127 (today -1 and -1, the low word and byte of $7FFFFFFF)
 
 ## MODIFIED Requirements
 
@@ -262,4 +311,12 @@ A program that has no Quick operand in an arithmetic expression under a whole-nu
 
 ### Requirement: A whole-valued literal stays whole under a Byte type
 **Reason**: a constant written with a point is fractional also under a Byte type (user, 2026-11-24, F6: "Neue Regel überall"); requirement "A constant with a point is fractional". `rb.b=vb+2.0` keeps its value 5.
-**Migration**: the case `rb.b=vb AND 2.0` (compiles today) is an open point of the change (design, "Open questions").
+**Migration**: `rb.b=vb AND 2.0` gives 2 (requirement "Bit operators take the whole part of a fraction"); `rb.b=vb LSL 2.0` is refused (requirement "A shift count is a whole number").
+
+### Requirement: A fraction literal with a bit operator under a Byte type is refused
+**Reason**: `AND`, `OR`, `EOR` and `NOT` take the whole part of a constant with a fraction (user, 2026-11-25, "expr-tree-5: bit operators and shifts with fractions; Quick /0; Mod /0"); requirement "Bit operators take the whole part of a fraction". A constant with a point as a shift count is refused (requirement "A shift count is a whole number").
+**Migration**: `rb.b=1.5 AND vb` gives `vb AND 1`, `rb.b=Not 1.5` -2.
+
+### Requirement: A bit operator with a fraction constant in a later index is refused
+**Reason**: the same decision; `ja(1,vq AND 1.5)` compiles in both builds (requirement "Bit operators take the whole part of a fraction").
+**Migration**: none; both builds still evaluate the index alike.
