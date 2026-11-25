@@ -8191,3 +8191,11 @@ rows:
     text: "An assignment to a number array element whose index works with strings no longer builds a string of its right side at a stray address: after `Read t$`, `a(Val(d$)) = Len(c$+\"x\")` overwrote the next `Data` item and the next `Read` crashed."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1218
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "AND, OR, EOR"
+    text: "`AND`, `OR` and `EOR` of two Byte values with different signs give the right result when it is used as a Word or Long; the original left a wrong upper byte (`If (mb AND zb)=zw` was false for `mb.b=-2`, `zb.b=0`, `zw.w=0`)."
+    page: compiler
+    anchor: expressions-and-statements

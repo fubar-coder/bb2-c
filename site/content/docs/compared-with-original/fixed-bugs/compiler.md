@@ -1017,6 +1017,12 @@ Each point says first what the original did, then what the port does.
   with it is a compile error
   ([`AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte]({{< relref "/docs/compared-with-original/new-errors#byte-fraction-operator" >}}),
   [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
+* `AND`, `OR` and `EOR` of two Byte values with different signs left a
+  wrong upper byte behind, so the result was wrong as soon as it was
+  used as a Word or Long: with `mb.b=-2` and `zb.b=0`,
+  `If (mb AND zb)=zw` was false for `zw.w=0`, because `mb AND zb` came out
+  as -256 instead of 0. The result is now the same as in a Word
+  calculation ([#1218](https://github.com/fubar-coder/bb2-c/issues/1218)).
 * An AmigaOS function (`Name_`) after a Float calculation in the same
   expression made the Float operations after it go through that
   library: `Abs(-2)+FindTask_(0)` crashed and `x*y+IEEESPFix_(i)` gave a
