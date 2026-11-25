@@ -800,6 +800,7 @@ struct ev {
     uint64_t powsig;            /* its two Float operands */
     int powknown;
     int c5ovf;                  /* C5: a 32.16 product beyond its consumer (EM_R_C5ERR) */
+    int divtrap;                /* a DIVS.W by 0 ran: the CPU's division trap, no value */
 };
 
 static int fits(struct rat a, int t)
@@ -1230,6 +1231,8 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
         if (t <= TW) {
             if (t == TB)
                 y = (uint32_t)(int32_t)(int16_t)y;
+            if (!(int16_t)y)
+                e->divtrap = 1;     /* DIVS.W by 0 */
             x = m68k_divs((uint32_t)(int32_t)(int16_t)x, y);
         } else if (t == TL)
             x = lib_divide(x, y, 31, e->cd);
@@ -1242,11 +1245,15 @@ static void doop(struct ev *e, enum em_op op, struct reg *a, struct reg *b, int 
     case EM_MOD:
         if (t == TL || t == TF)
             e->flags |= EM_F_MODLF;    /* not folded as a constant (nocando) */
-        if (t <= TW)
+        if (t <= TW) {
+            if (!(int16_t)y)
+                e->divtrap = 1;     /* modlib's DIVS.W by 0 */
             x = lib_modw(x, y);
-        else if (t == TL)
+        } else if (t == TL)
             x = lib_modl(x, y, e->cd);
         else if (t == TQ) {
+            if (!(int16_t)(y >> 16))
+                e->divtrap = 1;     /* the whole part of the divisor 0 */
             x = lib_modw((x << 16) | (x >> 16), (y << 16) | (y >> 16));
             rt = TW;
         } else {
@@ -2491,8 +2498,9 @@ struct cev {
     int preach;                 /* EM_R_PREACH */
     int pcmp;                   /* EM_R_PCMP */
     int pqdiv;                  /* EM_R_PQDIV */
-    int pbitwhole, pbitq;       /* EM_R_PBITWHOLE, EM_R_PBITQ (analysis of design open question 1) */
-    int inbit;                  /* the constant being typed is an operand of a bit operator or shift */
+    int pbits;                  /* EM_R_PBITS */
+    int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
+                                   2 the count of a shift (EM_R_PBITS) */
     int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
     int fracwhole;              /* P: a whole-number subtree here is computed in the fractional format */
     int reachf;                 /* P: the expression is typed under Float (a Float in it, change 7) */
@@ -2646,21 +2654,25 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
         tt = TF;
     if (c->pconst && pt && a.ok && (!rat_isint(a) || cpoint(n)))
         tt = pconstfloat(c, a, W, pt) ? TF : TQ;
-    /* the analysis of design open question 1 (rb.b=vb AND 2.0): a
-       constant with a point as the operand of a bit operator or shift;
-       EM_R_PBITWHOLE: a whole value is the whole number of its smallest
-       type (option 2); EM_R_PBITQ: a value in the Quick range is a Quick,
-       the operator takes its whole part as for a Quick operand (option 3) */
+    /* EM_R_PBITS ("expr-tree-5: bit operators and shifts with fractions;
+       Quick /0; Mod /0", 2026-11-25): a constant with a point or a
+       fraction as an operand of AND, OR, EOR or NOT is its whole part,
+       rounded down (as #1209 takes a Quick), a whole number of its
+       smallest type: b AND 1.5 = 1.5 AND b = b AND 1; as the count of a
+       shift it is refused ("Immer ablehnen") */
     int bitwhole = 0, inbit = c->inbit;
 
     c->inbit = 0;
-
-    if (inbit && a.ok && cpoint(n)) {
-        if (c->pbitwhole && rat_isint(a) && cfits(a, TL)) {
+    if (c->pbits && inbit && a.ok && (cpoint(n) || !rat_isint(a))) {
+        if (inbit == 2) {
+            c->e->illegal = 1;
+            return 1;
+        }
+        a = rat_floor(a);
+        if (cfits(a, TL)) {
             tt = cfits(a, TB) ? TB : cfits(a, TW) ? TW : TL;
             bitwhole = 1;
-        } else if (c->pbitq && cfits(a, TQ))
-            tt = TQ;
+        }
     }
     char text[48];
 
@@ -2720,7 +2732,7 @@ static void wideok(struct ev *e, struct reg *r)
 static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, struct reg *r, struct reg *b)
 {
     int lc = is_consttree(n->l), rc = is_consttree(n->r);
-    int bit = is_bitop(n->op) || (n->op >= EM_LSL && n->op <= EM_ASR);
+    int shift = n->op >= EM_LSL && n->op <= EM_ASR, bit = is_bitop(n->op) && !shift;
 
     c->inbit = 0;
     if (em_op_is_compare(n->op) && (c->ptyped || c->pconst)) {
@@ -2749,13 +2761,13 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
             return 1;
         /* a shifted constant is not typed by the count */
         c->inmul = n->op == EM_MUL;
-        c->inbit = bit;
+        c->inbit = bit;         /* a shifted constant: as it is (F7) */
         return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
     }
     if (cand(c, n->l, WL, 0, r))
         return 1;
     c->inmul = n->op == EM_MUL;
-    c->inbit = bit && rc;
+    c->inbit = rc ? (shift ? 2 : bit) : 0;
     return cand(c, n->r, WR, rc ? r->t : 0, b);
 }
 
@@ -2833,6 +2845,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
         plainreg(r);
         return 0;
     case TN_NOT:
+        c->inbit = is_consttree(n->l);
         if (cand(c, n->l, W, 0, r))
             return 1;
         wideok(e, r);
@@ -3298,9 +3311,20 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
             v = rat_make((int32_t)q, 65536);
         } else if (!rat_sign(y)) {
             e->flags |= EM_F_OVF;
-            /* EM_R_PQDIV: the largest number with the dividend's sign, as
-               lqdiv and longdiv (#200); else 0 */
-            v = !c->pqdiv ? rat_int(0) : rat_sign(x) < 0 ? rat_int(-0x7fffffff) : rat_int(0x7fffffff);
+            /* EM_R_PQDIV: the largest value in the format of the wanted
+               type with the dividend's sign ("expr-tree-5: bit operators
+               and shifts with fractions; Quick /0; Mod /0": "Größter Wert
+               des Ziels"): a Quick $7FFFFFFF as qdivide, a Word 32767, a
+               Byte 127, a Long or none the largest Long, as lqdiv and
+               longdiv (#200); else 0 */
+            if (!c->pqdiv)
+                v = rat_int(0);
+            else {
+                v = W == TQ ? rat_make(0x7fffffff, 65536)
+                    : W == TW ? rat_int(32767) : W == TB ? rat_int(127) : rat_int(0x7fffffff);
+                if (rat_sign(x) < 0)
+                    v = rat_op(rat_int(0), v, '-');
+            }
         } else
             v = rat_q16(rat_op(x, y, '/'));
         if (c->pdivl && W == TL)
@@ -3310,6 +3334,15 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         if (!rat_sign(y)) {
             e->flags |= EM_F_OVF;
             v = rat_int(0);
+            if (c->pmod) {
+                /* EM_R_PMOD, a divisor 0 as today per type ("Wie heute je
+                   Typ"): a 16.16 Mod traps as domodquick's DIVS.W, a
+                   48.16 one gives the dividend as domodlong */
+                if (f == 16)
+                    e->divtrap = 1;
+                else
+                    v = x;
+            }
         } else
             v = rat_op(x, rat_op(y, rat_trunc(rat_op(x, y, '/')), '*'), '-');
         if (c->pmod && rat_sign(v) < 0)
@@ -3554,8 +3587,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
             c.preach = (rules & EM_R_PREACH) != 0;
             c.pcmp = (rules & EM_R_PCMP) != 0;
             c.pqdiv = (rules & EM_R_PQDIV) != 0;
-            c.pbitwhole = (rules & EM_R_PBITWHOLE) != 0;
-            c.pbitq = (rules & EM_R_PBITQ) != 0;
+            c.pbits = (rules & EM_R_PBITS) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;
@@ -3671,6 +3703,9 @@ void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, stru
     memset(&r, 0, sizeof r);
     if (tree_value(&e, x->root, asked, rules, &r, &tr)) {
         strcpy(out->v.text, "!noncompile");
+        out->v.flags = e.flags;
+    } else if (e.divtrap) {
+        strcpy(out->v.text, "!trap");
         out->v.flags = e.flags;
     } else if (e.c5ovf && (rules & EM_R_C5ERR)) {
         strcpy(out->v.text, "!runtime");

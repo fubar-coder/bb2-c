@@ -168,8 +168,7 @@ left operand of a comparison by scope (a) and (b), and C5 and C6 also with their
 overflow a runtime error (`C5ea`, `C5eb`, `C6ea`, `C6eb`), and C7K (`C7Kown`, `C7Klong`,
 `C7Kdest`, `C7Kx`: C7 with constants by their smallest type), and the decided rule `P+`
 (`EM_RULES_DECIDED`: C7Kx with the parts `EM_R_PTYPED` ... `EM_R_PQDIV`, `exprmatrix.h`)
-beside `P`, its changes 1-6, and `P+o2`, `P+o3` (analysis only: the options of a constant with a
-point under a bit operator or shift, `EM_R_PBITWHOLE`, `EM_R_PBITQ`); `--out` lists the cells where
+beside `P`, its changes 1-6; `--out` lists the cells where
 one differs, and the counts go to stdout. `--exprs` evaluates expressions
 the matrix has no cell for (chains, a compound left operand), one per line:
 an ID, a context (`dl`, `print`, ...: the names of the description), the

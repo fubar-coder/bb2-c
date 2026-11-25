@@ -75,9 +75,6 @@ std::vector<ruleset> rulesets()
     // the analysis's P (changes 1-6) and the decided rule P+ (changes 1-8)
     v.push_back({ "P", EM_RULES_P });
     v.push_back({ "P+", EM_RULES_DECIDED });
-    // the two options of design open question 1 (analysis only)
-    v.push_back({ "P+o2", EM_RULES_DECIDED | EM_R_PBITWHOLE });
-    v.push_back({ "P+o3", EM_RULES_DECIDED | EM_R_PBITQ });
     return v;
 }
 

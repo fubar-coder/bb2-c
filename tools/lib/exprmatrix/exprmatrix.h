@@ -397,6 +397,12 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
  *              fractional format.
  * EM_R_PCMP    change 8 (F1): a comparison's common format, the wider
  *              class of its two sides, reaches into both operands.
+ * EM_R_PBITS   bit operators and shifts with fractions ("expr-tree-5: bit
+ *              operators and shifts with fractions; Quick /0; Mod /0",
+ *              2026-11-25): AND, OR, EOR and NOT take a constant with a
+ *              point or a fraction on either side as its whole part,
+ *              rounded down (b AND 1.5 = 1.5 AND b = b AND 1); a constant
+ *              with a point as a shift count is refused.
  * EM_R_PQDIV   the 16.16 routines as today ("expr-tree-5: shared C for
  *              typing, arithmetic and folding"): a 16.16 division is
  *              qdivide bit for bit (its last bit, $7FFFFFFF for a divisor
@@ -413,19 +419,13 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 #define EM_R_PREACH (1u << 23)
 #define EM_R_PCMP (1u << 24)
 #define EM_R_PQDIV (1u << 25)
-/* analysis only (design open question 1, rb.b=vb AND 2.0), not part of P+:
-   a constant with a point as the operand of a bit operator or shift is
-   the whole number of its smallest type when its value is whole (option 2,
-   EM_R_PBITWHOLE), or a Quick, whose whole part the operator takes
-   (option 3, EM_R_PBITQ) */
-#define EM_R_PBITWHOLE (1u << 26)
-#define EM_R_PBITQ (1u << 27)
+#define EM_R_PBITS (1u << 26)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 #define EM_RULES_C7KX (EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT)
 #define EM_RULES_P                                                                                                    \
     (EM_RULES_CANDBASE | EM_RULES_C7KX | EM_R_PTYPED | EM_R_PCONST | EM_R_PMOD | EM_R_PNARROW | EM_R_PDIVL            \
      | EM_R_PQDIV)
-#define EM_RULES_DECIDED (EM_RULES_P | EM_R_PREACH | EM_R_PCMP)
+#define EM_RULES_DECIDED (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS)
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);

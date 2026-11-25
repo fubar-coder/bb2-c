@@ -778,11 +778,11 @@ TEST_CASE("exprmatrix model: P+, a constant with a point is never integral", "[e
     CHECK(expr("b/2.0", "b.b=3").typing(EM_DB, NOW) == "div B>B k>B p B;");
     CHECK(expr("b/2.0", "b.b=3").typing(EM_DB, DEC) == "div B>F k>F p F;");
     CHECK(expr("b/2", "b.b=3").typing(EM_DB, DEC) == "div B>B k>B p B;");
-    // ... so a bit operator or shift with 2.0 under a Byte type is refused
-    // as with any Float (today it compiles: #1186's whole literal); the
-    // reading the model gives F2 with F6, reported with task 2.2
+    // a bit operator takes its whole part, a shift count refuses it (the
+    // case below)
     CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, NOW) == "2");
-    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, DEC) == "!noncompile");
+    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, DEC) == "2");
+    CHECK(expr("b LSL 2.0", "b.b=3").value(EM_DB, DEC) == "!noncompile");
     // beside a Quick a Quick
     CHECK(expr("q*3.0", "q=1.5").value(EM_DQ, DEC) == "00048000");
     CHECK(expr("q+3.0", "q=1.5").value(EM_PRINT, DEC) == "4.5");
@@ -864,24 +864,103 @@ TEST_CASE("exprmatrix model: P+, a bit operator inside a comparison with a Float
     CHECK(expr("b AND 1", "b.b=3").value(EM_DF, DEC) == "!noncompile");
 }
 
-TEST_CASE("exprmatrix model: the options of a constant with a point under a bit operator", "[exprmatrix][cand]")
-{
-    // analysis only (design open question 1): option 2 a whole value its
-    // whole number, option 3 a Quick whose whole part the operator takes
-    const unsigned o2 = DEC | EM_R_PBITWHOLE, o3 = DEC | EM_R_PBITQ;
 
-    for (unsigned r : { o2, o3 }) {
-        CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, r) == "2");
-        CHECK(expr("2.0 AND b", "b.b=3").value(EM_DB, r) == "2");
-        CHECK(expr("b LSL 2.0", "b.b=3").value(EM_DB, r) == "12");
-        CHECK(expr("l LSL 2.0", "l.l=5").value(EM_DL, r) == "20");
-        CHECK(expr("w AND 2.0", "w.w=3").value(EM_DW, r) == "2");
-        CHECK(expr("q AND 2.0", "q=3.5").value(EM_DQ, r) == "00020000");
+TEST_CASE("exprmatrix model: P+, bit operators take the whole part of a fraction", "[exprmatrix][cand][decided]")
+{
+    // "expr-tree-5: bit operators and shifts with fractions; Quick /0;
+    // Mod /0" (2026-11-25): AND, OR, EOR and NOT take a Quick or a constant
+    // with a fraction on either side, the fraction cut (rounded down)
+    for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_PRINT }) {
+        INFO(em_ctx_name(ctx));
+        CHECK(expr("b AND 1.5", "b.b=3").value(ctx, DEC) == "1");
+        CHECK(expr("1.5 AND b", "b.b=3").value(ctx, DEC) == "1");
+        CHECK(expr("b AND 1", "b.b=3").value(ctx, DEC) == "1");
+        CHECK(expr("b AND 2.0", "b.b=3").value(ctx, DEC) == "2");
+        CHECK(expr("2.0 AND b", "b.b=3").value(ctx, DEC) == "2");
+        CHECK(expr("w OR 2.5", "w.w=4").value(ctx, DEC) == "6");
+        CHECK(expr("2.5 EOR l", "l.l=7").value(ctx, DEC) == "5");
+        CHECK(expr("NOT 1.5", "").value(ctx, DEC) == "-2");
     }
-    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, o2) == "!noncompile");
-    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, o3) == "1");
-    CHECK(expr("b AND 2.5", "b.b=3").value(EM_DB, o3) == "2");
-    CHECK(expr("2.5 AND b", "b.b=3").value(EM_DB, o3) == "2");
-    CHECK(expr("l LSL 2.5", "l.l=5").value(EM_DL, o3) == "20");
-    CHECK(expr("b AND 2.0", "b.b=3").value(EM_DB, DEC) == "!noncompile");
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("1.5 AND b", "b.b=3").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_IF, DEC) == "T");
+    CHECK(expr("q AND 1.5", "q=3.5").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("q AND 1.5", "q=3.5").value(EM_DL, DEC) == "1");
+    CHECK(expr("q AND 2.0", "q=3.5").value(EM_DQ, DEC) == "00020000");
+    CHECK(expr("b AND -1.5", "b.b=7").value(EM_DL, DEC) == "6");     // -1.5 rounded down: -2
+    CHECK(expr("NOT 1.5", "").value(EM_DQ, DEC) == "FFFE0000");
+    // in an index (#1179's refusal lifted)
+    CHECK(expr("q AND 1.5", "q=3").value(EM_I1, DEC) == "1");
+    CHECK(expr("q AND 1.5", "q=3").value(EM_I2, DEC) == "1");
+    // today refused under a whole-number type
+    CHECK(expr("b AND 1.5", "b.b=3").value(EM_DB, NOW) == "!noncompile");
+    // a Float variable stays refused
+    CHECK(expr("l AND f", "l.l=7 f.f=1.5").value(EM_DL, DEC) == "!noncompile");
+}
+
+TEST_CASE("exprmatrix model: P+, shift counts", "[exprmatrix][cand][decided]")
+{
+    // a constant with a point as a count is always refused; a variable or
+    // expression of any whole or Quick type is the count, a Quick cut to
+    // its whole part, as the original (shift-count/report.md)
+    for (const char *t : { "b LSL 2.0", "b LSL 2.5", "q LSL 2.5", "q LSL 2.0", "x LSL 2.0", "l LSL 2.0", "b LSL (1+1.0)" })
+        for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_DQ, EM_PRINT }) {
+            INFO(t, " ", em_ctx_name(ctx));
+            CHECK(expr(t, "b.b=3 q=1.5 x.w=3 l.l=3").value(ctx, DEC) == "!noncompile");
+        }
+    CHECK(expr("b LSL 2.0", "b.b=3").value(EM_DB, NOW) == "12");    // today and the original
+    static const char *const V = "x.w=3 l.l=100000 b.b=3 q=1.5 n.w=1 q2=2.0 qh=2.5 qn=2.99";
+    static const struct {
+        const char *e;
+        enum em_ctx ctx;
+        const char *v;
+    } counts[] = {
+        { "x LSL q2", EM_PRINT, "12" },    { "x LSL qh", EM_PRINT, "12" },   { "x LSL qn", EM_PRINT, "12" },
+        { "l LSL q2", EM_PRINT, "400000" }, { "l LSL qh", EM_PRINT, "400000" }, { "q LSL 2", EM_PRINT, "6" },
+        { "q LSL n", EM_PRINT, "3" },      { "q LSL qh", EM_PRINT, "6" },    { "b LSL q2", EM_PRINT, "12" },
+        { "b LSL qh", EM_PRINT, "12" },    { "x LSL (n+1)", EM_PRINT, "12" }, { "x LSL (qh*2)", EM_PRINT, "96" },
+        { "x LSR qh", EM_PRINT, ".75" },   { "l LSR qh", EM_PRINT, "25000" }, { "l ASR qh", EM_PRINT, "25000" },
+        { "q ASR qh", EM_PRINT, ".375" },  { "x LSL qh", EM_DL, "12" },      { "l LSL qh", EM_DL, "400000" },
+        { "x LSL qh", EM_DW, "12" },       { "x LSL qh", EM_DQ, "000C0000" }, { "q LSL qh", EM_DL, "4" },
+    };
+
+    for (const auto &c : counts) {
+        INFO(c.e, " ", em_ctx_name(c.ctx));
+        CHECK(expr(c.e, V).value(c.ctx, DEC) == c.v);
+        CHECK(expr(c.e, V).value(c.ctx, NOW) == c.v);
+    }
+}
+
+TEST_CASE("exprmatrix model: P+, division by 0 in the destination's format", "[exprmatrix][cand][decided]")
+{
+    // the largest value in the destination's format with the dividend's
+    // sign: a Quick destination $7FFFFFFF as today
+    CHECK(expr("l/q", "l.l=100 q=0").value(EM_DQ, DEC) == "7FFFFFFF");
+    CHECK(expr("l/q", "l.l=-100 q=0").value(EM_DQ, DEC) == "80000001");
+    CHECK(expr("(l+q)/p", "l.l=100 q=0.5 p=0").value(EM_DQ, DEC) == "7FFFFFFF");
+    CHECK(expr("l/q", "l.l=100 q=0").value(EM_DL, DEC) == "2147483647");
+    CHECK(expr("l/q", "l.l=-100 q=0").value(EM_PRINT, DEC) == "-2147483647");
+    CHECK(expr("l/q", "l.l=100 q=0").value(EM_DW, DEC) == "32767");
+    CHECK(expr("l/q", "l.l=-100 q=0").value(EM_DW, DEC) == "-32767");
+    CHECK(expr("l/q", "l.l=100 q=0").value(EM_DB, DEC) == "127");
+}
+
+TEST_CASE("exprmatrix model: Mod by 0 as today per type", "[exprmatrix][cand][decided]")
+{
+    // "Wie heute je Typ": Byte, Word and Quick trap (DIVS.W by 0), Long and
+    // Float give the dividend; P+ keeps it (a 16.16 Mod traps, a 48.16 one
+    // gives the dividend)
+    for (unsigned r : { NOW, DEC }) {
+        CHECK(expr("b MOD z", "b.b=7 z.b=0").value(EM_DB, r) == "!trap");
+        CHECK(expr("w MOD z", "w.w=7 z.w=0").value(EM_DW, r) == "!trap");
+        CHECK(expr("q MOD p", "q=7.5 p=0").value(EM_DQ, r) == "!trap");
+        CHECK(expr("l MOD z", "l.l=-7 z.l=0").value(EM_DL, r) == "-7");
+        CHECK(expr("f MOD g", "f.f=7.5 g.f=0").value(EM_DL, r) == "7");
+        CHECK(expr("l MOD q", "l.l=100000 q=0").value(EM_DL, r) == "100000");
+        CHECK(expr("w/z", "w.w=7 z.w=0").value(EM_DW, r) == "!trap");
+    }
+    // a Quick divisor below 1: today its whole part 0 traps, P+'s exact
+    // Mod has a value
+    CHECK(expr("q MOD p", "q=7.5 p=0.5").value(EM_DQ, NOW) == "!trap");
+    CHECK(expr("q MOD p", "q=7.5 p=0.5").value(EM_DQ, DEC) == "00000000");
 }
