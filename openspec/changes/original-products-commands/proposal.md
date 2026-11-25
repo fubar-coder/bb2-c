@@ -48,6 +48,6 @@ Planning choices (mine, not the user's):
 
 - `libs/acidlibs/` a new library file and its CMake entry; `libs/variants/bb2-2.10/libnums.h`; `libs/acidlibs/declarations-intended.txt` if the build asks for it.
 - Not the compiler: no file under `programs/` (not `eval.c`; not in the eval.c line).
-- Tests: a library capture `libtest_NAME` in `libs/tests` whose blocks equal the `[orig]` blocks of `libtest_lmullib`; an expect test in `tests/blitz2/` (the 3000 pairs of #199 against `OldMul{}`/`OldQMul{}`, edge values, the LCG); two `tests/perf` lines; the prev comparison.
+- Tests: a library capture `libtest_NAME` in `libs/tests` whose blocks equal the `[orig]` blocks of `libtest_lmullib`; a test of the BASIC test model in `tests/blitz2/` (the 3000 pairs of #199 against `OldMul{}`/`OldQMul{}`, edge values, the LCG); two `tests/perf` lines; the prev comparison.
 - Docs: `docs/libs/bb2-readme.md`, the library's head comment; site: `fixed-bugs/libraries/index.md` ("Getting the old products"), `site/data/libintros/acidlibs/NAME.yaml`, `site/data/cmddesc/acidlibs/NAME.yaml`.
 - Overlaps: none with `console-break-option` any more (it adds no `acidlibs` library); `quick-long-arithmetic` edits `docs/libs/bb2-readme.md` (its tasks are done; another section).

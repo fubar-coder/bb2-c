@@ -8,12 +8,12 @@ Names and place are decided (proposal, "Decisions of the user"). An enhancement,
 
 ## 2. Tests first
 
-- [ ] 2.1 Expect test `tests/blitz2/original-products` (`@runerrs off`): `LMulBB2(196608,30000)`, `LMulBB2(-196608,30000)`, `QMulBB2(300,300)` raw, the LCG from 4711 (5 numbers), the edge values (0, -1, $7FFFFFFF, $80000000, 2^k for k = 0..31, both functions, both argument orders), and checksums over the 3000 mixed pairs of #199 (`~/.local/share/bb2-c-work/analyse-199/`) computed with the functions and with `OldMul{}`/`OldQMul{}` in the same program (they must agree; the expectation holds both checksums). Verify: REGRESSED on main ("Token Not Found").
+- [ ] 2.1 Test of the BASIC test model `tests/blitz2/original-products.test.bas` with `original-products.test.toml` (`extension = 1036`; what the original does instead as declared deviations; no `.expect` file, `runtime-errors` off): `LMulBB2(196608,30000)`, `LMulBB2(-196608,30000)`, `QMulBB2(300,300)` raw, the LCG from 4711 (5 numbers), the edge values (0, -1, $7FFFFFFF, $80000000, 2^k for k = 0..31, both functions, both argument orders), and checksums over the 3000 mixed pairs of #199 (`~/.local/share/bb2-c-work/analyse-199/`) computed with the functions and with `OldMul{}`/`OldQMul{}` in the same program (they must agree; the checks hold both checksums). Verify: fails on main ("Token Not Found").
 - [ ] 2.2 Library capture `libtest_NAME` in `libs/tests` with the vectors of `test_lmullib` (`systest_mathstr.c:346`) and a check that each block's checksum equals the `[orig]` block of `libtest_lmullib` (design, planning choice 3); a KEEPS case (a3-a7 kept). Verify: fails on main (no library).
 
 ## 3. Implementation
 
-- [ ] 3.1 The library (`libs/acidlibs/`, the CMake entry, the number in `libs/variants/bb2-2.10/libnums.h`): the two functions from the archive's routines (design decisions 1, 2), their declarations (`.l`/`.q` arguments and results), help texts; `blitzlib check` clean, no warnings. Verify: 2.1 FIXED; 2.2 passes (`libs-update` for its expected data, reviewed with `git diff`).
+- [ ] 3.1 The library (`libs/acidlibs/`, the CMake entry, the number in `libs/variants/bb2-2.10/libnums.h`): the two functions from the archive's routines (design decisions 1, 2), their declarations (`.l`/`.q` arguments and results), help texts; `blitzlib check` clean, no warnings. Verify: 2.1 passes; 2.2 passes (`libs-update` for its expected data, reviewed with `git diff`).
 
 ## 4. Checks
 
