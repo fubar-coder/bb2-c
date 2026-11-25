@@ -426,7 +426,13 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
  *              variable.
  * EM_R_PBITK   "Wie mit Variable": a bit operator on constants only with
  *              a fraction (1.5 AND 3) folds as b AND 1.5 takes it, the
- *              fraction cut.
+ *              fraction cut; a comparison in a constant subtree is
+ *              evaluated ("expr-tree-5 group 3: three readings of the four
+ *              rule points": "Auch nach Regel falten").
+ * EM_R_PCMPW   the same entry, "Vergleichsergebnis ganzzahlig": a
+ *              comparison's result is a whole number (a Word, -1/0) also
+ *              when it compares in Float; it makes no Float of the
+ *              expression around it ((b>0.5)+(q*2) on the 48.16 path).
  * EM_R_P48     "Modell auf 48 Bit": a 48.16 value keeps a 48-bit whole
  *              part (design decision 9), not 32 bits.
  *
@@ -445,13 +451,14 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
 #define EM_R_PMODX (1u << 28)
 #define EM_R_PBITK (1u << 29)
 #define EM_R_P48 (1u << 30)
+#define EM_R_PCMPW (1u << 31)
 #define EM_RULES_CANDBASE EM_RULES_PORTNOW      /* the rules the candidates are put on */
 #define EM_RULES_C7KX (EM_R_CAND(EM_CAND_C7) | EM_R_C7K | EM_R_C7KLONG | EM_R_C7KEXACT)
 #define EM_RULES_P                                                                                                    \
     (EM_RULES_CANDBASE | EM_RULES_C7KX | EM_R_PTYPED | EM_R_PCONST | EM_R_PMOD | EM_R_PNARROW | EM_R_PDIVL            \
      | EM_R_PQDIV)
 #define EM_RULES_DECIDED                                                                                              \
-    (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48)
+    (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48 | EM_R_PCMPW)
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);

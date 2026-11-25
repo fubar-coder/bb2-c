@@ -2505,6 +2505,7 @@ struct cev {
     int pmodx;                  /* EM_R_PMODX */
     int pbitk;                  /* EM_R_PBITK */
     int p48;                    /* EM_R_P48 */
+    int pcmpw;                  /* EM_R_PCMPW */
     int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
                                    shift or Not */
     int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
@@ -2585,17 +2586,32 @@ static int consttarget(int cand, struct rat a, int W, int pt)
 /* a subtree of constants: folded by today's rules under the type it
    takes (exprtree's fold), its value a constant of that type */
 /* the exact value of a subtree of constants (a whole-number operator on
-   the whole parts; a division by zero: 0) */
-static struct rat const_ideal(const struct em_tnode *n)
+   the whole parts; a division by zero: 0); a comparison -1 whatever it
+   compares, or with cmp (EM_R_PBITK: "Auch nach Regel falten", "expr-tree-5
+   group 3: three readings of the four rule points") its value, -1 or 0 */
+static struct rat const_ideal2(const struct em_tnode *n, int cmp)
 {
     struct rat a, b;
 
     if (n->kind == TN_CONST)
         return rat_text(n->text);
     if (n->kind == TN_NEG)
-        return rat_op(rat_int(0), const_ideal(n->l), '-');
-    a = const_ideal(n->l);
-    b = const_ideal(n->r);
+        return rat_op(rat_int(0), const_ideal2(n->l, cmp), '-');
+    a = const_ideal2(n->l, cmp);
+    b = const_ideal2(n->r, cmp);
+    if (cmp && em_op_is_compare(n->op)) {
+        int d = rat_cmp(a, b), t;
+
+        switch (n->op) {
+        case EM_EQ: t = d == 0; break;
+        case EM_NE: t = d != 0; break;
+        case EM_LT: t = d < 0; break;
+        case EM_LE: t = d <= 0; break;
+        case EM_GT: t = d > 0; break;
+        default: t = d >= 0; break;
+        }
+        return rat_int(t ? -1 : 0);
+    }
     switch (n->op) {
     case EM_ADD: return rat_op(a, b, '+');
     case EM_SUB: return rat_op(a, b, '-');
@@ -2615,6 +2631,11 @@ static struct rat const_ideal(const struct em_tnode *n)
         }
     }
     }
+}
+
+static struct rat const_ideal(const struct em_tnode *n)
+{
+    return const_ideal2(n, 0);
 }
 
 static int has_qvar(const struct em_tnode *n);
@@ -2644,33 +2665,25 @@ static int pconstfloat(struct cev *c, struct rat a, int W, int pt)
 }
 
 /* EM_R_PBITK: a subtree of constants with AND, OR or EOR on an operand with
-   a point or a fraction, and no comparison (whose fold const_ideal does not
-   know) */
-static int hascmp(const struct em_tnode *n)
-{
-    switch (n->kind) {
-    case TN_BIN: return em_op_is_compare(n->op) || hascmp(n->l) || hascmp(n->r);
-    case TN_NEG: return hascmp(n->l);
-    default: return 0;
-    }
-}
-
-static int bitfrac1(const struct em_tnode *n)
+   a point or a fraction (a comparison in it evaluated: cideal) */
+static int bitfrac(const struct em_tnode *n)
 {
     switch (n->kind) {
     case TN_BIN:
         if ((n->op == EM_AND || n->op == EM_OR || n->op == EM_EOR)
             && (cpoint(n->l) || cpoint(n->r) || !rat_isint(const_ideal(n->l)) || !rat_isint(const_ideal(n->r))))
             return 1;
-        return bitfrac1(n->l) || bitfrac1(n->r);
-    case TN_NEG: return bitfrac1(n->l);
+        return bitfrac(n->l) || bitfrac(n->r);
+    case TN_NEG: return bitfrac(n->l);
     default: return 0;
     }
 }
 
-static int bitfrac(const struct em_tnode *n)
+/* the exact value of a constant subtree under the rules of c (EM_R_PBITK:
+   its comparisons evaluated) */
+static struct rat cideal(const struct cev *c, const struct em_tnode *n)
 {
-    return bitfrac1(n) && !hascmp(n);
+    return const_ideal2(n, c->pbitk);
 }
 
 /* a subtree of constants: one constant of its exact value, of the type the
@@ -2678,7 +2691,7 @@ static int bitfrac(const struct em_tnode *n)
    whole number, by today's fold in that type) */
 static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
 {
-    struct rat a = const_ideal(n);
+    struct rat a = cideal(c, n);
     int cn = c->cand, T, tt;
 
     /* C6: a whole constant beside a Quick in a * by its value (C3's rule),
@@ -2732,7 +2745,7 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
             c->e->illegal = 1;
             return 1;
         }
-        a = const_ideal(n);
+        a = cideal(c, n);
         tt = !pt ? W : rat_isint(a) ? 0 : pconstfloat(c, a, W, pt) ? TF : TQ;
         bitwhole = 1;
     }
@@ -3042,8 +3055,8 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
     /* a constant too large for a Quick under a wanted Quick is a Long, as
        today, and the operation then one under a Long */
     if (W == TQ
-        && ((is_consttree(n->l) && !cfits(const_ideal(n->l), TQ))
-            || (is_consttree(n->r) && !cfits(const_ideal(n->r), TQ))))
+        && ((is_consttree(n->l) && !cfits(cideal(c, n->l), TQ))
+            || (is_consttree(n->r) && !cfits(cideal(c, n->r), TQ))))
         W = TL;
     if ((c->cand == EM_CAND_C5 || c->cand == EM_CAND_C6) && op == EM_MUL && W != TF && lt != TF && rt != TF && (lt == TQ) != (rt == TQ)) {
         /* C5 ("Q*W and Q*L with a 32.16 result", 2026-11-24): the exact
@@ -3281,7 +3294,7 @@ static int c7whole(struct cev *c, const struct em_tnode *n, int W, struct rat *o
     int save = c->cand;
 
     if (is_consttree(n) && !shiftq(c, n)) {
-        *out = const_ideal(n);
+        *out = cideal(c, n);
         if (!rat_isint(*out))
             *out = rat_q16(*out);       /* a fraction on the 1/65536 grid of the format */
         *t = -1;
@@ -3490,6 +3503,15 @@ static int cpoint(const struct em_tnode *n)
     }
 }
 
+/* pfloat of an operand: EM_R_PCMPW ("Vergleichsergebnis ganzzahlig"): a
+   comparison's result is a whole number, also when it compares in Float */
+static int pfloatop(struct cev *c, const struct em_tnode *n, int W)
+{
+    if (c->pcmpw && n->kind == TN_BIN && em_op_is_compare(n->op))
+        return 0;
+    return pfloat(c, n, W);
+}
+
 /* P: does the subtree under the wanted type W hold a Float value (a Float
    variable, a ^, a fraction constant that is a Float there) */
 static int pfloat(struct cev *c, const struct em_tnode *n, int W)
@@ -3510,22 +3532,22 @@ static int pfloat(struct cev *c, const struct em_tnode *n, int W)
             int sq = c->regionq, k;
 
             c->regionq = has_qvar(n->l);
-            k = pfloat(c, n->l, 0);
+            k = pfloatop(c, n->l, 0);
             c->regionq = has_qvar(n->r);
-            k = k || pfloat(c, n->r, 0);
+            k = k || pfloatop(c, n->r, 0);
             c->regionq = sq;
             /* a constant alone beside the other operand takes its class */
             if (is_consttree(n->l) && !has_t(n->r, TF) && !has_pow(n->r) && has_qvar(n->r))
-                k = pfloat(c, n->r, 0);
+                k = pfloatop(c, n->r, 0);
             if (is_consttree(n->r) && !has_t(n->l, TF) && !has_pow(n->l) && has_qvar(n->l)) {
                 c->regionq = 1;
-                k = pfloat(c, n->l, 0);
+                k = pfloatop(c, n->l, 0);
                 c->regionq = sq;
             }
             return k;
         }
-        return pfloat(c, n->l, W) || pfloat(c, n->r, W);
-    default: return pfloat(c, n->l, W);
+        return pfloatop(c, n->l, W) || pfloatop(c, n->r, W);
+    default: return pfloatop(c, n->l, W);
     }
 }
 
@@ -3567,7 +3589,7 @@ static int bigconst(const struct em_tnode *n)
 static int haslongw(struct cev *c, const struct em_tnode *n, int W)
 {
     if (is_consttree(n)) {
-        struct rat a = const_ideal(n);
+        struct rat a = cideal(c, n);
 
         return a.ok && rat_isint(a) && !cfits(a, TW);
     }
@@ -3732,6 +3754,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, unsi
             c.pmodx = (rules & EM_R_PMODX) != 0;
             c.pbitk = (rules & EM_R_PBITK) != 0;
             c.p48 = (rules & EM_R_P48) != 0;
+            c.pcmpw = (rules & EM_R_PCMPW) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

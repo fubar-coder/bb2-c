@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <set>
 #include <sstream>
@@ -379,6 +380,14 @@ outcome theirs(const struct em_expr *x, enum em_ctx ctx)
     return o;
 }
 
+std::string theirs_value(const struct em_expr *x, enum em_ctx ctx)
+{
+    em_exprval v;
+
+    em_expr_eval(x, ctx, DEC, &v);
+    return v.v.text;
+}
+
 std::string show(const outcome &o)
 {
     if (o.refused)
@@ -521,6 +530,14 @@ const chain CHAINS[] = {
     { "(1.5 AND 3)+0.5", "" },
     { "2.5 OR 1.5", "" },
     { "l*q/l2", "l.l=2000000000 q=2 l2.l=4" },
+    // the readings of "expr-tree-5 group 3: three readings of the four rule
+    // points": constant comparisons folded, a comparison's result whole
+    { "1.5 AND (3=1)", "" },
+    { "1.5 AND 3=3", "" },
+    { "(3=1)+q", "q=1.5" },
+    { "(b>0.5)+(q*2)", "b.b=1 q=1.5" },
+    { "(b>0.5)+(q*2)+l", "b.b=1 q=1.5 l.l=100000" },
+    { "(f>0.5) AND (l+q)", "f.f=1 q=1.5 l.l=100000" },
     { "q=0.1", "q=0.1" },
     { "q MOD 2", "q=7.5" },
     { "w/2>q", "w.w=3 q=1.2" },
@@ -765,4 +782,67 @@ TEST_CASE("exprtyping: every chain of two operators as the model types it", "[ex
         FAIL_CHECK(d[i]);
     INFO(d.size(), " of ", n * (sizeof CONTEXTS / sizeof CONTEXTS[0]));
     CHECK(d.empty());
+}
+
+TEST_CASE("exprtyping: constant subtrees fold as the model folds them", "[exprtyping]")
+{
+    // the value of a constant subtree (exprtyping_constvalue) against the
+    // model's value under a wanted Long, where it is a whole number of a
+    // Long: bit operators with fractions and comparisons folded by the rule
+    // ("expr-tree-5 group 3: three readings of the four rule points"); a
+    // subtree without a fraction under a bit operator the model folds by
+    // today's flow (task 3.6 keeps that fold byte-identical), not compared
+    std::function<bool(const exprtyping_node *)> hasfrac = [&](const exprtyping_node *n) -> bool {
+        int64_t num, den;
+
+        if (n->kind == ETN_CONST && n->point)
+            return true;
+        if (n->kind == ETN_NEG)
+            return hasfrac(n->l);
+        if (n->kind == ETN_BIN && (hasfrac(n->l) || hasfrac(n->r)))
+            return true;
+        return !exprtyping_constvalue(n, &num, &den) && den != 1;
+    };
+    std::function<bool(const exprtyping_node *)> bitfraction = [&](const exprtyping_node *n) -> bool {
+        if (n->kind == ETN_NEG)
+            return bitfraction(n->l);
+        if (n->kind != ETN_BIN)
+            return false;
+        if ((n->op == ETO_AND || n->op == ETO_OR || n->op == ETO_EOR) && (hasfrac(n->l) || hasfrac(n->r)))
+            return true;
+        return bitfraction(n->l) || bitfraction(n->r);
+    };
+    static const char *const ops[] = { " AND ", " OR ", " EOR ", "=", "<", ">", "+", "-", "*" };
+    static const char *const k[] = { "3", "1.5", "0", "-2", "2.5", "40000" };
+    std::vector<std::string> d;
+    size_t compared = 0;
+
+    for (const char *o1 : ops)
+        for (const char *o2 : ops)
+            for (const char *a : k)
+                for (const char *b : k)
+                    for (const char *c : k)
+                        for (int br = 0; br < 2; br++) {
+                            std::string t = br ? std::string(a) + o1 + "(" + b + o2 + c + ")"
+                                               : std::string(a) + o1 + b + o2 + c;
+                            tree tr(t, "");
+                            struct em_expr *x = nullptr;
+                            char *err = nullptr;
+                            int64_t num, den;
+
+                            REQUIRE(tr.root);
+                            REQUIRE(em_expr_parse(t.c_str(), "", &x, &err) == 0);
+                            std::string m = theirs_value(x, EM_DL);
+                            em_expr_free(x);
+                            if (!bitfraction(tr.root) || exprtyping_constvalue(tr.root, &num, &den) || den != 1
+                                || num < INT32_MIN || num > INT32_MAX || m[0] == '!')
+                                continue;
+                            compared++;
+                            if (m != std::to_string(num))
+                                d.push_back(t + ": the pass " + std::to_string(num) + ", the model " + m);
+                        }
+    for (size_t i = 0; i < d.size() && i < 25; i++)
+        FAIL_CHECK(d[i]);
+    CHECK(d.empty());
+    CHECK(compared > 10000);
 }

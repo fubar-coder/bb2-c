@@ -1055,3 +1055,19 @@ TEST_CASE("exprmatrix model: P+, the four rule points of group 3", "[exprmatrix]
     // 4, "Modell auf 48 Bit": a 48-bit whole part
     CHECK(expr("l*q/l2", "l.l=2000000000 q=2 l2.l=4").value(EM_DL, DEC) == "1000000000");
 }
+
+TEST_CASE("exprmatrix model: P+, the readings of the four rule points", "[exprmatrix][cand][decided]")
+{
+    // "expr-tree-5 group 3: three readings of the four rule points"
+    // (2026-11-25): "Auch nach Regel falten" - a comparison in a constant
+    // subtree is evaluated
+    CHECK(expr("1.5 AND (3=1)", "").value(EM_DL, DEC) == "0");
+    CHECK(expr("1.5 AND 3=3", "").value(EM_DL, DEC) == "1");
+    CHECK(expr("(3=1)+q", "q=1.5").value(EM_PRINT, DEC) == "1.5");
+    // "Vergleichsergebnis ganzzahlig": a comparison's result is a whole
+    // number also when it compares in Float
+    CHECK(expr("(b>0.5)+(q*2)", "b.b=1 q=1.5").typing(EM_DL, DEC) == "gt B>F k>F c W;mul Q>~ k>~ 3 L;add W>~ Q>~ 3 L;");
+    CHECK(expr("(b>0.5)+(q*2)", "b.b=1 q=1.5").value(EM_DL, DEC) == "2");
+    // "Ja, auch Float exakt": a Float Mod is exact
+    CHECK(expr("f MOD g", "f.f=7.5 g.f=2").value(EM_PRINT, DEC) == "1.5");
+}

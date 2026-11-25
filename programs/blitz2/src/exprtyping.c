@@ -240,6 +240,25 @@ static struct rq const_value(const struct exprtyping_node *n)
         return rq_op(rq_int(0), const_value(n->l), '-');
     a = const_value(n->l);
     b = const_value(n->r);
+    if (exprtype_iscompare(n->op)) {
+        /* a comparison of constants evaluated ("expr-tree-5 group 3: three
+           readings of the four rule points": "Auch nach Regel falten") */
+        struct rq d = rq_op(a, b, '-');
+        int s, t;
+
+        if (!d.ok)
+            return rq_make(0, 1, 0);
+        s = d.n > 0 ? 1 : d.n < 0 ? -1 : 0;
+        switch (n->op) {
+        case ETO_EQ: t = s == 0; break;
+        case ETO_NE: t = s != 0; break;
+        case ETO_LT: t = s < 0; break;
+        case ETO_LE: t = s <= 0; break;
+        case ETO_GT: t = s > 0; break;
+        default: t = s >= 0; break;
+        }
+        return rq_int(t ? -1 : 0);
+    }
     switch (n->op) {
     case ETO_ADD: return rq_op(a, b, '+');
     case ETO_SUB: return rq_op(a, b, '-');
@@ -262,8 +281,17 @@ static struct rq const_value(const struct exprtyping_node *n)
     case ETO_ASL: return rq_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
     case ETO_LSR:
     case ETO_ASR: return rq_int(y >= 0 && y < 32 ? x >> y : 0);
-    default: return rq_int(-1);         /* a comparison: true or false */
+    default: return rq_int(-1);         /* no other operator */
     }
+}
+
+int exprtyping_constvalue(const struct exprtyping_node *n, int64_t *num, int64_t *den)
+{
+    struct rq a = const_value(n);
+
+    *num = a.n;
+    *den = a.d;
+    return !a.ok;
 }
 
 /* ------------------------------------------------------------ the pass */
@@ -403,18 +431,8 @@ static int const_isfloat(const struct ctx *c, struct rq a, unsigned want, unsign
 
 enum { BIT_NONE, BIT_OPERAND, BIT_COUNT, BIT_SHIFTED };
 
-/* a comparison in a constant subtree */
-static int has_compare(const struct exprtyping_node *n)
-{
-    switch (n->kind) {
-    case ETN_BIN: return exprtype_iscompare(n->op) || has_compare(n->l) || has_compare(n->r);
-    case ETN_NEG: return has_compare(n->l);
-    default: return 0;
-    }
-}
-
 /* AND, OR or EOR in a constant subtree on an operand with a point or a
-   fraction */
+   fraction (a comparison in it evaluated: const_value) */
 static int bit_fraction(const struct exprtyping_node *n)
 {
     switch (n->kind) {
@@ -463,7 +481,7 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
             bitwhole = 1;
         }
     }
-    if (!bitwhole && role != BIT_SHIFTED && bit_fraction(n) && !has_compare(n)) {
+    if (!bitwhole && role != BIT_SHIFTED && bit_fraction(n)) {
         /* "expr-tree-5 group 3 findings: four rule points of P+", 3: a bit
            operator of constants with a fraction folds as b AND 1.5 takes
            it, the fraction cut (const_value: the whole parts); refused
@@ -487,6 +505,16 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
 static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned beside, int role);
 static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned want, int whole);
 
+static int is_floaty(struct ctx *c, const struct exprtyping_node *n, unsigned want);
+
+/* is_floaty of an operand: a comparison's result is a whole number, also
+   when it compares in Float ("expr-tree-5 group 3: three readings of the
+   four rule points": "Vergleichsergebnis ganzzahlig") */
+static int floaty_operand(struct ctx *c, const struct exprtyping_node *n, unsigned want)
+{
+    return is_cmp(n) ? 0 : is_floaty(c, n, want);
+}
+
 /* part 2, 5: the subtree under the wanted type want holds a Float value (a
    Float variable, a ^, a constant with a point that is a Float there) */
 static int is_floaty(struct ctx *c, const struct exprtyping_node *n, unsigned want)
@@ -507,22 +535,22 @@ static int is_floaty(struct ctx *c, const struct exprtyping_node *n, unsigned wa
             int save = c->quickhere, k;
 
             c->quickhere = has_quick(n->l);
-            k = is_floaty(c, n->l, 0);
+            k = floaty_operand(c, n->l, 0);
             c->quickhere = has_quick(n->r);
-            k = k || is_floaty(c, n->r, 0);
+            k = k || floaty_operand(c, n->r, 0);
             c->quickhere = save;
             /* a constant alone beside the other operand takes its class */
             if (isconst(n->l) && !has_type(n->r, ET_FLOAT) && has_quick(n->r))
-                k = is_floaty(c, n->r, 0);
+                k = floaty_operand(c, n->r, 0);
             if (isconst(n->r) && !has_type(n->l, ET_FLOAT) && has_quick(n->l)) {
                 c->quickhere = 1;
-                k = is_floaty(c, n->l, 0);
+                k = floaty_operand(c, n->l, 0);
                 c->quickhere = save;
             }
             return k;
         }
-        return is_floaty(c, n->l, want) || is_floaty(c, n->r, want);
-    default: return is_floaty(c, n->l, want);
+        return floaty_operand(c, n->l, want) || floaty_operand(c, n->r, want);
+    default: return floaty_operand(c, n->l, want);
     }
 }
 
