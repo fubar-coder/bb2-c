@@ -8,3 +8,7 @@
 "check.compound_left.plus_greater.actual" = "== 0"
 "check.compound_left.times_equal" = "== fail"
 "check.compound_left.times_equal.actual" = "== 0"
+"check.compound_left.long_constant_float" = "== fail"
+"check.compound_left.long_constant_float.actual" = "== $00000000"
+"check.compound_left.long_sum_quick" = "== fail"
+"check.compound_left.long_sum_quick.actual" = "== $00000000"
