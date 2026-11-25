@@ -1,0 +1,12 @@
+# compiler-constmod-quick-fraction.test.bas: an open bug (issue to be
+# filed): the original compiler and the port run into the division trap
+# while folding the constants: a Software Failure, no compile result, the
+# session ends at its limit
+timeout = 30
+
+[deviations."compiler=orig195"]
+compile = "== none"
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
