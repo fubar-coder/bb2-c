@@ -473,6 +473,12 @@ struct em_exprval {
     char cells[1024];           /* the cell of each operation: "OP WANT LFROM RFROM;" (k a constant) */
     struct em_optype top;
     int nops;
+    /* C7 and P+: how the value of an expression computed in a fractional
+       format is taken (c7root): 'c' a comparison's Word, 'q' the 16.16
+       value under a wanted Quick, 'z' no wanted type (the Quick when it
+       fits, else the whole part), 'f' a wanted whole number rounded down,
+       't' towards zero (a / at the top under a wanted Long); 0 none */
+    int consumer;
 };
 void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, struct em_exprval *out);
 

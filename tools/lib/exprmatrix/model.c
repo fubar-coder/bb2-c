@@ -2164,6 +2164,7 @@ struct trec {
     char *cells;                /* "OP WANT LFROM RFROM;" per operation */
     size_t ccap, clen;
     int curw;                   /* the wanted type (type so far) at the operation */
+    int consumer;               /* em_exprval.consumer */
 };
 
 static char tlet(int t, int raw)
@@ -3560,6 +3561,11 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
     if (c7val(c, root, asked, c->pnarrow && !asked && !(root->kind == TN_BIN && em_op_is_compare(root->op)) ? haslong(c, root) : 0, &v, &fmt))
         return 1;
     memset(r, 0, sizeof *r);
+    if (c->tr)
+        c->tr->consumer = root->kind == TN_BIN && em_op_is_compare(root->op) ? 'c'
+                          : asked == TQ ? 'q'
+                          : !asked ? 'z'
+                          : root->kind == TN_BIN && root->op == EM_DIV && !(c->ptyped && asked != TL) ? 't' : 'f';
     if (root->kind == TN_BIN && em_op_is_compare(root->op)) {
         r->t = TW;
         r->v = (uint32_t)(int32_t)rat_whole(v);
@@ -3746,6 +3752,7 @@ void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, unsigned rules, stru
     if (!tr.nops)
         out->top.op = -1;
     out->nops = tr.nops;
+    out->consumer = tr.consumer;
 }
 
 /* the cell's expression as a tree (a constant with a sign: NEG over it) */

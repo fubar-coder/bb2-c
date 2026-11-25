@@ -77,3 +77,28 @@ target_compile_options(test_exprarith PRIVATE -Wall -Wextra)
 own_warnings(test_exprarith)
 set_target_properties(test_exprarith PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME blitz2_exprarith COMMAND test_exprarith)
+
+#   exprtyping the typing pass of rule P+ (src/exprtyping.c, change
+#            expr-tree-5-operand-typing, task 3.3): every decision (the
+#            format and path of each operation, the conversions of its
+#            operands, how the value is taken) against the expression
+#            matrix's model with EM_RULES_DECIDED, for every cell of the
+#            matrix and the chains of the analysis (the order pairs, the
+#            idioms), and the fast path of a 48.16 operation by
+#            src/exprarith.c.
+add_library(blitz2_exprtyping_host STATIC ${BLITZ2_SRC}/exprtyping.c)
+set_target_properties(blitz2_exprtyping_host PROPERTIES C_STANDARD 99 C_EXTENSIONS OFF)
+target_compile_options(blitz2_exprtyping_host PRIVATE -Wall -Wextra -pedantic)
+own_warnings(blitz2_exprtyping_host)
+target_include_directories(blitz2_exprtyping_host PUBLIC ${BLITZ2_SRC})
+target_link_libraries(blitz2_exprtyping_host PUBLIC blitz2_exprtype_host)
+
+add_executable(test_exprtyping test_exprtyping.cpp)
+target_link_libraries(test_exprtyping PRIVATE blitz2_exprtyping_host blitz2_exprarith_host lib_exprmatrix
+	snitch::snitch)
+target_compile_definitions(test_exprtyping PRIVATE
+	EXPRMATRIX_TXT="${exprtype_repo}/tests/corpus/tests-exprmatrix/matrix.txt")
+target_compile_options(test_exprtyping PRIVATE -Wall -Wextra)
+own_warnings(test_exprtyping)
+set_target_properties(test_exprtyping PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+add_test(NAME blitz2_exprtyping COMMAND test_exprtyping)
