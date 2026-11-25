@@ -1,4 +1,4 @@
-; compiler-byte-bitop-float (#1217) - a Byte AND or OR in the right operand
+; compiler-byte-bitop-float (#1177, #1217) - a Byte AND or OR in the right operand
 ; of a comparison under a Float destination.  The original evaluates the
 ; right operand in the destination's type, a Float, and refuses AND and OR
 ; there ("Illegal Operator for Type"); the port types the right operand by

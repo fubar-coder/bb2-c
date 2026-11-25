@@ -1,7 +1,7 @@
-# compiler-byte-bitop-float.test.bas: the test of an extension of the port (#1217): the
+# compiler-byte-bitop-float.test.bas: the test of an extension of the port (#1177): the
 # original refuses AND and OR under a Float destination, the port compiles
 # the comparison since #1177 and, with the fix of #1217, gives the right value
-extension = 1217
+extension = 1177
 
 [deviations."compiler=orig195"]
 compile = "contains \"Illegal Operator for Type\""
