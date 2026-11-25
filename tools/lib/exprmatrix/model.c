@@ -2500,7 +2500,7 @@ struct cev {
     int pqdiv;                  /* EM_R_PQDIV */
     int pbits;                  /* EM_R_PBITS */
     int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
-                                   2 the count of a shift (EM_R_PBITS) */
+                                   2 the count of a shift, 3 the shifted operand (EM_R_PBITS) */
     int regionq;                /* P: a Quick variable is in the expression or comparison side being typed */
     int fracwhole;              /* P: a whole-number subtree here is computed in the fractional format */
     int reachf;                 /* P: the expression is typed under Float (a Float in it, change 7) */
@@ -2663,7 +2663,15 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
     int bitwhole = 0, inbit = c->inbit;
 
     c->inbit = 0;
-    if (c->pbits && inbit && a.ok && (cpoint(n) || !rat_isint(a))) {
+    if (c->pbits && inbit == 3) {
+        /* the shifted operand ("expr-tree-5: division by 0 per format, q
+           Mod 0.5, fraction left of a shift", 2026-11-25: "Wie eine
+           Quick-Variable"): a constant with a point is a Quick, its 16.16
+           value shifted (1.5 LSL 2 = 6; under a Long rounded down first,
+           F7) */
+        if (a.ok && (cpoint(n) || !rat_isint(a)) && cfits(a, TQ))
+            tt = TQ;
+    } else if (c->pbits && inbit && a.ok && (cpoint(n) || !rat_isint(a))) {
         if (inbit == 2) {
             c->e->illegal = 1;
             return 1;
@@ -2704,6 +2712,23 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
 }
 
 static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r);
+
+/* EM_R_PBITS: a subtree of constants with a shift of a constant with a
+   point: not folded as one constant, the shifted constant is a Quick */
+static int shiftq(const struct cev *c, const struct em_tnode *n)
+{
+    if (!c->pbits)
+        return 0;
+    switch (n->kind) {
+    case TN_BIN:
+        if (n->op >= EM_LSL && n->op <= EM_ASR && cpoint(n->l))
+            return 1;
+        return shiftq(c, n->l) || shiftq(c, n->r);
+    case TN_NEG:
+    case TN_NOT: return shiftq(c, n->l);
+    default: return 0;
+    }
+}
 
 /* C7K: the least width of a whole-number operation in the operands of a
    comparison (with no wanted type there): none, a Long, or the
@@ -2761,9 +2786,10 @@ static int coperands(struct cev *c, const struct em_tnode *n, int WL, int WR, st
             return 1;
         /* a shifted constant is not typed by the count */
         c->inmul = n->op == EM_MUL;
-        c->inbit = bit;         /* a shifted constant: as it is (F7) */
+        c->inbit = shift ? 3 : bit;     /* a shifted constant: EM_R_PBITS */
         return cand(c, n->l, WL, n->op >= EM_LSL && n->op <= EM_ASR ? 0 : b->t, r);
     }
+    c->inbit = shift && lc ? 3 : 0;
     if (cand(c, n->l, WL, 0, r))
         return 1;
     c->inmul = n->op == EM_MUL;
@@ -2792,7 +2818,7 @@ static int cand(struct cev *c, const struct em_tnode *n, int W, int pt, struct r
     enum em_op op;
     int lt, rt, T, lfrom, rfrom;
 
-    if (is_consttree(n))
+    if (is_consttree(n) && !shiftq(c, n))
         return cconst(c, n, W, pt, r);
     if (W == TF && c->fmtf
         && (n->kind == TN_NOT
@@ -3156,7 +3182,7 @@ static int c7whole(struct cev *c, const struct em_tnode *n, int W, struct rat *o
     struct reg r;
     int save = c->cand;
 
-    if (is_consttree(n)) {
+    if (is_consttree(n) && !shiftq(c, n)) {
         *out = const_ideal(n);
         if (!rat_isint(*out))
             *out = rat_q16(*out);       /* a fraction on the 1/65536 grid of the format */

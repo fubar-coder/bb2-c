@@ -964,3 +964,37 @@ TEST_CASE("exprmatrix model: Mod by 0 as today per type", "[exprmatrix][cand][de
     CHECK(expr("q MOD p", "q=7.5 p=0.5").value(EM_DQ, NOW) == "!trap");
     CHECK(expr("q MOD p", "q=7.5 p=0.5").value(EM_DQ, DEC) == "00000000");
 }
+
+TEST_CASE("exprmatrix model: P+, a constant with a point left of a shift is a Quick", "[exprmatrix][cand][decided]")
+{
+    // "expr-tree-5: division by 0 per format, q Mod 0.5, fraction left of a
+    // shift" (2026-11-25): "Wie eine Quick-Variable" - its 16.16 value is
+    // shifted, under a Long rounded down first (F7); the same as a Quick
+    // variable of that value
+    static const struct {
+        const char *e;
+        enum em_ctx ctx;
+        const char *v;
+    } cases[] = {
+        { "1.5 LSL 2", EM_DB, "6" },        { "1.5 LSL 2", EM_DW, "6" },     { "1.5 LSL 2", EM_DL, "4" },
+        { "1.5 LSL 2", EM_DQ, "00060000" }, { "1.5 LSL 2", EM_PRINT, "6" },  { "2.0 LSL 1", EM_DB, "4" },
+        { "2.0 LSL 1", EM_DL, "4" },        { "2.0 LSL 1", EM_PRINT, "4" },  { "1.5 LSR 1", EM_DQ, "0000C000" },
+        { "1.5 LSR 1", EM_PRINT, ".75" },   { "1.5 LSL qh", EM_PRINT, "6" }, { "1.5 LSL qh", EM_DL, "4" },
+        { "1.5 LSL qh", EM_DB, "6" },       { "-1.5 ASR 1", EM_PRINT, "-.75" }, { "(1.5 LSL 2)+1", EM_DB, "7" },
+    };
+
+    for (const auto &k : cases) {
+        INFO(k.e, " ", em_ctx_name(k.ctx));
+        CHECK(expr(k.e, "qh=2.5").value(k.ctx, DEC) == k.v);
+    }
+    // as a Quick variable of the same value
+    for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_DQ, EM_PRINT }) {
+        INFO(em_ctx_name(ctx));
+        CHECK(expr("1.5 LSL 2", "").value(ctx, DEC) == expr("c LSL 2", "c=1.5").value(ctx, DEC));
+        CHECK(expr("1.5 LSR 1", "").value(ctx, DEC) == expr("c LSR 1", "c=1.5").value(ctx, DEC));
+    }
+    // today: refused under Byte (#1188), the original 4
+    CHECK(expr("1.5 LSL 2", "").value(EM_DB, NOW) == "!noncompile");
+    // the count stays a whole number
+    CHECK(expr("1.5 LSL 2.0", "").value(EM_DL, DEC) == "!noncompile");
+}
