@@ -30,7 +30,9 @@ static const char *const DESC =
     "cell A dl AND f b\ncell I i1 * q w\ncell B dl ^ f b\ncell B df ^ f b\ncell A db MOD cb cb\n"
     "cell A db MOD cb cl\ncell A dl MOD cl cb\ncell A dl MOD l cb\ncell B dl ^ q b\n"
     "cell A dq * q q\ncell A pl + w l\ncell A pq + q l\ncell A if - q q\ncell A if < q l\n"
-    "cell I i2 + b w\ncell I i2 * l cl\ncell A print + w l\ncell A print / q l\n";
+    "cell I i2 + b w\ncell I i2 * l cl\ncell A print + w l\ncell A print / q l\n"
+    // the named cells of expr-tree-5: another value, compiles after the change, refused after it
+    "cell A db / q l\ncell A dl AND l cf\ncell A dq LSL q cf\ncell A dq LSL q cb\n";
 
 static const char *const HEAD = "key\tsource\tc210\tc195\tportcd\tclib\tab3\tc210_on\tc195_on\tportcd_on\tclib_on\n";
 // the Float powers the model does not compute: 1.95's bits of (-2.5)^3, and
@@ -302,7 +304,15 @@ TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
     // no corpus test of it
     CHECK(one.has(t + ".test.toml", "do not edit\nfixed-orig = 1178\n"));
     CHECK(one.file(t + ".test.bas") == now.file(t + ".test.bas"));
-    CHECK(one.files.size() == now.files.size());
+    // (the named cells of expr-tree-5 depend on the port's rules, not on the fix)
+    auto others = [](const gen &g) {
+        size_t k = 0;
+
+        for (const auto &[path, text] : g.files)
+            k += path.find("compiler-expr-1216") == std::string::npos;
+        return k;
+    };
+    CHECK(others(one) == others(now));
     for (const auto &[path, text] : one.files)
         CHECK(path.find("fix1178") == std::string::npos);
     // a test of two issues, one fixed: kept, not marked
@@ -347,4 +357,47 @@ TEST_CASE("exprmatrix expect: the files of its own", "[exprmatrix]")
     CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3"));
     CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/cases.cmake"));
     CHECK(!em_expect_owns("tests/ab3/cli/atoi.ab3"));
+}
+
+TEST_CASE("exprmatrix expect: the named cells of the decided rule", "[exprmatrix]")
+{
+    gen g(std::string(HEAD) + POW);
+
+    REQUIRE(g.rc == 0);
+    // the named cells (the decided rule's value differs from the port's) as
+    // bug-orig tests of #1216, open: no fixed-orig, the original's value the
+    // deviation
+    CHECK(g.has(SRC + "named-cells.tsv", "db-div-q-l-A\tdb\tarith\tvalue\t-1\t0\n"));
+    const std::string v = BUG + "compiler-expr-1216-db-a-01";
+
+    CHECK(g.has(v + ".test.bas", "BUG(orig) (#1216)"));
+    CHECK(g.has(v + ".test.bas", "!CheckEq{rb,0,\"db-div-q-l-A\"}"));
+    CHECK(g.has(v + ".test.toml", "\"check.cells.db-div-q-l-A.actual\" = \"== -1\"\n"));
+    CHECK(!g.has(v + ".test.toml", "fixed-orig"));
+    // a cell that compiles after the change: the whole source is refused by
+    // the port and the original, the compile error the deviation
+    const std::string n = BUG + "compiler-expr-1216-dl-a-now-01";
+
+    CHECK(g.has(n + ".test.bas", "!CheckEq{rl,0,\"dl-and-l-cf-A\"}"));
+    CHECK(g.has(n + ".test.toml", "compile = \"contains \\\"Illegal Operator for Type\\\"\"\n"));
+    CHECK(g.has(n + ".test.toml", "rc = \"not exists\"\n"));
+    CHECK(!g.has(n + ".test.toml", "fixed-orig"));
+    // a cell refused after the change: a data source, the original's compile the deviation
+    const std::string r = BUG + "compiler-expr-1216-refused";
+
+    CHECK(g.has(r + ".test.toml", "\"data.dq-lsl-Q-C.bas\" = \"== \\\"error 7 Illegal Operator for Type\\\"\"\n"));
+    CHECK(g.has(r + ".test.toml", "\"data.dq-lsl-Q-C.bas\" = \"== ok\"\n"));
+    CHECK(g.has(r + ".test/dq-lsl-Q-C.bas", "rq=vq LSL 2.5"));
+    // a cell the original gives a value (the port refuses it): left out, with its reason
+    CHECK(g.has(SRC + "left-out.txt", "db-and-cf-b-A\tnamed cell, compiles now: the port refuses it, the original "
+                                      "gives 1"));
+    CHECK(g.report.find("named cells in tests: with another value 1, compiling after the change 1, refused after "
+                        "the change 1; left out 1") != std::string::npos);
+    // with the decided rule as the port's rules there is no named cell and no test
+    gen d(std::string(HEAD) + POW, EM_RULES_DECIDED);
+
+    REQUIRE(d.rc == 0);
+    for (const auto &[path, text] : d.files)
+        CHECK(path.find("compiler-expr-1216") == std::string::npos);
+    CHECK(d.report.find("named cells of the decided rule 0\n") != std::string::npos);
 }

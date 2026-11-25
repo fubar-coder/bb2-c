@@ -6,7 +6,8 @@
  * BASIC test model of the agreement, baseline and fixed cells, the
  * bug-orig tests of the open cells, the tests of the refused cells and the
  * list of the cells left out; and the named cells of expr-tree-5 (the cells
- * whose value the decided rule changes, named_cells).
+ * whose value the decided rule changes, named_cells; their bug-orig tests
+ * of #1216, sort_named).
  *
  * Every cell is looked at in its modes: a cell of a destination,
  * parameter, If or Print context in one ('v'), an index cell unchecked
@@ -336,6 +337,12 @@ struct group {
     size_t n, cap;
 };
 
+/* a group of the named cells that compile after the change (sort_named) */
+static int is_now(const struct group *g)
+{
+    return !strncmp(g->tag, "now-", 4);
+}
+
 /* the operand class of a refused cell: I a whole number, Q, F, C (a
    fraction constant), S */
 static char kind_class(int k)
@@ -452,6 +459,7 @@ static const struct {
     { "1188", "a constant with a fraction is cut to a whole number when the type so far is Byte" },
     { "1189", "^ with a negative base drops the sign of the power" },
     { "1209", "NOT, AND, OR and EOR under a Quick type so far work on the 16.16 bits, the fraction included" },
+    { "1216", "an operand is typed by the type so far and its place in the chain, not by its own type and the wanted type" },
     { "199", "the CD's quickmult adds the high words' product beyond the Quick range" },
     { "234", "the CD's printlib prints a Quick that rounds to 0 as \"-.\"" },
 };
@@ -588,6 +596,7 @@ struct ctx {
     size_t nerr;
     size_t counts[8];           /* cells per kind_of, and left out (4) */
     size_t files_kind[4];
+    size_t nm[4];               /* the named cells: in value tests, in compile-now tests, in refused tests, left out */
     struct buf ab3;             /* the AmiBlitz3 cases (cases.cmake) */
     size_t ab3_cases, ab3_cells, ab3_refused, ab3_d1, ab3_ref, ab3_differ;
 };
@@ -1117,6 +1126,105 @@ static void sort_cell(struct ctx *x, struct groups *gs, const struct em_class *k
     }
 }
 
+/*
+ * The named cells of expr-tree-5-operand-typing (design.md, decision 7) as
+ * bug-orig tests of the issue NAMED_ISSUE, in a mode: a cell whose value
+ * under the decided rule (EM_RULES_DECIDED) differs from the port's.  An
+ * open test is judged against its declared deviations in every cell, the
+ * port's included, so a cell is a test cell where the port with the C
+ * libraries, the port with the CD's libraries and the original agree:
+ *
+ *   value        the port gives a value, the decided rule another: a source
+ *                of the cells of a context, value set and mode
+ *                (compiler-expr-1216-CTX-SET[-u|-c]-NN), the original's value
+ *                the deviation;
+ *   compiles now the port and the original refuse the cell and the decided
+ *                rule gives a value: a source (compiler-expr-1216-CTX-SET-now
+ *                [-u|-c]-NN) that compiles after the change and checks each
+ *                value, now refused by both (the compile error the deviation);
+ *   refused now  the port and the original compile the cell and the decided
+ *                rule refuses it: a data source per context, operator and
+ *                operand classes (compiler-expr-1216-refused), the
+ *                original's compile the deviation.
+ *
+ * Every other named cell is left out with its reason (left-out.txt).
+ */
+#define NAMED_ISSUE "1216"
+
+static void sort_named(struct ctx *x, struct groups *gs, const struct em_cell *c, const struct em_row *r, int chk)
+{
+    char mode = !is_index(c) ? 'v' : chk ? 'c' : 'u';
+    const char *o = r->v[chk ? EM_C195_ON : EM_C195], *pc = r->v[chk ? EM_PORTCD_ON : EM_PORTCD];
+    struct em_value dv, pv;
+    const char *e, *p;
+    char tag[48], why[320];
+    struct group *g;
+    int now, refused;
+
+    em_model(x->m, c, EM_RULES_DECIDED, chk, &dv);
+    em_model(x->m, c, x->port, chk, &pv);
+    e = dv.text;
+    p = pv.text;
+    if (!strcmp(e, p))
+        return;                 /* not a named cell in this mode */
+    now = !strcmp(p, "!noncompile");
+    refused = !strcmp(e, "!noncompile");
+    if (!now && !refused && mode == 'u' && (o[0] == '!' || e[0] == '!' || p[0] == '!' || pc[0] == '!'))
+        return;                 /* outside the array: only with checking (design decision 8) */
+    if (now) {
+        if (mode == 'u' && e[0] == '!')
+            return;
+        if (!printable(e, mode)) {
+            snprintf(why, sizeof why, "named cell, compiles now: no value to compare (%s)", e);
+            left_out(x, c, mode, why);
+            return;
+        }
+        if (strcmp(o, "!noncompile") || strcmp(pc, "!noncompile")) {
+            snprintf(why, sizeof why, "named cell, compiles now: the port refuses it, the original gives %s (port "
+                     "with the CD's libraries %s)", o, pc);
+            left_out(x, c, mode, why);
+            x->nm[3]++;
+            return;
+        }
+        snprintf(tag, sizeof tag, "now-%s", NAMED_ISSUE);
+        g = group_of(gs, K_OPEN, mode, c, tag, NAMED_ISSUE);
+        group_add(gs, g, c, o, e, "", pc, "");
+        x->nm[1]++;
+        return;
+    }
+    if (refused) {
+        if (o[0] == '!' || pc[0] == '!' || p[0] == '!' || mode != 'v') {
+            snprintf(why, sizeof why, "named cell, refused now: the port gives %s, the original %s (port with the "
+                     "CD's libraries %s)", p, o, pc);
+            left_out(x, c, mode, why);
+            x->nm[3]++;
+            return;
+        }
+        snprintf(tag, sizeof tag, "%s-%s-%c-%c", em_ctx_name(c->ctx), em_op_name(c->op), kind_class(c->left),
+                 c->right >= 0 ? kind_class(c->right) : 'x');
+        g = group_of(gs, K_OPEN_REFUSED, mode, c, tag, NAMED_ISSUE);
+        group_add(gs, g, c, o, e, "", pc, "");
+        x->nm[2]++;
+        return;
+    }
+    if (!printable(o, mode) || !printable(e, mode) || !printable(p, mode) || !printable(pc, mode)) {
+        left_out(x, c, mode, "named cell: no value to compare");
+        x->nm[3]++;
+        return;
+    }
+    if (strcmp(o, p) || strcmp(pc, p)) {
+        snprintf(why, sizeof why, "named cell: the port gives %s, the original %s, the port with the CD's "
+                 "libraries %s", p, o, pc);
+        left_out(x, c, mode, why);
+        x->nm[3]++;
+        return;
+    }
+    snprintf(tag, sizeof tag, "open-%s", NAMED_ISSUE);
+    g = group_of(gs, K_OPEN, mode, c, tag, NAMED_ISSUE);
+    group_add(gs, g, c, o, e, "", pc, "");
+    x->nm[0]++;
+}
+
 /* an id of the BASIC test model is lower-case (the value sets are
    upper-case letters) */
 static void lower(char *s)
@@ -1234,7 +1342,8 @@ static void emit_model(struct ctx *x, struct group *g, const char *path, struct 
         if (ex && v[CF_PC] && v[CF_OD] && v[CF_OC]) {
             put(&conf, "\n[asserts]\n");
             output_line(&conf, "output", ex);
-            deviate(&d, "output", ex, (const char *const *)v, output_line);
+            if (!is_now(g))
+                deviate(&d, "output", ex, (const char *const *)v, output_line);
         } else
             conf.oom = 1;
         free(ex);
@@ -1250,9 +1359,16 @@ static void emit_model(struct ctx *x, struct group *g, const char *path, struct 
             check_value(vv[CF_PC], sizeof vv[CF_PC], g->ctx, e[i].pc);
             check_value(vv[CF_OD], sizeof vv[CF_OD], g->ctx, e[i].o);
             check_value(vv[CF_OC], sizeof vv[CF_OC], g->ctx, corpus ? e[i].oc : e[i].e);
-            deviate(&d, query, ev, v, check_line);
+            if (!is_now(g))
+                deviate(&d, query, ev, v, check_line);
         }
     put_devs(&conf, &d);
+    if (is_now(g))
+        /* the named cells that compile after the change: the compile of the
+           whole source is refused by the port and the original, nothing runs */
+        put(&conf, "\n[deviations.\"compiler=%s\"]\ncompile = \"contains \\\"Illegal Operator for Type\\\"\"\n"
+                   "\"end.case\" = \"not exists\"\n\"end.run\" = \"not exists\"\nrc = \"not exists\"\n%s",
+            d.orig, g->ctx == EM_PRINT ? "output = \"not exists\"\n" : "");
     add_file(&x->out, str_printf("%s.test.toml", path), text_of(&conf));
     devs_free(&d);
     free(cells);
@@ -1268,11 +1384,22 @@ static void emit_open(struct ctx *x, struct group *g, const char *id, struct ent
 
     for (size_t i = 0; i < n; i++)
         put(&keys, "%s%s", i ? " " : "", e[i].c->key);
-    put(&what, "open cells, context %s, value set %s%s, %zu cells", em_ctx_name(g->ctx), m->sets[g->set].name,
-        mode_text(g->mode), n);
-    bug_header(&head, id, g->issues, what.oom ? "" : what.s,
-               "; Correct: the values of the fixed rules of the matrix's model (tools/lib/exprmatrix/\n"
-               "; model.c); the original's values are the declared deviations of the test.\n");
+    put(&what, "%s cells, context %s, value set %s%s, %zu cells", is_now(g) ? "named" : "open", em_ctx_name(g->ctx),
+        m->sets[g->set].name, mode_text(g->mode), n);
+    if (is_now(g))
+        bug_header(&head, id, g->issues, what.oom ? "" : what.s,
+                   "; Correct: the source compiles and each cell has the value of the decided rule\n"
+                   "; (EM_RULES_DECIDED, tools/lib/exprmatrix/model.c); the port and the original refuse\n"
+                   "; a cell of it (Illegal Operator for Type), so nothing runs: the declared deviations.\n");
+    else if (g->issues[0] && !strcmp(g->issues, NAMED_ISSUE))
+        bug_header(&head, id, g->issues, what.oom ? "" : what.s,
+                   "; Correct: the values of the decided rule (EM_RULES_DECIDED, tools/lib/exprmatrix/\n"
+                   "; model.c); the values of the port and the original, which agree, are the declared\n"
+                   "; deviations of the test.\n");
+    else
+        bug_header(&head, id, g->issues, what.oom ? "" : what.s,
+                   "; Correct: the values of the fixed rules of the matrix's model (tools/lib/exprmatrix/\n"
+                   "; model.c); the original's values are the declared deviations of the test.\n");
     if (!keys.oom)
         put_wrapped(&head, "; cells: ", keys.s);
     put(&head, "; generated by exprmatrix expect from %s (tools/exprmatrix/README.md); do not edit\n", x->desc);
@@ -1354,8 +1481,8 @@ static void emit_group(struct ctx *x, struct group *g)
                      !strncmp(g->tag, "fixed-", 6) ? g->issues : "", part);
             emit_corpus(x, g, name, g->e + first, k);
         } else {
-            snprintf(name, sizeof name, "compiler-expr-%s-%s-%s%s-%02zu", iss, em_ctx_name(g->ctx),
-                     m->sets[g->set].name, ms, part);
+            snprintf(name, sizeof name, "compiler-expr-%s-%s-%s%s%s-%02zu", iss, em_ctx_name(g->ctx),
+                     m->sets[g->set].name, is_now(g) ? "-now" : "", ms, part);
             lower(name);
             emit_open(x, g, name, g->e + first, k);
         }
@@ -1571,6 +1698,15 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
         if (has_checked(kk->cell))
             sort_cell(&x, &gs, kk, &t.rows[i], 1);
     }
+    for (size_t i = 0; i < m->ncells; i++) {
+        const struct em_cell *c = &m->cells[i];
+
+        if (c->left == EM_S || c->right == EM_S)
+            continue;           /* strings: not typed by the rule */
+        sort_named(&x, &gs, c, &t.rows[i], 0);
+        if (has_checked(c))
+            sort_named(&x, &gs, c, &t.rows[i], 1);
+    }
     if (gs.oom)
         goto out;
     for (size_t i = 0; i < gs.n; i++)
@@ -1604,6 +1740,8 @@ int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_
     put(&x.rep, "AmiBlitz3 cases %zu (%zu cells; left out: %zu refused by AmiBlitz3, %zu If on a folded Float "
         "constant; %zu cases with REF_EXPECT, %zu cells differ)\n", x.ab3_cases, x.ab3_cells, x.ab3_refused,
         x.ab3_d1, x.ab3_ref, x.ab3_differ);
+    put(&x.rep, "named cells in tests: with another value %zu, compiling after the change %zu, refused after the "
+        "change %zu; left out %zu\n", x.nm[0], x.nm[1], x.nm[2], x.nm[3]);
     put(&x.rep, "left out %zu\nfiles %zu\n", x.counts[4], x.out.n);
     if (x.rep.oom)
         goto out;
