@@ -65,8 +65,12 @@ The left operand of a comparison SHALL be typed by its own operands, not by the 
 - **THEN** rq is -1 (today 0)
 
 #### Scenario: Whole-number sums and products on the left keep their values
-- **WHEN** a program evaluates `r.l=(w+v>c)` and `r.l=(w-(-v)>c)` with `w=20000`, `v=20000`, `c=0`, `rw.w=(w+v>c)` and `If w+v>c` with the same values, `r.l=(q*1000>50000)` with `q=100`, and `rb.b=(b1+b2>150)` with `b1.b=100`, `b2.b=100`
-- **THEN** r is -1 and -1, rw is -1, the condition is true, r is -1 and rb is -1
+- **WHEN** a program evaluates `r.l=(w+v>c)` and `r.l=(w-(-v)>c)` with `w=20000`, `v=20000`, `c=0`, `r.l=(q*1000>50000)` with `q=100`, and `rb.b=(b1+b2>150)` with `b1.b=100`, `b2.b=100`
+- **THEN** r is -1 and -1, r is -1 and rb is -1
+
+#### Scenario: A whole-number sum on the left under a Word type is compared as a Long
+- **WHEN** a program evaluates `rw.w=(w+v>c)` and `If w+v>c` with `w=20000`, `v=20000`, `c=0`
+- **THEN** rw is -1 and the condition is true (the comparison's common format is at least Long; today and in the original the Word sum overflows: 0 and false)
 
 ### Requirement: A Quick keeps its fraction when nothing asks for a whole number
 When no destination, parameter or operand asks for a whole-number type, an expression with a Quick operand SHALL give the Quick value with its fraction.
