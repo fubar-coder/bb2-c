@@ -205,11 +205,15 @@ Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's
 - **THEN** compiling it gives "Illegal Operator for Type", as before
 
 ### Requirement: A shift count is a whole number
-The count of `LSL`, `ASL`, `LSR` and `ASR` SHALL be a constant without a point or a variable or expression of a Byte, Word, Long or Quick type; a Quick count SHALL be its whole part, rounded down, as in the original. A constant with a point as a count SHALL be refused with "Illegal Operator for Type", whatever its value. The left operand of a shift is taken as before.
+The count of `LSL`, `ASL`, `LSR` and `ASR` SHALL be a constant without a point or a variable or expression of a Byte, Word, Long or Quick type; a Quick count SHALL be its whole part, rounded down, as in the original. A constant with a point as a count SHALL be refused with "Illegal Operator for Type", whatever its value. A constant with a point as the shifted operand SHALL be taken as a Quick variable of its value (rounded down first under a wanted Long).
 
 #### Scenario: A constant with a point as count
 - **WHEN** a program contains `rb.b=b LSL 2.0`, `NPrint q LSL 2.5` or `x.w=x LSL 2.0`
 - **THEN** compiling it gives "Illegal Operator for Type" (before the change the first two compiled, as in the original)
+
+#### Scenario: A constant with a point as the shifted operand
+- **WHEN** a program evaluates `rb.b=1.5 LSL 2`, `r.l=1.5 LSL 2`, `NPrint 1.5 LSR 1`, `NPrint 2.0 LSL 1` and `NPrint 1.5 LSL qh` with `qh=2.5`
+- **THEN** it gets 6, 4, .75, 4 and 6 (before the change the first was refused, the original gave 4, and the third, fourth and fifth were refused)
 
 #### Scenario: Quick variables as count
 - **WHEN** a program executes `NPrint x LSL q2`, `NPrint x LSL qh` and `NPrint x LSL qn` with `x.w=3`, `q2=2.0`, `qh=2.5`, `qn=2.99`
@@ -231,7 +235,7 @@ Where the rule computes in 16.16, the compiler SHALL give today's values bit for
 - **THEN** x is $7FFFFFFF and $80000001, r is -2147483647, as today
 
 ### Requirement: A 48.16 division by 0 gives the largest value of the wanted type
-A 48.16 division by 0 SHALL give the largest value in the format of the wanted type with the dividend's sign: a Quick $7FFFFFFF ($80000001), a Word 32767, a Byte 127, a Long or no wanted type $7FFFFFFF, as `lqdiv`.
+A 48.16 division by 0 SHALL give the largest value in the format of the wanted type with the dividend's sign: a Quick $7FFFFFFF ($80000001), a Word 32767, a Byte 127, a Long or no wanted type $7FFFFFFF, as `lqdiv`. A 16.16 division by 0 stays today's (requirement "16.16 operations give today's values"), a documented limit: under a Byte destination it gives -1 where a 48.16 one gives 127.
 
 #### Scenario: 48.16 division by zero without a wanted Long
 - **WHEN** a program executes `NPrint l/q` with `l.l=-100`, `q=0`
@@ -240,6 +244,10 @@ A 48.16 division by 0 SHALL give the largest value in the format of the wanted t
 #### Scenario: 48.16 division by zero under a Quick, Word or Byte destination
 - **WHEN** a program evaluates `x.q=l/q`, `x.w=l/q` and `x.b=l/q` with `l.l=100`, `q=0`
 - **THEN** x is $7FFFFFFF as today, 32767 and 127 (today -1 and -1, the low word and byte of $7FFFFFFF)
+
+#### Scenario: The limit under a Byte destination
+- **WHEN** a program evaluates `rb.b=q/p` with `q=1`, `p=0` and `x.b=l/q` with `l.l=100`, `q=0`
+- **THEN** rb is -1 (the 16.16 division, as today) and x is 127 (the 48.16 division)
 
 ## MODIFIED Requirements
 
