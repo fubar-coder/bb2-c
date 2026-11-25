@@ -9,7 +9,7 @@ Every bug-orig test whose program runs and checks itself has moved. What is
 listed here has not, **for now**. For each category this file states the
 technical reason (what the model cannot do today) and what is missing to
 move it (the feature and its size). The list was asked for in
-`~/.local/share/bb2-c-work/decisions/rounds/tr/decisions.md`, "Group 4:
+`~/.local/share/bb2-c-work/decisions/archive/2026-11-23-tr/decisions.md`, "Group 4:
 split the two long bug-fix-workflow requirements; the old form \"for
 now\""; `TODO.md` ("Tests left in the old form") points here. Two paths
 the user suggested are marked **proposal** (not decided, not planned) in
@@ -26,7 +26,7 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | [2. Compile-only tests](#2-compile-only-tests) | 1 hand-written (`compiler-checklib-examine`) | the result is a refused or unrun compile; the model can judge that, but the source must be rewritten for the driver | the move (small) |
 | [3. Self tests of the old runner](#3-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
 | [4. Single tests the model does not express](#4-single-tests-the-model-does-not-express) | 0 | — | — |
-| [5. Other suites with `.expect`](#5-other-suites-with-expect) | `tests/blitz2` 13, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
+| [5. Other suites with `.expect`](#5-other-suites-with-expect) | `tests/blitz2` 13 and 1 self test, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
 
 `compiler/` has 1 old-form test and `regression/` none (the Blitz self
 tests of `selftest/` are in section 3 and not counted there).
@@ -286,10 +286,14 @@ its jobs j000 and j001.
 ## 5. Other suites with `.expect`
 
 - `tests/blitz2/*.expect`: 13 port tests of the compiler (7 with
-  `[run]`, 6 compile-only), next to 10 model tests in the same directory
-  (`*.test.bas`). They are not bug-orig tests and not part of the change
+  `[run]`, 6 compile-only), and the self test
+  `tests/blitz2/selftest/intrinsic-selftest-wrong` (`.bas` and
+  `.expect`; an expectation the port does not meet on purpose, ctest
+  `blitz2_selftest_intrinsic_selftest_wrong`, REGRESSED expected), next to
+  23 model tests in the same directory (`*.test.bas`) and 14 in
+  `selftest/`. They are not bug-orig tests and not part of the change
   `bug-orig-basic-tests`; they are listed so that the count of old-form
-  tests is complete. No decision on moving them is recorded.
+  tests is complete. They move to the model after the change expr-tree-5 (no feature is missing, only the rewrite; `tests/README.md`, "The test model").
 - `tests/ted-ab/scripts`: 51 `.drv` scripts and 3 `.expect` files of the
   TED A/B suite (original TED against the port; `tests/README.md`, "TED
   A/B"). Own suite with its own runner; the fixed scripts carry

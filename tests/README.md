@@ -34,9 +34,21 @@ model (spec `testing/test-model`; implemented for the library tests
 `ID.test.bas` the expected side, the declared deviations of its
 configuration the `[orig]` side; the tests left in the old form for now:
 `ID.orig` the `[orig]` side, `ID.expect` the expected one, [Recorded
-originals](#recorded-originals), [the list](../docs/testing-old-form.md))
-and the corpus (`NAME.orig.out` / `NAME.fixed-N.out`, [Corpus](#corpus));
-the TED oracle keeps its own form for now: rows with an issue). A test is a list of **cases**; a case is a key, an input
+originals](#recorded-originals), [the list](../docs/testing-old-form.md)),
+the corpus (`NAME.orig.out` / `NAME.fixed-N.out`, [Corpus](#corpus)) and
+the site examples (`expect/GROUP/NAME.out`, [Site examples](#site-examples))).
+The table form of the model: one row per case, a note row with `#NNN` per
+deviation (the CD's compile table `tests/data/blitz2-cd.tsv`, the TED
+oracle; later `ab3_examples`). Not yet moved, each for a technical reason:
+`tests/ab3` (a cell compiles through tedstub with BB2's libraries; an
+`ab3_cli` case is compiled from the command line by blitz2-ab3 or
+AmiBlitz3 and judged on the compiler's console output, and AmiBlitz3's
+differences, `NAME.ref.expect`, mostly have no issue); the expect tests of
+`tests/blitz2` (no feature missing, only the rewrite); TED A/B (the editor
+driven by scripts, the runs compared with each other at test time).
+Outside the model: host tests, perf budgets, the comparisons of build
+results and data, the tools' self tests and the `lsclear` checker of
+[bug-port](#bug-port-tests). A test is a list of **cases**; a case is a key, an input
 and an expected output, and its verdict is the difference of the actual
 output against the expected one, reported by key. The expected output
 (the **expected data**) is committed with the test; a test only compares
