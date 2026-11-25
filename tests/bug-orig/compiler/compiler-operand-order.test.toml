@@ -25,3 +25,7 @@
 "check.if_forms.if_word_half_twice_equals.actual" = "== -1"
 "check.mod_fraction.quick_mod" = "== fail"
 "check.mod_fraction.quick_mod.actual" = "== $00010000"
+"check.word_sum.word_dest" = "== fail"
+"check.word_sum.word_dest.actual" = "== 0"
+"check.word_sum.if_word_sum" = "== fail"
+"check.word_sum.if_word_sum.actual" = "== 0"

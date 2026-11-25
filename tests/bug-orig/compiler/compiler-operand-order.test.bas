@@ -71,3 +71,11 @@
   xm=q Mod 2
   !CheckQEq{xm,1.5,"quick_mod"}
 !EndTestCase
+
+!TestCase{word_sum}
+  ww.w=20000 : vv.w=20000 : cc.w=0 : rw.w=0 : r.l=0
+  rw=(ww+vv>cc)
+  !CheckEq{rw,-1,"word_dest"}
+  If ww+vv>cc Then r=-1
+  !CheckEq{r,-1,"if_word_sum"}
+!EndTestCase
