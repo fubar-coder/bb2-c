@@ -44,6 +44,7 @@ static const char *const DESC =
     // the fixed bugs and the libraries
     "cell A db + cf cf\ncell A dw + cf cf\ncell A db = cf cf\ncell A if - f\ncell A if + b f\n"
     "cell A dq * w w\ncell A print / q l\ncell A db AND cf b\n"
+    "cell A print + w w\ncell A print + b b\ncell A print + b f\ncell A if > l q\n"
     "cell B dl ^ f b\ncell B df ^ f b\ncell B dl ^ b w\ncell B dl ^ f cf\ncell J i1 ^ f b\ncell A if ^ b b\n"
     "cell B dl ^ l b\ncell B dw ^ l b\n"
     // the question classes
@@ -997,4 +998,26 @@ TEST_CASE("exprmatrix model: P+, a constant with a point left of a shift is a Qu
     CHECK(expr("1.5 LSL 2", "").value(EM_DB, NOW) == "!noncompile");
     // the count stays a whole number
     CHECK(expr("1.5 LSL 2.0", "").value(EM_DL, DEC) == "!noncompile");
+}
+
+TEST_CASE("exprmatrix model: the type so far of an evaluated cell", "[exprmatrix]")
+{
+    model md;
+    struct em_value v;
+
+    // Word+Word is a Long (doplusw), Byte+Byte a Word (doplusb), a Byte and
+    // a Float a Float, a comparison a Word
+    const struct { const char *key; int type; } want[] = {
+        { "print-add-w-w-A", 3 }, { "print-add-b-b-A", 2 }, { "print-add-b-f-A", 5 }, { "if-gt-l-q-A", 2 },
+        { "dl-and-f-b-A", 0 },  /* refused: no type */
+        { "i1-add-f-cb-FI", 0 }, /* an index cell: no type */
+    };
+
+    for (const auto &w : want) {
+        const struct em_cell *c = md.cell(w.key);
+
+        REQUIRE(c != nullptr);
+        em_model(&md.m, c, EM_RULES_PORTNOW, 0, &v);
+        CHECK(v.type == w.type);
+    }
 }

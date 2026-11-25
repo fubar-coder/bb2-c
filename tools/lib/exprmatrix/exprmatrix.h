@@ -222,6 +222,9 @@ struct em_value {
     char text[EM_TEXT_MAX];
     unsigned flags;
     unsigned long long sig;     /* EM_F_POW: the bits of the two Float operands of ^ */
+    int type;                   /* the type so far after the last operation (1 Byte, 2 Word, 3 Long, 4 Quick,
+                                   5 Float, 7 string as ET_* of exprtype.h); 0: no expression evaluated (a
+                                   cell the model refuses, an index cell) */
 };
 
 /*

@@ -8,8 +8,10 @@
 // expression matrix (tests/corpus/tests-exprmatrix/matrix.txt) against the
 // matrix's model (tools/lib/exprmatrix/model.c, the port's rules): a cell
 // the functions refuse ("Illegal Operator for Type") is one the model
-// refuses, and the value the model prints in the Print context fits the
-// type the functions give.
+// refuses, the value the model prints in the Print context fits the type
+// the functions give, and the type so far the model gives a Print or If
+// cell (em_value.type) is the result type of the functions (a planted wrong
+// type that keeps the value fails).
 //
 // Generator mode: EXPRTYPE_TSV_WRITE=FILE test_exprtype writes the table to
 // FILE (the test "the generator mode"; the others still run).
@@ -363,11 +365,11 @@ bool fitswhole(const char *text, unsigned t)
 }
 
 struct matrixcheck {
-    size_t cells = 0, refused = 0, printed = 0;
+    size_t cells = 0, refused = 0, printed = 0, typed = 0;
     std::vector<std::string> mismatches;
 };
 
-matrixcheck checkmatrix()
+matrixcheck checkmatrix(unsigned (*plant)(unsigned) = nullptr)
 {
     matrixcheck r;
     std::string text = readfile(EXPRMATRIX_TXT);
@@ -386,12 +388,20 @@ matrixcheck checkmatrix()
             continue;           // the two-operand cells of numbers
         r.cells++;
         t = celltype(m, c);
+        if (plant && t)
+            t = plant(t);
         em_model(&m, &c, EM_RULES_PORTNOW, c.ctx == EM_I1 || c.ctx == EM_I2, &v);
         refused = !std::strncmp(v.text, "!noncompile", 11);
         r.refused += refused;
         if (refused != !t) {
             r.mismatches.push_back(std::string(c.key) + ": the model " + v.text + ", the functions " + tname(t));
             continue;
+        }
+        if (t && v.type && (c.ctx == EM_PRINT || c.ctx == EM_IF)) {
+            r.typed++;
+            if ((unsigned)v.type != t)
+                r.mismatches.push_back(std::string(c.key) + ": the model gives the type " + tname(v.type)
+                                       + ", the functions " + tname(t));
         }
         if (c.ctx != EM_PRINT || !t || v.text[0] == '?')
             continue;
@@ -511,12 +521,26 @@ TEST_CASE("exprtype: the two-operand cells of the expression matrix against its 
 {
     matrixcheck r = checkmatrix();
 
-    std::printf("expression matrix: %zu two-operand cells, %zu refused, %zu printed values checked\n", r.cells,
-                r.refused, r.printed);
+    std::printf("expression matrix: %zu two-operand cells, %zu refused, %zu printed values and %zu types checked\n",
+                r.cells, r.refused, r.printed, r.typed);
     // the cells of matrix.txt: two operands, no string
     CHECK(r.cells > 4000);
     CHECK(r.refused > 0);
     CHECK(r.printed > 0);
+    // the type so far of the Print and If cells (the destination contexts convert to theirs)
+    CHECK(r.typed > 4000);
     for (const std::string &m : r.mismatches)
         FAIL_CHECK(m);
+}
+
+TEST_CASE("exprtype: a wrong result type that keeps the value fails the type check", "[exprtype]")
+{
+    // a Long result given as a Word: the value the model prints still fits
+    matrixcheck r = checkmatrix([](unsigned t) -> unsigned { return t == ET_LONG ? (unsigned)ET_WORD : t; });
+    size_t types = 0;
+
+    for (const std::string &m : r.mismatches)
+        if (m.find("the model gives the type L, the functions W") != std::string::npos)
+            types++;
+    CHECK(types > 100);
 }

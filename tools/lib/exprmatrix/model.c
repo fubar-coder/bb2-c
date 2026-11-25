@@ -1770,6 +1770,7 @@ void em_model(const struct em_matrix *m, const struct em_cell *c, unsigned rules
         strcpy(out->text, "!noncompile");
         return;
     }
+    out->type = r.t;
     if (e.c5ovf && (rules & EM_R_C5ERR)) {
         strcpy(out->text, "!runtime");  /* C5 with its overflow an error */
         return;
