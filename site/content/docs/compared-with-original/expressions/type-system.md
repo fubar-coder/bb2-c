@@ -1,8 +1,10 @@
 ---
-title: The type of each operation
-weight: 6
+title: Expression type system
+weight: 1
+prev: /docs/compared-with-original/expressions
+next: /docs/compared-with-original/compiled-programs
 description: How Blitz Basic 2 and the BB2 C port decide the type in which each operation of an expression is computed, with copyable programs that give the original's and the port's output - the order of the operands, chains, a Quick beside a Long, Mod, comparisons, bit operators, shifts, Select and the edge cases.
-prev: /docs/compared-with-original/libraries
+aliases: [/docs/compared-with-original/expression-types/]
 ---
 
 The same sum, written in another order, gives another result in Blitz
@@ -137,7 +139,7 @@ result is stored: 10+1.5+2.75 is 14.25, stored as 14, and (1.5+2.75)*10
 is 42.5, stored as 42. A bit operator or a shift takes the rounded value
 of the chain. More single operations of a Quick in a Long computation,
 such as `r.l=q*2` and `r.l=l/q`, are on
-[A Quick in a Long computation]({{< relref "/docs/compared-with-original/compiler#quick-long-arithmetic" >}}).
+[A Quick in a Long computation]({{< relref "/docs/compared-with-original/expressions#quick-long-arithmetic" >}}).
 
 ## A Quick beside a Long {#quick-and-long}
 
@@ -220,7 +222,7 @@ Since the right side of `ld/3>3.2` has a fraction, the division is
 computed with its fraction too. The destination only receives the -1 or
 0. A comparison whose left side is a single variable, such as `r.l=(q>1)`,
 is on
-[A comparison with a Quick, or of large Longs]({{< relref "/docs/compared-with-original/compiler#quick-compare" >}}).
+[A comparison with a Quick, or of large Longs]({{< relref "/docs/compared-with-original/expressions#quick-compare" >}}).
 
 ## Bit operators with a fraction {#bit-operators}
 
@@ -273,7 +275,7 @@ rb.b=vq LSL 2.5      ; original: 6    port: Illegal Operator for Type
 
 Write the count as a whole number (`vb LSL 2`), or use a variable. The
 compile error is also on
-[A constant with a point as a shift count]({{< relref "/docs/compared-with-original/compiler#shift-count-with-point" >}}).
+[A constant with a point as a shift count]({{< relref "/docs/compared-with-original/expressions#shift-count-with-point" >}}).
 
 A constant with a point as the value that is shifted is taken as a Quick
 variable of that value:
@@ -318,7 +320,7 @@ original.
 the processor's eight data registers. An expression that would need a
 register beyond the eighth is the compile error "Expression too Complex",
 as for the ninth register of
-[An operator too deep in an expression]({{< relref "/docs/compared-with-original/compiler#expression-too-complex" >}}).
+[An operator too deep in an expression]({{< relref "/docs/compared-with-original/expressions#expression-too-complex" >}}).
 
 ```blitzbasic
 q.q=1.5 : l.l=2 : c1.l=1 : c2.l=2 : e.l=3 : h.l=4 : i.l=5

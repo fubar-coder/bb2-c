@@ -59,7 +59,7 @@ six types, not a NewType.
 `Function Return` in a statement, or `Statement Return` in a function, is
 the compile error "Illegal Procedure return", and an `End Statement` that
 closes a function, or the other way round, is an error as well
-([`End Statement` could close a Function]({{< relref "/docs/compared-with-original/compiler#end-of-procedure" >}})).
+([`End Statement` could close a Function]({{< relref "/docs/compared-with-original/language#end-of-procedure" >}})).
 
 ## Parameters
 

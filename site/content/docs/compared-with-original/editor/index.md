@@ -1,6 +1,6 @@
 ---
 title: Editor
-weight: 4
+weight: 6
 next: /docs/compared-with-original/libraries
 description: Fixed bugs of TED, the editor of Blitz Basic 2, in the block commands, in Join, with accented letters, in loading and saving, in the file requester, in the options and in starting with little memory, with examples of the ones ordinary users meet.
 aliases: [/docs/compared-with-original/fixed-bugs/editor/]

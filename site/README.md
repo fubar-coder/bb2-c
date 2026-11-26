@@ -100,23 +100,37 @@ allowed"). Quote such a value, or write it as a block scalar (`|` or
 
 ## The chapter "Differences from the original"
 
-The chapter (`content/docs/compared-with-original/`) is flat: its pages
-are, in this order, "Important Fixes & Breaking Changes"
-(`important-fixes.md`, the overview table below), the pages of fixed
-bugs "Compiling" (`compiler.md`), "Running blitz2" (`running-blitz2.md`),
+The chapter (`content/docs/compared-with-original/`) has these pages, in
+this order: "Important Fixes & Breaking Changes" (`important-fixes.md`,
+the overview table below), the pages of fixed bugs "Language"
+(`language.md`: how the compiler reads a source and what it accepts),
+"Expressions" (`expressions/_index.md`: the value of an expression, with
+the sub-page "Expression type system", `expressions/type-system.md`),
+"Compiled programs" (`compiled-programs.md`: the program the compiler
+generates), "Running blitz2" (`running-blitz2.md`: blitz2 as a program),
 "Editor" (`editor/index.md`) and "Libraries" (`libraries/`, with its
-groups `commands/`, `userlibs/` and `amigaos.md`), then "The type of each
-operation", "Extensions", "Bugs not fixed yet" and "Comparing with the
-original yourself". A fixed bug is described once, on its page of fixed
-bugs; a fix that makes the port refuse a source or stop with a new runtime
-error (levels 3 and 4) is described there with its example and what to
-change in a source.
+groups `commands/`, `userlibs/` and `amigaos.md`), then "Extensions",
+"Bugs not fixed yet" and "Comparing with the original yourself". A fix of
+the compiler goes to Language when it is about what a source may contain,
+to Expressions when it is about the value of an expression, and to
+Compiled programs when it is about the generated program. A fixed bug is
+described once, on its page of fixed bugs; a fix that makes the port
+refuse a source or stop with a new runtime error (levels 3 and 4) is
+described there with its example and what to change in a source.
 
-A fix of level 3 or 4 follows the list of its group on its page, as an
-entry with its own heading (`####` under the group's `###`): the
-program with comments for the original's and the port's results, the
-reason, and **What to change**. A form that only the port accepts, as a
-side of a fix, is on "Extensions", under "Forms the original refused".
+The theme's pager links only the regular pages of one section, so the pages next to a section (`expressions/`, `libraries/`)
+name their neighbours in `prev` and `next` in their front matter.
+
+On the pages of fixed bugs of the compiler, the fixes that an ordinary
+program can meet are sections of their own with a program. The others
+are under "Other fixes", in groups (`###`), each with a table
+`What was wrong | Now | Issue` (one short sentence per cell, the issue
+as a link `[#N](URL)`). A fix of level 3 or 4, or one that needs more
+room, follows the table of its group as an entry with its own heading
+(`####` under the group's `###`): the program with comments for the
+original's and the port's results, the reason, and **What to change**.
+A form that only the port accepts, as a side of a fix, is on
+"Extensions", under "Forms the original refused".
 
 A page keeps the URLs that readers may have bookmarked as `aliases` in
 its front matter (the pages of fixed bugs: below `fixed-bugs/`; the
@@ -127,7 +141,9 @@ link. An entry that went to another page than the alias names is listed
 in the front matter `anchorMoves` of the alias's page, by its anchor
 (`frac-string: libraries/commands/vallib`), and a link to that anchor
 goes there. A page that moves gets an alias for its old URL, and its
-headings keep their ids.
+headings keep their ids. The old page "Compiling" (`compiler/`) is an
+alias of Language, whose `anchorMoves` send its entries on Expressions,
+Compiled programs and Running blitz2 there.
 
 ## The overview of fixed bugs
 
@@ -155,7 +171,8 @@ add sorting and filters. The file has four parts:
     command: "RenderToBitmap, RenderPoly"   # may be ""
     text: "One sentence for the reader: what the port does, and what the original did."
     short: "Draws on the first bitmap, with the second as the pattern."
-    page: libraries/commands/polylib   # the page of fixed bugs: compiler,
+    page: libraries/commands/polylib   # the page of fixed bugs: language,
+                         # expressions, compiled-programs,
                          # running-blitz2, editor, libraries (the index),
                          # libraries/commands/NAME, libraries/userlibs/NAME
                          # or libraries/amigaos
@@ -197,8 +214,9 @@ The build checks the file (`layouts/_partials/fix-overview/check.html`)
 and fails when the levels are not the five levels 1 to 5, when a row lacks
 a field, has an unknown level or topic, names an
 anchor that is no heading of its page, or appears twice, and when an issue
-linked on a page of fixed bugs has no row and is not on `notRows`. A list
-entry under a `###` group heading uses that heading's id as its anchor;
+linked on a page of fixed bugs has no row and is not on `notRows` (the
+pages below a page of fixed bugs, such as "Expression type system", count
+as such pages). A table row or list entry under a `###` group heading uses that heading's id as its anchor;
 where two headings of a page have the same text, the second gets an
 explicit id (`### Other fixes {#rwe-other-fixes}`).
 

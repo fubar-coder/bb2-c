@@ -2,31 +2,31 @@
 # NAME MODE FILE#N [rwe=LIB...] [REASON]: run = compiled and run, the output
 # compared with expect/GROUP/NAME.out; compile = compiled only, with the reason.
 page-project-structure-library-test-cases-1 run content/docs/project-structure/library-test-cases.md#1 rwe=riarrayslib
-page-compared-with-original-compiler-1 run content/docs/compared-with-original/compiler.md#1
-page-compared-with-original-compiler-2 run content/docs/compared-with-original/compiler.md#2
-page-compared-with-original-compiler-3 run content/docs/compared-with-original/compiler.md#3
-page-compared-with-original-compiler-4 run content/docs/compared-with-original/compiler.md#4
-page-compared-with-original-compiler-5 run content/docs/compared-with-original/compiler.md#5
-page-compared-with-original-compiler-6 run content/docs/compared-with-original/compiler.md#6
-page-compared-with-original-compiler-7 run content/docs/compared-with-original/compiler.md#7
-page-compared-with-original-compiler-8 run content/docs/compared-with-original/compiler.md#8
-page-compared-with-original-compiler-9 run content/docs/compared-with-original/compiler.md#9
-page-compared-with-original-compiler-10 compile content/docs/compared-with-original/compiler.md#10 a fragment: it defines a type and has no output
-page-compared-with-original-compiler-11 run content/docs/compared-with-original/compiler.md#11
-page-compared-with-original-expression-types-1 run content/docs/compared-with-original/expression-types.md#1
-page-compared-with-original-expression-types-2 run content/docs/compared-with-original/expression-types.md#2
-page-compared-with-original-expression-types-3 run content/docs/compared-with-original/expression-types.md#3
-page-compared-with-original-expression-types-4 run content/docs/compared-with-original/expression-types.md#4
-page-compared-with-original-expression-types-5 run content/docs/compared-with-original/expression-types.md#5
-page-compared-with-original-expression-types-6 run content/docs/compared-with-original/expression-types.md#6
-page-compared-with-original-expression-types-7 run content/docs/compared-with-original/expression-types.md#7
-page-compared-with-original-expression-types-8 run content/docs/compared-with-original/expression-types.md#8
-page-compared-with-original-expression-types-9 run content/docs/compared-with-original/expression-types.md#9
-page-compared-with-original-expression-types-10 run content/docs/compared-with-original/expression-types.md#10
-page-compared-with-original-expression-types-11 run content/docs/compared-with-original/expression-types.md#11
-page-compared-with-original-expression-types-12 run content/docs/compared-with-original/expression-types.md#12
-page-compared-with-original-expression-types-13 run content/docs/compared-with-original/expression-types.md#13
-page-compared-with-original-expression-types-14 run content/docs/compared-with-original/expression-types.md#14
+page-compared-with-original-language-1 run content/docs/compared-with-original/language.md#1
+page-compared-with-original-language-2 run content/docs/compared-with-original/language.md#2
+page-compared-with-original-language-3 run content/docs/compared-with-original/language.md#3
+page-compared-with-original-language-4 run content/docs/compared-with-original/language.md#4
+page-compared-with-original-language-5 run content/docs/compared-with-original/language.md#5
+page-compared-with-original-language-6 compile content/docs/compared-with-original/language.md#6 a fragment: it defines a type and has no output
+page-compared-with-original-language-7 run content/docs/compared-with-original/language.md#7
+page-compared-with-original-expressions-1 run content/docs/compared-with-original/expressions/_index.md#1
+page-compared-with-original-expressions-2 run content/docs/compared-with-original/expressions/_index.md#2
+page-compared-with-original-expressions-3 run content/docs/compared-with-original/expressions/_index.md#3
+page-compared-with-original-expressions-4 run content/docs/compared-with-original/expressions/_index.md#4
+page-compared-with-original-expressions-type-system-1 run content/docs/compared-with-original/expressions/type-system.md#1
+page-compared-with-original-expressions-type-system-2 run content/docs/compared-with-original/expressions/type-system.md#2
+page-compared-with-original-expressions-type-system-3 run content/docs/compared-with-original/expressions/type-system.md#3
+page-compared-with-original-expressions-type-system-4 run content/docs/compared-with-original/expressions/type-system.md#4
+page-compared-with-original-expressions-type-system-5 run content/docs/compared-with-original/expressions/type-system.md#5
+page-compared-with-original-expressions-type-system-6 run content/docs/compared-with-original/expressions/type-system.md#6
+page-compared-with-original-expressions-type-system-7 run content/docs/compared-with-original/expressions/type-system.md#7
+page-compared-with-original-expressions-type-system-8 run content/docs/compared-with-original/expressions/type-system.md#8
+page-compared-with-original-expressions-type-system-9 run content/docs/compared-with-original/expressions/type-system.md#9
+page-compared-with-original-expressions-type-system-10 run content/docs/compared-with-original/expressions/type-system.md#10
+page-compared-with-original-expressions-type-system-11 run content/docs/compared-with-original/expressions/type-system.md#11
+page-compared-with-original-expressions-type-system-12 run content/docs/compared-with-original/expressions/type-system.md#12
+page-compared-with-original-expressions-type-system-13 run content/docs/compared-with-original/expressions/type-system.md#13
+page-compared-with-original-expressions-type-system-14 run content/docs/compared-with-original/expressions/type-system.md#14
 page-compared-with-original-libraries-1 run content/docs/compared-with-original/libraries/_index.md#1 rwe=rimisclib
 cmd-acidlibs-displaylib-1 compile data/cmddesc/acidlibs/displaylib.yaml#1 needs hardware or a device the test machine does not have (a display)
 cmd-acidlibs-gtlib-1 run data/cmddesc/acidlibs/gtlib.yaml#1

@@ -1,14 +1,15 @@
 ---
 title: Running blitz2
-weight: 3
-description: Fixed bugs of Blitz Basic 2 in blitz2 as a program - loading the libraries, starting and ending, out of memory during a compile, and the editor's compiler menu.
+weight: 5
+description: Fixed bugs of Blitz Basic 2 in blitz2 as a program - loading the libraries, starting and ending, out of memory during a compile, the compiler's memory, the editor's compiler menu and the progress bar.
 aliases: [/docs/compared-with-original/fixed-bugs/running-blitz2/]
 ---
 
 These bugs concern blitz2 as a program rather than the code it compiles:
 how it loads its libraries, how it starts and ends, what it does when
-memory runs out during a compile, and what the compiler menu of the
-editor does. Each is a short point here, and its
+memory runs out during a compile, how it handles its own memory, what the
+compiler menu of the editor does, and how it shows its progress. Each is
+a short point here, and its
 issue has the details. Each point says first what the original did,
 then, after the semicolon, what the port does.
 The table on [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})
@@ -94,6 +95,24 @@ or from the Shell, it reports the error "Out of Memory" instead.
   first); the compile ends with the alert or error described above
   ([#32](https://github.com/fubar-coder/bb2-c/issues/32)).
 
+## The compiler's memory
+
+* After the object buffer ran full during an assignment or a `Select`,
+  the compiler lost a little memory; the buffer is freed in every case
+  ([#14](https://github.com/fubar-coder/bb2-c/issues/14)).
+* A compile error in some assignments or in `Select` lost a little
+  memory; the buffer is freed at the end of every pass
+  ([#994](https://github.com/fubar-coder/bb2-c/issues/994)).
+* An operation of two constants, such as `3 LSL 2`, is worked out while
+  compiling, by running the code just compiled for it. When that code
+  ended exactly at the end of the object buffer, the compiler ran on into
+  the memory behind the buffer and crashed or hung. The compiler skips
+  the operation when the buffer is full and handles the full buffer as
+  always: the requester "Not Enough Object Memory Available!", or with
+  **Make Smallest Code** a second pass with a buffer of the right size
+  ([Make Smallest Code]({{< relref "/docs/how-blitz2-works/compiling#make-smallest-code" >}}),
+  [#1190](https://github.com/fubar-coder/bb2-c/issues/1190)).
+
 ## The editor's compiler menu
 
 * LOAD DEBUG MODULE left the busy pointer on when no debugger module had
@@ -103,3 +122,11 @@ or from the Shell, it reports the error "Out of Memory" instead.
   memory, the `EXECUTING` requester stayed open; it is closed, with no
   error message, as in the original
   ([#25](https://github.com/fubar-coder/bb2-c/issues/25)).
+
+## The progress bar while compiling
+
+* While compiling from TED on a screen with 3641 or more bytes per row
+  (wide RTG modes), the compiler's progress bar wrote about 28 KB before
+  TED's screen memory. The port's compiler reports its progress to TED, which
+  draws the bar itself; with the original TED, the port's compiler shows
+  no bar ([#980](https://github.com/fubar-coder/bb2-c/issues/980)).

@@ -107,7 +107,7 @@ same wanted type, but it decides every operation by its own two operands
 and that type, so the place of an operand in the expression does not
 change the result. The sections below show where this matters; every
 difference, with the original's result and the port's, is on
-[The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}}).
+[Expression type system]({{< relref "/docs/compared-with-original/expressions/type-system" >}}).
 
 ### A Quick in a Long computation
 
@@ -169,7 +169,7 @@ Under a Quick type so far, such as a Quick destination or a variable
 without a suffix, `NOT`, `AND`, `OR` and `EOR` also take the whole part of
 a Quick (rounded down) and give a Quick, while the shifts keep the
 fraction. The details are in
-[`NOT`, `AND`, `OR` and `EOR` on a Quick]({{< relref "/docs/compared-with-original/compiler#quick-bit-operators" >}}).
+[`NOT`, `AND`, `OR` and `EOR` on a Quick]({{< relref "/docs/compared-with-original/expressions#quick-bit-operators" >}}).
 
 ### Comparisons
 

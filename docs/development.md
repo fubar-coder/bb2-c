@@ -165,9 +165,12 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    of them, also in the name of a `[fixed #NNN]` test case. Write such
    a name rephrased ("the fixed case of #NNN");
 3. the entry on the website page of fixed original bugs
-   (in `site/content/docs/compared-with-original/`: `compiler.md`,
-   `running-blitz2.md`, `editor/`, `libraries/` with `commands/`,
-   `userlibs/` and `amigaos.md`: a one-sentence entry; a fix of level 3
+   (in `site/content/docs/compared-with-original/`: for the compiler
+   `language.md` (what a source may contain), `expressions/_index.md`
+   (the value of an expression) or `compiled-programs.md` (the generated
+   program), then `running-blitz2.md`, `editor/`, `libraries/` with
+   `commands/`, `userlibs/` and `amigaos.md`: a row in its group's table
+   (What was wrong | Now | Issue) or a one-sentence entry; a fix of level 3
    or 4 is an entry of its own with the program (the original's and the
    port's comments) and "What to change"; a source the port refuses or
    compiles differently also goes to "Forms the original refused" on

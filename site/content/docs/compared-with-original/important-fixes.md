@@ -33,31 +33,37 @@ your programs behaved strangely with Blitz Basic 2, look at these first.
 Each of them is shown on its page with a short program, what the
 original made of it, and what the port does.
 
-In the compiler ([Compiling]({{< relref "/docs/compared-with-original/compiler" >}})):
+In the language ([Language]({{< relref "/docs/compared-with-original/language" >}})):
 
-* [Numbers like `1.` and `1.0e5`]({{< relref "/docs/compared-with-original/compiler#float-literals" >}})
-  were refused.
-* [Arrays with 256-byte elements]({{< relref "/docs/compared-with-original/compiler#arrays-256" >}})
+* [Arrays with 256-byte elements]({{< relref "/docs/compared-with-original/language#arrays-256" >}})
   had their elements 64 KB apart.
-* [A List array indexed by another array]({{< relref "/docs/compared-with-original/compiler#list-array-index" >}}),
+* [A List array indexed by another array]({{< relref "/docs/compared-with-original/language#list-array-index" >}}),
   as in `a(b(1))`, read the wrong element.
-* [A field of a NewType defined later]({{< relref "/docs/compared-with-original/compiler#newtype-defined-later" >}})
+* [A field of a NewType defined later]({{< relref "/docs/compared-with-original/language#newtype-defined-later" >}})
   got a wrong size.
-* [`End Statement` could close a Function]({{< relref "/docs/compared-with-original/compiler#end-of-procedure" >}}),
+* [`End Statement` could close a Function]({{< relref "/docs/compared-with-original/language#end-of-procedure" >}}),
   and a string Function ended that way crashed.
-* [An AmigaOS function inside a calculation]({{< relref "/docs/compared-with-original/compiler#amigaos-call-in-expression" >}}),
-  as in `a+(b+(c+Write_(…)))`, overwrote values of the calculation.
-* [Object numbers above a raised maximum]({{< relref "/docs/compared-with-original/compiler#object-numbers-above-32k" >}}),
-  such as Shape 1025, addressed memory before the object table.
-* [Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/compiler#text-after-path" >}}),
+* [Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/language#text-after-path" >}}),
   such as `: a=2`, was never compiled.
-* [`IncDir` stayed for the next compile]({{< relref "/docs/compared-with-original/compiler#incdir-next-compile" >}})
+* [`IncDir` stayed for the next compile]({{< relref "/docs/compared-with-original/language#incdir-next-compile" >}})
   in the same editor session.
-* [An include name with a device after `IncDir`]({{< relref "/docs/compared-with-original/compiler#include-with-device" >}})
+* [An include name with a device after `IncDir`]({{< relref "/docs/compared-with-original/language#include-with-device" >}})
   could not be opened.
-* [A program with the Blitz OS commands hung at its end]({{< relref "/docs/compared-with-original/compiler#os-commands-end" >}}),
+
+In expressions ([Expressions]({{< relref "/docs/compared-with-original/expressions" >}})):
+
+* [Numbers like `1.` and `1.0e5`]({{< relref "/docs/compared-with-original/expressions#float-literals" >}})
+  were refused.
+
+In the compiled program ([Compiled programs]({{< relref "/docs/compared-with-original/compiled-programs" >}})):
+
+* [An AmigaOS function inside a calculation]({{< relref "/docs/compared-with-original/compiled-programs#amigaos-call-in-expression" >}}),
+  as in `a+(b+(c+Write_(…)))`, overwrote values of the calculation.
+* [Object numbers above a raised maximum]({{< relref "/docs/compared-with-original/compiled-programs#object-numbers-above-32k" >}}),
+  such as Shape 1025, addressed memory before the object table.
+* [A program with the Blitz OS commands hung at its end]({{< relref "/docs/compared-with-original/compiled-programs#os-commands-end" >}}),
   even if it never called one of them.
-* [Data of odd length at the end of a program]({{< relref "/docs/compared-with-original/compiler#odd-end" >}})
+* [Data of odd length at the end of a program]({{< relref "/docs/compared-with-original/compiled-programs#odd-end" >}})
   crashed it at `End`.
 
 In the libraries ([Libraries]({{< relref "/docs/compared-with-original/libraries" >}})):

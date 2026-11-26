@@ -11,7 +11,8 @@
     boolean;
   * an issue that is a row twice, or a row and a notRows entry;
   * a row whose anchor is no heading id of its page;
-  * an issue linked on a page of fixed bugs (Compiling, Running blitz2,
+  * an issue linked on a page of fixed bugs (Language, Expressions with
+    its sub-page, Compiled programs, Running blitz2,
     Editor, and Libraries with the pages below it) that is neither a row
     nor on the notRows list (a raw-text scan of the pages' Markdown).
 
@@ -25,7 +26,7 @@
 {{- $base := "/docs/compared-with-original" -}}
 {{- /* the pages of fixed bugs, below $base; the rows name them in "page" */ -}}
 {{- $fixPages := slice -}}
-{{- range slice "compiler" "running-blitz2" "editor" "libraries" -}}
+{{- range slice "language" "expressions" "compiled-programs" "running-blitz2" "editor" "libraries" -}}
   {{- with site.GetPage (printf "%s/%s" $base .) -}}
     {{- $fixPages = $fixPages | append . -}}
   {{- else -}}

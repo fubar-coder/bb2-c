@@ -183,7 +183,7 @@ it is refused. A constant alone keeps its value: `rb.b=2.0` stores 2.
 Blitz Basic 2 itself read an expression from left to right with one
 type so far, so the type of an operation depended on the place of its
 operands, and some results differ from the port's;
-[The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}})
+[Expression type system]({{< relref "/docs/compared-with-original/expressions/type-system" >}})
 shows them by example.
 
 The page

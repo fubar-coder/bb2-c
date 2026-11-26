@@ -47,7 +47,7 @@ rows:
     command: ""
     text: "An inline assembler expression of 240 characters or more in a macro or include is freed correctly; the original freed it with a wrong size."
     short: "An inline assembler expression of 240 characters or more in a macro or include is freed with its right size."
-    page: compiler
+    page: language
     anchor: inline-assembler
   - issue: 3
     severity: 5
@@ -74,7 +74,7 @@ rows:
     command: ""
     text: "A constant definition without a name, `#=5`, is \"Syntax Error\"; the original accepted it."
     short: "A constant definition without a name, `#=5`, is \"Syntax Error\"."
-    page: compiler
+    page: language
     anchor: constant-without-name
   - issue: 8
     severity: 5
@@ -92,7 +92,7 @@ rows:
     command: "=<"
     text: "`=<` is less-or-equal, the same as `<=`; the original compiled it as \"not equal\" without a message."
     short: "Is less-or-equal, the same as `<=`, not \"not equal\"."
-    page: compiler
+    page: expressions
     anchor: less-or-equal
     highlight: true
   - issue: 10
@@ -102,7 +102,7 @@ rows:
     command: ""
     text: "A number ending in a decimal point, such as `1.`, compiles as a number; the original reported a syntax error."
     short: "A number ending in a decimal point, such as `1.`, compiles as a number."
-    page: compiler
+    page: expressions
     anchor: float-literals
   - issue: 11
     severity: 5
@@ -111,7 +111,7 @@ rows:
     command: ""
     text: "An exponent after a fraction of 0, as in `1.0e5`, is applied; the original ignored it and gave 1."
     short: "An exponent after a fraction of 0, as in `1.0e5`, is applied."
-    page: compiler
+    page: expressions
     anchor: float-literals
   - issue: 13
     severity: 5
@@ -120,8 +120,8 @@ rows:
     command: ""
     text: "A number without a fraction in a Quick calculation, such as `q=1.0`, is a Quick constant; the original converted a float at run time (same value, longer code)."
     short: "A number without a fraction in a Quick calculation, such as `q=1.0`, is a Quick constant."
-    page: compiler
-    anchor: names-labels-and-constants
+    page: expressions
+    anchor: numbers
   - issue: 14
     severity: 5
     topic: "Compiler"
@@ -129,7 +129,7 @@ rows:
     command: "Select"
     text: "A full object buffer during an assignment or `Select` loses no memory; the original lost a little."
     short: "A full object buffer during an assignment or `Select` loses no memory."
-    page: compiler
+    page: running-blitz2
     anchor: the-compilers-memory
   - issue: 15
     severity: 5
@@ -138,7 +138,7 @@ rows:
     command: "Dim"
     text: "Arrays with 256-byte elements have their elements 256 bytes apart; the original put them 65536 bytes apart and overwrote memory."
     short: "Arrays with 256-byte elements have their elements 256 bytes apart."
-    page: compiler
+    page: language
     anchor: arrays-256
   - issue: 16
     severity: 4
@@ -147,7 +147,7 @@ rows:
     command: "IncDir"
     text: "An `IncDir` path of 96 characters or more is \"Path too Long\"; the original overwrote the compiler's data and the program crashed."
     short: "A path of 96 characters or more is \"Path too Long\"."
-    page: compiler
+    page: language
     anchor: path-too-long
   - issue: 17
     severity: 4
@@ -156,7 +156,7 @@ rows:
     command: "IncDir, Include, XInclude, IncBin"
     text: "A quoted path of `IncDir`, `Include`, `XInclude` or `IncBin` ends at its closing quote, other text after it is \"Syntax Error\"; the original took the whole line."
     short: "A quoted path ends at its closing quote; other text after it is \"Syntax Error\"."
-    page: compiler
+    page: language
     anchor: text-after-path
   - issue: 19
     severity: 5
@@ -246,7 +246,7 @@ rows:
     command: "Macro"
     text: "A name of more than 127 characters, possible through a macro, is \"Syntax Error\"; the original overwrote the compiler's data."
     short: "A name of more than 127 characters, possible through a macro, is \"Syntax Error\"."
-    page: compiler
+    page: language
     anchor: long-name
   - issue: 30
     severity: 4
@@ -255,7 +255,7 @@ rows:
     command: "Goto, Gosub, Restore"
     text: "A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name is \"Syntax Error\"; the original searched 65536 bytes of memory for an empty name."
     short: "A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name is \"Syntax Error\"."
-    page: compiler
+    page: language
     anchor: missing-name
   - issue: 31
     severity: 4
@@ -264,7 +264,7 @@ rows:
     command: "UsePath"
     text: "A `UsePath` path of 128 characters or more is \"Path too Long\"; the original overwrote the compiler's own code."
     short: "A path of 128 characters or more is \"Path too Long\"."
-    page: compiler
+    page: language
     anchor: path-too-long
   - issue: 32
     severity: 5
@@ -282,7 +282,7 @@ rows:
     command: ""
     text: "The constant list of a resident ends inside the resident; the original's last constant pointed behind it, and every compile freed foreign memory."
     short: "The constant list of a resident ends inside the resident."
-    page: compiler
+    page: language
     anchor: residents
   - issue: 35
     severity: 5
@@ -291,7 +291,7 @@ rows:
     command: "NEWTYPE"
     text: "A resident with a `NewType` without fields loads everything defined behind it; the original lost those types, macros and constants."
     short: "A resident with a `NewType` without fields loads everything defined behind it."
-    page: compiler
+    page: language
     anchor: residents
   - issue: 36
     severity: 5
@@ -300,7 +300,7 @@ rows:
     command: ""
     text: "Two residents defining the same constant differently give the warning \"Clash in Residents\" and use the first value; the original used it silently."
     short: "Two residents defining a constant differently give the warning \"Clash in Residents\"."
-    page: compiler
+    page: language
     anchor: residents
   - issue: 37
     severity: 4
@@ -309,7 +309,7 @@ rows:
     command: "Dcb"
     text: "`Dcb` with a count of 0 emits nothing and a negative count is \"Illegal Constant\"; the original made about four thousand million copies."
     short: "A count of 0 emits nothing and a negative count is \"Illegal Constant\"."
-    page: compiler
+    page: language
     anchor: dcb-count
   - issue: 38
     severity: 5
@@ -318,7 +318,7 @@ rows:
     command: "IncBin"
     text: "`IncBin` releases its file or directory after an error; the original kept it in use."
     short: "Releases its file or directory after an error."
-    page: compiler
+    page: language
     anchor: paths-and-include-files
   - issue: 39
     severity: 4
@@ -327,7 +327,7 @@ rows:
     command: "For"
     text: "`For` with a global string variable is \"Bad Type for For...Next\"; the original compiled it and treated the string as a number."
     short: "A global string variable is \"Bad Type for For...Next\"."
-    page: compiler
+    page: language
     anchor: for-string
   - issue: 42
     severity: 5
@@ -336,7 +336,7 @@ rows:
     command: ""
     text: "On a 68010 with a moved vector table, runtime errors and the debugger use that table; the original took the trap vectors from the wrong one."
     short: "On a 68010 with a moved vector table, runtime errors and the debugger use that table."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 44
     severity: 5
@@ -363,7 +363,7 @@ rows:
     command: "PeekSound"
     text: "`PeekSound` inside a string expression leaves the sound object intact; the original overwrote it."
     short: "Inside a string expression, `PeekSound` leaves the sound object intact."
-    page: compiler
+    page: compiled-programs
     anchor: object-function-in-string
   - issue: 48
     severity: 1
@@ -2299,7 +2299,7 @@ rows:
     command: "Include, XInclude, IncBin, IncDir"
     text: "An include file name that is more than 127 characters with the `IncDir` path is \"Path too Long\"; the original overwrote the compiler's data."
     short: "An include file name of more than 127 characters with the `IncDir` path is \"Path too Long\"."
-    page: compiler
+    page: language
     anchor: path-too-long
   - issue: 326
     severity: 3
@@ -2362,7 +2362,7 @@ rows:
     command: ""
     text: "A program using a library that needs objects only through another library ends cleanly; the original could hang the system at its end."
     short: "A program using a library that needs objects only through another library ends cleanly."
-    page: compiler
+    page: compiled-programs
     anchor: os-commands-end
   - issue: 336
     severity: 4
@@ -2371,7 +2371,7 @@ rows:
     command: "Macro"
     text: "The Macro Buffer option sets the largest macro text, a longer one is \"Macro too Big\"; the original ignored the option and could crash when ending."
     short: "The Macro Buffer option sets the largest macro text; a longer one is \"Macro too Big\"."
-    page: compiler
+    page: language
     anchor: macro-buffer
   - issue: 337
     severity: 5
@@ -2398,7 +2398,7 @@ rows:
     command: "Include, IncDir"
     text: "After `IncDir`, a file name with a device or assign is included as given; the original put the `IncDir` path in front and failed."
     short: "After `IncDir`, a file name with a device or assign is included as given."
-    page: compiler
+    page: language
     anchor: include-with-device
   - issue: 342
     severity: 5
@@ -2407,7 +2407,7 @@ rows:
     command: "IncDir"
     text: "The path of `IncDir` applies only to the compile that set it; the original kept it for the following compiles."
     short: "The path applies only to the compile that set it."
-    page: compiler
+    page: language
     anchor: incdir-next-compile
   - issue: 343
     severity: 5
@@ -2416,7 +2416,7 @@ rows:
     command: ""
     text: "Character constants in inline assembler are read correctly on every line; after a calculation such as `#\">\"*8`, the original could make an earlier `#\" \"` 0."
     short: "Character constants in inline assembler are read correctly on every line."
-    page: compiler
+    page: language
     anchor: inline-assembler
   - issue: 344
     severity: 5
@@ -2425,7 +2425,7 @@ rows:
     command: ""
     text: "An AmigaOS function called inside an expression keeps the expression's intermediate values; the original overwrote them."
     short: "An AmigaOS function called inside an expression keeps the expression's intermediate values."
-    page: compiler
+    page: compiled-programs
     anchor: amigaos-call-in-expression
   - issue: 345
     severity: 5
@@ -7755,7 +7755,7 @@ rows:
     command: "Dim List"
     text: "A List array indexed by an element of another array reads the right element; the original used a wrong element size."
     short: "A List array indexed by an element of another array reads the right element."
-    page: compiler
+    page: language
     anchor: list-array-index
   - issue: 939
     severity: 5
@@ -7764,7 +7764,7 @@ rows:
     command: ""
     text: "Objects 32 KB or more into their table are addressed correctly with a raised object maximum; the original addressed memory before the table."
     short: "Objects 32 KB or more into their table are addressed correctly with a raised object maximum."
-    page: compiler
+    page: compiled-programs
     anchor: object-numbers-above-32k
   - issue: 940
     severity: 4
@@ -7773,7 +7773,7 @@ rows:
     command: "End Statement, End Function, Statement Return, Function Return"
     text: "Ending or leaving a procedure with the statement of the other kind is \"Illegal End Procedure\"; the original compiled it and the program crashed."
     short: "Ending or leaving a procedure with the statement of the other kind is \"Illegal End Procedure\"."
-    page: compiler
+    page: language
     anchor: end-of-procedure
   - issue: 942
     severity: 5
@@ -7782,7 +7782,7 @@ rows:
     command: "Macro"
     text: "A one-line macro with a colon right after its name, `Macro a:1:End Macro`, expands to `1`; the original kept the colon in the text."
     short: "A one-line macro with a colon right after its name, `Macro a:1:End Macro`, expands to `1`."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 943
     severity: 5
@@ -7791,7 +7791,7 @@ rows:
     command: ""
     text: "Very large executables with very many relocations load on AmigaOS 2.0 and later; the original wrote one relocation block that did not load."
     short: "Very large executables with very many relocations load on AmigaOS 2.0 and later."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 945
     severity: 5
@@ -7891,7 +7891,7 @@ rows:
     command: ""
     text: "AmigaOS function calls with an argument in register a4 or a5 keep the program's variables; the original crashed or destroyed them."
     short: "AmigaOS function calls with an argument in register a4 or a5 keep the program's variables."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 959
     severity: 5
@@ -7909,8 +7909,8 @@ rows:
     command: "Supervisor_"
     text: "`Supervisor_` compiles; the original gave \"Syntax Error\" because it looked the name up in the dos library."
     short: "Compiles."
-    page: compiler
-    anchor: expressions-and-statements
+    page: language
+    anchor: names-labels-and-constants
   - issue: 961
     severity: 3
     topic: "Windows & screens"
@@ -7936,7 +7936,7 @@ rows:
     command: "Macro"
     text: "A macro text of 65536 bytes or more is \"Macro too Big\"; the original cut it and lost part of its memory until a reboot."
     short: "A macro text of 65536 bytes or more is \"Macro too Big\"."
-    page: compiler
+    page: language
     anchor: macro-buffer
   - issue: 965
     severity: 5
@@ -7945,7 +7945,7 @@ rows:
     command: "Macro"
     text: "An error inside a macro definition is shown; the original could crash the compiler freeing a macro text it never set."
     short: "An error inside a macro definition is shown."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 966
     severity: 5
@@ -7954,7 +7954,7 @@ rows:
     command: ""
     text: "A `~` inside a string literal is an ordinary character; the original evaluated `~...~` there as a constant expression, so `\"a~1+2~b\"` became `a3b`."
     short: "A `~` inside a string literal is an ordinary character."
-    page: compiler
+    page: language
     anchor: tilde-in-string
   - issue: 968
     severity: 5
@@ -7963,7 +7963,7 @@ rows:
     command: "Macro, End"
     text: "A macro line ending in `End` keeps the rest of the macro and of the calling line, as in AmiBlitz3; the original cut both off."
     short: "A macro line ending in `End` keeps the rest of the macro and of the calling line, as in AmiBlitz3."
-    page: compiler
+    page: language
     anchor: macro-end-line
   - issue: 969
     severity: 5
@@ -7972,7 +7972,7 @@ rows:
     command: "Even, Ds"
     text: "Pad bytes from `Even`, alignment and `Ds` are zero; the original filled them with random bytes."
     short: "Pad bytes from `Even`, alignment and `Ds` are zero."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 970
     severity: 5
@@ -7981,7 +7981,7 @@ rows:
     command: ""
     text: "CREATE RESIDENT writes the same file each time, with unused bytes zero; the original wrote bytes it never set."
     short: "CREATE RESIDENT writes the same file each time, with unused bytes zero."
-    page: compiler
+    page: language
     anchor: residents
   - issue: 971
     severity: 5
@@ -7990,7 +7990,7 @@ rows:
     command: "AddBox"
     text: "A string addition nested seven levels deep, or in a late register argument such as the text of `AddBox`, gets the right length; the original's was wrong."
     short: "A string addition nested seven levels deep, or in a late register argument, gets the right length."
-    page: compiler
+    page: expressions
     anchor: expressions-and-statements
   - issue: 972
     severity: 5
@@ -7999,7 +7999,7 @@ rows:
     command: ""
     text: "A constant defined without a value, a line `#c` alone, is 0; the original gave it a random value."
     short: "A constant defined without a value, a line `#c` alone, is 0."
-    page: compiler
+    page: language
     anchor: constant-without-value
   - issue: 973
     severity: 4
@@ -8008,7 +8008,7 @@ rows:
     command: "NEWTYPE"
     text: "A NewType field of the type being defined is \"Illegal Type\", a pointer to it stays allowed; the original gave the field a random size."
     short: "A NewType field of the type being defined is \"Illegal Type\"; a pointer to it stays allowed."
-    page: compiler
+    page: language
     anchor: newtype-contains-itself
   - issue: 974
     severity: 4
@@ -8017,7 +8017,7 @@ rows:
     command: "NEWTYPE, SizeOf"
     text: "A NewType field of a type defined later gets that type's size, and using it too early is \"Type not yet defined\"; the original gave a wrong size."
     short: "A NewType field of a type defined later gets that type's size; too early is \"Type not yet defined\"."
-    page: compiler
+    page: language
     anchor: newtype-defined-later
   - issue: 977
     severity: 5
@@ -8026,7 +8026,7 @@ rows:
     command: "Goto, Gosub"
     text: "A jump to a label named like a constant of value 0 is \"Label has been used as a Constant\"; the original gave a nonsense error or touched random memory."
     short: "A jump to a label named like a constant of value 0 is \"Label has been used as a Constant\"."
-    page: compiler
+    page: language
     anchor: names-labels-and-constants
   - issue: 978
     severity: 5
@@ -8035,7 +8035,7 @@ rows:
     command: ""
     text: "A Byte variable compared with a constant from 128 to 255 matches when it holds that byte; the original comparison never matched."
     short: "A Byte variable compared with a constant from 128 to 255 matches when it holds that byte."
-    page: compiler
+    page: expressions
     anchor: byte-compare
   - issue: 979
     severity: 5
@@ -8044,7 +8044,7 @@ rows:
     command: "IncBin"
     text: "A program ending with data of odd length ends normally; the original put its end code on an odd address and crashed."
     short: "A program ending with data of odd length ends normally."
-    page: compiler
+    page: compiled-programs
     anchor: odd-end
   - issue: 980
     severity: 5
@@ -8053,7 +8053,7 @@ rows:
     command: ""
     text: "TED draws the compile progress bar itself, also on wide RTG screens; the original compiler wrote about 28 KB before TED's screen memory there."
     short: "TED draws the compile progress bar itself, also on wide RTG screens."
-    page: compiler
+    page: running-blitz2
     anchor: the-progress-bar-while-compiling
   - issue: 981
     severity: 5
@@ -8134,7 +8134,7 @@ rows:
     command: "Select"
     text: "A compile error in some assignments or in `Select` loses no memory; the original lost its code save buffer."
     short: "A compile error in some assignments or in `Select` loses no memory."
-    page: compiler
+    page: running-blitz2
     anchor: the-compilers-memory
   - issue: 995
     severity: 5
@@ -8143,7 +8143,7 @@ rows:
     command: "Macro"
     text: "A resident with a macro text of 32767 bytes or more loads correctly; the original read the definitions behind it from the wrong place."
     short: "A resident with a macro text of 32767 bytes or more loads correctly."
-    page: compiler
+    page: language
     anchor: residents
   - issue: 997
     severity: 4
@@ -8152,7 +8152,7 @@ rows:
     command: ""
     text: "An inline assembler operand too long for its buffer is \"Operand too Long\"; the original cut it into wrong code or overwrote the compiler's data."
     short: "An inline assembler operand too long for its buffer is \"Operand too Long\"."
-    page: compiler
+    page: language
     anchor: operand-too-long
   - issue: 998
     severity: 5
@@ -8161,7 +8161,7 @@ rows:
     command: "Used"
     text: "`Used` gives the right object number with a raised object maximum; the original gave a wrong number from 64 KB into the object table."
     short: "Gives the right object number with a raised object maximum."
-    page: compiler
+    page: compiled-programs
     anchor: object-numbers-above-32k
   - issue: 999
     severity: 5
@@ -8449,7 +8449,7 @@ rows:
     command: "Mod"
     text: "A division or `Mod` by a constant 0 is the compile error \"Division by Zero\"; the original crashed the compiler or compiled the largest Long number."
     short: "A division or `Mod` by a constant 0 is the compile error \"Division by Zero\"."
-    page: compiler
+    page: expressions
     anchor: division-by-zero
   - issue: 1046
     severity: 1
@@ -8477,7 +8477,7 @@ rows:
     command: "TokeJsr, ALibJsr"
     text: "Without runtime error checking, `TokeJsr` and `ALibJsr` call a routine with an error check directly; the original went through an extra 8-byte stub."
     short: "Without runtime error checking, call a routine with an error check directly."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 1049
     severity: 5
@@ -8486,7 +8486,7 @@ rows:
     command: "Mod"
     text: "A constant operation such as `7 Mod 3` as the first use of a library keeps that library's relocations; the original dropped them, so a later Long or Float `Mod` jumped into the compiler's freed memory and the program crashed when it was started on its own."
     short: "A constant operation such as `7 Mod 3` as the first use of a library keeps that library's relocations."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 1051
     severity: 5
@@ -8621,8 +8621,8 @@ rows:
     command: "Data"
     text: "A Quick literal just below 32768, such as `q=32767.9999`, is the largest Quick number; the original wrapped it to -32768 and `Data.q` refused it."
     short: "A Quick literal just below 32768, such as `q=32767.9999`, is the largest Quick number."
-    page: compiler
-    anchor: expressions-and-statements
+    page: expressions
+    anchor: numbers
   - issue: 1071
     severity: 5
     topic: "System"
@@ -8648,8 +8648,8 @@ rows:
     command: "Data"
     text: "`Data.q -32768` stores the smallest Quick number; the original stopped the compile with \"Bad Data\"."
     short: "`Data.q -32768` stores the smallest Quick number."
-    page: compiler
-    anchor: expressions-and-statements
+    page: expressions
+    anchor: numbers
   - issue: 1084
     severity: 4
     topic: "Compiler"
@@ -8657,7 +8657,7 @@ rows:
     command: "NEWTYPE"
     text: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"; the original gave it the size of the count modulo 65536, and programs wrote past it."
     short: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"."
-    page: compiler
+    page: language
     anchor: newtype-field-count
   - issue: 1076
     severity: 2
@@ -9017,7 +9017,7 @@ rows:
     command: ""
     text: "The last word of the code in an executable is zero when the code has an odd number of words; the original took it from behind its own memory, so under a memory checker the same source gave different executables."
     short: "The last word of the code in an executable is zero when the code has an odd number of words."
-    page: compiler
+    page: compiled-programs
     anchor: the-executable
   - issue: 1177
     severity: 1
@@ -9026,7 +9026,7 @@ rows:
     command: "=, <>, <, >, <=, >="
     text: "The operands of a comparison are compared with their own values, a Long against a Quick exactly; the original cut a Quick to a whole number when the result went to a Long (`q>1` false for `q=1.5`, `q>l` and `l<q` disagreeing) and compared two Longs as Quick or Float values under a Quick or Float destination (100000001 equal to 100000000)."
     short: "The operands of a comparison are compared with their own values, a Long against a Quick exactly."
-    page: compiler
+    page: expressions
     anchor: quick-compare
   - issue: 1178
     severity: 1
@@ -9035,7 +9035,7 @@ rows:
     command: "+, -, *, /"
     text: "A Quick in a Long computation keeps its fraction: the operation is computed with it and rounded to a whole number, down for `+`, `-`, `*` and a minus sign, towards zero for `/`; the original cut the Quick to a whole number first (`r.l=q*2` 2 for `q=1.5`, `r.l=l/q` 10 for `l=10`, `NPrint q*100000` 100000). `Int(q)` gives the old result."
     short: "A Quick in a Long computation keeps its fraction, and the result is rounded to a whole number."
-    page: compiler
+    page: expressions
     anchor: quick-long-arithmetic
   - issue: 1209
     severity: 1
@@ -9044,7 +9044,7 @@ rows:
     command: "NOT, AND, OR, EOR"
     text: "`NOT`, `AND`, `OR` and `EOR` on a Quick or untyped value work on its whole part (rounded down): untyped flags toggled with `NOT`, and `If h OR g` with a fraction below 1, give other results than in the original."
     short: "Work on the whole part (rounded down) of a Quick or untyped value."
-    page: compiler
+    page: expressions
     anchor: quick-bit-operators
     highlight: true
   - issue: 1208
@@ -9054,8 +9054,8 @@ rows:
     command: "On, constants"
     text: "A negative whole constant in a Quick calculation has its exact value: `q.q=On` is -1, `q=#c` with `#c=-3` is -3, `q=1+On` 0; the original gave values just above them (-0.0000153, -2.0000153, 0.99998). `flag=On : flag=NOT flag` toggles as in the original."
     short: "A negative whole constant in a Quick calculation has its exact value: `q.q=On` is -1."
-    page: compiler
-    anchor: names-labels-and-constants
+    page: expressions
+    anchor: numbers
   - issue: 1185
     severity: 4
     topic: "Compiler"
@@ -9063,7 +9063,7 @@ rows:
     command: ""
     text: "An operator whose right operand needs a ninth register, such as `a+b*c` as the 7th or a later argument of a statement or function, is the compile error \"Expression too Complex\" (write `b*c+a` or `a+(b*c)`); the original computed a wrong value or crashed the program or the compiler."
     short: "An expression needing a ninth register is the compile error \"Expression too Complex\"."
-    page: compiler
+    page: expressions
     anchor: expression-too-complex
   - issue: 1187
     severity: 1
@@ -9072,7 +9072,7 @@ rows:
     command: "If, While, Until"
     text: "A Float condition (`If f`, `While f*g`, `Until Abs(f)`) tests its own value; the original tested what an earlier statement had left in a register, so `If f` could be false for `f=1.5`, `While z` could run without end for `z=0`, and a condition's result depended on the commands before it. Comparisons such as `If f<>0` are unchanged."
     short: "A Float condition (`If f`, `While f*g`, `Until Abs(f)`) tests its own value."
-    page: compiler
+    page: expressions
     anchor: float-condition
   - issue: 1190
     severity: 5
@@ -9081,7 +9081,7 @@ rows:
     command: ""
     text: "A constant operation whose code ends exactly at the end of the object buffer does not crash or hang the compiler; the original ran on into the memory behind the buffer."
     short: "A constant operation ending exactly at the end of the object buffer does not crash the compiler."
-    page: compiler
+    page: running-blitz2
     anchor: the-compilers-memory
   - issue: 1179
     severity: 1
@@ -9090,8 +9090,8 @@ rows:
     command: ""
     text: "An array index after the first one is computed as a Long also without runtime error checking, so both builds use the same element; the original computed it as a Word there (`g(1,y*200/2)` element 52768 for `y=200` instead of 20000, `b(1,q ASL 4)` 24 instead of 16 for `q=1.5`). `ja(1,vq AND 1.5)` compiles in both builds and takes the whole part of 1.5; a constant with a point as a shift count is refused with \"Illegal Operator for Type\" in every index."
     short: "An array index after the first one is computed as a Long also without runtime error checking."
-    page: compiler
-    anchor: expressions-and-statements
+    page: expressions
+    anchor: later-array-index
   - issue: 1182
     severity: 1
     topic: "Compiler"
@@ -9099,7 +9099,7 @@ rows:
     command: ""
     text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `lb+(a=b)` -31073 for `lb=100000`, `fh+(a=b)` -1 for `fh=0.5`). A Quick keeps its fraction in arithmetic (`q+(a=b)` 0.5 for `q=1.5`); `AND`, `OR` and `EOR` take its whole part, so `If q OR (a<>b)` is false for `q=0.5`, as in the original. `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
     short: "A comparison as the right operand is converted to the left operand's type."
-    page: compiler
+    page: expressions
     anchor: float-bit-operator-comparison
   - issue: 1188
     severity: 1
@@ -9108,8 +9108,8 @@ rows:
     command: ""
     text: "A constant with a fraction keeps it when the type so far is Byte (a Byte destination, parameter, field or array element), as under a Word; the original cut it to a whole number before the operation (`rb.b=(1.5*vb)` 2 instead of 3 for `vb=2`, `cprotect.b=swordhit*.8` computed `swordhit*0`). `rb=2.0` and `Data.b 1.5` keep the original's results; `AND`, `OR`, `EOR` and `NOT` take the whole part of the constant, rounded down (`rb=1.5 AND vb` is `1 AND vb`), and a constant with a point as a shift count is refused with \"Illegal Operator for Type\"."
     short: "A constant with a fraction keeps it when the type so far is Byte."
-    page: compiler
-    anchor: expressions-and-statements
+    page: expressions
+    anchor: byte-fraction-constant
   - issue: 1189
     severity: 1
     topic: "Numbers & dates"
@@ -9126,7 +9126,7 @@ rows:
     command: "Macro"
     text: "A compile error on a line that came from a macro frees the memory of the expanded line; the original kept it until the next compile, in a nested macro the outer line's for good."
     short: "A compile error on a line that came from a macro frees the memory of the expanded line."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 1204
     severity: 5
@@ -9135,7 +9135,7 @@ rows:
     command: "Macro"
     text: "A line in the debugger's direct mode that used a macro frees the memory of the expanded line once it is compiled; the original kept it until the next macro or compile, for good if blitz2 ended first."
     short: "A direct-mode line that used a macro frees the memory of the expanded line once compiled."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 1202
     severity: 1
@@ -9144,7 +9144,7 @@ rows:
     command: "PutReg"
     text: "`PutReg` into a local variable of a procedure stores the register into the local; the original left the local unchanged and overwrote 1 to 4 bytes next to the global variables. A program that reads the local afterwards takes another way, for example GMODPLAY on the CD reports a failed module init, which the original always reported as success."
     short: "Into a local variable of a procedure stores the register into the local."
-    page: compiler
+    page: language
     anchor: inline-assembler
   - issue: 1201
     severity: 3
@@ -9162,7 +9162,7 @@ rows:
     command: "Macro"
     text: "A macro whose last line ends in `NOT`, `OR`, `MOD`, `Print`, `Len` or another token with a high low byte no longer keeps the colon of its line end; `c = !m b` with the text `NOT` compiles."
     short: "A macro whose last line ends in `NOT`, `OR`, `Print` or `Len` no longer keeps the colon of its line end."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 1207
     severity: 5
@@ -9171,7 +9171,7 @@ rows:
     command: "Macro"
     text: "The blank between a macro call and what follows it on the line is kept, so `!mw b` with the macro text `!mq` expands to `!mq b`; the original dropped it and glued a macro text ending in a letter or digit to the next name or number (`!mqb`, \"Macro not Found\" or another macro)."
     short: "The blank between a macro call and what follows it on the line is kept."
-    page: compiler
+    page: language
     anchor: macros
   - issue: 1211
     severity: 5
@@ -9180,8 +9180,8 @@ rows:
     command: "OS library functions (`Name_`)"
     text: "An OS library function after a Float calculation in the same expression no longer makes the Float operations after it go through that library: `Abs(-2)+FindTask_(0)` crashed, `x*y+IEEESPFix_(i)` gave a wrong value; an OS call before the Float part was not affected."
     short: "An OS call after a Float calculation no longer breaks the Float operations after it."
-    page: compiler
-    anchor: expressions-and-statements
+    page: compiled-programs
+    anchor: library-calls
   - issue: 1212
     severity: 5
     topic: "Compiler"
@@ -9189,8 +9189,8 @@ rows:
     command: "Assignment to an array element"
     text: "An assignment to an array element whose index calls a library function no longer takes that library as loaded on the right side, which runs first: `a(Abs(-j)) = Abs(-5)` could store -5 or crash."
     short: "An assignment to an array element whose index calls a library function stores the right value."
-    page: compiler
-    anchor: expressions-and-statements
+    page: compiled-programs
+    anchor: library-calls
   - issue: 1213
     severity: 5
     topic: "Compiler"
@@ -9198,8 +9198,8 @@ rows:
     command: "Assignment to a string array element"
     text: "An assignment to a string array element whose index works with strings (`Val`, `Mid$`, `Instr`, a string comparison, a Function with strings) stores the right string; the index overwrote it before: `s$(Val(d$)) = \"ab\"+c$` stored `2`, a zero byte and `cde`."
     short: "An assignment to a string array element whose index works with strings stores the right string."
-    page: compiler
-    anchor: expressions-and-statements
+    page: compiled-programs
+    anchor: library-calls
   - issue: 1214
     severity: 5
     topic: "Compiler"
@@ -9207,8 +9207,8 @@ rows:
     command: "Assignment to a number array element"
     text: "An assignment to a number array element whose index works with strings no longer builds a string of its right side at a stray address: after `Read t$`, `a(Val(d$)) = Len(c$+\"x\")` overwrote the next `Data` item and the next `Read` crashed."
     short: "A number array element whose index works with strings is assigned without a stray string."
-    page: compiler
-    anchor: expressions-and-statements
+    page: compiled-programs
+    anchor: library-calls
   - issue: 1218
     severity: 5
     topic: "Compiler"
@@ -9216,7 +9216,7 @@ rows:
     command: "AND, OR, EOR"
     text: "`AND`, `OR` and `EOR` of two Byte values with different signs give the right result when it is used as a Word or Long; the original left a wrong upper byte (`If (mb AND zb)=zw` was false for `mb.b=-2`, `zb.b=0`, `zw.w=0`)."
     short: "Of two Byte values with different signs give the right result when it is used as a Word or Long."
-    page: compiler
+    page: expressions
     anchor: expressions-and-statements
   - issue: 1216
     severity: 1
@@ -9225,7 +9225,7 @@ rows:
     command: "+, -, *, /, Mod, AND, OR, EOR, NOT, LSL, LSR, ASL, ASR"
     text: "Every operation is typed by its own two operands and the type the result is wanted in, so the order of the operands does not matter (`NPrint 1+1+1+q` and `NPrint q+1+1+1` both 4.5 for `q=1.5`), a chain with a Quick and a Long is computed exactly and rounded once (`r.l=l+q+p` 14 for `l=10`, `p=2.75`) and `Mod` with a fraction is exact (`x.q=q Mod 2` 1.5 for `q=7.5`); the original typed from left to right and gave 4, 13 and 1. A constant with a point as a shift count (`vb LSL 2.0`) is refused with \"Illegal Operator for Type\"."
     short: "Every operation is typed by its own two operands and the wanted result type, not left to right."
-    page: compiler
+    page: expressions
     anchor: operand-order
     highlight: true
   - issue: 1183
@@ -9235,7 +9235,7 @@ rows:
     command: "=, <>, <, >, <=, >="
     text: "A left operand of a comparison that is a calculation is computed by its own operands: `r.l=(q*2>2.4)` is -1 for `q=1.25`, `rf.f=(100000001>l3)` -1 for `l3=100000000`; the original computed it in the destination's type first and gave 0 for both."
     short: "A left operand of a comparison that is a calculation is computed by its own operands."
-    page: compiler
+    page: expressions
     anchor: quick-compare
   - issue: 1219
     severity: 5
@@ -9244,5 +9244,5 @@ rows:
     command: "Mod"
     text: "A constant Quick `Mod` by a divisor below 1 (`5 Mod 0.5`) compiles and gives the exact result (0; `5.25 Mod 0.5` gives 0.25); the original crashed the compiler with \"Software Failure\"."
     short: "`5 Mod 0.5` compiles and gives the exact `Mod`."
-    page: compiler
+    page: expressions
     anchor: mod-fraction-divisor

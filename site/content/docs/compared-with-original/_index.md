@@ -32,7 +32,7 @@ against the original yourself.
   usually in the way it was always meant to.
   Most fixes concern rare cases: an error without the debugger, a value at
   the edge of its range, a resource that is missing.
-* **The type of each operation.** The port decides the type of every
+* **The expression type system.** The port decides the type of every
   operation in an expression by its own operands and the type the result
   is wanted in, where the original went from left to right. Programs that
   mix Quicks with other types can get other, mostly more exact, results.
@@ -86,11 +86,13 @@ that shows the fix; the pages link them.
 
 {{< cards >}}
   {{< card link="important-fixes" title="Important Fixes & Breaking Changes" subtitle="All fixed bugs in one table, by what they can change in an existing program." >}}
-  {{< card link="compiler" title="Compiling" subtitle="Fixed bugs in what the compiler makes of a source, from operators and arrays to include files and macros." >}}
-  {{< card link="running-blitz2" title="Running blitz2" subtitle="Fixed bugs of blitz2 as a program: loading the libraries, starting and ending, and the editor's compiler menu." >}}
+  {{< card link="language" title="Language" subtitle="Fixed bugs in how the compiler reads a source: arrays, NewTypes, procedures, names, include files and macros." >}}
+  {{< card link="expressions" title="Expressions" subtitle="Fixed bugs in the value of an expression: operators, numbers, comparisons and Quicks in Long computations." >}}
+  {{< card link="expressions/type-system" title="Expression type system" subtitle="How the original and the port type each operation of an expression, with the results that differ, by example." >}}
+  {{< card link="compiled-programs" title="Compiled programs" subtitle="Fixed bugs in the generated program: AmigaOS functions and objects, the end of a program, the executable." >}}
+  {{< card link="running-blitz2" title="Running blitz2" subtitle="Fixed bugs of blitz2 as a program: loading the libraries, starting and ending, its memory, and the editor's compiler menu." >}}
   {{< card link="editor" title="Editor" subtitle="Fixed bugs of the editor TED: blocks, JOIN, accented letters, loading, saving, options and low memory." >}}
   {{< card link="libraries" title="Libraries" subtitle="Fixed bugs of the command libraries, of AmigaOS calls and of the RWE userlibs, one page per library." >}}
-  {{< card link="expression-types" title="The type of each operation" subtitle="How the original and the port type each operation of an expression, with the results that differ, by example." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler and the libraries accept beyond Blitz Basic 2." >}}
   {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}
   {{< card link="comparing" title="Comparing with the original yourself" subtitle="Compile your own program with both compilers and compare the results." >}}

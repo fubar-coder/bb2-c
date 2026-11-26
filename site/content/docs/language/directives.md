@@ -36,9 +36,9 @@ pic: IncBin "title.raw"     ; ?pic is the address of the bytes
 as `"dh0:inc/a.bb2"`, is used as it is. The names can be written with or
 without quotes; with quotes they are safe from the editor's
 tokenising, and only a comment may follow them
-([Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/compiler#text-after-path" >}})).
+([Text after `IncDir "…"`]({{< relref "/docs/compared-with-original/language#text-after-path" >}})).
 A path that is too long is the compile error "Path too Long"
-([Paths that are too long]({{< relref "/docs/compared-with-original/compiler#path-too-long" >}})).
+([Paths that are too long]({{< relref "/docs/compared-with-original/language#path-too-long" >}})).
 
 Precompiled NewTypes, macros and constants come from residents, which the
 compiler options load before the source
@@ -156,7 +156,7 @@ Without the tildes the line would read `NPrint var2+1`. Inside a string,
 
 A macro text has at most the size of the **Macro Buffer** of the
 compiler options
-([A macro larger than the Macro Buffer]({{< relref "/docs/compared-with-original/compiler#macro-buffer" >}})).
+([A macro larger than the Macro Buffer]({{< relref "/docs/compared-with-original/language#macro-buffer" >}})).
 
 ## Settings in the source
 

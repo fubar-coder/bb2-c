@@ -1,8 +1,9 @@
 ---
 title: Extensions
-weight: 7
+weight: 8
 description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, the rule that keeps old sources unchanged, the four functions it compiles faster, the animations LoadShape loads, and the forms the original refused that fixes of bugs compile.
 aliases: [/docs/compared-with-original/new-errors/refused-forms/]
+prev: /docs/compared-with-original/libraries
 ---
 
 Before this page you should know how the compiler options work
@@ -190,7 +191,7 @@ stopped with "Illegal Operator for Type" in line 2.
 **With the port.** `AND`, `OR`, `EOR` and `NOT` take the whole part of a
 constant with a fraction, rounded down, in every type: the program
 prints `1001` (1000 OR 1). A Float variable is still refused
-([The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
+([Expression type system]({{< relref "/docs/compared-with-original/expressions/type-system#bit-operators" >}})).
 
 **What to change.** Nothing. A source that must also compile with the
 original writes the whole number, `vw OR 1`.

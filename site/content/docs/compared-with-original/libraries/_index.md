@@ -1,6 +1,6 @@
 ---
 title: Libraries
-weight: 5
+weight: 7
 description: Fixed bugs of Blitz Basic 2 in the command libraries, in AmigaOS calls and in the RWE userlibs, one page per library, with examples of the ones ordinary programs meet.
 aliases: [/docs/compared-with-original/fixed-bugs/libraries/, /docs/compared-with-original/new-errors/runtime-errors/]
 # the entries of the old page new-errors/runtime-errors, and those that
