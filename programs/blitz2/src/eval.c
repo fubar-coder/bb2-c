@@ -6663,6 +6663,162 @@ static void p5wholediv(UWORD tok)
     p5patch(done);
 }
 
+/* the follow-up of task 4.3 (decision "expr-tree-5 4.3 follow-up: a whole
+   Quick divisor for Mod"): q48mod's exact Mod of a and b, a - trunc(a /
+   b) * b plus b when negative (exprarith_q48's rule), for a whole b = m
+   << 16 (m not 0, |m| <= 32768) is the remainder of |a|'s whole part by
+   |m| with |a|'s fraction below it, a's sign applied, b added when that is
+   negative.  p5wholemod: a 48.16 dividend (d0/d1, any value) by a 16.16
+   divisor (d2/d3, its sign extension) in p5callin's frame, tested at run
+   time: the 48 bits of the whole part by three DIVU (each digit's
+   quotient fits a word); a fraction or 0 calls the routine tok (its Mod by
+   0: the dividend).  The host test test_exprarith.cpp ("Mod by a whole
+   divisor") checks the steps against exprarith_q48. */
+static void p5wholemod(UWORD tok)
+{
+    ULONG frac, nul, pos, rzero, done;
+    static const UWORD digits[] = {
+        0x7400,                 /* moveq #0,d2 */
+        0x4841,                 /* swap d1 */
+        0x3401,                 /* move.w d1,d2: 0:w2 */
+        0x84c3,                 /* divu.w d3,d2 */
+        0x4841,                 /* swap d1 */
+        0x3401,                 /* move.w d1,d2: r:w1 */
+        0x84c3,                 /* divu.w d3,d2 */
+        0x4840,                 /* swap d0 */
+        0x3400,                 /* move.w d0,d2: r:w0 */
+        0x84c3,                 /* divu.w d3,d2 */
+        0x4840,                 /* swap d0 */
+        0x3400,                 /* move.w d0,d2: r:fraction, |a| Mod |b| */
+        0x7200,                 /* moveq #0,d1 */
+        0x2002,                 /* move.l d2,d0 */
+        0x241f,                 /* move.l (a7)+,d2: b */
+        0x4a9f,                 /* tst.l (a7)+: the sign of a */
+    };
+    UWORD i;
+
+    p5w(0x4a42);                                /* tst.w d2: a fraction */
+    frac = p5bra(0x6600);                       /* bne.s .call */
+    p5w(0x4a82);                                /* tst.l d2 */
+    nul = p5bra(0x6700);                        /* beq.s .call */
+    p5w(0x2f01);                                /* move.l d1,-(a7): the sign of a */
+    p5w(0x6a04);                                /* bpl.s */
+    p5w(0x4480);                                /* neg.l d0 */
+    p5w(0x4081);                                /* negx.l d1: |a| */
+    p5w(0x2602);                                /* move.l d2,d3 */
+    p5w(0x6a02);                                /* bpl.s */
+    p5w(0x4483);                                /* neg.l d3 */
+    p5w(0x4843);                                /* swap d3: |m| */
+    p5w(0x2f02);                                /* move.l d2,-(a7): b */
+    for (i = 0; i < sizeof digits / sizeof digits[0]; i++)
+        p5w(digits[i]);
+    pos = p5bra(0x6a00);                        /* bpl.s .done */
+    p5w(0x4480);                                /* neg.l d0 */
+    p5w(0x4081);                                /* negx.l d1 */
+    rzero = p5bra(0x6a00);                       /* bpl.s .done: 0 */
+    p5w(0x7600);                                /* moveq #0,d3 */
+    p5w(0x4a82);                                /* tst.l d2 */
+    p5w(0x6a02);                                /* bpl.s */
+    p5w(0x76ff);                                /* moveq #-1,d3 */
+    p5w(0xd082);                                /* add.l d2,d0 */
+    p5w(0xd383);                                /* addx.l d3,d1: + b */
+    done = p5bra(0x6000);                       /* bra.s .done */
+    p5patch(frac);
+    p5patch(nul);
+    tokejsr(tok);                               /* .call */
+    p5patch(pos);
+    p5patch(rzero);
+    p5patch(done);
+}
+
+/* the Mod of two 16.16 values a in D(r) and b in D(r+1) (the exact Mod,
+   p5bin) for a whole b as p5wholemod: one DIVU of |a|'s whole part (at
+   most 32768) by |m|, the result in D(r).  cst: b is the constant m << 16
+   (m not 0), no test; else b is tested at run time and a fraction or 0
+   calls q48mod as before (its trap of a divisor 0) */
+static void p5qmod(UWORD r, BOOL cst, LONG m)
+{
+    UWORD a = r, b = r + 1, t, u;
+    ULONG frac = 0, nul = 0, pos, rzero, done;
+
+    if (!cst) {
+        p5w(0x4a40 | b);                        /* tst.w Db: a fraction */
+        frac = p5bra(0x6600);                   /* bne.s .call */
+        p5w(0x4a80 | b);                        /* tst.l Db */
+        nul = p5bra(0x6700);                    /* beq.s .call */
+    }
+    p5scratch(r, cst ? 1 : 2);
+    t = p5scr[0];
+    u = cst ? b : p5scr[1];
+    if (!cst) {
+        p5w(0x2000 | (u << 9) | b);             /* move.l Db,Du */
+        p5w(0x6a02);                            /* bpl.s */
+        p5w(0x4480 | u);                        /* neg.l Du: |m|:0 */
+    }
+    p5w(0x2000 | (t << 9) | a);                 /* move.l Da,Dt */
+    p5w(0x6a02);                                /* bpl.s */
+    p5w(0x4480 | t);                            /* neg.l Dt: |a| */
+    p5w(0x3000 | (u << 9) | t);                 /* move.w Dt,Du: the fraction */
+    if (!cst)
+        p5w(0x4840 | u);                        /* swap Du: |m| in the low word */
+    p5w(0x4240 | t);                            /* clr.w Dt */
+    p5w(0x4840 | t);                            /* swap Dt: the whole part */
+    if (cst) {
+        p5w(0x80fc | (t << 9));                 /* divu.w #|m|,Dt */
+        p5w((UWORD)(m < 0 ? -m : m));
+    } else {
+        p5w(0x80c0 | (t << 9) | u);             /* divu.w Du,Dt */
+        p5w(0x4840 | u);                        /* swap Du: the fraction */
+    }
+    p5w(0x3000 | (t << 9) | u);                 /* move.w Du,Dt: the remainder, the fraction */
+    p5w(0x4a80 | a);                            /* tst.l Da */
+    pos = p5bra(0x6a00);                        /* bpl.s .pos */
+    p5w(0x4480 | t);                            /* neg.l Dt */
+    rzero = p5bra(0x6a00);                       /* bpl.s .pos: 0 */
+    if (cst) {
+        p5w(0x0680 | t);                        /* addi.l #b,Dt */
+        p5l((ULONG)m << 16);
+    } else
+        p5w(0xd080 | (t << 9) | b);             /* add.l Db,Dt */
+    p5patch(pos);
+    p5patch(rzero);
+    p5w(0x2000 | (a << 9) | t);                 /* .pos: move.l Dt,Da */
+    p5scratchend(r);
+    if (cst)
+        return;
+    done = p5bra(0x6000);                       /* bra.s .done */
+    p5patch(frac);
+    p5patch(nul);
+    p5callin(q48mod, r, T_QUICK, FALSE, T_QUICK, FALSE, FALSE, TRUE);   /* .call */
+    p5callout(r, FALSE);
+    p5patch(done);
+}
+
+/* the divisor of a 16.16 Mod (p5qmod) that is a whole constant m, not 0,
+   that 16.16 takes exactly */
+static BOOL p5modconst(const struct p5node *R, LONG *m)
+{
+    struct p5q v;
+
+    if (!p5folded(&R->t) || R->df != ETF_TYPE
+        || (R->dt != T_BYTE && R->dt != T_WORD && R->dt != T_LONG && R->dt != T_QUICK))
+        return FALSE;
+    v = p5qval(&R->t);
+    if (!v.ok || v.d != 1 || v.n < -32768 || v.n > 32767 || !v.n)
+        return FALSE;
+    *m = (LONG)v.n;
+    return TRUE;
+}
+
+/* a constant divisor of a Mod that p5modconst does not take: the
+   routine without the run-time test */
+static BOOL p5modfrac(const struct p5node *R)
+{
+    LONG m;
+
+    return p5folded(&R->t) && !p5modconst(R, &m);
+}
+
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
@@ -6692,10 +6848,14 @@ static void p5bin(struct p5node *p, UWORD r)
             tok = p->want == T_QUICK ? q48divq : p->want == T_WORD ? q48divw : p->want == T_BYTE ? q48divb : q48div;
             break;
         }
-        if (op == ETO_DIV && !rw && rt == T_QUICK && !p5prep) {
-            /* a 16.16 divisor: whole at run time, the division inline */
+        if ((op == ETO_DIV || (op == ETO_MOD && !p5modfrac(R))) && !rw && rt == T_QUICK && !p5prep) {
+            /* a 16.16 divisor: whole at run time, the division or Mod
+               inline (not a Mod by a constant with a fraction) */
             p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
-            p5wholediv(tok);
+            if (op == ETO_DIV)
+                p5wholediv(tok);
+            else
+                p5wholemod(tok);
         } else
             p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
         if (op == ETO_ADD) {
@@ -6800,10 +6960,18 @@ static void p5bin(struct p5node *p, UWORD r)
         T = o->path == ETY_Q16 ? T_QUICK : o->las;
         if (op == ETO_MOD && (p->dt == T_QUICK || p->dt == T_FLOAT)) {
             /* the exact Mod (an operand with a fraction) */
+            LONG m;
+
             p5operands(L, R, r, q, p->dt, p->dt);
             if (p->dt == T_FLOAT)
                 p5fmod(r);
+            else if (p5modconst(R, &m)) {
+                if (!p5prep)
+                    p5qmod(r, TRUE, m);         /* a whole constant divisor */
+            } else if (!p5prep && !p5folded(&R->t))
+                p5qmod(r, FALSE, 0);            /* whole at run time, else q48mod */
             else {
+                /* a constant with a fraction (or 0, the trap) */
                 p5callin(q48mod, r, T_QUICK, FALSE, T_QUICK, FALSE, FALSE, TRUE);
                 p5callout(r, FALSE);
             }
