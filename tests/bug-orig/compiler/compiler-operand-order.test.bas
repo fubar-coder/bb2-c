@@ -47,7 +47,7 @@
 !EndTestCase
 
 !TestCase{if_forms}
-  l1.l=10 : w.w=3 : q.q=1.2 : xl.l=3 : q3.q=2 : r.l=0 : rf.f=0 : rq.q=0
+  l1.l=10 : w.w=3 : q.q=1.2 : xq.q=3 : q3.q=2 : r.l=0 : rf.f=0 : rq.q=0
   rf=(l1/3>3.2)
   !CheckFltNear{rf,-1,0.001,"float_dest"}
   rq=(l1/3>3.2)
@@ -58,7 +58,7 @@
   !CheckEq{r,-1,"if_quotient"}
   r=0 : If w/2>q Then r=-1
   !CheckEq{r,-1,"if_word_half_greater"}
-  r=0 : If w/2*2<>xl Then r=-1
+  r=0 : If w/2*2<>xq Then r=-1
   !CheckEq{r,0,"if_word_half_twice_differs"}
   r=0 : If w/2*2=q3 Then r=-1
   !CheckEq{r,0,"if_word_half_twice_equals"}
