@@ -1,13 +1,13 @@
 ---
 title: Bugs not fixed yet
-weight: 6
+weight: 8
 description: The known bugs of Blitz Basic 2 that the BB2 C port still shows, where they are recorded, and the tests that check the correct behaviour.
 aliases:
   - /docs/compared-with-original/kept-bugs/
 ---
 
-Before this page you should know which bugs have been fixed ([Fixed
-original bugs]({{< relref "/docs/compared-with-original/fixed-bugs" >}})).
+Before this page you should know which bugs have been fixed ([Important
+Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}})).
 
 If a program behaves strangely with the BB2 C port, the first question is
 whether it behaves the same way with the original. Often it does: the

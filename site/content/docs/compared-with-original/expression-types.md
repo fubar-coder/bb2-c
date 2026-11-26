@@ -1,9 +1,8 @@
 ---
 title: The type of each operation
-weight: 3
+weight: 6
 description: How Blitz Basic 2 and the BB2 C port decide the type in which each operation of an expression is computed, with copyable programs that give the original's and the port's output - the order of the operands, chains, a Quick beside a Long, Mod, comparisons, bit operators, shifts, Select and the edge cases.
-prev: /docs/compared-with-original/fixed-bugs/editor
-next: /docs/compared-with-original/new-errors
+prev: /docs/compared-with-original/libraries
 ---
 
 The same sum, written in another order, gives another result in Blitz
@@ -134,7 +133,7 @@ result is stored: 10+1.5+2.75 is 14.25, stored as 14, and (1.5+2.75)*10
 is 42.5, stored as 42. A bit operator or a shift takes the rounded value
 of the chain. More single operations of a Quick in a Long computation,
 such as `r.l=q*2` and `r.l=l/q`, are on
-[A Quick in a Long computation]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#quick-long-arithmetic" >}}).
+[A Quick in a Long computation]({{< relref "/docs/compared-with-original/compiler#quick-long-arithmetic" >}}).
 
 ## A Quick beside a Long {#quick-and-long}
 
@@ -217,7 +216,7 @@ Since the right side of `ld/3>3.2` has a fraction, the division is
 computed with its fraction too. The destination only receives the -1 or
 0. A comparison whose left side is a single variable, such as `r.l=(q>1)`,
 is on
-[A comparison with a Quick, or of large Longs]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#quick-compare" >}}).
+[A comparison with a Quick, or of large Longs]({{< relref "/docs/compared-with-original/compiler#quick-compare" >}}).
 
 ## Bit operators with a fraction {#bit-operators}
 

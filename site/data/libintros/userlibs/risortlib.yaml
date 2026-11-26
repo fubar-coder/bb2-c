@@ -35,6 +35,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in risortlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/risortlib#risortlib-fixes" >}}).
+  [Fixes in risortlib]({{< relref "/docs/compared-with-original/libraries/userlibs/risortlib#risortlib-fixes" >}}).
 
   *Based on the RI Sort Lib guide by Reflective Images.*

@@ -1,6 +1,6 @@
 {{- /*
   Checks the data of the overview of fixed original bugs against the
-  fixed-bugs pages and fails the build (errorf) for every problem:
+  pages of fixed bugs and fails the build (errorf) for every problem:
 
   * a levels list that is not the five levels 1 to 5 in this order, each
     with a name and a text (the shortcode counts the rows of levels 1
@@ -11,9 +11,9 @@
     boolean;
   * an issue that is a row twice, or a row and a notRows entry;
   * a row whose anchor is no heading id of its page;
-  * an issue linked on a fixed-bugs page (the section, its pages and the
-    pages of its subsections) that is neither a row nor on the notRows
-    list (a raw-text scan of the pages' Markdown).
+  * an issue linked on a page of fixed bugs (Compiling, Running blitz2,
+    Editor, and Libraries with the pages below it) that is neither a row
+    nor on the notRows list (a raw-text scan of the pages' Markdown).
 
   Called by the shortcode fix-overview with
   (dict "data" $data "name" $name), $name the data file's key for the
@@ -22,10 +22,15 @@
 */ -}}
 {{- $d := .data -}}
 {{- $name := .name -}}
-{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
-{{- $section := site.GetPage $base -}}
-{{- if not $section -}}
-  {{- errorf "fixoverview (%s): the section %s does not exist" $name $base -}}
+{{- $base := "/docs/compared-with-original" -}}
+{{- /* the pages of fixed bugs, below $base; the rows name them in "page" */ -}}
+{{- $fixPages := slice -}}
+{{- range slice "compiler" "running-blitz2" "editor" "libraries" -}}
+  {{- with site.GetPage (printf "%s/%s" $base .) -}}
+    {{- $fixPages = $fixPages | append . -}}
+  {{- else -}}
+    {{- errorf "fixoverview (%s): the page %s/%s does not exist" $name $base . -}}
+  {{- end -}}
 {{- end -}}
 {{- $topics := $d.topics | default slice -}}
 {{- $levels := slice -}}
@@ -79,13 +84,16 @@
   {{- end -}}
   {{- $seen = merge $seen (dict $id true) -}}
 {{- end -}}
-{{- with $section -}}
-  {{- /* the section and every page below it, also the pages of its
-    subsections (the libraries' pages) */ -}}
-  {{- $pages := slice . -}}
+{{- with $fixPages -}}
+  {{- /* the pages of fixed bugs and every page below them (the
+    libraries' pages) */ -}}
+  {{- $pages := . -}}
   {{- range site.Pages -}}
-    {{- if .IsDescendant $section -}}
-      {{- $pages = $pages | append . -}}
+    {{- $p := . -}}
+    {{- range $fixPages -}}
+      {{- if $p.IsDescendant . -}}
+        {{- $pages = $pages | append $p -}}
+      {{- end -}}
     {{- end -}}
   {{- end -}}
   {{- range $pages -}}

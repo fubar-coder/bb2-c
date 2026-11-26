@@ -28,7 +28,7 @@ A comparison gives -1 for true and 0 for false. The original's `=<` was
 true wherever the two values differ, without any message. Where a source
 meant less-or-equal, it now does what it says; where it relied on "not
 equal", write `<>`. The bug is shown in full on
-[`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}).
+[`=<` meant "not equal"]({{< relref "/docs/compared-with-original/compiler#less-or-equal" >}}).
 
 Issue: [The operator =< meant "not equal" (#9)](https://github.com/fubar-coder/bb2-c/issues/9).
 
@@ -189,7 +189,7 @@ End
 
 The port converts the comparison's result to the type of the left
 operand instead
-([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})).
+([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/compiler#expressions-and-statements" >}})).
 A Float left of `AND`, `OR`, `EOR` or a shift is then "Illegal Operator
 for Type", as it is with any other right operand.
 

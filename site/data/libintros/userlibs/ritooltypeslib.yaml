@@ -33,6 +33,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ritooltypeslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ritooltypeslib#ritooltypeslib-fixes" >}}).
+  [Fixes in ritooltypeslib]({{< relref "/docs/compared-with-original/libraries/userlibs/ritooltypeslib#ritooltypeslib-fixes" >}}).
 
   *Based on the RI ToolTypes Lib guide by Reflective Images.*

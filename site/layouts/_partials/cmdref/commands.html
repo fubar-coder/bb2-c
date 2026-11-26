@@ -54,7 +54,7 @@
     {{- $where = cond $bycmd "below with the command it concerns" "at the end of this page" -}}
   {{- end -}}
   {{- if where . "page" $.fixpage -}}
-    {{- $where = printf "%s and on the page [%s]({{< relref \"/docs/compared-with-original/fixed-bugs/%s\" >}}) of the fixed original bugs" $where (path.Base $.fixpage) $.fixpage -}}
+    {{- $where = printf "%s and on the page [%s]({{< relref \"/docs/compared-with-original/%s\" >}}) of the fixed original bugs" $where (path.Base $.fixpage) $.fixpage -}}
   {{- end -}}
   {{- $fixline = printf "The BB2 C port fixes %d %s of the original in this library, listed %s." $n (cond (eq $n 1) "bug" "bugs") $where -}}
 {{- end -}}

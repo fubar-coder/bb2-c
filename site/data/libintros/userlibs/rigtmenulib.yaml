@@ -46,6 +46,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rigtmenulib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rigtmenulib#rigtmenulib-fixes" >}}).
+  [Fixes in rigtmenulib]({{< relref "/docs/compared-with-original/libraries/userlibs/rigtmenulib#rigtmenulib-fixes" >}}).
 
   *Based on the RI GTMenus Lib guide by Reflective Images (Red When Excited).*

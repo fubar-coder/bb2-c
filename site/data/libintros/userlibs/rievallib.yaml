@@ -49,6 +49,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rievallib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rievallib#rievallib-fixes" >}}).
+  [Fixes in rievallib]({{< relref "/docs/compared-with-original/libraries/userlibs/rievallib#rievallib-fixes" >}}).
 
   *Based on the RI Eval Lib guide by Reflective Images.*

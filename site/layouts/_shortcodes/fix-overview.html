@@ -19,7 +19,7 @@
 {{- if not $d -}}
   {{- errorf "fix-overview: no data file %q" $name -}}
 {{- end -}}
-{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
+{{- $base := "/docs/compared-with-original" -}}
 {{- $rows := sort (sort ($d.rows | default slice) "issue") "severity" -}}
 {{- $levelName := dict -}}
 {{- range $d.levels }}{{ $levelName = merge $levelName (dict (string .level) .name) }}{{ end -}}

@@ -98,6 +98,26 @@ reads it as a new key and the build fails ("mapping value is not
 allowed"). Quote such a value, or write it as a block scalar (`|` or
 `>`), as `intro` and `notes` above.
 
+## The chapter "Differences from the original"
+
+The chapter (`content/docs/compared-with-original/`) is flat: its pages
+are, in this order, "Important Fixes & Breaking Changes"
+(`important-fixes.md`, the overview table below), the pages of fixed
+bugs "Compiling" (`compiler.md`), "Running blitz2" (`running-blitz2.md`),
+"Editor" (`editor/index.md`) and "Libraries" (`libraries/`, with its
+groups `commands/`, `userlibs/` and `amigaos.md`), then "The type of each
+operation", "Extensions", "Bugs not fixed yet" and "Comparing with the
+original yourself". A fixed bug is described once, on its page of fixed
+bugs; a fix that makes the port refuse a source or stop with a new runtime
+error (levels 3 and 4) is described there with its example and what to
+change in a source.
+
+A page keeps the URLs that readers may have bookmarked as `aliases` in
+its front matter (the pages of fixed bugs: below `fixed-bugs/`). The
+template `layouts/alias.html` makes the page at such a URL; it forwards
+to the page and keeps the anchor of the link. A page that moves gets an
+alias for its old URL.
+
 ## The overview of fixed bugs
 
 The page "Important Fixes & Breaking Changes"
@@ -110,7 +130,7 @@ add sorting and filters. The file has four parts:
 * `levels`: the five severity levels, each with `level` (1-5), `name` and
   `text`, shown on the page and in the filter.
 * `topics`: the list of topics a row may have.
-* `notRows`: issues linked on a fixed-bugs page that are not a row of their
+* `notRows`: issues linked on a page of fixed bugs that are not a row of their
   own (a cross-reference to a kept bug, for example), each with `issue` and
   `reason`.
 * `rows`: one entry per fixed issue:
@@ -123,7 +143,7 @@ add sorting and filters. The file has four parts:
                          # separated by ", "), or "Compiler" or "TED"
     command: "RenderToBitmap, RenderPoly"   # may be ""
     text: "One sentence for the reader: what the port does, and what the original did."
-    page: libraries/commands/polylib   # the fixed-bugs page: compiler,
+    page: libraries/commands/polylib   # the page of fixed bugs: compiler,
                          # running-blitz2, editor, libraries (the index),
                          # libraries/commands/NAME, libraries/userlibs/NAME
                          # or libraries/amigaos
@@ -144,16 +164,14 @@ add sorting and filters. The file has four parts:
   The page's warning box shows only the rows with `highlight: true` (a
   boolean; any level), the few fixes an ordinary program meets most
   easily, and points to the table for the count of all rows of levels 1
-  and 2. Keep it to about three to six rows, the same set as the list
-  "Changes for existing programs" on the fixed-bugs index page, which is
-  written by hand.
+  and 2. Keep it to about three to six rows.
 
-Every fix that gets an entry on a fixed-bugs page also gets its row here.
+Every fix that gets an entry on a page of fixed bugs also gets its row here.
 The build checks the file (`layouts/_partials/fix-overview/check.html`)
 and fails when the levels are not the five levels 1 to 5, when a row lacks
 a field, has an unknown level or topic, names an
 anchor that is no heading of its page, or appears twice, and when an issue
-linked on a fixed-bugs page has no row and is not on `notRows`. A list
+linked on a page of fixed bugs has no row and is not on `notRows`. A list
 entry under a `###` group heading uses that heading's id as its anchor;
 where two headings of a page have the same text, the second gets an
 explicit id (`### Other fixes {#rwe-other-fixes}`).
@@ -168,7 +186,7 @@ without them.
 ## The pages of fixed library bugs
 
 The fixed bugs of the libraries have one page per library, in
-`content/docs/compared-with-original/fixed-bugs/libraries/`:
+`content/docs/compared-with-original/libraries/`:
 `commands/NAME.md` for a command library of acidlibs, `userlibs/NAME.md`
 for an RWE userlib, `amigaos.md` for the calls of AmigaOS functions. A fix
 that concerns several libraries goes to the page of the first of them; a
@@ -189,7 +207,7 @@ The links between these pages and the command reference are made from
 * On these pages, a link to an issue is followed by the badge of its
   row's level and by links to the row's commands in the command
   reference (the link render hook in
-  `layouts/docs/compared-with-original/fixed-bugs/libraries/_markup/`).
+  `layouts/docs/compared-with-original/libraries/_markup/`).
   A command links to its heading when the library declares a command of
   that name; a suffix in parentheses, as in `PlayTracker (effect E8x)`,
   is ignored.

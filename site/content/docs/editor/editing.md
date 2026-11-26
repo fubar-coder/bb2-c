@@ -29,7 +29,7 @@ You can type the umlauts ä ö ü Ä Ö Ü and every other Latin-1 character,
 such as ß, é or £, and the editor shows each as itself. Accented letters
 belong in strings and comments; outside them, the compiler stops with
 "Syntax Error"
-([ß, é and other accented letters]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
+([ß, é and other accented letters]({{< relref "/docs/compared-with-original/editor#latin1-in-strings" >}})).
 
 ## The keys of the text
 

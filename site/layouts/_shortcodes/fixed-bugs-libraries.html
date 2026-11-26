@@ -8,7 +8,7 @@
 */ -}}
 {{- partial "fixed-bugs/css.html" . -}}
 {{- $group := .Get "group" -}}
-{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
+{{- $base := "/docs/compared-with-original" -}}
 {{- $section := site.GetPage (printf "%s/libraries/%s" $base $group) -}}
 {{- if not $section -}}
   {{- errorf "fixed-bugs-libraries: no section %q on %s" $group .Page.RelPermalink -}}

@@ -1,6 +1,6 @@
 ---
 title: Sources that compile differently
-weight: 4
+weight: 10
 description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, the new runtime errors of the libraries and the forms only the port accepts, with what the original did and how to change them.
 ---
 
@@ -23,7 +23,7 @@ Each case on the following pages shows a short program to copy, with
 comments that give what the original did and what the port does, then
 the reason for the difference and, where a source needs it, what to
 change. Before these pages you should know the fixed bugs of the compiler
-([Fixed original bugs]({{< relref "/docs/compared-with-original/fixed-bugs" >}})).
+([Compiling]({{< relref "/docs/compared-with-original/compiler" >}})).
 
 ## Compile errors
 

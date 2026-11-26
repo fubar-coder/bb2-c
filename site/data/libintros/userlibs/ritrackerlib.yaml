@@ -31,5 +31,5 @@ intro: |
   pauses and continues the module, and `Tracker` switches the player off
   and on. The known faults of the play routine and of these commands are
   fixed
-  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ciatrklib#protracker-play-routine" >}}),
-  [Other fixes in ritrackerlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ritrackerlib#ritrackerlib-fixes" >}})).
+  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/libraries/userlibs/ciatrklib#protracker-play-routine" >}}),
+  [Other fixes in ritrackerlib]({{< relref "/docs/compared-with-original/libraries/userlibs/ritrackerlib#ritrackerlib-fixes" >}})).

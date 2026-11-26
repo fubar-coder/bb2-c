@@ -86,7 +86,7 @@ gets it from the editor.
 The port's editor still offers it this service, so the original compiler
 runs under it as before: when the memory runs out, the editor shows its
 alert and ends the compile at once, without the compiler's cleanup
-([Running blitz2]({{< relref "/docs/compared-with-original/fixed-bugs/running-blitz2#out-of-memory-during-a-compile" >}})).
+([Running blitz2]({{< relref "/docs/compared-with-original/running-blitz2#out-of-memory-during-a-compile" >}})).
 
 ## Running a program from the editor
 

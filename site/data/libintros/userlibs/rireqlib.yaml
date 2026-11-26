@@ -17,6 +17,6 @@ intro: |
   and returns the colour the user chose.
 
   The fixed bugs of the library are listed in
-  [Fixes in rireqlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rireqlib#rireqlib-fixes" >}}).
+  [Fixes in rireqlib]({{< relref "/docs/compared-with-original/libraries/userlibs/rireqlib#rireqlib-fixes" >}}).
 
   *Based on the RI Req Library guide by Steven Matty.*

@@ -2,10 +2,10 @@
 # NAME MODE FILE#N [rwe=LIB...] [REASON]: run = compiled and run, the output
 # compared with expect/GROUP/NAME.out; compile = compiled only, with the reason.
 page-project-structure-library-test-cases-1 run content/docs/project-structure/library-test-cases.md#1 rwe=riarrayslib
-page-compared-with-original-fixed-bugs-compiler-1 run content/docs/compared-with-original/fixed-bugs/compiler.md#1
-page-compared-with-original-fixed-bugs-compiler-2 run content/docs/compared-with-original/fixed-bugs/compiler.md#2
-page-compared-with-original-fixed-bugs-compiler-3 run content/docs/compared-with-original/fixed-bugs/compiler.md#3
-page-compared-with-original-fixed-bugs-compiler-4 run content/docs/compared-with-original/fixed-bugs/compiler.md#4
+page-compared-with-original-compiler-1 run content/docs/compared-with-original/compiler.md#1
+page-compared-with-original-compiler-2 run content/docs/compared-with-original/compiler.md#2
+page-compared-with-original-compiler-3 run content/docs/compared-with-original/compiler.md#3
+page-compared-with-original-compiler-4 run content/docs/compared-with-original/compiler.md#4
 page-compared-with-original-expression-types-1 run content/docs/compared-with-original/expression-types.md#1
 page-compared-with-original-expression-types-2 run content/docs/compared-with-original/expression-types.md#2
 page-compared-with-original-expression-types-3 run content/docs/compared-with-original/expression-types.md#3

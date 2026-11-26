@@ -79,7 +79,7 @@ character behind its last glyph from the memory behind the font. It
 took no third argument: the compiler refused `InstallFNS(1,f,100)`.
 
 **With the port.** A character the font has no glyph for is printed as
-a space ([Characters an FNS font has no glyph for]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rifnslib#fns-missing-glyphs" >}})).
+a space ([Characters an FNS font has no glyph for]({{< relref "/docs/compared-with-original/libraries/userlibs/rifnslib#fns-missing-glyphs" >}})).
 For that the library needs the number of glyphs. The form
 `InstallFNS(fontnum,address,characters)` gives it, counted from the
 space on; the form without it takes the 91 glyphs, from the space to

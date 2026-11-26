@@ -32,7 +32,7 @@ In the port such a letter in a name or as a statement stops the compiler
 with "Syntax Error" at its line; in AB3 mode the message is "Token Not
 Found". In a text file loaded into the original, the letter was taken for
 a keyword. The editor's side of the fix is on
-[ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}}).
+[ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/editor#latin1-in-strings" >}}).
 
 **What to change:** write names with plain letters, and accented letters
 only in strings and comments.
@@ -167,7 +167,7 @@ other kind "Illegal Procedure return", at its line. Two examples on the
 Blitz Basic 2 CD, `DARTS_POLY.BB` and `DARTS_WIRE.BB`, end the Function
 `gendart` with `End Statement` and are refused for this reason. The bug
 is shown in full on
-[`End Statement` could close a Function]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#end-of-procedure" >}}).
+[`End Statement` could close a Function]({{< relref "/docs/compared-with-original/compiler#end-of-procedure" >}}).
 
 **What to change:** close a Function with `End Function` and leave it with
 `Function Return`, a Statement with `End Statement` and `Statement Return`.

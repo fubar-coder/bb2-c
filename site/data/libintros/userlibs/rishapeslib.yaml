@@ -33,6 +33,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rishapeslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rishapeslib#rishapeslib-fixes" >}}).
+  [Fixes in rishapeslib]({{< relref "/docs/compared-with-original/libraries/userlibs/rishapeslib#rishapeslib-fixes" >}}).
 
   *Based on the RI Shapes Lib guide by Red When Excited.*

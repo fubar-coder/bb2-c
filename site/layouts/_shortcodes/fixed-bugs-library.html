@@ -1,6 +1,6 @@
 {{- /*
   The head of a page of fixed library bugs
-  (content/docs/compared-with-original/fixed-bugs/libraries/GROUP/NAME.md):
+  (content/docs/compared-with-original/libraries/GROUP/NAME.md):
   the number of fixes on the page by level, the library's page in the
   command reference, and the fixes of the library that are described on
   other pages. All from data/fixoverview.yaml: a row is on the page its
@@ -13,7 +13,7 @@
                                                    in the table of contents), or nothing
 */ -}}
 {{- $part := .Get "part" | default "head" -}}
-{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
+{{- $base := "/docs/compared-with-original" -}}
 {{- $key := strings.TrimPrefix (printf "%s/" $base) .Page.Path -}}
 {{- $lib := path.Base $key -}}
 {{- $rows := where site.Data.fixoverview.rows "page" $key -}}

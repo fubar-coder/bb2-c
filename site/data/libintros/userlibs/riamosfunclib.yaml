@@ -29,6 +29,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in riamosfunclib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riamosfunclib#riamosfunclib-fixes" >}}).
+  [Fixes in riamosfunclib]({{< relref "/docs/compared-with-original/libraries/userlibs/riamosfunclib#riamosfunclib-fixes" >}}).
 
   *Based on the RI AMOS Func Library guide by Red When Excited.*

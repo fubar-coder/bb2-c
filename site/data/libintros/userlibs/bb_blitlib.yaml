@@ -21,4 +21,4 @@ intro: |
   `UnBuffer` restores it, and shift the shape to any x position.
 
   The fixed bugs of the library are listed in
-  [Fixes in bb_blitlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/bb_blitlib#bb-blitlib-fixes" >}}).
+  [Fixes in bb_blitlib]({{< relref "/docs/compared-with-original/libraries/userlibs/bb_blitlib#bb-blitlib-fixes" >}}).

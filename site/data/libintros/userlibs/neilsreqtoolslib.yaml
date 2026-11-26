@@ -44,6 +44,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in neilsreqtoolslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/neilsreqtoolslib#neilsreqtoolslib-fixes" >}}).
+  [Fixes in neilsreqtoolslib]({{< relref "/docs/compared-with-original/libraries/userlibs/neilsreqtoolslib#neilsreqtoolslib-fixes" >}}).
 
   *Based on the documentation of ReqToolsLib by Neil O'Rourke.*

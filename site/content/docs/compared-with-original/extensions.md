@@ -1,6 +1,6 @@
 ---
 title: Extensions
-weight: 5
+weight: 7
 description: What the compiler of the BB2 C port accepts beyond Blitz Basic 2, the rule that keeps old sources unchanged, the four functions it compiles faster, and the animations LoadShape loads.
 ---
 

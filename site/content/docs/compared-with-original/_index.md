@@ -65,7 +65,7 @@ The port's editor is TED 1.1, the editor of Blitz Basic 2, translated
 like the compiler. It is checked against a build of the original editor's
 source: both are given the same key presses and their screens, requesters
 and saved files are compared. Apart from the fixed bugs of the original
-([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})),
+([Editor]({{< relref "/docs/compared-with-original/editor" >}})),
 the differences that exist are internal and cannot be seen from the
 outside.
 
@@ -83,7 +83,10 @@ that shows the fix; the pages link them.
 
 {{< cards >}}
   {{< card link="important-fixes" title="Important Fixes & Breaking Changes" subtitle="All fixed bugs in one table, by what they can change in an existing program." >}}
-  {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
+  {{< card link="compiler" title="Compiling" subtitle="Fixed bugs in what the compiler makes of a source, from operators and arrays to include files and macros." >}}
+  {{< card link="running-blitz2" title="Running blitz2" subtitle="Fixed bugs of blitz2 as a program: loading the libraries, starting and ending, and the editor's compiler menu." >}}
+  {{< card link="editor" title="Editor" subtitle="Fixed bugs of the editor TED: blocks, JOIN, accented letters, loading, saving, options and low memory." >}}
+  {{< card link="libraries" title="Libraries" subtitle="Fixed bugs of the command libraries, of AmigaOS calls and of the RWE userlibs, one page per library." >}}
   {{< card link="expression-types" title="The type of each operation" subtitle="How the original and the port type each operation of an expression, with the results that differ, by example." >}}
   {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler and the libraries accept beyond Blitz Basic 2." >}}

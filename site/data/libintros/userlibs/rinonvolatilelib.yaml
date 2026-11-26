@@ -28,6 +28,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rinonvolatilelib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rinonvolatilelib#rinonvolatilelib-fixes" >}}).
+  [Fixes in rinonvolatilelib]({{< relref "/docs/compared-with-original/libraries/userlibs/rinonvolatilelib#rinonvolatilelib-fixes" >}}).
 
   *Based on the RI NonVolatile Lib guide by Red When Excited.*

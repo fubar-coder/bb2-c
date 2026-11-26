@@ -93,7 +93,7 @@ version before that as a `.bak` file
 
 The editor behaves like the original TED 1.1, except for the original's
 bugs, which the port fixes. Those fixes are listed on the page
-[Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})
+[Editor]({{< relref "/docs/compared-with-original/editor" >}})
 of the fixed bugs.
 
 *Parts of this chapter are based on the Blitz Basic 2 manual by Acid

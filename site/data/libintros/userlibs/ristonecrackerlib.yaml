@@ -24,6 +24,6 @@ intro: |
   faster than the original's, about 4 % on a large file.
 
   The fixed bugs of the libraries are listed in
-  [Fixes in ristonecrackerlib and ristcdecrunchlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ristonecrackerlib#stonecracker-fixes" >}}).
+  [Fixes in ristonecrackerlib and ristcdecrunchlib]({{< relref "/docs/compared-with-original/libraries/userlibs/ristonecrackerlib#stonecracker-fixes" >}}).
 
   *Based on the RI STC Lib guide by Reflective Images.*

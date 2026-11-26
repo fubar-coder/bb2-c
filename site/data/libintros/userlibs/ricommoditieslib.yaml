@@ -36,6 +36,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ricommoditieslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ricommoditieslib#ricommoditieslib-fixes" >}}).
+  [Fixes in ricommoditieslib]({{< relref "/docs/compared-with-original/libraries/userlibs/ricommoditieslib#ricommoditieslib-fixes" >}}).
 
   *Based on the RI Commodities Library guide by Reflective Images (Red When Excited).*

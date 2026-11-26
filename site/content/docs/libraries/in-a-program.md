@@ -269,7 +269,7 @@ If an AmigaOS library cannot be opened, its start routine returns 0 and
 the program runs on; only a call of that library then crashes. A program
 that can do without an optional library checks for it itself before it
 uses its functions
-([Fixed original bugs]({{< relref "/docs/compared-with-original/fixed-bugs" >}})).
+([A missing AmigaOS library hung the program at its start]({{< relref "/docs/compared-with-original/libraries/amigaos#missing-os-library" >}})).
 
 ## In AB3 mode
 

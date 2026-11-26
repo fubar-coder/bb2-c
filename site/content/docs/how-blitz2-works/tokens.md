@@ -33,7 +33,7 @@ Every other Latin-1 character, such as ß or é, is stored as a
 *literal character*: the byte `$90` followed by the character's code.
 Literal characters belong in strings and comments; anywhere else the compiler
 reports an error
-([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/fixed-bugs/editor#latin1-in-strings" >}})).
+([ß, é and other accented letters were lost]({{< relref "/docs/compared-with-original/editor#latin1-in-strings" >}})).
 
 The program
 

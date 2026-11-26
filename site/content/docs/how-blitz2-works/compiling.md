@@ -168,7 +168,7 @@ Under a Quick type so far, such as a Quick destination or a variable
 without a suffix, `NOT`, `AND`, `OR` and `EOR` also take the whole part of
 a Quick (rounded down) and give a Quick, while the shifts keep the
 fraction. The details are in
-[`NOT`, `AND`, `OR` and `EOR` on a Quick]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#quick-bit-operators" >}}).
+[`NOT`, `AND`, `OR` and `EOR` on a Quick]({{< relref "/docs/compared-with-original/compiler#quick-bit-operators" >}}).
 
 ### Comparisons
 

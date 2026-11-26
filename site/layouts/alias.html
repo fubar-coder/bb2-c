@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{{- /*
+  The page at an old URL (front matter "aliases"): it sends the reader to
+  the page's current URL and, with JavaScript, keeps the anchor of the old
+  link (#heading), so that a bookmark of an entry still finds it.
+*/}}
+<html lang="en">
+<head>
+<title>{{ .Permalink }}</title>
+<link rel="canonical" href="{{ .Permalink }}">
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<script>location.replace({{ .Permalink }} + location.hash);</script>
+<meta http-equiv="refresh" content="0; url={{ .Permalink }}">
+</head>
+<body><p>This page has moved to <a href="{{ .Permalink }}">{{ .Permalink }}</a>.</p></body>
+</html>

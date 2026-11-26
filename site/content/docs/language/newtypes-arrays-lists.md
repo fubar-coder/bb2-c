@@ -87,7 +87,7 @@ structures are built
 ([A NewType that contains itself]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-contains-itself" >}})).
 A field may have a NewType that is defined further down the source; its
 size is then known only from that definition on
-([A field of a NewType defined later]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#newtype-defined-later" >}})).
+([A field of a NewType defined later]({{< relref "/docs/compared-with-original/compiler#newtype-defined-later" >}})).
 
 ## USEPATH
 
