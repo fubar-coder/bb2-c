@@ -161,6 +161,12 @@ static struct rat rat_q16(struct rat a)
     return rat_op(rat_trunc(rat_op(a, rat_int(65536), '*')), rat_int(65536), '/');
 }
 
+/* the multiple of 1/65536 rounded down (EM_R_1221) */
+static struct rat rat_q16dn(struct rat a)
+{
+    return rat_op(rat_floor(rat_op(a, rat_int(65536), '*')), rat_int(65536), '/');
+}
+
 /* a decimal literal or value text */
 static struct rat rat_text(const char *s)
 {
@@ -2519,6 +2525,7 @@ struct cev {
     int pbitk;                  /* EM_R_PBITK */
     int p48;                    /* EM_R_P48 */
     int pcmpw;                  /* EM_R_PCMPW */
+    int p1221;                  /* EM_R_1221: a 48.16 * or / under a wanted Byte, Word or Long cut down */
     int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
                                    shift or Not */
     int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
@@ -3448,7 +3455,11 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
     switch (op) {
     case EM_ADD: v = rat_op(x, y, '+'); break;
     case EM_SUB: v = rat_op(x, y, '-'); break;
-    case EM_MUL: v = rat_q16(rat_op(x, y, '*')); break;
+    case EM_MUL:
+        /* EM_R_1221: the cut at 1/65536 in the direction of the final
+           rounding, down under a wanted whole number */
+        v = c->p1221 && f == 32 && W >= TB && W <= TL ? rat_q16dn(rat_op(x, y, '*')) : rat_q16(rat_op(x, y, '*'));
+        break;
     case EM_DIV:
         if (c->pqdiv && f == 16) {
             /* EM_R_PQDIV: qdivide as it runs, its last bit (up to 1/65536
@@ -3475,7 +3486,9 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
                 if (rat_sign(x) < 0)
                     v = rat_op(rat_int(0), v, '-');
             }
-        } else
+        } else if (c->p1221 && f == 32 && W >= TB && W <= TL && !(c->pdivl && W == TL))
+            v = rat_q16dn(rat_op(x, y, '/'));   /* EM_R_1221, as * (a Long: whole towards zero below) */
+        else
             v = rat_q16(rat_op(x, y, '/'));
         if (c->pdivl && W == TL)
             v = rat_trunc(v);   /* P: a / under a wanted Long gives a whole number, as today (#1178) */
@@ -3768,6 +3781,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
             c.pbitk = (rules & EM_R_PBITK) != 0;
             c.p48 = (rules & EM_R_P48) != 0;
             c.pcmpw = (rules & EM_R_PCMPW) != 0;
+            c.p1221 = (rules & EM_R_1221) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

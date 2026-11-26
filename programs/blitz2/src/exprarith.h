@@ -76,6 +76,12 @@ int32_t exprarith_qmod_today(int32_t a, int32_t b, unsigned *flags);
  *         (a divisor 0: the dividend, as domodlong). */
 int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags);
 
+/** @brief exprarith_q48 with * and / cut down to 1/65536 instead of
+ *         towards zero: a 48.16 product or quotient under a wanted Byte,
+ *         Word or Long (the consumer ETC_FLOOR), whose value is rounded
+ *         down once (#1221); the other operations as exprarith_q48. */
+int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags);
+
 /** @brief The value of a 48.16 division by 0 under the wanted type want
  *         (design decision 6: a Quick $7FFFFFFF as qdivide, a Word 32767,
  *         a Byte 127, a Long or none the largest Long), as a 48.16 value

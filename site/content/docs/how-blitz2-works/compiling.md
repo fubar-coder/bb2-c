@@ -150,7 +150,8 @@ operation by its own operands and the type the result is wanted in
 ([#1216](https://github.com/fubar-coder/bb2-c/issues/1216)), so the order
 of the operands does not matter: a Quick and a Long are computed exactly
 (with a whole part of 48 bits), and the result is rounded once, where it
-is taken. Shifts and the logic operators (`AND`, `OR`, `EOR`, `Not`) take
+is taken (a product or quotient is cut to 1/65536 in the direction of that
+rounding). Shifts and the logic operators (`AND`, `OR`, `EOR`, `Not`) take
 the Quick rounded down, as in the original. A program that relies on the
 old result writes `Int(q)`: `r.l=Int(q)*2` gives 2.
 

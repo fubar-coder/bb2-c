@@ -131,10 +131,16 @@ found while the expression is read, as in the original):
   whole part of 48 bits and 16 bits of fraction in a register pair,
   computed exactly by the routines of the port's `compilerlib`
   (`q48add` to `q48trunc`); a Float operand makes the operation Float;
-* the value is rounded once, where it is taken: a wanted whole number its
-  whole part rounded down (a `/` at the top under a wanted Long towards
+* the value is rounded once, where it is taken: a wanted whole number the
+  exact value rounded down (a `/` at the top under a wanted Long towards
   zero), a wanted Quick its 16.16 value, no wanted type a Quick where it
-  fits, else its whole part (decided at run time for a 48.16 value);
+  fits, else rounded down to a whole number (decided at run time for a
+  48.16 value); a 48.16 product or quotient is cut to 1/65536 in the
+  direction of that rounding, down under a wanted whole number, towards
+  zero elsewhere (#1221: `r.l=q*p+l` is 4 for `q=-0.5`, `p=1/65536`,
+  `l=5`); a 16.16 operation (no Long in it, under a wanted Byte or Word)
+  keeps the original's routines, which cut towards zero (`x.w=q*p` is 0
+  there);
 * `Mod` with an operand that has a fraction (a Quick, a Float, a constant
   with a point) is exact with the whole numbers' sign rule (`NPrint q Mod
   2` is 1.5 for `q=7.5`, `f Mod g` 1.5 for 7.5 and 2); whole operands keep

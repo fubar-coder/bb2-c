@@ -282,7 +282,7 @@ run with AmiBlitz3's compiler).
 ### compilerlib: the compiler's own library (#1178)
 
 `libs/compilerlib/compilerlib.c`, system library 64030 with the tokens
-`$D600`-`$D610` (free in the port's, the CD's and AmiBlitz3's library
+`$D600`-`$D611` (free in the port's, the CD's and AmiBlitz3's library
 sets; `blitzlib numbers` checks it against acidlibs and deflibs), is not
 part of `blitz2:acidlibs`: it is a BigLib of its own
 (`build/amiga/libs/compilerlib/compilerlib.big`) that `blitz2` and
@@ -299,10 +299,12 @@ giving the largest value of a Long, a Quick, a Word or a Byte (`q48div`,
 `q48divq`, `q48divw`, `q48divb`, `$D606`-`$D609`, with their error check),
 `q48mod` (`$D60A`), the casts `l2q48`, `q2q48`, `q48floor`, `q48trunc`
 (`$D60B`-`$D60E`), `q16mod` (`$D60F`, the exact Mod of two Quicks) and
-`q48mull` (`$D610`, the exact 48.16 product of a Long and a Quick); their values are those of
+`q48mull` (`$D610`, the exact 48.16 product of a Long and a Quick) and
+`q48mulf` (`$D611`, `q48mul` cut down, #1221; `q48divw` and `q48divb` cut
+down too); their values are those of
 `programs/blitz2/src/exprarith.c`, bit for bit. Like every library it is
 copied into a program only when the program uses one of its routines, and
-then whole (1418 bytes, 1438 with runtime error checking). Register
+then whole (1518 bytes, 1538 with runtime error checking). Register
 contract of `$D600`-`$D602` and `$D60F` as longmult and longdiv: d0/d1 in, d0 out, d1
 changed, d2-d7 and a0-a6 kept; of the 48.16 routines: a in d0 (low) and d1
 (high), b in d2/d3, the result in d0/d1 (`q48floor`, `q48trunc`: d0), d2/d3

@@ -206,7 +206,10 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
                 for (enum em_ctx ctx : { EM_DL, EM_DQ, EM_DW, EM_DB }) {
                     unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DQ ? ET_QUICK : ctx == EM_DW ? ET_WORD : ET_BYTE;
                     unsigned f = 0;
-                    int64_t v = exprarith_q48(op, x, y, exprarith_div0(want), &f);
+                    // #1221: * and / cut down under a wanted whole number (a /
+                    // under a Long is whole towards zero)
+                    bool down = want != ET_QUICK && (op == ETO_MUL || (op == ETO_DIV && want != ET_LONG));
+                    int64_t v = (down ? exprarith_q48_down : exprarith_q48)(op, x, y, exprarith_div0(want), &f);
                     int32_t r;
 
                     if (want == ET_QUICK)
@@ -262,10 +265,14 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
             int64_t L = exprarith_whole_q48(l), L2 = exprarith_whole_q48(l2), Q = exprarith_q16_q48(q),
                     P = exprarith_q16_q48(p), d0 = exprarith_div0(want);
             unsigned f = 0;
-            // a / under a wanted Long: a whole number at once
+            // a / under a wanted Long: a whole number at once; * and / under
+            // a wanted whole number cut down (#1221)
             auto div = [&](int64_t a, int64_t b) {
-                int64_t v = exprarith_q48(ETO_DIV, a, b, d0, &f);
+                int64_t v = (want == ET_WORD ? exprarith_q48_down : exprarith_q48)(ETO_DIV, a, b, d0, &f);
                 return want == ET_LONG ? exprarith_whole_q48(exprarith_q48_trunc(v, ET_LONG, &f)) : v;
+            };
+            auto mul = [&](int64_t a, int64_t b) {
+                return (want == ET_QUICK ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, a, b, 0, &f);
             };
             auto take = [&](int64_t v, bool topdiv) {
                 if (want == ET_QUICK)
@@ -277,15 +284,13 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
                 const char *text;
                 int32_t r;
             } forms[] = {
-                { "l*q/l2", take(div(exprarith_q48(ETO_MUL, L, Q, 0, &f), L2), true) },
-                { "l*q*p", take(exprarith_q48(ETO_MUL, exprarith_q48(ETO_MUL, L, Q, 0, &f), P, 0, &f), false) },
-                { "l*q-l2*p",
-                  take(exprarith_q48(ETO_SUB, exprarith_q48(ETO_MUL, L, Q, 0, &f), exprarith_q48(ETO_MUL, L2, P, 0, &f),
-                                     0, &f),
-                       false) },
-                { "(l+q)*p", take(exprarith_q48(ETO_MUL, exprarith_q48(ETO_ADD, L, Q, 0, &f), P, 0, &f), false) },
+                { "l*q/l2", take(div(mul(L, Q), L2), true) },
+                { "l*q*p", take(mul(mul(L, Q), P), false) },
+                { "l*q-l2*p", take(exprarith_q48(ETO_SUB, mul(L, Q), mul(L2, P), 0, &f), false) },
+                { "(l+q)*p", take(mul(exprarith_q48(ETO_ADD, L, Q, 0, &f), P), false) },
                 { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q), L2, 0, &f), false) },
-                { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, exprarith_q48(ETO_MUL, L, Q, 0, &f), L2, 0, &f), false) },
+                { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, mul(L, Q), L2, 0, &f), false) },
+                { "q*p+l", take(exprarith_q48(ETO_ADD, mul(Q, P), L, 0, &f), false) },
             };
 
             for (const auto &fm : forms) {
@@ -301,6 +306,21 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
     CHECK(differ == 0);
     CHECK(compared > 25000);
     CHECK(model("l*q/l2", "l.l=2000000000 q=2 l2.l=4", EM_DL, DEC) == "1000000000");
+    // #1221: the cut of a product or quotient under a wanted whole number
+    // rounds down, the value is the exact one rounded down once (without
+    // the rule: towards zero first, one above)
+    const std::string tiny = "q=-0.5 p=" + q16text(1) + " l.l=5";
+    CHECK(model("q*p+l", tiny, EM_DL, DEC) == "4");
+    CHECK(model("q*p+l", tiny, EM_DL, DEC & ~EM_R_1221) == "5");
+    CHECK(model("l*p*q", tiny, EM_DW, DEC) == "-1");
+    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC) == "-1");
+    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC & ~EM_R_1221) == "0");
+    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DL, DEC) == "0");
+    unsigned f = 0;
+    CHECK(exprarith_q48_down(ETO_MUL, -0x8000, 1, 0, &f) == -1);
+    CHECK(exprarith_q48(ETO_MUL, -0x8000, 1, 0, &f) == 0);
+    CHECK(exprarith_q48_down(ETO_DIV, -3 * 65536, exprarith_whole_q48(2), 0, &f) == -0x18000);
+    CHECK(exprarith_q48_down(ETO_DIV, -1, exprarith_whole_q48(3), 0, &f) == -1);
 }
 
 TEST_CASE("exprarith: no wanted type takes a Quick when it fits, else the whole part", "[exprarith]")
@@ -452,8 +472,9 @@ uint32_t mag32(int32_t a)
 }
 
 // P5F_NDIV: two DIVU of |A| by d, the sign, under a wanted Long the cut
-// towards zero
-int32_t fast_ndiv(int32_t a, int32_t d, bool cut)
+// towards zero (cut 1), under a wanted Word or Byte a negative quotient
+// with a remainder one lower (cut 2, #1221)
+int32_t fast_ndiv(int32_t a, int32_t d, int cut)
 {
     uint32_t s = mag32(a), dm = mag32(d), t;
     uint32_t hi = s >> 16, lo = s & 0xffff, q1, q2;
@@ -463,26 +484,33 @@ int32_t fast_ndiv(int32_t a, int32_t d, bool cut)
     t = ((t % dm) << 16) | lo;                  // move.w, swap, move.w: r1:lo
     q2 = (t / dm) & 0xffff;
     s = (q1 << 16) | q2;
-    if ((a < 0) != (d < 0))
+    if ((a < 0) != (d < 0)) {
+        if (cut == 2 && (t % dm))
+            s++;                                // swap Dt, tst.w Dt, addq.l #1
         s = 0u - s;
+    }
     int32_t r = (int32_t)s;
-    if (cut && r < 0 && (r & 0xffff)) {
+    if (cut == 1 && r < 0 && (r & 0xffff)) {
         r = (int32_t)((uint32_t)r + 0x10000);
     }
-    if (cut)
+    if (cut == 1)
         r = (int32_t)((uint32_t)r & 0xffff0000u);
     return r;
 }
 
-// P5F_NMULF: (al * |X|) >> 16 + ah * |X|, the sign
-int32_t fast_nmulf(int32_t a, int32_t x)
+// P5F_NMULF: (al * |X|) >> 16 + ah * |X|, the sign; down (under a wanted
+// whole number, #1221): a negative product with cut bits one lower
+int32_t fast_nmulf(int32_t a, int32_t x, bool down = false)
 {
     uint32_t s = mag32(a), xm = mag32(x) & 0xffff;
-    uint32_t t = ((s & 0xffff) * xm) >> 16;
+    uint32_t t = ((s & 0xffff) * xm) >> 16, cutbits = ((s & 0xffff) * xm) & 0xffff;
     uint32_t r = (s >> 16) * xm + t;
 
-    if ((int32_t)((uint32_t)a ^ (uint32_t)x) < 0)
+    if ((int32_t)((uint32_t)a ^ (uint32_t)x) < 0) {
         r = 0u - r;
+        if (down && cutbits)
+            r--;                                // tst.w Dx, subq.l #1
+    }
     return (int32_t)r;
 }
 
@@ -508,6 +536,14 @@ int64_t q48(unsigned op, int64_t a, int64_t b)
     unsigned f = 0;
 
     return exprarith_q48(op, a, b, exprarith_div0(ET_QUICK), &f);
+}
+
+// the same cut down (#1221)
+int64_t q48d(unsigned op, int64_t a, int64_t b)
+{
+    unsigned f = 0;
+
+    return exprarith_q48_down(op, a, b, exprarith_div0(ET_WORD), &f);
 }
 
 // the 48.16 code's cut towards zero of a quotient (part 3)
@@ -547,11 +583,11 @@ TEST_CASE("exprarith: the fast paths of p5fast equal q48div and q48mul", "[expra
     const int32_t divs[] = { 2, 3, 10, -2, -3, 7, 100, 255, 256, 4096, 32767, 32768, 65535, -65535 };
 
     for (int32_t d : divs)
-        for (int cut = 0; cut < 2; cut++) {
+        for (int cut = 0; cut < 3; cut++) {
             int32_t bad = 0;
             bool ok = each_quick(seed, [&](int32_t a) {
-                int64_t v = q48(ETO_DIV, exprarith_q16_q48(a), exprarith_whole_q48(d));
-                if (cut)
+                int64_t v = (cut == 2 ? q48d : q48)(ETO_DIV, exprarith_q16_q48(a), exprarith_whole_q48(d));
+                if (cut == 1)
                     v = q48cut(v);
                 if (v != (int64_t)fast_ndiv(a, d, cut)) {
                     bad = a;
@@ -572,7 +608,8 @@ TEST_CASE("exprarith: the fast paths of p5fast equal q48div and q48mul", "[expra
     for (int32_t x : xs) {
         int32_t bad = 0;
         bool ok = each_quick(seed, [&](int32_t a) {
-            if (q48(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(x)) != (int64_t)fast_nmulf(a, x)) {
+            if (q48(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(x)) != (int64_t)fast_nmulf(a, x)
+                || q48d(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(x)) != (int64_t)fast_nmulf(a, x, true)) {
                 bad = a;
                 return false;
             }
@@ -582,7 +619,10 @@ TEST_CASE("exprarith: the fast paths of p5fast equal q48div and q48mul", "[expra
         CHECK(ok);
     }
     // a planted error is seen: the sign of a negative divisor dropped
-    CHECK(q48(ETO_DIV, exprarith_q16_q48(-0x30000), exprarith_whole_q48(-2)) != (int64_t)fast_ndiv(-0x30000, 2, false));
+    CHECK(q48(ETO_DIV, exprarith_q16_q48(-0x30000), exprarith_whole_q48(-2)) != (int64_t)fast_ndiv(-0x30000, 2, 0));
+    // and the cut down left out
+    CHECK(q48d(ETO_DIV, exprarith_q16_q48(-0x30001), exprarith_whole_q48(2)) != (int64_t)fast_ndiv(-0x30001, 2, 0));
+    CHECK(q48d(ETO_MUL, exprarith_q16_q48(-3), exprarith_q16_q48(0x8000)) != (int64_t)fast_nmulf(-3, 0x8000));
 }
 
 TEST_CASE("exprarith: the Word fast path of p5fast equals q48mul", "[exprarith]")
@@ -636,8 +676,9 @@ bool divu(uint32_t &d, uint32_t mm)
 }
 
 // the 48.16 dividend n (d1:d0); plant: the high digits skipped also when
-// d1 is not 0 (the planted error)
-bool fast_wdiv(int64_t n, int32_t mraw, bool ldiv, int64_t *out, bool plant = false)
+// d1 is not 0 (the planted error); down (#1221, p5divsign): a negative
+// quotient with a remainder one 1/65536 lower
+bool fast_wdiv(int64_t n, int32_t mraw, bool ldiv, int64_t *out, bool plant = false, bool down = false)
 {
     uint32_t sign = ((uint32_t)((uint64_t)n >> 32) ^ (uint32_t)mraw) >> 31;
     uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n;
@@ -675,14 +716,17 @@ bool fast_wdiv(int64_t n, int32_t mraw, bool ldiv, int64_t *out, bool plant = fa
         return false;
     d0 = (d0 & 0xffff0000u) | (d3 & 0xffff);
     uint64_t q = ((uint64_t)d1 << 32) | d0;
-    if (sign)
+    if (sign) {
+        if (down && (d3 >> 16))
+            q++;                                // clr.w d3, tst.l d3, addq.l, addq.l
         q = 0 - q;
+    }
     *out = (int64_t)q;
     return true;
 }
 
 // a whole dividend l in d0, not widened
-bool fast_wdivl(int32_t l, int32_t mraw, bool ldiv, int64_t *out)
+bool fast_wdivl(int32_t l, int32_t mraw, bool ldiv, int64_t *out, bool down = false)
 {
     uint32_t d1 = (uint32_t)l ^ (uint32_t)mraw;     // the sign
     uint32_t d0 = mag32(l), d3 = 0;
@@ -711,8 +755,11 @@ bool fast_wdivl(int32_t l, int32_t mraw, bool ldiv, int64_t *out)
     uint32_t hi = d0 >> 16;                     // swap d0, move.w d0,d1
     d0 = (d0 << 16) | (d3 & 0xffff);            // move.w d3,d0
     uint64_t q = ((uint64_t)hi << 32) | d0;
-    if ((int32_t)d1 < 0)
+    if ((int32_t)d1 < 0) {
+        if (down && (d3 >> 16))
+            q++;
         q = 0 - q;
+    }
     *out = (int64_t)q;
     return true;
 }
@@ -734,7 +781,8 @@ bool wdiv_ok(int64_t n, int32_t mraw, bool plant = false)
     unsigned f = 0;
 
     return fast_wdiv(n, mraw, false, &got, plant) && got == want && fast_wdiv(n, mraw, true, &got, plant)
-           && got == exprarith_q48_trunc(want, ET_LONG, &f) && truncd0(want) == exprarith_q48_trunc(want, ET_LONG, &f);
+           && got == exprarith_q48_trunc(want, ET_LONG, &f) && truncd0(want) == exprarith_q48_trunc(want, ET_LONG, &f)
+           && fast_wdiv(n, mraw, false, &got, plant, true) && got == q48d(ETO_DIV, n, (int64_t)mraw);
 }
 
 bool wdivl_ok(int32_t l, int32_t mraw)
@@ -743,7 +791,8 @@ bool wdivl_ok(int32_t l, int32_t mraw)
     unsigned f = 0;
 
     return fast_wdivl(l, mraw, false, &got) && got == want && fast_wdivl(l, mraw, true, &got)
-           && got == exprarith_q48_trunc(want, ET_LONG, &f);
+           && got == exprarith_q48_trunc(want, ET_LONG, &f) && fast_wdivl(l, mraw, false, &got, true)
+           && got == q48d(ETO_DIV, exprarith_whole_q48(l), (int64_t)mraw);
 }
 
 } // namespace

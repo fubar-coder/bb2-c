@@ -5346,6 +5346,7 @@ static BOOL p5prep;
 #define q48mod 0xd60a
 #define q16mod 0xd60f                /* the exact Mod of two 16.16 values (the speed review) */
 #define q48mull 0xd610               /* a Long times a Quick, exact, not widened (the speed review) */
+#define q48mulf 0xd611               /* q48mul cut down (#1221) */
 
 static void p5reset(void)
 {
@@ -6407,6 +6408,15 @@ static void p5scratchend(UWORD r)
             p5w(0x201f | (p5scr[k] << 9));      /* move.l (a7)+,Dk */
 }
 
+/* #1221 (user decision of 2026-11-26, "Quick rounding: down stays; the
+   48.16 cut in the final direction (E)"): the cut at 1/65536 of the 48.16
+   operation p, a * or /, rounds down: under a wanted Byte, Word or Long
+   (a / under a wanted Long is a whole number towards zero instead) */
+static BOOL p5down(const struct p5node *p)
+{
+    return p->want == T_BYTE || p->want == T_WORD || (p->want == T_LONG && p->t.op == ETO_MUL);
+}
+
 /* task 4.3 (decision "expr-tree-5 4.3: fast path for a Quick with a
    constant divisor/factor", "the Word fast path q*w"): a 48.16 operation
    of a 16.16 value A (in D(r)) whose value p5fastmark knows to be what
@@ -6447,6 +6457,20 @@ static void p5fast(struct p5node *p, UWORD r)
         p5w(0x80fc | (t << 9));                 /* divu.w #d,Dt */
         p5w((UWORD)p->whole);
         p5w(0x3000 | (x << 9) | t);             /* move.w Dt,Dx: q1:q2 */
+        if (p5down(p)) {
+            /* #1221: under a wanted Word or Byte cut down, a negative
+               quotient with a remainder one 1/65536 lower */
+            p5w(0x4a80 | a);                    /* tst.l Da */
+            p5w(p->ffp ? 0x6b0a : 0x6a0a);      /* bmi.s / bpl.s: not negative */
+            p5w(0x4840 | t);                    /* swap Dt */
+            p5w(0x4a40 | t);                    /* tst.w Dt: the remainder */
+            p5w(0x6702);                        /* beq.s */
+            p5w(0x5280 | x);                    /* addq.l #1,Dx */
+            p5w(0x4480 | x);                    /* neg.l Dx */
+            p5scratchend(r);
+            p5w(0x2000 | (a << 9) | x);         /* move.l Dx,Da */
+            return;
+        }
         p5scratchend(r);
         p5w(0x4a80 | a);                        /* tst.l Da */
         p5w(p->ffp ? 0x6b02 : 0x6a02);          /* bmi.s / bpl.s: the sign */
@@ -6478,6 +6502,24 @@ static void p5fast(struct p5node *p, UWORD r)
         p5w(0x4480 | x);                        /* neg.l Dx: |X| < 65536 */
         p5w(0x3000 | (t << 9) | a);             /* move.w Da,Dt */
         p5w(0xc0c0 | (t << 9) | x);             /* mulu.w Dx,Dt: al * |X| */
+        if (p5down(p)) {
+            /* #1221: under a wanted whole number cut down, a negative
+               product with cut bits one 1/65536 lower */
+            p5w(0x4840 | a);                    /* swap Da */
+            p5w(0xc0c0 | (a << 9) | x);         /* mulu.w Dx,Da: ah * |X| */
+            p5w(0x3000 | (x << 9) | t);         /* move.w Dt,Dx: the cut bits */
+            p5w(0x4240 | t);                    /* clr.w Dt */
+            p5w(0x4840 | t);                    /* swap Dt: >> 16 */
+            p5w(0xd080 | (a << 9) | t);         /* add.l Dt,Da */
+            p5w(0x4a80 | u);                    /* tst.l Du */
+            p5w(0x6a08);                        /* bpl.s */
+            p5w(0x4480 | a);                    /* neg.l Da */
+            p5w(0x4a40 | x);                    /* tst.w Dx */
+            p5w(0x6702);                        /* beq.s */
+            p5w(0x5380 | a);                    /* subq.l #1,Da */
+            p5scratchend(r);
+            return;
+        }
         p5w(0x4240 | t);                        /* clr.w Dt */
         p5w(0x4840 | t);                        /* swap Dt: >> 16 */
         p5w(0x4840 | a);                        /* swap Da */
@@ -6629,9 +6671,34 @@ static void p5truncd0(void)
    digits) and b is widened in d2/d3.  ldiv: the division at the top
    under a wanted Long (P5F_LDIV): its value is the quotient towards zero
    (part 3) modulo 2^32 as a Long in d0, the fraction digit not computed
-   (after tok: p5truncd0).  The host test test_exprarith.cpp ("a whole
-   divisor at run time") runs the same steps against exprarith_q48. */
-static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv)
+   (after tok: p5truncd0).  down: under a wanted Word or Byte the cut
+   rounds down (#1221, p5divsign; tok is then q48divw or q48divb, which cut
+   down too).  The host test test_exprarith.cpp ("a whole divisor at run
+   time") runs the same steps against exprarith_q48 and exprarith_q48_down. */
+/* the sign of a 48.16 quotient d1:d0 (its magnitude) applied when the
+   long at (a7)+ (stack) or in d2 is negative; down (#1221): a remainder
+   in d3's high word not 0 makes it one 1/65536 lower */
+static void p5divsign(BOOL stack, BOOL down)
+{
+    p5w(stack ? 0x4a9f : 0x4a82);               /* tst.l (a7)+ / tst.l d2: the sign */
+    if (!down) {
+        p5w(0x6a04);                            /* bpl.s */
+        p5w(0x4480);                            /* neg.l d0 */
+        p5w(0x4081);                            /* negx.l d1 */
+        return;
+    }
+    p5w(0x6a10);                                /* bpl.s .done */
+    p5w(0x4243);                                /* clr.w d3 */
+    p5w(0x4a83);                                /* tst.l d3: the remainder */
+    p5w(0x6706);                                /* beq.s */
+    p5w(0x5280);                                /* addq.l #1,d0 */
+    p5w(0x6402);                                /* bcc.s */
+    p5w(0x5281);                                /* addq.l #1,d1 */
+    p5w(0x4480);                                /* neg.l d0 */
+    p5w(0x4081);                                /* negx.l d1 */
+}
+
+static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv, BOOL down)
 {
     ULONG frac, nul, done, high;
 
@@ -6673,10 +6740,7 @@ static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv)
             p5w(0x4840);                        /* swap d0 */
             p5w(0x3200);                        /* move.w d0,d1: the high word */
             p5w(0x3003);                        /* move.w d3,d0 */
-            p5w(0x4a82);                        /* tst.l d2 */
-            p5w(0x6a04);                        /* bpl.s */
-            p5w(0x4480);                        /* neg.l d0 */
-            p5w(0x4081);                        /* negx.l d1 */
+            p5divsign(FALSE, down);
         }
     } else {
         p5w(0x2601);                            /* move.l d1,d3 */
@@ -6718,10 +6782,7 @@ static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv)
             p5w(0x3600);                        /* move.w d0,d3: r:w0 */
             p5w(0x86c2);                        /* divu.w d2,d3 */
             p5w(0x3003);                        /* move.w d3,d0 */
-            p5w(0x4a9f);                        /* tst.l (a7)+: the sign */
-            p5w(0x6a04);                        /* bpl.s */
-            p5w(0x4480);                        /* neg.l d0 */
-            p5w(0x4081);                        /* negx.l d1 */
+            p5divsign(TRUE, down);
         }
     }
     done = p5bra(0x6000);                       /* bra.s .done */
@@ -6975,7 +7036,7 @@ static void p5bin(struct p5node *p, UWORD r)
         switch (op) {
         case ETO_ADD:
         case ETO_SUB: tok = 0; break;   /* inline: q48add's, q48sub's code */
-        case ETO_MUL: tok = q48mul; break;
+        case ETO_MUL: tok = p5down(p) ? q48mulf : q48mul; break;
         case ETO_MOD: tok = q48mod; break;
         default:
             tok = p->want == T_QUICK ? q48divq : p->want == T_WORD ? q48divw : p->want == T_BYTE ? q48divb : q48div;
@@ -6990,7 +7051,7 @@ static void p5bin(struct p5node *p, UWORD r)
             p5nowide = longa;
             p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
             if (op == ETO_DIV)
-                p5wholediv(tok, lt, longa, ldiv);
+                p5wholediv(tok, lt, longa, ldiv, p5down(p));
             else
                 p5wholemod(tok, lt, longa);
         } else if (op == ETO_MUL && !lw && !rw && ((p5whole1(lt) && rt == T_QUICK) || (lt == T_QUICK && p5whole1(rt)))) {

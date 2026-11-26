@@ -41,9 +41,10 @@ L Long, Q Quick, F Float, – none.
 * `Q~ Q~ → 48`: a 48.16 operation. Both operands are taken as 48.16 values (a
   whole number with 16 bits of fraction, a register pair), so a Quick and a Long
   or a Quick under a wanted Long are computed exactly; the result is rounded once,
-  where the expression's value is taken (a wanted whole number its whole part, a
-  wanted Quick its 16.16 value, no wanted type a Quick where it fits, else its
-  whole part).
+  where the expression's value is taken (a wanted whole number rounded down, a
+  wanted Quick its 16.16 value, no wanted type a Quick where it fits, else
+  rounded down to a whole number); a product or quotient is cut to 1/65536 in
+  the direction of that rounding (down under a wanted whole number, #1221).
 * `Q Q → Q` with a Byte or Word operand: a 16.16 operation.
 * `illegal`: the compiler refuses the operation ("Illegal Operator for Type").
 * † marks a cell that differs when the operands are swapped (listed below

@@ -1,7 +1,8 @@
 /*
  * libtest_q48 - the 48.16 routines of compilerlib ($D603-$D60E, OpenSpec
  * change expr-tree-5-operand-typing, design decision 9) and the routines
- * of its speed review (from $D60F: q16mod, q48mull) against
+ * of its speed review (from $D60F: q16mod, q48mull, q48mulf; q48divw and q48divb cut
+ * down, #1221) against
  * programs/blitz2/src/exprarith.c, compiled here for the m68k: every
  * result bit for bit as exprarith_q48 and the casts give it, and the
  * registers the contract keeps (libs/compilerlib/compilerlib.c, "Registers
@@ -30,10 +31,10 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n);
 #define QMAXFAIL 20
 #define QROUNDS 2500
 
-enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_Q48MULL, Q_N };
+enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_Q48MULL, Q_Q48MULF, Q_N };
 static const char *const qname[Q_N] = {
     "q48add", "q48sub", "q48mul", "q48div", "q48divq", "q48divw", "q48divb", "q48mod",
-    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod", "q48mull"
+    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod", "q48mull", "q48mulf"
 };
 
 static APTR qcode[Q_N];
@@ -114,7 +115,7 @@ static void fail(int q, int64_t a, int64_t b, uint64_t got, uint64_t want, const
    for the routines with two operands */
 static void kept(int q, int64_t a, int64_t b, const struct regs *in, const struct regs *out)
 {
-    int k, first = q <= Q_MOD || q == Q_Q48MULL ? 4 : 2;
+    int k, first = q <= Q_MOD || q == Q_Q48MULL || q == Q_Q48MULF ? 4 : 2;
 
     for (k = first; k < 8; k++)
         if (in->d[k] != out->d[k])
@@ -148,11 +149,20 @@ static void pair(int64_t a, int64_t b)
     for (q = Q_ADD; q <= Q_MOD; q++) {
         unsigned f = 0;
         int64_t div0 = q >= Q_DIV && q <= Q_DIVB ? exprarith_div0(want_of[q - Q_DIV]) : 0;
-        uint64_t want = (uint64_t)exprarith_q48(ops[q], a, b, div0, &f);
+        /* q48divw and q48divb cut down (#1221) */
+        uint64_t want = (uint64_t)(q == Q_DIVW || q == Q_DIVB ? exprarith_q48_down : exprarith_q48)(ops[q], a, b, div0, &f);
         uint64_t got = call2(q, a, b);
 
         if (got != want)
             fail(q, a, b, got, want, "value");
+    }
+    {
+        unsigned f = 0;
+        uint64_t want = (uint64_t)exprarith_q48_down(ETO_MUL, a, b, 0, &f);
+        uint64_t got = call2(Q_Q48MULF, a, b);
+
+        if (got != want)
+            fail(Q_Q48MULF, a, b, got, want, "value");
     }
 }
 

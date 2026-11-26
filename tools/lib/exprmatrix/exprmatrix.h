@@ -189,6 +189,13 @@ enum {
 /* a Byte AND, OR, EOR is a Word operation, so it leaves no stale upper
    byte (#1218, #1217); beyond the 32 bits that the rules below use */
 #define EM_R_1218 (1ull << 32)
+/* the 48.16 intermediate's cut at 1/65536 of a product or quotient in the
+   direction of the final rounding: down under a wanted Byte, Word or Long
+   (a / under a wanted Long whole towards zero as before), towards zero
+   elsewhere (#1221; user decision of 2026-11-26, "Quick rounding: down
+   stays; the 48.16 cut in the final direction (E)"); a fix of the port's
+   rule P+, part of the decided rule */
+#define EM_R_1221 (1ull << 33)
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
@@ -462,7 +469,8 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
     (EM_RULES_CANDBASE | EM_RULES_C7KX | EM_R_PTYPED | EM_R_PCONST | EM_R_PMOD | EM_R_PNARROW | EM_R_PDIVL            \
      | EM_R_PQDIV)
 #define EM_RULES_DECIDED                                                                                              \
-    (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48 | EM_R_PCMPW)
+    (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48 | EM_R_PCMPW \
+     | EM_R_1221)
 /* the rules of P+ beyond the port's before it (#1216, #1183): a port's
    rules with all of them are the decided rule, the fix of #1216 */
 #define EM_RULES_PPLUS (EM_RULES_DECIDED & ~(uint64_t)EM_RULES_CANDBASE)

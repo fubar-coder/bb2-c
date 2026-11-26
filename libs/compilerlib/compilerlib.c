@@ -31,7 +31,8 @@
  *   $D603 q48add    a + b                 modulo 2^64
  *   $D604 q48sub    a - b                 modulo 2^64
  *   $D605 q48mul    a * b                 cut towards zero to 1/65536
- *   $D606 q48div    a / b                 cut towards zero to 1/65536;
+ *   $D606 q48div    a / b                 cut towards zero to 1/65536
+ *                                         (q48divw, q48divb: down, #1221);
  *   $D607 q48divq   a / b                 a divisor 0 gives the largest
  *   $D608 q48divw   a / b                 value of the wanted type with
  *   $D609 q48divb   a / b                 the dividend's sign: a Long or
@@ -69,6 +70,15 @@
  *                   a Quick (either       d0, b in d2, the product in
  *                   order)                d0/d1, d2 and d3 changed (the
  *                                         48.16 routines' contract)
+ *
+ * The cut of a 48.16 product or quotient under a wanted Byte, Word or
+ * Long rounds down (#1221, user decision of 2026-11-26, "Quick rounding:
+ * down stays; the 48.16 cut in the final direction (E)";
+ * exprarith_q48_down): q48divw and q48divb (only under a wanted Word or
+ * Byte) cut their quotient down, and
+ *
+ *   $D611 q48mulf   a * b                 cut down to 1/65536 (q48mul's
+ *                                         contract)
  */
 #include "blitzlib.h"
 
@@ -76,11 +86,11 @@ void mixmult(void), qqmult(void), lqdivide(void);
 void q48add(void), q48sub(void), q48mul(void);
 void q48div(void), q48divq(void), q48divw(void), q48divb(void), q48mod(void);
 void l2q48(void), q2q48(void), q48floor(void), q48trunc(void);
-void q16mod(void), q48mull(void);
+void q16mod(void), q48mull(void), q48mulf(void);
 void lqdivchk(void), q48divchk(void);
 
-/* !syslibheader{64030,$d600,$d611,0,0,0,errors,$4000} */
-BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd611, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
+/* !syslibheader{64030,$d600,$d612,0,0,0,errors,$4000} */
+BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd612, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
 BLITZ_NULLSUB(mixmult, 0, 0);           /* $D600 mixmult */
 BLITZ_NULLSUB(qqmult, 0, 0);            /* $D601 qqmult */
 BLITZ_NULLSUB(lqdivide, lqdivchk, 0);   /* $D602 lqdiv */
@@ -98,6 +108,7 @@ BLITZ_NULLSUB(q48floor, 0, 0);          /* $D60D q48floor */
 BLITZ_NULLSUB(q48trunc, 0, 0);          /* $D60E q48trunc */
 BLITZ_NULLSUB(q16mod, 0, 0);            /* $D60F q16mod */
 BLITZ_NULLSUB(q48mull, 0, 0);           /* $D610 q48mull */
+BLITZ_NULLSUB(q48mulf, 0, 0);           /* $D611 q48mulf */
 BLITZ_LIBFIN();
 
 /**
@@ -402,6 +413,26 @@ BLITZ_ASM_BLOCK(q48add,
  * d0/d1: the product
  */
 BLITZ_ASM_BLOCK(q48mul,
+        "   .globl  _q48mulf\n"
+        "_q48mulf:\n"
+        "   tst.l   d1\n"
+        "   bmi.s   1f\n"
+        "   tst.l   d3\n"
+        "   bpl.s   _q48mul\n"              /* a positive product: q48mul's value */
+        "   bra.s   2f\n"
+        "1: tst.l   d3\n"
+        "   bmi.s   _q48mul\n"
+        "2: move.l  d4,-(sp)\n"
+        "   move.w  d0,d4\n"
+        "   mulu.w  d2,d4\n"                /* the low word of the cut bits */
+        "   tst.w   d4\n"
+        "   movem.l (sp)+,d4\n"             /* the CCR stays */
+        "   beq.s   _q48mul\n"              /* none: q48mul's value */
+        "   bsr.s   _q48mul\n"
+        "   subq.l  #1,d0\n"                /* one 1/65536 down */
+        "   bcc.s   3f\n"
+        "   subq.l  #1,d1\n"
+        "3: rts\n"
         "   .globl  _q48mul\n"
         "_q48mul:\n"
         "   movem.l d4-d6,-(sp)\n"
@@ -523,8 +554,9 @@ BLITZ_ASM_BLOCK(q48mul,
 
 /**
  * @brief q48div ($D606), q48divq ($D607), q48divw ($D608), q48divb
- * ($D609): d1:d0 = a / b, (|a| << 16) / |b| cut towards zero, the sign
- * applied, modulo 2^64 (exprarith_q48 ETO_DIV); and q48mod ($D60A): d1:d0
+ * ($D609): d1:d0 = a / b, (|a| << 16) / |b| cut towards zero (q48divw and
+ * q48divb, only under a wanted Word or Byte: down, exprarith_q48_down,
+ * #1221), the sign applied, modulo 2^64 (exprarith_q48 ETO_DIV); and q48mod ($D60A): d1:d0
  * = a Mod b (ETO_MOD), |a| modulo |b| with a's sign, a negative remainder
  * plus b (domodlong's rule).
  *
@@ -558,17 +590,17 @@ BLITZ_ASM_BLOCK(q48div,
         "   .globl  _q48divb\n"
         "_q48divb:\n"
         "   tst.l   d2\n"
-        "   bne.s   .Ldiv\n"
+        "   bne.s   .Ldivf\n"
         "   tst.l   d3\n"
-        "   bne.s   .Ldiv\n"
+        "   bne.s   .Ldivf\n"
         "   move.l  #0x007f0000,d2\n"       /* 127.0 */
         "   bra.s   .Ldiv0\n"
         "   .globl  _q48divw\n"
         "_q48divw:\n"
         "   tst.l   d2\n"
-        "   bne.s   .Ldiv\n"
+        "   bne.s   .Ldivf\n"
         "   tst.l   d3\n"
-        "   bne.s   .Ldiv\n"
+        "   bne.s   .Ldivf\n"
         "   move.l  #0x7fff0000,d2\n"       /* 32767.0 */
         "   bra.s   .Ldiv0\n"
         "   .globl  _q48divq\n"
@@ -596,12 +628,31 @@ BLITZ_ASM_BLOCK(q48div,
         "1: move.l  d2,d0\n"
         "   move.l  d3,d1\n"
         "   rts\n"
+        ".Ldivf:\n"
+        "   movem.l d4-d7/a0-a1,-(sp)\n"
+        "   moveq   #1,d4\n"                /* the cut down (q48divw, q48divb) */
+        "   bra.s   5f\n"
         ".Ldiv:\n"
         "   movem.l d4-d7/a0-a1,-(sp)\n"
-        "   move.l  d1,-(sp)\n"
-        "   eor.l   d3,(sp)\n"              /* bit 31: the sign of the quotient */
+        "   moveq   #0,d4\n"
+        "5: move.l  d1,d5\n"
+        "   eor.l   d3,d5\n"                /* bit 31: the sign of the quotient */
+        "   clr.w   d5\n"
+        "   or.w    d4,d5\n"                /* bit 0: the cut down */
+        "   move.l  d5,-(sp)\n"
         "   bsr.w   .Lqmag\n"
-        "   clr.w   -(sp)\n"                /* the pad digit of .Lqcore */
+        "   tst.l   d4\n"
+        "   beq.s   6f\n"
+        "   tst.l   d2\n"                   /* the digits of N the drop below leaves out: */
+        "   bne.s   6f\n"
+        "   tst.w   d0\n"                   /* D's low long 0: |a|'s low word, */
+        "   bne.s   7f\n"
+        "   tst.w   d3\n"
+        "   bne.s   6f\n"
+        "   tst.l   d0\n"                   /* D's low 48 bits 0: its low long */
+        "   beq.s   6f\n"
+        "7: bset    #1,3(sp)\n"             /* bit 1: not 0 */
+        "6: clr.w   -(sp)\n"                /* the pad digit of .Lqcore */
         "   clr.w   -(sp)\n"                /* N = |a| << 16 */
         "   bsr.w   .Lqpush\n"
         "   moveq   #5,d6\n"
@@ -615,9 +666,18 @@ BLITZ_ASM_BLOCK(q48div,
         "   bra.s   2b\n"
         "3: bsr     .Lqcore\n"
         "   lea     14(sp),sp\n"
-        "   tst.l   (sp)+\n"
+        "   move.l  (sp)+,d4\n"
         "   bpl.s   4f\n"
-        "   neg.l   d0\n"
+        "   btst    #0,d4\n"
+        "   beq.s   8f\n"                   /* towards zero */
+        "   btst    #1,d4\n"
+        "   bne.s   9f\n"
+        "   or.l    d3,d2\n"
+        "   beq.s   8f\n"                   /* exact */
+        "9: addq.l  #1,d0\n"                /* down: one 1/65536 more before the sign */
+        "   bcc.s   8f\n"
+        "   addq.l  #1,d1\n"
+        "8: neg.l   d0\n"
         "   negx.l  d1\n"
         "4: movem.l (sp)+,d4-d7/a0-a1\n"
         "   rts\n"

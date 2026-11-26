@@ -65,7 +65,10 @@ whole numbers only; it is never a whole number.
 The result is rounded once, where it is taken: rounded down to a whole
 number for a whole destination (a `/` under a Long towards zero), to a
 Quick for a Quick destination. Where nothing is wanted it stays a Quick
-if it fits, otherwise it is its whole part.
+if it fits, otherwise it is rounded down to a whole number. A product or
+a quotient in the exact format is cut to 1/65536 in the same direction,
+so `r.l=q*p+l` with `q=-0.5`, `p=1/65536` and `l=5` is 4, the exact
+value 4.99999 rounded down.
 
 The original's Quick routines stay wherever no Long is involved, so most
 programs compute exactly as before; the exact format is used only where a

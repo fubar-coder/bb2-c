@@ -476,7 +476,11 @@
 # by compilerlib's q48mull: bq48.iflmulq 592.8 -> 464.5, the new loops
 # iflxmulq 1013.2 -> 592.5, lmulqaddp 556.8 -> 427.0. The dead load of
 # the divisor of a Quick divided by a whole constant dropped:
-# bcmp.inteq 1073.5 -> 1061.6, bq48.qdiv4addl 498.2 -> 488.2.
+# bcmp.inteq 1073.5 -> 1061.6, bq48.qdiv4addl 498.2 -> 488.2. The cut
+# down of #1221 (q48mulf, q48divw, the test in .Ldiv): bmath.qqmul 605.1
+# -> 633.2, qqmulw 483.1 -> 507.2, qqmulc 481.1 -> 508.8, bq48.qmulpaddl
+# 657.2 -> 684.0, xldivq 1866.7 -> 1887.5, bcompilerlib.q48divw 1077.7 ->
+# 1095.2 (q48div 1773.7 -> 1793.0, within its budget); budgets raised.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -513,7 +517,7 @@ bcompilerlib.q48mulxx        1365          -  100000.5*100000.5: q48mul, both wi
 bcompilerlib.q48div          1795          -  1.5/2.5: SysJsr $D606 (two divisor digits, two quotient digits)
 bcompilerlib.q48divx         2097          -  100000.5/2.5: q48div (three quotient digits)
 bcompilerlib.q48divl         1855          -  100000.5/100000: q48div (the divisor's low word 0 dropped, two divisor digits)
-bcompilerlib.q48divw         1092          -  1.5/3.0: q48div (a divisor below $10000 after the drop: one DIVU per digit)
+bcompilerlib.q48divw         1112          -  1.5/3.0: q48div (a divisor below $10000 after the drop: one DIVU per digit; q48divw cuts down, #1221)
 bcompilerlib.q48divxx        3251          -  100000.5/100000.5: q48div (a divisor beyond 32 bits: bit by bit)
 bcompilerlib.q48mod          1451          -  7.5 Mod 2.0: SysJsr $D60A
 bcompilerlib.l2q48             75          -  100000 as 48.16: SysJsr $D60B
@@ -646,9 +650,9 @@ bmath.lqdivw                  329          -  c=a4/q7 (q7=3.0; P+: a 48.16 divis
 bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
 bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
 bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
-bmath.qqmul                   615          -  c=q1*q2 (two Quicks with a fraction; P+: a 48.16 product under a Long, compilerlib q48mul)
-bmath.qqmulw                  491          -  c=q1*q7 (q7=3.0, a whole Quick; P+: q48mul)
-bmath.qqmulc                  489          -  c=q7*q7 (two whole Quicks; P+: q48mul)
+bmath.qqmul                   643          -  c=q1*q2 (two Quicks with a fraction; P+: a 48.16 product under a Long, compilerlib q48mulf)
+bmath.qqmulw                  515          -  c=q1*q7 (q7=3.0, a whole Quick; P+: q48mulf)
+bmath.qqmulc                  517          -  c=q7*q7 (two whole Quicks; P+: q48mulf, the cut down of #1221)
 bmath.fpow                  14186    14018.2  f3=f1^f2 (f1=12.5, f2=3.25: mathtranslib ^, SPPow with a positive base, #1189)
 bmath.fpown                 14180    13902.2  f3=f4^f5 (f4=-2.5, f5=3: SPPow of |x| and the sign of an odd power, #1189)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
@@ -684,7 +688,7 @@ bq48.xlmulq                   220          -  x=l*q (under a Quick: the low 32 b
 bq48.xlxmulq                  224          -  x=lx*q (under a Quick, lx=100000)
 bq48.laddqp                   186          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
 bq48.xladdqp                   96          -  x=l+q+p (the same under a Quick)
-bq48.qmulpaddl                667          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
+bq48.qmulpaddl                695          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
 bq48.qmulwaddp                314          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16; q*w inline)
 bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 comparison)
 bq48.iflmulq                  472          -  If l*q>p Then c=1 (a 48.16 product compared: compilerlib q48mull, l not widened, two MULU)
@@ -692,7 +696,7 @@ bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Lo
 bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
 bq48.xqmodc                   572          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q16mod)
 bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exact)
-bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
+bq48.xldivq                  1916          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
 bq48.qdiv4addl                496          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
 bq48.xqmulhaddl               294          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
 bq48.xldivqw                  494          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole; l not widened, its high word 0 skipped: two DIVU)

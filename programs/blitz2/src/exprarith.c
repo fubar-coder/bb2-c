@@ -286,6 +286,27 @@ int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned 
     }
 }
 
+int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags)
+{
+    int64_t v = exprarith_q48(op, a, b, div0, flags);
+    int neg = (a < 0) != (b < 0);
+
+    if (op == ETO_MUL && neg && (mul64(mag(a), mag(b)).lo & 0xffff))
+        v = (int64_t)((uint64_t)v - 1);         /* the cut bits not 0: one 1/65536 down */
+    else if (op == ETO_DIV && neg && b) {
+        /* the remainder of (|a| << 16) / |b| not 0 */
+        struct u128 n, q, p;
+
+        n.hi = mag(a) >> 48;
+        n.lo = mag(a) << 16;
+        q = div128(n, mag(b));
+        p = mul64(q.lo, mag(b));
+        if (p.lo != n.lo || p.hi + q.hi * mag(b) != n.hi)
+            v = (int64_t)((uint64_t)v - 1);
+    }
+    return v;
+}
+
 int64_t exprarith_div0(unsigned want)
 {
     switch (want) {
