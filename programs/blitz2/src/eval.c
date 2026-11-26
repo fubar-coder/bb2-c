@@ -5278,7 +5278,9 @@ enum {
     P5F_RAW = 1,                    /* the build's code holds a raw Quick (#1178) */
     P5F_RELAX = 2,                  /* the build's typing refused it: the pass decides */
     P5F_KEEP = 4,                   /* a folded constant whose code stays the build's */
-    P5F_SIGNEXT = 8                 /* a constant compared with a byte value (#978) */
+    P5F_SIGNEXT = 8,                /* a constant compared with a byte value (#978) */
+    P5F_NDIV = 16,                  /* a 48.16 / of a 16.16 value by a whole constant (p5fastmark) */
+    P5F_NMULF = 32                  /* a 48.16 * of a 16.16 value and a constant below 1 */
 };
 
 struct p5node {
@@ -6383,6 +6385,166 @@ static void p5fmod(UWORD r)
     pokemovem(pull);
 }
 
+static int p5mixkind(const struct exprtyping_node *n);
+
+/* the scratch registers of the inline 48.16 code at D(r) (p5fast): n
+   registers other than D(r), D(r+1), from D(r+2) up, then below D(r);
+   one below D(r) or beyond d5 kept on the stack around the code */
+static UWORD p5scr[2], p5nscr;
+
+static void p5scratch(UWORD r, UWORD n)
+{
+    UWORD k, i = 0;
+
+    for (k = r + 2; k <= 7 && i < n; k++)
+        p5scr[i++] = k;
+    for (k = 0; k < r && i < n; k++)
+        p5scr[i++] = k;
+    p5nscr = n;
+    for (k = 0; k < n; k++)
+        if (p5scr[k] < r || p5scr[k] > 5)
+            p5w(0x2f00 | p5scr[k]);             /* move.l Dk,-(a7) */
+}
+
+static void p5scratchend(UWORD r)
+{
+    UWORD k;
+
+    for (k = p5nscr; k--;)
+        if (p5scr[k] < r || p5scr[k] > 5)
+            p5w(0x201f | (p5scr[k] << 9));      /* move.l (a7)+,Dk */
+}
+
+/* task 4.3 (decision "expr-tree-5 4.3: fast path for a Quick with a
+   constant divisor/factor"): a 48.16 operation
+   of a 16.16 value A (in D(r)) whose value p5fastmark knows to be what
+   q48div or q48mul gives, written inline:
+   - P5F_NDIV, A / d (d whole, 2 <= |d| <= 65535, p->whole = |d|, p->ffp:
+     d < 0): q48div's (|A| << 16) / (|d| << 16) = |A| / |d| rounded down by
+     two DIVU, the sign applied; fits 16.16, the result in D(r) alone;
+     under a wanted Long cut towards zero (part 3) as the 48.16 code does;
+   - P5F_NMULF, A * X (X a constant's 16.16 value, |X| < 65536, in the
+     other operand's register): q48mul's (|A| * |X|) >> 16 by two MULU,
+     the sign applied; fits 16.16, in D(r) alone.
+   The host test test_exprarith.cpp ("fast paths") checks the same
+   steps against exprarith_q48. */
+static void p5fast(struct p5node *p, UWORD r)
+{
+    UWORD a = r, x = r + 1, t, u;
+
+    if (p5prep)
+        return;
+    if (p->flags & P5F_NDIV) {
+        p5scratch(r, 1);
+        t = p5scr[0];
+        p5w(0x2000 | (x << 9) | a);             /* move.l Da,Dx: |A| in Dx */
+        p5w(0x6a02);                            /* bpl.s */
+        p5w(0x4480 | x);                        /* neg.l Dx */
+        p5w(0x4840 | x);                        /* swap Dx */
+        p5w(0x7000 | (t << 9));                 /* moveq #0,Dt */
+        p5w(0x3000 | (t << 9) | x);             /* move.w Dx,Dt: the high word */
+        p5w(0x80fc | (t << 9));                 /* divu.w #d,Dt */
+        p5w((UWORD)p->whole);
+        p5w(0x3000 | (x << 9) | t);             /* move.w Dt,Dx */
+        p5w(0x4840 | x);                        /* swap Dx: q1, the low word */
+        p5w(0x3000 | (t << 9) | x);             /* move.w Dx,Dt: the remainder and the low word */
+        p5w(0x80fc | (t << 9));                 /* divu.w #d,Dt */
+        p5w((UWORD)p->whole);
+        p5w(0x3000 | (x << 9) | t);             /* move.w Dt,Dx: q1:q2 */
+        p5scratchend(r);
+        p5w(0x4a80 | a);                        /* tst.l Da */
+        p5w(p->ffp ? 0x6b02 : 0x6a02);          /* bmi.s / bpl.s: the sign */
+        p5w(0x4480 | x);                        /* neg.l Dx */
+        p5w(0x2000 | (a << 9) | x);             /* move.l Dx,Da */
+        if (p->want == T_LONG) {
+            p5w(0x6a0a);                        /* bpl.s .cut */
+            p5w(0x4a40 | a);                    /* tst.w Da */
+            p5w(0x6706);                        /* beq.s .cut */
+            p5w(0x0680 | a);                    /* addi.l #$10000,Da */
+            p5l(0x00010000);
+            p5w(0x4240 | a);                    /* .cut: clr.w Da */
+        }
+        return;
+    }
+    if (p->ffp & 1)
+        p5w(0xc140 | (a << 9) | x);             /* exg Da,Dx: A in Da */
+    p5scratch(r, 2);
+    t = p5scr[0];
+    u = p5scr[1];
+    if (p->flags & P5F_NMULF) {
+        p5w(0x2000 | (u << 9) | a);             /* move.l Da,Du */
+        p5w(0xb180 | (x << 9) | u);             /* eor.l Dx,Du: the sign */
+        p5w(0x4a80 | a);                        /* tst.l Da */
+        p5w(0x6a02);                            /* bpl.s */
+        p5w(0x4480 | a);                        /* neg.l Da */
+        p5w(0x4a80 | x);                        /* tst.l Dx */
+        p5w(0x6a02);                            /* bpl.s */
+        p5w(0x4480 | x);                        /* neg.l Dx: |X| < 65536 */
+        p5w(0x3000 | (t << 9) | a);             /* move.w Da,Dt */
+        p5w(0xc0c0 | (t << 9) | x);             /* mulu.w Dx,Dt: al * |X| */
+        p5w(0x4240 | t);                        /* clr.w Dt */
+        p5w(0x4840 | t);                        /* swap Dt: >> 16 */
+        p5w(0x4840 | a);                        /* swap Da */
+        p5w(0xc0c0 | (a << 9) | x);             /* mulu.w Dx,Da: ah * |X| */
+        p5w(0xd080 | (a << 9) | t);             /* add.l Dt,Da */
+        p5w(0x4a80 | u);                        /* tst.l Du */
+        p5w(0x6a02);                            /* bpl.s */
+        p5w(0x4480 | a);                        /* neg.l Da */
+        p5scratchend(r);
+    }
+}
+
+/* a 16.16 operand of p5fastmark: not a constant, held as a Quick */
+static BOOL p5fastq(const struct p5node *k)
+{
+    return !p5folded(&k->t) && p5mixkind(&k->t) == 2 && k->dt == T_QUICK && k->df == ETF_TYPE;
+}
+
+/* the fast paths of p5fast, decided when the operands are applied */
+static void p5fastmark(struct p5node *p)
+{
+    struct p5node *L = P5(p->t.l), *R = P5(p->t.r), *Q, *O;
+    struct p5q v;
+
+    if (p->t.o.path != ETY_Q48)
+        return;
+    if (p->t.op == ETO_DIV) {
+        if (!p5fastq(L) || !p5folded(&R->t) || R->df != ETF_TYPE
+            || (R->dt != T_BYTE && R->dt != T_WORD && R->dt != T_LONG))
+            return;
+        v = p5qval(&R->t);
+        if (!v.ok || v.d != 1 || v.n < -65535 || v.n > 65535 || (v.n > -2 && v.n < 2))
+            return;
+        p->flags |= P5F_NDIV;
+        p->whole = (ULONG)(v.n < 0 ? -v.n : v.n);
+        p->ffp = v.n < 0;
+        return;
+    }
+    if (p->t.op != ETO_MUL)
+        return;
+    if (p5fastq(L) && !p5fastq(R)) {
+        Q = L;
+        O = R;
+    } else if (p5fastq(R) && !p5fastq(L)) {
+        Q = R;
+        O = L;
+    } else
+        return;
+    if (O->df != ETF_TYPE)
+        return;
+    p->ffp = Q == R;                            /* the 16.16 value on the right */
+    if (p5folded(&O->t)) {
+        v = p5qval(&O->t);
+        if (!v.ok)
+            return;
+        if (v.d == 1)
+            return;
+        /* below 1, its 16.16 value below 65536 whatever its rounding */
+        if (O->dt == T_QUICK && (v.n < 0 ? -v.n : v.n) * 65536 < 65535 * v.d)
+            p->flags |= P5F_NMULF;
+    }
+}
+
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
@@ -6399,6 +6561,10 @@ static void p5bin(struct p5node *p, UWORD r)
     case ETY_Q48: {
         UWORD tok;
 
+        if (p->flags & (P5F_NDIV | P5F_NMULF)) {
+            p5fast(p, r);
+            break;
+        }
         switch (op) {
         case ETO_ADD:
         case ETO_SUB: tok = 0; break;   /* inline: q48add's, q48sub's code */
@@ -6740,10 +6906,15 @@ static void p5binapply(struct p5node *p, UWORD want)
     if (L->df == ETF_Q48)
         p5shift(R);
     p->want = (UBYTE)want;
+    p5fastmark(p);
     switch (o->path) {
     case ETY_Q48:
         p->dt = T_LONG;
         p->df = ETF_Q48;
+        if (p->flags & (P5F_NDIV | P5F_NMULF)) {
+            p->dt = T_QUICK;        /* its value fits 16.16: one register */
+            p->df = ETF_TYPE;
+        }
         break;
     case ETY_Q16: p->dt = T_QUICK; break;
     case ETY_EXACT:

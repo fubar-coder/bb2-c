@@ -3,7 +3,9 @@
 ; operands moved into d0-d3 without the stack, + and - and the comparisons
 ; written inline, a whole number and a 16.16 value under a wanted Long by
 ; the routines of #1178 (mixedop), the low 32 bits under a wanted Quick in
-; 32 bits, a constant Case of a 48.16 Select compared as immediates, the
+; 32 bits, a constant Case of a 48.16 Select compared as immediates, a
+; 16.16 value divided by a whole constant or times a constant below 1
+; inline (the fast paths), the
 ; operations in parameters (registers d1 to d5).  Each value is the one
 ; the code of task 4.2 gives (all its 48.16 operations through
 ; compilerlib's routines, measured once); a regression test of the fixed
@@ -351,4 +353,101 @@ End Function
   !CheckEq{r,-1,"pl_cmp_5"}
   r=pl6{1,l+q>p,l*q=250,lx*qn<ln,lx+q>lx,5}
   !CheckEq{r,5,"pl_cmp_6"}
+  l=100 : lx=100000 : ln=-100000 : lm=2147483647 : lz=0 : lb=2147483647
+  q=2.5 : qn=-1.75 : qs=1 : p=1.25 : qm=-32768
+  w=3 : wn=-7 : b=-3 : r=0 : x=0
+  qs=qs/65536
+  ; the fast paths of a 16.16 value with a constant divisor or factor, or a Word
+  r=q/2+l
+  !CheckEq{r,101,"fast_r_q_div2_add_l"}
+  r=qn/2+l
+  !CheckEq{r,100,"fast_r_qn_div2_add_l"}
+  r=qm/3+l
+  !CheckEq{r,-10822,"fast_r_qm_div3_add_l"}
+  r=qs/-2+l
+  !CheckEq{r,100,"fast_r_qs_divm2_add_l"}
+  r=q/10+lx
+  !CheckEq{r,100000,"fast_r_q_div10_add_lx"}
+  r=qn/-3+ln
+  !CheckEq{r,-100000,"fast_r_qn_divm3_add_ln"}
+  r=qm/65535+l
+  !CheckEq{r,100,"fast_r_qm_div65535_add_l"}
+  r=qn/7-l
+  !CheckEq{r,-100,"fast_r_qn_div7_sub_l"}
+  r=q*0.5+l
+  !CheckEq{r,101,"fast_r_q_mulh_add_l"}
+  r=qn*-0.5+l
+  !CheckEq{r,100,"fast_r_qn_mulmh_add_l"}
+  r=qm*0.25+l
+  !CheckEq{r,-8092,"fast_r_qm_mulq_add_l"}
+  r=qn*0.3+l
+  !CheckEq{r,99,"fast_r_qn_mul03_add_l"}
+  r=0.75*qn+l
+  !CheckEq{r,98,"fast_r_c_mul_qn_add_l"}
+  r=q*w+l
+  !CheckEq{r,107,"fast_r_q_mul_w_add_l"}
+  r=wn*qn+l
+  !CheckEq{r,112,"fast_r_wn_mul_qn_add_l"}
+  r=qm*w+lx
+  !CheckEq{r,1696,"fast_r_qm_mul_w_add_lx"}
+  r=q*3+l
+  !CheckEq{r,107,"fast_r_q_mul3_add_l"}
+  r=-7*qn+l
+  !CheckEq{r,112,"fast_r_c7_mul_qn_add_l"}
+  r=qm*-32768+l
+  !CheckEq{r,1073741924,"fast_r_qm_mulm32768_add_l"}
+  r=b*q+l
+  !CheckEq{r,92,"fast_r_b_mul_q_add_l"}
+  r=qm*wn-lb
+  !CheckEq{r,-2147254271,"fast_r_qm_mul_wn_sub_lb"}
+  r=q/2
+  !CheckEq{r,1,"fast_r_q_div2"}
+  r=qn/2
+  !CheckEq{r,0,"fast_r_qn_div2"}
+  r=qm/3
+  !CheckEq{r,-10922,"fast_r_qm_div3"}
+  r=qn/-2
+  !CheckEq{r,0,"fast_r_qn_divm2"}
+  r=qs/2
+  !CheckEq{r,0,"fast_r_qs_div2"}
+  r=q*w
+  !CheckEq{r,7,"fast_r_q_mul_w"}
+  r=qn*wn
+  !CheckEq{r,12,"fast_r_qn_mul_wn"}
+  r=q*0.5
+  !CheckEq{r,1,"fast_r_q_mulh"}
+  r=qn*0.3
+  !CheckEq{r,0,"fast_r_qn_mul03"}
+  r=qm*w
+  !CheckEq{r,-98304,"fast_r_qm_mul_w"}
+  x=q/2+l
+  !CheckEq{Peek.l(&x),6635520,"fast_x_q_div2_add_l"}
+  x=qn/3-l
+  !CheckEq{Peek.l(&x),-6591829,"fast_x_qn_div3_sub_l"}
+  x=q*w+lx
+  !CheckEq{Peek.l(&x),-2035843072,"fast_x_q_mul_w_add_lx"}
+  x=qn*0.5+l
+  !CheckEq{Peek.l(&x),6496256,"fast_x_qn_mulh_add_l"}
+  x=q*w
+  !CheckEq{Peek.l(&x),491520,"fast_x_q_mul_w"}
+  x=qm/2+lb
+  !CheckEq{Peek.l(&x),-1073807360,"fast_x_qm_div2_add_lb"}
+  x=qn*wn+l
+  !CheckEq{Peek.l(&x),7356416,"fast_x_qn_mul_wn_add_l"}
+  x=(qn/2)*l
+  !CheckEq{Peek.l(&x),-5734400,"fast_x_qn_div2_mul_l"}
+  x=-(q/2)+l
+  !CheckEq{Peek.l(&x),6471680,"fast_x_neg_q_div2_add_l"}
+  r=0 : If qn/2=Int(qn/2) Then r=1
+  !CheckEq{r,0,"fast_if_inteq"}
+  r=0 : If q*2/2=Int(q) Then r=1
+  !CheckEq{r,0,"fast_if_inteq2"}
+  r=0 : If q/2<l Then r=1
+  !CheckEq{r,1,"fast_if_div_lt"}
+  r=0 : If q*w>l Then r=1
+  !CheckEq{r,0,"fast_if_mulw_gt"}
+  r=0 : If qn*0.5<qn Then r=1
+  !CheckEq{r,0,"fast_if_mulh_lt"}
+  r=0 : If qm/2=-16384 Then r=1
+  !CheckEq{r,1,"fast_if_div_eq"}
 !EndTestCase

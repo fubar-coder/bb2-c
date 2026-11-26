@@ -435,3 +435,133 @@ TEST_CASE("exprarith: the casts and the fast-path test", "[exprarith]")
     exprarith_whole_q16(32768, &f);
     CHECK(f == EXA_OVF);
 }
+
+// ------------------------------------------------- the fast paths (task 4.3)
+// The inline code of eval.c's p5fast step by step, on the 68000's word
+// operations (DIVU, MULU of words, swap), against exprarith_q48: a 16.16
+// value divided by a whole constant 2 <= |d| <= 65535 (P5F_NDIV), times a
+// constant below 1 (P5F_NMULF).
+
+namespace {
+
+uint32_t mag32(int32_t a)
+{
+    return a < 0 ? 0u - (uint32_t)a : (uint32_t)a;
+}
+
+// P5F_NDIV: two DIVU of |A| by d, the sign, under a wanted Long the cut
+// towards zero
+int32_t fast_ndiv(int32_t a, int32_t d, bool cut)
+{
+    uint32_t s = mag32(a), dm = mag32(d), t;
+    uint32_t hi = s >> 16, lo = s & 0xffff, q1, q2;
+
+    t = hi;                                     // moveq #0 : move.w
+    q1 = (t / dm) & 0xffff;                     // divu.w: t = r1:q1
+    t = ((t % dm) << 16) | lo;                  // move.w, swap, move.w: r1:lo
+    q2 = (t / dm) & 0xffff;
+    s = (q1 << 16) | q2;
+    if ((a < 0) != (d < 0))
+        s = 0u - s;
+    int32_t r = (int32_t)s;
+    if (cut && r < 0 && (r & 0xffff)) {
+        r = (int32_t)((uint32_t)r + 0x10000);
+    }
+    if (cut)
+        r = (int32_t)((uint32_t)r & 0xffff0000u);
+    return r;
+}
+
+// P5F_NMULF: (al * |X|) >> 16 + ah * |X|, the sign
+int32_t fast_nmulf(int32_t a, int32_t x)
+{
+    uint32_t s = mag32(a), xm = mag32(x) & 0xffff;
+    uint32_t t = ((s & 0xffff) * xm) >> 16;
+    uint32_t r = (s >> 16) * xm + t;
+
+    if ((int32_t)((uint32_t)a ^ (uint32_t)x) < 0)
+        r = 0u - r;
+    return (int32_t)r;
+}
+
+int64_t q48(unsigned op, int64_t a, int64_t b)
+{
+    unsigned f = 0;
+
+    return exprarith_q48(op, a, b, exprarith_div0(ET_QUICK), &f);
+}
+
+// the 48.16 code's cut towards zero of a quotient (part 3)
+int64_t q48cut(int64_t v)
+{
+    if (v < 0 && (v & 0xffff))
+        v += 0x10000;
+    return v & ~(int64_t)0xffff;
+}
+
+uint32_t rnd32(uint64_t &s)
+{
+    s = s * 6364136223846793005ULL + 1442695040888963407ULL;
+    return (uint32_t)(s >> 32);
+}
+
+// the 16.16 values of the test: every whole part with the fractions 0, 1,
+// $7FFF, $8000, $FFFF and four random ones
+template <typename F> bool each_quick(uint64_t &seed, F f)
+{
+    uint32_t frac[9] = { 0, 1, 0x7fff, 0x8000, 0xffff, 0, 0, 0, 0 };
+
+    for (int i = 5; i < 9; i++)
+        frac[i] = rnd32(seed) & 0xffff;
+    for (uint32_t w = 0; w < 0x10000; w++)
+        for (uint32_t fr : frac)
+            if (!f((int32_t)((w << 16) | fr)))
+                return false;
+    return true;
+}
+
+} // namespace
+
+TEST_CASE("exprarith: the fast paths of p5fast equal q48div and q48mul", "[exprarith]")
+{
+    uint64_t seed = 0x4f3ull;
+    const int32_t divs[] = { 2, 3, 10, -2, -3, 7, 100, 255, 256, 4096, 32767, 32768, 65535, -65535 };
+
+    for (int32_t d : divs)
+        for (int cut = 0; cut < 2; cut++) {
+            int32_t bad = 0;
+            bool ok = each_quick(seed, [&](int32_t a) {
+                int64_t v = q48(ETO_DIV, exprarith_q16_q48(a), exprarith_whole_q48(d));
+                if (cut)
+                    v = q48cut(v);
+                if (v != (int64_t)fast_ndiv(a, d, cut)) {
+                    bad = a;
+                    return false;
+                }
+                return true;
+            });
+            INFO("d ", d, " cut ", cut, " a ", bad);
+            CHECK(ok);
+        }
+    // a constant below 1: its 16.16 value |X| < 65536 (0.5, -0.5, the
+    // smallest, the largest, random)
+    int32_t xs[24] = { 32768, -32768, 1, -1, 65535, -65535, 16384, 6554, -6553, 0 };
+    for (int i = 10; i < 24; i++) {
+        int32_t m = (int32_t)(rnd32(seed) % 65535) + 1;
+        xs[i] = (rnd32(seed) & 1) ? -m : m;
+    }
+    for (int32_t x : xs) {
+        int32_t bad = 0;
+        bool ok = each_quick(seed, [&](int32_t a) {
+            if (q48(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(x)) != (int64_t)fast_nmulf(a, x)) {
+                bad = a;
+                return false;
+            }
+            return true;
+        });
+        INFO("x ", x, " a ", bad);
+        CHECK(ok);
+    }
+    // a planted error is seen: the sign of a negative divisor dropped
+    CHECK(q48(ETO_DIV, exprarith_q16_q48(-0x30000), exprarith_whole_q48(-2)) != (int64_t)fast_ndiv(-0x30000, 2, false));
+}
