@@ -457,6 +457,12 @@
 # 1866.7 (within their budgets).
 # bq48.xqmodc3, xqmodqw, xlmodqw from two runs of main ad8396cf9
 # (1506.2/1506.5, 1479.7/1479.0, 1462.2/1460.5).
+# Mod by a whole divisor inline (the follow-up of task 4.3, decision of
+# 2026-11-26 "a whole Quick divisor for Mod"), two runs, before -> after:
+# bq48.xqmodc3 1506.5 -> 238.6, xqmodqw 1479.7 -> 296.1, xlmodqw 1462.2
+# -> 668.0; a fractional Quick divisor pays the test: bmath.qmod 1506.6
+# -> 1520.5, bq48.xlmodq 1492.7 -> 1506.5 (within their budgets); a
+# constant with a fraction does not (bq48.xqmodc 1539.2 -> 1539.0).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -676,9 +682,9 @@ bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Qu
 bq48.qdiv4addl                507          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
 bq48.xqmulhaddl               294          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
 bq48.xldivqw                  832          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole)
-bq48.xqmodc3                 1525          -  x=q Mod 3 (a Quick Mod a whole constant)
-bq48.xqmodqw                 1498          -  x=q Mod qw (qw=4: a Quick Mod a Quick that is whole)
-bq48.xlmodqw                 1480          -  x=l Mod qw (a Long Mod a Quick that is whole: a 48.16 dividend)
+bq48.xqmodc3                  244          -  x=q Mod 3 (a Quick Mod a whole constant: inline, one DIVU)
+bq48.xqmodqw                  303          -  x=q Mod qw (qw=4: a Quick Mod a Quick that is whole at run time: one DIVU)
+bq48.xlmodqw                  678          -  x=l Mod qw (a Long Mod a Quick that is whole: a 48.16 dividend, three DIVU)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
