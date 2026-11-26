@@ -8207,6 +8207,7 @@ rows:
     text: "Every operation is typed by its own two operands and the type the result is wanted in, so the order of the operands does not matter (`NPrint 1+1+1+q` and `NPrint q+1+1+1` both 4.5 for `q=1.5`), a chain with a Quick and a Long is computed exactly and rounded once (`r.l=l+q+p` 14 for `l=10`, `p=2.75`) and `Mod` with a fraction is exact (`x.q=q Mod 2` 1.5 for `q=7.5`); the original typed from left to right and gave 4, 13 and 1. A constant with a point as a shift count (`vb LSL 2.0`) is refused with \"Illegal Operator for Type\"."
     page: compiler
     anchor: operand-order
+    highlight: true
   - issue: 1183
     severity: 1
     topic: "Compiler"
