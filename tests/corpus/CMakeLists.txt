@@ -698,7 +698,7 @@ corpus_expect_selftest(corpus_originals_orig_changed 1
 	"ref: OUTPUT DIFFERS; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), output as expected \\(matched \\[fixed #1\\]\\)\n  ref: [^\n]*orig-changed/t01_int.orig.out line 1: expected \"667 1801 -699678 -3\", got \"667 1801 -699678 -2\"\n1 checks, 1 with differences"
 	orig-changed ref-port originals)
 corpus_expect_selftest(corpus_originals_exe_differs 0
-	"ref: output as expected; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), output as expected \\(matched \\[fixed #1\\]\\)\n1 checks, 0 with differences"
+	"ref: output as expected \\(matched \\[orig\\]\\); port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), output as expected \\(matched \\[fixed #1\\]\\)\n1 checks, 0 with differences"
 	unlisted ref-port-clib originals)
 corpus_expect_selftest(corpus_originals_exe_differs_output 1
 	"ref: OUTPUT DIFFERS; port: exe differs \\(informational: [0-9a-f]+, [0-9a-f]+\\), OUTPUT DIFFERS\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n[^\n]*wrong-out/t01_int.out line 1[^\n]*\n1 checks, 1 with differences"
