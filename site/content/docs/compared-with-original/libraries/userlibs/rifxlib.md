@@ -7,6 +7,38 @@ aliases: [/docs/compared-with-original/fixed-bugs/libraries/userlibs/rifxlib/]
 
 {{< fixed-bugs-library >}}
 
+## Changes for existing programs
+
+### `Derez` returned no useful value {#derez-result}
+
+`Derez` of
+[rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}) makes a
+picture blocky. It can also be used as a function: it returns -1 when it
+did its work and 0 when it did nothing, for a `derez_value` of 0.
+
+**What happened.** The original set no result: a program that used
+`Derez` as a function got whatever was left in the register: a value
+of the program from before the call, a loop counter, or a word of a
+table or of the picture. This program asks `Derez` for its result four times:
+
+```
+DEFTYPE .l
+BitMap 1,320,16,1
+BitMap 2,320,16,1
+r=Derez(1,2,0,0,0,8) : NPrint "0: ",r
+r=Derez(1,2,0,0,1,8) : NPrint "1: ",r
+r=Derez(1,2,0,0,2,8) : NPrint "2: ",r
+r=Derez(1,2,0,0,3,8) : NPrint "3: ",r
+```
+
+With the original it printed `64`, `65535`, `0` and `0`; with the port
+it prints `0`, `-1`, `-1` and `-1`.
+
+**What to change.** A program that uses `Derez` as a statement works as
+before.
+
+Issue: [Derez is declared with a long result but returns no defined value (#672)](https://github.com/fubar-coder/bb2-c/issues/672).
+
 ## Other fixes {#other-fixes}
 
 In the lists of fixes below, each point says first what the port does
@@ -18,8 +50,7 @@ otherwise.
 These fixes concern
 [rifxlib]({{< relref "/docs/libraries/userlibs/rifxlib" >}}), the bitmap
 effects by Reflective Images. The fix of
-[the result of `Derez`]({{< relref "/docs/compared-with-original/libraries#rwe-effect-results" >}}) is described for several libraries
-together.
+[the result of `Derez`](#derez-result) is described above.
 
 * `ClearBitmap` clears the whole area. The original left the last word
   of each bitplane's area as it was and cleared the word in front of

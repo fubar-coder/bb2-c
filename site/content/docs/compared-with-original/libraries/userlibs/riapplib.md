@@ -91,7 +91,7 @@ files on it or chooses it; `AppEvent` fetches the message, and
 `NextAppFile`, `AppFile` and `AppLock` tell which files it holds. The
 fixes of [the result of `AddAppMenu`](#addappmenu-result), of
 [the result of `AppEventID`](#appeventid-no-event), of
-[the text that follows `NextAppFile` and `AppFile`]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}})
+[the text that follows `NextAppFile` and `AppFile`]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}})
 and of [the local variables after `AddAppIcon`](#more-fixes) are
 described elsewhere on this page.
 

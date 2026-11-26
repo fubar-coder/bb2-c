@@ -48,7 +48,7 @@ These fixes concern
 and colour requesters of req.library, a requester library that is not
 part of AmigaOS, by Steven Matty; the fix of
 [its default flags](#reqfilerequest-default-flags) is described above,
-and the fix of [the text that follows `ReqFileRequest`]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}})
+and the fix of [the text that follows `ReqFileRequest`]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}})
 for several libraries together.
 
 * `ReqFileRequest` returns the path of the file the user chose. The

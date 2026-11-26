@@ -39,6 +39,29 @@ place after the `CopperMove`.
 
 Issue: [GetCCOffset returns -1 after CopperResetAdr although the commands work (#593)](https://github.com/fubar-coder/bb2-c/issues/593).
 
+### `DoColSplit` and `CopperAGACol` returned no useful value {#rwe-effect-results}
+
+`DoColSplit` of
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}})
+writes a colour split into the custom space of a coplist, and
+`CopperAGACol` writes one AGA colour there. Both can also be used as
+functions: they return -1 when they wrote their instructions and 0 when
+no custom space was chosen with `CopperReset` or `CopperResetAdr`.
+
+**What happened.** The original set no result for `DoColSplit`: the
+program got whatever the command had left in the register, the address
+of its colour table or a colour step of the gradient. `CopperAGACol`
+returned 1234 without a custom space and its colour number with one.
+
+**What to change.** A program that uses the commands as statements
+works as before. One that used the colour number `CopperAGACol`
+returned takes it from its own variables.
+
+Issues:
+
+* [DoColSplit is declared with a word result but returns no defined value (#592)](https://github.com/fubar-coder/bb2-c/issues/592)
+* [CopperAGACol is declared with a long result but returns 1234 or its col# argument (#590)](https://github.com/fubar-coder/bb2-c/issues/590)
+
 ## Other fixes {#other-fixes}
 
 In the lists of fixes below, each point says first what the port does
@@ -50,10 +73,9 @@ otherwise.
 These fixes concern
 [ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}}),
 the copper instructions by Reflective Images for the custom space of a
-coplist. The fix of [`GetCCOffset` after `CopperResetAdr`](#getccoffset-resetadr)
-is described above, and the fix of
-[the results of `DoColSplit` and `CopperAGACol`]({{< relref "/docs/compared-with-original/libraries#rwe-effect-results" >}})
-for several libraries together.
+coplist. The fixes of [`GetCCOffset` after `CopperResetAdr`](#getccoffset-resetadr)
+and of [the results of `DoColSplit` and `CopperAGACol`](#rwe-effect-results)
+are described above.
 
 * A colour split of `DoColSplit` that starts at line 0 starts there. The
   original first wrote the wait for line 256 that the copper needs for

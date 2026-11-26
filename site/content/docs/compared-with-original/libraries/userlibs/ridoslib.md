@@ -19,7 +19,7 @@ These fixes concern
 [ridoslib]({{< relref "/docs/libraries/userlibs/ridoslib" >}}), the DOS
 helpers of Red When Excited: file notification, the list of devices,
 volumes and assigns, and splitting a path; the fix of
-[the text that follows `GetPathName` and `NextDevice`]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}})
+[the text that follows `GetPathName` and `NextDevice`]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}})
 is described for several libraries together.
 
 * Programs that use the library run on Kickstart 1.x. There

@@ -69,7 +69,7 @@ These fixes concern
 [rimisclib]({{< relref "/docs/libraries/userlibs/rimisclib" >}}), the
 miscellaneous commands of Reflective Images and Steve Matty; the fix
 of [`NextArg$`](#nextarg-doubled-quote) is described above, and the fix
-of [the text that follows a string function]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}})
+of [the text that follows a string function]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}})
 for several libraries together.
 
 * `WorkbenchHere` works: it returns -1 if the title of an open screen

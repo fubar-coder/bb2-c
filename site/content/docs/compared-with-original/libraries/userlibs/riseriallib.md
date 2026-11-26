@@ -84,7 +84,7 @@ the serial port with interrupts of its own. `SerialGot` is described in
 [Changes for existing programs](#serialgot-count), the block commands
 in [Changes you may notice](#serial-block-commands), and text after
 `SerialReadString` in
-[Text after a string function]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}}).
+[Text after a string function]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}}).
 
 * `SerialClose` switches only the library's two serial interrupts off
   and back to their state at `SerialOpen`. The original switched every

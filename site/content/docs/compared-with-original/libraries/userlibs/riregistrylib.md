@@ -19,7 +19,7 @@ These fixes concern
 [riregistrylib]({{< relref "/docs/libraries/userlibs/riregistrylib" >}}),
 the interface of Red When Excited to registry.library, a settings
 database that is not available any more; the fix of
-[the text that follows its string functions]({{< relref "/docs/compared-with-original/libraries#rwe-text-after-string-function" >}})
+[the text that follows its string functions]({{< relref "/docs/compared-with-original/libraries#text-after-string-function" >}})
 is described for several libraries together. `LockRegistry` locks a registry structure and makes
 it the current one, on which the other commands work; locks can be
 nested, and `UnlockRegistry` returns to the one before.

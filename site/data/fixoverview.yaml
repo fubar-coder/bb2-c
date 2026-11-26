@@ -2327,7 +2327,7 @@ rows:
     text: "`GTGetAttrs` and `GTSetAttrs` in a string expression give a correct joined string; the original built it over a tag list inside the library and overwrote memory."
     short: "In a string expression give a correct joined string."
     page: libraries
-    anchor: text-after-string-function
+    anchor: string-function-wrong-place
   - issue: 330
     severity: 3
     topic: "Graphics"
@@ -3058,7 +3058,7 @@ rows:
     text: "Text added after `Replace$` with an empty search string comes out right; the original put a byte of its arguments in its place."
     short: "Text added after it with an empty search string comes out right."
     page: libraries
-    anchor: text-after-string-function
+    anchor: string-function-wrong-place
   - issue: 430
     severity: 5
     topic: "Sound"
@@ -3463,7 +3463,7 @@ rows:
     text: "Text appended to `RTEZLoadFile` or `RTFileRequest` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to the result follows it."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 465
     severity: 5
     topic: "Strings"
@@ -3472,7 +3472,7 @@ rows:
     text: "Text appended to `RTEZSaveFile` follows the chosen path; the original wrote it over the end of the path or behind its arguments."
     short: "Text appended to the result follows the chosen path."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: string-function-wrong-place
   - issue: 454
     severity: 5
     topic: "Windows & screens"
@@ -6099,8 +6099,8 @@ rows:
     command: "Derez"
     text: "`Derez` used as a function returns -1 when it worked and 0 for a derez value of 0; the original returned whatever a register held."
     short: "Used as a function, returns -1 when it worked and 0 for a derez value of 0."
-    page: libraries
-    anchor: rwe-effect-results
+    page: libraries/userlibs/rifxlib
+    anchor: derez-result
   - issue: 668
     severity: 2
     topic: "Graphics"
@@ -6189,7 +6189,7 @@ rows:
     command: "CopperAGACol"
     text: "`CopperAGACol` used as a function returns -1 when it wrote the colour and 0 without a custom space; the original returned 1234 or its colour number."
     short: "Used as a function, returns -1 when it wrote the colour and 0 without a custom space."
-    page: libraries
+    page: libraries/userlibs/ricopperfxlib
     anchor: rwe-effect-results
   - issue: 592
     severity: 1
@@ -6198,7 +6198,7 @@ rows:
     command: "DoColSplit"
     text: "`DoColSplit` used as a function returns -1 when it wrote the split and 0 without a custom space; the original returned whatever a register held."
     short: "Used as a function, returns -1 when it wrote the split and 0 without a custom space."
-    page: libraries
+    page: libraries/userlibs/ricopperfxlib
     anchor: rwe-effect-results
   - issue: 593
     severity: 1
@@ -6370,7 +6370,7 @@ rows:
     text: "Text appended to `NextAppFile` or `AppFile` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to `NextAppFile` or `AppFile` follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 618
     severity: 5
     topic: "Strings"
@@ -6379,7 +6379,7 @@ rows:
     text: "Text appended to `GetPathName` or `NextDevice` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to `GetPathName` or `NextDevice` follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 670
     severity: 5
     topic: "Graphics"
@@ -6397,7 +6397,7 @@ rows:
     text: "Text appended to `ProgPath$`, `ProgDir$`, `ProgName$` or `DefaultFontName` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to `ProgPath$`, `ProgDir$`, `ProgName$` or `DefaultFontName` follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 752
     severity: 5
     topic: "Input"
@@ -6424,7 +6424,7 @@ rows:
     text: "Text appended to the string functions of the registry library follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to the string functions of the registry library follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 784
     severity: 5
     topic: "Strings"
@@ -6433,7 +6433,7 @@ rows:
     text: "Text appended to `ReqFileRequest` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to `ReqFileRequest` follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 795
     severity: 5
     topic: "Strings"
@@ -6442,7 +6442,7 @@ rows:
     text: "Text appended to `SerialReadString` follows the result; the original left a 0 byte between and lost the last character."
     short: "Text appended to `SerialReadString` follows the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: text-after-string-function
   - issue: 807
     severity: 5
     topic: "Graphics"
@@ -8324,7 +8324,7 @@ rows:
     text: "`EZRequest` and `EZRequestArgs` in a string expression let the rest of the expression follow the result; the original wrote it over address 0 or its argument list."
     short: "In a string expression, lets the rest of the expression follow the result."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: string-function-wrong-place
   - issue: 1028
     severity: 5
     topic: "Strings"
@@ -8333,7 +8333,7 @@ rows:
     text: "`ChangeWBSprite` in a string expression leaves the rest of the expression where it was; the original wrote it over a tag list inside the library."
     short: "In a string expression, leaves the rest of the expression where it was."
     page: libraries
-    anchor: rwe-text-after-string-function
+    anchor: string-function-wrong-place
   - issue: 1029
     severity: 5
     topic: "Numbers & dates"
