@@ -1223,6 +1223,30 @@ running program
 
 Issue: [A division or Mod by a constant 0 crashed the compiler (#1044)](https://github.com/fubar-coder/bb2-c/issues/1044).
 
+#### A constant Mod by a divisor below 1 {#mod-fraction-divisor}
+
+When both operands of a Quick `Mod` are constants and the divisor is
+smaller than 1, such as `0.5`, the original crashed the compiler with
+"Software Failure": it worked out the whole parts of the two numbers, and
+the whole part of the divisor is 0. The port compiles the line and gives
+the exact `Mod`, the same as for variables.
+
+```
+; original: Software Failure in the compiler    port: 0
+rq.q=5 Mod 0.5
+; original: Software Failure in the compiler    port: 0.25
+rq.q=5.25 Mod 0.5
+```
+
+A divisor of exactly 0 stays the compile error
+([A division by a constant 0](#division-by-zero)).
+
+**What to change:** nothing; the port accepts the line. With a variable
+divisor below 1 the original fails as well, when the program runs
+("Software Failure"); the port gives the exact `Mod` there too.
+
+Issue: [A constant Quick Mod by a divisor below 1 crashed the compiler (#1219)](https://github.com/fubar-coder/bb2-c/issues/1219).
+
 #### An operator too deep in an expression {#expression-too-complex}
 
 The compiler works out an expression in the processor's eight data

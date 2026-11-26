@@ -9237,3 +9237,12 @@ rows:
     short: "A left operand of a comparison that is a calculation is computed by its own operands."
     page: compiler
     anchor: quick-compare
+  - issue: 1219
+    severity: 5
+    topic: "Compiler"
+    library: "Compiler"
+    command: "Mod"
+    text: "A constant Quick `Mod` by a divisor below 1 (`5 Mod 0.5`) compiles and gives the exact result (0; `5.25 Mod 0.5` gives 0.25); the original crashed the compiler with \"Software Failure\"."
+    short: "`5 Mod 0.5` compiles and gives the exact `Mod`."
+    page: compiler
+    anchor: mod-fraction-divisor
