@@ -463,6 +463,13 @@
 # -> 668.0; a fractional Quick divisor pays the test: bmath.qmod 1506.6
 # -> 1520.5, bq48.xlmodq 1492.7 -> 1506.5 (within their budgets); a
 # constant with a fraction does not (bq48.xqmodc 1539.2 -> 1539.0).
+# The speed review's candidates (decision of 2026-11-26, "Speed review
+# of P+: the candidates and the rest"), main 8f9a8bee1 -> after: a whole
+# divisor at run time with a whole dividend not widened, a leading zero
+# digit skipped, a / at the top under a wanted Long as its Long:
+# bmath.lqdivw 854.0 -> 324.1, bq48.xldivqw 819.6 -> 486.7, xlmodqw
+# 668.1 -> 308.7; the new loops lxdivqw 859.6 -> 454.2, xlqdivqw 868.1
+# -> 576.8, xlxmodqw 660.1 -> 438.8.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -628,7 +635,7 @@ bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
 bmath.peekc                   126      124.6  c=Peek.l(4)
 bmath.mixmul                  483          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, four MULU, #1178, #1191)
 bmath.lqdiv                  2325          -  c=a4/q2 (a4=100, q2=3.25: compilerlib lqdiv, 32 steps)
-bmath.lqdivw                  868          -  c=a4/q7 (q7=3.0; P+: a 48.16 division under a Long, q7 whole at run time: inline)
+bmath.lqdivw                  329          -  c=a4/q7 (q7=3.0; P+: a 48.16 division under a Long, q7 whole at run time: inline, a4 not widened, its Long towards zero)
 bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
 bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
 bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
@@ -681,10 +688,13 @@ bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exa
 bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
 bq48.qdiv4addl                507          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
 bq48.xqmulhaddl               294          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
-bq48.xldivqw                  832          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole)
+bq48.xldivqw                  494          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole; l not widened, its high word 0 skipped: two DIVU)
 bq48.xqmodc3                  244          -  x=q Mod 3 (a Quick Mod a whole constant: inline, one DIVU)
 bq48.xqmodqw                  303          -  x=q Mod qw (qw=4: a Quick Mod a Quick that is whole at run time: one DIVU)
-bq48.xlmodqw                  678          -  x=l Mod qw (a Long Mod a Quick that is whole: a 48.16 dividend, three DIVU)
+bq48.xlmodqw                  314          -  x=l Mod qw (a Long Mod a Quick that is whole: l not widened, its high word 0 skipped: one DIVU)
+bq48.lxdivqw                  462          -  r=lx/qw (lx=100000: two DIVU of the Long, its Long towards zero)
+bq48.xlqdivqw                 586          -  x=(l+q)/qw (a 48.16 dividend by a whole Quick, its high long 0 skipped: two DIVU)
+bq48.xlxmodqw                 446          -  x=lx Mod qw (lx=100000: two DIVU of the Long)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)

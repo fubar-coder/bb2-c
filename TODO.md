@@ -1198,12 +1198,6 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   compilerlib routine for it changes the executables of every program that
   uses only the routines of #1178, inline it is four MULU and the carries.
   Its values must stay q48mul's (`tests/blitz2/expr-q48-paths.test.bas`).
-- [ ] **One cut towards zero for a 48.16 `/` at the top under a wanted
-  Long** (expr-tree-5 task 4.3, found when measuring bmath.lqdivw): the
-  operator cuts the quotient towards zero (`p5bin`, part 3) and the
-  consumer ETC_TRUNC (`p5exit`, `p5trunc48`) cuts it again, which changes
-  nothing (its fraction is 0 already) and costs about 30 cycles; drop one
-  of the two (same values, changed executables named).
 - [ ] **Programs not judged in a mixed configuration** (user decision
   2026-11-26, "Exclude, with reason (Recommended)"): `corpus_runerr_originals`
   does not judge t01_int in `port` (the CD's library without the fix of

@@ -8,11 +8,13 @@
 ; times a Word inline (the fast paths), a 48.16 division by a 16.16
 ; value that is whole at run time inline, Mod by a Quick that is whole at
 ; run time or by a whole constant inline (a Quick or a 48.16 dividend),
-; the operations in parameters (registers d1 to d5).  Each value is the
-; one the code of task 4.2 gives (all its 48.16 operations through
-; compilerlib's routines, measured once; the Mod checks on main ad8396cf9,
-; every such Mod through q48mod); a regression test of the fixed port, no
-; key, as select-fraction.test.bas.
+; a whole dividend of such a division or Mod not widened, a / at the top
+; under a wanted Long as its Long, the operations in parameters (registers
+; d1 to d5).  Each value is the one the code of task 4.2 gives (all its
+; 48.16 operations through compilerlib's routines, measured once; the Mod
+; checks on main ad8396cf9, every such Mod through q48mod; the checks of
+; the speed review's candidates, wd2_ and after, on main 8f9a8bee1); a
+; regression test of the fixed port, no key, as select-fraction.test.bas.
 Function.l pl1{a.l,b.l,c.l,d.l,e.l,f.l}
   Function Return a
 End Function
@@ -625,4 +627,81 @@ End Function
   !CheckEq{r,1,"wmod_if_eq"}
   r=0 : If ln Mod qnw<-3 Then r=1
   !CheckEq{r,1,"wmod_if_lt"}
+  ; a whole divisor at run time: a whole dividend not widened, a leading
+  ; zero digit skipped, a / at the top under a wanted Long as a Long
+  lmn.l=-2147483647 : lmn=lmn-1
+  r=lx/qw
+  !CheckEq{r,25000,"wd2_r_lx_div_qw"}
+  r=lx/qnw
+  !CheckEq{r,-33333,"wd2_r_lx_div_qnw"}
+  r=w/qw
+  !CheckEq{r,0,"wd2_r_w_div_qw"}
+  r=wn/qnw
+  !CheckEq{r,2,"wd2_r_wn_div_qnw"}
+  r=b/qnw
+  !CheckEq{r,1,"wd2_r_b_div_qnw"}
+  r=lm/qone
+  !CheckEq{r,2147483647,"wd2_r_lm_div_qone"}
+  r=lmn/qone
+  !CheckEq{r,-2147483648,"wd2_r_lmn_div_qone"}
+  r=lmn/qm
+  !CheckEq{r,65536,"wd2_r_lmn_div_qm"}
+  r=(lb+lb+q)/qnw
+  !CheckEq{r,0,"wd2_r_lblbq_div_qnw"}
+  r=(lx*qbig)/qw
+  !CheckEq{r,819175000,"wd2_r_lxqbig_div_qw"}
+  r=(l+q)/qw
+  !CheckEq{r,25,"wd2_r_lpq_div_qw"}
+  r=(ln-q)/qw
+  !CheckEq{r,-25000,"wd2_r_lnmq_div_qw"}
+  r=(ln-q)/q
+  !CheckEq{r,-40001,"wd2_r_lnmq_div_q"}
+  r=ln/q
+  !CheckEq{r,-40000,"wd2_r_ln_div_q"}
+  x=lx/qw
+  !CheckEq{Peek.l(&x),1638400000,"wd2_x_lx_div_qw"}
+  x=ln/qw
+  !CheckEq{Peek.l(&x),-1638400000,"wd2_x_ln_div_qw"}
+  x=lmn/qnw
+  !CheckEq{Peek.l(&x),-1431655766,"wd2_x_lmn_div_qnw"}
+  x=wn/qnw
+  !CheckEq{Peek.l(&x),152917,"wd2_x_wn_div_qnw"}
+  x=(lb+lb+q)/qnw
+  !CheckEq{Peek.l(&x),-1431666688,"wd2_x_lblbq_div_qnw"}
+  x=(lx*qbig)/qnw
+  !CheckEq{Peek.l(&x),-678778197,"wd2_x_lxqbig_div_qnw"}
+  r=pl3{l,l,lx/qw,l,l,l}
+  !CheckEq{r,25000,"wd2_pl3"}
+  r=pl4{l,l,l,ln/qnw,l,l}
+  !CheckEq{r,33333,"wd2_pl4"}
+  r=pl5{l,l,l,l,(lb+lb+q)/qnw,l}
+  !CheckEq{r,0,"wd2_pl5"}
+  r=pl6{l,l,l,l,l,ln/q}
+  !CheckEq{r,-40000,"wd2_pl6"}
+  r=pq4{q,p,q,lx/qnw,q,q}
+  !CheckEq{r,2110433963,"wd2_pq4"}
+  x=ln Mod qm
+  !CheckEq{Peek.l(&x),2036334592,"wm2_x_ln_mod_qm"}
+  r=ln Mod qm
+  !CheckEq{r,-34464,"wm2_r_ln_mod_qm"}
+  x=wn Mod qnw
+  !CheckEq{Peek.l(&x),-262144,"wm2_x_wn_mod_qnw"}
+  r=b Mod qw
+  !CheckEq{r,1,"wm2_r_b_mod_qw"}
+  x=lmn Mod qnw
+  !CheckEq{Peek.l(&x),-327680,"wm2_x_lmn_mod_qnw"}
+  x=lb Mod qnw
+  !CheckEq{Peek.l(&x),65536,"wm2_x_lb_mod_qnw"}
+  r=lmn Mod qm
+  !CheckEq{r,0,"wm2_r_lmn_mod_qm"}
+  x=lx Mod qbig
+  !CheckEq{Peek.l(&x),111345664,"wm2_x_lx_mod_qbig"}
+  x=(lb+lb+q) Mod qbig
+  !CheckEq{Peek.l(&x),294912,"wm2_x_lblbq_mod_qbig"}
+  x=(lx*qbig) Mod qnw
+  !CheckEq{Peek.l(&x),65536,"wm2_x_lxqbig_mod_qnw"}
+  r=pq5{q,p,q,p,ln Mod qm,q}
+  !CheckEq{r,2036334592,"wm2_pq5"}
+  r=pl4{l,l,l,lx Mod qnw,l,l}
+  !CheckEq{r,1,"wm2_pl4"}
 !EndTestCase

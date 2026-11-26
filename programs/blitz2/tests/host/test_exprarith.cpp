@@ -614,31 +614,135 @@ TEST_CASE("exprarith: the Word fast path of p5fast equals q48mul", "[exprarith]"
 }
 
 // ------------------------------------------ a whole divisor at run time (task 4.3)
-// eval.c's p5wholediv step by step: a 48.16 dividend's 64-bit magnitude
-// divided by the whole part |m| <= 32768 of a 16.16 divisor with four DIVU
-// (a word quotient per digit: an overflow fails), the sign of a eor b,
-// against exprarith_q48's division.
+// eval.c's p5wholediv step by step: |a| divided by the whole part |m| <=
+// 32768 of a 16.16 divisor with one DIVU per 16-bit digit (a word quotient
+// per digit: an overflow fails), a leading zero digit skipped (the code's
+// tst.l d1 and the beq.s after the first digit's move.w), the sign of a
+// eor b; a 48.16 dividend (four digits) or a whole one in d0, not widened
+// (the digits hi, lo and 0), and under a wanted Long at the top (ldiv)
+// the whole quotient's low 32 bits, the fraction digit left out; against
+// exprarith_q48's division (ldiv: cut towards zero, exprarith_q48_trunc).
 
 namespace {
 
-bool fast_wdiv(int64_t n, int32_t mraw, int64_t *out)
+// one DIVU of the 32-bit d by the word mm: false on its overflow
+bool divu(uint32_t &d, uint32_t mm)
+{
+    if ((d / mm) > 0xffff)
+        return false;
+    d = ((d % mm) << 16) | (d / mm);
+    return true;
+}
+
+// the 48.16 dividend n (d1:d0); plant: the high digits skipped also when
+// d1 is not 0 (the planted error)
+bool fast_wdiv(int64_t n, int32_t mraw, bool ldiv, int64_t *out, bool plant = false)
 {
     uint32_t sign = ((uint32_t)((uint64_t)n >> 32) ^ (uint32_t)mraw) >> 31;
-    uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n, q = 0;
+    uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n;
+    uint32_t d1 = (uint32_t)(u >> 32), d0 = (uint32_t)u, d3 = 0;
     int32_t m = mraw >> 16;
-    uint32_t mm = (uint32_t)(m < 0 ? -m : m), r = 0;
+    uint32_t mm = (uint32_t)(m < 0 ? -m : m);
 
-    for (int k = 3; k >= 0; k--) {
-        uint32_t cur = (r << 16) | (uint32_t)((u >> (16 * k)) & 0xffff);
-        if (cur / mm > 0xffff)
-            return false;                       // DIVU's overflow
-        q = (q << 16) | (cur / mm);
-        r = cur % mm;
+    if (d1 && !plant) {                         // tst.l d1: beq.s .low
+        d3 = d1 >> 16;                          // swap d1, move.w d1,d3: 0:w3
+        if (d3 && !divu(d3, mm))                // beq.s: 0
+            return false;
+        d1 = ((d3 & 0xffff) << 16) | (d1 & 0xffff);     // move.w d3,d1, swap d1: q3:w2
+        d3 = (d3 & 0xffff0000u) | (d1 & 0xffff);    // move.w d1,d3: r:w2
+        if (!divu(d3, mm))
+            return false;
+        d1 = (d1 & 0xffff0000u) | (d3 & 0xffff);    // move.w d3,d1: q3:q2
+    } else
+        d1 = 0;
+    d0 = (d0 << 16) | (d0 >> 16);               // .low: swap d0
+    d3 = (d3 & 0xffff0000u) | (d0 & 0xffff);    // move.w d0,d3: r:w1
+    if (!divu(d3, mm))
+        return false;
+    d0 = (d0 & 0xffff0000u) | (d3 & 0xffff);
+    d0 = (d0 << 16) | (d0 >> 16);               // swap d0: q1:w0
+    if (ldiv) {
+        d0 = (d0 & 0xffff0000u) | (d1 & 0xffff);    // move.w d1,d0
+        d0 = (d0 << 16) | (d0 >> 16);           // swap d0: q2:q1
+        if (sign)
+            d0 = 0u - d0;
+        *out = (int32_t)d0;
+        return true;
     }
+    d3 = (d3 & 0xffff0000u) | (d0 & 0xffff);    // move.w d0,d3: r:w0
+    if (!divu(d3, mm))
+        return false;
+    d0 = (d0 & 0xffff0000u) | (d3 & 0xffff);
+    uint64_t q = ((uint64_t)d1 << 32) | d0;
     if (sign)
         q = 0 - q;
     *out = (int64_t)q;
     return true;
+}
+
+// a whole dividend l in d0, not widened
+bool fast_wdivl(int32_t l, int32_t mraw, bool ldiv, int64_t *out)
+{
+    uint32_t d1 = (uint32_t)l ^ (uint32_t)mraw;     // the sign
+    uint32_t d0 = mag32(l), d3 = 0;
+    int32_t m = mraw >> 16;
+    uint32_t mm = (uint32_t)(m < 0 ? -m : m);
+
+    d0 = (d0 << 16) | (d0 >> 16);               // swap d0
+    d3 = d0 & 0xffff;                           // moveq #0,d3, move.w d0,d3: 0:hi
+    if (d3 && !divu(d3, mm))                    // beq.s: 0
+        return false;
+    d0 = (d0 & 0xffff0000u) | (d3 & 0xffff);    // move.w d3,d0
+    d0 = (d0 << 16) | (d0 >> 16);               // swap d0
+    d3 = (d3 & 0xffff0000u) | (d0 & 0xffff);    // move.w d0,d3: r:lo
+    if (!divu(d3, mm))
+        return false;
+    d0 = (d0 & 0xffff0000u) | (d3 & 0xffff);    // the whole quotient
+    if (ldiv) {
+        if ((int32_t)d1 < 0)
+            d0 = 0u - d0;
+        *out = (int32_t)d0;
+        return true;
+    }
+    d3 &= 0xffff0000u;                          // clr.w d3: r:0
+    if (!divu(d3, mm))
+        return false;
+    uint32_t hi = d0 >> 16;                     // swap d0, move.w d0,d1
+    d0 = (d0 << 16) | (d3 & 0xffff);            // move.w d3,d0
+    uint64_t q = ((uint64_t)hi << 32) | d0;
+    if ((int32_t)d1 < 0)
+        q = 0 - q;
+    *out = (int64_t)q;
+    return true;
+}
+
+// p5truncd0: d0/d1 towards zero as a Long (q48trunc's code)
+int32_t truncd0(int64_t v)
+{
+    uint32_t d1 = (uint32_t)((uint64_t)v >> 32), d0 = (uint32_t)v;
+    uint32_t f = (d1 << 16) | (d0 >> 16);
+
+    if ((int32_t)d1 < 0 && (d0 & 0xffff))
+        f++;
+    return (int32_t)f;
+}
+
+bool wdiv_ok(int64_t n, int32_t mraw, bool plant = false)
+{
+    int64_t got, want = q48(ETO_DIV, n, (int64_t)mraw);
+    unsigned f = 0;
+
+    return fast_wdiv(n, mraw, false, &got, plant) && got == want && fast_wdiv(n, mraw, true, &got, plant)
+           && got == exprarith_q48_trunc(want, ET_LONG, &f) && truncd0(want) == exprarith_q48_trunc(want, ET_LONG, &f);
+}
+
+bool wdivl_ok(int32_t l, int32_t mraw)
+{
+    int64_t got, want = q48(ETO_DIV, exprarith_whole_q48(l), (int64_t)mraw);
+    unsigned f = 0;
+
+    return fast_wdivl(l, mraw, false, &got) && got == want && fast_wdivl(l, mraw, true, &got)
+           && got == exprarith_q48_trunc(want, ET_LONG, &f);
 }
 
 } // namespace
@@ -649,12 +753,20 @@ TEST_CASE("exprarith: a whole divisor at run time equals q48div", "[exprarith]")
     std::vector<int64_t> ns = { 0, 1, -1, 0x8000, -0x8000, 0x10000, -0x10000, 0x7fffffff, -0x7fffffffLL - 1,
                                 0x7fffffffLL << 16, -(0x7fffffffLL << 16), (int64_t)0x00007fffffffffffLL << 16,
                                 -((int64_t)0x00007fffffffffffLL << 16), 0x7fffffffffffffffLL, -0x7fffffffffffffffLL,
-                                0x123456789abcLL, -0x123456789abcLL, 0xffffffffLL, -0xffffffffLL };
+                                0x123456789abcLL, -0x123456789abcLL, 0xffffffffLL, -0xffffffffLL, 0x100000000LL,
+                                -0x100000000LL, 0xffff00000000LL, 0x1000000000000LL, -0x1000000000000LL,
+                                (int64_t)0x8000000000000000ULL };
+    std::vector<int32_t> ls = { 0, 1, -1, 2, 0xffff, -0xffff, 0x10000, -0x10000, 0x7fffffff, -0x7fffffff,
+                                (int32_t)0x80000000u, 100, -100, 100000, -100000, 0x7fff, -0x8000, 0x12345678 };
     for (int i = 0; i < 40; i++) {
         uint64_t v = ((uint64_t)rnd32(seed) << 32) | rnd32(seed);
         ns.push_back((int64_t)v >> (rnd32(seed) % 40));
         ns.push_back((int64_t)(int32_t)rnd32(seed));
+        ls.push_back((int32_t)rnd32(seed));
+        ls.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 31));
     }
+    for (int32_t l : ls)
+        ns.push_back(exprarith_whole_q48(l));
     bool ok = true;
     int64_t badn = 0;
     int32_t badm = 0;
@@ -662,33 +774,45 @@ TEST_CASE("exprarith: a whole divisor at run time equals q48div", "[exprarith]")
         if (!m)
             continue;
         int32_t mraw = (int32_t)((uint32_t)m << 16);
-        for (int64_t n : ns) {
-            int64_t got;
-            if (!fast_wdiv(n, mraw, &got) || got != q48(ETO_DIV, n, (int64_t)mraw)) {
+        for (int64_t n : ns)
+            if (ok && !wdiv_ok(n, mraw)) {
                 ok = false;
                 badn = n;
                 badm = m;
-                break;
             }
-        }
+        for (int32_t l : ls)
+            if (ok && !wdivl_ok(l, mraw)) {
+                ok = false;
+                badn = l;
+                badm = m;
+            }
     }
     INFO("n ", badn, " m ", badm);
+    CHECK(ok);
+    // every Long dividend in steps for the divisors 1, -1, 3, 32767, -32768
+    for (int32_t m : { 1, -1, 3, 32767, -32768 }) {
+        int32_t mraw = (int32_t)((uint32_t)m << 16);
+        for (int64_t l = INT32_MIN; l <= INT32_MAX && ok; l += 65521)
+            ok = wdivl_ok((int32_t)l, mraw) && wdivl_ok((int32_t)(l | 0xffff), mraw);
+    }
     CHECK(ok);
     for (int i = 0; i < 2000000 && ok; i++) {
         uint64_t v = ((uint64_t)rnd32(seed) << 32) | rnd32(seed);
         int64_t n = (int64_t)v >> (rnd32(seed) % 48 + 1);
+        int32_t l = (int32_t)rnd32(seed) >> (rnd32(seed) % 32);
         int32_t m = (int32_t)(rnd32(seed) & 0xffff) - 32768;
-        int64_t got;
         if (!m)
             continue;
         int32_t mraw = (int32_t)((uint32_t)m << 16);
-        ok = fast_wdiv(n, mraw, &got) && got == q48(ETO_DIV, n, (int64_t)mraw);
+        ok = wdiv_ok(n, mraw) && wdivl_ok(l, mraw);
     }
     CHECK(ok);
-    // a planted error is seen: the sign of the divisor dropped
+    // a planted error is seen: the sign of the divisor dropped, the high
+    // digits skipped when they are not 0
     int64_t got = 0;
-    CHECK(fast_wdiv(-0x30000, 2 << 16, &got));
+    CHECK(fast_wdiv(-0x30000, 2 << 16, false, &got));
     CHECK(got != q48(ETO_DIV, -0x30000, (int64_t)(-2 * 65536)));
+    CHECK(!wdiv_ok(0x123456789abcLL, 3 << 16, true));
 }
 
 // ------------------------------------------ Mod by a whole divisor (task 4.3)
@@ -724,22 +848,28 @@ bool fast_qmod(int32_t a, int32_t b, int32_t *out, bool plant = false)
     return true;
 }
 
-// p5wholemod: d1:d0 = |a|, d3 = |m|, three DIVU over the whole part's
-// words w2, w1, w0 (the remainder above each in d2), d0 = r:fraction,
-// a's sign in 64 bits, b sign-extended added when negative
+// p5wholemod: d1:d0 = |a|, d3 = |m|, the high digits skipped when d1 is 0
+// (tst.l d1) and the first one when it is 0 (beq.s), one DIVU per digit of
+// the whole part (w2, w1, w0; the remainder above each in d2), d0 =
+// r:fraction, a's sign in 64 bits, b sign-extended added when negative
 bool fast_wmod(int64_t n, int32_t b, int64_t *out, bool plant = false)
 {
     uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n;
-    uint32_t d3 = mag32(b) >> 16, d2 = 0;
+    uint32_t d1 = (uint32_t)(u >> 32), d3 = mag32(b) >> 16, d2 = 0;
 
     if (!d3)
         return false;
-    for (int k = 3; k >= 1; k--) {
-        uint32_t cur = (d2 & 0xffff0000u) | (uint32_t)((u >> (16 * k)) & 0xffff);
-        if (cur / d3 > 0xffff)
-            return false;                       // DIVU's overflow
-        d2 = ((cur % d3) << 16) | ((cur / d3) & 0xffff);
+    if (d1) {                                   // tst.l d1: beq.s .low
+        d2 = d1 >> 16;                          // swap d1, move.w d1,d2: 0:w2
+        if (d2 && !divu(d2, d3))                // beq.s: 0
+            return false;
+        d2 = (d2 & 0xffff0000u) | (d1 & 0xffff);    // swap d1, move.w d1,d2: r:w1
+        if (!divu(d2, d3))
+            return false;
     }
+    d2 = (d2 & 0xffff0000u) | (uint32_t)((u >> 16) & 0xffff);  // .low: swap d0, move.w d0,d2: r:w0
+    if (!divu(d2, d3))
+        return false;
     uint64_t v = (d2 & 0xffff0000u) | (uint32_t)(u & 0xffff);
     if (n < 0) {
         v = 0 - v;                              // neg.l d0, negx.l d1
@@ -747,6 +877,37 @@ bool fast_wmod(int64_t n, int32_t b, int64_t *out, bool plant = false)
             v += (uint64_t)(int64_t)b;          // add.l d2,d0, addx.l d3,d1
     }
     *out = (int64_t)v;
+    return true;
+}
+
+// p5wholemod with a whole dividend l in d0, not widened: d3 = a's high
+// word : |m|, the digits hi and lo of |l| in d0 (hi skipped when 0)
+bool fast_wmodl(int32_t l, int32_t b, int64_t *out)
+{
+    uint32_t d3 = mag32(b), d1 = mag32(l), d0;
+
+    d3 = (d3 & 0xffff0000u) | ((uint32_t)l >> 16);  // swap d0, move.w d0,d3
+    d3 = (d3 << 16) | (d3 >> 16);               // swap d3: the sign of a : |m|
+    if (!(d3 & 0xffff))
+        return false;
+    d0 = d1 >> 16;                              // moveq #0,d0, swap d1, move.w d1,d0: 0:hi
+    if (d0 && !divu(d0, d3 & 0xffff))           // beq.s: 0
+        return false;
+    d0 = (d0 & 0xffff0000u) | (d1 & 0xffff);    // swap d1, move.w d1,d0: r:lo
+    if (!divu(d0, d3 & 0xffff))
+        return false;
+    d0 &= 0xffff0000u;                          // clr.w d0
+    uint32_t hi = 0;                            // moveq #0,d1
+    if ((int32_t)d3 < 0) {                      // tst.l d3
+        d0 = 0u - d0;                           // neg.l d0
+        if ((int32_t)d0 < 0) {
+            uint64_t v = ((uint64_t)0xffffffffu << 32) | d0;     // moveq #-1,d1
+            v += (uint64_t)(int64_t)b;          // add.l d2,d0, addx.l d3,d1
+            *out = (int64_t)v;
+            return true;
+        }
+    }
+    *out = (int64_t)(((uint64_t)hi << 32) | d0);
     return true;
 }
 
@@ -770,6 +931,15 @@ bool wmod_ok(int64_t n, int32_t m, bool plant = false)
     return fast_wmod(n, b, &got, plant) && got == q48(ETO_MOD, n, exprarith_q16_q48(b));
 }
 
+// p5wholemod for the whole dividend l (not widened) and the whole divisor m
+bool wmodl_ok(int32_t l, int32_t m)
+{
+    int32_t b = (int32_t)((uint32_t)m << 16);
+    int64_t got;
+
+    return fast_wmodl(l, b, &got) && got == q48(ETO_MOD, exprarith_whole_q48(l), exprarith_q16_q48(b));
+}
+
 } // namespace
 
 TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
@@ -778,6 +948,8 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
     std::vector<int32_t> qs = { 0, 1, -1, 0xffff, -0xffff, 0x8000, -0x8000, 0x10000, -0x10000, 0x7fffffff,
                                 -0x7fffffff, (int32_t)0x80000000u, 0x7fff0000, -0x7fff0000, 0x7fff8000,
                                 -0x7fff8000, 0x30000, -0x30000, 0x2c000, -0x1c000 };
+    std::vector<int32_t> ls = { 0, 1, -1, 7, -7, 0xffff, -0xffff, 0x10000, -0x10000, 0x7fffffff, -0x7fffffff,
+                                (int32_t)0x80000000u, 100000, -100000, 0x7fff, -0x8000, 0x12345678 };
     std::vector<int64_t> ns = { 0, 1, -1, 0x10000, -0x10000, 0x7fffffffLL << 16, -(0x7fffffffLL << 16),
                                 -(0x80000000LL << 16), (int64_t)0x00007fffffffffffLL << 16,
                                 -((int64_t)0x00007fffffffffffLL << 16), 0x7fffffffffffffffLL,
@@ -788,7 +960,11 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
         qs.push_back((int32_t)rnd32(seed));
         qs.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 31));
         ns.push_back((int64_t)v >> (rnd32(seed) % 40));
+        ls.push_back((int32_t)rnd32(seed));
+        ls.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 31));
     }
+    for (int32_t l : ls)
+        ns.push_back(exprarith_whole_q48(l));
     for (int32_t a : qs)
         ns.push_back(exprarith_q16_q48(a));
     bool ok = true;
@@ -809,16 +985,28 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
                 bad = n;
                 badm = m;
             }
+        for (int32_t l : ls)
+            if (ok && !wmodl_ok(l, m)) {
+                ok = false;
+                bad = l;
+                badm = m;
+            }
     }
     INFO("a ", bad, " m ", badm);
+    CHECK(ok);
+    // every Long dividend in steps for the divisors 1, -1, 3, 32767, -32768
+    for (int32_t m : { 1, -1, 3, 32767, -32768 })
+        for (int64_t l = INT32_MIN; l <= INT32_MAX && ok; l += 65521)
+            ok = wmodl_ok((int32_t)l, m) && wmodl_ok((int32_t)(l | 0xffff), m);
     CHECK(ok);
     for (int i = 0; i < 2000000 && ok; i++) {
         uint64_t v = ((uint64_t)rnd32(seed) << 32) | rnd32(seed);
         int64_t n = (int64_t)v >> (rnd32(seed) % 48);
         int32_t a = (int32_t)rnd32(seed);
+        int32_t l = (int32_t)rnd32(seed) >> (rnd32(seed) % 32);
         int32_t m = (int32_t)(rnd32(seed) & 0xffff) - 32768;
         if (m)
-            ok = qmod_ok(a, m) && wmod_ok(n, m);
+            ok = qmod_ok(a, m) && wmod_ok(n, m) && wmodl_ok(l, m);
     }
     CHECK(ok);
     // a planted error is seen: the divisor not added to a negative
