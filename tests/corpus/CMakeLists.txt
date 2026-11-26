@@ -133,7 +133,8 @@ set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 # unfixed original bug and a fix that no expected file of the program can
 # describe (the expect forms allow one fix per program, tests/README.md
 # "Corpus"); the pass reports "not judged" and REASON and judges the
-# program's other configurations.  An entry naming no pass is an error here,
+# program's other configurations.  An entry naming no pass is an error of
+# the configure step (check-unjudged.cmake),
 # one naming no configuration or program of the pass an error of the pass
 # (exit status 2), one whose output is as expected again is STALE (the pass
 # fails, corpus.h unjudged=)
@@ -218,7 +219,6 @@ function(corpus_pass name)
 		foreach(u IN LISTS CORPUS_UNJUDGED)
 			if(u MATCHES "^${test}:")
 				string(APPEND text "unjudged=${u}\n")
-				set_property(GLOBAL APPEND PROPERTY CORPUS_UNJUDGED_USED "${u}")
 			endif()
 		endforeach()
 		foreach(f IN LISTS arg_DATA)
@@ -231,6 +231,7 @@ function(corpus_pass name)
 		file(GENERATE OUTPUT ${work}.pass CONTENT "${text}")
 		set(passfile_${kind} ${work}.pass)
 		add_test(NAME ${test} COMMAND ${CORPUSRUN} pass ${work}.pass)
+		set_property(GLOBAL APPEND PROPERTY CORPUS_PASS_TESTS ${test})
 		# one session per configuration, one after the other if there are not
 		# enough emulator slots free, each maybe waiting for one
 		math(EXPR limit "${CORPUS_TIMEOUT} * ${configs} + 120 + ${configs} * ${EMULATION_QUEUE_WAIT}")
@@ -283,12 +284,24 @@ corpus_pass(corpus_serial SERIAL LAUNCHER reqtrap SOURCES ${corpus_tests-serial}
 corpus_pass(corpus_serial_runerr RUNTIME_ERRORS SERIAL LAUNCHER reqtrap
 	SOURCES ${corpus_tests-serial})
 # an entry of CORPUS_UNJUDGED names one of the passes above
-get_property(unjudged_used GLOBAL PROPERTY CORPUS_UNJUDGED_USED)
-foreach(u IN LISTS CORPUS_UNJUDGED)
-	if(NOT u IN_LIST unjudged_used)
-		message(FATAL_ERROR "CORPUS_UNJUDGED: ${u}: no corpus pass of that name")
-	endif()
-endforeach()
+# (check-unjudged.cmake).  corpus_unjudged_check_broken: an entry of a pass
+# that does not exist must fail the check
+include(${CMAKE_CURRENT_SOURCE_DIR}/check-unjudged.cmake)
+get_property(corpus_pass_tests GLOBAL PROPERTY CORPUS_PASS_TESTS)
+corpus_check_unjudged("${CORPUS_UNJUDGED}" "${corpus_pass_tests}")
+add_test(NAME corpus_unjudged_check COMMAND ${CMAKE_COMMAND}
+	"-DENTRIES=corpus_x:port:t01_int|r;corpus_y_originals:ref:t02_float|s"
+	"-DPASSES=corpus_x;corpus_y_originals"
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-unjudged.cmake)
+set_tests_properties(corpus_unjudged_check PROPERTIES
+	PASS_REGULAR_EXPRESSION "check-unjudged: every entry names a pass")
+add_test(NAME corpus_unjudged_check_broken COMMAND ${CMAKE_COMMAND}
+	"-DENTRIES=corpus_x:port:t01_int|r;corpus_runer_originals:port:t01_int|s"
+	"-DPASSES=corpus_x;corpus_runerr_originals"
+	-P ${CMAKE_CURRENT_SOURCE_DIR}/check-unjudged.cmake)
+set_tests_properties(corpus_unjudged_check_broken PROPERTIES
+	PASS_REGULAR_EXPRESSION "CORPUS_UNJUDGED: corpus_runer_originals:port:t01_int\\|s: no corpus pass[ \n]+corpus_runer_originals"
+	FAIL_REGULAR_EXPRESSION "every entry names a pass")
 # the reference sends the same with and without runtime error checking: both
 # passes judge its serial bytes against their committed NAME.serial, so the
 # committed files of the two passes must be equal.  The twin compares a file
