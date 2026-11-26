@@ -447,6 +447,14 @@
 # fmod 966.1/2400.0/2402.2, lqdivw 573.6/1219.0/1173.2, qqmul
 # 504.1/651.5/605.1, qqmulw 280.6/527.0/483.1, qqmulc 164.7/526.5/481.1,
 # inteq 1161.5/2013.2/1856.7.
+# The fast paths of task 4.3 (a Quick with a constant divisor or a
+# factor below 1, a Quick times a Word, a whole Quick divisor at run
+# time; decisions of 2026-11-26), two runs, before (18fcb3640) -> after:
+# bcmp.inteq 1856.6 -> 1073.2, bmath.lqdivw 1173.2 -> 856.2,
+# bq48.qdiv4addl 1221.2 -> 498.2, qmulwaddp 536.7 -> 307.2, xldivqw
+# 1137.7 -> 820.2, xqmulhaddl 633.2 -> 287.2; a fractional Quick divisor
+# pays the test: bmath.lqdiv 1861.2 -> 1875.8, bq48.xldivq 1855.2 ->
+# 1866.7 (within their budgets).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -494,7 +502,7 @@ bcmp.emptylong                  3          -  the empty loop again, 150000 itera
 bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
 bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)
 bcmp.leqq                     120      107.0  If cq=y Then c=1 (Long = Quick, no fraction)
-bcmp.inteq                   1879     1150.0  If n/2=Int(n/2) Then c=1 (n=8; P+: beside the Long of Int both sides 48.16)
+bcmp.inteq                   1087     1150.0  If n/2=Int(n/2) Then c=1 (n=8; P+: beside the Long of Int both sides 48.16, n/2 inline)
 bcmp.qgtconst                  99       90.5  If x>1 Then c=1
 bcmp.lgtconst                  95       91.0  If l>1 Then c=1 (Long > constant)
 bcmp.whilelq                   24       16.5  While cnt<w : cnt+1 : Wend (per pass)
@@ -612,7 +620,7 @@ bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
 bmath.peekc                   126      124.6  c=Peek.l(4)
 bmath.mixmul                  483          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, four MULU, #1178, #1191)
 bmath.lqdiv                  2325          -  c=a4/q2 (a4=100, q2=3.25: compilerlib lqdiv, 32 steps)
-bmath.lqdivw                 1188          -  c=a4/q7 (q7=3.0; P+: a 48.16 division under a Long, compilerlib q48div)
+bmath.lqdivw                  868          -  c=a4/q7 (q7=3.0; P+: a 48.16 division under a Long, q7 whole at run time: inline)
 bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
 bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
 bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
@@ -655,7 +663,7 @@ bq48.xlxmulq                  224          -  x=lx*q (under a Quick, lx=100000)
 bq48.laddqp                   186          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
 bq48.xladdqp                   96          -  x=l+q+p (the same under a Quick)
 bq48.qmulpaddl                667          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
-bq48.qmulwaddp                543          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16)
+bq48.qmulwaddp                314          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16; q*w inline)
 bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 comparison)
 bq48.iflmulq                  602          -  If l*q>p Then c=1 (a 48.16 product compared)
 bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
@@ -663,9 +671,9 @@ bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Cas
 bq48.xqmodc                  1556          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q48mod)
 bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exact)
 bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
-bq48.qdiv4addl               1237          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
-bq48.xqmulhaddl               643          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
-bq48.xldivqw                 1153          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole)
+bq48.qdiv4addl                507          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
+bq48.xqmulhaddl               294          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
+bq48.xldivqw                  832          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
