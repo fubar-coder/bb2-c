@@ -1,9 +1,10 @@
 ; bq48 - perf benchmark: compiled expressions that rule P+ computes in 48.16 or by the routines of #1178
 ; (expr-tree-5-operand-typing, design decision 9, task 4.3): a Long beside a Quick, l narrow (100) and lx
-; wide (100000), the wanted types Long (r) and Quick (x), If, Select and Mod with a fraction
-Dim t.l(18)
+; wide (100000), the wanted types Long (r) and Quick (x), If, Select and Mod with a fraction, a Quick
+; with a constant divisor or factor
+Dim t.l(21)
 t0.l=0 : tt.l=0 : th.l=0 : tl.l=0 : t2.l=0 : i.l=0 : c.l=0 : r.l=0 : x.q=0
-l.l=100 : lx.l=100000 : q.q=2.5 : p.q=1.25 : w.w=3
+l.l=100 : lx.l=100000 : q.q=2.5 : p.q=1.25 : w.w=3 : qw.q=4
 VWait 5
 BLITZ
 Poke.b $bfde00,0 : Poke.b $bfdf00,0
@@ -108,6 +109,21 @@ For i=1 To 2000
 x=l/q
 Next
 Gosub tod : t(17)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+r=q/4+l
+Next
+Gosub tod : t(18)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+x=q*0.5+l
+Next
+Gosub tod : t(19)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+x=l/qw
+Next
+Gosub tod : t(20)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -128,6 +144,9 @@ NPrint "selladdq ",t(14)," 2000 1"
 NPrint "xqmodc ",t(15)," 2000 1"
 NPrint "xlmodq ",t(16)," 2000 1"
 NPrint "xldivq ",t(17)," 2000 1"
+NPrint "qdiv4addl ",t(18)," 2000 1"
+NPrint "xqmulhaddl ",t(19)," 2000 1"
+NPrint "xldivqw ",t(20)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255
