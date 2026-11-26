@@ -5344,6 +5344,7 @@ static BOOL p5prep;
 #define q48divw 0xd608
 #define q48divb 0xd609
 #define q48mod 0xd60a
+#define q16mod 0xd60f                /* the exact Mod of two 16.16 values (the speed review) */
 
 static void p5reset(void)
 {
@@ -6849,8 +6850,9 @@ static void p5wholemod(UWORD tok, UWORD at, BOOL longa)
 /* the Mod of two 16.16 values a in D(r) and b in D(r+1) (the exact Mod,
    p5bin) for a whole b as p5wholemod: one DIVU of |a|'s whole part (at
    most 32768) by |m|, the result in D(r).  cst: b is the constant m << 16
-   (m not 0), no test; else b is tested at run time and a fraction or 0
-   calls q48mod as before (its trap of a divisor 0) */
+   (m not 0), no test; else b is tested at run time: a fraction calls
+   compilerlib's q16mod (the exact 16.16 Mod, the speed review), 0 its trap
+   (divs.w by it, before the call) */
 static void p5qmod(UWORD r, BOOL cst, LONG m)
 {
     UWORD a = r, b = r + 1, t, u;
@@ -6904,8 +6906,10 @@ static void p5qmod(UWORD r, BOOL cst, LONG m)
     done = p5bra(0x6000);                       /* bra.s .done */
     p5patch(frac);
     p5patch(nul);
-    p5callin(q48mod, r, T_QUICK, FALSE, T_QUICK, FALSE, FALSE, TRUE);   /* .call */
-    p5callout(r, FALSE);
+    p5w(0x4a80 | b);                            /* .call: tst.l Db */
+    p5w(0x6602);                                /* bne.s +2 */
+    p5w(0x81c0 | (b << 9) | b);                 /* divs.w Db,Db: the trap of a Mod by 0 */
+    domylib(q16mod);
     p5patch(done);
 }
 
@@ -7092,12 +7096,15 @@ static void p5bin(struct p5node *p, UWORD r)
                 if (!p5prep)
                     p5qmod(r, TRUE, m);         /* a whole constant divisor */
             } else if (!p5prep && !p5folded(&R->t))
-                p5qmod(r, FALSE, 0);            /* whole at run time, else q48mod */
-            else {
-                /* a constant with a fraction (or 0, the trap) */
+                p5qmod(r, FALSE, 0);            /* whole at run time, else q16mod */
+            else if (p5folded(&R->t) && !p5qval(&R->t).n) {
+                /* a constant 0: the trap */
                 p5callin(q48mod, r, T_QUICK, FALSE, T_QUICK, FALSE, FALSE, TRUE);
                 p5callout(r, FALSE);
-            }
+            } else if (p5prep)
+                tokuse(q16mod);
+            else
+                domylib(q16mod);                /* a constant with a fraction: not 0, no trap */
             break;
         }
         if (op == ETO_POW && o->las != o->ras) {

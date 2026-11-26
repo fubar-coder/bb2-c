@@ -56,6 +56,15 @@
  * and d3; the result in d0 and d1 (q48floor, q48trunc: d0); d2 and d3
  * changed by the routines with two operands, every other register kept;
  * the CCR is no result.
+ *
+ * The routines of the speed review of rule P+ (user decision of
+ * 2026-11-26, "Speed review of P+: the candidates and the rest"; D-027),
+ * with the values of exprarith.c as the 48.16 routines:
+ *
+ *   $D60F q16mod    a Mod b of two Quicks the exact 16.16 Mod
+ *                                         (exprarith_q16: a % b, plus b
+ *                                         when negative); b not 0; d0/d1
+ *                                         in, d0 out (longdiv's contract)
  */
 #include "blitzlib.h"
 
@@ -63,10 +72,11 @@ void mixmult(void), qqmult(void), lqdivide(void);
 void q48add(void), q48sub(void), q48mul(void);
 void q48div(void), q48divq(void), q48divw(void), q48divb(void), q48mod(void);
 void l2q48(void), q2q48(void), q48floor(void), q48trunc(void);
+void q16mod(void);
 void lqdivchk(void), q48divchk(void);
 
-/* !syslibheader{64030,$d600,$d60f,0,0,0,errors,$4000} */
-BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd60f, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
+/* !syslibheader{64030,$d600,$d610,0,0,0,errors,$4000} */
+BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd610, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
 BLITZ_NULLSUB(mixmult, 0, 0);           /* $D600 mixmult */
 BLITZ_NULLSUB(qqmult, 0, 0);            /* $D601 qqmult */
 BLITZ_NULLSUB(lqdivide, lqdivchk, 0);   /* $D602 lqdiv */
@@ -82,6 +92,7 @@ BLITZ_NULLSUB(l2q48, 0, 0);             /* $D60B l2q48 */
 BLITZ_NULLSUB(q2q48, 0, 0);             /* $D60C q2q48 */
 BLITZ_NULLSUB(q48floor, 0, 0);          /* $D60D q48floor */
 BLITZ_NULLSUB(q48trunc, 0, 0);          /* $D60E q48trunc */
+BLITZ_NULLSUB(q16mod, 0, 0);            /* $D60F q16mod */
 BLITZ_LIBFIN();
 
 /**
@@ -873,6 +884,84 @@ BLITZ_ASM_BLOCK(q48casts,
         "_q48floor:\n"
         "   move.w  d1,d0\n"
         "   swap    d0\n"                   /* bits 16..47 */
+        "   rts");
+
+/**
+ * @brief q16mod ($D60F): d0.l = d0 Mod d1, two Quicks (16.16), the exact
+ * Mod of rule P+ (exprarith_q16 ETO_MOD, also q48mod's low 32 bits): r =
+ * |a| Mod |b| with a's sign, plus b when that is negative (modulo 2^32).
+ * The caller has checked b against 0 (the trap of a Mod by 0 is its
+ * code's).
+ *
+ * |b| below $10000 (a divisor below 1): two DIVU, the high word of |a|
+ * (at most $8000, so its quotient fits) and the remainder above the low
+ * word.  Else |a| / |b| is at most 32768: both shifted right by s, the
+ * fewest steps that leave b' = |b| >> s below $10000 (b' >= $8000), and
+ * q = (|a| >> s) / b' by one DIVU (a word: |a| >> s is at most 2^30).  q
+ * is never too small (|a| >= q0 |b| gives |a| >> s >= q0 b') and at most
+ * 2 too large ((q0 + 1)(1 + 1/b') < q0 + 3 for q0 <= 32768); its product
+ * with |b| (two MULU) is below 2^31 + 2^16 (q |b| <= |a| |b| / (2^s b')
+ * < |a| (b' + 1) / b'), so it is exact in 32 bits and |a| - q |b| borrows
+ * exactly when it is negative; then |b| is added until the sum carries
+ * past 2^32 (at most twice: the remainder is at least -2 |b| > -2^32),
+ * which it does first at the remainder in 0..|b|-1.
+ *
+ * @arg d0 a
+ * @arg d1 b (not 0)
+ * @par Result
+ * d0: a Mod b
+ */
+BLITZ_ASM_BLOCK(q16mod,
+        "   .globl  _q16mod\n"
+        "_q16mod:\n"
+        "   movem.l d2-d5,-(sp)\n"
+        "   move.l  d1,d4\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d4\n"                   /* |b| */
+        "1: move.l  d0,d2\n"
+        "   bpl.s   2f\n"
+        "   neg.l   d2\n"                   /* |a|; d0: a's sign */
+        "2: cmp.l   #0xffff,d4\n"
+        "   bhi.s   .Lqmbig\n"
+        "   moveq   #0,d3\n"                /* |b| below $10000: two DIVU */
+        "   swap    d2\n"
+        "   move.w  d2,d3\n"
+        "   beq.s   3f\n"
+        "   divu.w  d4,d3\n"
+        "3: swap    d2\n"
+        "   move.w  d2,d3\n"
+        "   divu.w  d4,d3\n"
+        "   clr.w   d3\n"
+        "   swap    d3\n"                   /* the remainder */
+        "   bra.s   .Lqmsign\n"
+        ".Lqmbig:\n"
+        "   move.l  d4,d3\n"
+        "   move.l  d2,d5\n"
+        "4: lsr.l   #1,d3\n"
+        "   lsr.l   #1,d5\n"
+        "   cmp.l   #0xffff,d3\n"
+        "   bhi.s   4b\n"
+        "   divu.w  d3,d5\n"                /* q, at most 2 too large */
+        "   move.l  d4,d3\n"
+        "   swap    d3\n"
+        "   mulu.w  d5,d3\n"
+        "   swap    d3\n"
+        "   clr.w   d3\n"                   /* q * hi(|b|) << 16 */
+        "   mulu.w  d4,d5\n"
+        "   add.l   d3,d5\n"                /* q * |b|, below 2^32 */
+        "   move.l  d2,d3\n"
+        "   sub.l   d5,d3\n"                /* |a| - q * |b| */
+        "   bcc.s   .Lqmsign\n"
+        "5: add.l   d4,d3\n"
+        "   bcc.s   5b\n"                   /* until it carries */
+        ".Lqmsign:\n"
+        "   tst.l   d0\n"
+        "   bpl.s   6f\n"
+        "   neg.l   d3\n"
+        "   bpl.s   6f\n"                   /* 0 */
+        "   add.l   d1,d3\n"                /* negative: plus b */
+        "6: move.l  d3,d0\n"
+        "   movem.l (sp)+,d2-d5\n"
         "   rts");
 
 /* ------------------------------------------- error checks (debugger only) */

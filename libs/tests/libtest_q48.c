@@ -1,6 +1,7 @@
 /*
  * libtest_q48 - the 48.16 routines of compilerlib ($D603-$D60E, OpenSpec
- * change expr-tree-5-operand-typing, design decision 9) against
+ * change expr-tree-5-operand-typing, design decision 9) and the routines
+ * of its speed review (from $D60F: q16mod) against
  * programs/blitz2/src/exprarith.c, compiled here for the m68k: every
  * result bit for bit as exprarith_q48 and the casts give it, and the
  * registers the contract keeps (libs/compilerlib/compilerlib.c, "Registers
@@ -29,10 +30,10 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n);
 #define QMAXFAIL 20
 #define QROUNDS 2500
 
-enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_N };
+enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_N };
 static const char *const qname[Q_N] = {
     "q48add", "q48sub", "q48mul", "q48div", "q48divq", "q48divw", "q48divb", "q48mod",
-    "l2q48", "q2q48", "q48floor", "q48trunc"
+    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod"
 };
 
 static APTR qcode[Q_N];
@@ -204,6 +205,29 @@ static void casts(int64_t v)
     }
 }
 
+/* the routines of the speed review with two 16.16 operands in d0 and d1
+   (the contract of an operator: d0 the result, d1 changed): the low 32
+   bits of a and b; q16mod not with b 0 (its caller's trap) */
+static void two(int64_t a, int64_t b)
+{
+    struct regs r = mark(), in;
+    int32_t x = (int32_t)(uint32_t)(uint64_t)a, y = (int32_t)(uint32_t)(uint64_t)b;
+    unsigned f = 0;
+    uint64_t got, want;
+
+    if (!y)
+        return;
+    r.d[0] = (ULONG)x;
+    r.d[1] = (ULONG)y;
+    in = r;
+    callregs(qcode[Q_Q16MOD], &r, 0, 0);
+    kept(Q_Q16MOD, x, y, &in, &r);
+    got = (ULONG)r.d[0];
+    want = (ULONG)exprarith_q16(ETO_MOD, x, y, &f);
+    if (got != want)
+        fail(Q_Q16MOD, x, y, got, want, "value");
+}
+
 int libtest_q48(APTR const *code, const UWORD *tok, int n)
 {
     long tests = 0;
@@ -227,14 +251,17 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n)
     fails = 0;
     seed = 0x48164816;
     for (x = 0; x < NEDGES; x++) {
-        for (y = 0; y < NEDGES; y++, tests++)
+        for (y = 0; y < NEDGES; y++, tests++) {
             pair(edges[x], edges[y]);
+            two(edges[x], edges[y]);
+        }
         casts(edges[x]);
     }
     for (x = 0; x < QROUNDS; x++, tests++) {
         int64_t a = rnd64(), b = rnd64();
 
         pair(a, b);
+        two(a, b);
         casts(a);
     }
     printf("%-12s %ld pairs, %ld differences\n", "48.16", tests, fails);

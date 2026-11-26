@@ -704,4 +704,65 @@ End Function
   !CheckEq{r,2036334592,"wm2_pq5"}
   r=pl4{l,l,l,lx Mod qnw,l,l}
   !CheckEq{r,1,"wm2_pl4"}
+  ; Mod with a fraction: the exact 16.16 Mod without q48mod
+  q1.q=12.5 : q2.q=3.25 : h75.q=0.75 : hn75.q=-0.75 : qmx.q=0 : hn.q=-0.5 : qt.q=1 : qt=qt/65536
+  Poke.l &qmx,$7FFFFFFF : qbh.q=0 : Poke.l &qbh,$40004000 : qmn.q=0 : Poke.l &qmn,$80000001
+  x=q1 Mod q2
+  !CheckEq{Peek.l(&x),180224,"qm_x_q1_mod_q2"}
+  x=q Mod p
+  !CheckEq{Peek.l(&x),0,"qm_x_q_mod_p"}
+  x=qn Mod hn
+  !CheckEq{Peek.l(&x),-49152,"qm_x_qn_mod_hn"}
+  x=qn Mod h75
+  !CheckEq{Peek.l(&x),32768,"qm_x_qn_mod_h75"}
+  x=qn Mod hn75
+  !CheckEq{Peek.l(&x),-65536,"qm_x_qn_mod_hn75"}
+  x=qm Mod p
+  !CheckEq{Peek.l(&x),49152,"qm_x_qm_mod_p"}
+  x=qm Mod qt
+  !CheckEq{Peek.l(&x),0,"qm_x_qm_mod_qt"}
+  x=qbig Mod qt
+  !CheckEq{Peek.l(&x),0,"qm_x_qbig_mod_qt"}
+  x=qm Mod hn
+  !CheckEq{Peek.l(&x),0,"qm_x_qm_mod_hn"}
+  x=qm Mod qmx
+  !CheckEq{Peek.l(&x),2147483646,"qm_x_qm_mod_qmx"}
+  x=qmx Mod qmn
+  !CheckEq{Peek.l(&x),0,"qm_x_qmx_mod_qmn"}
+  x=qmx Mod qbh
+  !CheckEq{Peek.l(&x),1073725439,"qm_x_qmx_mod_qbh"}
+  x=qm Mod qbh
+  !CheckEq{Peek.l(&x),32768,"qm_x_qm_mod_qbh"}
+  x=qmn Mod qmx
+  !CheckEq{Peek.l(&x),0,"qm_x_qmn_mod_qmx"}
+  x=qbh Mod qn
+  !CheckEq{Peek.l(&x),49152,"qm_x_qbh_mod_qn"}
+  x=q Mod 0.75
+  !CheckEq{Peek.l(&x),16384,"qm_x_q_mod_c075"}
+  x=qn Mod 0.75
+  !CheckEq{Peek.l(&x),32768,"qm_x_qn_mod_c075"}
+  x=qn Mod -0.75
+  !CheckEq{Peek.l(&x),-65536,"qm_x_qn_mod_cn075"}
+  x=q Mod 1.5
+  !CheckEq{Peek.l(&x),65536,"qm_x_q_mod_c15"}
+  x=qn Mod 1.5
+  !CheckEq{Peek.l(&x),81920,"qm_x_qn_mod_c15"}
+  x=qm Mod 1.5
+  !CheckEq{Peek.l(&x),65536,"qm_x_qm_mod_c15"}
+  x=qbig Mod 2.5
+  !CheckEq{Peek.l(&x),131072,"qm_x_qbig_mod_c25"}
+  x=qmx Mod 16384.25
+  !CheckEq{Peek.l(&x),1073725439,"qm_x_qmx_mod_c16384"}
+  x=qm Mod -1.5
+  !CheckEq{Peek.l(&x),-131072,"qm_x_qm_mod_cn15"}
+  r=qn Mod p
+  !CheckEq{r,0,"qm_r_qn_mod_p"}
+  r=q1 Mod q2
+  !CheckEq{r,2,"qm_r_q1_mod_q2"}
+  r=pq3{q,p,q1 Mod q2,q,q,q}
+  !CheckEq{r,180224,"qm_pq3"}
+  r=pq4{q,p,q,qn Mod 0.75,q,q}
+  !CheckEq{r,32768,"qm_pq4"}
+  r=pq6{q,p,q,p,q,qm Mod qbh}
+  !CheckEq{r,32768,"qm_pq6"}
 !EndTestCase

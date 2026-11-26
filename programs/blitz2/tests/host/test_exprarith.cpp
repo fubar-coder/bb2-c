@@ -1019,3 +1019,132 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
     CHECK(qseen);
     CHECK(wseen);
 }
+
+// --------------------------------- the 16.16 Mod with a fraction (speed review)
+// compilerlib's q16mod step by step: |b| below $10000 two DIVU; else |a|
+// and |b| shifted right until b' fits a word, one DIVU for the estimate q
+// (a word quotient: an overflow fails), q * |b| by two MULU modulo 2^32,
+// the borrow of |a| - q |b| and the adds of |b| until the sum carries
+// (counted: more than two fail), a's sign, b added when negative; against
+// exprarith_q16's Mod and q48mod's low 32 bits.
+
+namespace {
+
+// plant: no add-back after the borrow (the planted error)
+bool fast_q16mod(int32_t a, int32_t b, int32_t *out, bool plant = false)
+{
+    uint32_t d4 = mag32(b), d2 = mag32(a), d3;
+
+    if (!b)
+        return false;
+    if (d4 <= 0xffff) {
+        d3 = d2 >> 16;                          // moveq #0, swap, move.w: 0:hi
+        if (d3 && !divu(d3, d4))                // beq.s: 0
+            return false;
+        d3 = (d3 & 0xffff0000u) | (d2 & 0xffff);    // swap, move.w: r:lo
+        if (!divu(d3, d4))
+            return false;
+        d3 >>= 16;                              // clr.w, swap: the remainder
+    } else {
+        uint32_t bs = d4, as = d2;
+        while (bs > 0xffff) {                   // lsr.l #1 both, cmp.l #$ffff
+            bs >>= 1;
+            as >>= 1;
+        }
+        if (!divu(as, bs))
+            return false;
+        uint32_t q = as & 0xffff;
+        uint32_t p = ((q * (d4 >> 16)) << 16) + q * (d4 & 0xffff);  // two MULU, modulo 2^32
+        d3 = d2 - p;
+        if (d2 < p && !plant) {                 // bcc.s
+            int adds = 0;
+            for (;;) {
+                uint32_t s = d3 + d4;
+                bool c = s < d3;
+                d3 = s;
+                adds++;
+                if (c)
+                    break;
+            }
+            if (adds > 2)
+                return false;
+        }
+    }
+    if (a < 0) {
+        d3 = 0u - d3;
+        if ((int32_t)d3 < 0)
+            d3 += (uint32_t)b;
+    }
+    *out = (int32_t)d3;
+    return true;
+}
+
+bool q16mod_ok(int32_t a, int32_t b, bool plant = false)
+{
+    int32_t got;
+    unsigned f = 0;
+
+    return fast_q16mod(a, b, &got, plant) && got == exprarith_q16(ETO_MOD, a, b, &f)
+           && got == (int32_t)(uint32_t)(uint64_t)q48(ETO_MOD, exprarith_q16_q48(a), exprarith_q16_q48(b));
+}
+
+} // namespace
+
+TEST_CASE("exprarith: q16mod equals the exact 16.16 Mod", "[exprarith]")
+{
+    uint64_t seed = 0x6e5ull;
+    std::vector<int32_t> bs = { 1, -1, 2, 0x8000, -0x8000, 0xffff, -0xffff, 0x10001, -0x10001, 0x18000, -0x18000,
+                                0x34000, 0xc000, 0x7fffffff, -0x7fffffff, (int32_t)0x80000000u, 0x40004000,
+                                0x7fff0001, 0x1ffff, 0x20000 - 1, 0x40000001, -0x40000001 };
+    // every place of the divisor's top bit with the values around it
+    for (int k = 16; k < 31; k++)
+        for (int32_t d : { -1, 0, 1 }) {
+            bs.push_back((int32_t)((1u << k) + (uint32_t)d));
+            bs.push_back(-(int32_t)((1u << k) + (uint32_t)d));
+        }
+    for (int i = 0; i < 24; i++)
+        bs.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 31));
+    bool ok = true;
+    int32_t bada = 0, badb = 0;
+    for (int32_t b : bs) {
+        if (!b)
+            continue;
+        ok = each_quick(seed, [&](int32_t a) {
+            if (!q16mod_ok(a, b) || !q16mod_ok(-a, b)) {
+                bada = a;
+                badb = b;
+                return false;
+            }
+            return true;
+        });
+        if (!ok)
+            break;
+    }
+    INFO("a ", bada, " b ", badb);
+    CHECK(ok);
+    // the dividend's edges for every divisor below 1 and every 7th above
+    const int32_t as[] = { 0, 1, -1, 0x7fffffff, -0x7fffffff, (int32_t)0x80000000u, 0x7fff0000, 0x12345 };
+    for (int64_t b = INT32_MIN; b <= INT32_MAX && ok; b += (b > -0x10000 && b < 0x10000) ? 1 : 7919)
+        for (int32_t a : as)
+            if (b && ok && !q16mod_ok(a, (int32_t)b)) {
+                ok = false;
+                bada = a;
+                badb = (int32_t)b;
+            }
+    INFO("a ", bada, " b ", badb);
+    CHECK(ok);
+    for (int i = 0; i < 2000000 && ok; i++) {
+        int32_t a = (int32_t)rnd32(seed) >> (rnd32(seed) % 32), b = (int32_t)rnd32(seed) >> (rnd32(seed) % 32);
+        if (b)
+            ok = q16mod_ok(a, b);
+    }
+    CHECK(ok);
+    // a planted error is seen: the estimate too large left uncorrected
+    bool seen = false;
+    for (int i = 0; i < 200000 && !seen; i++) {
+        int32_t a = (int32_t)rnd32(seed), b = (int32_t)rnd32(seed) >> (rnd32(seed) % 16);
+        if (b)
+            seen = !q16mod_ok(a, b, true);
+    }
+    CHECK(seen);
+}

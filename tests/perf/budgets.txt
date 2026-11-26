@@ -469,7 +469,10 @@
 # digit skipped, a / at the top under a wanted Long as its Long:
 # bmath.lqdivw 854.0 -> 324.1, bq48.xldivqw 819.6 -> 486.7, xlmodqw
 # 668.1 -> 308.7; the new loops lxdivqw 859.6 -> 454.2, xlqdivqw 868.1
-# -> 576.8, xlxmodqw 660.1 -> 438.8.
+# -> 576.8, xlxmodqw 660.1 -> 438.8. A Quick Mod with a fraction by
+# compilerlib's q16mod instead of q48mod: bmath.qmod 1520.7 -> 638.0,
+# bq48.xqmodc 1539.0 -> 562.6, the new loops xqmodh 1114.5 -> 594.5,
+# xqmodch 1095.0 -> 560.5.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -605,7 +608,7 @@ bmath.lmod32                 1854     2973.5  c=a2 MOD b2 (same values: the slow
 bmath.qdivw                 2053~4     3876.5  q3=q4/q5 (q4=1000.5, q5=$00010001: the loop with most steps)
 bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: the smallest divisor of the loop)
 bmath.wmod                    253      248.5  w3=w1 MOD w2
-bmath.qmod                   1525      276.5  q3=q1 MOD q2 (P+: exact, compilerlib q48mod)
+bmath.qmod                    648      276.5  q3=q1 MOD q2 (P+: exact, compilerlib q16mod: one DIVU estimate, two MULU)
 bmath.fmod                   2430     3700.5  c=f1 MOD f2 (P+: exact, inline mathffp)
 bmath.q2f                    1922     1907.5  f3=q1
 bmath.f2q                    1784     1762.5  q3=f1
@@ -683,7 +686,7 @@ bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 compari
 bq48.iflmulq                  602          -  If l*q>p Then c=1 (a 48.16 product compared)
 bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
 bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
-bq48.xqmodc                  1556          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q48mod)
+bq48.xqmodc                   572          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q16mod)
 bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exact)
 bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
 bq48.qdiv4addl                507          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
@@ -695,6 +698,8 @@ bq48.xlmodqw                  314          -  x=l Mod qw (a Long Mod a Quick tha
 bq48.lxdivqw                  462          -  r=lx/qw (lx=100000: two DIVU of the Long, its Long towards zero)
 bq48.xlqdivqw                 586          -  x=(l+q)/qw (a 48.16 dividend by a whole Quick, its high long 0 skipped: two DIVU)
 bq48.xlxmodqw                 446          -  x=lx Mod qw (lx=100000: two DIVU of the Long)
+bq48.xqmodh                   604          -  x=q Mod h (h=0.75, a Quick below 1: compilerlib q16mod, two DIVU)
+bq48.xqmodch                  569          -  x=q Mod 0.75 (a constant below 1: compilerlib q16mod)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
