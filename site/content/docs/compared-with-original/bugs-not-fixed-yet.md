@@ -1,6 +1,6 @@
 ---
 title: Bugs not fixed yet
-weight: 5
+weight: 6
 description: The known bugs of Blitz Basic 2 that the BB2 C port still shows, where they are recorded, and the tests that check the correct behaviour.
 aliases:
   - /docs/compared-with-original/kept-bugs/

@@ -142,21 +142,25 @@ take such addresses.
 
 ## The type of an expression
 
-The compiler computes an expression in one of the number types, and it
-does not look at the whole expression first. It reads it from left to
-right and keeps a *type so far*:
+The compiler computes every operation of an expression in one of the
+number types. It decides the type of each operation by three things: the
+operator, the types of its two operands, and the type the result is
+wanted in.
 
-1. The type so far starts as the type the result is wanted in: the type
-   of the variable in an assignment, the type of a parameter. In `If`,
-   `While`, `Until`, `Select` and `Print` nothing is wanted, and the first
-   operand sets the type.
-2. A variable or function of a higher type raises the type so far, in
-   the order Byte, Word, Long, Quick, Float. The operands before it are
-   converted up.
-3. A whole-number constant takes the smallest type that holds it, and
-   two Bytes added give a Word, two Words added or multiplied a Long.
-4. A comparison starts again: its operands are compared with their own
-   values, and its result, a truth value, takes the type of the context.
+1. The wanted type is the type of the variable in an assignment or of a
+   parameter, and a Long for an array index. In `If`, `While`, `Until`,
+   `Select` and `Print`, and on both sides of a comparison, nothing is
+   wanted.
+2. Whole numbers are computed in their own types. A whole-number constant
+   takes the smallest type that holds it, two Bytes added give a Word,
+   two Words added or multiplied a Long.
+3. An operand of a higher type makes the operation that type, in the
+   order Byte, Word, Long, Quick, Float, and the other operand is
+   converted up. A Quick with a Long, or where a whole number is wanted,
+   is computed exactly, and the result is rounded once, where it is
+   taken.
+4. A comparison compares its operands with their own values, and its
+   result, a truth value, takes the type of the context.
 
 The rule explains results that look surprising:
 
@@ -167,17 +171,20 @@ a.w=10 : NPrint a/4  ; 2: a Word divided by a whole number
 r.l=2147483647/2*2   ; 2147483646, a Long computation
 ```
 
-Two parts of the rule need care. In a Long computation, a Quick does not
-make the computation Quick: `adr.l=base+i*4` with a Quick `i` is computed
-as a Long, as an address must be, and each operation with the Quick is
-rounded to a whole number. And a constant with a fraction keeps it while
-the type so far is Byte, as it does under a Word: `NPrint 3+1.5` prints
-4.5, and with `vb.b=2`, `rb.b=1.5*vb` gives 3. The original cut the
-constant to a whole number there and printed 4 and gave 2
-([#1188](https://github.com/fubar-coder/bb2-c/issues/1188)). Such a
-constant is a Float, so `AND`, `OR`, `EOR`, `NOT` and the shifts refuse
-it. A whole-valued constant written with a point, such as `2.0`, stays a
-whole number under a Byte.
+Two parts of the rule need care. Where a whole number is wanted, a Quick
+does not make the result a Quick: `adr.l=base+i*4` with a Quick `i` is
+computed exactly and stored as a whole number, as an address must be.
+And a constant written with a point has a fraction wherever it is an
+operand, also under a Byte: `NPrint 3+1.5` prints 4.5, and with
+`vb.b=2`, `rb.b=1.5*vb` gives 3. `AND`, `OR`, `EOR` and `NOT` take the
+whole part of such a constant, rounded down, and as the count of a shift
+it is refused. A constant alone keeps its value: `rb.b=2.0` stores 2.
+
+Blitz Basic 2 itself read an expression from left to right with one
+type so far, so the type of an operation depended on the place of its
+operands, and some results differ from the port's;
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}})
+shows them by example.
 
 The page
 [From source to executable]({{< relref "/docs/how-blitz2-works/compiling#the-type-of-an-expression" >}})

@@ -32,6 +32,10 @@ against the original yourself.
   usually in the way it was always meant to.
   Most fixes concern rare cases: an error without the debugger, a value at
   the edge of its range, a resource that is missing.
+* **The type of each operation.** The port decides the type of every
+  operation in an expression by its own operands and the type the result
+  is wanted in, where the original went from left to right. Programs that
+  mix Quicks with other types can get other, mostly more exact, results.
 * **Sources that compile differently.** A few of the fixes concern the
   compiler. A small number of sources that the original compiled, mostly
   with a wrong or random result, give an error with the port or compile to
@@ -80,6 +84,7 @@ that shows the fix; the pages link them.
 {{< cards >}}
   {{< card link="important-fixes" title="Important Fixes & Breaking Changes" subtitle="All fixed bugs in one table, by what they can change in an existing program." >}}
   {{< card link="fixed-bugs" title="Fixed original bugs" subtitle="The bugs of Blitz Basic 2 that the port fixes, and which programs notice." >}}
+  {{< card link="expression-types" title="The type of each operation" subtitle="How the original and the port type each operation of an expression, with the results that differ, by example." >}}
   {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler and the libraries accept beyond Blitz Basic 2." >}}
   {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}

@@ -419,32 +419,12 @@ The library is written so that it does not disturb what it tests:
 
 ## Known limits
 
-Two open bugs of the port's compiler and libraries change what a check
-sees. Write a test so that it does not depend on them:
-
-* **A comparison with a compound left operand** is computed in the type
-  of its surroundings. In `!Check{q*2>2.4}` the condition is a long
-  value, so with `q.q=1.25` the quick `q` becomes the whole number 1
-  before it is multiplied, and the comparison is `2>2.4`: the check fails
-  although `q*2` is 2.5. A single variable on the left is compared with
-  its own value. So assign the compound operand to a quick variable
-  first, or check the value itself
-  ([open issue](https://github.com/fubar-coder/bb2-c/issues/1183)):
-
-  ```basic
-  !TestCase{compound}
-    q.q=1.25
-    t.q=q*2
-    !Check{t>2.4,"with_variable"}
-    !CheckQEq{q*2,2.5,"value"}
-  !EndTestCase
-  ```
-
-* **`MOD` with a negative dividend and a negative divisor** gives a
-  remainder outside the divisor's range: `-7 MOD -3` is -4 instead of -1.
-  With a positive divisor the remainder is between 0 and the divisor
-  minus 1: `-7 MOD 3` is 2
-  ([open issue](https://github.com/fubar-coder/bb2-c/issues/1197)).
+An open bug of the port's libraries changes what a check sees. Write a
+test so that it does not depend on it: **`MOD` with a negative dividend
+and a negative divisor** gives a remainder outside the divisor's range:
+`-7 MOD -3` is -4 instead of -1. With a positive divisor the remainder is
+between 0 and the divisor minus 1: `-7 MOD 3` is 2
+([open issue](https://github.com/fubar-coder/bb2-c/issues/1197)).
 
 The repository's
 [description of the test sources](https://github.com/fubar-coder/bb2-c/blob/main/tests/README.md#blitz-test-sources-and-the-result-file)

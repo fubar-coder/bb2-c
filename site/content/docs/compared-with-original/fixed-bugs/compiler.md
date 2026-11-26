@@ -205,14 +205,18 @@ l<q
 
 Comparisons with a Float operand, of two Quicks, of whole numbers in a
 whole-number context and of strings give the same results as in the original.
-A few cases are not fixed yet: a left operand that is itself a
-calculation whose fraction is rounded away, such as `q*2>2.4` with
-`q=1.25`, and a large whole-number
-constant on the left in a Float context. Put such an operand on the
-right side or compute it into a variable first; the details are in
-[From source to executable]({{< relref "/docs/how-blitz2-works/compiling#comparisons" >}}).
 
-Issue: [A comparison with a Quick operand is done in Long when the context or the left operand is Long (#1177)](https://github.com/fubar-coder/bb2-c/issues/1177).
+The same holds for a left operand that is itself a calculation. The
+original computed it in the type of the destination before it read the
+comparison operator, so with `q=1.25`, `r.l=(q*2>2.4)` cut `q` to 1 and
+gave 0. In the port each side of a comparison is computed by its own
+operands, and the result is -1. A large Long constant on the left in a
+Float context, as in `rf.f=(100000001>l3)`, is compared as a Long. More
+examples, also for a Word sum and a division on the left, are in
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types#comparisons" >}}).
+
+Issues: [A comparison with a Quick operand is done in Long when the context or the left operand is Long (#1177)](https://github.com/fubar-coder/bb2-c/issues/1177),
+[A comparison with a compound left operand is still done in the type of the context: a Quick inside it is cut (#1183)](https://github.com/fubar-coder/bb2-c/issues/1183).
 
 ### A Quick in a Long computation {#quick-long-arithmetic}
 
@@ -263,11 +267,36 @@ for `/`. The program prints
 A Quick without a fraction gives the same results as in the original.
 Shifts and the logic operators (`AND`, `OR`, `EOR`, `Not`) still take the
 Quick rounded down. A program that relies on the old result writes
-`Int(q)`: `r.l=Int(q)*2` gives 2. The computation still follows the type
-so far, so `NPrint 1+1+1+q` prints 4, not 4.5; the details are in
-[From source to executable]({{< relref "/docs/how-blitz2-works/compiling#a-quick-in-a-long-computation" >}}).
+`Int(q)`: `r.l=Int(q)*2` gives 2. A whole chain, such as `r.l=l+q+p`, is
+computed with every fraction and rounded once, when it is stored; the
+examples are in
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types#chains" >}}).
 
 Issue: [Arithmetic with a Quick operand is done in Long when the context or the left operand is Long: the fraction is cut before the operation (#1178)](https://github.com/fubar-coder/bb2-c/issues/1178).
+
+### The order of the operands {#operand-order}
+
+The original computed an expression from left to right with one type, the
+type so far, so the type of an operation depended on where its operands
+stood and on what came before them. The same sum in another order could
+give another result: with `q=1.5`, `NPrint 1+1+1+q` printed 4 and
+`NPrint q+1+1+1` 4.5. With `l.l=10` and `p=2.75`, `r.l=l+q+p` gave 13,
+because each Quick was cut before it was added. A `Mod` with a fraction
+was computed on the whole parts: `x.q=q Mod 2` was 1 for `q=7.5`.
+
+The port decides every operation by its own two operands and the type
+the result is wanted in. Both orders give 4.5, a chain with a Quick under
+a Long is computed exactly and rounded once (`r.l=l+q+p` is 14), and
+`Mod` with a fraction is exact (1.5). Bit operators take the whole part of
+a constant with a fraction, rounded down (`vb AND -1.5` is `vb AND -2`),
+and a constant with a point as a shift count, such as `vb LSL 2.0`, is
+the compile error "Illegal Operator for Type"
+([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}})).
+The examples, with the original's results, the port's and the reasons,
+are in
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}}).
+
+Issue: [The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
 
 ### `NOT`, `AND`, `OR` and `EOR` on a Quick {#quick-bit-operators}
 
@@ -325,7 +354,9 @@ bug, for example with `flag=On`, works as before. Look at `AND`, `OR`
 and `EOR` on values that can have a fraction: in the port a condition
 such as `If h OR g` is false for `h=0.5` and `g=0`, because 0.5 counts
 as 0, and true for `h=-0.5`, which counts as -1. Where the fraction matters, compare instead:
-`If h<>0 OR g<>0`.
+`If h<>0 OR g<>0`. A constant with a fraction is taken the same way, in
+every type
+([Bit operators with a fraction]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
 
 Issue: [NOT, AND, OR and EOR under a Quick type so far work on the 16.16 bits (#1209)](https://github.com/fubar-coder/bb2-c/issues/1209).
 
@@ -982,10 +1013,13 @@ Each point says first what the original did, then what the port does.
   computed as a Long in both builds, and simple indexes such as `a(i,j)`
   or `a(5,7)` compile to the same code as in the original
   ([Array indexes]({{< relref "/docs/how-blitz2-works/compiling#array-indexes" >}}),
-  [#1179](https://github.com/fubar-coder/bb2-c/issues/1179)). Without the
-  checking, `AND`, `OR`, `EOR` or a shift of a Quick and a constant with a
-  fraction in such an index is a compile error
-  ([`AND`, `OR`, `EOR` or a shift in a later array index]({{< relref "/docs/compared-with-original/new-errors#later-index-operator" >}})).
+  [#1179](https://github.com/fubar-coder/bb2-c/issues/1179)). `AND`,
+  `OR` and `EOR` with a constant with a fraction, such as
+  `ja(1,vq AND 1.5)`, compile in both builds and take its whole part; a
+  constant with a point as a shift count is a compile error in every
+  index
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}}),
+  [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
 * A comparison as the right operand of an operator, such as
   `lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
   converted the operator's left operand down to Word before the
@@ -1011,11 +1045,14 @@ Each point says first what the original did, then what the port does.
   `cprotect.b=swordhit*.8`, which computed `swordhit*0`. The port keeps
   the fraction, computes the operation in Float and converts the result
   to the Byte at the end, rounded towards zero: both give 3, as under a
-  Word. A whole-valued constant written with a point, such as `2.0`, and
-  a value of `Data.b` (`Data.b 1.5` is 1) give the original's results.
-  Such a constant is a Float, so `AND`, `OR`, `EOR`, `NOT` or a shift
-  with it is a compile error
-  ([`AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte]({{< relref "/docs/compared-with-original/new-errors#byte-fraction-operator" >}}),
+  Word. A whole-valued constant written with a point, such as
+  `rb.b=2.0`, and a value of `Data.b` (`Data.b 1.5` is 1) give the
+  original's results. `AND`, `OR`, `EOR` and `NOT` take the whole part of
+  such a constant, rounded down: `rb.b=1.5 AND vb` is `1 AND vb`, as in the
+  original, but `rb.b=NOT -1.5` is 1 where the original, which cut -1.5 to
+  -1, gave 0. A constant with a point as a shift count is a compile error
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}}),
+  [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}}),
   [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
 * `AND`, `OR` and `EOR` of two Byte values with different signs left a
   wrong upper byte behind, so the result was wrong as soon as it was

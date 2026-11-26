@@ -1,6 +1,6 @@
 ---
 title: Sources that compile differently
-weight: 3
+weight: 4
 description: Sources that Blitz Basic 2 accepted and the BB2 C port refuses or compiles to something else, the new runtime errors of the libraries and the forms only the port accepts, with what the original did and how to change them.
 ---
 
@@ -17,9 +17,12 @@ same way when the program runs: a command that the original carried out
 with a wrong argument stops with a runtime error
 ([Runtime errors of the libraries](#runtime-errors)).
 
-Three cases go the other way
+Four cases go the other way
 ([Forms the original refused](#forms-the-original-refused)):
 
+* `AND`, `OR`, `EOR` and `NOT` with a constant with a fraction, which
+  the original refused under a Word, Long or Float type, take its whole
+  part.
 * `Frac` of a string, which the original refused when compiling,
   compiles and is a runtime error.
 * `PlayWait` without a tape number compiles and waits for the playback.
@@ -199,39 +202,22 @@ eight registers compiles as before: a chain of operators of one
 precedence (`a+b+c`), the tighter operator first (`b*c+a`), or brackets
 around the right part (`a+(b*c)`).
 
+A calculation of a Quick with a Long is computed exactly by the port, and
+its value takes two registers. So a few expressions that the original
+compiled reach the limit with the port: with a Quick `q` and Longs,
+`r.l=c1+(c2+(e+(h+(i+(j+(q*l*l))))))` is "Expression too Complex", where
+one level of brackets less still compiles. The port finds this only after
+it has read the whole expression, so another error further right in the
+same expression is reported first
+([Edge cases]({{< relref "/docs/compared-with-original/expression-types#edge-cases" >}})).
+
 **What to change.** Write the tighter operation first, `b*c+a`, or put
 it in brackets, `a+(b*c)`. Inside many levels of brackets, compute a
 part into a variable first.
 
 Issue: [An operator whose right operand needs a ninth register took a wrong value (#1185)](https://github.com/fubar-coder/bb2-c/issues/1185).
-
-### `AND`, `OR`, `EOR` or a shift in a later array index {#later-index-operator}
-
-**What happened.** Without runtime error checking, the original computed
-an array index after the first one as a Word. There it accepted `AND`,
-`OR`, `EOR` or a shift of a Quick and a constant with a fraction, which
-the first index and the checked build refused:
-
-```
-vq.q=1.5
-Dim ja.l(1,300)
-For ii.l=0 To 300 : ja(1,ii)=ii*16+1 : Next
-NPrint ja(1,vq AND 1.5)
-End
-```
-
-compiled without the checking and printed `17`.
-
-**With the port.** Every index is computed as a Long, with and without
-runtime error checking
-([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})),
-so such an operator is the compile error "Illegal Operator for Type" at
-its line (line 4 here) in both builds.
-
-**What to change.** Write the constant as a whole number, such as
-`vq AND 1`.
-
-Issue: [A later array index is evaluated as a Word without runtime error checking and as a Long with it (#1179)](https://github.com/fubar-coder/bb2-c/issues/1179).
+For the expressions with a Quick and a Long:
+[The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
 
 ### A Float with `AND`, `OR`, `EOR` or a shift and a comparison {#float-bit-operator-comparison}
 
@@ -261,33 +247,34 @@ variable.
 
 Issue: [A comparison as the right operand converts the left operand down to Word: a Long loses its high word, a Float or Quick is cut (#1182)](https://github.com/fubar-coder/bb2-c/issues/1182).
 
-### `AND`, `OR`, `EOR`, `NOT` or a shift with a constant with a fraction under a Byte {#byte-fraction-operator}
+### A constant with a point as a shift count {#shift-count-with-point}
 
-**What happened.** When the type so far was Byte (a Byte destination,
-parameter, field or array element), the original cut a constant with a
-fraction to a whole number before the operation, so it accepted a bit
-operator or a shift with it:
+**What happened.** The count of `LSL`, `LSR`, `ASL` and `ASR` is a whole
+number. The original accepted a constant written with a point as the
+count in many places and shifted by its whole part:
 
 ```
-vb.b=3 : rb.b=0
-rb=1.5 AND vb : NPrint rb
+vb.b=3 : vq.q=1.5 : rb.b=0
+rb=vb LSL 2.5 : NPrint rb
+rb=vq LSL 2.5 : NPrint rb
+rb=vb ASL 1.0 : NPrint rb
 End
 ```
 
-compiled and printed `1` (1 AND 3).
+compiled and printed `12`, `6` and `6`. In an array index after the first
+one it accepted such a count only without runtime error checking.
 
-**With the port.** The constant keeps its fraction under a Byte as under
-a Word
-([Fixed bugs: expressions and statements]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#expressions-and-statements" >}})),
-so it is a Float, and `AND`, `OR`, `EOR`, `NOT` and the shifts refuse it
-with the compile error "Illegal Operator for Type" at its line (line 2
-here), as under a Word. A whole-valued constant with a point, as in
-`vb AND 2.0`, still compiles.
+**With the port.** A constant with a point is a number with a fraction
+wherever it is an operand, also when its value is whole, as `1.0`, so as
+a shift count it is the compile error "Illegal Operator for Type" at its
+line (line 2 here), in every type and in every array index. A Quick
+variable as the count is still its whole part, rounded down
+([The type of each operation]({{< relref "/docs/compared-with-original/expression-types#shifts" >}})).
 
-**What to change.** Write the constant as a whole number, such as
-`1 AND vb`, which gives the original's result.
+**What to change.** Write the count as a whole number, such as
+`vb LSL 2` or `vb ASL 1`, which gives the original's result.
 
-Issue: [Under a Byte destination a constant with a fraction is cut before the operation (#1188)](https://github.com/fubar-coder/bb2-c/issues/1188).
+Issue: [The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
 
 ## Characters
 
@@ -2550,6 +2537,30 @@ Most cases of this page go one way: the original compiled them and the
 port does not, or compiles them to something else. The cases in this
 section go the other way, as `Frac` of a string does: a source that the
 original refused compiles with the port.
+
+### A bit operator with a constant with a fraction {#bit-operator-fraction}
+
+**What happened.** Under a Word, Long or Float type so far the original
+made a constant with a fraction a Float, and a Float has no `AND`, `OR`,
+`EOR` or `NOT`:
+
+```
+vw.w=1000 : rw.w=0
+rw=vw OR 1.5 : NPrint rw
+End
+```
+
+stopped with "Illegal Operator for Type" in line 2.
+
+**With the port.** `AND`, `OR`, `EOR` and `NOT` take the whole part of a
+constant with a fraction, rounded down, in every type: the program
+prints `1001` (1000 OR 1). A Float variable is still refused
+([The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
+
+**What to change.** Nothing. A source that must also compile with the
+original writes the whole number, `vw OR 1`.
+
+Issue: [The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
 
 ### `PlayWait` without a tape number {#playwait-without-tape}
 

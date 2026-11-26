@@ -102,6 +102,13 @@ and after an addition or multiplication of two Words, whose result is a
 Long. A small whole number such as `1` counts as a Byte, and two Bytes
 added give a Word.
 
+This is the rule of the original compiler. The BB2 C port starts from the
+same wanted type, but it decides every operation by its own two operands
+and that type, so the place of an operand in the expression does not
+change the result. The sections below show where this matters; every
+difference, with the original's result and the port's, is on
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}}).
+
 ### A Quick in a Long computation
 
 There is one exception to "the higher type wins": when the type so far is
@@ -152,9 +159,10 @@ type Float, and `r.l=2.0*q` gives 3. A Float and a Quick round
 differently when they end up in a whole number: a Float is cut towards
 zero (-1.5 gives -1), a Quick is rounded down (-1.5 gives -2).
 
-To get the exact result with a fraction, compute in a Quick or Float
-variable first (`t=q*2 : r.l=t`), or start the expression with a Float
-literal (`r.l=2.0*q`). AmiBlitz3 keeps the original's rule.
+AmiBlitz3 keeps the original's rule. A program that has to give the same
+results there computes in a Quick or Float variable first
+(`t=q*2 : r.l=t`), or starts the expression with a Float literal
+(`r.l=2.0*q`).
 
 Under a Quick type so far, such as a Quick destination or a variable
 without a suffix, `NOT`, `AND`, `OR` and `EOR` also take the whole part of

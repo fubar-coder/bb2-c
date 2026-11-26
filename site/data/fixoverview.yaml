@@ -8084,7 +8084,7 @@ rows:
     topic: "Compiler"
     library: "Compiler"
     command: ""
-    text: "An array index after the first one is computed as a Long also without runtime error checking, so both builds use the same element; the original computed it as a Word there (`g(1,y*200/2)` element 52768 for `y=200` instead of 20000, `b(1,q ASL 4)` 24 instead of 16 for `q=1.5`). `ja(1,vq AND 1.5)` is refused with \"Illegal Operator for Type\" also without the checking."
+    text: "An array index after the first one is computed as a Long also without runtime error checking, so both builds use the same element; the original computed it as a Word there (`g(1,y*200/2)` element 52768 for `y=200` instead of 20000, `b(1,q ASL 4)` 24 instead of 16 for `q=1.5`). `ja(1,vq AND 1.5)` compiles in both builds and takes the whole part of 1.5; a constant with a point as a shift count is refused with \"Illegal Operator for Type\" in every index."
     page: compiler
     anchor: expressions-and-statements
   - issue: 1182
@@ -8100,7 +8100,7 @@ rows:
     topic: "Compiler"
     library: "Compiler"
     command: ""
-    text: "A constant with a fraction keeps it when the type so far is Byte (a Byte destination, parameter, field or array element), as under a Word; the original cut it to a whole number before the operation (`rb.b=(1.5*vb)` 2 instead of 3 for `vb=2`, `cprotect.b=swordhit*.8` computed `swordhit*0`). `2.0` and `Data.b 1.5` keep the original's results; `rb=1.5 AND vb` is refused with \"Illegal Operator for Type\"."
+    text: "A constant with a fraction keeps it when the type so far is Byte (a Byte destination, parameter, field or array element), as under a Word; the original cut it to a whole number before the operation (`rb.b=(1.5*vb)` 2 instead of 3 for `vb=2`, `cprotect.b=swordhit*.8` computed `swordhit*0`). `rb=2.0` and `Data.b 1.5` keep the original's results; `AND`, `OR`, `EOR` and `NOT` take the whole part of the constant, rounded down (`rb=1.5 AND vb` is `1 AND vb`), and a constant with a point as a shift count is refused with \"Illegal Operator for Type\"."
     page: compiler
     anchor: expressions-and-statements
   - issue: 1189
@@ -8199,3 +8199,19 @@ rows:
     text: "`AND`, `OR` and `EOR` of two Byte values with different signs give the right result when it is used as a Word or Long; the original left a wrong upper byte (`If (mb AND zb)=zw` was false for `mb.b=-2`, `zb.b=0`, `zw.w=0`)."
     page: compiler
     anchor: expressions-and-statements
+  - issue: 1216
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "+, -, *, /, Mod, AND, OR, EOR, NOT, LSL, LSR, ASL, ASR"
+    text: "Every operation is typed by its own two operands and the type the result is wanted in, so the order of the operands does not matter (`NPrint 1+1+1+q` and `NPrint q+1+1+1` both 4.5 for `q=1.5`), a chain with a Quick and a Long is computed exactly and rounded once (`r.l=l+q+p` 14 for `l=10`, `p=2.75`) and `Mod` with a fraction is exact (`x.q=q Mod 2` 1.5 for `q=7.5`); the original typed from left to right and gave 4, 13 and 1. A constant with a point as a shift count (`vb LSL 2.0`) is refused with \"Illegal Operator for Type\"."
+    page: compiler
+    anchor: operand-order
+  - issue: 1183
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "=, <>, <, >, <=, >="
+    text: "A left operand of a comparison that is a calculation is computed by its own operands: `r.l=(q*2>2.4)` is -1 for `q=1.25`, `rf.f=(100000001>l3)` -1 for `l3=100000000`; the original computed it in the destination's type first and gave 0 for both."
+    page: compiler
+    anchor: quick-compare
