@@ -2,7 +2,9 @@
   The Markdown of one entry of a command library: a statement, function,
   command, object name or keyword. Context: dict "entry" (the entry of
   the data, tools/cmdref) and "desc" (its hand-written description from
-  data/cmddesc: "text" and optional "notes"; nil if there is none).
+  data/cmddesc: "text" and optional "notes"; nil if there is none) and
+  "fixes" (the rows of data/fixoverview.yaml that name the command; nil
+  if there are none).
   Returns a string.
 */ -}}
 {{- $e := .entry -}}
@@ -51,5 +53,8 @@
 {{- end -}}
 {{- with $desc.notes -}}
   {{- $md = printf "%s%s\n\n" $md (strings.TrimSpace .) -}}
+{{- end -}}
+{{- with .fixes -}}
+  {{- $md = printf "%sFixed original bugs:\n\n%s\n" $md (partial "cmdref/fixes.html" .) -}}
 {{- end -}}
 {{- return $md -}}

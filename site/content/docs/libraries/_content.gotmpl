@@ -10,6 +10,9 @@
   sentence, for lists and search) and "intro" (Markdown, shown above the
   commands).
 
+  The fixed original bugs of a library (data/fixoverview.yaml) are linked
+  from the page and from its commands (layouts/_partials/cmdref/fixes.html).
+
   Hand-written descriptions of single commands, if there are any:
   data/cmddesc/GROUP/NAME.yaml, keyed by the command's name, each with
   "text" (one or two sentences, shown under the command's heading) and
@@ -17,6 +20,24 @@
 */ -}}
 {{- $intros := site.Data.libintros | default dict -}}
 {{- $cmddescs := site.Data.cmddesc | default dict -}}
+
+{{- /* The fixed original bugs of each library, from data/fixoverview.yaml
+  (site/README.md): a row concerns every library its "library" names; the
+  rows of the page of the AmigaOS calls are of deflibs libraries, the
+  others of command libraries and userlibs. */ -}}
+{{- $fixes := dict -}}
+{{- $osfixes := dict -}}
+{{- range site.Data.fixoverview.rows -}}
+  {{- $row := . -}}
+  {{- range split .library "," -}}
+    {{- $name := trim . " " -}}
+    {{- if eq $row.page "libraries/amigaos" -}}
+      {{- $osfixes = merge $osfixes (dict $name ((index $osfixes $name | default slice) | append $row)) -}}
+    {{- else -}}
+      {{- $fixes = merge $fixes (dict $name ((index $fixes $name | default slice) | append $row)) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 
 {{- /* command libraries (acidlibs) and userlibs: one page each */ -}}
 {{- range $group, $section := dict "acidlibs" "commands" "userlibs" "userlibs" -}}
@@ -26,7 +47,8 @@
     {{- $n := len (where $lib.entries "kind" "in" (slice "statement" "function" "command")) -}}
     {{- $desc := printf "The %d commands of %s, with their forms and argument types." $n $name -}}
     {{- $descs := index (index $cmddescs $group | default dict) $name | default dict -}}
-    {{- $content := partial "cmdref/commands.html" (dict "lib" $lib "intro" $intro.intro "descs" $descs) -}}
+    {{- $content := partial "cmdref/commands.html" (dict "lib" $lib "intro" $intro.intro "descs" $descs
+      "fixes" (index $fixes $name) "fixpage" (printf "libraries/%s/%s" $section $name)) -}}
     {{- $.AddPage (dict
       "path" (printf "%s/%s" $section $name)
       "title" $name
@@ -57,7 +79,8 @@
     {{- end -}}
     {{- $n := len $calls -}}
     {{- $desc := printf "The %d calls of %s that a program can use directly, with their registers." $n . -}}
-    {{- $content := partial "cmdref/oscalls.html" (dict "lib" $lib "calls" $calls "numbers" $numbers "intro" $intro.intro) -}}
+    {{- $content := partial "cmdref/oscalls.html" (dict "lib" $lib "calls" $calls "numbers" $numbers "intro" $intro.intro
+      "fixes" (index $osfixes $name)) -}}
     {{- $.AddPage (dict
       "path" (printf "amigaos/%s" $name)
       "title" .

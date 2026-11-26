@@ -1,0 +1,52 @@
+{{- /*
+  The links from a row of data/fixoverview.yaml to the command reference:
+  each command of the row that its library declares links to the
+  command's heading there, and a library none of whose commands is found
+  links to its page. Context: the row. Returns HTML (empty for a row
+  without a reference page, such as one of the compiler).
+*/ -}}
+{{- $row := . -}}
+{{- $links := slice -}}
+{{- $cmds := slice -}}
+{{- range split $row.command "," -}}
+  {{- with trim (replaceRE `\s*\(.*\)$` "" .) " " -}}
+    {{- $cmds = $cmds | append (lower .) -}}
+  {{- end -}}
+{{- end -}}
+{{- range split $row.library "," -}}
+  {{- $lib := trim . " " -}}
+  {{- $refpage := partial "fixed-bugs/refpage.html" (dict "lib" $lib "page" $row.page) -}}
+  {{- with $refpage -}}
+    {{- $ref := . -}}
+    {{- $data := or (index site.Data.libraries.acidlibs $lib) (index site.Data.libraries.userlibs $lib) -}}
+    {{- $found := 0 -}}
+    {{- if and $data (ne $row.page "libraries/amigaos") -}}
+      {{- /* the heading ids as Hugo gives them: in the order of the page
+        (cmdref/commands.html), a repeated id with -1, -2, ... */ -}}
+      {{- $seen := dict -}}
+      {{- range sort $data.entries "name" -}}
+        {{- $id := anchorize .name -}}
+        {{- $n := index $seen $id | default 0 -}}
+        {{- $seen = merge $seen (dict $id (add $n 1)) -}}
+        {{- if $n -}}
+          {{- $id = printf "%s-%d" $id $n -}}
+        {{- end -}}
+        {{- if in $cmds (lower .name) -}}
+          {{- if $ref.Fragments.Identifiers.Contains $id -}}
+            {{- $links = $links | append (printf `<a href="%s#%s" title="%s in the reference of %s"><code>%s</code></a>` $ref.RelPermalink $id (.name | htmlEscape) $lib (.name | htmlEscape)) -}}
+            {{- $found = add $found 1 -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $found -}}
+      {{- $links = $links | append (printf `<a href="%s" title="The reference of %s">%s</a>` $ref.RelPermalink $lib $ref.Title) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $html := "" -}}
+{{- with $links -}}
+  {{- $icon := partial "utils/icon.html" (dict "name" "book-open" "attributes" `class="hx:inline hx:align-text-bottom" height="1em"`) -}}
+  {{- $html = printf `<span class="fixed-bug-refs">%s%s</span>` $icon (delimit . ", ") -}}
+{{- end -}}
+{{- return ($html | safeHTML) -}}

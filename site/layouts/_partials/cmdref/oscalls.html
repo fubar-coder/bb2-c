@@ -3,7 +3,9 @@
   deflibs library whose calls use its base. Context: dict "lib" (the
   library that opens it), "calls" (the call entries, tools/cmdref),
   "numbers" (the library numbers that declare them) and "intro" (the
-  hand-written introduction, Markdown, may be empty). Returns a string.
+  hand-written introduction, Markdown, may be empty) and "fixes" (the rows
+  of data/fixoverview.yaml of the library, may be empty). Returns a
+  string.
 */ -}}
 {{- $md := "" -}}
 {{- with .intro -}}
@@ -21,5 +23,8 @@
     {{- $args = printf "`%s`" (replace . "|" "\\|") -}}
   {{- end -}}
   {{- $md = printf "%s| `%s` | %s | %s | %v |\n" $md .name $args (delimit .registers ", ") .offset -}}
+{{- end -}}
+{{- with .fixes -}}
+  {{- $md = printf "%s\n## Fixed original bugs\n\nThe BB2 C port fixes these bugs of the original in the calls of this library ([AmigaOS calls]({{< relref \"/docs/compared-with-original/fixed-bugs/libraries/amigaos\" >}})):\n\n%s" $md (partial "cmdref/fixes.html" .) -}}
 {{- end -}}
 {{- return $md -}}

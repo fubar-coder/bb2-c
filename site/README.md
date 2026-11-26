@@ -119,12 +119,14 @@ add sorting and filters. The file has four parts:
   - issue: 421
     severity: 1          # 1-5, the levels at the top of this file
     topic: "Graphics"    # one of topics
-    library: "polylib"   # the library of the command reference, or
-                         # "Compiler" or "TED"
+    library: "polylib"   # the library of the command reference (several
+                         # separated by ", "), or "Compiler" or "TED"
     command: "RenderToBitmap, RenderPoly"   # may be ""
     text: "One sentence for the reader: what the port does, and what the original did."
-    page: libraries      # the fixed-bugs page: compiler, running-blitz2,
-                         # libraries or editor
+    page: libraries/commands/polylib   # the fixed-bugs page: compiler,
+                         # running-blitz2, editor, libraries (the index),
+                         # libraries/commands/NAME, libraries/userlibs/NAME
+                         # or libraries/amigaos
     anchor: rendertobitmap-dither   # a heading id on that page
     highlight: true      # optional: the row is in the warning box
   ```
@@ -162,6 +164,44 @@ as it is, and `site_fixoverview_*` build it with the broken data files of
 site parameter `fixOverviewData`) and expect each to fail with its
 message. The tests need podman and the image above and are skipped
 without them.
+
+## The pages of fixed library bugs
+
+The fixed bugs of the libraries have one page per library, in
+`content/docs/compared-with-original/fixed-bugs/libraries/`:
+`commands/NAME.md` for a command library of acidlibs, `userlibs/NAME.md`
+for an RWE userlib, `amigaos.md` for the calls of AmigaOS functions. A fix
+that concerns several libraries goes to the page of the first of them; a
+fault shared by many libraries is described once on the section's
+`_index.md`, under "Fixes in several libraries". A library page begins
+with the shortcode `{{</* fixed-bugs-library */>}}` and ends with
+`{{%/* fixed-bugs-library part="elsewhere" */%}}`; the section indexes list
+the pages with `{{</* fixed-bugs-libraries group="commands" */>}}` (or
+`userlibs`).
+
+The links between these pages and the command reference are made from
+`data/fixoverview.yaml`, not written by hand:
+
+* The head of a library page counts its fixes by level (the rows whose
+  `page` is that page) and links the library's page in the command
+  reference; the end lists the rows of other pages whose `library` names
+  this library.
+* On these pages, a link to an issue is followed by the badge of its
+  row's level and by links to the row's commands in the command
+  reference (the link render hook in
+  `layouts/docs/compared-with-original/fixed-bugs/libraries/_markup/`).
+  A command links to its heading when the library declares a command of
+  that name; a suffix in parentheses, as in `PlayTracker (effect E8x)`,
+  is ignored.
+* A page of the command reference (`_content.gotmpl` with the partials
+  in `layouts/_partials/cmdref/`) shows under each command the rows that
+  name it, each linked to its entry, and the other rows of the library
+  in a section "Fixed original bugs" at its end. A row of the page
+  `libraries/amigaos` belongs to the deflibs library it names, every
+  other row to the command library or userlib of that name.
+
+So a row's `library` and `command` must use the names of the command
+reference for the links to appear.
 
 ## API reference
 

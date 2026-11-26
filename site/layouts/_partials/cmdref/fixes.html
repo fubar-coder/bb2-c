@@ -1,0 +1,10 @@
+{{- /*
+  The Markdown list of fixed original bugs (rows of data/fixoverview.yaml),
+  each its one-sentence text linked to its entry on the fixed-bugs page.
+  Context: the rows. Returns a string (empty without rows).
+*/ -}}
+{{- $md := "" -}}
+{{- range sort . "issue" -}}
+  {{- $md = printf "%s- [%s]({{< relref \"/docs/compared-with-original/fixed-bugs/%s#%s\" >}})\n" $md (strings.TrimSpace .text) .page .anchor -}}
+{{- end -}}
+{{- return $md -}}
