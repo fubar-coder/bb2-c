@@ -341,7 +341,7 @@ ab3_cli_case(latin1_stray latin1_stray.bb2)
 # with #c=1 and #c=2 - the warning line and rc 5 (RETURN_WARN), as an
 # error (-werr) rc 10, disabled (-w) silent and rc 0 also when in -werr;
 # the warning and a compile error: rc 10
-ab3_cli_case(wclash wclash.ab3)
+ab3_cli_case(wclash wclash.ab3 REF REF_EXPECT wclash.ref.expect)
 ab3_cli_case(wclash_werr wclash.ab3 ARGS -werr resclash)
 ab3_cli_case(wclash_off wclash.ab3 ARGS -w -resclash)
 ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
