@@ -1814,6 +1814,20 @@ unqualified file beside a qualified one, two `fixed` files, a pair of
 equal files, one file of a pair without the other, and a missing file
 fail the pass before any session (exit status 2, with the file names).
 
+A program has one fix pair at most, so a mixed configuration in which an
+unfixed bug of one part meets a fix in the other (port: the CD's library
+without the fix of #200, the compiler with the fix of #1216) can write an
+output that neither file describes. Such a combination is listed in
+`CORPUS_UNJUDGED` (`tests/corpus/CMakeLists.txt`), one entry
+`PASS:CONFIG:NAME|REASON` (`corpus_runerr_originals:port:t01_int|...`):
+the pass does not judge that program in that configuration, the report
+says `not judged` and gives the reason, and the program's other
+configurations are judged as before. An entry that names no pass fails the
+configure step, one that names no configuration or program of the pass
+fails the pass before any session (exit status 2), and one whose program
+is as expected again is `STALE` and fails the pass, as a stale
+`PREV_INTENDED` entry does.
+
 The files are written by two targets, never by a test, and reviewed with
 `git diff tests/corpus/expect`:
 

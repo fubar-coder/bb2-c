@@ -104,6 +104,11 @@ one is reported, none fails), as against the original only outputs and
 errors count; a `NAME.exe` file is refused. A malformed
 directory or a missing file fails the pass before any session; a pass
 with `expect_dir=` may have the reference as its only configuration.
+`unjudged=TEST:CONFIG:NAME|REASON` (any number, from `CORPUS_UNJUDGED`)
+leaves the output of source `NAME` in configuration `CONFIG` unjudged: the
+report says `not judged` and gives `REASON`; an entry of another `test=`,
+configuration or source is an error before any session, one whose output
+is as expected again is `STALE` and fails the pass.
 
 Options:
 

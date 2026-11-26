@@ -140,6 +140,34 @@ int main(void)
     CHECK(parse(BASE CONFIGS "source=/s\ntest=corpus\nintended=corpuz:a\n", err, sizeof err) == -1
           && strstr(err, "unknown test"));
 
+    /* unjudged=TEST:CONFIG:NAME|REASON: an entry of this pass, its configuration and source */
+#define UJ BASE CONFIGS "source=/s/t01_int.bb2\ntest=corpus_x\nexpect_dir=/e\n"
+    CHECK(corpus_parse(UJ "unjudged=corpus_x:port:t01_int|why: both\n", &p, err, sizeof err) == 0);
+    CHECK(p.nunjudged == 1 && !strcmp(p.unjudged[0].entry, "corpus_x:port:t01_int")
+          && !strcmp(p.unjudged[0].config, "port") && !strcmp(p.unjudged[0].name, "t01_int")
+          && !strcmp(p.unjudged[0].reason, "why: both") && !p.unjudged[0].seen);
+    corpus_free(&p);
+    CHECK(parse(UJ "unjudged=corpus_x:port:t01_int\n", err, sizeof err) == -1
+          && strstr(err, "TEST:CONFIG:NAME|REASON"));
+    CHECK(parse(UJ "unjudged=corpus_x:port:t01_int|\n", err, sizeof err) == -1
+          && strstr(err, "TEST:CONFIG:NAME|REASON"));
+    CHECK(parse(UJ "unjudged=corpus_x::t01_int|r\n", err, sizeof err) == -1
+          && strstr(err, "TEST:CONFIG:NAME|REASON"));
+    CHECK(parse(UJ "unjudged=corpus_x:port:t01:int|r\n", err, sizeof err) == -1
+          && strstr(err, "TEST:CONFIG:NAME|REASON"));
+    CHECK(parse(UJ "unjudged=corpus_y:port:t01_int|r\n", err, sizeof err) == -1
+          && strstr(err, "not an entry of the pass corpus_x"));
+    CHECK(parse(UJ "unjudged=corpus_x:clib:t01_int|r\n", err, sizeof err) == -1
+          && strstr(err, "no configuration clib"));
+    CHECK(parse(UJ "unjudged=corpus_x:port:t02_float|r\n", err, sizeof err) == -1
+          && strstr(err, "no program t02_float"));
+    CHECK(parse(UJ "unjudged=corpus_x:port:t01_int|r\nunjudged=corpus_x:port:t01_int|s\n", err,
+                sizeof err) == -1 && strstr(err, "twice"));
+    CHECK(parse(BASE CONFIGS "source=/s/t01_int.bb2\ntest=corpus_x\n"
+                "unjudged=corpus_x:port:t01_int|r\n", err, sizeof err) == -1
+          && strstr(err, "needs expect_dir="));
+#undef UJ
+
     /* read-only volumes */
     CHECK(corpus_parse(BASE CONFIGS "source=/s\nmount=BB2|/cd\nmount=X|/x\n", &p, err,
                        sizeof err) == 0);

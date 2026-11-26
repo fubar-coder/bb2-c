@@ -120,6 +120,19 @@
  *                     all of them with ON; each listed one must differ
  *                     (else STALE, the pass fails), an unlisted difference
  *                     fails; needs test=
+ *   unjudged=TEST:CONFIG:NAME|REASON
+ *                     with expect_dir=: the output (and serial data) of
+ *                     source NAME in the configuration CONFIG is not judged
+ *                     (a combination of an unfixed original bug and a fix
+ *                     that no expected file of the program describes); the
+ *                     report says so and gives REASON, the program's other
+ *                     configurations are judged.  TEST is the ctest name of
+ *                     the pass (test=), CONFIG one of its configurations,
+ *                     NAME one of its sources (else an error before any
+ *                     session); an entry whose program was run and whose
+ *                     output is as expected again is STALE (the pass
+ *                     fails); any number (tests/corpus/CMakeLists.txt,
+ *                     CORPUS_UNJUDGED)
  *   serial=on|off     on: the emulated serial port is a TCP server, a
  *                     remote end answers the programs (serial.h); the bytes
  *                     a program sends over the serial port (NAME.serial) are
@@ -303,6 +316,14 @@ struct corpus_config {
     char *blitz2, *deflibs, *acidlibs;
 };
 
+/* unjudged=TEST:CONFIG:NAME|REASON: a program not judged in a configuration */
+struct corpus_unjudged {
+    char *entry;                        /* TEST:CONFIG:NAME, as given */
+    char *config, *name, *reason;
+    int seen;                           /* judged: the program was run in CONFIG */
+    int matched;                        /* every observation was as expected (STALE) */
+};
+
 struct corpus_pass {
     char *work, *report, *ted, *launcher, *gate, *defaultdbug;
     char *publish, *run_dir;            /* publish=, run_dir= (rundir.h) */
@@ -318,6 +339,8 @@ struct corpus_pass {
     size_t nfix;
     char *observe_to;                   /* corpus_observe: the directory of the observations */
     struct prevint intended;            /* intended=: PREV_INTENDED, for the config "prev" */
+    struct corpus_unjudged *unjudged;   /* unjudged= */
+    size_t nunjudged;
     int record;                         /* record=: enum corpus_record */
     char *record_to;                    /* record_to= (record=write) */
     int layout_stack;                   /* layout=stack */

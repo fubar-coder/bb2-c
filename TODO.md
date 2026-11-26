@@ -1187,6 +1187,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   changes (`-DPREV_INTENDED`) and tests of the results for positive,
   negative and odd values; first count in the corpus how often `/2^n*2^n`
   occurs.
+- [ ] **Programs not judged in a mixed configuration** (user decision
+  2026-11-26, "Exclude, with reason (Recommended)"): `corpus_runerr_originals`
+  does not judge t01_int in `port` (the CD's library without the fix of
+  #200 and the compiler with the fix of #1216 give an output that neither
+  `t01_int.orig.out` nor `t01_int.fixed-200.out` describes; the expect
+  forms allow one fix per program), an entry of `CORPUS_UNJUDGED` in
+  `tests/corpus/CMakeLists.txt` (tests/README.md, "Corpus"). If more such
+  combinations appear, decide whether the expect forms should describe
+  them (e.g. an expected file per configuration or a file for two fixes)
+  instead of more entries.
 
 ## 3 Only once §1 is done
 

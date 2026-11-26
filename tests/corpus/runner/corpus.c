@@ -55,6 +55,13 @@ void corpus_free(struct corpus_pass *p)
     free(p->test);
     free(p->expect_dir);
     prevint_free(&p->intended);
+    for (i = 0; i < p->nunjudged; i++) {
+        free(p->unjudged[i].entry);
+        free(p->unjudged[i].config);
+        free(p->unjudged[i].name);
+        free(p->unjudged[i].reason);
+    }
+    free(p->unjudged);
     cexp_free(&p->expected);
     free(p->fix);
     free(p->observe_to);
@@ -359,6 +366,34 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             if (r)
                 return fail(p, err, errlen, "line %u: intended=%s", no,
                             r < 0 ? msg : "TEST:NAME or ON (a library path is not for the corpus)");
+            continue;
+        }
+        if (!strcmp(key, "unjudged")) {
+            /* TEST:CONFIG:NAME|REASON; checked against the pass below */
+            struct corpus_unjudged u = { 0 }, *v2;
+            char *bar = strchr(val, '|'), *c1 = strchr(val, ':'), *c2 = c1 ? strchr(c1 + 1, ':') : NULL;
+            char *c3 = c2 ? strchr(c2 + 1, ':') : NULL;
+
+            if (!bar || !c1 || !c2 || c2 > bar || c1 == val || c2 == c1 + 1 || bar == c2 + 1
+                || !bar[1] || (c3 && c3 < bar)) {
+                free(val);
+                return fail(p, err, errlen, "line %u: unjudged=TEST:CONFIG:NAME|REASON", no);
+            }
+            u.entry = strndup(val, (size_t)(bar - val));
+            u.config = strndup(c1 + 1, (size_t)(c2 - c1 - 1));
+            u.name = strndup(c2 + 1, (size_t)(bar - c2 - 1));
+            u.reason = strdup(bar + 1);
+            free(val);
+            if (!u.entry || !u.config || !u.name || !u.reason
+                || !(v2 = realloc(p->unjudged, (p->nunjudged + 1) * sizeof *v2))) {
+                free(u.entry);
+                free(u.config);
+                free(u.name);
+                free(u.reason);
+                return fail(p, err, errlen, "out of memory");
+            }
+            p->unjudged = v2;
+            p->unjudged[p->nunjudged++] = u;
             continue;
         }
         if (!strcmp(key, "source")) {
@@ -681,6 +716,35 @@ common:
         if (k == p->nconfigs)
             return fail(p, err, errlen, "file=%s: no configuration %s", p->file_dest[i],
                         p->file_tag[i]);
+    }
+    /* unjudged=: an entry of this pass, one of its configurations and sources */
+    if (p->nunjudged && (!p->expect_dir || !p->test))
+        return fail(p, err, errlen, "unjudged= needs expect_dir= and test= (the ctest name)");
+    for (i = 0; i < p->nunjudged; i++) {
+        const struct corpus_unjudged *u = &p->unjudged[i];
+        size_t n = strlen(p->test);
+        int found = 0;
+
+        if (strncmp(u->entry, p->test, n) || u->entry[n] != ':')
+            return fail(p, err, errlen, "unjudged=%s: not an entry of the pass %s", u->entry,
+                        p->test);
+        for (k = 0; k < p->nconfigs && strcmp(u->config, p->configs[k].tag); k++)
+            ;
+        if (k == p->nconfigs)
+            return fail(p, err, errlen, "unjudged=%s: the pass has no configuration %s",
+                        u->entry, u->config);
+        for (k = 0; k < p->nsources && !found; k++) {
+            char *a = corpus_source_name(p, k);
+
+            found = a && !strcmp(a, u->name);
+            free(a);
+        }
+        if (!found)
+            return fail(p, err, errlen, "unjudged=%s: the pass has no program %s", u->entry,
+                        u->name);
+        for (k = 0; k < i; k++)
+            if (!strcmp(u->entry, p->unjudged[k].entry))
+                return fail(p, err, errlen, "unjudged=%s twice", u->entry);
     }
     for (i = 0; i < p->nsources; i++)
         for (k = 0; k < i; k++) {
@@ -2254,6 +2318,18 @@ static int prev_judge(struct corpus_pass *p, const struct corpus_config *cf, con
     return v == PREVINT_DIFFERS;
 }
 
+/* unjudged=: the entry of source name in configuration cf, or NULL */
+static struct corpus_unjudged *unjudged_of(struct corpus_pass *p, const struct corpus_config *cf,
+                                           const char *name)
+{
+    size_t i;
+
+    for (i = 0; name && i < p->nunjudged; i++)
+        if (!strcmp(p->unjudged[i].config, cf->tag) && !strcmp(p->unjudged[i].name, name))
+            return &p->unjudged[i];
+    return NULL;
+}
+
 int corpus_run(struct corpus_pass *p, FILE *log)
 {
     struct amiga_emulation **e = calloc(p->nconfigs, sizeof *e);
@@ -2561,6 +2637,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
             const struct outcome *rb = compared_with(p, c, i, slog, &ref, &bo);
             int cdiff = 0;
             enum cexp_qual mq = CEXP_PLAIN;
+            struct corpus_unjudged *uj = NULL;   /* unjudged= */
 
             load_outcome(p, c, i, slog[c], &o);
             text_add(&rep, "%s %s:", c > (p->expect_dir ? 0u : 1u) ? ";" : "", cf->tag);
@@ -2587,7 +2664,21 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                     o.result);
                 cdiff |= !ok;
             }
-            if (p->expect_dir) {
+            if (p->expect_dir && (uj = unjudged_of(p, cf, name)) != NULL) {
+                /* not judged: only whether it is as expected again (STALE) */
+                struct text scratch = { 0 };
+
+                uj->seen = 1;
+                uj->matched = o.run && !expect_judge(p, name, CEXP_OUT, cf, o.run, o.runlen,
+                                                     &scratch, &mq);
+                if (p->serial)
+                    uj->matched &= o.serial && !expect_judge(p, name, CEXP_SERIAL, cf, o.serial,
+                                                             o.seriallen, &scratch, &mq);
+                free(scratch.p);
+                text_add(&rep, " not judged");
+                text_add(&detail, "  %s: %s is not judged in this configuration: %s\n", cf->tag,
+                         name, uj->reason);
+            } else if (p->expect_dir) {
                 int d = expect_judge(p, name, CEXP_OUT, cf, o.run, o.runlen, &detail, &mq);
 
                 text_add(&rep, !o.run ? " NO OUTPUT" : d ? " OUTPUT DIFFERS" : " output as expected");
@@ -2603,7 +2694,7 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                     text_add(&rep, " OUTPUT DIFFERS");
                 cdiff |= !same(rb->run, rb->runlen, o.run, o.runlen);
             }
-            if (p->serial) {
+            if (p->serial && !uj) {
                 if (p->expect_dir) {
                     int d = expect_judge(p, name, CEXP_SERIAL, cf, o.serial, o.seriallen, &detail,
                                          &mq);
@@ -2665,6 +2756,16 @@ int corpus_run(struct corpus_pass *p, FILE *log)
                     vbad[c] = 1;
         }
     }
+    /* a stale unjudged= entry: the program's output is as expected again */
+    for (i = 0; i < p->nunjudged; i++)
+        if (p->unjudged[i].seen && p->unjudged[i].matched) {
+            text_add(&rep, "STALE unjudged=%s: its output is as expected, judge it again (remove "
+                           "the entry from CORPUS_UNJUDGED)\n", p->unjudged[i].entry);
+            bad++;
+            for (c = 0; c < p->nconfigs; c++)
+                if (!strcmp(p->configs[c].tag, p->unjudged[i].config))
+                    vbad[c] = 1;
+        }
     if (prevdiff.n)
         text_add(&rep, "prev differs in: PREV_INTENDED=\"%s\"\n", prevdiff.p);
     text_add(&rep, "%zu checks, %ld with differences\n", p->nsources, bad);
