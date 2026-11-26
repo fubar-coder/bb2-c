@@ -27,7 +27,8 @@ GitHub.
 
 ### Requirement: The detail pages stay
 The pages of fixed original bugs SHALL be pages directly under
-`compared-with-original/`: `compiler`, `running-blitz2`, `editor` and
+`compared-with-original/`: `language`, `expressions` (with its sub-page
+`type-system`), `compiled-programs`, `running-blitz2`, `editor` and
 `libraries` (with its groups `commands/`, `userlibs/` and `amigaos`).
 There SHALL be no `fixed-bugs/` and no `new-errors/` section. They SHALL
 stay the detail articles and SHALL link to the overview; a row's link
@@ -133,8 +134,8 @@ fixes of levels 1 and 2 and gives their count.
 A page of fixed bugs that moved, and the removed sections `fixed-bugs/` and `new-errors/`, SHALL keep their old URLs as `aliases` in the front matter of the page that now holds their content. The template `layouts/alias.html` SHALL make the page at such a URL, forward to the page and keep the anchor of the link.
 
 #### Scenario: An old link with an anchor
-- **WHEN** a reader opens `/docs/compared-with-original/fixed-bugs/compiler/#float-literals`
-- **THEN** the page at that URL forwards to `/docs/compared-with-original/compiler/#float-literals`
+- **WHEN** a reader opens `/docs/compared-with-original/fixed-bugs/compiler/#arrays-256`
+- **THEN** the page at that URL forwards to `/docs/compared-with-original/language/#arrays-256`
 
 ### Requirement: Fixes of levels 3 and 4 are entries with a program
 A fix of level 3 or 4 SHALL be described on its page of fixed bugs as an
@@ -164,7 +165,7 @@ list the rows of other pages whose `library` names this library.
 An entry that went to another page than the alias names SHALL be listed in the front matter `anchorMoves` of the alias's page, by its anchor, and a link to that anchor SHALL go to that page. An `anchorMoves` that names a page that does not exist SHALL fail the build.
 
 #### Scenario: A moved entry
-- **WHEN** the page `compiler` has `anchorMoves` with `latin1-outside-string: editor` and a reader opens its alias `new-errors/names-and-types/` with the anchor `#latin1-outside-string`
+- **WHEN** the page `language` has `anchorMoves` with `latin1-outside-string: editor` and a reader opens its alias `new-errors/names-and-types/` with the anchor `#latin1-outside-string`
 - **THEN** the reader is forwarded to the page `editor` with that anchor
 
 ### Requirement: Component and fix of a row
