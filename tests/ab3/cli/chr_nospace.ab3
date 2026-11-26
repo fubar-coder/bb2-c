@@ -1,0 +1,17 @@
+; character literals right after the = without a space, with byte, word,
+; float and a Long field as target (spec ab3-compat/strings): the value
+; as with a space. AmiBlitz3 refuses these ("Can't convert types")
+OPTIMIZE 4
+NEWTYPE .zt
+  l.l
+End NEWTYPE
+b.b=@"A"
+w.w=@"AB"
+f.f=@"AB"
+DEFTYPE .zt t
+t\l=@"AB"
+NPrint b
+NPrint w
+NPrint f
+NPrint t\l
+End

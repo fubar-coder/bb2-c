@@ -391,6 +391,8 @@ ab3_cli_case(join_incok join_incok.ab3 REF)
 # its Macro line), as in AmiBlitz3
 ab3_cli_case(join_incmacro join_incmacro.ab3 REF)
 ab3_cli_case(join_op join_op.ab3 REF REF_EXPECT join_op.ref.expect)
+# @@ after a comma inside parentheses with a parameter still to come
+ab3_cli_case(join_funcpar join_funcpar.ab3 REF REF_EXPECT join_funcpar.ref.expect)
 # @@ on an End Macro line is an error (AmiBlitz3 ignores it there)
 ab3_cli_case(join_endmacro join_endmacro.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 ab3_cli_case(join_endmacro1 join_endmacro1.ab3 REF REF_EXPECT join_endmacro.ref.expect)
@@ -484,6 +486,8 @@ ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 ab3_cli_case(chr_value chr_value.ab3 REF)
 ab3_cli_case(chr_mem chr_mem.ab3 REF)
 ab3_cli_case(chr_float chr_float.ab3 REF REF_EXPECT chr_float.ref.expect)
+# without a space after = the assignment shortcut of AmiBlitz3 refuses non-Long targets
+ab3_cli_case(chr_nospace chr_nospace.ab3 REF REF_EXPECT chr_nospace.ref.expect)
 ab3_cli_case(chr_at chr_at.ab3 REF)
 ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
 ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)

@@ -1,0 +1,11 @@
+; joining lines with @@ after a comma inside a parenthesised parameter
+; list with a parameter still to come (spec ab3-compat/syntax-rules,
+; "Line joining with @@"). AmiBlitz3: "a bracket ) is expected here"
+OPTIMIZE 4
+NPrint Left$("abc", @@
+  2)
+NPrint Instr("abc", @@
+  "b")
+NPrint QLimit(5, @@
+  1,3)
+End
