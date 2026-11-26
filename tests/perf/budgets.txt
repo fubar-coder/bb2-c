@@ -434,6 +434,19 @@
 # xlmulq 214.1/214.1, xlxmulq 218.1/218.1, laddqp 180.6/180.6, xladdqp
 # 91.1/91.1, ifladdq 216.6/216.6 (the other loops as before, within
 # their budgets).
+# The fix of #1216 (rule P+, expr-tree-5-operand-typing, tasks 4.1/4.2)
+# made seven loops slower, a decided consequence of the rule (user,
+# 2026-11-26, "expr-tree-5 4.3: budgets, the compare bug, the narrow
+# product": the budgets raised): Mod with a fraction exact (qmod: q48mod,
+# fmod: the exact Float Mod inline), 48.16 under a wanted Long (lqdivw:
+# q48div instead of lqdiv; qqmul, qqmulw, qqmulc: q48mul instead of
+# qqmult, which rounds the exact product down where q48mul cuts at
+# 1/65536 first), a comparison with a Long in it in 48.16 (inteq: n/2 a
+# 48.16 division beside the Long of Int). Before (afc2a49f9) / 80c220d5a
+# / after task 4.3 (the larger of three runs): qmod 278.6/1553.0/1506.7,
+# fmod 966.1/2400.0/2402.2, lqdivw 573.6/1219.0/1173.2, qqmul
+# 504.1/651.5/605.1, qqmulw 280.6/527.0/483.1, qqmulc 164.7/526.5/481.1,
+# inteq 1161.5/2013.2/1856.7.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -481,7 +494,7 @@ bcmp.emptylong                  3          -  the empty loop again, 150000 itera
 bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
 bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)
 bcmp.leqq                     120      107.0  If cq=y Then c=1 (Long = Quick, no fraction)
-bcmp.inteq                   1177     1150.0  If n/2=Int(n/2) Then c=1 (n=8)
+bcmp.inteq                   1879     1150.0  If n/2=Int(n/2) Then c=1 (n=8; P+: beside the Long of Int both sides 48.16)
 bcmp.qgtconst                  99       90.5  If x>1 Then c=1
 bcmp.lgtconst                  95       91.0  If l>1 Then c=1 (Long > constant)
 bcmp.whilelq                   24       16.5  While cnt<w : cnt+1 : Wend (per pass)
@@ -569,8 +582,8 @@ bmath.lmod32                 1854     2973.5  c=a2 MOD b2 (same values: the slow
 bmath.qdivw                 2053~4     3876.5  q3=q4/q5 (q4=1000.5, q5=$00010001: the loop with most steps)
 bmath.ldivw                 1254~4     2528.0  c=a3/b3 (a3=123456789, b3=65536: the smallest divisor of the loop)
 bmath.wmod                    253      248.5  w3=w1 MOD w2
-bmath.qmod                    285      276.5  q3=q1 MOD q2
-bmath.fmod                    979     3700.5  c=f1 MOD f2
+bmath.qmod                   1525      276.5  q3=q1 MOD q2 (P+: exact, compilerlib q48mod)
+bmath.fmod                   2430     3700.5  c=f1 MOD f2 (P+: exact, inline mathffp)
 bmath.q2f                    1922     1907.5  f3=q1
 bmath.f2q                    1784     1762.5  q3=f1
 bmath.plocal                  333      391.5  plocal{a} (a Statement with two Long locals: link, clrloc)
@@ -599,13 +612,13 @@ bmath.absq                   3643     3618.6  q3=Abs(q6) (q6=-12.25)
 bmath.peekc                   126      124.6  c=Peek.l(4)
 bmath.mixmul                  483          -  c=a*q2 (a Long times a Quick under a Long: compilerlib mixmult, four MULU, #1178, #1191)
 bmath.lqdiv                  2325          -  c=a4/q2 (a4=100, q2=3.25: compilerlib lqdiv, 32 steps)
-bmath.lqdivw                  583          -  c=a4/q7 (q7=3.0: lqdiv's two DIVU)
+bmath.lqdivw                 1188          -  c=a4/q7 (q7=3.0; P+: a 48.16 division under a Long, compilerlib q48div)
 bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
 bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
 bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
-bmath.qqmul                   513          -  c=q1*q2 (two Quicks with a fraction: compilerlib qqmult, the 64 bit product)
-bmath.qqmulw                  287          -  c=q1*q7 (q7=3.0: qqmult, a whole Quick, two MULS)
-bmath.qqmulc                  170          -  c=q7*q7 (qqmult, two whole Quicks, one MULS)
+bmath.qqmul                   615          -  c=q1*q2 (two Quicks with a fraction; P+: a 48.16 product under a Long, compilerlib q48mul)
+bmath.qqmulw                  491          -  c=q1*q7 (q7=3.0, a whole Quick; P+: q48mul)
+bmath.qqmulc                  489          -  c=q7*q7 (two whole Quicks; P+: q48mul)
 bmath.fpow                  14186    14018.2  f3=f1^f2 (f1=12.5, f2=3.25: mathtranslib ^, SPPow with a positive base, #1189)
 bmath.fpown                 14180    13902.2  f3=f4^f5 (f4=-2.5, f5=3: SPPow of |x| and the sign of an odd power, #1189)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
