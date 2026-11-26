@@ -481,6 +481,9 @@
 # -> 633.2, qqmulw 483.1 -> 507.2, qqmulc 481.1 -> 508.8, bq48.qmulpaddl
 # 657.2 -> 684.0, xldivq 1866.7 -> 1887.5, bcompilerlib.q48divw 1077.7 ->
 # 1095.2 (q48div 1773.7 -> 1793.0, within its budget); budgets raised.
+# Two Quicks multiplied under a wanted Long by qqmult (candidate #4):
+# bmath.qqmul 633.2 -> 504.1, qqmulw 507.2 -> 278.6, qqmulc 508.8 ->
+# 166.7, bq48.qmulpaddl 684.0 -> 524.5.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -650,9 +653,9 @@ bmath.lqdivw                  329          -  c=a4/q7 (q7=3.0; P+: a 48.16 divis
 bmath.mixmulw                 311          -  c=b4*q2 (b4=20: mixmult, a factor a signed word, two MULS)
 bmath.mixmulc                 196          -  c=q7*4 (q7=3.0: mixmult, a signed word times a whole Quick, one MULS)
 bmath.mixmulh                 305          -  c=a*q7 (a=123456, q7=3.0: mixmult, a whole Quick, two MULU)
-bmath.qqmul                   643          -  c=q1*q2 (two Quicks with a fraction; P+: a 48.16 product under a Long, compilerlib q48mulf)
-bmath.qqmulw                  515          -  c=q1*q7 (q7=3.0, a whole Quick; P+: q48mulf)
-bmath.qqmulc                  517          -  c=q7*q7 (two whole Quicks; P+: q48mulf, the cut down of #1221)
+bmath.qqmul                   512          -  c=q1*q2 (two Quicks with a fraction; P+: under a Long compilerlib qqmult, the exact floor, four MULU)
+bmath.qqmulw                  283          -  c=q1*q7 (q7=3.0, a whole Quick; P+: qqmult, a factor whole)
+bmath.qqmulc                  170          -  c=q7*q7 (two whole Quicks; P+: qqmult, one MULS)
 bmath.fpow                  14186    14018.2  f3=f1^f2 (f1=12.5, f2=3.25: mathtranslib ^, SPPow with a positive base, #1189)
 bmath.fpown                 14180    13902.2  f3=f4^f5 (f4=-2.5, f5=3: SPPow of |x| and the sign of an odd power, #1189)
 bmath.qlimit                  133      134.5  q3=QLimit(q1,0,10)
@@ -688,7 +691,7 @@ bq48.xlmulq                   220          -  x=l*q (under a Quick: the low 32 b
 bq48.xlxmulq                  224          -  x=lx*q (under a Quick, lx=100000)
 bq48.laddqp                   186          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
 bq48.xladdqp                   96          -  x=l+q+p (the same under a Quick)
-bq48.qmulpaddl                695          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
+bq48.qmulpaddl                533          -  r=q*p+l (a product of two Quicks, then a Long added: qqmult + l as Longs)
 bq48.qmulwaddp                314          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16; q*w inline)
 bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 comparison)
 bq48.iflmulq                  472          -  If l*q>p Then c=1 (a 48.16 product compared: compilerlib q48mull, l not widened, two MULU)

@@ -1189,15 +1189,16 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   occurs.
 - [ ] **A 48.16 product of two Quicks without q48mul** (user decisions
   2026-11-26, "expr-tree-5 4.3: budgets, the compare bug, the narrow
-  product" and "the Word fast path q*w"): a Quick times a Word, Byte or
-  whole constant, times a constant below 1, and a Quick divided by a whole
-  constant are written inline (task 4.3, `eval.c` `p5fast`); a product of
-  two Quick values (`q*p` in a chain under a wanted Long, `r=q*p+l`,
-  `tests/perf` bq48 `qmulpaddl`) still calls `q48mul` (about 500 cycles).
-  Its 48.16 product needs a signed 32 x 32 -> 64 bit multiplication: a
-  compilerlib routine for it changes the executables of every program that
-  uses only the routines of #1178, inline it is four MULU and the carries.
-  Its values must stay q48mul's (`tests/blitz2/expr-q48-paths.test.bas`).
+  product", "the Word fast path q*w", "Speed review of P+: the candidates
+  and the rest" and "Quick rounding: down stays; the 48.16 cut in the
+  final direction (E)"): a product of two Quick values at the top under a
+  wanted Long (`r=q*p`), and `q*p+l`, `l+q*p`, `q*p-l` there, call
+  compilerlib's `qqmult` (the exact product rounded down); a product of
+  two Quick values elsewhere in 48.16 (a comparison, a deeper chain,
+  `l-q*p`, the low 32 bits under a wanted Quick) still calls `q48mul` or
+  `q48mulf` (about 500 cycles). Its values must stay those of
+  `exprarith_q48` and `exprarith_q48_down`
+  (`tests/blitz2/expr-q48-paths.test.bas`).
 - [ ] **Programs not judged in a mixed configuration** (user decision
   2026-11-26, "Exclude, with reason (Recommended)"): `corpus_runerr_originals`
   does not judge t01_int in `port` (the CD's library without the fix of

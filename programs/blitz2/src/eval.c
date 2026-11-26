@@ -7535,25 +7535,33 @@ static int p5mixkind(const struct exprtyping_node *n)
     return n->t == ET_WORD || n->t == ET_LONG ? 1 : 0;
 }
 
-/* task 4.3 (a tree optimisation, design decision 9): the root of an
-   expression taken as its whole part rounded down (ETC_FLOOR), a 48.16
-   +, - or * of a whole number and a 16.16 value (+ and - also of two
-   16.16 values), is the routine of #1178 that gives that whole part
-   directly (mixedop: l + floor(q), l - ceil(q), mixmult's bits 16..47 of
-   the product), the same value: neither operand has more than 32 bits,
-   so the 48.16 operation is exact and its floor is the routine's. */
-static void p5mixfloor(struct p5node *root, struct exprtyping_result *res)
+/* a constant below 1 with a fraction: a factor p5fastmark takes inline
+   (P5F_NMULF) beside a 16.16 value */
+static BOOL p5below1(const struct exprtyping_node *n)
 {
-    struct exprtyping_op *o = &root->t.o;
-    int lk, rk;
+    struct p5q v;
 
-    if (res->consumer != ETC_FLOOR || res->fmt != ETF_Q48 || root->t.kind != ETN_BIN || o->path != ETY_Q48
-        || (root->t.op != ETO_ADD && root->t.op != ETO_SUB && root->t.op != ETO_MUL))
-        return;
-    lk = p5mixkind(root->t.l);
-    rk = p5mixkind(root->t.r);
-    if (!lk || !rk || (lk == 1 && rk == 1) || (root->t.op == ETO_MUL && lk == 2 && rk == 2))
-        return;
+    if (!p5folded(n))
+        return FALSE;
+    v = p5qval(n);
+    return v.ok && v.d != 1 && (v.n < 0 ? -v.n : v.n) * 65536 < 65535 * v.d;
+}
+
+/* n is a 48.16 * of two 16.16 values that the routine qqmult of #1178 takes
+   (not a factor below 1: that is inline) */
+static BOOL p5qqmul(const struct exprtyping_node *n)
+{
+    return n->kind == ETN_BIN && n->typed && n->op == ETO_MUL && n->o.path == ETY_Q48 && p5mixkind(n->l) == 2
+           && p5mixkind(n->r) == 2 && !p5below1(n->l) && !p5below1(n->r);
+}
+
+/* the operation n of the routines of #1178 (ETY_MIXED; qqmult for two
+   16.16 values): a whole number (lk, rk 1) or a 16.16 value (2) on each
+   side, the whole part rounded down as a Long */
+static void p5mixset(struct exprtyping_node *n, int lk, int rk)
+{
+    struct exprtyping_op *o = &n->o;
+
     o->path = ETY_MIXED;
     o->lwide = (unsigned char)(lk == 2);
     o->rwide = (unsigned char)(rk == 2);
@@ -7561,8 +7569,52 @@ static void p5mixfloor(struct p5node *root, struct exprtyping_result *res)
     o->ras = rk == 2 ? ET_QUICK : ET_LONG;
     o->result = ET_LONG;
     o->fast = 0;
-    root->t.t = ET_LONG;
-    root->t.fmt = ETF_TYPE;
+    n->t = ET_LONG;
+    n->fmt = ETF_TYPE;
+}
+
+/* task 4.3 (a tree optimisation, design decision 9): the root of an
+   expression taken as its whole part rounded down (ETC_FLOOR), a 48.16
+   +, - or * of a whole number and a 16.16 value (+ and - also of two
+   16.16 values), is the routine of #1178 that gives that whole part
+   directly (mixedop: l + floor(q), l - ceil(q), mixmult's bits 16..47 of
+   the product), the same value: neither operand has more than 32 bits,
+   so the 48.16 operation is exact and its floor is the routine's.  The
+   speed review (2026-11-26, candidate #4): a * of two 16.16 values is
+   compilerlib's qqmult, the exact product rounded down (p5qqmul; with the cut of
+   #1221 that is the 48.16 value: the cut rounds down there too); a + of such a
+   product and a whole number l, or a - of l from it, is floor(q * p) + l
+   or - l as Longs (floor(x + l) = floor(x) + l for a whole l, modulo
+   2^32 as the consumer takes it). */
+static void p5mixfloor(struct p5node *root, struct exprtyping_result *res)
+{
+    struct exprtyping_op *o = &root->t.o;
+    struct exprtyping_node *l = root->t.l, *r = root->t.r;
+    int lk, rk;
+
+    if (res->consumer != ETC_FLOOR || res->fmt != ETF_Q48 || root->t.kind != ETN_BIN || o->path != ETY_Q48
+        || (root->t.op != ETO_ADD && root->t.op != ETO_SUB && root->t.op != ETO_MUL))
+        return;
+    lk = p5mixkind(l);
+    rk = p5mixkind(r);
+    if (root->t.op != ETO_MUL && ((p5qqmul(l) && rk == 1) || (root->t.op == ETO_ADD && lk == 1 && p5qqmul(r)))) {
+        /* floor(q * p) + l, floor(q * p) - l, l + floor(q * p) */
+        if (lk == 1)
+            p5mixset(r, 2, 2);
+        else
+            p5mixset(l, 2, 2);
+        o->path = ETY_PLAIN;
+        o->las = o->ras = o->result = ET_LONG;
+        o->lwide = o->rwide = 0;
+        o->fast = 0;
+        root->t.t = ET_LONG;
+        root->t.fmt = ETF_TYPE;
+        res->fmt = ETF_TYPE;
+        return;
+    }
+    if (!lk || !rk || (lk == 1 && rk == 1) || (root->t.op == ETO_MUL && lk == 2 && rk == 2 && !p5qqmul(&root->t)))
+        return;
+    p5mixset(&root->t, lk, rk);
     res->fmt = ETF_TYPE;
 }
 

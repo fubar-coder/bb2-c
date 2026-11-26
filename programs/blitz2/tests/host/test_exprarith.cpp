@@ -1276,3 +1276,59 @@ TEST_CASE("exprarith: q48mull equals q48mul of a Long and a Quick", "[exprarith]
     // a planted error is seen: the low long's carry dropped
     CHECK(!q48mull_ok(0x7fffffff, 0x7fffffff, true));
 }
+
+// ------------------------------------- two Quicks under a wanted Long (speed review)
+// a product of two 16.16 values at the top under a wanted Long, or with a
+// whole number added there, is qqmult's floor(q * p) (exprarith_mixed, the
+// routine of #1178): with the cut of #1221 it is the 48.16 product rounded
+// down (exprarith_q48_down, exprarith_q48_floor), floor(x + l) = floor(x) +
+// l for a whole l.
+
+namespace {
+
+bool qqmult_ok(int32_t a, int32_t b, int32_t l, bool plant = false)
+{
+    unsigned f = 0;
+    int64_t x = (plant ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(b), 0, &f);
+    int32_t m = exprarith_mixed(ETO_MUL, a, 1, b, 1, &f);
+
+    return m == exprarith_q48_floor(x, ET_LONG, &f)
+           && (int32_t)((uint32_t)m + (uint32_t)l)
+                  == exprarith_q48_floor(exprarith_q48(ETO_ADD, x, exprarith_whole_q48(l), 0, &f), ET_LONG, &f);
+}
+
+} // namespace
+
+TEST_CASE("exprarith: qqmult equals the 48.16 product rounded down (#1221)", "[exprarith]")
+{
+    uint64_t seed = 0x9c3ull;
+    int32_t bs[24] = { 1, -1, 0x8000, -0x8000, 0xffff, -0xffff, 0x10000, -0x10000, 0x18000, -0x18000,
+                       0x7fffffff, (int32_t)0x80000000u, 0x7fff0001, -0x7fff0001, 0x14000, 0x30000 };
+    for (int i = 16; i < 24; i++)
+        bs[i] = (int32_t)rnd32(seed);
+    bool ok = true;
+    int32_t bada = 0, badb = 0;
+    for (int32_t b : bs) {
+        ok = each_quick(seed, [&](int32_t a) {
+            if (!qqmult_ok(a, b, 5) || !qqmult_ok(a, b, (int32_t)rnd32(seed))) {
+                bada = a;
+                badb = b;
+                return false;
+            }
+            return true;
+        });
+        if (!ok)
+            break;
+    }
+    INFO("a ", bada, " b ", badb);
+    CHECK(ok);
+    for (int i = 0; i < 2000000 && ok; i++) {
+        int32_t a = (int32_t)rnd32(seed) >> (rnd32(seed) % 24), b = (int32_t)rnd32(seed) >> (rnd32(seed) % 24);
+        ok = qqmult_ok(a, b, (int32_t)rnd32(seed) >> (rnd32(seed) % 32));
+    }
+    CHECK(ok);
+    // a planted error is seen: q48mul's cut towards zero (-0.5 * 1/65536:
+    // 0 instead of -1)
+    CHECK(!qqmult_ok(1, -0x8000, 5, true));
+    CHECK(qqmult_ok(1, -0x8000, 5));
+}

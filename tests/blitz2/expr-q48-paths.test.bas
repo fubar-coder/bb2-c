@@ -802,4 +802,61 @@ End Function
   !CheckEq{r,250001,"lq_pl3"}
   r=pl5{l,l,l,l,ln*qn-p,l}
   !CheckEq{r,174998,"lq_pl5"}
+  ; two Quicks multiplied under a wanted Long: compilerlib's qqmult
+  ; (the exact floor; qt*hn has the values of #1221)
+  hn.q=-0.5 : qt.q=1 : qt=qt/65536
+  r=q*p
+  !CheckEq{r,3,"qq_r_q_mul_p"}
+  r=qn*p
+  !CheckEq{r,-3,"qq_r_qn_mul_p"}
+  r=qn*q
+  !CheckEq{r,-5,"qq_r_qn_mul_q"}
+  r=q*qw
+  !CheckEq{r,10,"qq_r_q_mul_qw"}
+  r=qn*qw
+  !CheckEq{r,-7,"qq_r_qn_mul_qw"}
+  r=qw*qnw
+  !CheckEq{r,-12,"qq_r_qw_mul_qnw"}
+  r=qm*qm
+  !CheckEq{r,1073741824,"qq_r_qm_mul_qm"}
+  r=qm*qbig
+  !CheckEq{r,-1073709056,"qq_r_qm_mul_qbig"}
+  r=qt*hn
+  !CheckEq{r,-1,"qq_r_qt_mul_hn"}
+  r=hn*qt
+  !CheckEq{r,-1,"qq_r_hn_mul_qt"}
+  r=qt*qn
+  !CheckEq{r,-1,"qq_r_qt_mul_qn"}
+  r=q*1.5
+  !CheckEq{r,3,"qq_r_q_mul_c"}
+  r=qn*1.5
+  !CheckEq{r,-2,"qq_r_qn_mul_c"}
+  r=q*0.5
+  !CheckEq{r,1,"qq_r_q_mul_half"}
+  r=q*p+l
+  !CheckEq{r,103,"qq_r_q_mul_p_add_l"}
+  r=qn*p+l
+  !CheckEq{r,97,"qq_r_qn_mul_p_add_l"}
+  r=l+qn*p
+  !CheckEq{r,97,"qq_r_l_add_qn_mul_p"}
+  r=qn*p-l
+  !CheckEq{r,-103,"qq_r_qn_mul_p_sub_l"}
+  r=l-qn*p
+  !CheckEq{r,102,"qq_r_l_sub_qn_mul_p"}
+  r=qt*hn+l
+  !CheckEq{r,99,"qq_r_qt_mul_hn_add_l"}
+  r=qm*qm+lb
+  !CheckEq{r,-1073741825,"qq_r_qm_mul_qm_add_lb"}
+  x=q*p+l
+  !CheckEq{Peek.l(&x),6758400,"qq_x_q_mul_p_add_l"}
+  x=qn*p-l
+  !CheckEq{Peek.l(&x),-6696960,"qq_x_qn_mul_p_sub_l"}
+  x=l+qm*qm
+  !CheckEq{Peek.l(&x),6553600,"qq_x_l_add_qm_mul_qm"}
+  r=pl3{l,l,q*p,l,l,l}
+  !CheckEq{r,3,"qq_pl3"}
+  r=pl4{l,l,l,qn*p+l,l,l}
+  !CheckEq{r,97,"qq_pl4"}
+  r=pq5{q,p,q,p,qn*p+l,q}
+  !CheckEq{r,6410240,"qq_pq5"}
 !EndTestCase
