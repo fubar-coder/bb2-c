@@ -3037,7 +3037,7 @@ rows:
     library: "polylib"
     command: "RenderToBitmap, RenderPoly"
     text: "`RenderPoly` after `RenderToBitmap b,d` draws on bitmap `b` with `d` as the dither pattern, as documented; the original swapped the two."
-    short: "After `RenderToBitmap b,d` draws on bitmap `b` with `d` as the dither pattern, as documented."
+    short: "`RenderPoly` after `RenderToBitmap b,d` draws on bitmap `b`, with `d` as the dither pattern."
     page: libraries/commands/polylib
     anchor: rendertobitmap-dither
     highlight: true
