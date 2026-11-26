@@ -17,7 +17,7 @@ source of facts, but is not included here; the pages are new texts.
 ## Local preview
 
 ```
-podman run --rm -p 1313:1313 -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
+podman run --rm -p 1313:1313 -v $PWD/site:/src docker.io/hugomods/hugo:go-git-0.165.0 \
     hugo server --bind 0.0.0.0 --poll 700ms
 ```
 
@@ -30,7 +30,7 @@ volume on SELinux hosts.
 A one-off build into `site/public/` (CI adds `--enableGitInfo`):
 
 ```
-podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:exts-0.154.5 \
+podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:go-git-0.165.0 \
     hugo --gc --minify
 ```
 

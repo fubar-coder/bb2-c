@@ -16,7 +16,7 @@
 */ -}}
 {{- $part := .Get "part" | default "table" -}}
 {{- $name := site.Params.fixOverviewData | default "fixoverview" -}}
-{{- $d := site.Data -}}
+{{- $d := hugo.Data -}}
 {{- range split $name "." }}{{ $d = index $d . }}{{ end -}}
 {{- if not $d -}}
   {{- errorf "fix-overview: no data file %q" $name -}}
@@ -78,7 +78,7 @@
       {{- if eq $c "Compiler" }}{{ $c = "blitz2" }}
       {{- else if eq $c "TED" }}{{ $c = "ted" }}
       {{- else if eq $row.page "libraries/amigaos" }}
-        {{- with index site.Data.libraries.deflibs $c }}{{ with .opens }}{{ $c = . }}{{ end }}{{ end }}
+        {{- with index hugo.Data.libraries.deflibs $c }}{{ with .opens }}{{ $c = . }}{{ end }}{{ end }}
       {{- end }}
       {{- $components = $components | append $c }}
     {{- end }}

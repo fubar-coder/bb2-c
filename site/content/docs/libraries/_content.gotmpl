@@ -18,8 +18,8 @@
   "text" (one or two sentences, shown under the command's heading) and
   optionally "notes" (Markdown, shown after its forms).
 */ -}}
-{{- $intros := site.Data.libintros | default dict -}}
-{{- $cmddescs := site.Data.cmddesc | default dict -}}
+{{- $intros := hugo.Data.libintros | default dict -}}
+{{- $cmddescs := hugo.Data.cmddesc | default dict -}}
 
 {{- /* The fixed original bugs of each library, from data/fixoverview.yaml
   (site/README.md): a row concerns every library its "library" names; the
@@ -27,7 +27,7 @@
   others of command libraries and userlibs. */ -}}
 {{- $fixes := dict -}}
 {{- $osfixes := dict -}}
-{{- range site.Data.fixoverview.rows -}}
+{{- range hugo.Data.fixoverview.rows -}}
   {{- $row := . -}}
   {{- range split .library "," -}}
     {{- $name := trim . " " -}}
@@ -42,7 +42,7 @@
 {{- /* command libraries (acidlibs) and userlibs: one page each */ -}}
 {{- range $group, $section := dict "acidlibs" "commands" "userlibs" "userlibs" -}}
   {{- $groupintros := index $intros $group | default dict -}}
-  {{- range $name, $lib := index site.Data.libraries $group -}}
+  {{- range $name, $lib := index hugo.Data.libraries $group -}}
     {{- $intro := index $groupintros $name | default dict -}}
     {{- $n := len (where $lib.entries "kind" "in" (slice "statement" "function" "command")) -}}
     {{- $desc := printf "The %d commands of %s, with their forms and argument types." $n $name -}}
@@ -62,7 +62,7 @@
 {{- /* AmigaOS libraries (deflibs): one page per library or resource that
   a deflibs library opens, with the calls of every deflibs library that
   uses its base */ -}}
-{{- $deflibs := site.Data.libraries.deflibs -}}
+{{- $deflibs := hugo.Data.libraries.deflibs -}}
 {{- $groupintros := index $intros "deflibs" | default dict -}}
 {{- range $name, $lib := $deflibs -}}
   {{- with $lib.opens -}}

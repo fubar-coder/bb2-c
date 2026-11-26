@@ -10,7 +10,7 @@
 # the build must fail with output matching EXPECT. CACHE keeps Hugo's
 # module cache between runs (the theme). Exits 77 (skipped) without podman,
 # without the image or when the theme cannot be downloaded.
-set(IMAGE docker.io/hugomods/hugo:exts-0.154.5)
+set(IMAGE docker.io/hugomods/hugo:go-git-0.165.0)
 foreach(v SITE CASE CACHE WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "site-fixoverview-test: ${v} is needed")

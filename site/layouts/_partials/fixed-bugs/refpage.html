@@ -8,14 +8,14 @@
 */ -}}
 {{- $p := false -}}
 {{- if eq .page "libraries/amigaos" -}}
-  {{- with index site.Data.libraries.deflibs .lib -}}
+  {{- with index hugo.Data.libraries.deflibs .lib -}}
     {{- if .opens -}}
       {{- $p = site.GetPage (printf "/docs/libraries/amigaos/%s" $.lib) -}}
     {{- end -}}
   {{- end -}}
-{{- else if index site.Data.libraries.acidlibs .lib -}}
+{{- else if index hugo.Data.libraries.acidlibs .lib -}}
   {{- $p = site.GetPage (printf "/docs/libraries/commands/%s" .lib) -}}
-{{- else if index site.Data.libraries.userlibs .lib -}}
+{{- else if index hugo.Data.libraries.userlibs .lib -}}
   {{- $p = site.GetPage (printf "/docs/libraries/userlibs/%s" .lib) -}}
 {{- end -}}
 {{- return $p -}}

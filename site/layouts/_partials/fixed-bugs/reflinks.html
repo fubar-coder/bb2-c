@@ -18,7 +18,7 @@
   {{- $refpage := partial "fixed-bugs/refpage.html" (dict "lib" $lib "page" $row.page) -}}
   {{- with $refpage -}}
     {{- $ref := . -}}
-    {{- $data := or (index site.Data.libraries.acidlibs $lib) (index site.Data.libraries.userlibs $lib) -}}
+    {{- $data := or (index hugo.Data.libraries.acidlibs $lib) (index hugo.Data.libraries.userlibs $lib) -}}
     {{- $found := 0 -}}
     {{- if and $data (ne $row.page "libraries/amigaos") -}}
       {{- /* the heading ids as Hugo gives them: in the order of the page

@@ -16,7 +16,7 @@
 {{- $base := "/docs/compared-with-original" -}}
 {{- $key := strings.TrimPrefix (printf "%s/" $base) .Page.Path -}}
 {{- $lib := path.Base $key -}}
-{{- $rows := where site.Data.fixoverview.rows "page" $key -}}
+{{- $rows := where hugo.Data.fixoverview.rows "page" $key -}}
 {{- $badges := slice -}}
 {{- range $level := slice 1 2 3 4 5 -}}
   {{- with where $rows "severity" $level -}}
@@ -39,7 +39,7 @@
 {{- end -}}
 {{- $elsewhere := slice -}}
 {{- if ne $key "libraries/amigaos" -}}
-  {{- range site.Data.fixoverview.rows -}}
+  {{- range hugo.Data.fixoverview.rows -}}
     {{- $row := . -}}
     {{- if and (ne .page $key) (ne .page "libraries/amigaos") -}}
       {{- range split .library "," -}}

@@ -21,7 +21,7 @@
   <tbody>
     {{- range $section.RegularPages.ByTitle }}
     {{- $key := strings.TrimPrefix (printf "%s/" $base) .Path }}
-    {{- $rows := where site.Data.fixoverview.rows "page" $key }}
+    {{- $rows := where hugo.Data.fixoverview.rows "page" $key }}
     {{- $badges := slice }}
     {{- range $level := slice 1 2 3 4 5 }}
       {{- with where $rows "severity" $level }}

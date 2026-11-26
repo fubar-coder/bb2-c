@@ -42,7 +42,7 @@ Hugo module. It is built with the same Hugo image as in the Pages
 workflow. For a preview that rebuilds on every change:
 
 ```
-podman run --rm -p 1313:1313 -v $PWD:/src -w /src docker.io/hugomods/hugo:exts-0.154.5 \
+podman run --rm -p 1313:1313 -v $PWD:/src -w /src docker.io/hugomods/hugo:go-git-0.165.0 \
     hugo server --source site --bind 0.0.0.0 --poll 700ms
 ```
 
@@ -55,7 +55,7 @@ A one-off build, as the Pages workflow does it, writes the site into
 `site/public/`:
 
 ```
-podman run --rm -v $PWD:/src -w /src docker.io/hugomods/hugo:exts-0.154.5 \
+podman run --rm -v $PWD:/src -w /src docker.io/hugomods/hugo:go-git-0.165.0 \
     hugo --gc --minify --source site --baseURL https://fubar-coder.github.io/bb2-c/
 ```
 
