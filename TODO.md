@@ -1187,17 +1187,17 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   changes (`-DPREV_INTENDED`) and tests of the results for positive,
   negative and odd values; first count in the corpus how often `/2^n*2^n`
   occurs.
-- [ ] **A 48.16 product of two narrow operands without q48mul** (user
-  decision 2026-11-26, "expr-tree-5 4.3: budgets, the compare bug, the
-  narrow product": left for later): the typing pass marks a 48.16
-  operation whose operands are both narrow (`exprtyping_op.fast`; `q*p`,
-  `q*w` in a chain under a wanted Long, `r=q*p+l`), but blitz2 still calls
-  `q48mul` (about 530 cycles, `tests/perf` bq48 `qmulpaddl`, `qmulwaddp`).
-  The full 48.16 product needs a signed 32 x 32 -> 64 bit multiplication:
-  a compilerlib routine for it changes the executables of every program
-  that uses only the routines of #1178; for a Word operand a signed
-  32 x 16 product inline would do. Its values must stay q48mul's
-  (`tests/blitz2/expr-q48-paths.test.bas`).
+- [ ] **A 48.16 product of two Quicks without q48mul** (user decisions
+  2026-11-26, "expr-tree-5 4.3: budgets, the compare bug, the narrow
+  product" and "the Word fast path q*w"): a Quick times a Word, Byte or
+  whole constant, times a constant below 1, and a Quick divided by a whole
+  constant are written inline (task 4.3, `eval.c` `p5fast`); a product of
+  two Quick values (`q*p` in a chain under a wanted Long, `r=q*p+l`,
+  `tests/perf` bq48 `qmulpaddl`) still calls `q48mul` (about 500 cycles).
+  Its 48.16 product needs a signed 32 x 32 -> 64 bit multiplication: a
+  compilerlib routine for it changes the executables of every program that
+  uses only the routines of #1178, inline it is four MULU and the carries.
+  Its values must stay q48mul's (`tests/blitz2/expr-q48-paths.test.bas`).
 - [ ] **One cut towards zero for a 48.16 `/` at the top under a wanted
   Long** (expr-tree-5 task 4.3, found when measuring bmath.lqdivw): the
   operator cuts the quotient towards zero (`p5bin`, part 3) and the

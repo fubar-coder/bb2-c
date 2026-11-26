@@ -4,8 +4,8 @@
 ; written inline, a whole number and a 16.16 value under a wanted Long by
 ; the routines of #1178 (mixedop), the low 32 bits under a wanted Quick in
 ; 32 bits, a constant Case of a 48.16 Select compared as immediates, a
-; 16.16 value divided by a whole constant or times a constant below 1
-; inline (the fast paths), the
+; 16.16 value divided by a whole constant, times a constant below 1 or
+; times a Word inline (the fast paths), the
 ; operations in parameters (registers d1 to d5).  Each value is the one
 ; the code of task 4.2 gives (all its 48.16 operations through
 ; compilerlib's routines, measured once); a regression test of the fixed

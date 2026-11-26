@@ -440,7 +440,7 @@ TEST_CASE("exprarith: the casts and the fast-path test", "[exprarith]")
 // The inline code of eval.c's p5fast step by step, on the 68000's word
 // operations (DIVU, MULU of words, swap), against exprarith_q48: a 16.16
 // value divided by a whole constant 2 <= |d| <= 65535 (P5F_NDIV), times a
-// constant below 1 (P5F_NMULF).
+// constant below 1 (P5F_NMULF), times a Word (P5F_WMUL).
 
 namespace {
 
@@ -482,6 +482,23 @@ int32_t fast_nmulf(int32_t a, int32_t x)
     if ((int32_t)((uint32_t)a ^ (uint32_t)x) < 0)
         r = 0u - r;
     return (int32_t)r;
+}
+
+// P5F_WMUL: ah * |w| << 16 + al * |w| in 64 bits (the carry by addx), the
+// sign of ah eor w applied in 64 bits
+int64_t fast_wmul(int32_t a, int16_t w)
+{
+    uint32_t s = mag32(a);
+    uint16_t wm = (uint16_t)(w < 0 ? -(int32_t)w : w);
+    uint32_t t = (s >> 16) * wm, lo = (s & 0xffff) * wm;
+    uint32_t hi = t >> 16, sh = t << 16;
+    uint32_t l2 = lo + sh;
+
+    hi += l2 < lo;
+    uint64_t v = ((uint64_t)hi << 32) | l2;
+    if ((int16_t)((uint16_t)((uint32_t)a >> 16) ^ (uint16_t)w) < 0)
+        v = 0 - v;
+    return (int64_t)v;
 }
 
 int64_t q48(unsigned op, int64_t a, int64_t b)
@@ -565,3 +582,33 @@ TEST_CASE("exprarith: the fast paths of p5fast equal q48div and q48mul", "[expra
     // a planted error is seen: the sign of a negative divisor dropped
     CHECK(q48(ETO_DIV, exprarith_q16_q48(-0x30000), exprarith_whole_q48(-2)) != (int64_t)fast_ndiv(-0x30000, 2, false));
 }
+
+TEST_CASE("exprarith: the Word fast path of p5fast equals q48mul", "[exprarith]")
+{
+    uint64_t seed = 0x5a1ull;
+
+    // a Word: every Word for a set of 16.16 values, and random pairs
+    int32_t qs[16] = { 0, 1, -1, 0x7fffffff, (int32_t)0x80000000u, 0x8000, -0x8000, 0x18000, -0x18000,
+                       0x7fff8000, (int32_t)0x80008000u, 0x10000, -0x10000, 0xffff, -0xffff, 0x12345678 };
+    for (int32_t a : qs) {
+        int32_t bad = 0;
+        bool ok = true;
+        for (int32_t w = -32768; w <= 32767 && ok; w++)
+            if (q48(ETO_MUL, exprarith_q16_q48(a), exprarith_whole_q48(w)) != fast_wmul(a, (int16_t)w)) {
+                bad = w;
+                ok = false;
+            }
+        INFO("a ", a, " w ", bad);
+        CHECK(ok);
+    }
+    bool ok = true;
+    for (int i = 0; i < 2000000 && ok; i++) {
+        int32_t a = (int32_t)rnd32(seed);
+        int16_t w = (int16_t)rnd32(seed);
+        ok = q48(ETO_MUL, exprarith_q16_q48(a), exprarith_whole_q48(w)) == fast_wmul(a, w);
+    }
+    CHECK(ok);
+    // a planted error is seen: the carry of the low part dropped
+    CHECK(q48(ETO_MUL, exprarith_q16_q48(0x7fffffff), exprarith_whole_q48(32767)) != fast_wmul(0x7fffffff, 32767) - ((int64_t)1 << 32));
+}
+
