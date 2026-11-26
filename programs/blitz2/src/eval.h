@@ -179,10 +179,11 @@ extern BOOL evalcond;
    type is then T_SELWIDE: the value kept as 48.16 on the stack (8 bytes,
    in a program with runtime error checking 6 more: the frame "sE" for
    casechkw), each Case compared with it exactly (selwidepush,
-   selwidecase, selwidedrop) */
+   selwidestart, selwidecase, selwidedrop) */
 extern BOOL evalwide, p5wide;
 #define T_SELWIDE 9
 void selwidepush(void);
+void selwidestart(void);
 void selwidecase(UWORD type);
 void selwidedrop(void);
 /* findtoke and uselib for an expression being built: the use now, the

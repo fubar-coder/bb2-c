@@ -1341,6 +1341,7 @@ void docase(UWORD c)
            48.16 value exactly (the Case's own type, no wanted one) */
         type = 0;
         evalwide = TRUE;
+        selwidestart();
         bakevalu(&type);
         selwidecase(type);
     } else

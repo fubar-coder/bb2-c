@@ -420,6 +420,14 @@
 # 467.1/467.2/467.1, xqmodc 1583.6/1583.8/1583.6, xlmodq
 # 1538.1/1538.8/1538.6, xldivq 1897.1/1897.2/1897.1. No target: the
 # original computes these expressions in other types.
+# The operands in d0-d3 by register moves, + - and the comparisons
+# inline, the constant Cases as immediates (task 4.3, two runs): lmulq
+# 502.6/502.6, lxmulq 924.0/924.0, qmull 485.6/485.6, xlmulq
+# 487.1/487.1, xlxmulq 904.5/904.5, laddqp 182.6/182.6, xladdqp
+# 164.6/164.6, qmulpaddl 656.5/656.5, qmulwaddp 534.5/534.5, ifladdq
+# 219.1/219.1, iflmulq 592.5/592.5, selladdq 280.6/280.6, xqmodc
+# 1537.0/1537.0, xlmodq 1493.0/1493.0, xldivq 1855.0/1855.0 (ifqltl
+# unchanged, no 48.16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -620,22 +628,22 @@ bproc.pstr                    8121     10038.3  pstr{a$} (a Statement with a str
 bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 bq48.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bq48.lmulq                    556          -  r=l*q (l=100, q=2.5: a Long times a Quick under a Long, 48.16)
-bq48.lxmulq                   983          -  r=lx*q (lx=100000: the product beyond 32 bits)
-bq48.qmull                    540          -  r=q*l (the other order)
-bq48.xlmulq                   540          -  x=l*q (under a Quick: the low 32 bits of the 48.16 product)
-bq48.xlxmulq                  967          -  x=lx*q (under a Quick, lx=100000)
-bq48.laddqp                   383          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
-bq48.xladdqp                  363          -  x=l+q+p (the same under a Quick)
-bq48.qmulpaddl                826          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
-bq48.qmulwaddp                702          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16)
-bq48.ifladdq                  411          -  If l+q>p Then c=1 (a 48.16 comparison)
-bq48.iflmulq                  753          -  If l*q>p Then c=1 (a 48.16 product compared)
+bq48.lmulq                    511          -  r=l*q (l=100, q=2.5: a Long times a Quick under a Long, 48.16)
+bq48.lxmulq                   937          -  r=lx*q (lx=100000: the product beyond 32 bits)
+bq48.qmull                    494          -  r=q*l (the other order)
+bq48.xlmulq                   495          -  x=l*q (under a Quick: the low 32 bits of the 48.16 product)
+bq48.xlxmulq                  917          -  x=lx*q (under a Quick, lx=100000)
+bq48.laddqp                   188          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
+bq48.xladdqp                  170          -  x=l+q+p (the same under a Quick)
+bq48.qmulpaddl                667          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
+bq48.qmulwaddp                543          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16)
+bq48.ifladdq                  225          -  If l+q>p Then c=1 (a 48.16 comparison)
+bq48.iflmulq                  602          -  If l*q>p Then c=1 (a 48.16 product compared)
 bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
-bq48.selladdq                 475          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
-bq48.xqmodc                  1603          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q48mod)
-bq48.xlmodq                  1558          -  x=l Mod q (a Long Mod a Quick, exact)
-bq48.xldivq                  1920          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
+bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
+bq48.xqmodc                  1556          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q48mod)
+bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exact)
+bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)

@@ -5262,7 +5262,9 @@ static void stvar(const struct exprnode *l)
    operand that needs a register beyond D7 is "Expression too Complex",
    as #1185 (design decision 10).  The 48.16 operations are compilerlib's
    routines (a in d0/d1, b in d2/d3, the result in d0/d1; d2 and d3
-   changed, every other register kept). */
+   changed, every other register kept); an addition, a subtraction and a
+   comparison write the routine's add/addx or sub/subx inline in d0-d3
+   (task 4.3). */
 
 #define P5STACK 192                 /* the nodes pending in the build */
 #define P5C_PAIR 100                /* EVAL's vtype: the value as 48.16 (a Select's, T_SELWIDE) */
@@ -5326,9 +5328,8 @@ static BOOL p5prep;
 #define P5_SPMUL (-78)
 #define P5_SPDIV (-84)
 
-/* compilerlib's 48.16 routines (libs/compilerlib) */
-#define q48add 0xd603
-#define q48sub 0xd604
+/* compilerlib's 48.16 routines (libs/compilerlib; q48add $D603 and q48sub
+   $D604 are written inline) */
 #define q48mul 0xd605
 #define q48div 0xd606
 #define q48divq 0xd607
@@ -6206,19 +6207,59 @@ static void p5widen(UWORD n, UWORD t)
 /* the registers p5callin saved (movem.l, d0 bit 0) */
 static UWORD p5saved;
 
+/* the moves of the registers src[i] to d0-d3 (src[i] > 7: d(i) gets no
+   value), in parallel: a move whose destination no other move still
+   reads first, a cycle by exg */
+static void p5moves(UWORD *src)
+{
+    UWORD i, j, n;
+
+    for (;;) {
+        for (n = i = 0; i < 4; i++)
+            if (src[i] <= 7 && src[i] != i)
+                n++;
+        if (!n)
+            return;
+        for (i = 0; i < 4; i++) {
+            if (src[i] > 7 || src[i] == i)
+                continue;
+            for (j = 0; j < 4 && !(j != i && src[j] == i); j++)
+                ;
+            if (j == 4)
+                break;
+        }
+        if (i < 4) {
+            p5w(0x2000 | (i << 9) | src[i]);        /* move.l Ds,Di */
+            src[i] = i;
+            continue;
+        }
+        /* a cycle: Di and its source exchanged, the move reading Di reads
+           the source now */
+        for (i = 0; i < 4 && (src[i] > 7 || src[i] == i); i++)
+            ;
+        p5w(0xc140 | (src[i] << 9) | i);            /* exg Ds,Di */
+        for (j = 0; j < 4; j++)
+            if (j != i && src[j] == i)
+                src[j] = src[i];
+        src[i] = i;
+    }
+}
+
 /* a 48.16 routine tok on a in D(r) (of type at, a pair when aw) and b in
    D(r+1+aw) (of type bt, a pair when bw): the registers below D(r) among
    d0-d3 saved, a in d0/d1 and b in d2/d3 (swap: the other way), each
    widened to 48.16; trap: a divisor 0 raises the CPU's division trap
-   (a Quick Mod, as today) */
+   (a Quick Mod, as today); tok 0: the caller writes the operation
+   (inline, in d0-d3) */
 static void p5callin(UWORD tok, UWORD r, UWORD at, BOOL aw, UWORD bt, BOOL bw, BOOL swap, BOOL trap)
 {
-    UWORD q = r + 1 + aw, k = r < 4 ? r : 4, i, mask = 0;
+    UWORD q = r + 1 + aw, k = r < 4 ? r : 4, i, mask = 0, src[4];
     UWORD xr = swap ? q : r, yr = swap ? r : q, xt = swap ? bt : at, yt = swap ? at : bt;
     BOOL xw = swap ? bw : aw, yw = swap ? aw : bw;
 
     if (p5prep) {
-        tokuse(tok);
+        if (tok)
+            tokuse(tok);
         return;
     }
     p5reg(q + bw);
@@ -6232,28 +6273,12 @@ static void p5callin(UWORD tok, UWORD r, UWORD at, BOOL aw, UWORD bt, BOOL bw, B
     p5saved = 0;
     for (i = 0; i < k; i++)
         p5saved |= 1 << i;
-    if (r < 4) {
-        /* through the stack: the operands may lie in d0-d3 */
-        if (yw)
-            p5w(0x2f00 | (yr + 1));         /* move.l Dy+1,-(a7) */
-        p5w(0x2f00 | yr);
-        if (xw)
-            p5w(0x2f00 | (xr + 1));
-        p5w(0x2f00 | xr);
-        p5w(0x201f);                        /* move.l (a7)+,d0 */
-        if (xw)
-            p5w(0x221f);                    /* move.l (a7)+,d1 */
-        p5w(0x241f);                        /* move.l (a7)+,d2 */
-        if (yw)
-            p5w(0x261f);                    /* move.l (a7)+,d3 */
-    } else {
-        p5w(0x2000 | xr);                   /* move.l Dx,d0 */
-        if (xw)
-            p5w(0x2200 | (xr + 1));         /* move.l Dx+1,d1 */
-        p5w(0x2400 | yr);                   /* move.l Dy,d2 */
-        if (yw)
-            p5w(0x2600 | (yr + 1));         /* move.l Dy+1,d3 */
-    }
+    /* the operands to d0-d3 (they may lie there already) */
+    src[0] = xr;
+    src[1] = xw ? xr + 1 : 8;
+    src[2] = yr;
+    src[3] = yw ? yr + 1 : 8;
+    p5moves(src);
     if (!xw)
         p5widen(0, xt);
     if (!yw)
@@ -6263,7 +6288,8 @@ static void p5callin(UWORD tok, UWORD r, UWORD at, BOOL aw, UWORD bt, BOOL bw, B
         p5w(0x6602);                        /* bne.s +2 */
         p5w(0x85c2);                        /* divs.w d2,d2: the trap */
     }
-    tokejsr(tok);
+    if (tok)
+        tokejsr(tok);
 }
 
 /* the routine's result to D(r) (pair: d0/d1 to D(r)/D(r+1), else d0),
@@ -6370,8 +6396,8 @@ static void p5bin(struct p5node *p, UWORD r)
         UWORD tok;
 
         switch (op) {
-        case ETO_ADD: tok = q48add; break;
-        case ETO_SUB: tok = q48sub; break;
+        case ETO_ADD:
+        case ETO_SUB: tok = 0; break;   /* inline: q48add's, q48sub's code */
         case ETO_MUL: tok = q48mul; break;
         case ETO_MOD: tok = q48mod; break;
         default:
@@ -6379,6 +6405,13 @@ static void p5bin(struct p5node *p, UWORD r)
             break;
         }
         p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
+        if (op == ETO_ADD) {
+            p5w(0xd082);                    /* add.l d2,d0 */
+            p5w(0xd383);                    /* addx.l d3,d1 */
+        } else if (op == ETO_SUB) {
+            p5w(0x9082);                    /* sub.l d2,d0 */
+            p5w(0x9383);                    /* subx.l d3,d1 */
+        }
         p5callout(r, TRUE);
         if (op == ETO_DIV && p->want == T_LONG && !p5prep) {
             /* part 3 (EM_R_PDIVL): under a wanted Long the quotient is a
@@ -6401,7 +6434,9 @@ static void p5bin(struct p5node *p, UWORD r)
             BOOL swap = op == ETO_GT || op == ETO_LE;
             UWORD scc = op == ETO_EQ ? *mseq : op == ETO_NE ? *msne : op == ETO_LT || op == ETO_GT ? *mslt : *msge;
 
-            p5callin(q48sub, r, lt, lw, rt, rw, swap, FALSE);
+            p5callin(0, r, lt, lw, rt, rw, swap, FALSE);
+            p5w(0x9082);                    /* sub.l d2,d0: q48sub's code */
+            p5w(0x9383);                    /* subx.l d3,d1 */
             if (op == ETO_EQ || op == ETO_NE)
                 p5w(0x8081);                /* or.l d1,d0 */
             else
@@ -6914,13 +6949,72 @@ void selwidepush(void)
     }
 }
 
+/* the emitter's state before a Case's evaluation (selwidestart) */
+static ULONG p5casepc, p5casebig, p5caseoffs;
+
+/* docase, before the Case's evaluation: where its code begins */
+void selwidestart(void)
+{
+    p5casepc = pc;
+    p5casebig = bigpc;
+    p5caseoffs = numoffs;
+}
+
+/* the Case's code since selwidestart, when it is a constant's load into
+   d0 alone (moveq, move.w # of a Byte or Word, move.l # without a
+   relocation): its value as 48.16 in *v */
+static BOOL p5caseconst(UWORD type, int64_t *v)
+{
+    ULONG at = (p5casepc + 1) & ~1UL, n = pc - at;
+    UWORD w;
+    LONG x;
+
+    if (nomemleft || numoffs != p5caseoffs || pc < at)
+        return FALSE;
+    w = W_(at);
+    if (n == 2 && (w & 0xff00) == 0x7000)
+        x = (BYTE)w;                        /* moveq #n,d0 */
+    else if (n == 4 && w == 0x303c && (type == T_BYTE || type == T_WORD))
+        x = (WORD)W_(at + 2);               /* move.w #n,d0 */
+    else if (n == 6 && w == 0x203c)
+        x = (LONG)(((ULONG)W_(at + 2) << 16) | W_(at + 4));    /* move.l #n,d0 */
+    else
+        return FALSE;
+    switch (type) {
+    case T_BYTE: *v = (int64_t)(BYTE)x * 65536; return TRUE;
+    case T_WORD: *v = (int64_t)(WORD)x * 65536; return TRUE;
+    case T_LONG: *v = (int64_t)x * 65536; return TRUE;
+    case T_QUICK: *v = x; return TRUE;
+    default: return FALSE;
+    }
+}
+
+/* cmpi.l #k,d(a7), tst.l d(a7) for k 0 (d 0: (a7)) */
+static void p5cmpsp(ULONG k, UWORD d)
+{
+    pokewd(k ? (d ? 0x0caf : 0x0c97) : (d ? 0x4aaf : 0x4a97));
+    if (k)
+        pokel(k);
+    if (d)
+        pokewd(d);
+}
+
+/* the size of p5cmpsp's instruction */
+static UWORD p5cmpsize(ULONG k, UWORD d)
+{
+    return (UWORD)(2 + (k ? 4 : 0) + (d ? 2 : 0));
+}
+
 /* docase: the Case's value in D(regat) of type type (T_SELWIDE: a 48.16
    value, p5wide) compared with the Select's: a whole number or a Quick as
    48.16, a Float with the Select's value made a Float; the flags for
-   docase's bne */
+   docase's bne.  A constant Case (p5caseconst) is compared as immediates
+   against the Select's value on the stack, its load taken back (task 4.3,
+   the candidate of 2026-11-26; the same flags) */
 void selwidecase(UWORD type)
 {
     UWORD r = regat, lo = P5SELLO;
+    int64_t v;
 
     if (r)
         interr2();                  /* not reached: a statement's evaluation */
@@ -6939,6 +7033,16 @@ void selwidecase(UWORD type)
         p5q48tof(0);
         pokewd(0x221f);                     /* move.l (a7)+,d1 */
         pokewd(0xb081);                     /* cmp.l d1,d0 */
+        return;
+    }
+    if (type != T_SELWIDE && p5caseconst(type, &v)) {
+        ULONG kl = (ULONG)v, kh = (ULONG)((uint64_t)v >> 32);
+
+        pc = p5casepc;
+        bigpc = p5casebig;
+        p5cmpsp(kl, lo);                    /* the low parts */
+        pokewd(0x6600 | p5cmpsize(kh, (UWORD)(lo + 4)));       /* bne.s: not equal */
+        p5cmpsp(kh, (UWORD)(lo + 4));       /* the high parts */
         return;
     }
     if (type == T_BYTE)
