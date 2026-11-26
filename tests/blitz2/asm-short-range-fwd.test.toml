@@ -1,0 +1,19 @@
+# asm-short-range-fwd.test.bas: the test of an extension of the port (#1075):
+# the correct result is a failed compile (Illegal Displacement at the line of
+# the branch) and nothing runs; the original refuses the size .s (Syntax
+# Error)
+extension = 1075
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+compile = "== \"error 6 Illegal Displacement\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 6 Syntax Error\""

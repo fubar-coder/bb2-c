@@ -1,0 +1,19 @@
+# debug-off.test.bas: the test of an extension of the port (#1226, the
+# predefined constant #__debug); the original does not know the constant and
+# stops with "Constant Not Found" at the first use (line 7)
+extension = 1226
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+output = "== \"0\nrelease build\n5\nend\n\""
+
+[deviations."compiler=orig195"]
+compile = "== \"error 7 Constant Not Found\""
+output = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

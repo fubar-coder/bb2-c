@@ -1,0 +1,22 @@
+# asm-short-range-back.test.bas: the test of an extension of the port (#1075):
+# the correct result is a failed compile (Illegal Displacement at the line of
+# the branch) and nothing runs; the original accepts .b and compiles a word
+# branch, so the program runs
+extension = 1075
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+compile = "== \"error 10 Illegal Displacement\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== ok"
+"end.case" = "exists"
+"end.run" = "exists"
+rc = "== 0"

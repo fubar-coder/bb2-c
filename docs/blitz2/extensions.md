@@ -15,7 +15,7 @@ the size `.b`, which the original accepts and compiles as a word branch
 values; in `blitz2-ab3` in both modes). Its value is −1 when the program
 is compiled with runtime error checking and 0 without it. The option is
 the one given at the start of the compile; `RunErrsOff` in the source does
-not change it. The original compiler says "Constant Not Found" for it.
+not change it (#1226). The original compiler says "Constant Not Found" for it.
 
 Use it to keep code for debugging only in a program that is compiled with
 runtime error checking:
@@ -124,7 +124,7 @@ in range, the executable is 64 bytes shorter).
 
 ## Tests
 
-* `blitz2_debug_on`, `blitz2_debug_off`, `blitz2_stop_off`
+* `blitz2_debug_on__debug`, `blitz2_debug_off__release`, `blitz2_stop_off__stop_off`
   (`tests/blitz2/`; the section "emulator tests" of `tests/README.md`
   describes how they run);
 * in AB3 mode `debugconst_on`, `debugconst_off`, `debugconst_r`,
@@ -138,14 +138,14 @@ in range, the executable is 64 bytes shorter).
   stays), each without and with runtime error checking (`tests/blitz2/`,
   tests of the BASIC test model: the programs count the JSRs between two
   labels around the statement and check the count; the self test
-  `blitz2_selftest_intrinsic_selftest_wrong` must come out REGRESSED); in AB3 mode `intrinsic_int` and
+  `blitz2_selftest_intrinsic_selftest_wrong` must come out FAILED); in AB3 mode `intrinsic_int` and
   `intrinsic_frac` of `ab3_cli`, confirmed by `ab3_cli_ref`; the cycles
   in `tests/perf/budgets.txt` (`bmath.int`, `.intn`, `.frac`, `.fracn`,
   `bstr.len`, `.asc` and their lines at 10, 100 and 1000 characters);
-* the short branches: `blitz2_asm_short_branch` (short branches forward
+* the short branches: `blitz2_asm_short_branch__branches` (short branches forward
   and backward, taken and run, their opcode words and sizes, the limits
   +126 and -128, `.w`, no suffix, `Bcc.l`, `MOVE.s`),
-  `blitz2_asm_short_range_fwd`, `_range_back` and `_zero` (the errors); in
+  `blitz2_asm_short_range_fwd__range_fwd`, `blitz2_asm_short_range_back__range_back` and `blitz2_asm_short_zero__zero` (the errors); in
   BB2 mode `asm_short_s_bb2`, `asm_short_range_bb2`, `asm_short_zero_bb2`
   and `asm_bra_l_bb2` of `ab3_cli`; AB3 mode's word branches:
   `asm_short_s` of `ab3_cli`, confirmed by `ab3_cli_ref`.

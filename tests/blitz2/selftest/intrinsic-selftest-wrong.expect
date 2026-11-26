@@ -1,6 +1,0 @@
-[compile]
-ok
-[run]
-int f: -1
-int f: calls 0
-rc=0

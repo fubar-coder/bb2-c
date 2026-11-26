@@ -1,0 +1,16 @@
+# frac-string.test.bas: with runtime error checking for the announced error;
+# the test of an extension of the port (#1064: Frac takes any type): the
+# original refuses Frac(a$) when it compiles
+extension = 1064
+runtime-errors = "on"
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[deviations."compiler=orig195"]
+compile = "== \"error 13 Can't Convert Types\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

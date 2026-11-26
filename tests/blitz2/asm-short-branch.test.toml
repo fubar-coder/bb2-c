@@ -1,0 +1,19 @@
+# asm-short-branch.test.bas: the test of an extension of the port (#1075):
+# the printed opcode words and sizes of the short and word branches; the
+# original refuses the size .s (Syntax Error at the first one, line 15)
+extension = 1075
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+output = "== \"BNE.s fwd 1 00006602 4\nBNE.b back 3 000066FA 2\nBSR.s 7 00006102 BRA.s 00006004\nBEQ.w 0 00006700 4 6\nBRA.w 00006000 2 4\nBSR.w 9 00006100 6 4\nBEQ 00006700 2 4 BRA 4\nBEQ.l 00006700 2 4\n+126 0000607E -128 00006780\nMOVE.s -251 0000103C\n\""
+
+[deviations."compiler=orig195"]
+compile = "== \"error 15 Syntax Error\""
+output = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

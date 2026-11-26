@@ -1,0 +1,14 @@
+# literal-include.test.bas: a plain test (#1018, literal characters): the
+# original compiler with the CD's libraries gives the same codes, so both are
+# judged by the same assertion (the port with the C libraries, the original
+# 1.95 with the CD's). literal-include.inc is tokenised by the build
+# (tests/blitz2/CMakeLists.txt) into the test data and staged as CORPUS:src/
+files = ["src/literal-include.inc|@TESTDATA@/literal-include.inc"]
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+output = "== \"223 233 2\n\""

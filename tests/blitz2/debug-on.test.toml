@@ -1,0 +1,21 @@
+# debug-on.test.bas: with runtime error checking; the test of an extension of
+# the port (#1226, the predefined constant #__debug); the original does not
+# know the constant and stops with "Constant Not Found" at the first use
+# (line 6)
+extension = 1226
+runtime-errors = "on"
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+output = "== \"-1\ndebug build\n-1\n-1\n\""
+
+[deviations."compiler=orig195"]
+compile = "== \"error 6 Constant Not Found\""
+output = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

@@ -26,7 +26,7 @@ directory; the old form has `ID.bas` or `ID.drv`.
 | [2. Compile-only tests](#2-compile-only-tests) | 1 hand-written (`compiler-checklib-examine`) | the result is a refused or unrun compile; the model can judge that, but the source must be rewritten for the driver | the move (small) |
 | [3. Self tests of the old runner](#3-self-tests-of-the-old-runner) | 3 Blitz, 5 TED, fixtures | they test code of the old form | nothing; they go with the old form |
 | [4. Single tests the model does not express](#4-single-tests-the-model-does-not-express) | 0 | — | — |
-| [5. Other suites with `.expect`](#5-other-suites-with-expect) | `tests/blitz2` 13 and 1 self test, `tests/ted-ab` 3 | not bug-orig tests | outside the change |
+| [5. Other suites with `.expect`](#5-other-suites-with-expect) | `tests/ted-ab` 3 | not bug-orig tests | outside the change |
 
 `compiler/` has 1 old-form test and `regression/` none (the Blitz self
 tests of `selftest/` are in section 3 and not counted there).
@@ -285,15 +285,13 @@ its jobs j000 and j001.
 
 ## 5. Other suites with `.expect`
 
-- `tests/blitz2/*.expect`: 13 port tests of the compiler (7 with
-  `[run]`, 6 compile-only), and the self test
-  `tests/blitz2/selftest/intrinsic-selftest-wrong` (`.bas` and
-  `.expect`; an expectation the port does not meet on purpose, ctest
-  `blitz2_selftest_intrinsic_selftest_wrong`, REGRESSED expected), next to
-  23 model tests in the same directory (`*.test.bas`) and 14 in
-  `selftest/`. They are not bug-orig tests and not part of the change
-  `bug-orig-basic-tests`; they are listed so that the count of old-form
-  tests is complete. They move to the model after the change expr-tree-5 (no feature is missing, only the rewrite; `tests/README.md`, "The test model").
+- `tests/blitz2` has no old-form tests any more: its 13 expect tests
+  (`asm-short-*`, `debug-on`, `debug-off`, `frac-string`, `literal-*`,
+  `quick-arith-long`, `stop-off`) and the self test of the intrinsic checks
+  (`selftest/intrinsic-selftest-wrong`) are tests of the model
+  (`*.test.bas`; `tests/README.md`, "Extensions of blitz2"), next to the
+  other tests of the model in the directory and the self tests of the model
+  in `selftest/`.
 - `tests/ted-ab/scripts`: 51 `.drv` scripts and 3 `.expect` files of the
   TED A/B suite (original TED against the port; `tests/README.md`, "TED
   A/B"). Own suite with its own runner; the fixed scripts carry

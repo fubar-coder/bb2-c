@@ -1,0 +1,15 @@
+# stop-off.test.bas: a plain test, the original gives the same error: the
+# compile fails at the Stop line and nothing runs; both sides (the port with
+# the C libraries, the original 1.95 with the CD's libraries) are judged by
+# the same assertions
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+compile = "== \"error 7 Debugger must be enabled for STOP\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

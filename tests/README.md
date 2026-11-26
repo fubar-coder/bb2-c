@@ -7,7 +7,7 @@ labels select within them.
 |---|---|---|
 | `native` | the host tests of the native profile (for IDEs: `build/native`) | native compiler |
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
-| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the expect tests (compilers' extensions, port regression tests), the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed-orig #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
+| `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the port regression tests, the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed-orig #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
 | `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. A test of the BASIC test model is judged against its declared deviations, a test of the old form against the recorded observation of the original (`ID.orig`); no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
@@ -43,8 +43,7 @@ oracle; later `ab3_examples`). Not yet moved, each for a technical reason:
 `tests/ab3` (a cell compiles through tedstub with BB2's libraries; an
 `ab3_cli` case is compiled from the command line by blitz2-ab3 or
 AmiBlitz3 and judged on the compiler's console output, and AmiBlitz3's
-differences, `NAME.ref.expect`, mostly have no issue); the expect tests of
-`tests/blitz2` (no feature missing, only the rewrite); TED A/B (the editor
+differences, `NAME.ref.expect`, mostly have no issue); TED A/B (the editor
 driven by scripts, the runs compared with each other at test time).
 Outside the model: host tests, perf budgets, the comparisons of build
 results and data, the tools' self tests and the `lsclear` checker of
@@ -1689,32 +1688,31 @@ one corpusrun pass with `run=off` and tedstub `resident=`;
 
 ### Extensions of blitz2
 
-`blitz2_ID` (`tests/blitz2/`): the extensions of blitz2
-(`docs/blitz2/extensions.md`), which have no reference to compare with.
-They are **expect tests**, the same suite as the
-[port regression tests](#port-regression-tests): blitz2 compiles and runs
-`ID.bas` (header `; @runerrs on|off`, default off) with the C libraries
-(`clib`), and the result must equal `ID.expect` (the sections of the
-bug-orig tests, `tests/corpus/runner/bugorig.h`; one corpusrun pass with
-`expect=` and `regression=on`). There is no reference session and nothing
-of the CD is used: the verdict is FIXED (the expected behaviour) or
-REGRESSED (exit status 1), label `emulator`, skipped (77) only without
-Amiberry. Both suites run without the CD:
-
-```
-ctest --preset all -R 'blitz2_|regression_'
-```
-
-The expectation is the correct behaviour, not the original's: a fix (of
-an original bug or of the port) that changes what an expect test shows
-changes its `ID.expect` in the same commit and names the issue
-(`#N` in the commit message), like a [fixed test](#fixed-tests); the
-program is not edited to avoid the difference.
+`blitz2_ID__CASE` (`tests/blitz2/`): the tests of blitz2's own behaviour,
+among them the extensions of blitz2 (`docs/blitz2/extensions.md`). They
+are tests of the BASIC test model ([Tests that judge
+themselves](#tests-that-judge-themselves)), `ID.test.bas` with an optional
+`ID.test.toml`, label `emulator` (the cells with the original compiler:
+`_originals`, label `originals`). A test of an extension of the port,
+where the original refuses or does something else, sets `extension = N`
+and declares what the original does as deviations of `compiler=orig195`
+([Fixed tests](#fixed-tests)): `asm-short-*` (#1075, the size `.s` of the
+branches), `frac-string` (#1064), `literal-stray` and `literal-stray-expr`
+(#1018, the original stops with "Token Not Found"), `debug-on` and `debug-off`
+(#1226, `#__debug`: "Constant Not Found"); `quick-arith-long`
+has `fixed-orig = 1178`. A test on which the original agrees
+(`literal-strings`, `literal-include`, `stop-off`) has the same
+assertions in both cells, without a key. Where a test judges the printed
+output (`output`) or the compile result (`compile`) it is the expectation of the correct
+behaviour, not the original's: a fix (of an original bug or of the
+port) that changes what such a test shows changes its `ID.test.toml` in
+the same commit and names the issue (`#N` in the commit message), like
+a [fixed test](#fixed-tests); the program is not edited to avoid the
+difference.
 
 The tests of the intrinsics (`intrinsic-*.test.bas`, the library
-functions blitz2 compiles inline, `openspec/specs/compiler/intrinsics`;
-tests of the BASIC test model, [Tests that judge
-themselves](#tests-that-judge-themselves)) check the compiled code as well
+functions blitz2 compiles inline, `openspec/specs/compiler/intrinsics`)
+check the compiled code as well
 as the value: the program counts the JSR instructions (`$4EB9`, the form
 of every library call) between two labels around the statement
 (`jsrs{?a,?b}`, the routine in each test) and checks the count, so the
@@ -1723,11 +1721,16 @@ without and with runtime error checking (the axis `runtime-errors`); a
 count that differs between the two is `rv{OFF,ON}`, and the program tells
 the cells apart by the debugger's `trap #1` (`$4E41`) in front of a
 statement (`runerrs{?a,?b}` in the batch init). So does
-`array-index-code.test.bas`. The self test `blitz2_selftest_intrinsic_selftest_wrong`
-(`tests/blitz2/selftest/`, an expectation of no call for `Int` of a
-Float) must come out REGRESSED with the case in the report (its line
-`; @want REGEX`, the ctest `PASS_REGULAR_EXPRESSION`: the observed
-`int f: calls 1`).
+`array-index-code.test.bas`. The self test
+`blitz2_selftest_intrinsic_selftest_wrong` (`tests/blitz2/selftest/`, a
+check of no call for `Int` of a Float) must come out FAILED with the
+check in the report (its ctest `PASS_REGULAR_EXPRESSION`: the check
+`int_f_calls`, expected 0, actual 1).
+
+`tests/blitz2/literal-include.inc`, the include of `literal-include`, is
+tokenised by the build like TED does (`tedsrc tok`) into the test data
+(`@TESTDATA@`) and staged as `CORPUS:src/literal-include.inc` by the
+test's `files`.
 
 ### Corpus
 
@@ -2524,8 +2527,7 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     (`site_examples_run_rwe_1999` ...): the prev configuration is in every
     group, with the variant's libraries and userlibs below the prev build
     directory.
-  * `compiler_prev`: every source of `tests/blitz2` and every
-    compiler bug-orig test (`tests/bug-orig/compiler`, the compiler's port
+  * `compiler_prev`: every compiler bug-orig test (`tests/bug-orig/compiler`, the compiler's port
     regression tests `regression/compiler-*`) that needs nothing special
     in its pass (no `@pass` lines for the compile, no runtime error
     checking) in one pass: one session per configuration for all of them.

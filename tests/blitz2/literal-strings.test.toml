@@ -1,0 +1,12 @@
+# literal-strings.test.bas: a plain test (#1018, literal characters): the
+# original compiler with the CD's libraries gives the same codes, so both are
+# judged by the same assertion (the port with the C libraries, the original
+# 1.95 with the CD's)
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+output = "== \"5\n71\n114\n246\n223\n101\n233 255\n232 224\n223\n223252\n\""

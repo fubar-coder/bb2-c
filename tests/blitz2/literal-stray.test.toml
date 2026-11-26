@@ -1,0 +1,18 @@
+# literal-stray.test.bas: the test of an extension of the port (#1018,
+# literal characters): the compile fails at the line of the stray character
+# and nothing runs
+extension = 1018
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+compile = "== \"error 8 Syntax Error\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195"]
+compile = "== \"error 8 Token Not Found : $10E9.\""
