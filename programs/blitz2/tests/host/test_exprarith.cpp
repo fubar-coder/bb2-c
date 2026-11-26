@@ -206,15 +206,15 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
                 for (enum em_ctx ctx : { EM_DL, EM_DQ, EM_DW, EM_DB }) {
                     unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DQ ? ET_QUICK : ctx == EM_DW ? ET_WORD : ET_BYTE;
                     unsigned f = 0;
-                    // #1221: * and / cut down under a wanted whole number (a /
-                    // under a Long is whole towards zero)
-                    bool down = want != ET_QUICK && (op == ETO_MUL || (op == ETO_DIV && want != ET_LONG));
+                    // #1221: * cuts down under a wanted whole number; a / at
+                    // the top under one is whole towards zero (#1222)
+                    bool down = want != ET_QUICK && op == ETO_MUL;
                     int64_t v = (down ? exprarith_q48_down : exprarith_q48)(op, x, y, exprarith_div0(want), &f);
                     int32_t r;
 
                     if (want == ET_QUICK)
                         r = exprarith_q48_q16(v, &f);
-                    else if (op == ETO_DIV && want == ET_LONG)
+                    else if (op == ETO_DIV)
                         r = exprarith_q48_trunc(v, ET_LONG, &f);
                     else
                         r = exprarith_q48_floor(v, ET_LONG, &f);
@@ -267,8 +267,10 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
             unsigned f = 0;
             // a / under a wanted Long: a whole number at once; * and / under
             // a wanted whole number cut down (#1221)
-            auto div = [&](int64_t a, int64_t b) {
-                int64_t v = (want == ET_WORD ? exprarith_q48_down : exprarith_q48)(ETO_DIV, a, b, d0, &f);
+            // a / at the top under a wanted Word towards zero (#1222), a
+            // deeper one cut down (#1221)
+            auto div = [&](int64_t a, int64_t b, bool top) {
+                int64_t v = (want == ET_WORD && !top ? exprarith_q48_down : exprarith_q48)(ETO_DIV, a, b, d0, &f);
                 return want == ET_LONG ? exprarith_whole_q48(exprarith_q48_trunc(v, ET_LONG, &f)) : v;
             };
             auto mul = [&](int64_t a, int64_t b) {
@@ -277,18 +279,18 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
             auto take = [&](int64_t v, bool topdiv) {
                 if (want == ET_QUICK)
                     return exprarith_q48_q16(v, &f);
-                return topdiv && want == ET_LONG ? exprarith_q48_trunc(v, ET_LONG, &f)
+                return topdiv && want != ET_QUICK ? exprarith_q48_trunc(v, ET_LONG, &f)
                                                  : exprarith_q48_floor(v, ET_LONG, &f);
             };
             const struct {
                 const char *text;
                 int32_t r;
             } forms[] = {
-                { "l*q/l2", take(div(mul(L, Q), L2), true) },
+                { "l*q/l2", take(div(mul(L, Q), L2, true), true) },
                 { "l*q*p", take(mul(mul(L, Q), P), false) },
                 { "l*q-l2*p", take(exprarith_q48(ETO_SUB, mul(L, Q), mul(L2, P), 0, &f), false) },
                 { "(l+q)*p", take(mul(exprarith_q48(ETO_ADD, L, Q, 0, &f), P), false) },
-                { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q), L2, 0, &f), false) },
+                { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q, false), L2, 0, &f), false) },
                 { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, mul(L, Q), L2, 0, &f), false) },
                 { "q*p+l", take(exprarith_q48(ETO_ADD, mul(Q, P), L, 0, &f), false) },
             };
@@ -313,8 +315,10 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
     CHECK(model("q*p+l", tiny, EM_DL, DEC) == "4");
     CHECK(model("q*p+l", tiny, EM_DL, DEC & ~EM_R_1221) == "5");
     CHECK(model("l*p*q", tiny, EM_DW, DEC) == "-1");
-    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC) == "-1");
-    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC & ~EM_R_1221) == "0");
+    CHECK(model("q/l+l2", "q=-1.5 l.l=100000 l2.l=0", EM_DW, DEC) == "-1");
+    CHECK(model("q/l+l2", "q=-1.5 l.l=100000 l2.l=0", EM_DW, DEC & ~EM_R_1221) == "0");
+    // #1222: at the top under a Word towards zero, as under a Long
+    CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC) == "0");
     CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DL, DEC) == "0");
     unsigned f = 0;
     CHECK(exprarith_q48_down(ETO_MUL, -0x8000, 1, 0, &f) == -1);
@@ -1331,4 +1335,140 @@ TEST_CASE("exprarith: qqmult equals the 48.16 product rounded down (#1221)", "[e
     // 0 instead of -1)
     CHECK(!qqmult_ok(1, -0x8000, 5, true));
     CHECK(qqmult_ok(1, -0x8000, 5));
+}
+
+// ------------------------------------ a / at the top towards zero (#1222)
+// eval.c's p5qdivt (a 16.16 / at the top under a wanted Byte or Word) and
+// p5wholediv's raw path (a Word, Byte or Quick dividend by a 16.16 divisor
+// with a fraction, 48.16 at the top) step by step: longdiv on the 16.16
+// bits for a divisor with a fraction, quickdiv and the cut towards zero
+// for one without (and 0), DIVS.W of the dividend's whole part towards
+// zero for a whole constant divisor; against exprarith_q16's quotient
+// (qdivide) taken towards zero and q48div's taken towards zero.
+
+namespace {
+
+// p5qdivt's steps: the Long it leaves in d0 (plant: the cut towards zero
+// left out, the quotient rounded down)
+int32_t qdivt(int32_t a, int32_t b, bool plant = false)
+{
+    unsigned f = 0;
+
+    if (b & 0xffff)
+        return exprarith_whole(ETO_DIV, ET_LONG, a, b, &f);     // longdiv
+    uint32_t v = (uint32_t)exprarith_q16(ETO_DIV, a, b, &f);    // quickdiv
+    if ((int32_t)v < 0 && !plant)
+        v += 0xffff;                                            // addi.l #$FFFF,d0
+    return (int16_t)(uint16_t)(v >> 16);                        // swap d0, ext.l d0
+}
+
+// P5F_NDIV in p5qdivt: the dividend's whole part towards zero, DIVS.W #k
+int32_t qdivk(int32_t a, int16_t k)
+{
+    uint32_t v = (uint32_t)a;
+    unsigned f = 0;
+
+    if ((int32_t)v < 0)
+        v += 0xffff;
+    return exprarith_whole(ETO_DIV, ET_WORD, (int16_t)(uint16_t)(v >> 16), k, &f);
+}
+
+// the value of the decided rule under a wanted Word: the 16.16 quotient
+// (qdivide) towards zero; where that quotient overflows 16.16 the exact
+// quotient towards zero (the 48.16 path's value), its low 16 bits
+int16_t qdivt_want(int32_t a, int32_t b)
+{
+    unsigned f = 0;
+    int64_t exact = b ? ((int64_t)a * 65536) / b : 0;
+
+    if (!(b & 0xffff) || (exact >= INT32_MIN && exact <= INT32_MAX))
+        return (int16_t)exprarith_q48_trunc(exprarith_q16_q48(exprarith_q16(ETO_DIV, a, b, &f)), ET_LONG, &f);
+    return (int16_t)(exact / 65536);
+}
+
+bool qdivt_ok(int32_t a, int32_t b)
+{
+    unsigned f = 0;
+    int32_t got = qdivt(a, b);
+
+    if ((int16_t)got != qdivt_want(a, b))
+        return false;
+    if (b & 0xffff) {
+        // the 48.16 path's raw step: longdiv's Long is q48div's towards zero
+        int64_t v = exprarith_q48(ETO_DIV, exprarith_q16_q48(a), exprarith_q16_q48(b), exprarith_div0(ET_LONG), &f);
+        if (got != exprarith_q48_trunc(v, ET_LONG, &f))
+            return false;
+    }
+    return true;
+}
+
+} // namespace
+
+TEST_CASE("exprarith: a 16.16 division at the top towards zero (#1222)", "[exprarith]")
+{
+    uint64_t seed = 0x1222ull;
+    std::vector<int32_t> bs = { 1, -1, 2, 0x8000, -0x8000, 0xffff, -0xffff, 0x10000, -0x10000, 0x10001,
+                                -0x10001, 0x18000, -0x18000, 0x30000, -0x30000, 0x4ec5, 0x34000, 0x7fffffff,
+                                -0x7fffffff, (int32_t)0x80000000u, 0x7fff0000, (int32_t)0x80000001u,
+                                (int32_t)0xffff0001u, 0, 1000 << 16, -(1000 << 16), 0x0001999a, -0x0001999a };
+    for (int i = 0; i < 8; i++) {
+        bs.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 24));
+        bs.push_back((int32_t)(rnd32(seed) & 0x7fff0000u));
+    }
+    bool ok = true;
+    int32_t bada = 0, badb = 0;
+    for (int32_t b : bs) {
+        ok = each_quick(seed, [&](int32_t a) {
+            if (!qdivt_ok(a, b)) {
+                bada = a;
+                badb = b;
+                return false;
+            }
+            return true;
+        });
+        if (!ok)
+            break;
+    }
+    INFO("a ", bada, " b ", badb);
+    CHECK(ok);
+    // Word dividends by every whole divisor k of the Word range: the
+    // constant path and k as a 16.16 value at run time
+    for (int32_t k = -32768; k <= 32767 && ok; k++) {
+        if (k > -2 && k < 2)
+            continue;
+        int32_t kraw = (int32_t)((uint32_t)k << 16);
+        for (int32_t n = -32768; n <= 32767 && ok; n += 509 + (k & 7)) {
+            int32_t a = (int32_t)((uint32_t)n << 16 | (k & 1 ? rnd32(seed) & 0xffff : 0));
+            ok = (int16_t)qdivk(a, (int16_t)k) == qdivt_want(a, kraw) && qdivt_ok(a, kraw);
+            if (!ok) {
+                bada = a;
+                badb = k;
+            }
+        }
+    }
+    INFO("a ", bada, " k ", badb);
+    CHECK(ok);
+    for (int i = 0; i < 2000000 && ok; i++) {
+        int32_t a = (int32_t)rnd32(seed) >> (rnd32(seed) % 24), b = (int32_t)rnd32(seed) >> (rnd32(seed) % 31);
+        if (i % 4 == 0)
+            a = (int32_t)((uint32_t)(int16_t)rnd32(seed) << 16);
+        ok = qdivt_ok(a, b);
+        if (!ok) {
+            bada = a;
+            badb = b;
+        }
+    }
+    INFO("a ", bada, " b ", badb);
+    CHECK(ok);
+    // the values of the issue (-10 / 3) and a division by 0 (qdivide's
+    // $7FFFFFFF with the dividend's sign, towards zero: +-32767)
+    CHECK(qdivt(-10 << 16, 3 << 16) == -3);
+    CHECK(qdivk(-10 << 16, 3) == -3);
+    CHECK(qdivt(-10 << 16, 0) == -32767);
+    CHECK(qdivt(10 << 16, 0) == 32767);
+    CHECK(qdivt(-0x8000, 0x30000) == 0);
+    CHECK(qdivt(-10 << 16, 0x30001) == -3);
+    // a planted error is seen: the quotient rounded down
+    CHECK(qdivt(-10 << 16, 3 << 16, true) == -4);
+    CHECK((int16_t)qdivt(-10 << 16, 3 << 16, true) != qdivt_want(-10 << 16, 3 << 16));
 }

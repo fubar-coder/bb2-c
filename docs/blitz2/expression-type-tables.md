@@ -42,9 +42,10 @@ L Long, Q Quick, F Float, – none.
   whole number with 16 bits of fraction, a register pair), so a Quick and a Long
   or a Quick under a wanted Long are computed exactly; the result is rounded once,
   where the expression's value is taken (a wanted whole number rounded down, a
-  wanted Quick its 16.16 value, no wanted type a Quick where it fits, else
-  rounded down to a whole number); a product or quotient is cut to 1/65536 in
-  the direction of that rounding (down under a wanted whole number, #1221).
+  `/` at the top towards zero, #1222; a wanted Quick its 16.16 value, no wanted
+  type a Quick where it fits, else rounded down to a whole number); a product or
+  quotient is cut to 1/65536 in the direction of that rounding (down under a
+  wanted whole number, #1221).
 * `Q Q → Q` with a Byte or Word operand: a 16.16 operation.
 * `illegal`: the compiler refuses the operation ("Illegal Operator for Type").
 * † marks a cell that differs when the operands are swapped (listed below
@@ -378,22 +379,22 @@ is 1, `f Mod g` with 7.5 and 2 is 1.5. Two whole operands keep the whole-number
 | B | B | B B → F | B B → F | W W → F | L L → F | Q Q → F | F F → F |
 | B | W | W W → F | W W → F | W W → F | L L → F | Q Q → F | F F → F |
 | B | L | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
-| B | Q | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
+| B | Q | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
 | B | F | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 | W | B | W W → F | W W → F | W W → F | L L → F | Q Q → F | F F → F |
 | W | W | W W → F | W W → F | W W → F | L L → F | Q Q → F | F F → F |
 | W | L | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
-| W | Q | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
+| W | Q | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
 | W | F | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 | L | B | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
 | L | W | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
 | L | L | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
 | L | Q | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 | L | F | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
-| Q | B | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
-| Q | W | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
+| Q | B | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
+| Q | W | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
 | Q | L | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
-| Q | Q | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
+| Q | Q | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
 | Q | F | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 | F | B | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 | F | W | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
@@ -408,7 +409,7 @@ With a comparison as the right operand (its boolean, a Word; #1182):
 | B | a comparison | W W → F | W W → F | W W → F | L L → F | Q Q → F | F F → F |
 | W | a comparison | W W → F | W W → F | W W → F | L L → F | Q Q → F | F F → F |
 | L | a comparison | L L → F | L L → F | L L → F | L L → F | Q Q → F | F F → F |
-| Q | a comparison | F F → F | F F → F | F F → F | Q Q → F | F F → F | F F → F |
+| Q | a comparison | F F → F | Q Q → F | Q Q → F | Q Q → F | F F → F | F F → F |
 | F | a comparison | F F → F | F F → F | F F → F | F F → F | F F → F | F F → F |
 
 ## Comparisons
@@ -553,9 +554,9 @@ that type, without conversion code. The cell is the type of a constant alone (an
 expression that is only the constant) under the wanted type; "(whole)": a
 constant written with a point that is taken as the whole number it is. As an
 operand of an operation a constant with a point is fractional, never a whole
-number: a Quick where a Quick is in its expression or wanted, else a Float
-("Constants beside an operand", below). A negative constant is the constant
-with a minus before it.
+number: a Float under a wanted Byte, Word or Long (#1222), else a Quick where a
+Quick is in its expression or wanted, else a Float ("Constants beside an
+operand", below). A negative constant is the constant with a minus before it.
 
 | constant | kind | – | B | W | L | Q | F |
 |---|---|---|---|---|---|---|---|

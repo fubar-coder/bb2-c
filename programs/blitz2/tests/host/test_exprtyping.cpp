@@ -685,7 +685,7 @@ TEST_CASE("exprtyping: the rounding point and the formats of the analysis", "[ex
     } cases[] = {
         { "i/2*2", ET_LONG, ETC_FLOOR, ETF_Q48 },  // a / under a wanted Long whole at once
         { "q/2", ET_LONG, ETC_TRUNC, ETF_Q48 },    // a / at the top towards zero
-        { "q/2", ET_WORD, ETC_FLOOR, ETF_Q16 },    // a Word destination rounded down
+        { "q/2", ET_WORD, ETC_TRUNC, ETF_Q16 },    // also under a Word (#1222)
         { "q*q2*l", ET_NONE, ETC_FIT, ETF_Q48 },   // Print: a Quick when it fits
         { "q+w/2", ET_NONE, ETC_KEEP, ETF_Q16 },   // 16.16 without a Long
         { "l*q", ET_WORD, ETC_FLOOR, ETF_Q48 },    // a Long under a Word computed wide

@@ -2526,6 +2526,9 @@ struct cev {
     int p48;                    /* EM_R_P48 */
     int pcmpw;                  /* EM_R_PCMPW */
     int p1221;                  /* EM_R_1221: a 48.16 * or / under a wanted Byte, Word or Long cut down */
+    int p1222;                  /* EM_R_1222: the top / under a wanted Byte or Word towards zero, a
+                                   constant with a point a Float under them */
+    const struct em_tnode *root; /* the expression's root (EM_R_1222) */
     int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
                                    shift or Not */
     int inbit;                  /* the constant being typed: 1 an operand of AND, OR, EOR or NOT,
@@ -2671,15 +2674,16 @@ static int cpoint(const struct em_tnode *n);
 /* P, change 2 (EM_R_PCONST; "expr-tree-5 Q4 (P+ round 2)", F2): is a
    constant with a point a Float here, as in the original: under a wanted
    Float, beside a Float or beyond the Quick range always; under a wanted
-   Quick never; under a wanted Long always; else unless a Quick is beside
-   it or in its expression (regionq) */
+   Quick never; under a wanted Long always (EM_R_1222: under a wanted
+   Byte, Word or Long); else unless a Quick is beside it or in its
+   expression (regionq) */
 static int pconstfloat(struct cev *c, struct rat a, int W, int pt)
 {
     if (W == TF || pt == TF || !cfits(a, TQ))
         return 1;
     if (W == TQ)
         return 0;
-    if (W == TL)
+    if (W == TL || (c->p1222 && (W == TB || W == TW)))
         return 1;
     return !(pt == TQ || c->regionq);
 }
@@ -3461,7 +3465,13 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
         v = c->p1221 && f == 32 && W >= TB && W <= TL ? rat_q16dn(rat_op(x, y, '*')) : rat_q16(rat_op(x, y, '*'));
         break;
     case EM_DIV:
-        if (c->pqdiv && f == 16) {
+        if (c->p1222 && f == 16 && n == c->root && (W == TB || W == TW) && rat_sign(y)
+            && (q16bits(y) & 0xffff)) {
+            /* EM_R_1222: at the top a divisor with a fraction, the exact
+               quotient towards zero (the code's Long division of the 16.16
+               bits; beyond the 16.16 range its low bits) */
+            v = rat_trunc(rat_op(x, y, '/'));
+        } else if (c->pqdiv && f == 16) {
             /* EM_R_PQDIV: qdivide as it runs, its last bit (up to 1/65536
                above the quotient towards zero) and its $7FFFFFFF for a
                divisor 0 */
@@ -3486,7 +3496,8 @@ static int c7val(struct cev *c, const struct em_tnode *n, int W, int force, stru
                 if (rat_sign(x) < 0)
                     v = rat_op(rat_int(0), v, '-');
             }
-        } else if (c->p1221 && f == 32 && W >= TB && W <= TL && !(c->pdivl && W == TL))
+        } else if (c->p1221 && f == 32 && W >= TB && W <= TL && !(c->pdivl && W == TL)
+                   && !(c->p1222 && n == c->root))
             v = rat_q16dn(rat_op(x, y, '/'));   /* EM_R_1221, as * (a Long: whole towards zero below) */
         else
             v = rat_q16(rat_op(x, y, '/'));
@@ -3705,8 +3716,13 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
     struct ev *e = c->e;
     struct rat v;
     int fmt;
+    /* part 3: a / at the top towards zero, under a wanted Long (EM_R_1222:
+       also under a Byte or Word) */
+    int topdiv = root->kind == TN_BIN && root->op == EM_DIV
+                 && (!(c->ptyped && asked != TL) || (c->p1222 && (asked == TB || asked == TW)));
 
     c->scopeb = 0;              /* a comparison's operands: no wanted type, both scopes */
+    c->root = root;
     c->regionq = has_qvar(root);
     if (!has_qvar(root) || asked == TF)
         return -1;
@@ -3720,7 +3736,7 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
         c->tr->consumer = root->kind == TN_BIN && em_op_is_compare(root->op) ? 'c'
                           : asked == TQ ? 'q'
                           : !asked ? 'z'
-                          : root->kind == TN_BIN && root->op == EM_DIV && !(c->ptyped && asked != TL) ? 't' : 'f';
+                          : topdiv ? 't' : 'f';
     if (root->kind == TN_BIN && em_op_is_compare(root->op)) {
         r->t = TW;
         r->v = (uint32_t)(int32_t)rat_whole(v);
@@ -3736,7 +3752,7 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
         return 0;
     }
     /* a whole number: once, at the consumer */
-    v = root->kind == TN_BIN && root->op == EM_DIV && !(c->ptyped && asked != TL) ? rat_trunc(v) : rat_floor(v);
+    v = topdiv ? rat_trunc(v) : rat_floor(v);
     v = c7wrap(e, v, 32);
     r->t = TL;
     r->v = (uint32_t)(int32_t)rat_whole(v);
@@ -3782,6 +3798,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
             c.p48 = (rules & EM_R_P48) != 0;
             c.pcmpw = (rules & EM_R_PCMPW) != 0;
             c.p1221 = (rules & EM_R_1221) != 0;
+            c.p1222 = (rules & EM_R_1222) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;
@@ -3802,7 +3819,8 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
                 c.cand = EM_CAND_C1;
                 c.scopeb = 0;
             }
-            if (c.preach && asked != TL && asked != TF && asked != TS && has_qvar(root) && pfloat(&c, root, asked)
+            if (c.preach && asked != TL && !(c.p1222 && (asked == TB || asked == TW)) && asked != TF && asked != TS
+                && has_qvar(root) && pfloat(&c, root, asked)
                 && !(root->kind == TN_BIN && em_op_is_compare(root->op))) {
                 c.reachf = 1;
                 c.fmtf = 1;

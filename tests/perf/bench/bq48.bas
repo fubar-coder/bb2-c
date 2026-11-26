@@ -1,10 +1,12 @@
 ; bq48 - perf benchmark: compiled expressions that rule P+ computes in 48.16 or by the routines of #1178
 ; (expr-tree-5-operand-typing, design decision 9, task 4.3): a Long beside a Quick, l narrow (100) and lx
 ; wide (100000), the wanted types Long (r) and Quick (x), If, Select and Mod with a fraction, a Quick
-; with a constant divisor or factor, Mod by a whole constant or a Quick that is whole
-Dim t.l(31)
+; with a constant divisor or factor, Mod by a whole constant or a Quick that is whole; a / at the top and a
+; constant with a point under a Word, a Byte and a Long (#1222)
+Dim t.l(40)
 t0.l=0 : tt.l=0 : th.l=0 : tl.l=0 : t2.l=0 : i.l=0 : c.l=0 : r.l=0 : x.q=0
 l.l=100 : lx.l=100000 : q.q=2.5 : p.q=1.25 : w.w=3 : qw.q=4 : h.q=0.75
+n.q=-10 : z.q=0 : rw.w=0 : rb.b=0
 VWait 5
 BLITZ
 Poke.b $bfde00,0 : Poke.b $bfdf00,0
@@ -174,6 +176,41 @@ For i=1 To 2000
 r=l*q+p
 Next
 Gosub tod : t(30)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rw=n/q
+Next
+Gosub tod : t(31)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rw=l/q
+Next
+Gosub tod : t(32)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rw=w*0.5+z
+Next
+Gosub tod : t(33)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+r=n/q
+Next
+Gosub tod : t(34)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rb=n/q
+Next
+Gosub tod : t(35)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rw=w/q
+Next
+Gosub tod : t(36)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+rw=n/qw
+Next
+Gosub tod : t(37)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -207,6 +244,13 @@ NPrint "xqmodh ",t(27)," 2000 1"
 NPrint "xqmodch ",t(28)," 2000 1"
 NPrint "iflxmulq ",t(29)," 2000 1"
 NPrint "lmulqaddp ",t(30)," 2000 1"
+NPrint "wndivq ",t(31)," 2000 1"
+NPrint "wldivq ",t(32)," 2000 1"
+NPrint "wwmulhaddz ",t(33)," 2000 1"
+NPrint "lndivq ",t(34)," 2000 1"
+NPrint "bndivq ",t(35)," 2000 1"
+NPrint "wwdivq ",t(36)," 2000 1"
+NPrint "wndivqw ",t(37)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

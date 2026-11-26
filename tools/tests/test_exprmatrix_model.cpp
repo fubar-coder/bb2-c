@@ -713,13 +713,52 @@ TEST_CASE("exprmatrix model: P+ keeps Quick as a whole number (fixed point 3)", 
     CHECK(expr("l AND q", "l.l=65536 q=-1").value(EM_IF, DEC) == "T");
 }
 
+TEST_CASE("exprmatrix model: a top / and a constant with a point under every whole destination (#1222)",
+          "[exprmatrix][cand][decided]")
+{
+    // A1: a / at the top under a wanted Byte, Word or Long towards zero; a
+    // deeper / keeps its rule (rounded down under a Byte or Word)
+    const char *v = "l.l=-10 w.w=-10 n.q=-10 q.q=3 z.q=0";
+    for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL }) {
+        INFO(em_ctx_name(ctx));
+        for (const char *t : { "l/q", "w/q", "n/q" }) {
+            INFO(t);
+            CHECK(expr(t, v).value(ctx, DEC) == "-3");
+        }
+        // option 1 (F2): a constant with a point makes the operation Float
+        CHECK(expr("-1.5+z", v).value(ctx, DEC) == "-1");
+        CHECK(expr("z-1.5", v).value(ctx, DEC) == "-1");
+        CHECK(expr("w*0.5+z", "w.w=-3 z.q=0").value(ctx, DEC) == "-1");
+        CHECK(expr("n*0.25", "n.q=-10").value(ctx, DEC) == "-2");
+        CHECK(expr("q*0.1", "q.q=10").value(ctx, DEC) == "1");
+    }
+    // without the rule: rounded down under a Byte or Word
+    CHECK(expr("l/q", v).value(EM_DW, DEC & ~EM_R_1222) == "-4");
+    CHECK(expr("-1.5+z", v).value(EM_DW, DEC & ~EM_R_1222) == "-2");
+    // the named limit: a deeper / under a Word rounded down (-10/3 + 0)
+    CHECK(expr("n/q+z", v).value(EM_DW, DEC) == "-4");
+    CHECK(expr("n/q+z", v).value(EM_DL, DEC) == "-3");
+    // a division by 0 at the top: the largest value of the type
+    CHECK(expr("n/z", v).value(EM_DW, DEC) == "-32767");
+    CHECK(expr("l/z", v).value(EM_DW, DEC) == "-32767");
+    CHECK(expr("l/z", v).value(EM_DB, DEC) == "-127");
+    // expr-q48-cut-down's cases that change: 0 (towards zero, a Float)
+    const char *t = "qt.q=-0.0000152587890625 lz.l=0 qn.q=-1.5 lx.l=100000 qw.q=2";
+    CHECK(expr("qn/lx", t).value(EM_DW, DEC) == "0");
+    CHECK(expr("qn/lx", t).value(EM_DB, DEC) == "0");
+    CHECK(expr("qt*0.5+lz", t).value(EM_DW, DEC) == "0");
+    CHECK(expr("qt/2+lz", t).value(EM_DW, DEC) == "-1");
+    CHECK(expr("(qt+lz)/qw", t).value(EM_DW, DEC) == "0");
+    CHECK(expr("(qt+lz)/2.5", t).value(EM_DW, DEC) == "0");
+}
+
 TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")
 {
     // 1-4: a / under a wanted Long whole at once (F3), the top-level / of
-    // a Word destination rounded down, Mod by today's sign rule (F4)
+    // a Word destination towards zero (#1222), Mod by today's sign rule (F4)
     CHECK(expr("i/2*2", "i=7").value(EM_DL, DEC) == "6");
     CHECK(expr("q/2+0", "q=-3").value(EM_DL, DEC) == "-1");
-    CHECK(expr("q/2", "q=-3").value(EM_DW, DEC) == "-2");
+    CHECK(expr("q/2", "q=-3").value(EM_DW, DEC) == "-1");
     CHECK(expr("q MOD 2", "q=-7").value(EM_DL, DEC) == "1");
     // 5-8: a constant with a point beside whole numbers or under a wanted
     // Long a Float as in the original (F2)
@@ -846,6 +885,21 @@ TEST_CASE("exprmatrix model: P+ computes 16.16 as today's routines, bit for bit"
             for (enum em_ctx ctx : { EM_DQ, EM_DW, EM_PRINT }) {
                 std::string x = expr(t, vars.c_str()).value(ctx, DEC), y = expr(t, vars.c_str()).value(ctx, NOW);
 
+                if (ctx == EM_DW && t[std::strlen(t) - 2] == '/') {
+                    // #1222: a / at the top under a wanted Word towards
+                    // zero: a divisor without a fraction qdivide's value
+                    // (today's under a Quick) cut towards zero, else the
+                    // Long division of the 16.16 bits
+                    int32_t n = t[0] == '(' ? (int32_t)((uint32_t)a + (uint32_t)b) : a, w;
+
+                    if (!(b & 0xffff)) {
+                        int32_t v = (int32_t)std::strtoul(expr(t, vars.c_str()).value(EM_DQ, NOW).c_str(), nullptr, 16);
+
+                        w = v < 0 ? -(int32_t)((-(int64_t)v) >> 16) : v >> 16;
+                    } else
+                        w = (int32_t)((int64_t)n / b);
+                    y = std::to_string((int16_t)w);
+                }
                 if (x != y && differ++ < 10)
                     FAIL_CHECK(std::string(t) + " " + vars + ": " + x + ", today " + y);
             }

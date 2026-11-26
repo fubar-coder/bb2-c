@@ -5282,7 +5282,7 @@ enum {
     P5F_NDIV = 16,                  /* a 48.16 / of a 16.16 value by a whole constant (p5fastmark) */
     P5F_NMULF = 32,                 /* a 48.16 * of a 16.16 value and a constant below 1 */
     P5F_WMUL = 64,                  /* a 48.16 * of a 16.16 value and a Word, Byte or Word constant */
-    P5F_LDIV = 128                  /* a 48.16 / at the top under a wanted Long (ETC_TRUNC): its Long */
+    P5F_LDIV = 128                  /* a / at the top under a wanted Byte, Word or Long (ETC_TRUNC): its Long */
 };
 
 struct p5node {
@@ -6411,9 +6411,12 @@ static void p5scratchend(UWORD r)
 /* #1221 (user decision of 2026-11-26, "Quick rounding: down stays; the
    48.16 cut in the final direction (E)"): the cut at 1/65536 of the 48.16
    operation p, a * or /, rounds down: under a wanted Byte, Word or Long
-   (a / under a wanted Long is a whole number towards zero instead) */
+   (a / under a wanted Long, and one at the top under a wanted Byte or Word,
+   P5F_LDIV (#1222), is a whole number towards zero instead) */
 static BOOL p5down(const struct p5node *p)
 {
+    if (p->flags & P5F_LDIV)
+        return FALSE;
     return p->want == T_BYTE || p->want == T_WORD || (p->want == T_LONG && p->t.op == ETO_MUL);
 }
 
@@ -6424,7 +6427,8 @@ static BOOL p5down(const struct p5node *p)
    - P5F_NDIV, A / d (d whole, 2 <= |d| <= 65535, p->whole = |d|, p->ffp:
      d < 0): q48div's (|A| << 16) / (|d| << 16) = |A| / |d| rounded down by
      two DIVU, the sign applied; fits 16.16, the result in D(r) alone;
-     under a wanted Long cut towards zero (part 3) as the 48.16 code does;
+     under a wanted Long or at the top (P5F_LDIV) cut towards zero to a
+     whole number (part 3) as the 48.16 code does;
    - P5F_NMULF, A * X (X a constant's 16.16 value, |X| < 65536, in the
      other operand's register): q48mul's (|A| * |X|) >> 16 by two MULU,
      the sign applied; fits 16.16, in D(r) alone;
@@ -6476,7 +6480,7 @@ static void p5fast(struct p5node *p, UWORD r)
         p5w(p->ffp ? 0x6b02 : 0x6a02);          /* bmi.s / bpl.s: the sign */
         p5w(0x4480 | x);                        /* neg.l Dx */
         p5w(0x2000 | (a << 9) | x);             /* move.l Dx,Da */
-        if (p->want == T_LONG) {
+        if (p->want == T_LONG || (p->flags & P5F_LDIV)) {
             p5w(0x6a0a);                        /* bpl.s .cut */
             p5w(0x4a40 | a);                    /* tst.w Da */
             p5w(0x6706);                        /* beq.s .cut */
@@ -6574,6 +6578,19 @@ static void p5fastmark(struct p5node *p)
     struct p5node *L = P5(p->t.l), *R = P5(p->t.r), *Q, *O;
     struct p5q v;
 
+    if (p->t.o.path == ETY_Q16 && p->t.op == ETO_DIV && (p->flags & P5F_LDIV)) {
+        /* p5qdivt: a whole constant divisor of the Word range (#1222) */
+        if (!p5fastq(L) || !p5folded(&R->t) || R->df != ETF_TYPE)
+            return;
+        v = p5qval(&R->t);
+        if (!v.ok || v.d != 1 || v.n < -32768 || v.n > 32767 || (v.n > -2 && v.n < 2))
+            return;
+        p->flags |= P5F_NDIV;
+        p->whole = (ULONG)v.n;
+        if (!(R->flags & P5F_KEEP) || R->t.kind == ETN_CONST)
+            p5nopall(R, NULL);
+        return;
+    }
     if (p->t.o.path != ETY_Q48)
         return;
     if (p->t.op == ETO_DIV) {
@@ -6669,12 +6686,18 @@ static void p5truncd0(void)
    p5nowide; a Byte or Word extended to a Long first): |a| << 16 has the
    digits hi(|a|), lo(|a|) and 0; else a is a 48.16 value in d0/d1 (four
    digits) and b is widened in d2/d3.  ldiv: the division at the top
-   under a wanted Long (P5F_LDIV): its value is the quotient towards zero
-   (part 3) modulo 2^32 as a Long in d0, the fraction digit not computed
-   (after tok: p5truncd0).  down: under a wanted Word or Byte the cut
-   rounds down (#1221, p5divsign; tok is then q48divw or q48divb, which cut
-   down too).  The host test test_exprarith.cpp ("a whole divisor at run
-   time") runs the same steps against exprarith_q48 and exprarith_q48_down. */
+   under a wanted Byte, Word or Long (P5F_LDIV): its value is the quotient
+   towards zero (part 3, #1222) modulo 2^32 as a Long in d0, the fraction
+   digit not computed (after tok: p5truncd0); a divisor with a fraction
+   calls ftok instead of tok (at the top under a wanted Word or Byte the
+   cut towards zero of q48div, tok's q48divw or q48divb only for the
+   division by 0), and with raw (a dividend a of at most 16.16 bits: a
+   Word, Byte or Quick, not a Long) longdiv on the 16.16 bits of a and b,
+   whose quotient towards zero is that of a / b (p5qdivt).  down: under a
+   wanted Word or Byte the cut rounds down (#1221, p5divsign; tok is then
+   q48divw or q48divb, which cut down too).  The host test
+   test_exprarith.cpp ("a whole divisor at run time") runs the same steps
+   against exprarith_q48 and exprarith_q48_down. */
 /* the sign of a 48.16 quotient d1:d0 (its magnitude) applied when the
    long at (a7)+ (stack) or in d2 is negative; down (#1221): a remainder
    in d3's high word not 0 makes it one 1/65536 lower */
@@ -6698,9 +6721,9 @@ static void p5divsign(BOOL stack, BOOL down)
     p5w(0x4081);                                /* negx.l d1 */
 }
 
-static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv, BOOL down)
+static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, BOOL raw, BOOL down)
 {
-    ULONG frac, nul, done, high;
+    ULONG frac, nul, done, done2 = 0, high;
 
     if (longa && p5norm(at) != T_LONG)
         p5w(0x48c0);                            /* ext.l d0 */
@@ -6787,6 +6810,24 @@ static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv, BOOL down)
     }
     done = p5bra(0x6000);                       /* bra.s .done */
     p5patch(frac);
+    if (ldiv && raw) {
+        /* #1222: a / b towards zero, the 16.16 bits divided */
+        if (longa) {
+            p5w(0x4840);                        /* swap d0 */
+            p5w(0x4240);                        /* clr.w d0: a's 16.16 bits */
+        }
+        p5w(0x2202);                            /* move.l d2,d1 */
+        tokejsr(longdiv);
+        done2 = p5bra(0x6000);                  /* bra.s .done */
+    } else if (ftok != tok) {
+        if (longa) {
+            p5widen(0, T_LONG);                 /* the operands as 48.16 */
+            p5widen(2, T_QUICK);
+        }
+        tokejsr(ftok);
+        p5truncd0();
+        done2 = p5bra(0x6000);                  /* bra.s .done */
+    }
     p5patch(nul);
     if (longa) {
         p5widen(0, T_LONG);                     /* .call: the operands as 48.16 */
@@ -6796,6 +6837,8 @@ static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv, BOOL down)
     if (ldiv)
         p5truncd0();
     p5patch(done);
+    if (done2)
+        p5patch(done2);
 }
 
 /* the follow-up of task 4.3 (decision "expr-tree-5 4.3 follow-up: a whole
@@ -7012,6 +7055,66 @@ static BOOL p5whole1(UWORD t)
     return t == T_LONG || t == T_WORD || t == T_BYTE;
 }
 
+/* #1222 (the user's decision of 2026-11-26, "P+ part 3 under Byte/Word
+   (A1) and F2 under whole destinations (option 1)"): a 16.16 / at the
+   top under a wanted Byte, Word or Long (P5F_LDIV, path ETY_Q16: no Long
+   in the expression) gives its quotient towards zero as a Long in D(r).
+   With a and b the 16.16 bits of the operands, trunc(a / b) is the Long
+   division a / b towards zero (both are scaled by 65536): longdiv on
+   them, no rounding step.  A divisor without a fraction (also 0) calls
+   quickdiv as before (its two DIVU, its value for a division by 0,
+   $7FFFFFFF with the dividend's sign, and its error check), then the
+   16.16 value towards zero.  Where the 16.16 quotient of a divisor with a
+   fraction overflows (|a / b| >= 32768) the value is the exact quotient's
+   low bits, as on the 48.16 path, not those of qdivide's wrapped 16.16
+   value.  P5F_NDIV here (a whole constant divisor k of the Word range,
+   |k| >= 2, p->whole = k; p5fastmark): the dividend towards zero, then
+   DIVS.W #k, whose quotient fits a Word.  The host test test_exprarith.cpp
+   ("a 16.16 division at the top towards zero") runs the same steps
+   against exprarith_q16 and the cut towards zero. */
+static void p5qdivt(struct p5node *p, UWORD r, UWORD q)
+{
+    struct p5node *L = P5(p->t.l), *R = P5(p->t.r);
+    ULONG push, pull, whole, done;
+
+    if (p->flags & P5F_NDIV) {
+        p5w(0x4a80 | r);                        /* tst.l D(r) */
+        p5w(0x6a06);                            /* bpl.s */
+        p5w(0x0680 | r);                        /* addi.l #$FFFF,D(r): towards zero */
+        p5l(0x0000ffff);
+        p5w(0x4840 | r);                        /* swap D(r) */
+        p5w(0x48c0 | r);                        /* ext.l D(r): the whole part */
+        p5w(0x81fc | (r << 9));                 /* divs.w #k,D(r) */
+        p5w((UWORD)p->whole);
+        p5w(0x48c0 | r);                        /* ext.l D(r) */
+        return;
+    }
+    p5operands(L, R, r, q, T_QUICK, T_QUICK);
+    if (p5prep) {
+        tokuse(longdiv);
+        tokuse(quickdiv);
+        return;
+    }
+    savereg(&push, &pull);
+    pokemovem(push);
+    ritetod0();
+    p5w(0x4a41);                                /* tst.w d1: a fraction */
+    whole = p5bra(0x6700);                      /* beq.s .whole */
+    tokejsr(longdiv);
+    done = p5bra(0x6000);                       /* bra.s .done */
+    p5patch(whole);
+    tokejsr(quickdiv);                          /* .whole */
+    p5w(0x4a80);                                /* tst.l d0 */
+    p5w(0x6a06);                                /* bpl.s */
+    p5w(0x0680);                                /* addi.l #$FFFF,d0: towards zero */
+    p5l(0x0000ffff);
+    p5w(0x4840);                                /* swap d0 */
+    p5w(0x48c0);                                /* ext.l d0 */
+    p5patch(done);                              /* .done */
+    ritefromd0();
+    pokemovem(pull);
+}
+
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
@@ -7026,8 +7129,9 @@ static void p5bin(struct p5node *p, UWORD r)
 
     switch (o->path) {
     case ETY_Q48: {
-        UWORD tok;
+        UWORD tok, ftok;
         BOOL ldiv = (p->flags & P5F_LDIV) != 0;
+        BOOL wdiv = ldiv && (p->want == T_WORD || p->want == T_BYTE);
 
         if (p->flags & (P5F_NDIV | P5F_NMULF | P5F_WMUL)) {
             p5fast(p, r);
@@ -7042,16 +7146,28 @@ static void p5bin(struct p5node *p, UWORD r)
             tok = p->want == T_QUICK ? q48divq : p->want == T_WORD ? q48divw : p->want == T_BYTE ? q48divb : q48div;
             break;
         }
-        if ((op == ETO_DIV || (op == ETO_MOD && !p5modfrac(R))) && !rw && rt == T_QUICK && !p5prep) {
+        /* #1222: at the top under a wanted Word or Byte towards zero, as
+           q48div cuts (q48divw, q48divb for their division by 0) */
+        ftok = wdiv ? q48div : tok;
+        if ((op == ETO_DIV || (op == ETO_MOD && !p5modfrac(R))) && !rw && rt == T_QUICK) {
             /* a 16.16 divisor: whole at run time, the division or Mod
                inline (not a Mod by a constant with a fraction); a whole
                dividend not widened */
             BOOL longa = !lw && (lt == T_LONG || lt == T_WORD || lt == T_BYTE);
+            BOOL raw = ldiv && !lw && lt != T_LONG;
 
+            if (p5prep) {
+                p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
+                if (op == ETO_DIV && raw)
+                    tokuse(longdiv);
+                else if (op == ETO_DIV && ftok != tok)
+                    tokuse(ftok);
+                break;
+            }
             p5nowide = longa;
             p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
             if (op == ETO_DIV)
-                p5wholediv(tok, lt, longa, ldiv, p5down(p));
+                p5wholediv(tok, ftok, lt, longa, ldiv, raw, p5down(p));
             else
                 p5wholemod(tok, lt, longa);
         } else if (op == ETO_MUL && !lw && !rw && ((p5whole1(lt) && rt == T_QUICK) || (lt == T_QUICK && p5whole1(rt)))) {
@@ -7066,8 +7182,32 @@ static void p5bin(struct p5node *p, UWORD r)
                 p5w(0x48c2);                /* ext.l d2 */
             if (!p5prep)
                 tokejsr(q48mull);
+        } else if (op == ETO_DIV && wdiv && !p5folded(&R->t)) {
+            /* #1222: towards zero (q48div), a divisor 0 by tok for its
+               value */
+            ULONG z, z2, done;
+
+            p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
+            if (p5prep) {
+                tokuse(tok);
+                tokuse(ftok);
+                break;
+            }
+            p5w(0x4a82);                    /* tst.l d2 */
+            z = p5bra(0x6600);              /* bne.s .div */
+            p5w(0x4a83);                    /* tst.l d3 */
+            z2 = p5bra(0x6600);             /* bne.s .div */
+            tokejsr(tok);
+            done = p5bra(0x6000);           /* bra.s .done */
+            p5patch(z);
+            p5patch(z2);
+            tokejsr(ftok);                  /* .div */
+            p5patch(done);
+            p5truncd0();
         } else {
-            p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
+            /* a constant divisor at the top under a wanted Word or Byte:
+               q48div (#1222), tok when it is 0 */
+            p5callin(wdiv && p5qval(&R->t).ok && p5qval(&R->t).n ? ftok : tok, r, lt, lw, rt, rw, FALSE, FALSE);
             if (ldiv && !p5prep)
                 p5truncd0();
         }
@@ -7203,6 +7343,10 @@ static void p5bin(struct p5node *p, UWORD r)
                 tokuse(mathq * 128 + 1);
             else
                 domylib(mathq * 128 + 1);
+            break;
+        }
+        if (op == ETO_DIV && (p->flags & P5F_LDIV)) {
+            p5qdivt(p, r, q);
             break;
         }
         p5operands(L, R, r, q, T, o->path == ETY_Q16 ? T_QUICK : o->ras);
@@ -7447,7 +7591,7 @@ static void p5binapply(struct p5node *p, UWORD want)
         } else if (p->flags & P5F_LDIV)
             p->df = ETF_TYPE;       /* its Long towards zero (p5bin) */
         break;
-    case ETY_Q16: p->dt = T_QUICK; break;
+    case ETY_Q16: p->dt = p->flags & P5F_LDIV ? T_LONG : T_QUICK; break;    /* p5qdivt's Long */
     case ETY_EXACT:
     case ETY_COMPARE: p->dt = T_WORD; break;
     case ETY_MIXED: p->dt = T_LONG; break;
@@ -7745,10 +7889,11 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
                 a->x = 0x2f06;              /* move.l d6,-(a7) */
         }
     }
-    /* a 48.16 / at the top under a wanted Long gives its value towards
-       zero as a Long itself (part 3, the consumer's cut once) */
+    /* a 48.16 or 16.16 / at the top under a wanted Byte, Word or Long
+       gives its value towards zero as a Long itself (part 3, #1222: the
+       consumer's cut once) */
     if (res.consumer == ETC_TRUNC && root->t.kind == ETN_BIN && root->t.op == ETO_DIV
-        && root->t.o.path == ETY_Q48)
+        && (root->t.o.path == ETY_Q48 || root->t.o.path == ETY_Q16))
         root->flags |= P5F_LDIV;
     p5apply(root, res.t, FALSE, want);
     switch (res.consumer) {
@@ -7759,7 +7904,7 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
     default: S = root->df == ETF_Q48 ? T_QUICK : root->dt; break;
     }
     if ((res.consumer == ETC_TRUNC || res.consumer == ETC_FIT) && root->df != ETF_Q48)
-        S = root->dt;               /* not reached: only for 48.16 */
+        S = root->dt;               /* ETC_TRUNC: p5qdivt's Long; ETC_FIT only for 48.16 */
     e->lflags |= EVF_P5;
     p5unit = TRUE;
     if (res.consumer == ETC_FIT && root->df == ETF_Q48)
@@ -7795,6 +7940,15 @@ static void p5exit(struct exprnode *e, WORD push)
             p5reg(r + 1);
             p5widen(r, p->dt);
         }
+        return;
+    }
+    if (e->vtype == ETC_TRUNC && p->df != ETF_Q48 && p->dt == T_QUICK) {
+        /* a 16.16 / at the top that p5qdivt does not write: the value
+           towards zero, the consumer's cut down then exact (#1222) */
+        pokewd(0x4a80 | r);                         /* tst.l D(r) */
+        pokewd(0x6a06);                             /* bpl.s */
+        pokewd(0x0680 | r);                         /* addi.l #$FFFF,D(r) */
+        pokel(0x0000ffff);
         return;
     }
     if (p->df != ETF_Q48)

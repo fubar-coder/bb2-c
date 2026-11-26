@@ -23,14 +23,15 @@
  *   Long is wanted (part 7); a comparison compares its two sides exactly,
  *   each in its own format (part 8).
  * - The value is rounded once, where it is taken: a wanted Long, Word or
- *   Byte its whole part rounded down, a / at the top under a wanted Long
- *   towards zero (part 3); a wanted Quick the 16.16 value; If and Print a
- *   Quick when it fits, else the whole part (rounded down) as a Long.
+ *   Byte its whole part rounded down, a / at the top under a wanted Byte,
+ *   Word or Long towards zero (part 3, #1222); a wanted Quick the 16.16
+ *   value; If and Print a Quick when it fits, else the whole part
+ *   (rounded down) as a Long.
  * - A constant with a point is fractional, never whole (part 2): a Float
- *   beside whole numbers only or under a wanted Long or Float, a Quick
- *   where a Quick is in its expression or wanted; as an operand of AND,
- *   OR, EOR and NOT its whole part rounded down; as a shift count it is
- *   refused; as the shifted operand a Quick.
+ *   beside whole numbers only or under a wanted Byte, Word, Long or Float
+ *   (#1222), a Quick where a Quick is in its expression or wanted; as an
+ *   operand of AND, OR, EOR and NOT its whole part rounded down; as a
+ *   shift count it is refused; as the shifted operand a Quick.
  * - An expression without a Quick, or with a Float, is typed as today but
  *   with every operand typed by its own operands (operand typing: the
  *   type of an operation never depends on the order of its operands); a
@@ -106,7 +107,7 @@ enum {
                                    wanted type and a whole value at the top (a bit operator,
                                    shift or NOT): that value */
     ETC_FLOOR,                  /* the whole part, rounded down, as a Long */
-    ETC_TRUNC,                  /* a / at the top under a wanted Long: towards zero, as a Long */
+    ETC_TRUNC,                  /* a / at the top under a wanted Byte, Word or Long: towards zero, as a Long */
     ETC_FIT                     /* no wanted type, 48.16: a Quick when the value fits one, else
                                    its whole part rounded down as a Long (decided at run time) */
 };

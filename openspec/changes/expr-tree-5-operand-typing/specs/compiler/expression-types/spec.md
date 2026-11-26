@@ -99,7 +99,7 @@ In an expression with a Quick, `+`, `-`, `*`, `/` and `Mod` SHALL be computed in
 - **THEN** it prints 150000, 100000 and 1.5 (today 1)
 
 ### Requirement: The result is rounded once, where it is used
-A Quick expression's result SHALL be rounded once, where it is used: down to a whole number, the 16.16 value for a Quick, without a wanted type the Quick when it fits, else rounded down. A `/` under a wanted Long SHALL be whole, towards zero, at the operator. A 48.16 product or quotient SHALL be cut to 1/65536 in the direction of the final rounding (down under a wanted Byte, Word or Long, else towards zero) (#1221).
+A Quick expression's result SHALL be rounded once, where it is used: down to a whole number, the 16.16 value for a Quick, without a wanted type the Quick when it fits, else rounded down. A `/` under a wanted Long SHALL be whole, towards zero, at the operator, and a `/` at the top under a wanted Byte or Word towards zero (#1222). A 48.16 product or quotient SHALL be cut to 1/65536 in the direction of the final rounding (down under a wanted Byte, Word or Long, else towards zero) (#1221).
 
 #### Scenario: Long destination
 - **WHEN** a program evaluates `r.l=q*2`, `r.l=l-q`, `r.l=l*q`, `r.l=q/h`, `r.l=l+q`, `r.l=q+p` with `q=1.5`, `h=0.5`, `p=2.75`, `l=10`
@@ -115,14 +115,22 @@ A Quick expression's result SHALL be rounded once, where it is used: down to a w
 
 #### Scenario: Word destination
 - **WHEN** a program evaluates `x.w=q/2` with `q=-3` and `x.w=l*q` with `l.l=100000`, `q=0.25`
-- **THEN** it gets -2 (the 16.16 quotient rounded down) and 25000 (the Long takes part: 48.16)
+- **THEN** it gets -1 (the `/` at the top towards zero, as under a Long) and 25000 (the Long takes part: 48.16)
+
+#### Scenario: A division at the top under a Byte or Word destination
+- **WHEN** a program evaluates `x.w=l/q`, `x.w=w/q`, `x.w=n/q`, `x.b=n/q` and `x.w=n/q+z` with `l.l=-10`, `w.w=-10`, `n=-10`, `q=3`, `z=0`
+- **THEN** it gets -3, -3, -3, -3 and -4 (a deeper `/` is rounded down with the rest; test `expr-top-div-trunc`)
 
 ### Requirement: A constant with a point is fractional
-A constant written with a point (`3.0`, `1.5`) SHALL be a fractional number whatever its value, also under a Byte type; a constant without a point SHALL be integral and take its smallest whole-number type (Byte, Word, Long). A fractional constant SHALL be a Float, as in the original, where it stands beside whole numbers only or a Long is wanted, and a Quick where a Quick is in its expression or wanted (and the value fits).
+A constant written with a point (`3.0`, `1.5`) SHALL be a fractional number whatever its value, also under a Byte type; a constant without a point SHALL be integral and take its smallest whole-number type (Byte, Word, Long). A fractional constant SHALL be a Float, as in the original, where it stands beside whole numbers only or a Byte, Word or Long is wanted (#1222), and a Quick where a Quick is in its expression or wanted (and the value fits).
 
 #### Scenario: Beside whole numbers or under a wanted Long a Float
 - **WHEN** a program evaluates `r.l=l*0.1` with `l=100`, `NPrint l*0.001` with `l=1000000`, `r.l=q*1.1` with `q=10` and `r.l=l*0.5` with `l=-3`
 - **THEN** it gets 10, 1000, 11 and -1, as the original
+
+#### Scenario: Under a wanted Byte or Word a Float beside a Quick
+- **WHEN** a program evaluates `x.w=-1.5+z`, `x.b=z-1.5`, `x.w=w*0.5+z` and `x.w=n*0.25` with `z=0`, `w.w=-3`, `n=-10`
+- **THEN** it gets -1, -1, -1 and -2, as under a Long destination (test `expr-top-div-trunc`)
 
 #### Scenario: Under a wanted Quick a Quick
 - **WHEN** a program evaluates `x.q=l*1.1` with `l.l=10`

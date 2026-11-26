@@ -59,12 +59,13 @@ holds any Long with a fraction.
 An operand counts as a Long when it is a Long variable or function, a
 constant above 32767, the address of a variable, the product of two
 Words or a shift of a whole number. A constant written with a point, such
-as `1.5` or `2.0`, counts as a Quick beside a Quick and as a Float beside
-whole numbers only; it is never a whole number.
+as `1.5` or `2.0`, counts as a Float for a whole destination (Byte, Word
+or Long) and beside whole numbers only, otherwise as a Quick beside a
+Quick; it is never a whole number.
 
 The result is rounded once, where it is taken: rounded down to a whole
-number for a whole destination (a `/` under a Long towards zero), to a
-Quick for a Quick destination. Where nothing is wanted it stays a Quick
+number for a whole destination (a `/` as the last operation towards zero,
+and under a Long every `/`), to a Quick for a Quick destination. Where nothing is wanted it stays a Quick
 if it fits, otherwise it is rounded down to a whole number. A product or
 a quotient in the exact format is cut to 1/65536 in the same direction,
 so `r.l=q*p+l` with `q=-0.5`, `p=1/65536` and `l=5` is 4, the exact
@@ -341,6 +342,12 @@ rq.q=l^n : NPrint Hex$(Peek.l(&rq))   ; original: E5400000   port: FFFFFFFF
 
 1e10 is far beyond a Quick, and the port's conversion gives $FFFFFFFF.
 The original converted the base to a Quick first.
+
+**A division inside an expression.** Under a Byte or Word destination
+only a `/` that is the last operation of the expression gives its
+quotient towards zero; a `/` inside it is rounded down with the rest of
+the expression. With `n=-10`, `q=3` and `z=0`, `x.w=n/q` is -3 but
+`x.w=n/q+z` is -4; under a Long destination both are -3.
 
 **Very deep expressions.** The port decides the types over the whole
 expression only up to 64 levels of nesting. An expression nested deeper

@@ -132,22 +132,30 @@ found while the expression is read, as in the original):
   computed exactly by the routines of the port's `compilerlib`
   (`q48add` to `q48trunc`); a Float operand makes the operation Float;
 * the value is rounded once, where it is taken: a wanted whole number the
-  exact value rounded down (a `/` at the top under a wanted Long towards
-  zero), a wanted Quick its 16.16 value, no wanted type a Quick where it
+  exact value rounded down (a `/` at the top under a wanted Byte, Word or
+  Long towards zero, #1222: `x.w=l/q`, `x.w=w/q` and `x.w=n/q` are -3 for
+  -10 and 3, as `r.l=l/q`; a deeper `/` under a wanted Byte or Word is
+  rounded down with the rest, a limit: `x.w=n/q+z` is -4 with `z=0`,
+  `r.l=n/q+z` -3), a wanted Quick its 16.16 value, no wanted type a Quick where it
   fits, else rounded down to a whole number (decided at run time for a
   48.16 value); a 48.16 product or quotient is cut to 1/65536 in the
   direction of that rounding, down under a wanted whole number, towards
   zero elsewhere (#1221: `r.l=q*p+l` is 4 for `q=-0.5`, `p=1/65536`,
   `l=5`); a 16.16 operation (no Long in it, under a wanted Byte or Word)
   keeps the original's routines, which cut towards zero (`x.w=q*p` is 0
-  there);
+  there); a 16.16 `/` at the top by a divisor with a fraction is the Long
+  division of the two 16.16 values (the same value towards zero, faster
+  than the Quick division; where the 16.16 quotient would overflow, beyond
+  +-32768, its low bits are those of the exact quotient, as on the 48.16
+  path, not those of the original's wrapped Quick);
 * `Mod` with an operand that has a fraction (a Quick, a Float, a constant
   with a point) is exact with the whole numbers' sign rule (`NPrint q Mod
   2` is 1.5 for `q=7.5`, `f Mod g` 1.5 for 7.5 and 2); whole operands keep
   the whole-number `Mod`;
 * a constant with a point is fractional as an operand, never a whole
-  number: a Quick where a Quick is in its expression or wanted, else a
-  Float; `AND`, `OR`, `EOR` and `NOT` take its whole part, and the whole
+  number: a Float under a wanted Byte, Word or Long (#1222: `x.w=-1.5+z`
+  is -1, as `r.l=-1.5+z`), else a Quick where a Quick is in its
+  expression or wanted, else a Float; `AND`, `OR`, `EOR` and `NOT` take its whole part, and the whole
   part of a Quick or 48.16 value (#1209); a constant with a point as a
   shift count is refused;
 * a comparison gives a Word, compares its operands exactly in their own

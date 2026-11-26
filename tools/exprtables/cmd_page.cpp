@@ -92,9 +92,10 @@ static const char *const about =
     "  whole number with 16 bits of fraction, a register pair), so a Quick and a Long\n"
     "  or a Quick under a wanted Long are computed exactly; the result is rounded once,\n"
     "  where the expression's value is taken (a wanted whole number rounded down, a\n"
-    "  wanted Quick its 16.16 value, no wanted type a Quick where it fits, else\n"
-    "  rounded down to a whole number); a product or quotient is cut to 1/65536 in\n"
-    "  the direction of that rounding (down under a wanted whole number, #1221).\n"
+    "  `/` at the top towards zero, #1222; a wanted Quick its 16.16 value, no wanted\n"
+    "  type a Quick where it fits, else rounded down to a whole number); a product or\n"
+    "  quotient is cut to 1/65536 in the direction of that rounding (down under a\n"
+    "  wanted whole number, #1221).\n"
     "* `Q Q \xe2\x86\x92 Q` with a Byte or Word operand: a 16.16 operation.\n"
     "* `illegal`: the compiler refuses the operation (\"Illegal Operator for Type\").\n"
     "* \xe2\x80\xa0 marks a cell that differs when the operands are swapped (listed below\n"
@@ -137,9 +138,9 @@ static const char *const constabout =
     "expression that is only the constant) under the wanted type; \"(whole)\": a\n"
     "constant written with a point that is taken as the whole number it is. As an\n"
     "operand of an operation a constant with a point is fractional, never a whole\n"
-    "number: a Quick where a Quick is in its expression or wanted, else a Float\n"
-    "(\"Constants beside an operand\", below). A negative constant is the constant\n"
-    "with a minus before it.\n\n";
+    "number: a Float under a wanted Byte, Word or Long (#1222), else a Quick where a\n"
+    "Quick is in its expression or wanted, else a Float (\"Constants beside an\n"
+    "operand\", below). A negative constant is the constant with a minus before it.\n\n";
 
 static const char *const notes =
     "## The exceptions and their issues\n"

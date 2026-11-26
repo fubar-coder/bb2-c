@@ -2338,8 +2338,10 @@ cycle values do not depend on the host's load or on what else runs
   `bq48` measures the code blitz2 writes for the expressions rule P+
   computes in 48.16 (`expr-tree-5-operand-typing`: a Long beside a Quick
   under a Long and a Quick, a chain, `If`, a `Select` with constant Cases,
-  `Mod` with a fraction, a division under a Quick), the routines it calls
-  included. No targets: the original computes these in other types.
+  `Mod` with a fraction, a division under a Quick; a `/` at the top and a
+  constant with a point under a Word, a Byte and a Long, #1222), the
+  routines it calls included. No targets: the original computes these in
+  other types.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the

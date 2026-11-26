@@ -484,6 +484,15 @@
 # Two Quicks multiplied under a wanted Long by qqmult (candidate #4):
 # bmath.qqmul 633.2 -> 504.1, qqmulw 507.2 -> 278.6, qqmulc 508.8 ->
 # 166.7, bq48.qmulpaddl 684.0 -> 524.5.
+# #1222 (a / at the top towards zero, a constant with a point a Float
+# under a wanted Byte or Word): the new loops bq48.wndivq ... wndivqw,
+# main 0df969d55 -> after (the original's compiler and libraries in
+# brackets, the loops alone; budgets from two runs): rw=n/q 1877.2 ->
+# 1143.2 (3701.7), rw=l/q 1921.7 -> 1915.0 (2866.7), rw=w*0.5+z 406.1 ->
+# 1929.0 (2037.2: FFP, as under a Long; the user's decision accepts it),
+# r=n/q 1965.7 -> 1198.7 (2890.7), rb=n/q 1877.7 -> 1142.7 (3701.7),
+# rw=w/q 1951.2 -> 1134.7 (3799.7), rw=n/qw 544.1 -> 586.6 (3691.2: the
+# test and the cut towards zero).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -713,6 +722,13 @@ bq48.xqmodh                   604          -  x=q Mod h (h=0.75, a Quick below 1
 bq48.xqmodch                  569          -  x=q Mod 0.75 (a constant below 1: compilerlib q16mod)
 bq48.iflxmulq                 602          -  If lx*q>p Then c=1 (lx=100000: q48mull, four MULU)
 bq48.lmulqaddp                434          -  r=l*q+p (an exact Long x Quick product by q48mull, then a 48.16 sum under a Long)
+bq48.wndivq                  1158          -  rw=n/q (n=-10, q=2.5: a 16.16 / at the top under a Word towards zero, #1222: longdiv on the 16.16 bits)
+bq48.wldivq                  1938          -  rw=l/q (a 48.16 / at the top under a Word: q48div, then towards zero)
+bq48.wwmulhaddz              1952          -  rw=w*0.5+z (z=0: a constant with a point makes it Float under a Word, #1222)
+bq48.lndivq                  1214          -  r=n/q (a Quick dividend under a Long: longdiv on the 16.16 bits instead of q48div)
+bq48.bndivq                  1158          -  rb=n/q (the same under a Byte)
+bq48.wwdivq                  1150          -  rw=w/q (a Word dividend, a 16.16 divisor with a fraction: longdiv)
+bq48.wndivqw                  596          -  rw=n/qw (qw=4, whole at run time: quickdiv's two DIVU, then towards zero)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)

@@ -94,6 +94,12 @@ static struct rq rq_op(struct rq a, struct rq b, char op)
     }
 }
 
+/* a wanted Byte, Word or Long */
+static int is_wholewant(unsigned want)
+{
+    return want == ET_BYTE || want == ET_WORD || want == ET_LONG;
+}
+
 static int rq_isint(struct rq a)
 {
     return a.ok && a.d == 1;
@@ -416,15 +422,17 @@ static unsigned const_flow(struct ctx *c, const struct exprtyping_node *n, unsig
 
 /* part 2 (EM_R_PCONST): a constant with a point is a Float here, as in
    the original: under a wanted Float, beside a Float or beyond the Quick
-   range always; under a wanted Quick never; under a wanted Long always;
-   else unless a Quick is beside it or in its expression */
+   range always; under a wanted Quick never; under a wanted Byte, Word or
+   Long always (#1222: the user's decision of 2026-11-26, "P+ part 3 under
+   Byte/Word (A1) and F2 under whole destinations (option 1)"); else
+   unless a Quick is beside it or in its expression */
 static int const_isfloat(const struct ctx *c, struct rq a, unsigned want, unsigned beside)
 {
     if (want == ET_FLOAT || beside == ET_FLOAT || !rq_fits(a, ET_QUICK))
         return 1;
     if (want == ET_QUICK)
         return 0;
-    if (want == ET_LONG)
+    if (is_wholewant(want))
         return 1;
     return !(beside == ET_QUICK || c->quickhere);
 }
@@ -1070,9 +1078,11 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
             res->consumer = ETC_FIT;
         } else {
             t = ET_LONG;
-            res->consumer = root->kind == ETN_BIN && root->op == ETO_DIV && want == ET_LONG ? ETC_TRUNC : ETC_FLOOR;
+            /* part 3: a / at the top under a wanted Byte, Word or Long
+               towards zero (#1222) */
+            res->consumer = root->kind == ETN_BIN && root->op == ETO_DIV && is_wholewant(want) ? ETC_TRUNC : ETC_FLOOR;
         }
-    } else if (has_quick(root) && want != ET_LONG && want != ET_FLOAT && want != ET_STRING
+    } else if (has_quick(root) && !is_wholewant(want) && want != ET_FLOAT && want != ET_STRING
                && !is_cmp(root) && is_floaty(&c, root, want)) {
         /* part 7: an expression with a Quick and a Float under Float */
         c.reachedf = 1;
