@@ -807,6 +807,7 @@ struct ev {
     int powknown;
     int c5ovf;                  /* C5: a 32.16 product beyond its consumer (EM_R_C5ERR) */
     int divtrap;                /* a DIVS.W by 0 ran: the CPU's division trap, no value */
+    int wholeconst;             /* EM_R_1224: flow of a constquick expression, wholesub a constant */
 };
 
 static int fits(struct rat a, int t)
@@ -2284,6 +2285,7 @@ static int frac_operand(const struct em_tnode *n)
 static struct rat const_ideal(const struct em_tnode *n, int modx);
 static struct rat c7wrap(struct ev *e, struct rat x, int bits);
 static uint32_t q16bits(struct rat x);
+static int wholesub(const struct em_tnode *n);
 
 /* EM_R_1223: a Mod of two constants with a fraction in an operand, in the
    Quick or Float T it is computed in, is the exact Mod with today's sign
@@ -2351,6 +2353,14 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
         return 0;
     default:
         break;
+    }
+    if (e->wholeconst && wholesub(n)) {
+        /* EM_R_1224: in the variable form a constant of its value */
+        char t[48];
+
+        snprintf(t, sizeof t, "%lld", (long long)rat_whole(const_ideal(n, 1)));
+        fetch(e, EM_CB, t, T, r);
+        return 0;
     }
     op = n->op;
     w0 = *T;
@@ -2565,6 +2575,7 @@ struct cev {
     int p1222;                  /* EM_R_1222: the top / under a wanted Byte or Word towards zero, a
                                    constant with a point a Float under them */
     int p1223;                  /* EM_R_1223: a Mod of constants with a fraction exact */
+    int p1224;                  /* EM_R_1224: a larger constant expression with such a Mod a Quick */
     const struct em_tnode *root; /* the expression's root (EM_R_1222) */
     int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
                                    shift or Not */
@@ -2771,12 +2782,69 @@ static int constmodq(const struct em_tnode *n)
     return a.ok && b.ok && rat_sign(b) && (cpoint(n) || !rat_isint(a) || !rat_isint(b));
 }
 
+static int hasdiv(const struct em_tnode *n)
+{
+    switch (n->kind) {
+    case TN_BIN: return n->op == EM_DIV || hasdiv(n->l) || hasdiv(n->r);
+    case TN_NEG:
+    case TN_NOT: return hasdiv(n->l);
+    default: return 0;
+    }
+}
+
+/* EM_R_1224: an operation of constants without a point and without a /
+   whose value is whole (7 Mod 3, 2*3): in the variable form a constant of
+   its value beside the Quick */
+static int wholesub(const struct em_tnode *n)
+{
+    struct rat a;
+
+    if (n->kind != TN_BIN || !is_consttree(n) || cpoint(n) || hasdiv(n))
+        return 0;
+    a = const_ideal(n, 1);
+    return a.ok && rat_isint(a);
+}
+
+/* EM_R_1224: n is +, - or * (or a negation) over whole constants without
+   a point, wholesub operations of them and Mods of constmodq, one of them
+   at least (*mod) */
+static int constmodtree(const struct em_tnode *n, int *mod)
+{
+    switch (n->kind) {
+    case TN_CONST: return !cpoint(n);
+    case TN_NEG: return constmodtree(n->l, mod);
+    case TN_BIN:
+        if (constmodq(n))
+            return *mod = 1;
+        if (wholesub(n))
+            return 1;
+        return (n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL) && constmodtree(n->l, mod)
+               && constmodtree(n->r, mod);
+    default: return 0;
+    }
+}
+
+/* the constant subtree n is a Quick under a whole destination, rounded
+   down as its variable form (each Mod of constmodq one of Quick
+   variables), an expression of a Quick without a Float: EM_R_1223 a Mod of
+   constmodq, EM_R_1224 a larger expression of constmodtree */
+static int constquick(const struct cev *c, const struct em_tnode *n)
+{
+    int mod = 0;
+
+    if (constmodq(n))
+        return 1;
+    return c->p1224 && constmodtree(n, &mod) && mod;
+}
+
 /* a subtree of constants: one constant of its exact value, of the type the
    rule gives it (exprtree's fold; alone, or a fraction folded under a
    whole number, by today's fold in that type) */
 static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
 {
-    if (c->p1223 && W >= TB && W <= TL && constmodq(n))
+    int mq = c->p1223 && W >= TB && W <= TL && constquick(c, n);
+
+    if (mq)
         W = TQ;
     struct rat a = cideal(c, n);
     int cn = c->cand, T, tt;
@@ -2840,7 +2908,12 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
 
     T = tt;
     if (!bitwhole && (n->kind == TN_CONST || !pt || !a.ok || (!rat_isint(a) && tt != TQ && tt != TF))) {
-        if (flow(c->e, n, &T, r, NULL))
+        int k;
+
+        c->e->wholeconst = mq && c->p1224;
+        k = flow(c->e, n, &T, r, NULL);
+        c->e->wholeconst = 0;
+        if (k)
             return 1;
     } else {
         int neg = rat_sign(a) < 0;
@@ -3863,6 +3936,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
             c.p1221 = (rules & EM_R_1221) != 0;
             c.p1222 = (rules & EM_R_1222) != 0;
             c.p1223 = (rules & EM_R_1223) != 0;
+            c.p1224 = (rules & EM_R_1224) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

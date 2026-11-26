@@ -1,0 +1,2 @@
+# expr-constmod-larger.test.bas: a defect of the port's rule P+ (#1216, #1223), not the original's
+fixed = 1224

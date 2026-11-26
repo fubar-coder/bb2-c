@@ -788,6 +788,51 @@ TEST_CASE("exprmatrix model: a Mod of two constants is exact as with variables (
     CHECK(expr("-7 MOD 3", "").value(EM_PRINT, DEC) == "2");
 }
 
+TEST_CASE("exprmatrix model: such a Mod in a larger constant expression as with variables (#1224)",
+          "[exprmatrix][cand][decided]")
+{
+    // the user's decision of 2026-11-26: the rule of #1223 also in a larger
+    // constant expression, under every destination (each Mod one of Quick
+    // variables)
+    struct { const char *c, *v, *vars; } const k[] = {
+        { "-1-5.25 MOD 2", "-1-a MOD d", "a=5.25 d.q=2" },
+        { "-5.25 MOD -2+1", "a MOD d+1", "a=-5.25 d.q=-2" },
+        { "-5.25 MOD 2-1", "a MOD d-1", "a=-5.25 d.q=2" },
+        { "0-5 MOD 1.5", "0-a MOD d", "a=5 d.q=1.5" },
+        { "(-5.25 MOD 2)*-1", "(a MOD d)*-1", "a=-5.25 d.q=2" },
+        { "(5.25 MOD 2)-(7.5 MOD 2)", "(a MOD d)-(b MOD d)", "a=5.25 b.q=7.5 d.q=2" },
+        { "3-5.25 MOD 2", "3-a MOD d", "a=5.25 d.q=2" },
+        // a whole-number operation of constants beside such a Mod: a
+        // constant of its value, as in the variable form
+        { "(7 MOD 3)-(5.25 MOD 2)", "(7 MOD 3)-(a MOD d)", "a=5.25 d.q=2" },
+        { "1-(7 MOD 3)*(5.25 MOD 2)", "1-(7 MOD 3)*(a MOD d)", "a=5.25 d.q=2" },
+        // a further constant with a point: the variable form is a Float
+        { "-0.5-5.25 MOD 2", "-0.5-a MOD d", "a=5.25 d.q=2" },
+        { "(5.25 MOD 2)+0.5", "(a MOD d)+0.5", "a=5.25 d.q=2" },
+    };
+    for (const auto &t : k)
+        for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PRINT }) {
+            INFO(t.c, " ", em_ctx_name(ctx));
+            CHECK(expr(t.c, "").value(ctx, DEC) == expr(t.v, t.vars).value(ctx, DEC));
+        }
+    // a result beyond the Quick range under a Long: rounded down as the
+    // variable form's 48.16 value
+    CHECK(expr("-5.25 MOD 2-100000", "").value(EM_DL, DEC) == expr("a MOD d-100000", "a=-5.25 d.q=2").value(EM_DL, DEC));
+    CHECK(expr("-5.25 MOD 2-100000", "").value(EM_DL, DEC) == "-100000");
+    CHECK(expr("-1-5.25 MOD 2", "").value(EM_DL, DEC) == "-3");
+    CHECK(expr("-1-5.25 MOD 2", "").value(EM_DL, DEC & ~EM_R_1224) == "-2");
+    CHECK(expr("(7 MOD 3)-(5.25 MOD 2)", "").value(EM_DL, DEC) == "-1");
+    // a shift of constants beside it (a Float destination refuses the
+    // constant shift, the variable form does not: not #1224)
+    for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL }) {
+        INFO(em_ctx_name(ctx));
+        CHECK(expr("(1 LSL 2)-(5.25 MOD 2)*4", "").value(ctx, DEC)
+              == expr("(1 LSL 2)-(a MOD d)*4", "a=5.25 d.q=2").value(ctx, DEC));
+    }
+    CHECK(expr("(7 MOD 3)-(5.25 MOD 2)", "").value(EM_DL, DEC & ~EM_R_1224) == "0");
+    CHECK(expr("-1-5.25 MOD 2", "").value(EM_DQ, DEC) == "FFFDC000");
+}
+
 TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")
 {
     // 1-4: a / under a wanted Long whole at once (F3), the top-level / of

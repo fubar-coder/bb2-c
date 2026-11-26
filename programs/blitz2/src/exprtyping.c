@@ -323,6 +323,7 @@ struct ctx {
     int reachedf;               /* the expression is typed under Float as a reached format (part 7) */
     int fmtfloat;               /* the Float typed under is a reached format, no wanted type */
     int bittaker;               /* the operand typed is taken by a bit operator, shift or NOT */
+    int modtree;                /* const_flow of a const_quick expression (#1224) */
 };
 
 static unsigned tmax(unsigned a, unsigned b)
@@ -402,6 +403,29 @@ static unsigned const_fetch(int point, struct rq a, unsigned t)
 
 static unsigned handler_result(unsigned op, unsigned t);
 
+static int has_div(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_BIN: return n->op == ETO_DIV || has_div(n->l) || has_div(n->r);
+    case ETN_NEG:
+    case ETN_NOT: return has_div(n->l);
+    default: return 0;
+    }
+}
+
+/* an operation of constants without a point and without a / whose value
+   is whole (7 Mod 3, 2*3, 7 AND 3): in the variable form of a #1224
+   expression a constant of its value beside the Quick */
+static int const_wholesub(const struct exprtyping_node *n)
+{
+    struct rq a;
+
+    if (n->kind != ETN_BIN || has_point(n) || has_div(n))
+        return 0;
+    a = const_value(n);
+    return a.ok && rq_isint(a);
+}
+
 /* a constant subtree typed as today's flow types it under the type so
    far t (a constant alone, or one not beside an operand): each operation
    in the type so far after its right operand; a bit operator or shift in
@@ -410,6 +434,8 @@ static unsigned const_flow(struct ctx *c, const struct exprtyping_node *n, unsig
 {
     unsigned lt, rt;
 
+    if (c->modtree && const_wholesub(n))
+        return const_fetch(0, const_value(n), t);   /* #1224: as in the variable form, a constant */
     switch (n->kind) {
     case ETN_CONST: return const_fetch(n->point, const_value(n), t);
     case ETN_NEG:
@@ -494,6 +520,38 @@ static int const_modq(const struct exprtyping_node *n)
     return a.ok && b.ok && b.n && (has_point(n) || !rq_isint(a) || !rq_isint(b));
 }
 
+/* +, - or * (or a negation) over whole constants without a point, whole
+   operations of them (const_wholesub: 7 Mod 3) and Mods of const_modq, one
+   of them at least (*mod) */
+static int const_modtree(const struct exprtyping_node *n, int *mod)
+{
+    switch (n->kind) {
+    case ETN_CONST: return !n->point && n->den == 1;
+    case ETN_NEG: return const_modtree(n->l, mod);
+    case ETN_BIN:
+        if (const_modq(n))
+            return *mod = 1;
+        if (const_wholesub(n))
+            return 1;
+        return (n->op == ETO_ADD || n->op == ETO_SUB || n->op == ETO_MUL) && const_modtree(n->l, mod)
+               && const_modtree(n->r, mod);
+    default: return 0;
+    }
+}
+
+/* the constant subtree n is a Quick under a whole destination, rounded
+   down as its variable form (each Mod of const_modq one of Quick
+   variables), an expression of a Quick without a Float: a Mod of
+   const_modq (#1223) or a larger expression of const_modtree (#1224: the
+   user's decision of 2026-11-26, the rule of #1223 also in a larger
+   constant expression) */
+static int const_quick(const struct exprtyping_node *n)
+{
+    int mod = 0;
+
+    return const_modq(n) || (const_modtree(n, &mod) && mod);
+}
+
 /* the type of the constant subtree n beside an operand of type beside (0:
    none) under the wanted type want; role: BIT_* (an operand of AND, OR,
    EOR or NOT, a shift count, the shifted operand) */
@@ -503,8 +561,9 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
     struct rq a = const_value(n);
     int whole = rq_isint(a), point = has_point(n), bitwhole = 0;
     unsigned tt;
+    int modtree = is_wholewant(want) && const_quick(n);
 
-    if (is_wholewant(want) && const_modq(n))
+    if (modtree)
         want = ET_QUICK;
 
     if (!beside)
@@ -542,8 +601,12 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
         tt = !beside ? want : rq_isint(a) ? 0 : const_isfloat(c, a, want, beside) ? ET_FLOAT : ET_QUICK;
         bitwhole = 1;
     }
-    if (!bitwhole && (n->kind == ETN_CONST || !beside || !a.ok || (!whole && tt != ET_QUICK && tt != ET_FLOAT)))
-        return const_flow(c, n, tt);
+    if (!bitwhole && (n->kind == ETN_CONST || !beside || !a.ok || (!whole && tt != ET_QUICK && tt != ET_FLOAT))) {
+        c->modtree = modtree;
+        tt = const_flow(c, n, tt);
+        c->modtree = 0;
+        return tt;
+    }
     /* the folded value as a constant of its own: its magnitude, negated */
     if (a.n < 0)
         a = rq_make(-a.n, a.d, 1);

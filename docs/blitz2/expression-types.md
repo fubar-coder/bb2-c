@@ -154,8 +154,11 @@ found while the expression is read, as in the original):
   constants is the same exact value (#1223: `5.25 Mod 2` is 1.25,
   `x.w=5.25 Mod 2` 1 as with variables; under a whole destination it is a
   Quick rounded down as the variable form, an exception to the Float of a
-  constant with a point: `x.l=-5.25 Mod -2` -4); whole operands keep the
-  whole-number `Mod`;
+  constant with a point: `x.l=-5.25 Mod -2` -4), also in a larger
+  constant expression of `+`, `-` and `*` over whole constants and such
+  `Mod`s (#1224: `x.l=-1-5.25 Mod 2` is -3 as `x.l=-1-q Mod 2`,
+  `x.l=(7 Mod 3)-(5.25 Mod 2)` -1; a further constant with a point makes
+  both forms a Float, `x.l=-0.5-5.25 Mod 2` -1); whole operands keep the whole-number `Mod`;
 * a constant with a point is fractional as an operand, never a whole
   number: a Float under a wanted Byte, Word or Long (#1222: `x.w=-1.5+z`
   is -1, as `r.l=-1.5+z`), else a Quick where a Quick is in its
