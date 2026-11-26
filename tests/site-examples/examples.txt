@@ -6,6 +6,20 @@ page-compared-with-original-fixed-bugs-compiler-1 run content/docs/compared-with
 page-compared-with-original-fixed-bugs-compiler-2 run content/docs/compared-with-original/fixed-bugs/compiler.md#2
 page-compared-with-original-fixed-bugs-compiler-3 run content/docs/compared-with-original/fixed-bugs/compiler.md#3
 page-compared-with-original-fixed-bugs-compiler-4 run content/docs/compared-with-original/fixed-bugs/compiler.md#4
+page-compared-with-original-expression-types-1 run content/docs/compared-with-original/expression-types.md#1
+page-compared-with-original-expression-types-2 run content/docs/compared-with-original/expression-types.md#2
+page-compared-with-original-expression-types-3 run content/docs/compared-with-original/expression-types.md#3
+page-compared-with-original-expression-types-4 run content/docs/compared-with-original/expression-types.md#4
+page-compared-with-original-expression-types-5 run content/docs/compared-with-original/expression-types.md#5
+page-compared-with-original-expression-types-6 run content/docs/compared-with-original/expression-types.md#6
+page-compared-with-original-expression-types-7 run content/docs/compared-with-original/expression-types.md#7
+page-compared-with-original-expression-types-8 run content/docs/compared-with-original/expression-types.md#8
+page-compared-with-original-expression-types-9 run content/docs/compared-with-original/expression-types.md#9
+page-compared-with-original-expression-types-10 run content/docs/compared-with-original/expression-types.md#10
+page-compared-with-original-expression-types-11 run content/docs/compared-with-original/expression-types.md#11
+page-compared-with-original-expression-types-12 run content/docs/compared-with-original/expression-types.md#12
+page-compared-with-original-expression-types-13 run content/docs/compared-with-original/expression-types.md#13
+page-compared-with-original-expression-types-14 run content/docs/compared-with-original/expression-types.md#14
 cmd-acidlibs-displaylib-1 compile data/cmddesc/acidlibs/displaylib.yaml#1 needs hardware or a device the test machine does not have (a display)
 cmd-acidlibs-gtlib-1 run data/cmddesc/acidlibs/gtlib.yaml#1
 cmd-acidlibs-gtlib-2 compile data/cmddesc/acidlibs/gtlib.yaml#2 opens a screen or a window
