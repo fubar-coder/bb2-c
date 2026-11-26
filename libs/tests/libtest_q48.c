@@ -1,7 +1,7 @@
 /*
  * libtest_q48 - the 48.16 routines of compilerlib ($D603-$D60E, OpenSpec
  * change expr-tree-5-operand-typing, design decision 9) and the routines
- * of its speed review (from $D60F: q16mod) against
+ * of its speed review (from $D60F: q16mod, q48mull) against
  * programs/blitz2/src/exprarith.c, compiled here for the m68k: every
  * result bit for bit as exprarith_q48 and the casts give it, and the
  * registers the contract keeps (libs/compilerlib/compilerlib.c, "Registers
@@ -30,10 +30,10 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n);
 #define QMAXFAIL 20
 #define QROUNDS 2500
 
-enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_N };
+enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_Q48MULL, Q_N };
 static const char *const qname[Q_N] = {
     "q48add", "q48sub", "q48mul", "q48div", "q48divq", "q48divw", "q48divb", "q48mod",
-    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod"
+    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod", "q48mull"
 };
 
 static APTR qcode[Q_N];
@@ -114,7 +114,7 @@ static void fail(int q, int64_t a, int64_t b, uint64_t got, uint64_t want, const
    for the routines with two operands */
 static void kept(int q, int64_t a, int64_t b, const struct regs *in, const struct regs *out)
 {
-    int k, first = q <= Q_MOD ? 4 : 2;
+    int k, first = q <= Q_MOD || q == Q_Q48MULL ? 4 : 2;
 
     for (k = first; k < 8; k++)
         if (in->d[k] != out->d[k])
@@ -206,8 +206,9 @@ static void casts(int64_t v)
 }
 
 /* the routines of the speed review with two 16.16 operands in d0 and d1
-   (the contract of an operator: d0 the result, d1 changed): the low 32
-   bits of a and b; q16mod not with b 0 (its caller's trap) */
+   (the contract of an operator: d0 the result, d1 changed), q48mull with
+   a Long in d0 and a Quick in d2 (the 48.16 routines' contract): the low
+   32 bits of a and b; q16mod not with b 0 (its caller's trap) */
 static void two(int64_t a, int64_t b)
 {
     struct regs r = mark(), in;
@@ -215,6 +216,16 @@ static void two(int64_t a, int64_t b)
     unsigned f = 0;
     uint64_t got, want;
 
+    r.d[0] = (ULONG)x;
+    r.d[2] = (ULONG)y;
+    in = r;
+    callregs(qcode[Q_Q48MULL], &r, 0, 0);
+    kept(Q_Q48MULL, x, y, &in, &r);
+    got = (uint64_t)r.d[1] << 32 | r.d[0];
+    want = (uint64_t)exprarith_q48(ETO_MUL, exprarith_whole_q48(x), exprarith_q16_q48(y), 0, &f);
+    if (got != want)
+        fail(Q_Q48MULL, x, y, got, want, "value");
+    r = mark();
     if (!y)
         return;
     r.d[0] = (ULONG)x;

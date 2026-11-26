@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 #include <snitch/snitch.hpp>
 extern "C" {
@@ -1147,4 +1148,82 @@ TEST_CASE("exprarith: q16mod equals the exact 16.16 Mod", "[exprarith]")
             seen = !q16mod_ok(a, b, true);
     }
     CHECK(seen);
+}
+
+// ------------------------------- a Long times a Quick in 48.16 (speed review)
+// compilerlib's q48mull step by step: the magnitudes, two MULU when a
+// factor is below $10000 (swapped to the second place), else four (the
+// cross products' sum stays below 2^32: a carry fails), the sign in 64 bits; against
+// q48mul's product of the Long widened (exprarith_q48).
+
+namespace {
+
+// plant: the carry of the low long dropped (the planted error)
+int64_t fast_q48mull(int32_t a, int32_t b, bool plant = false)
+{
+    uint32_t x = mag32(a), y = mag32(b);
+    uint32_t hi, lo;
+
+    if ((y >> 16) && !(x >> 16))
+        std::swap(x, y);                        // exg: y below $10000
+    if (!(y >> 16)) {
+        uint32_t t = (x >> 16) * y, l0 = (x & 0xffff) * y;
+        lo = l0 + (t << 16);
+        hi = (t >> 16) + (lo < l0);             // addx
+    } else {
+        uint32_t c1 = (x >> 16) * (y & 0xffff), h = (x >> 16) * (y >> 16);
+        uint32_t c2 = (x & 0xffff) * (y >> 16), l0 = (x & 0xffff) * (y & 0xffff);
+        uint32_t c = c1 + c2;
+        if (c < c1)
+            return INT64_MIN;                   // no carry in the code
+        hi = h + (c >> 16);
+        lo = l0 + (c << 16);
+        hi += lo < l0 && !plant;                // addx
+    }
+    uint64_t v = ((uint64_t)hi << 32) | lo;
+    if ((int32_t)((uint32_t)a ^ (uint32_t)b) < 0)
+        v = 0 - v;
+    return (int64_t)v;
+}
+
+// l a whole number, q a 16.16 value, in both orders
+bool q48mull_ok(int32_t l, int32_t q, bool plant = false)
+{
+    int64_t want = q48(ETO_MUL, exprarith_whole_q48(l), exprarith_q16_q48(q));
+
+    return fast_q48mull(l, q, plant) == want && fast_q48mull(q, l, plant) == want;
+}
+
+} // namespace
+
+TEST_CASE("exprarith: q48mull equals q48mul of a Long and a Quick", "[exprarith]")
+{
+    uint64_t seed = 0x2b7ull;
+    std::vector<int32_t> ls = { 0, 1, -1, 2, 100, -100, 0x7fff, -0x8000, 0xffff, -0xffff, 0x10000, -0x10000,
+                                100000, -100000, 0x7fffffff, -0x7fffffff, (int32_t)0x80000000u, 0x12345678 };
+    for (int i = 0; i < 30; i++)
+        ls.push_back((int32_t)rnd32(seed) >> (rnd32(seed) % 32));
+    bool ok = true;
+    int32_t badl = 0, badq = 0;
+    for (int32_t l : ls) {
+        ok = each_quick(seed, [&](int32_t q) {
+            if (!q48mull_ok(l, q) || !q48mull_ok(l, -q)) {
+                badl = l;
+                badq = q;
+                return false;
+            }
+            return true;
+        });
+        if (!ok)
+            break;
+    }
+    INFO("l ", badl, " q ", badq);
+    CHECK(ok);
+    for (int i = 0; i < 2000000 && ok; i++) {
+        int32_t l = (int32_t)rnd32(seed) >> (rnd32(seed) % 32), q = (int32_t)rnd32(seed) >> (rnd32(seed) % 32);
+        ok = q48mull_ok(l, q);
+    }
+    CHECK(ok);
+    // a planted error is seen: the low long's carry dropped
+    CHECK(!q48mull_ok(0x7fffffff, 0x7fffffff, true));
 }

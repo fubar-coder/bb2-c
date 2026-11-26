@@ -765,4 +765,41 @@ End Function
   !CheckEq{r,32768,"qm_pq4"}
   r=pq6{q,p,q,p,q,qm Mod qbh}
   !CheckEq{r,32768,"qm_pq6"}
+  ; a Long times a Quick in 48.16 not rounded: compilerlib's q48mull
+  r=0 : If l*q>p Then r=1
+  !CheckEq{r,1,"lq_if_l_mul_q"}
+  r=0 : If lx*q>p Then r=1
+  !CheckEq{r,1,"lq_if_lx_mul_q"}
+  r=0 : If ln*qn>p Then r=1
+  !CheckEq{r,1,"lq_if_ln_mul_qn"}
+  r=0 : If l*qn<p Then r=1
+  !CheckEq{r,1,"lq_if_l_mul_qn"}
+  r=0 : If lx*qm<p Then r=1
+  !CheckEq{r,1,"lq_if_lx_mul_qm"}
+  r=0 : If lb*qm<-1000000 Then r=1
+  !CheckEq{r,1,"lq_if_lb_mul_qm"}
+  r=0 : If lmn*qm>1000000 Then r=1
+  !CheckEq{r,1,"lq_if_lmn_mul_qm"}
+  r=0 : If qt*lx>1.5 Then r=1
+  !CheckEq{r,1,"lq_if_qt_mul_lx"}
+  r=lx*q+p
+  !CheckEq{r,250001,"lq_r_lx_mul_q_add_p"}
+  r=ln*qn-p
+  !CheckEq{r,174998,"lq_r_ln_mul_qn_sub_p"}
+  r=lb*qm+p
+  !CheckEq{r,32769,"lq_r_lb_mul_qm_add_p"}
+  r=(lx*qn)/qw
+  !CheckEq{r,-43750,"lq_r_lx_mul_qn_div_qw"}
+  r=l*q*p
+  !CheckEq{r,312,"lq_r_l_mul_q_mul_p"}
+  r=w*2.5*p
+  !CheckEq{r,9,"lq_r_w_mul_c_mul_p"}
+  x=lx*q+p
+  !CheckEq{Peek.l(&x),-795787264,"lq_x_lx_mul_q_add_p"}
+  x=ln*qt+p
+  !CheckEq{Peek.l(&x),-18080,"lq_x_ln_mul_qt_add_p"}
+  r=pl3{l,l,lx*q+p,l,l,l}
+  !CheckEq{r,250001,"lq_pl3"}
+  r=pl5{l,l,l,l,ln*qn-p,l}
+  !CheckEq{r,174998,"lq_pl5"}
 !EndTestCase

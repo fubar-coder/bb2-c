@@ -472,7 +472,9 @@
 # -> 576.8, xlxmodqw 660.1 -> 438.8. A Quick Mod with a fraction by
 # compilerlib's q16mod instead of q48mod: bmath.qmod 1520.7 -> 638.0,
 # bq48.xqmodc 1539.0 -> 562.6, the new loops xqmodh 1114.5 -> 594.5,
-# xqmodch 1095.0 -> 560.5.
+# xqmodch 1095.0 -> 560.5. A Long times a Quick in 48.16 (not rounded)
+# by compilerlib's q48mull: bq48.iflmulq 592.8 -> 464.5, the new loops
+# iflxmulq 1013.2 -> 592.5, lmulqaddp 556.8 -> 427.0.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -683,7 +685,7 @@ bq48.xladdqp                   96          -  x=l+q+p (the same under a Quick)
 bq48.qmulpaddl                667          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
 bq48.qmulwaddp                314          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16; q*w inline)
 bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 comparison)
-bq48.iflmulq                  602          -  If l*q>p Then c=1 (a 48.16 product compared)
+bq48.iflmulq                  472          -  If l*q>p Then c=1 (a 48.16 product compared: compilerlib q48mull, l not widened, two MULU)
 bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
 bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
 bq48.xqmodc                   572          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q16mod)
@@ -700,6 +702,8 @@ bq48.xlqdivqw                 586          -  x=(l+q)/qw (a 48.16 dividend by a 
 bq48.xlxmodqw                 446          -  x=lx Mod qw (lx=100000: two DIVU of the Long)
 bq48.xqmodh                   604          -  x=q Mod h (h=0.75, a Quick below 1: compilerlib q16mod, two DIVU)
 bq48.xqmodch                  569          -  x=q Mod 0.75 (a constant below 1: compilerlib q16mod)
+bq48.iflxmulq                 602          -  If lx*q>p Then c=1 (lx=100000: q48mull, four MULU)
+bq48.lmulqaddp                434          -  r=l*q+p (an exact Long x Quick product by q48mull, then a 48.16 sum under a Long)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)

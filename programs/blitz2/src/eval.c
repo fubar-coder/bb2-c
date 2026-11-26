@@ -5345,6 +5345,7 @@ static BOOL p5prep;
 #define q48divb 0xd609
 #define q48mod 0xd60a
 #define q16mod 0xd60f                /* the exact Mod of two 16.16 values (the speed review) */
+#define q48mull 0xd610               /* a Long times a Quick, exact, not widened (the speed review) */
 
 static void p5reset(void)
 {
@@ -6938,6 +6939,12 @@ static BOOL p5modfrac(const struct p5node *R)
     return p5folded(&R->t) && !p5modconst(R, &m);
 }
 
+/* a whole number in one register (p5bin's type of an operand) */
+static BOOL p5whole1(UWORD t)
+{
+    return t == T_LONG || t == T_WORD || t == T_BYTE;
+}
+
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
@@ -6980,6 +6987,18 @@ static void p5bin(struct p5node *p, UWORD r)
                 p5wholediv(tok, lt, longa, ldiv);
             else
                 p5wholemod(tok, lt, longa);
+        } else if (op == ETO_MUL && !lw && !rw && ((p5whole1(lt) && rt == T_QUICK) || (lt == T_QUICK && p5whole1(rt)))) {
+            /* a whole number times a 16.16 value (the speed review,
+               candidate #8): compilerlib's q48mull on the two 32-bit
+               values, not widened, the exact product q48mul gives */
+            p5nowide = TRUE;
+            p5callin(p5prep ? q48mull : 0, r, lt, lw, rt, rw, FALSE, FALSE);
+            if (lt != T_QUICK && lt != T_LONG)
+                p5w(0x48c0);                /* ext.l d0: a Word or Byte */
+            if (rt != T_QUICK && rt != T_LONG)
+                p5w(0x48c2);                /* ext.l d2 */
+            if (!p5prep)
+                tokejsr(q48mull);
         } else {
             p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
             if (ldiv && !p5prep)

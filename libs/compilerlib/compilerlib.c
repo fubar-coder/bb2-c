@@ -65,6 +65,10 @@
  *                                         (exprarith_q16: a % b, plus b
  *                                         when negative); b not 0; d0/d1
  *                                         in, d0 out (longdiv's contract)
+ *   $D610 q48mull   a * b of a Long and   exact (q48mul's value); a in
+ *                   a Quick (either       d0, b in d2, the product in
+ *                   order)                d0/d1, d2 and d3 changed (the
+ *                                         48.16 routines' contract)
  */
 #include "blitzlib.h"
 
@@ -72,11 +76,11 @@ void mixmult(void), qqmult(void), lqdivide(void);
 void q48add(void), q48sub(void), q48mul(void);
 void q48div(void), q48divq(void), q48divw(void), q48divb(void), q48mod(void);
 void l2q48(void), q2q48(void), q48floor(void), q48trunc(void);
-void q16mod(void);
+void q16mod(void), q48mull(void);
 void lqdivchk(void), q48divchk(void);
 
-/* !syslibheader{64030,$d600,$d610,0,0,0,errors,$4000} */
-BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd610, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
+/* !syslibheader{64030,$d600,$d611,0,0,0,errors,$4000} */
+BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd611, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
 BLITZ_NULLSUB(mixmult, 0, 0);           /* $D600 mixmult */
 BLITZ_NULLSUB(qqmult, 0, 0);            /* $D601 qqmult */
 BLITZ_NULLSUB(lqdivide, lqdivchk, 0);   /* $D602 lqdiv */
@@ -93,6 +97,7 @@ BLITZ_NULLSUB(q2q48, 0, 0);             /* $D60C q2q48 */
 BLITZ_NULLSUB(q48floor, 0, 0);          /* $D60D q48floor */
 BLITZ_NULLSUB(q48trunc, 0, 0);          /* $D60E q48trunc */
 BLITZ_NULLSUB(q16mod, 0, 0);            /* $D60F q16mod */
+BLITZ_NULLSUB(q48mull, 0, 0);           /* $D610 q48mull */
 BLITZ_LIBFIN();
 
 /**
@@ -963,6 +968,85 @@ BLITZ_ASM_BLOCK(q16mod,
         "6: move.l  d3,d0\n"
         "   movem.l (sp)+,d2-d5\n"
         "   rts");
+
+/**
+ * @brief q48mull ($D610): d1:d0 = d0 * d2, a Long times a Quick (16.16)
+ * in either order as 48.16: the signed 64-bit product of the two 32-bit
+ * values, which is q48mul's value for the Long widened (l << 16 times q,
+ * shifted right by 16: nothing is cut; exprarith_q48 ETO_MUL).
+ *
+ * The magnitudes x and y: a factor below $10000 (after the swap: y) gives
+ * x * y with two MULU, else four (x1 y1 << 32, the cross products << 16:
+ * with magnitudes up to 2^31 their sum fits 32 bits, x0 y0); the sign
+ * applied in 64 bits.
+ *
+ * @arg d0 a
+ * @arg d2 b
+ * @par Result
+ * d0/d1: the product (low, high); d2, d3 changed
+ */
+BLITZ_ASM_BLOCK(q48mull,
+        "   .globl  _q48mull\n"
+        "_q48mull:\n"
+        "   move.l  d4,-(sp)\n"
+        "   move.l  d0,d4\n"
+        "   eor.l   d2,d4\n"                /* bit 31: the sign of the product */
+        "   tst.l   d0\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d0\n"
+        "1: tst.l   d2\n"
+        "   bpl.s   2f\n"
+        "   neg.l   d2\n"
+        "2: move.l  d2,d3\n"
+        "   swap    d3\n"
+        "   tst.w   d3\n"
+        "   beq.s   .Llword\n"              /* y below $10000 */
+        "   move.l  d0,d1\n"
+        "   swap    d1\n"
+        "   tst.w   d1\n"
+        "   bne.s   .Llfour\n"
+        "   exg     d0,d2\n"                /* x below $10000: the other way */
+        /* d1:d0 = d0 * d2.w */
+        ".Llword:\n"
+        "   move.l  d0,d1\n"
+        "   swap    d1\n"
+        "   mulu.w  d2,d1\n"                /* x1 * y */
+        "   mulu.w  d2,d0\n"                /* x0 * y */
+        "   move.l  d1,d3\n"
+        "   swap    d3\n"
+        "   clr.w   d3\n"                   /* << 16, its low part */
+        "   clr.w   d1\n"
+        "   swap    d1\n"                   /* its high part */
+        "   add.l   d3,d0\n"
+        "   moveq   #0,d3\n"
+        "   addx.l  d3,d1\n"
+        ".Llsign:\n"
+        "   tst.l   d4\n"
+        "   bpl.s   3f\n"
+        "   neg.l   d0\n"
+        "   negx.l  d1\n"
+        "3: move.l  (sp)+,d4\n"
+        "   rts\n"
+        /* d1.w = x1, d3.w = y1, both not 0 */
+        ".Llfour:\n"
+        "   move.l  d5,-(sp)\n"
+        "   move.w  d1,d5\n"
+        "   mulu.w  d2,d5\n"                /* x1 * y0 */
+        "   mulu.w  d3,d1\n"                /* x1 * y1 */
+        "   mulu.w  d0,d3\n"                /* x0 * y1 */
+        "   mulu.w  d2,d0\n"                /* x0 * y0 */
+        "   add.l   d5,d3\n"                /* the cross products: no carry, each below 2^31 */
+        "   move.l  d3,d2\n"
+        "   clr.w   d2\n"
+        "   swap    d2\n"
+        "   add.l   d2,d1\n"                /* + cross >> 16 */
+        "   swap    d3\n"
+        "   clr.w   d3\n"
+        "   add.l   d3,d0\n"                /* + cross << 16 */
+        "   moveq   #0,d3\n"
+        "   addx.l  d3,d1\n"
+        "   move.l  (sp)+,d5\n"
+        "   bra.s   .Llsign");
 
 /* ------------------------------------------- error checks (debugger only) */
 
