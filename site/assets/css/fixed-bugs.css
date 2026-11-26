@@ -1,6 +1,7 @@
 /* The level badges and the links to the command reference on the pages of
    fixed library bugs (shortcodes fixed-bugs-library and
-   fixed-bugs-libraries, the render hook of their links). The colours come
+   fixed-bugs-libraries, the render hook of their links), and the level
+   badges of the command reference (partial cmdref/fixes.html). The colours come
    from the theme's badge classes on each badge. */
 .fixed-bug-level {
   display: inline-block;
@@ -24,4 +25,13 @@
 }
 .fixed-bugs-libraries td:nth-child(3) {
   line-height: 1.9;
+}
+/* A table whose cells hold long code examples (a div around a Markdown
+   table): the code may break anywhere, so the table fits a narrow
+   screen. */
+.content .fixed-bugs-breakcode > table:first-child {
+  margin-top: calc(var(--hx-spacing) * 6);
+}
+.fixed-bugs-breakcode td code {
+  overflow-wrap: anywhere;
 }

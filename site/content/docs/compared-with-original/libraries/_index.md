@@ -361,27 +361,21 @@ the functions it concerns, linked to the command reference.
 
 #### Functions that left the place wrong in other ways {#string-function-wrong-place}
 
-These functions left the place of the next part somewhere else. Each
-point says what the original did; in the port the rest of the
-expression follows the result.
+These functions left the place of the next part somewhere else. The
+table says what the original did, with the issue and the functions it
+concerns; in the port the rest of the expression follows the result.
 
-* `Replace$` of [stringfunclib]({{< relref "/docs/compared-with-original/libraries/commands/stringfunclib" >}}), with an empty
-  search string, left it behind its arguments: `Replace$("ab","","c")+"x"`
-  gave `ab` and a 0 byte instead of `abx` ([#424](https://github.com/fubar-coder/bb2-c/issues/424)).
-* `GTGetAttrs` and `GTSetAttrs` of [gtlib]({{< relref "/docs/compared-with-original/libraries/commands/gtlib" >}}), used
-  as functions, left it on a tag list inside the library, and the rest of
-  the expression was written over that list and the memory behind it
-  ([#328](https://github.com/fubar-coder/bb2-c/issues/328)).
-* After `RTEZSaveFile` of [neilsreqtoolslib]({{< relref "/docs/compared-with-original/libraries/userlibs/neilsreqtoolslib" >}}), the
-  text that followed was written over the end of the chosen path, or
-  behind bytes of its arguments ([#465](https://github.com/fubar-coder/bb2-c/issues/465)).
-* `EZRequest` and `EZRequestArgs` of [rimisclib]({{< relref "/docs/compared-with-original/libraries/userlibs/rimisclib" >}}),
-  used as functions, left it at address 0 or on their argument list, so a
-  line such as `a$="Answer "+Str$(EZRequest("T","Body","Yes|No"))` came
-  out wrong or crashed the program ([#1027](https://github.com/fubar-coder/bb2-c/issues/1027)).
-* `ChangeWBSprite` of [riwbspritelib]({{< relref "/docs/compared-with-original/libraries/userlibs/riwbspritelib" >}}), used as a
-  function, left it on a tag list inside the library, and the rest of the
-  expression was written over that list ([#1028](https://github.com/fubar-coder/bb2-c/issues/1028)).
+<div class="fixed-bugs-breakcode">
+
+| Library | What was wrong |
+|---|---|
+| [stringfunclib]({{< relref "/docs/compared-with-original/libraries/commands/stringfunclib" >}}) | `Replace$` with an empty search string left it behind its arguments: `Replace$("ab","","c")+"x"` gave `ab` and a 0 byte instead of `abx`. [#424](https://github.com/fubar-coder/bb2-c/issues/424) |
+| [gtlib]({{< relref "/docs/compared-with-original/libraries/commands/gtlib" >}}) | `GTGetAttrs` and `GTSetAttrs`, used as functions, left it on a tag list inside the library; the rest of the expression overwrote that list and the memory behind it. [#328](https://github.com/fubar-coder/bb2-c/issues/328) |
+| [neilsreqtoolslib]({{< relref "/docs/compared-with-original/libraries/userlibs/neilsreqtoolslib" >}}) | After `RTEZSaveFile`, the text that followed overwrote the end of the chosen path, or came behind bytes of its arguments. [#465](https://github.com/fubar-coder/bb2-c/issues/465) |
+| [rimisclib]({{< relref "/docs/compared-with-original/libraries/userlibs/rimisclib" >}}) | `EZRequest` and `EZRequestArgs`, used as functions, left it at address 0 or on their argument list, so `a$="Answer "+Str$(EZRequest("T","Body","Yes\|No"))` came out wrong or crashed the program. [#1027](https://github.com/fubar-coder/bb2-c/issues/1027) |
+| [riwbspritelib]({{< relref "/docs/compared-with-original/libraries/userlibs/riwbspritelib" >}}) | `ChangeWBSprite`, used as a function, left it on a tag list inside the library; the rest of the expression overwrote that list. [#1028](https://github.com/fubar-coder/bb2-c/issues/1028) |
+
+</div>
 
 `Translate$` of speaklib also counted the 0 byte as part of its result
 ([`Translate$` added a 0 byte to its result]({{< relref "/docs/compared-with-original/libraries/commands/speaklib#translate-length" >}})).

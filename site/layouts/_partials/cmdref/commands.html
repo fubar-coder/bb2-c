@@ -14,8 +14,11 @@
 {{- $descs := .descs | default dict -}}
 {{- $fixes := .fixes | default slice -}}
 {{- $md := "" -}}
+{{- with $fixes -}}
+  {{- $md = partial "cmdref/css.html" . -}}
+{{- end -}}
 {{- with .intro -}}
-  {{- $md = printf "%s\n\n" . -}}
+  {{- $md = printf "%s%s\n\n" $md . -}}
 {{- end -}}
 {{- $facts := printf "Library number %v" $lib.number -}}
 {{- with $lib.object -}}

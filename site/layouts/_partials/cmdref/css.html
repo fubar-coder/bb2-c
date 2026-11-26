@@ -1,0 +1,7 @@
+{{- /*
+  The Markdown that loads the stylesheet of the level badges (partial
+  fixed-bugs/css.html) on a page of the command reference whose lists of
+  fixed original bugs show them (partial cmdref/fixes.html).
+  Context: anything. Returns a string: an HTML block and a blank line.
+*/ -}}
+{{- return printf "%s\n\n" (strings.TrimSpace (partial "fixed-bugs/css.html" .)) -}}
