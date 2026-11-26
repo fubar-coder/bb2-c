@@ -44,6 +44,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in riapplib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riapplib-fixes" >}}).
+  [Fixes in riapplib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riapplib#riapplib-fixes" >}}).
 
   *Based on the RI App Library guide by Reflective Images (Red When Excited).*

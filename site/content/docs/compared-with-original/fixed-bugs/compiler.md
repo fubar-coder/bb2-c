@@ -727,7 +727,7 @@ maximum it gives the right number
 Nothing. `LoadShapes`, `DecodeShapes` and `LoadSprites`, which load a
 whole range of objects up to the maximum, had the same fault in their
 libraries; they load the whole range with such a maximum as well
-([Shapes and sprites]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#shapes-and-sprites" >}})).
+([Shapes and sprites]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/shapeslib#shapes-and-sprites" >}})).
 
 Issues: [Objects past 32 KB of their table were addressed before the table (#939)](https://github.com/fubar-coder/bb2-c/issues/939),
 [Used Object returned a wrong number from 64 KB of its table on (#998)](https://github.com/fubar-coder/bb2-c/issues/998).

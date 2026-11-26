@@ -94,7 +94,7 @@ Some details of the operators:
   absolute value: `(-2)^0.5` is 1.414213, as `2^0.5`. The original
   dropped the sign also for an odd exponent, and so does AB3 mode, which
   uses AmiBlitz3's libraries
-  ([Fixed bugs in the libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#power-negative-base" >}})).
+  ([Fixed bugs in the libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/mathtranslib#power-negative-base" >}})).
 * The shifts and the bit operators work on whole numbers and Quicks; a
   Float operand is the compile error "Illegal Operator for Type". The
   same holds for `&`, `|`, `AND`, `OR`, `EOR` and `NOT`. `LSR` fills with

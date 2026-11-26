@@ -1,0 +1,14 @@
+{{- /*
+  The rows of data/fixoverview.yaml by issue number (a string), and the
+  level names by level. Context: anything (called with partialCached).
+  Returns dict "rows" (issue -> row) and "levels" (level -> dict name, text).
+*/ -}}
+{{- $rows := dict -}}
+{{- range site.Data.fixoverview.rows -}}
+  {{- $rows = merge $rows (dict (string .issue) .) -}}
+{{- end -}}
+{{- $levels := dict -}}
+{{- range site.Data.fixoverview.levels -}}
+  {{- $levels = merge $levels (dict (string .level) .) -}}
+{{- end -}}
+{{- return dict "rows" $rows "levels" $levels -}}

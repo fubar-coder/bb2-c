@@ -46,6 +46,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in riarexxlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riarexxlib-fixes" >}}).
+  [Fixes in riarexxlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riarexxlib#riarexxlib-fixes" >}}).
 
   *Based on the RI ARexx Lib guide by Red When Excited.*

@@ -33,25 +33,25 @@ ordinary program meets most easily. Check your own programs for them:
 * [`=<` meant "not equal"]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#less-or-equal" >}}):
   `If a=<b` was true whenever `a` and `b` differed. It is less-or-equal,
   as `<=`; a program that used `=<` for "not equal" has to write `<>`.
-* [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rendertobitmap-dither" >}}):
+* [`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/polylib#rendertobitmap-dither" >}}):
   `RenderToBitmap 0,1` made `RenderPoly` draw on bitmap 1. It draws on
   bitmap 0, with bitmap 1 as the pattern; a program that swapped the two
   numbers has to put them in this order. No known example program, demo
   or game uses the command this way.
-* [`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#box-origin" >}})
+* [`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/2dlib#box-origin" >}})
   after `BitMapOrigin`. It adds it once, as `Line` and `Boxf` do; a program
   that gave `Box` reduced coordinates has to give the same ones as for
   `Line`. No known example program, demo or game uses the command this
   way.
-* [`CustomSprites` took its offset 16 times too large]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customsprites-ccoffset" >}}):
+* [`CustomSprites` took its offset 16 times too large]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/displaylib#customsprites-ccoffset" >}}):
   a `CCOffset` of 1 meant 16 custom copper instructions. It counts single
   instructions, as for `CustomColors`; a program that gives an offset
   other than 0 has to give it in instructions, 16 times the old value for
   the old place.
-* [`CustomColors` with a `thru256flag` of 0 acted as 1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#customcolors-thru256flag" >}}).
+* [`CustomColors` with a `thru256flag` of 0 acted as 1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/displaylib#customcolors-thru256flag" >}}).
   A flag of 0 is the same as leaving it out; a program that gives 0 and
   needs the flag set has to give 1.
-* [`LoadShape` refuses pictures too large to blit]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#loadshape-blit-size" >}}):
+* [`LoadShape` refuses pictures too large to blit]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/shapeslib#loadshape-blit-size" >}}):
   a picture taller than 1023 rows or wider than 992 pixels is the runtime
   error "Can't Read/Write Shapes File", also without runtime error
   checking. A program that loads such a picture as a shape stops there;
@@ -95,48 +95,48 @@ In the compiler ([Compiling]({{< relref "/docs/compared-with-original/fixed-bugs
 
 In the libraries ([Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries" >}})):
 
-* [`Date$` showed 1 January after a leap year as 32 December]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#date-after-leap-year" >}}):
+* [`Date$` showed 1 January after a leap year as 32 December]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/datelib#date-after-leap-year" >}}):
   1 January 2025 came out as `32/12/2024`.
-* [Quicks were printed with a stray point or one too low]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#quick-print" >}}):
+* [Quicks were printed with a stray point or one too low]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/printlib#quick-print" >}}):
   2.99998 came out as `2.`.
-* [`Format` rounded wrongly and lost the minus sign]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#format" >}}):
+* [`Format` rounded wrongly and lost the minus sign]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/printlib#format" >}}):
   -7 with `"###"` came out as `7`.
-* [Umlauts were not drawn]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#umlauts" >}})
+* [Umlauts were not drawn]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/fontlib#umlauts" >}})
   by the text commands.
 * [Text after a string function lost its last character]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#text-after-string-function" >}}):
   `FileRequest$(...)+".bak"` or `ProgDir$+"/data"` held a 0 byte.
-* [`Loc` and `Lof` were one too high after `Eof`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#loc-lof-after-eof" >}}):
+* [`Loc` and `Lof` were one too high after `Eof`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/fileiolib#loc-lof-after-eof" >}}):
   a file of 3 bytes had the length 4.
-* [A GadTools gadget took over the values of the one before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#gadtools-values" >}}).
-* [Closing a window lost the events of the others]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#closewindow-events" >}}).
-* [`WSize` and `WMove` hung]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#wsize-wmove" >}})
+* [A GadTools gadget took over the values of the one before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/gtlib#gadtools-values" >}}).
+* [Closing a window lost the events of the others]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/windowslib#closewindow-events" >}}).
+* [`WSize` and `WMove` hung]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/windowslib#wsize-wmove" >}})
   at the size limits of a window or the edge of the screen.
-* [Window titles were never freed]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#window-titles" >}}).
-* [Decoded palettes were black on Kickstart before 3.0]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#palette-kickstart-13" >}}).
-* [A missing AmigaOS library hung the program at its start]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#missing-os-library" >}}).
-* [`NextArg$` did not end a quoted word after `""`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#nextarg-doubled-quote" >}}):
+* [Window titles were never freed]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/windowslib#window-titles" >}}).
+* [Decoded palettes were black on Kickstart before 3.0]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/palettelib#palette-kickstart-13" >}}).
+* [A missing AmigaOS library hung the program at its start]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/amigaos#missing-os-library" >}}).
+* [`NextArg$` did not end a quoted word after `""`]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rimisclib#nextarg-doubled-quote" >}}):
   `"a""b" c` gave the one word `a"b c`.
-* [The tracker library did not play in CIA mode]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#tracker-cia-mode" >}}):
+* [The tracker library did not play in CIA mode]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ciatrklib#tracker-cia-mode" >}}):
   a program that played a Protracker module crashed on a 68000 at its
   start, or stayed silent.
-* [Samples without a loop ended in a buzz]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#tracker-sample-end" >}})
+* [Samples without a loop ended in a buzz]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ciatrklib#tracker-sample-end" >}})
   in Protracker modules.
-* [Voices left out by `TrackerChannels` played the wrong notes]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#trackerchannels-voices" >}}):
+* [Voices left out by `TrackerChannels` played the wrong notes]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ritrackerlib#trackerchannels-voices" >}}):
   each voice after a left-out one played the notes of the voice before
   it.
-* [`BlockToShape` copied only part of a wide shape]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#blocktoshape-width" >}}):
+* [`BlockToShape` copied only part of a wide shape]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/bb_blitlib#blocktoshape-width" >}}):
   of a shape 32 pixels wide, only the first half of its planes.
-* [`RTEZGetLong` offered the number of the call before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rtezgetlong-previous" >}}),
+* [`RTEZGetLong` offered the number of the call before]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/neilsreqtoolslib#rtezgetlong-previous" >}}),
   and returned it when the user cancelled.
-* [`BankLimit n` returned an address]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#banklimit-result" >}})
+* [`BankLimit n` returned an address]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riamosfunclib#banklimit-result" >}})
   instead of the number of banks.
-* [`FindVolume` returned an address instead of -1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#findvolume-result" >}}),
+* [`FindVolume` returned an address instead of -1]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riamosfunclib#findvolume-result" >}}),
   so a comparison with -1 never found the volume.
-* [`PutIconObject` reported a failed write as success]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#puticonobject-result" >}})
+* [`PutIconObject` reported a failed write as success]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ritooltypeslib#puticonobject-result" >}})
   and dropped the icon.
-* [`SetToolValue` replaced a tool type whose name only began with the name given]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#settoolvalue-prefix" >}}):
+* [`SetToolValue` replaced a tool type whose name only began with the name given]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ritooltypeslib#settoolvalue-prefix" >}}):
   `SetToolValue "FL","x"` replaced `FLAG`.
-* [`StoreNVData` returned 0 for a stored item]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#storenvdata-result" >}}),
+* [`StoreNVData` returned 0 for a stored item]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rinonvolatilelib#storenvdata-result" >}}),
   and an error code, a true value, when it could not store it.
 
 In the editor ([Editor]({{< relref "/docs/compared-with-original/fixed-bugs/editor" >}})):

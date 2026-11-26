@@ -57,6 +57,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rianimlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rianimlib-fixes" >}}).
+  [Fixes in rianimlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rianimlib#rianimlib-fixes" >}}).
 
   *Based on the RI Anim Lib guide by Reflective Images.*

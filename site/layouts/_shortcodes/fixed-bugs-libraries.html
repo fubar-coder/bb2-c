@@ -1,0 +1,41 @@
+{{- /*
+  The pages of fixed library bugs of one group as a table: the library
+  (linked to its page of fixes), the number of fixes on that page by
+  level (data/fixoverview.yaml), and its page in the command reference.
+
+    {{< fixed-bugs-libraries group="commands" >}}   the command libraries
+    {{< fixed-bugs-libraries group="userlibs" >}}   the RWE userlibs
+*/ -}}
+{{- partial "fixed-bugs/css.html" . -}}
+{{- $group := .Get "group" -}}
+{{- $base := "/docs/compared-with-original/fixed-bugs" -}}
+{{- $section := site.GetPage (printf "%s/libraries/%s" $base $group) -}}
+{{- if not $section -}}
+  {{- errorf "fixed-bugs-libraries: no section %q on %s" $group .Page.RelPermalink -}}
+{{- end -}}
+<div class="fixed-bugs-libraries">
+<table>
+  <thead>
+    <tr><th>Library</th><th>Fixes</th><th>Levels</th><th>Command reference</th></tr>
+  </thead>
+  <tbody>
+    {{- range $section.RegularPages.ByTitle }}
+    {{- $key := strings.TrimPrefix (printf "%s/" $base) .Path }}
+    {{- $rows := where site.Data.fixoverview.rows "page" $key }}
+    {{- $badges := slice }}
+    {{- range $level := slice 1 2 3 4 5 }}
+      {{- with where $rows "severity" $level }}
+        {{- $badges = $badges | append (partial "fixed-bugs/level.html" (dict "level" $level "count" (len .))) }}
+      {{- end }}
+    {{- end }}
+    {{- $ref := partial "fixed-bugs/refpage.html" (dict "lib" .Title "page" $key) }}
+    <tr>
+      <td><a href="{{ .RelPermalink }}">{{ .Title }}</a></td>
+      <td>{{ len $rows }}</td>
+      <td>{{ delimit $badges " " | safeHTML }}</td>
+      <td>{{ with $ref }}<a href="{{ .RelPermalink }}">{{ .Title }}</a>{{ end }}</td>
+    </tr>
+    {{- end }}
+  </tbody>
+</table>
+</div>

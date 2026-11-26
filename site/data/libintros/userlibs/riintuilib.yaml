@@ -27,4 +27,4 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in riintuilib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#riintuilib-fixes" >}}).
+  [Fixes in riintuilib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/riintuilib#riintuilib-fixes" >}}).

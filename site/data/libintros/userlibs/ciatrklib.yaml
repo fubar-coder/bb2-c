@@ -37,7 +37,7 @@ intro: |
 
   `LoadTrackerModule` reads the file with AmigaDOS. The known faults of
   the play routine, for example with some effect commands, are fixed
-  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#protracker-play-routine" >}})).
+  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ciatrklib#protracker-play-routine" >}})).
 
   *Based on the CIA Protracker Library documentation by Crossbones/Binary
   Assault.*

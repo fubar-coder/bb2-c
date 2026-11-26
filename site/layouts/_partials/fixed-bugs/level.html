@@ -1,0 +1,18 @@
+{{- /*
+  A badge with the name of a level of data/fixoverview.yaml, in the
+  colours of the theme's badges. Context: dict "level" (1-5) and
+  optionally "count" (shown before the name). Returns HTML.
+*/ -}}
+{{- $d := partialCached "fixed-bugs/rows.html" "rows" -}}
+{{- $l := index $d.levels (string .level) -}}
+{{- $colors := dict
+  "1" "hx:border-red-200 hx:bg-red-100 hx:text-red-900 hx:dark:border-red-200/30 hx:dark:bg-red-900/30 hx:dark:text-red-200"
+  "2" "hx:border-amber-200 hx:bg-amber-100 hx:text-amber-900 hx:dark:border-amber-200/30 hx:dark:bg-amber-900/30 hx:dark:text-amber-200"
+  "3" "hx:border-purple-200 hx:bg-purple-100 hx:text-purple-900 hx:dark:border-purple-200/30 hx:dark:bg-purple-900/30 hx:dark:text-purple-200"
+  "4" "hx:border-blue-200 hx:bg-blue-100 hx:text-blue-900 hx:dark:border-blue-200/30 hx:dark:bg-blue-900/30 hx:dark:text-blue-200"
+  "5" "hx:border-gray-200 hx:bg-gray-100 hx:text-gray-600 hx:dark:border-neutral-700 hx:dark:bg-neutral-800 hx:dark:text-neutral-200" -}}
+{{- $text := $l.name -}}
+{{- with .count -}}
+  {{- $text = printf "%s: %v" $l.name . -}}
+{{- end -}}
+{{- return ((printf `<span class="fixed-bug-level hx:border %s" title="Level %v: %s">%s</span>` (index $colors (string .level)) .level ($l.text | plainify | htmlEscape) $text) | safeHTML) -}}

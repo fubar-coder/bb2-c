@@ -27,4 +27,4 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rithreadlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#rithreadlib-fixes" >}}).
+  [Fixes in rithreadlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/rithreadlib#rithreadlib-fixes" >}}).

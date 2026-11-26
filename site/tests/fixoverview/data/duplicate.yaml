@@ -15,7 +15,7 @@ rows:
     library: polylib
     command: RenderToBitmap
     text: A row.
-    page: libraries
+    page: libraries/commands/polylib
     anchor: rendertobitmap-dither
   - issue: 421
     severity: 1
@@ -23,5 +23,5 @@ rows:
     library: polylib
     command: RenderToBitmap
     text: A row.
-    page: libraries
+    page: libraries/commands/polylib
     anchor: rendertobitmap-dither

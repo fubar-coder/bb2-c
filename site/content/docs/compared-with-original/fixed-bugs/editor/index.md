@@ -527,7 +527,7 @@ Each point says first what the original did, then what the port does.
 
 The editor's file requester, as LOAD and SAVE show it, is the requester
 of `FileRequest$`. The fixes of that requester on the page
-[Libraries]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#file-requester-fixes" >}})
+[freqlib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/freqlib#file-requester-fixes" >}})
 apply to the editor too. They concern long names in the list, tall
 screens, the DRIVES list, the system libraries it left open, the
 directories it kept in use and the path gadget after CD. Two of them
@@ -540,7 +540,7 @@ change what users of the editor see:
   The port's requester refuses
   such a name or path: it stays open, keeps its fields, and shows "Name
   too long" or "Path too long" in the title bar of the editor's screen
-  ([Long file names overwrote memory]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#filerequest-long-names" >}}),
+  ([Long file names overwrote memory]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/freqlib#filerequest-long-names" >}}),
   [#1042](https://github.com/fubar-coder/bb2-c/issues/1042)).
 
 * The CD button made the drawer shown the editor's current directory and

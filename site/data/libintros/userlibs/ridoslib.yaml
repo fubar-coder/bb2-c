@@ -36,6 +36,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ridoslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#ridoslib-fixes" >}}).
+  [Fixes in ridoslib]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/userlibs/ridoslib#ridoslib-fixes" >}}).
 
   *Based on the RI DOS Lib guide by Red When Excited.*

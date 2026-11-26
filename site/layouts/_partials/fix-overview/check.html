@@ -11,8 +11,9 @@
     boolean;
   * an issue that is a row twice, or a row and a notRows entry;
   * a row whose anchor is no heading id of its page;
-  * an issue linked on a fixed-bugs page that is neither a row nor on the
-    notRows list (a raw-text scan of the pages' Markdown).
+  * an issue linked on a fixed-bugs page (the section, its pages and the
+    pages of its subsections) that is neither a row nor on the notRows
+    list (a raw-text scan of the pages' Markdown).
 
   Called by the shortcode fix-overview with
   (dict "data" $data "name" $name), $name the data file's key for the
@@ -79,7 +80,15 @@
   {{- $seen = merge $seen (dict $id true) -}}
 {{- end -}}
 {{- with $section -}}
-  {{- range .RegularPagesRecursive | append . -}}
+  {{- /* the section and every page below it, also the pages of its
+    subsections (the libraries' pages) */ -}}
+  {{- $pages := slice . -}}
+  {{- range site.Pages -}}
+    {{- if .IsDescendant $section -}}
+      {{- $pages = $pages | append . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- range $pages -}}
     {{- $page := . -}}
     {{- $found := dict -}}
     {{- range findRE `github\.com/fubar-coder/bb2-c/issues/[0-9]+` .RawContent -}}

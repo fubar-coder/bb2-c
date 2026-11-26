@@ -12,7 +12,7 @@
   notes: |
     The origin set with `BitMapOrigin` is added once, as for `Line` and
     `Boxf`; Blitz Basic 2 added it twice
-    ([`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries#box-origin" >}})).
+    ([`Box` added the bitmap origin twice]({{< relref "/docs/compared-with-original/fixed-bugs/libraries/commands/2dlib#box-origin" >}})).
 "Boxf":
   text: Draws a filled rectangle with the corners `x1,y1` and `x2,y2`.
 "Line":
