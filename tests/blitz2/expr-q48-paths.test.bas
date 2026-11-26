@@ -5,7 +5,8 @@
 ; the routines of #1178 (mixedop), the low 32 bits under a wanted Quick in
 ; 32 bits, a constant Case of a 48.16 Select compared as immediates, a
 ; 16.16 value divided by a whole constant, times a constant below 1 or
-; times a Word inline (the fast paths), the
+; times a Word inline (the fast paths), a 48.16 division by a 16.16
+; value that is whole at run time inline, the
 ; operations in parameters (registers d1 to d5).  Each value is the one
 ; the code of task 4.2 gives (all its 48.16 operations through
 ; compilerlib's routines, measured once); a regression test of the fixed
@@ -450,4 +451,60 @@ End Function
   !CheckEq{r,0,"fast_if_mulh_lt"}
   r=0 : If qm/2=-16384 Then r=1
   !CheckEq{r,1,"fast_if_div_eq"}
+  ; a whole 16.16 divisor at run time
+  l.l=100 : lx.l=100000 : ln.l=-100000 : lb.l=2147483647
+  q.q=2.5 : qn.q=-1.75 : qm.q=-32768 : r.l=0 : x.q=0
+  qw.q=4 : qnw.q=-3 : qone.q=1 : qz.q=0 : qbig.q=32767
+  r=l/qw
+  !CheckEq{r,25,"wdiv_r_l_div_qw"}
+  r=ln/qnw
+  !CheckEq{r,33333,"wdiv_r_ln_div_qnw"}
+  r=lx/qone
+  !CheckEq{r,100000,"wdiv_r_lx_div_qone"}
+  r=lb/qw
+  !CheckEq{r,536870911,"wdiv_r_lb_div_qw"}
+  r=lb/qm
+  !CheckEq{r,-65535,"wdiv_r_lb_div_qm"}
+  r=ln/qbig
+  !CheckEq{r,-3,"wdiv_r_ln_div_qbig"}
+  r=(l+q)/qnw
+  !CheckEq{r,-34,"wdiv_r_lpq_div_qnw"}
+  r=(lb+q)/qnw
+  !CheckEq{r,-715827883,"wdiv_r_lbpq_div_qnw"}
+  r=l/q
+  !CheckEq{r,40,"wdiv_r_l_div_q"}
+  r=l/qz
+  !CheckEq{r,2147483647,"wdiv_r_l_div_qz"}
+  r=ln/qz
+  !CheckEq{r,-2147483647,"wdiv_r_ln_div_qz"}
+  r=q/qw+l
+  !CheckEq{r,100,"wdiv_r_q_div_qw_add_l"}
+  r=l/qw+q
+  !CheckEq{r,27,"wdiv_r_l_div_qw_add_q"}
+  x=l/qw
+  !CheckEq{Peek.l(&x),1638400,"wdiv_x_l_div_qw"}
+  x=q/qw
+  !CheckEq{Peek.l(&x),40960,"wdiv_x_q_div_qw"}
+  x=qn/qnw
+  !CheckEq{Peek.l(&x),38229,"wdiv_x_qn_div_qnw"}
+  x=qm/qm
+  !CheckEq{Peek.l(&x),65536,"wdiv_x_qm_div_qm"}
+  x=l/qz
+  !CheckEq{Peek.l(&x),2147483647,"wdiv_x_l_div_qz"}
+  x=ln/qz
+  !CheckEq{Peek.l(&x),-2147483647,"wdiv_x_ln_div_qz"}
+  x=l/q
+  !CheckEq{Peek.l(&x),2621440,"wdiv_x_l_div_q"}
+  x=lx/qnw
+  !CheckEq{Peek.l(&x),2110433963,"wdiv_x_lx_div_qnw"}
+  x=(l+q)/qw
+  !CheckEq{Peek.l(&x),1679360,"wdiv_x_lpq_div_qw"}
+  x=l/qbig
+  !CheckEq{Peek.l(&x),200,"wdiv_x_l_div_qbig"}
+  r=0 : If l/qw=25 Then r=1
+  !CheckEq{r,1,"wdiv_if_div_eq"}
+  r=0 : If ln/qnw<33334 Then r=1
+  !CheckEq{r,1,"wdiv_if_div_lt"}
+  r=0 : If q/qw=0.625 Then r=1
+  !CheckEq{r,1,"wdiv_if_div_frac"}
 !EndTestCase

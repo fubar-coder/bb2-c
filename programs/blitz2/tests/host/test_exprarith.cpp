@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <vector>
 #include <snitch/snitch.hpp>
 extern "C" {
 #include "exprarith.h"
@@ -612,3 +613,80 @@ TEST_CASE("exprarith: the Word fast path of p5fast equals q48mul", "[exprarith]"
     CHECK(q48(ETO_MUL, exprarith_q16_q48(0x7fffffff), exprarith_whole_q48(32767)) != fast_wmul(0x7fffffff, 32767) - ((int64_t)1 << 32));
 }
 
+// ------------------------------------------ a whole divisor at run time (task 4.3)
+// eval.c's p5wholediv step by step: a 48.16 dividend's 64-bit magnitude
+// divided by the whole part |m| <= 32768 of a 16.16 divisor with four DIVU
+// (a word quotient per digit: an overflow fails), the sign of a eor b,
+// against exprarith_q48's division.
+
+namespace {
+
+bool fast_wdiv(int64_t n, int32_t mraw, int64_t *out)
+{
+    uint32_t sign = ((uint32_t)((uint64_t)n >> 32) ^ (uint32_t)mraw) >> 31;
+    uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n, q = 0;
+    int32_t m = mraw >> 16;
+    uint32_t mm = (uint32_t)(m < 0 ? -m : m), r = 0;
+
+    for (int k = 3; k >= 0; k--) {
+        uint32_t cur = (r << 16) | (uint32_t)((u >> (16 * k)) & 0xffff);
+        if (cur / mm > 0xffff)
+            return false;                       // DIVU's overflow
+        q = (q << 16) | (cur / mm);
+        r = cur % mm;
+    }
+    if (sign)
+        q = 0 - q;
+    *out = (int64_t)q;
+    return true;
+}
+
+} // namespace
+
+TEST_CASE("exprarith: a whole divisor at run time equals q48div", "[exprarith]")
+{
+    uint64_t seed = 0x77aull;
+    std::vector<int64_t> ns = { 0, 1, -1, 0x8000, -0x8000, 0x10000, -0x10000, 0x7fffffff, -0x7fffffffLL - 1,
+                                0x7fffffffLL << 16, -(0x7fffffffLL << 16), (int64_t)0x00007fffffffffffLL << 16,
+                                -((int64_t)0x00007fffffffffffLL << 16), 0x7fffffffffffffffLL, -0x7fffffffffffffffLL,
+                                0x123456789abcLL, -0x123456789abcLL, 0xffffffffLL, -0xffffffffLL };
+    for (int i = 0; i < 40; i++) {
+        uint64_t v = ((uint64_t)rnd32(seed) << 32) | rnd32(seed);
+        ns.push_back((int64_t)v >> (rnd32(seed) % 40));
+        ns.push_back((int64_t)(int32_t)rnd32(seed));
+    }
+    bool ok = true;
+    int64_t badn = 0;
+    int32_t badm = 0;
+    for (int32_t m = -32768; m <= 32767 && ok; m++) {
+        if (!m)
+            continue;
+        int32_t mraw = (int32_t)((uint32_t)m << 16);
+        for (int64_t n : ns) {
+            int64_t got;
+            if (!fast_wdiv(n, mraw, &got) || got != q48(ETO_DIV, n, (int64_t)mraw)) {
+                ok = false;
+                badn = n;
+                badm = m;
+                break;
+            }
+        }
+    }
+    INFO("n ", badn, " m ", badm);
+    CHECK(ok);
+    for (int i = 0; i < 2000000 && ok; i++) {
+        uint64_t v = ((uint64_t)rnd32(seed) << 32) | rnd32(seed);
+        int64_t n = (int64_t)v >> (rnd32(seed) % 48 + 1);
+        int32_t m = (int32_t)(rnd32(seed) & 0xffff) - 32768;
+        int64_t got;
+        if (!m)
+            continue;
+        int32_t mraw = (int32_t)((uint32_t)m << 16);
+        ok = fast_wdiv(n, mraw, &got) && got == q48(ETO_DIV, n, (int64_t)mraw);
+    }
+    CHECK(ok);
+    // a planted error is seen: the sign of the divisor dropped
+    int64_t got = 0;
+    CHECK(fast_wdiv(-0x30000, 2 << 16, &got));
+    CHECK(got != q48(ETO_DIV, -0x30000, (int64_t)(-2 * 65536)));
+}

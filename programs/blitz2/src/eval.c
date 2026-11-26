@@ -6585,6 +6585,84 @@ static void p5fastmark(struct p5node *p)
         p->flags |= P5F_WMUL;
 }
 
+/* a branch whose displacement p5patch writes when its target is known */
+static ULONG p5bra(UWORD op)
+{
+    ULONG at = (pc + 1) & ~1UL;
+
+    p5w(op);
+    return at;
+}
+
+static void p5patch(ULONG at)
+{
+    if (at + 2 <= libat && !nomemleft)
+        W_(at) = (UWORD)((W_(at) & 0xff00) | ((pc - at - 2) & 0xff));
+}
+
+/* task 4.3 (decision "expr-tree-5 4.3: a whole Quick divisor at run
+   time"): the 48.16 division of a (d0/d1, any 48.16 value) by a 16.16
+   value b (d2/d3, its sign extension), p5callin's frame: when b is whole
+   and not 0 (its low word 0), q48div's (|a| << 16) / (|m| << 16) is |a| /
+   |m| rounded down for the whole part m (|m| <= 32768), four DIVU of the
+   64-bit magnitude by |m| (each digit's quotient fits a word), the sign
+   of a eor b applied in 64 bits; a fraction or 0 calls the routine tok
+   (its division by 0, its error check).  The host test test_exprarith.cpp
+   ("a whole divisor at run time") checks the steps against
+   exprarith_q48. */
+static void p5wholediv(UWORD tok)
+{
+    ULONG frac, nul, done;
+    static const UWORD digit[] = {
+        0x3601,                 /* move.w d1,d3 */
+        0x86c2,                 /* divu.w d2,d3 */
+        0x3203,                 /* move.w d3,d1 */
+        0x4841,                 /* swap d1 */
+    }, lowd[] = {
+        0x3600,                 /* move.w d0,d3 */
+        0x86c2,                 /* divu.w d2,d3 */
+        0x3003,                 /* move.w d3,d0 */
+        0x4840,                 /* swap d0 */
+    };
+    UWORD i;
+
+    p5w(0x4a42);                                /* tst.w d2: a fraction */
+    frac = p5bra(0x6600);                       /* bne.s .call */
+    p5w(0x4a82);                                /* tst.l d2 */
+    nul = p5bra(0x6700);                        /* beq.s .call */
+    p5w(0x2601);                                /* move.l d1,d3 */
+    p5w(0xb583);                                /* eor.l d2,d3: the sign */
+    p5w(0x2f03);                                /* move.l d3,-(a7) */
+    p5w(0x4a81);                                /* tst.l d1 */
+    p5w(0x6a04);                                /* bpl.s */
+    p5w(0x4480);                                /* neg.l d0 */
+    p5w(0x4081);                                /* negx.l d1: |a| */
+    p5w(0x4842);                                /* swap d2 */
+    p5w(0x4a42);                                /* tst.w d2 */
+    p5w(0x6a02);                                /* bpl.s */
+    p5w(0x4442);                                /* neg.w d2: |m| */
+    p5w(0x7600);                                /* moveq #0,d3 */
+    p5w(0x4841);                                /* swap d1 */
+    for (i = 0; i < 4; i++)                     /* the digits of the high long */
+        p5w(digit[i]);
+    for (i = 0; i < 3; i++)
+        p5w(digit[i]);
+    p5w(0x4840);                                /* swap d0 */
+    for (i = 0; i < 4; i++)                     /* the digits of the low long */
+        p5w(lowd[i]);
+    for (i = 0; i < 3; i++)
+        p5w(lowd[i]);
+    p5w(0x4a9f);                                /* tst.l (a7)+: the sign */
+    p5w(0x6a04);                                /* bpl.s */
+    p5w(0x4480);                                /* neg.l d0 */
+    p5w(0x4081);                                /* negx.l d1 */
+    done = p5bra(0x6000);                       /* bra.s .done */
+    p5patch(frac);
+    p5patch(nul);
+    tokejsr(tok);                               /* .call */
+    p5patch(done);
+}
+
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
@@ -6614,7 +6692,12 @@ static void p5bin(struct p5node *p, UWORD r)
             tok = p->want == T_QUICK ? q48divq : p->want == T_WORD ? q48divw : p->want == T_BYTE ? q48divb : q48div;
             break;
         }
-        p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
+        if (op == ETO_DIV && !rw && rt == T_QUICK && !p5prep) {
+            /* a 16.16 divisor: whole at run time, the division inline */
+            p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
+            p5wholediv(tok);
+        } else
+            p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
         if (op == ETO_ADD) {
             p5w(0xd082);                    /* add.l d2,d0 */
             p5w(0xd383);                    /* addx.l d3,d1 */
