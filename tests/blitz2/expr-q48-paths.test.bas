@@ -507,4 +507,12 @@ End Function
   !CheckEq{r,1,"wdiv_if_div_lt"}
   r=0 : If q/qw=0.625 Then r=1
   !CheckEq{r,1,"wdiv_if_div_frac"}
+  ; a constant with a fraction beyond the Quick range beside a 48.16 value (#1220)
+  lc.l=100 : lxc.l=100000 : qc.q=2.5
+  r=0 : If lc+qc-lxc>=-99898.5 Then r=1
+  !CheckEq{r,1,"bigconst_if_ge"}
+  r=(lc+qc-lxc>=-99898.5)
+  !CheckEq{r,-1,"bigconst_val_ge"}
+  r=(lc+qc+lxc<100103.5)
+  !CheckEq{r,-1,"bigconst_val_lt"}
 !EndTestCase

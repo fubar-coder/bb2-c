@@ -5296,7 +5296,7 @@ struct p5node {
     UBYTE want;                     /* BIN: the wanted type of its expression */
     UBYTE depth;                    /* the depth of its subtree */
     ULONG whole, ffp;               /* CONST: its whole number, its FFP value */
-    ULONG enc;                      /* a folded constant the pass writes: its value */
+    ULONG enc, enc2;                /* a folded constant the pass writes: its value (a 48.16 one: the low and the high 32 bits) */
 };
 #define P5(n) ((struct p5node *)(n))
 
@@ -6843,7 +6843,14 @@ static void p5constact(struct expract *a)
 {
     const struct p5node *p = P5(a->x);
 
-    if (p->dt < T_LONG) {
+    if (p->df == ETF_Q48) {
+        /* a 48.16 value (#1220): the low 32 bits in Dn, the high ones in Dn+1 */
+        p5reg(regat + 1);
+        pokewd((UWORD)(regat << 9) | 0x203c);
+        pokel(p->enc);
+        pokewd((UWORD)((regat + 1) << 9) | 0x203c);
+        pokel(p->enc2);
+    } else if (p->dt < T_LONG) {
         pokewd((UWORD)(regat << 9) | 0x303c);   /* move.w #v,Dn */
         pokewd((UWORD)p->enc);
     } else {
@@ -6950,11 +6957,26 @@ static void p5constapply(struct p5node *p, UWORD take, BOOL bit)
     struct expract *a;
     ULONG enc = 0;
     BOOL ok, relax;
+    BOOL pair = FALSE;
+    int64_t m = 0;
 
     if (!take) {
         struct p5q v = p5qval(&p->t);
 
         take = v.ok && v.d == 1 && p5fits(v.n, T_LONG) ? T_LONG : T_QUICK;
+        /* a value beyond the Quick range (a fraction, 16.16 value beyond
+           32 bits): a 48.16 value in a register pair (#1220) */
+        if (take == T_QUICK && v.ok && !__builtin_mul_overflow(v.n, (int64_t)65536, &m)) {
+            m /= v.d;
+            pair = m < INT32_MIN || m > INT32_MAX;
+        }
+    }
+    if (pair) {
+        p->enc = (ULONG)(uint64_t)m;
+        p->enc2 = (ULONG)((uint64_t)m >> 32);
+        p->dt = T_LONG;
+        p->df = ETF_Q48;
+        goto place;
     }
     ok = p5encode(p, take, bit, &enc);
     relax = p5relaxed(&p->t);
@@ -6970,6 +6992,7 @@ static void p5constapply(struct p5node *p, UWORD take, BOOL bit)
     p->enc = enc;
     p->dt = (UBYTE)take;
     p->df = ETF_TYPE;
+place:
     while (k->t.kind != ETN_CONST)
         k = P5(k->t.l);             /* the first constant writes the value */
     p5nopall(p, k);
