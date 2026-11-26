@@ -1214,6 +1214,15 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
   combinations appear, decide whether the expect forms should describe
   them (e.g. an expected file per configuration or a file for two fixes)
   instead of more entries.
+- [ ] **Site: examples and screenshots in the library documentation**
+  (user request 2026-11-26, step 2 of "fixed library bugs per library,
+  cross-links"; rounds/tree/decisions.md): enrich the pages of the
+  command reference (`site/data/libintros/`, `site/data/cmddesc/`) with
+  Blitz Basic examples and screenshots where they help the reader. Step 1
+  (one page of fixed bugs per library, links both ways generated from
+  `site/data/fixoverview.yaml`) is done. Each example needs its entry in
+  `tests/site-examples/examples.txt` (site/README.md, "Blitz Basic
+  examples").
 
 ## 3 Only once §1 is done
 
