@@ -27,6 +27,7 @@ page-compared-with-original-expressions-type-system-11 run content/docs/compared
 page-compared-with-original-expressions-type-system-12 run content/docs/compared-with-original/expressions/type-system.md#12
 page-compared-with-original-expressions-type-system-13 run content/docs/compared-with-original/expressions/type-system.md#13
 page-compared-with-original-expressions-type-system-14 run content/docs/compared-with-original/expressions/type-system.md#14
+page-compared-with-original-expressions-type-system-15 run content/docs/compared-with-original/expressions/type-system.md#15
 page-compared-with-original-libraries-1 run content/docs/compared-with-original/libraries/_index.md#1 rwe=rimisclib
 cmd-acidlibs-displaylib-1 compile data/cmddesc/acidlibs/displaylib.yaml#1 needs hardware or a device the test machine does not have (a display)
 cmd-acidlibs-gtlib-1 run data/cmddesc/acidlibs/gtlib.yaml#1

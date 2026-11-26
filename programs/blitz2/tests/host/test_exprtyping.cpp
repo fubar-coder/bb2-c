@@ -587,6 +587,16 @@ const chain CHAINS[] = {
     { "(l+q)/p", "l.l=100 q=0.5 p=0" },
     { "l MOD q", "l.l=100000 q=0" },
     { "q MOD p", "q=7.5 p=0.5" },
+    // a Mod of constants with a fraction exact, as with variables (#1223)
+    { "5.25 MOD 2", "" },
+    { "-5.25 MOD 2", "" },
+    { "5.25 MOD -2", "" },
+    { "5 MOD 1.5", "" },
+    { "6.0 MOD 4", "" },
+    { "7.5 MOD 2.5", "" },
+    { "100000.5 MOD 3", "" },
+    { "1+5.25 MOD 2", "q=1" },
+    { "3 LSL (1.5 MOD 3)", "" },
     // Float beside a Quick, ^
     { "q*f+l", "q=1.5 f.f=2 l.l=3" },
     { "(q+l)*f", "q=1.5 f.f=2 l.l=3" },

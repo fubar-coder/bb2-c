@@ -18,4 +18,6 @@
   !CheckQEq{rq,0,"half"}
   rq=5.25 Mod 0.5
   !CheckQEq{rq,0.25,"quarter"}
+  rq=-5.75 Mod 0.5
+  !CheckQEq{rq,0.25,"negative"}
 !EndTestCase

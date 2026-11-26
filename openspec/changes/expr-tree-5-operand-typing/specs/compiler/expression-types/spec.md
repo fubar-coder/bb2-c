@@ -164,7 +164,7 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 - **THEN** the first is true and the other two false (today false, true, true); `If w/2*2=w` stays false
 
 ### Requirement: Mod keeps today's sign rule, exact with fractions
-`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands whenever an operand has a fraction (a Quick, a Float, a constant with a point), not only beside a Quick variable. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap ("GURU! - Division by Zero" with runtime error checking), a Long or Float `Mod` gives the dividend.
+`Mod` SHALL give the remainder by today's rule (a negative remainder has the divisor added, as `domodlong`), computed with the fractions of its operands whenever one has a fraction (a Quick, a Float, a constant with a point), also for two constants. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap, a Long or Float `Mod` gives the dividend.
 
 #### Scenario: Negative dividend
 - **WHEN** a program evaluates `x.l=q Mod 2` with `q=-7`
@@ -185,6 +185,10 @@ In an expression with a Quick or Float that is not wanted as a Long, a whole-num
 #### Scenario: A constant with a point beside whole numbers
 - **WHEN** a program evaluates `x.q=b Mod 1.5` and `NPrint b Mod 1.5` with `b.b=4`
 - **THEN** x is 1 and it prints 1 (today 0 and 0: the whole parts)
+
+#### Scenario: Two constants
+- **WHEN** a program evaluates `x.q=5.25 Mod 2`, `x.w=5.25 Mod 2`, `x.q=-5.25 Mod 2`, `x.q=5 Mod 0.5`, `x.l=-5.25 Mod -2` and `NPrint 5.25 Mod 2`
+- **THEN** x is 1.25, 1, 0.75, 0 and -4, and it prints 1.25, as with the variables, a whole destination rounding the Quick down (today the whole parts' Mod, and a crash for the divisor 0.5)
 
 ### Requirement: A Quick used as a whole number keeps working
 Booleans in Quicks, bit operators, shifts and `Not` on Quicks SHALL give today's values: the operands of bit operators, shifts and `Not` are typed by the same rule as any operand and rounded down once where the operator takes them; a comparison's boolean in arithmetic is a whole number (Word -1 or 0), and with a Long the operation is a Long one.

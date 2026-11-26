@@ -181,13 +181,20 @@ q.q=7.75 : p.q=0.5
 x.q=q Mod p : NPrint x         ; original: "Software Failure"    port: .25
 ```
 
-{{< callout type="warning" >}}
-A `Mod` of two constants is computed by the compiler itself. With a
-divisor whose whole part is 0, such as `rq.q=5 Mod 0.5`, the compiler
-stops with a "Software Failure", in the original as in the port. This is
-an open bug:
-[A constant Quick Mod by a divisor below 1 crashes the compiler (#1219)](https://github.com/fubar-coder/bb2-c/issues/1219).
-{{< /callout >}}
+A `Mod` of two constants is the same exact `Mod`; the compiler computes
+it when it reads the line. The original took the whole parts of the
+constants here (and its compiler stopped with a "Software Failure" for a
+divisor such as `0.5`, whose whole part is 0):
+
+```blitzbasic
+NPrint 5.25 Mod 2              ; original: 1    port: 1.25
+x.w=5.25 Mod 2 : NPrint x      ; original: 1    port: 1
+NPrint -5.25 Mod 2             ; original: 1    port: .75
+```
+
+As with variables, a negative remainder has the divisor added, a whole
+destination rounds the result down (`x.l=-5.25 Mod -2` is -4, as with
+variables), and a divisor of 0 stays an error.
 
 ## Comparisons {#comparisons}
 

@@ -1,0 +1,2 @@
+# expr-constmod-exact.test.bas: a defect of the port's rule P+ (#1216), not the original's
+fixed = 1223

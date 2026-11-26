@@ -2281,6 +2281,40 @@ static int frac_operand(const struct em_tnode *n)
 
 /* ----------------------------------------------- today's rules: the flow */
 
+static struct rat const_ideal(const struct em_tnode *n, int modx);
+static struct rat c7wrap(struct ev *e, struct rat x, int bits);
+static uint32_t q16bits(struct rat x);
+
+/* EM_R_1223: a Mod of two constants with a fraction in an operand, in the
+   Quick or Float T it is computed in, is the exact Mod with today's sign
+   rule (a - b*trunc(a/b), plus b when negative), as with variables; r
+   takes it (0: not such a Mod) */
+static int modexact(struct ev *e, const struct em_tnode *n, int T, struct reg *r)
+{
+    struct rat x = const_ideal(n->l, 1), y = const_ideal(n->r, 1), v;
+
+    if (!rat_sign(y) || (rat_isint(x) && rat_isint(y)))
+        return 0;
+    v = rat_op(x, rat_op(y, rat_trunc(rat_op(x, y, '/')), '*'), '-');
+    if (rat_sign(v) < 0)
+        v = rat_op(v, y, '+');
+    if (rat_isint(v)) {
+        /* a whole result keeps the handler's type (a Word, a Float's a Long) */
+        r->v = (uint32_t)(int32_t)rat_whole(v);
+        r->t = T == TQ ? TW : TL;
+    } else if (T == TQ) {
+        v = c7wrap(e, v, 16);
+        r->v = q16bits(v);
+        r->t = T;
+    } else {
+        r->v = ffp_of(v);
+        r->t = T;
+    }
+    r->id = v;
+    r->raw = 0;
+    return 1;
+}
+
 /* the node n with the type so far *T (eval5 over the tree: the left
    operand, then the right one at the type so far after it); 0, 1 refused */
 static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, struct trec *tr)
@@ -2412,7 +2446,9 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
                 e->flags |= EM_F_MODNF;
             if (op == EM_POW && !frac_operand(n->l) && !frac_operand(n->r))
                 e->flags |= EM_F_POWINT;
-            doop(e, op, r, &b, t2);
+            if (!(op == EM_MOD && (e->rules & EM_R_1223) && (t2 == TQ || t2 == TF) && is_consttree(n)
+                  && modexact(e, n, t2, r)))
+                doop(e, op, r, &b, t2);
             if (e->illegal)
                 return 1;
             trecord(tr, op, lfrom, t2, 0, rfrom, t2, 0, 'p', r->t);
@@ -2528,6 +2564,7 @@ struct cev {
     int p1221;                  /* EM_R_1221: a 48.16 * or / under a wanted Byte, Word or Long cut down */
     int p1222;                  /* EM_R_1222: the top / under a wanted Byte or Word towards zero, a
                                    constant with a point a Float under them */
+    int p1223;                  /* EM_R_1223: a Mod of constants with a fraction exact */
     const struct em_tnode *root; /* the expression's root (EM_R_1222) */
     int bittaker;               /* EM_R_PTAKE: the operand being typed is taken by a bit operator,
                                    shift or Not */
@@ -2612,16 +2649,16 @@ static int consttarget(int cand, struct rat a, int W, int pt)
    the whole parts; a division by zero: 0); a comparison -1 whatever it
    compares, or with cmp (EM_R_PBITK: "Auch nach Regel falten", "expr-tree-5
    group 3: three readings of the four rule points") its value, -1 or 0 */
-static struct rat const_ideal2(const struct em_tnode *n, int cmp)
+static struct rat const_ideal2(const struct em_tnode *n, int cmp, int modx)
 {
     struct rat a, b;
 
     if (n->kind == TN_CONST)
         return rat_text(n->text);
     if (n->kind == TN_NEG)
-        return rat_op(rat_int(0), const_ideal2(n->l, cmp), '-');
-    a = const_ideal2(n->l, cmp);
-    b = const_ideal2(n->r, cmp);
+        return rat_op(rat_int(0), const_ideal2(n->l, cmp, modx), '-');
+    a = const_ideal2(n->l, cmp, modx);
+    b = const_ideal2(n->r, cmp, modx);
     if (cmp && em_op_is_compare(n->op)) {
         int d = rat_cmp(a, b), t;
 
@@ -2647,7 +2684,14 @@ static struct rat const_ideal2(const struct em_tnode *n, int cmp)
         case EM_AND: return rat_int(x & y);
         case EM_OR: return rat_int(x | y);
         case EM_EOR: return rat_int(x ^ y);
-        case EM_MOD: return y ? rat_int(x % y) : rat_int(0);
+        case EM_MOD:
+            if (modx && rat_sign(b) && (!rat_isint(a) || !rat_isint(b))) {
+                /* EM_R_1223: exact, today's sign rule (a - b*trunc(a/b), plus b when negative) */
+                struct rat v = rat_op(a, rat_op(b, rat_trunc(rat_op(a, b, '/')), '*'), '-');
+
+                return rat_sign(v) < 0 ? rat_op(v, b, '+') : v;
+            }
+            return y ? rat_int(x % y) : rat_int(0);
         case EM_LSL: case EM_ASL: return rat_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
         case EM_LSR: case EM_ASR: return rat_int(y >= 0 && y < 32 ? x >> y : 0);
         default: return rat_int(-1);    /* a comparison: true or false, whole */
@@ -2656,9 +2700,9 @@ static struct rat const_ideal2(const struct em_tnode *n, int cmp)
     }
 }
 
-static struct rat const_ideal(const struct em_tnode *n)
+static struct rat const_ideal(const struct em_tnode *n, int modx)
 {
-    return const_ideal2(n, 0);
+    return const_ideal2(n, 0, modx);
 }
 
 static int has_qvar(const struct em_tnode *n);
@@ -2690,15 +2734,15 @@ static int pconstfloat(struct cev *c, struct rat a, int W, int pt)
 
 /* EM_R_PBITK: a subtree of constants with AND, OR or EOR on an operand with
    a point or a fraction (a comparison in it evaluated: cideal) */
-static int bitfrac(const struct em_tnode *n)
+static int bitfrac(const struct cev *c, const struct em_tnode *n)
 {
     switch (n->kind) {
     case TN_BIN:
         if ((n->op == EM_AND || n->op == EM_OR || n->op == EM_EOR)
-            && (cpoint(n->l) || cpoint(n->r) || !rat_isint(const_ideal(n->l)) || !rat_isint(const_ideal(n->r))))
+            && (cpoint(n->l) || cpoint(n->r) || !rat_isint(const_ideal(n->l, c->p1223)) || !rat_isint(const_ideal(n->r, c->p1223))))
             return 1;
-        return bitfrac(n->l) || bitfrac(n->r);
-    case TN_NEG: return bitfrac(n->l);
+        return bitfrac(c, n->l) || bitfrac(c, n->r);
+    case TN_NEG: return bitfrac(c, n->l);
     default: return 0;
     }
 }
@@ -2707,7 +2751,24 @@ static int bitfrac(const struct em_tnode *n)
    its comparisons evaluated) */
 static struct rat cideal(const struct cev *c, const struct em_tnode *n)
 {
-    return const_ideal2(n, c->pbitk);
+    return const_ideal2(n, c->pbitk, c->p1223);
+}
+
+/* EM_R_1223: a Mod of two constants with a fraction or a point in an
+   operand is a Quick under a whole destination, rounded down as the
+   variable form (the user's decision of 2026-11-26, "B: like the variable
+   form"), not the Float of a constant with a point (#1222) */
+static int constmodq(const struct em_tnode *n)
+{
+    struct rat a, b;
+
+    if (n->kind == TN_NEG)
+        return constmodq(n->l);
+    if (n->kind != TN_BIN || n->op != EM_MOD)
+        return 0;
+    a = const_ideal(n->l, 1);
+    b = const_ideal(n->r, 1);
+    return a.ok && b.ok && rat_sign(b) && (cpoint(n) || !rat_isint(a) || !rat_isint(b));
 }
 
 /* a subtree of constants: one constant of its exact value, of the type the
@@ -2715,6 +2776,8 @@ static struct rat cideal(const struct cev *c, const struct em_tnode *n)
    whole number, by today's fold in that type) */
 static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct reg *r)
 {
+    if (c->p1223 && W >= TB && W <= TL && constmodq(n))
+        W = TQ;
     struct rat a = cideal(c, n);
     int cn = c->cand, T, tt;
 
@@ -2759,7 +2822,7 @@ static int cconst(struct cev *c, const struct em_tnode *n, int W, int pt, struct
             bitwhole = 1;
         }
     }
-    if (c->pbitk && !bitwhole && inbit != 3 && bitfrac(n)) {
+    if (c->pbitk && !bitwhole && inbit != 3 && bitfrac(c, n)) {
         /* EM_R_PBITK ("Wie mit Variable", "expr-tree-5 group 3 findings:
            four rule points of P+"): a bit operator of constants with a
            fraction folds as b AND 1.5 takes it, the fraction cut (the
@@ -3799,6 +3862,7 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
             c.pcmpw = (rules & EM_R_PCMPW) != 0;
             c.p1221 = (rules & EM_R_1221) != 0;
             c.p1222 = (rules & EM_R_1222) != 0;
+            c.p1223 = (rules & EM_R_1223) != 0;
             rules |= EM_R_SCOPEB;   /* expressions without a Quick: C1's, operands typed by their own */
         }
         k = cn == EM_CAND_C7 ? c7root(&c, root, asked, r) : -1;

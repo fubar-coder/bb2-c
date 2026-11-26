@@ -283,9 +283,9 @@ static struct rq const_value(const struct exprtyping_node *n)
     case ETO_BAR: return rq_int(x | y);
     case ETO_EOR: return rq_int(x ^ y);
     case ETO_MOD:
-        if (b.ok && b.n > 0 && b.n < b.d) {
-            /* Fixed (#1219): a divisor above 0 and below 1 makes Mod exact (as
-               the pass's code does, today's sign rule): a - trunc(a/b)*b,
+        if (b.n && (!rq_isint(a) || !rq_isint(b))) {
+            /* Fixed (#1219, #1223): a Mod with a fraction in an operand is exact
+               (as the pass's code does, today's sign rule): a - trunc(a/b)*b,
                plus b when negative */
             struct rq t;
 
@@ -431,12 +431,12 @@ static unsigned const_flow(struct ctx *c, const struct exprtyping_node *n, unsig
     if (rt == ET_FLOAT && (is_bit(n->op) || is_shift(n->op)))
         return refuse(c);
     if (n->op == ETO_MOD && (rt == ET_QUICK || rt == ET_FLOAT)) {
-        struct rq b = const_value(n->r);
+        struct rq a = const_value(n->l), b = const_value(n->r);
 
-        /* Fixed (#1219): the exact Mod by a divisor above 0 and below 1,
+        /* Fixed (#1219, #1223): the exact Mod with a fraction in an operand,
            where it has a fraction, in the Quick or Float it is computed in
            (a whole result keeps the handler's type) */
-        if (b.ok && b.n > 0 && b.n < b.d && !rq_isint(const_value(n)))
+        if (a.ok && b.ok && b.n && (!rq_isint(a) || !rq_isint(b)) && !rq_isint(const_value(n)))
             return rt;
     }
     return handler_result(n->op, rt);
@@ -477,6 +477,23 @@ static int bit_fraction(const struct exprtyping_node *n)
     }
 }
 
+/* a Mod of two constants with a fraction or a point in an operand (#1223:
+   the user's decision of 2026-11-26, "B: like the variable form"): a Quick
+   under a whole destination, rounded down as the variable form, an
+   exception to the Float of a constant with a point there (#1222) */
+static int const_modq(const struct exprtyping_node *n)
+{
+    struct rq a, b;
+
+    if (n->kind == ETN_NEG)
+        return const_modq(n->l);
+    if (n->kind != ETN_BIN || n->op != ETO_MOD)
+        return 0;
+    a = const_value(n->l);
+    b = const_value(n->r);
+    return a.ok && b.ok && b.n && (has_point(n) || !rq_isint(a) || !rq_isint(b));
+}
+
 /* the type of the constant subtree n beside an operand of type beside (0:
    none) under the wanted type want; role: BIT_* (an operand of AND, OR,
    EOR or NOT, a shift count, the shifted operand) */
@@ -486,6 +503,9 @@ static unsigned const_type(struct ctx *c, const struct exprtyping_node *n, unsig
     struct rq a = const_value(n);
     int whole = rq_isint(a), point = has_point(n), bitwhole = 0;
     unsigned tt;
+
+    if (is_wholewant(want) && const_modq(n))
+        want = ET_QUICK;
 
     if (!beside)
         tt = want;

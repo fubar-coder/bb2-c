@@ -12,3 +12,5 @@ fixed-orig = 1216
 "check.cells.i2-mod-cb-f-I.actual" = "== 17"
 "check.cells.i2-mod-cl-q-I" = "== fail"
 "check.cells.i2-mod-cl-q-I.actual" = "== 1"
+"check.cells.i2-mod-cl-cf-I" = "== fail"
+"check.cells.i2-mod-cl-cf-I.actual" = "== 1"

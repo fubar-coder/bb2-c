@@ -204,6 +204,11 @@ enum {
    Byte/Word (A1) and F2 under whole destinations (option 1)"); a fix of
    the port's rule P+, part of the decided rule */
 #define EM_R_1222 (1ull << 34)
+/* a Mod of two constants with a fraction (or a point) is the exact Mod, as
+   with variables (P+ "exact with any fraction"), not the whole parts' Mod
+   (#1223; user decision of 2026-11-26, "Yes, all exact (Recommended)"); a
+   fix of the port's rule P+, part of the decided rule */
+#define EM_R_1223 (1ull << 35)
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
@@ -478,7 +483,7 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
      | EM_R_PQDIV)
 #define EM_RULES_DECIDED                                                                                              \
     (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48 | EM_R_PCMPW \
-     | EM_R_1221 | EM_R_1222)
+     | EM_R_1221 | EM_R_1222 | EM_R_1223)
 /* the rules of P+ beyond the port's before it (#1216, #1183): a port's
    rules with all of them are the decided rule, the fix of #1216 */
 #define EM_RULES_PPLUS (EM_RULES_DECIDED & ~(uint64_t)EM_RULES_CANDBASE)

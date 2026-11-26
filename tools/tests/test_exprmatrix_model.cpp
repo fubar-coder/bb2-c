@@ -1,3 +1,6 @@
+            // also a negative result under a whole destination: a Quick rounded
+            // down as the variable form (-3.25: -4), not the Float of a
+            // constant with a point (#1222; the user's decision of 2026-11-26)
 // test_exprmatrix_model - the model of the expression matrix
 // (lib/exprmatrix, model.c): the measured rows of
 // docs/blitz2/expression-types.md as cases, each by the original's rules
@@ -750,6 +753,39 @@ TEST_CASE("exprmatrix model: a top / and a constant with a point under every who
     CHECK(expr("qt/2+lz", t).value(EM_DW, DEC) == "-1");
     CHECK(expr("(qt+lz)/qw", t).value(EM_DW, DEC) == "0");
     CHECK(expr("(qt+lz)/2.5", t).value(EM_DW, DEC) == "0");
+}
+
+TEST_CASE("exprmatrix model: a Mod of two constants is exact as with variables (#1223)", "[exprmatrix][cand][decided]")
+{
+    // the user's decision of 2026-11-26: the same exact value as the Mod
+    // of variables (today's sign rule), under every destination
+    struct { const char *c, *v, *vars; } const k[] = {
+        { "5.25 MOD 2", "a MOD d", "a=5.25 d.q=2" },
+        { "-5.25 MOD 2", "a MOD d", "a=-5.25 d.q=2" },
+        { "5.25 MOD -2", "a MOD d", "a=5.25 d.q=-2" },
+        { "-5.25 MOD -2", "a MOD d", "a=-5.25 d.q=-2" },
+        { "5 MOD 1.5", "a MOD d", "a=5 d.q=1.5" },
+        { "5.75 MOD 0.5", "a MOD d", "a=5.75 d.q=0.5" },
+        { "6.0 MOD 4", "a MOD d", "a=6 d.q=4" },
+    };
+    for (const auto &t : k)
+        for (enum em_ctx ctx : { EM_DQ, EM_DL, EM_DW, EM_PRINT }) {
+            INFO(t.c, " ", em_ctx_name(ctx));
+            // also a negative result under a whole destination: a Quick
+            // rounded down as the variable form (-3.25: -4), not the Float of
+            // a constant with a point (#1222; the user's decision of 2026-11-26)
+            CHECK(expr(t.c, "").value(ctx, DEC) == expr(t.v, t.vars).value(ctx, DEC));
+        }
+    CHECK(expr("-5.25 MOD -2", "").value(EM_DL, DEC) == "-4");
+    CHECK(expr("5.25 MOD 2", "").value(EM_DQ, DEC) == "00014000");
+    CHECK(expr("5.25 MOD 2", "").value(EM_PRINT, DEC) == "1.25");
+    CHECK(expr("5.25 MOD 2", "").value(EM_DW, DEC) == "1");
+    CHECK(expr("5.25 MOD 2", "").value(EM_DQ, DEC & ~EM_R_1223) == "00010000");
+    CHECK(expr("1000 MOD 1.5", "").value(EM_DW, DEC) == "1");
+    CHECK(expr("1000 MOD 1.5", "").value(EM_DW, DEC & ~EM_R_1223) == "0");
+    // whole numbers unchanged
+    CHECK(expr("7 MOD 3", "").value(EM_PRINT, DEC) == "1");
+    CHECK(expr("-7 MOD 3", "").value(EM_PRINT, DEC) == "2");
 }
 
 TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")

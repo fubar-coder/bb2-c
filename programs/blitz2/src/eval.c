@@ -5828,20 +5828,21 @@ static BOOL p5eqbin(struct p5node *p)
     }
 }
 
-/* the constant subtree n has a Mod by a divisor above 0 and below 1: the
-   pass's exact Mod (#1219), not the fold of today's Mod of the whole parts
-   (DIVS.W by 0) */
+/* the constant subtree n has a Mod with a fraction in an operand: the
+   pass's exact Mod (#1219, #1223), not the fold of today's Mod of the whole
+   parts (DIVS.W by 0 for a divisor below 1) */
 static BOOL p5constmodfrac(const struct exprtyping_node *n)
 {
-    struct p5q b;
+    struct p5q a, b;
 
     if (n->kind == ETN_NEG)
         return p5constmodfrac(n->l);
     if (n->kind != ETN_BIN)
         return FALSE;
     if (n->op == ETO_MOD) {
+        a = p5qval(n->l);
         b = p5qval(n->r);
-        if (b.ok && b.n > 0 && b.n < b.d)
+        if (a.ok && b.ok && b.n && (a.d != 1 || b.d != 1))
             return TRUE;
     }
     return p5constmodfrac(n->l) || p5constmodfrac(n->r);

@@ -13,7 +13,9 @@ db-mod-f-q-A	db	mod	value	0	1
 db-mod-f-cf-A	db	mod	value	0	1
 db-mod-cb-f-A	db	mod	value	1	0
 db-mod-cw-q-A	db	mod	value	0	1
+db-mod-cw-cf-A	db	mod	value	0	1
 db-mod-cl-q-A	db	mod	value	0	1
+db-mod-cl-cf-A	db	mod	value	0	1
 db-and-b-cf-A	db	bit	compiles now	!noncompile	1
 db-and-w-cf-A	db	bit	compiles now	!noncompile	0
 db-and-l-cf-A	db	bit	compiles now	!noncompile	0
@@ -99,7 +101,9 @@ dw-mod-f-q-A	dw	mod	value	0	1
 dw-mod-f-cf-A	dw	mod	value	0	1
 dw-mod-cb-f-A	dw	mod	value	1	0
 dw-mod-cw-q-A	dw	mod	value	0	1
+dw-mod-cw-cf-A	dw	mod	value	0	1
 dw-mod-cl-q-A	dw	mod	value	0	1
+dw-mod-cl-cf-A	dw	mod	value	0	1
 dw-and-b-cf-A	dw	bit	compiles now	!noncompile	1
 dw-and-w-cf-A	dw	bit	compiles now	!noncompile	0
 dw-and-l-cf-A	dw	bit	compiles now	!noncompile	0
@@ -184,7 +188,9 @@ dl-mod-f-q-A	dl	mod	value	0	1
 dl-mod-f-cf-A	dl	mod	value	0	1
 dl-mod-cb-f-A	dl	mod	value	1	0
 dl-mod-cw-q-A	dl	mod	value	0	1
+dl-mod-cw-cf-A	dl	mod	value	0	1
 dl-mod-cl-q-A	dl	mod	value	0	1
+dl-mod-cl-cf-A	dl	mod	value	0	1
 dl-and-b-cf-A	dl	bit	compiles now	!noncompile	1
 dl-and-w-cf-A	dl	bit	compiles now	!noncompile	0
 dl-and-l-cf-A	dl	bit	compiles now	!noncompile	0
@@ -290,11 +296,15 @@ dq-mod-f-cl-A	dq	mod	value	00020000	00028000
 dq-mod-f-cf-A	dq	mod	value	00000000	00010000
 dq-mod-cb-f-A	dq	mod	value	00010000	00008000
 dq-mod-cw-q-A	dq	mod	value	00000000	00010000
+dq-mod-cw-cf-A	dq	mod	value	00000000	00010000
 dq-mod-cl-q-A	dq	mod	value	00000000	00010000
+dq-mod-cl-cf-A	dq	mod	value	00000000	00010000
 dq-mod-cf-b-A	dq	mod	value	00010000	00018000
 dq-mod-cf-w-A	dq	mod	value	00010000	00018000
 dq-mod-cf-l-A	dq	mod	value	00010000	00018000
 dq-mod-cf-f-A	dq	mod	value	00010000	00018000
+dq-mod-cf-cb-A	dq	mod	value	00010000	00018000
+dq-mod-cf-cw-A	dq	mod	value	00010000	00018000
 dq-pow-l-q-A	dq	pow	value	?	FFFFFFFF
 dq-pow-l-f-A	dq	pow	value	?	FFFFFFFF
 dq-and-cl-cf-A	dq	bit	compiles now	!noncompile	00000000
@@ -342,11 +352,16 @@ df-mod-f-cl-A	df	mod	value	80000042	A0000042
 df-mod-f-cf-A	df	mod	value	00000000	80000041
 df-mod-cb-f-A	df	mod	value	80000041	80000040
 df-mod-cw-q-A	df	mod	value	00000000	80000041
+df-mod-cw-cf-A	df	mod	value	00000000	80000041
 df-mod-cl-q-A	df	mod	value	00000000	80000041
+df-mod-cl-cf-A	df	mod	value	00000000	80000041
 df-mod-cf-b-A	df	mod	value	80000041	C0000041
 df-mod-cf-w-A	df	mod	value	80000041	C0000041
 df-mod-cf-l-A	df	mod	value	80000041	C0000041
 df-mod-cf-f-A	df	mod	value	80000041	C0000041
+df-mod-cf-cb-A	df	mod	value	80000041	C0000041
+df-mod-cf-cw-A	df	mod	value	80000041	C0000041
+df-mod-cf-cl-A	df	mod	value	80000041	C0000041
 pl-not-cf-A	pl	bit	compiles now	!noncompile	-2
 pl-mod-b-f-A	pl	mod	value	1	0
 pl-mod-w-q-A	pl	mod	value	0	1
@@ -357,7 +372,9 @@ pl-mod-f-q-A	pl	mod	value	0	1
 pl-mod-f-cf-A	pl	mod	value	0	1
 pl-mod-cb-f-A	pl	mod	value	1	0
 pl-mod-cw-q-A	pl	mod	value	0	1
+pl-mod-cw-cf-A	pl	mod	value	0	1
 pl-mod-cl-q-A	pl	mod	value	0	1
+pl-mod-cl-cf-A	pl	mod	value	0	1
 pl-and-b-cf-A	pl	bit	compiles now	!noncompile	1
 pl-and-w-cf-A	pl	bit	compiles now	!noncompile	0
 pl-and-l-cf-A	pl	bit	compiles now	!noncompile	0
@@ -442,7 +459,9 @@ pw-mod-f-q-A	pw	mod	value	0	1
 pw-mod-f-cf-A	pw	mod	value	0	1
 pw-mod-cb-f-A	pw	mod	value	1	0
 pw-mod-cw-q-A	pw	mod	value	0	1
+pw-mod-cw-cf-A	pw	mod	value	0	1
 pw-mod-cl-q-A	pw	mod	value	0	1
+pw-mod-cl-cf-A	pw	mod	value	0	1
 pw-and-b-cf-A	pw	bit	compiles now	!noncompile	1
 pw-and-w-cf-A	pw	bit	compiles now	!noncompile	0
 pw-and-l-cf-A	pw	bit	compiles now	!noncompile	0
@@ -549,11 +568,15 @@ pq-mod-f-cl-A	pq	mod	value	00020000	00028000
 pq-mod-f-cf-A	pq	mod	value	00000000	00010000
 pq-mod-cb-f-A	pq	mod	value	00010000	00008000
 pq-mod-cw-q-A	pq	mod	value	00000000	00010000
+pq-mod-cw-cf-A	pq	mod	value	00000000	00010000
 pq-mod-cl-q-A	pq	mod	value	00000000	00010000
+pq-mod-cl-cf-A	pq	mod	value	00000000	00010000
 pq-mod-cf-b-A	pq	mod	value	00010000	00018000
 pq-mod-cf-w-A	pq	mod	value	00010000	00018000
 pq-mod-cf-l-A	pq	mod	value	00010000	00018000
 pq-mod-cf-f-A	pq	mod	value	00010000	00018000
+pq-mod-cf-cb-A	pq	mod	value	00010000	00018000
+pq-mod-cf-cw-A	pq	mod	value	00010000	00018000
 pq-pow-l-q-A	pq	pow	value	?	FFFFFFFF
 pq-pow-l-f-A	pq	pow	value	?	FFFFFFFF
 pq-and-cl-cf-A	pq	bit	compiles now	!noncompile	00000000
@@ -601,11 +624,16 @@ pf-mod-f-cl-A	pf	mod	value	80000042	A0000042
 pf-mod-f-cf-A	pf	mod	value	00000000	80000041
 pf-mod-cb-f-A	pf	mod	value	80000041	80000040
 pf-mod-cw-q-A	pf	mod	value	00000000	80000041
+pf-mod-cw-cf-A	pf	mod	value	00000000	80000041
 pf-mod-cl-q-A	pf	mod	value	00000000	80000041
+pf-mod-cl-cf-A	pf	mod	value	00000000	80000041
 pf-mod-cf-b-A	pf	mod	value	80000041	C0000041
 pf-mod-cf-w-A	pf	mod	value	80000041	C0000041
 pf-mod-cf-l-A	pf	mod	value	80000041	C0000041
 pf-mod-cf-f-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-cb-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-cw-A	pf	mod	value	80000041	C0000041
+pf-mod-cf-cl-A	pf	mod	value	80000041	C0000041
 if-not-cf-A	if	bit	compiles now	!noncompile	T
 if-div-q-l-A	if	arith	value	T	F
 if-mod-w-q-A	if	mod	value	F	T
@@ -615,7 +643,9 @@ if-mod-l-cf-A	if	mod	value	F	T
 if-mod-f-q-A	if	mod	value	F	T
 if-mod-f-cf-A	if	mod	value	F	T
 if-mod-cw-q-A	if	mod	value	F	T
+if-mod-cw-cf-A	if	mod	value	F	T
 if-mod-cl-q-A	if	mod	value	F	T
+if-mod-cl-cf-A	if	mod	value	F	T
 if-and-b-cf-A	if	bit	compiles now	!noncompile	T
 if-and-w-cf-A	if	bit	compiles now	!noncompile	F
 if-and-l-cf-A	if	bit	compiles now	!noncompile	F
@@ -716,11 +746,16 @@ print-mod-f-cl-A	print	mod	value	2	2.5
 print-mod-f-cf-A	print	mod	value	0	1
 print-mod-cb-f-A	print	mod	value	1	.5
 print-mod-cw-q-A	print	mod	value	0	1
+print-mod-cw-cf-A	print	mod	value	0	1
 print-mod-cl-q-A	print	mod	value	0	1
+print-mod-cl-cf-A	print	mod	value	0	1
 print-mod-cf-b-A	print	mod	value	1	1.5
 print-mod-cf-w-A	print	mod	value	1	1.5
 print-mod-cf-l-A	print	mod	value	1	1.5
 print-mod-cf-f-A	print	mod	value	1	1.5
+print-mod-cf-cb-A	print	mod	value	1	1.5
+print-mod-cf-cw-A	print	mod	value	1	1.5
+print-mod-cf-cl-A	print	mod	value	1	1.5
 print-and-b-cf-A	print	bit	compiles now	!noncompile	1
 print-and-w-cf-A	print	bit	compiles now	!noncompile	0
 print-and-l-cf-A	print	bit	compiles now	!noncompile	0
@@ -809,8 +844,13 @@ db-mod-f-q-B	db	mod	value	0	-2
 db-mod-f-cf-B	db	mod	value	0	-2
 db-mod-cb-q-B	db	mod	value	-3	0
 db-mod-cw-q-B	db	mod	value	0	-3
+db-mod-cw-cf-B	db	mod	value	0	-3
 db-mod-cl-q-B	db	mod	value	0	-3
+db-mod-cl-cf-B	db	mod	value	0	-2
 db-mod-cf-f-B	db	mod	value	-3	-4
+db-mod-cf-cb-B	db	mod	value	-4	-5
+db-mod-cf-cw-B	db	mod	value	23	22
+db-mod-cf-cl-B	db	mod	value	95	94
 db-and-b-cf-B	db	bit	compiles now	!noncompile	-4
 db-and-w-cf-B	db	bit	compiles now	!noncompile	24
 db-and-l-cf-B	db	bit	compiles now	!noncompile	96
@@ -897,8 +937,13 @@ dw-mod-f-q-B	dw	mod	value	0	-2
 dw-mod-f-cf-B	dw	mod	value	0	-2
 dw-mod-cb-q-B	dw	mod	value	-3	0
 dw-mod-cw-q-B	dw	mod	value	0	-3
+dw-mod-cw-cf-B	dw	mod	value	0	-3
 dw-mod-cl-q-B	dw	mod	value	0	-3
+dw-mod-cl-cf-B	dw	mod	value	0	-2
 dw-mod-cf-f-B	dw	mod	value	-3	-4
+dw-mod-cf-cb-B	dw	mod	value	-4	-5
+dw-mod-cf-cw-B	dw	mod	value	-1001	-1002
+dw-mod-cf-cl-B	dw	mod	value	31071	31070
 dw-and-b-cf-B	dw	bit	compiles now	!noncompile	-4
 dw-and-w-cf-B	dw	bit	compiles now	!noncompile	-1000
 dw-and-l-cf-B	dw	bit	compiles now	!noncompile	31072
@@ -984,8 +1029,13 @@ dl-mod-f-q-B	dl	mod	value	0	-2
 dl-mod-f-cf-B	dl	mod	value	0	-2
 dl-mod-cb-q-B	dl	mod	value	-3	0
 dl-mod-cw-q-B	dl	mod	value	0	-3
+dl-mod-cw-cf-B	dl	mod	value	0	-3
 dl-mod-cl-q-B	dl	mod	value	0	-3
+dl-mod-cl-cf-B	dl	mod	value	0	-2
 dl-mod-cf-f-B	dl	mod	value	-3	-4
+dl-mod-cf-cb-B	dl	mod	value	-4	-5
+dl-mod-cf-cw-B	dl	mod	value	-1001	-1002
+dl-mod-cf-cl-B	dl	mod	value	-100001	-100002
 dl-and-b-cf-B	dl	bit	compiles now	!noncompile	-4
 dl-and-w-cf-B	dl	bit	compiles now	!noncompile	-1000
 dl-and-l-cf-B	dl	bit	compiles now	!noncompile	-100000
@@ -1091,12 +1141,17 @@ dq-mod-f-cw-B	dq	mod	value	FC160000	FC158000
 dq-mod-f-cl-B	dq	mod	value	795E0000	795D8000
 dq-mod-f-cf-B	dq	mod	value	00000000	FFFD8000
 dq-mod-cb-q-B	dq	mod	value	FFFD0000	00000000
+dq-mod-cb-cf-B	dq	mod	value	FFFD0000	00000000
 dq-mod-cw-q-B	dq	mod	value	00000000	FFFD8000
+dq-mod-cw-cf-B	dq	mod	value	00000000	FFFD8000
 dq-mod-cl-q-B	dq	mod	value	00000000	FFFD8000
+dq-mod-cl-cf-B	dq	mod	value	00000000	FFFD8000
 dq-mod-cf-b-B	dq	mod	value	FFFB0000	FFFB8000
 dq-mod-cf-w-B	dq	mod	value	FC160000	FC168000
 dq-mod-cf-l-B	dq	mod	value	795E0000	795E8000
 dq-mod-cf-f-B	dq	mod	value	FFFD0000	FFFC0000
+dq-mod-cf-cb-B	dq	mod	value	FFFB0000	FFFB8000
+dq-mod-cf-cw-B	dq	mod	value	FC160000	FC168000
 dq-pow-l-q-B	dq	pow	value	?	?-
 dq-pow-l-f-B	dq	pow	value	?	?-
 dq-and-cl-cf-B	dq	bit	compiles now	!noncompile	79600000
@@ -1142,11 +1197,16 @@ df-mod-f-cw-B	df	mod	value	FA8000CA	FAA000CA
 df-mod-f-cl-B	df	mod	value	C35100D1	C35140D1
 df-mod-f-cf-B	df	mod	value	00000000	A00000C2
 df-mod-cw-q-B	df	mod	value	00000000	A00000C2
+df-mod-cw-cf-B	df	mod	value	00000000	A00000C2
 df-mod-cl-q-B	df	mod	value	00000000	A00000C2
+df-mod-cl-cf-B	df	mod	value	00000000	A00000C2
 df-mod-cf-b-B	df	mod	value	800000C3	900000C3
 df-mod-cf-w-B	df	mod	value	FA4000CA	FA6000CA
 df-mod-cf-l-B	df	mod	value	C35080D1	C350C0D1
 df-mod-cf-f-B	df	mod	value	C00000C2	800000C3
+df-mod-cf-cb-B	df	mod	value	800000C3	900000C3
+df-mod-cf-cw-B	df	mod	value	FA4000CA	FA6000CA
+df-mod-cf-cl-B	df	mod	value	C35080D1	C350C0D1
 pl-not-cf-B	pl	bit	compiles now	!noncompile	1
 pl-mod-b-q-B	pl	mod	value	-3	0
 pl-mod-w-q-B	pl	mod	value	0	-3
@@ -1158,8 +1218,13 @@ pl-mod-f-q-B	pl	mod	value	0	-2
 pl-mod-f-cf-B	pl	mod	value	0	-2
 pl-mod-cb-q-B	pl	mod	value	-3	0
 pl-mod-cw-q-B	pl	mod	value	0	-3
+pl-mod-cw-cf-B	pl	mod	value	0	-3
 pl-mod-cl-q-B	pl	mod	value	0	-3
+pl-mod-cl-cf-B	pl	mod	value	0	-2
 pl-mod-cf-f-B	pl	mod	value	-3	-4
+pl-mod-cf-cb-B	pl	mod	value	-4	-5
+pl-mod-cf-cw-B	pl	mod	value	-1001	-1002
+pl-mod-cf-cl-B	pl	mod	value	-100001	-100002
 pl-and-b-cf-B	pl	bit	compiles now	!noncompile	-4
 pl-and-w-cf-B	pl	bit	compiles now	!noncompile	-1000
 pl-and-l-cf-B	pl	bit	compiles now	!noncompile	-100000
@@ -1245,8 +1310,13 @@ pw-mod-f-q-B	pw	mod	value	0	-2
 pw-mod-f-cf-B	pw	mod	value	0	-2
 pw-mod-cb-q-B	pw	mod	value	-3	0
 pw-mod-cw-q-B	pw	mod	value	0	-3
+pw-mod-cw-cf-B	pw	mod	value	0	-3
 pw-mod-cl-q-B	pw	mod	value	0	-3
+pw-mod-cl-cf-B	pw	mod	value	0	-2
 pw-mod-cf-f-B	pw	mod	value	-3	-4
+pw-mod-cf-cb-B	pw	mod	value	-4	-5
+pw-mod-cf-cw-B	pw	mod	value	-1001	-1002
+pw-mod-cf-cl-B	pw	mod	value	31071	31070
 pw-and-b-cf-B	pw	bit	compiles now	!noncompile	-4
 pw-and-w-cf-B	pw	bit	compiles now	!noncompile	-1000
 pw-and-l-cf-B	pw	bit	compiles now	!noncompile	31072
@@ -1353,12 +1423,17 @@ pq-mod-f-cw-B	pq	mod	value	FC160000	FC158000
 pq-mod-f-cl-B	pq	mod	value	795E0000	795D8000
 pq-mod-f-cf-B	pq	mod	value	00000000	FFFD8000
 pq-mod-cb-q-B	pq	mod	value	FFFD0000	00000000
+pq-mod-cb-cf-B	pq	mod	value	FFFD0000	00000000
 pq-mod-cw-q-B	pq	mod	value	00000000	FFFD8000
+pq-mod-cw-cf-B	pq	mod	value	00000000	FFFD8000
 pq-mod-cl-q-B	pq	mod	value	00000000	FFFD8000
+pq-mod-cl-cf-B	pq	mod	value	00000000	FFFD8000
 pq-mod-cf-b-B	pq	mod	value	FFFB0000	FFFB8000
 pq-mod-cf-w-B	pq	mod	value	FC160000	FC168000
 pq-mod-cf-l-B	pq	mod	value	795E0000	795E8000
 pq-mod-cf-f-B	pq	mod	value	FFFD0000	FFFC0000
+pq-mod-cf-cb-B	pq	mod	value	FFFB0000	FFFB8000
+pq-mod-cf-cw-B	pq	mod	value	FC160000	FC168000
 pq-pow-l-q-B	pq	pow	value	?	?-
 pq-pow-l-f-B	pq	pow	value	?	?-
 pq-and-cl-cf-B	pq	bit	compiles now	!noncompile	79600000
@@ -1404,11 +1479,16 @@ pf-mod-f-cw-B	pf	mod	value	FA8000CA	FAA000CA
 pf-mod-f-cl-B	pf	mod	value	C35100D1	C35140D1
 pf-mod-f-cf-B	pf	mod	value	00000000	A00000C2
 pf-mod-cw-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-cw-cf-B	pf	mod	value	00000000	A00000C2
 pf-mod-cl-q-B	pf	mod	value	00000000	A00000C2
+pf-mod-cl-cf-B	pf	mod	value	00000000	A00000C2
 pf-mod-cf-b-B	pf	mod	value	800000C3	900000C3
 pf-mod-cf-w-B	pf	mod	value	FA4000CA	FA6000CA
 pf-mod-cf-l-B	pf	mod	value	C35080D1	C350C0D1
 pf-mod-cf-f-B	pf	mod	value	C00000C2	800000C3
+pf-mod-cf-cb-B	pf	mod	value	800000C3	900000C3
+pf-mod-cf-cw-B	pf	mod	value	FA4000CA	FA6000CA
+pf-mod-cf-cl-B	pf	mod	value	C35080D1	C350C0D1
 if-not-cf-B	if	bit	compiles now	!noncompile	T
 if-div-q-l-B	if	arith	value	T	F
 if-mod-b-q-B	if	mod	value	T	F
@@ -1420,7 +1500,9 @@ if-mod-f-q-B	if	mod	value	F	T
 if-mod-f-cf-B	if	mod	value	F	T
 if-mod-cb-q-B	if	mod	value	T	F
 if-mod-cw-q-B	if	mod	value	F	T
+if-mod-cw-cf-B	if	mod	value	F	T
 if-mod-cl-q-B	if	mod	value	F	T
+if-mod-cl-cf-B	if	mod	value	F	T
 if-and-b-cf-B	if	bit	compiles now	!noncompile	T
 if-and-w-cf-B	if	bit	compiles now	!noncompile	T
 if-and-l-cf-B	if	bit	compiles now	!noncompile	T
@@ -1520,11 +1602,16 @@ print-mod-f-cl-B	print	mod	value	-100002	-100002.5
 print-mod-f-cf-B	print	mod	value	0	-2.5
 print-mod-cb-q-B	print	mod	value	-3	0
 print-mod-cw-q-B	print	mod	value	0	-2.5
+print-mod-cw-cf-B	print	mod	value	0	-2.5
 print-mod-cl-q-B	print	mod	value	0	-2.5
+print-mod-cl-cf-B	print	mod	value	0	-2.5
 print-mod-cf-b-B	print	mod	value	-4	-4.5
 print-mod-cf-w-B	print	mod	value	-1001	-1001.5
 print-mod-cf-l-B	print	mod	value	-100001	-100001.5
 print-mod-cf-f-B	print	mod	value	-3	-4
+print-mod-cf-cb-B	print	mod	value	-4	-4.5
+print-mod-cf-cw-B	print	mod	value	-1001	-1001.5
+print-mod-cf-cl-B	print	mod	value	-100001	-100001.5
 print-and-b-cf-B	print	bit	compiles now	!noncompile	-4
 print-and-w-cf-B	print	bit	compiles now	!noncompile	-1000
 print-and-l-cf-B	print	bit	compiles now	!noncompile	-100000
@@ -1607,6 +1694,7 @@ i1-mod-f-q-I	i1	mod	value	1/1	17/17
 i1-mod-f-cf-I	i1	mod	value	1/1	17/17
 i1-mod-cb-f-I	i1	mod	value	17/17	1/1
 i1-mod-cl-q-I	i1	mod	value	1/1	17/17
+i1-mod-cl-cf-I	i1	mod	value	1/1	17/17
 i1-and-b-cf-I	i1	bit	compiles now	!noncompile/!noncompile	17/17
 i1-and-w-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
 i1-and-l-cf-I	i1	bit	compiles now	!noncompile/!noncompile	1/1
@@ -1686,6 +1774,7 @@ i2-mod-f-q-I	i2	mod	value	1/1	17/17
 i2-mod-f-cf-I	i2	mod	value	1/1	17/17
 i2-mod-cb-f-I	i2	mod	value	17/17	1/1
 i2-mod-cl-q-I	i2	mod	value	1/1	17/17
+i2-mod-cl-cf-I	i2	mod	value	1/1	17/17
 i2-and-b-cf-I	i2	bit	compiles now	!noncompile/!noncompile	17/17
 i2-and-w-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
 i2-and-l-cf-I	i2	bit	compiles now	!noncompile/!noncompile	1/1
@@ -1767,7 +1856,9 @@ i1-mod-f-q-J	i1	mod	value	1/1	!outside/!runtime
 i1-mod-f-cf-J	i1	mod	value	1/1	!outside/!runtime
 i1-mod-cb-q-J	i1	mod	value	!outside/!runtime	1/1
 i1-mod-cw-q-J	i1	mod	value	1/1	!outside/!runtime
+i1-mod-cw-cf-J	i1	mod	value	1/1	!outside/!runtime
 i1-mod-cl-q-J	i1	mod	value	1/1	!outside/!runtime
+i1-mod-cl-cf-J	i1	mod	value	1/1	!outside/!runtime
 i1-and-b-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-w-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i1-and-l-cf-J	i1	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
@@ -1849,7 +1940,9 @@ i2-mod-f-q-J	i2	mod	value	1/1	!outside/!runtime
 i2-mod-f-cf-J	i2	mod	value	1/1	!outside/!runtime
 i2-mod-cb-q-J	i2	mod	value	!outside/!runtime	1/1
 i2-mod-cw-q-J	i2	mod	value	1/1	!outside/!runtime
+i2-mod-cw-cf-J	i2	mod	value	1/1	!outside/!runtime
 i2-mod-cl-q-J	i2	mod	value	1/1	!outside/!runtime
+i2-mod-cl-cf-J	i2	mod	value	1/1	!outside/!runtime
 i2-and-b-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-w-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
 i2-and-l-cf-J	i2	bit	compiles now	!noncompile/!noncompile	!outside/!runtime
