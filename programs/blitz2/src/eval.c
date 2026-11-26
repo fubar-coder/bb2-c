@@ -6524,6 +6524,8 @@ static BOOL p5fastq(const struct p5node *k)
     return !p5folded(&k->t) && p5mixkind(&k->t) == 2 && k->dt == T_QUICK && k->df == ETF_TYPE;
 }
 
+static void p5nopall(struct p5node *p, struct p5node *keep);
+
 /* the fast paths of p5fast, decided when the operands are applied */
 static void p5fastmark(struct p5node *p)
 {
@@ -6542,6 +6544,10 @@ static void p5fastmark(struct p5node *p)
         p->flags |= P5F_NDIV;
         p->whole = (ULONG)(v.n < 0 ? -v.n : v.n);
         p->ffp = v.n < 0;
+        /* the divisor is an immediate of the DIVU: its load is dead (a
+           subtree of the build's code only when it is one constant) */
+        if (!(R->flags & P5F_KEEP) || R->t.kind == ETN_CONST)
+            p5nopall(R, NULL);
         return;
     }
     if (p->t.op != ETO_MUL)

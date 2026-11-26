@@ -474,7 +474,9 @@
 # bq48.xqmodc 1539.0 -> 562.6, the new loops xqmodh 1114.5 -> 594.5,
 # xqmodch 1095.0 -> 560.5. A Long times a Quick in 48.16 (not rounded)
 # by compilerlib's q48mull: bq48.iflmulq 592.8 -> 464.5, the new loops
-# iflxmulq 1013.2 -> 592.5, lmulqaddp 556.8 -> 427.0.
+# iflxmulq 1013.2 -> 592.5, lmulqaddp 556.8 -> 427.0. The dead load of
+# the divisor of a Quick divided by a whole constant dropped:
+# bcmp.inteq 1073.5 -> 1061.6, bq48.qdiv4addl 498.2 -> 488.2.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -522,7 +524,7 @@ bcmp.emptylong                  3          -  the empty loop again, 150000 itera
 bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
 bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)
 bcmp.leqq                     120      107.0  If cq=y Then c=1 (Long = Quick, no fraction)
-bcmp.inteq                   1087     1150.0  If n/2=Int(n/2) Then c=1 (n=8; P+: beside the Long of Int both sides 48.16, n/2 inline)
+bcmp.inteq                   1078     1150.0  If n/2=Int(n/2) Then c=1 (n=8; P+: beside the Long of Int both sides 48.16, n/2 inline)
 bcmp.qgtconst                  99       90.5  If x>1 Then c=1
 bcmp.lgtconst                  95       91.0  If l>1 Then c=1 (Long > constant)
 bcmp.whilelq                   24       16.5  While cnt<w : cnt+1 : Wend (per pass)
@@ -691,7 +693,7 @@ bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Cas
 bq48.xqmodc                   572          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q16mod)
 bq48.xlmodq                  1511          -  x=l Mod q (a Long Mod a Quick, exact)
 bq48.xldivq                  1877          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
-bq48.qdiv4addl                507          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
+bq48.qdiv4addl                496          -  r=q/4+l (a 16.16 value divided by a whole constant in a 48.16 sum under a Long)
 bq48.xqmulhaddl               294          -  x=q*0.5+l (a 16.16 value times a constant below 1, under a Quick)
 bq48.xldivqw                  494          -  x=l/qw (qw=4: a 48.16 division by a Quick that is whole; l not widened, its high word 0 skipped: two DIVU)
 bq48.xqmodc3                  244          -  x=q Mod 3 (a Quick Mod a whole constant: inline, one DIVU)
