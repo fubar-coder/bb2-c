@@ -54,21 +54,41 @@ graphics. Two more fixes of them change what an existing program draws:
   the chunky area into other rows or behind the area; such a line is
   clipped away, as `ChunkyPlot` with `CLIP` does
   ([#987](https://github.com/fubar-coder/bb2-c/issues/987)).
-* `ChunkyVlin` without `CLIP` and a `y1` greater than `y2` wrote about
-  65536 words, one per chunky line; with runtime error checking it is the
-  error "ChunkyVlin y1 MUST NOT be greater than y2"
-  ([#417](https://github.com/fubar-coder/bb2-c/issues/417)).
 * `RenderPoly` before any `RenderToBitmap` or `RenderToChunky` drew the
   polygon into memory it took for a bitmap; it draws nothing
   ([#420](https://github.com/fubar-coder/bb2-c/issues/420)).
-* `RenderPoly` after `RenderToChunky` took a colour above 14 from the
-  memory behind its table of 15 colours; with runtime error checking it
-  is the error "Illegal Colour"
-  ([#422](https://github.com/fubar-coder/bb2-c/issues/422)).
 * The dither form of `BitMapPoly` and `RenderPoly` took the planes from
   the second one on from behind the dither bitmap when its planes were
   smaller than those of the bitmap drawn on; every plane comes from the
   dither bitmap
   ([#1035](https://github.com/fubar-coder/bb2-c/issues/1035)).
+
+#### `ChunkyVlin` with the ends the wrong way round {#chunkyvlin-ends}
+
+**What happened.** `ChunkyVlin x,y1,y2,colour` without `CLIP` draws from
+`y1` down to `y2`. With `y1` greater than `y2` it wrote about 65536 words,
+one in each chunky line, far beyond the chunky area.
+
+**With the port.** With runtime error checking, this is the error
+"ChunkyVlin y1 MUST NOT be greater than y2". The form with `CLIP` takes
+the ends in either order.
+
+**What to change.** Give the upper end first, or use the form with
+`CLIP`.
+
+Issue: [ChunkyVlin with y2 below y1 wrote about 65536 words (#417)](https://github.com/fubar-coder/bb2-c/issues/417).
+
+#### `RenderPoly` with a colour above 14 on a chunky area {#renderpoly-colour}
+
+**What happened.** After `RenderToChunky`, the colour of `RenderPoly` is
+a number from 0 to 14 for a fixed set of 15 colours. A colour above 14 was
+taken from the memory behind that set.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Colour".
+
+**What to change.** Give a colour from 0 to 14.
+
+Issue: [RenderPoly after RenderToChunky read colours above 14 behind its table (#422)](https://github.com/fubar-coder/bb2-c/issues/422).
 
 {{% fixed-bugs-library part="elsewhere" %}}

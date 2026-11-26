@@ -25,13 +25,22 @@ otherwise.
 * `StringGadget` after `Borders Off` wrote to the addresses 0, 2, 36 and
   38; it writes nothing there
   ([#164](https://github.com/fubar-coder/bb2-c/issues/164)).
-* `StringGadget` with a `Maxlen` of 0 cleared 65536 bytes of memory and
-  crashed the program; with runtime error checking it is the error
-  "Maxlen MUST be greater than zero"
-  ([#165](https://github.com/fubar-coder/bb2-c/issues/165)).
 * A `ShapeGadget` of a shape of depth 0 got a broken image; with runtime
   error checking such a shape cannot be made, as `InitShape` refuses a
   depth of 0
   ([#167](https://github.com/fubar-coder/bb2-c/issues/167)).
+
+#### `StringGadget` with a `Maxlen` of 0 {#stringgadget-maxlen}
+
+**What happened.** `StringGadget` with a `Maxlen` of 0 cleared 65536
+bytes of memory behind the gadget's empty text buffer and crashed the
+program.
+
+**With the port.** With runtime error checking, this is the error
+"Maxlen MUST be greater than zero".
+
+**What to change.** Give a `Maxlen` of 1 or more.
+
+Issue: [StringGadget with Maxlen 0 cleared 64 KB (#165)](https://github.com/fubar-coder/bb2-c/issues/165).
 
 {{% fixed-bugs-library part="elsewhere" %}}

@@ -76,11 +76,6 @@ Two more fixes of them change what an existing program does:
 * With a channel mask with gaps, such as `SetMedMask %0101`, the higher
   channels did not get the repeat part of their samples; every playing
   channel gets it ([#208](https://github.com/fubar-coder/bb2-c/issues/208)).
-* With runtime error checking, `JumpMed` without a playing module is the
-  error "No Module Playing"; the original wrote the position into an
-  exception vector of the processor
-  ([#210](https://github.com/fubar-coder/bb2-c/issues/210);
-  [`JumpMed` without a playing module]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#jumpmed-no-module" >}})).
 * A finetune outside -8 to 7, from the instrument or the command 15xx,
   made the MED player read a period table from outside its table; 15xx
   ignores such a value, and the instrument's is taken as 0
@@ -114,5 +109,32 @@ Two more fixes of them change what an existing program does:
   `a$="V"+Str$(GetMedVolume(0))` gave a cut string or crashed the
   program; they leave the pointer alone
   ([#1061](https://github.com/fubar-coder/bb2-c/issues/1061)).
+
+#### `JumpMed` without a playing module {#jumpmed-no-module}
+
+**What happened.** `JumpMed` makes the MED module that plays go on at
+another position of its song. Without a playing module, before the first
+`StartMedModule`, after `StopMed` or after the module stopped itself,
+the original wrote the position into low memory, into an exception
+vector of the processor:
+
+```
+NPrint "before"
+JumpMed 3
+NPrint "after"
+End
+```
+
+The original printed `before` and `after`, and the exception vector
+held the position from then on.
+
+**With the port.** With runtime error checking, the program prints
+`before` and stops with the error "No Module Playing". Without runtime
+error checking nothing changes.
+
+**What to change.** Call `JumpMed` only while a module plays, after
+`StartMedModule`.
+
+Issue: [JumpMed without a playing module writes to address 44-47 (#210)](https://github.com/fubar-coder/bb2-c/issues/210).
 
 {{% fixed-bugs-library part="elsewhere" %}}

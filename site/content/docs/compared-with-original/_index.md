@@ -36,10 +36,13 @@ against the original yourself.
   operation in an expression by its own operands and the type the result
   is wanted in, where the original went from left to right. Programs that
   mix Quicks with other types can get other, mostly more exact, results.
-* **Sources that compile differently.** A few of the fixes concern the
-  compiler. A small number of sources that the original compiled, mostly
-  with a wrong or random result, give an error with the port or compile to
-  something else.
+* **New errors.** A few fixes make the port refuse a source that the
+  original compiled, mostly with a wrong or random result, or stop a
+  program with a runtime error where the original went on with a wrong
+  argument. Each is described with its fix, with a program and what to
+  change; the table of
+  [Important Fixes & Breaking Changes]({{< relref "/docs/compared-with-original/important-fixes" >}}?level=3,4#all-fixes)
+  shows them as levels 3 and 4.
 * **Extensions.** The compiler understands a little more than the
   original, but only where the original refused the source. A source that
   the original compiled is never given a new meaning. It also compiles
@@ -88,7 +91,6 @@ that shows the fix; the pages link them.
   {{< card link="editor" title="Editor" subtitle="Fixed bugs of the editor TED: blocks, JOIN, accented letters, loading, saving, options and low memory." >}}
   {{< card link="libraries" title="Libraries" subtitle="Fixed bugs of the command libraries, of AmigaOS calls and of the RWE userlibs, one page per library." >}}
   {{< card link="expression-types" title="The type of each operation" subtitle="How the original and the port type each operation of an expression, with the results that differ, by example." >}}
-  {{< card link="new-errors" title="Sources that compile differently" subtitle="Sources the original accepted that the port refuses or compiles to something else, and new runtime errors." >}}
   {{< card link="extensions" title="Extensions" subtitle="What the compiler and the libraries accept beyond Blitz Basic 2." >}}
   {{< card link="bugs-not-fixed-yet" title="Bugs not fixed yet" subtitle="The known bugs of the original that the port still shows, and how they are tracked and tested." >}}
   {{< card link="comparing" title="Comparing with the original yourself" subtitle="Compile your own program with both compilers and compare the results." >}}

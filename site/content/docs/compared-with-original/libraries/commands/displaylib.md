@@ -105,11 +105,40 @@ existing program shows:
   instructions of the copper list, and the sprite stayed visible; the
   sprite is switched off on its own channel
   ([#1051](https://github.com/fubar-coder/bb2-c/issues/1051)).
-* `DisplaySprite` of a sprite whose channels run from the last channels
-  of the copper list into those of `CustomSprites` wrote over other
-  instructions of the list; it is the runtime error "Not Enough Sprite
-  Channels", also without runtime error checking
-  ([#414](https://github.com/fubar-coder/bb2-c/issues/414);
-  [`DisplaySprite` across the two sprite banks]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#displaysprite-two-banks" >}})).
+
+#### `DisplaySprite` across the two sprite banks {#displaysprite-two-banks}
+
+A copper list of the display library has its own sprite channels, 8 for
+a list made with 8 sprites. `CustomSprites` adds a second bank of
+channels, 8 to 15, for the lines from its position down. A sprite wider
+than one channel takes several channels after the one given to
+`DisplaySprite`.
+
+**What happened.** A sprite that starts on the last channels of the
+first bank and needs channels of the second wrote its other channels
+over the instructions behind the list's sprites, which set the scroll
+position, the priority of sprites and playfields and the colour banks:
+
+```
+InitCopList 0,44,256,$10004,8,32,80
+CustomSprites 0,0,14,8
+DisplaySprite 0,0,50,20,7
+```
+
+Sprite 0 is two channels wide, such as a sprite made with `GetaSprite`
+from a 4 colour shape of 32 pixels in `SpriteMode 0`. The original put its second channel
+over these instructions, with no error.
+
+**With the port.** The channels of a sprite must all lie in the bank of
+its first channel, since the two banks show their sprites in different
+parts of the display. Otherwise it is the runtime error "Not Enough
+Sprite Channels", also without runtime error checking, as for a sprite
+that needs more channels than a list without `CustomSprites` has.
+
+**What to change.** Show the sprite on channels that lie in one bank:
+here on channel 6 or lower, or from channel 8 on, below the position of
+`CustomSprites`.
+
+Issue: [DisplaySprite of a sprite across the two sprite banks overwrote the copper list (#414)](https://github.com/fubar-coder/bb2-c/issues/414).
 
 {{% fixed-bugs-library part="elsewhere" %}}

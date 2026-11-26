@@ -18,11 +18,20 @@ otherwise.
 * The runtime error of `Inkey$` from the default input read "Can't Input
   Character from Defualt Input"; it reads "Default"
   ([#193](https://github.com/fubar-coder/bb2-c/issues/193)).
-* With runtime error checking, the first `PopInput` or `PopOutput` with
-  no switch of the channel left to undo, such as one at the start of the
-  program, passed the check and left the program without a channel; the
-  error came only at the pop after it. It is reported at the first such
-  pop
-  ([#1032](https://github.com/fubar-coder/bb2-c/issues/1032)).
+
+#### `PopInput` and `PopOutput` with nothing to pop {#pop-without-push}
+
+**What happened.** With runtime error checking, the first `PopInput` or
+`PopOutput` with no switch of the channel left to undo, such as one at
+the start of the program, passed the check and left the program without
+an input or output channel. The error "No Input channel to pop!" or "No
+Output channel to pop!" came only at the next pop.
+
+**With the port.** The error comes at the first such pop.
+
+**What to change.** Pop only to undo a switch such as `FileInput` or
+`WindowOutput`.
+
+Issue: [The check of PopInput and PopOutput came one pop late (#1032)](https://github.com/fubar-coder/bb2-c/issues/1032).
 
 {{% fixed-bugs-library part="elsewhere" %}}

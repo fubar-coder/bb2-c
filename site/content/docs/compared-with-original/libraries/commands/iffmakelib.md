@@ -45,17 +45,39 @@ and the same colours.
   bitmap. Every row is packed from its own bytes, so a saved row can
   differ from the original's
   ([#183](https://github.com/fubar-coder/bb2-c/issues/183)).
-* `SaveBitmap` and `SaveShape` with a palette of 0 colours wrote 65536
-  colours into a buffer of 4096 bytes and over the memory behind it; with
-  runtime error checking, a palette without colours is the error
-  "Uninitialized Palette"
-  ([#182](https://github.com/fubar-coder/bb2-c/issues/182);
-  [A palette of 0 colours for `SaveBitmap` and `SaveShape`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#save-palette-no-colours" >}})).
-* `SaveShape` of a shape of depth 0 or of more than 14 planes, such as
-  one that `LoadShape` made from a 24-bit picture, wrote the addresses of
-  its planes over the memory of the library; it is the runtime error
-  "Illegal Shape Depth", also without runtime error checking
-  ([#326](https://github.com/fubar-coder/bb2-c/issues/326);
-  [`SaveShape` of a shape of depth 0 or more than 14]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#saveshape-depth" >}})).
+
+#### A palette of 0 colours for `SaveBitmap` and `SaveShape` {#save-palette-no-colours}
+
+**What happened.** `InitPalette p,0` makes a palette without colours.
+`SaveBitmap` and `SaveShape` with such a palette wrote 65536 colours,
+192 KB, into a buffer of 4 KB and over the memory behind it, also with
+runtime error checking.
+
+**With the port.** With runtime error checking, a palette without
+colours is the error "Uninitialized Palette", as a palette that was never
+made. Without runtime error checking, the commands work as in the
+original.
+
+**What to change.** Give the palette at least one colour, or save the
+picture without a palette.
+
+Issue: [A palette with 0 colours wrote 65536 colours (#182)](https://github.com/fubar-coder/bb2-c/issues/182).
+
+#### `SaveShape` of a shape of depth 0 or more than 14 {#saveshape-depth}
+
+**What happened.** `SaveShape` has room for the addresses of 14 planes.
+A shape of more planes, or of depth 0, made it write plane addresses over
+the memory of the library, and with depth 0 over 256 KB of it, so the
+program crashed or saved a broken file. `LoadShape` takes the depth of a
+picture as it is, so a shape loaded from a 24-bit picture has 24 planes.
+
+**With the port.** `SaveShape` of a shape of depth 0 or of more than 14
+planes is the runtime error "Illegal Shape Depth", also without runtime
+error checking. Shapes of 1 to 14 planes are saved as by the original.
+
+**What to change.** Save such a picture another way, or reduce it to at
+most 14 planes before it is loaded as a shape.
+
+Issue: [SaveShape with depth 0 or 15 and more overwrote its buffer (#326)](https://github.com/fubar-coder/bb2-c/issues/326).
 
 {{% fixed-bugs-library part="elsewhere" %}}

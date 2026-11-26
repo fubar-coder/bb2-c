@@ -75,7 +75,7 @@ rows:
     text: "A constant definition without a name, `#=5`, is \"Syntax Error\"; the original accepted it."
     short: "A constant definition without a name, `#=5`, is \"Syntax Error\"."
     page: compiler
-    anchor: names-labels-and-constants
+    anchor: constant-without-name
   - issue: 8
     severity: 5
     topic: "Compiler"
@@ -148,7 +148,7 @@ rows:
     text: "An `IncDir` path of 96 characters or more is \"Path too Long\"; the original overwrote the compiler's data and the program crashed."
     short: "A path of 96 characters or more is \"Path too Long\"."
     page: compiler
-    anchor: paths-and-include-files
+    anchor: path-too-long
   - issue: 17
     severity: 4
     topic: "Compiler"
@@ -247,7 +247,7 @@ rows:
     text: "A name of more than 127 characters, possible through a macro, is \"Syntax Error\"; the original overwrote the compiler's data."
     short: "A name of more than 127 characters, possible through a macro, is \"Syntax Error\"."
     page: compiler
-    anchor: names-labels-and-constants
+    anchor: long-name
   - issue: 30
     severity: 4
     topic: "Compiler"
@@ -256,7 +256,7 @@ rows:
     text: "A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name is \"Syntax Error\"; the original searched 65536 bytes of memory for an empty name."
     short: "A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name is \"Syntax Error\"."
     page: compiler
-    anchor: names-labels-and-constants
+    anchor: missing-name
   - issue: 31
     severity: 4
     topic: "Compiler"
@@ -265,7 +265,7 @@ rows:
     text: "A `UsePath` path of 128 characters or more is \"Path too Long\"; the original overwrote the compiler's own code."
     short: "A path of 128 characters or more is \"Path too Long\"."
     page: compiler
-    anchor: paths-and-include-files
+    anchor: path-too-long
   - issue: 32
     severity: 5
     topic: "Compiler"
@@ -310,7 +310,7 @@ rows:
     text: "`Dcb` with a count of 0 emits nothing and a negative count is \"Illegal Constant\"; the original made about four thousand million copies."
     short: "A count of 0 emits nothing and a negative count is \"Illegal Constant\"."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: dcb-count
   - issue: 38
     severity: 5
     topic: "Compiler"
@@ -328,7 +328,7 @@ rows:
     text: "`For` with a global string variable is \"Bad Type for For...Next\"; the original compiled it and treated the string as a number."
     short: "A global string variable is \"Bad Type for For...Next\"."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: for-string
   - issue: 42
     severity: 5
     topic: "Compiler"
@@ -400,7 +400,7 @@ rows:
     text: "With runtime error checking, a number out of range stops `GetRexxResult` (\"Illegal Result Number\") and `GetRexxCommand` (\"Illegal Argument Number\"); the original read the neighbouring fields."
     short: "A number out of range stops with \"Illegal Result Number\" or \"Illegal Argument Number\" (with runtime error checking)."
     page: libraries/commands/arexxlib
-    anchor: arexx
+    anchor: rexx-numbers
   - issue: 52
     severity: 5
     topic: "System"
@@ -454,7 +454,7 @@ rows:
     text: "A `Dim` of 4 GB or more stops with \"Out of Memory!\", also without runtime error checking (with it \"Array Size out of Range\"); the original made an array of a few bytes."
     short: "A `Dim` of 4 GB or more stops with \"Out of Memory!\", also without runtime error checking."
     page: libraries/commands/arrayslib
-    anchor: arrays-and-sorting
+    anchor: dim-too-large
   - issue: 59
     severity: 5
     topic: "Data structures"
@@ -517,7 +517,7 @@ rows:
     text: "With runtime error checking, `SetPeriod` tests only that the sound is set up; the original stopped every period above 15 with \"Illegal Chanel Mask\"."
     short: "With runtime error checking, tests only that the sound is set up."
     page: libraries/commands/audiolib
-    anchor: sounds
+    anchor: setperiod-check
   - issue: 67
     severity: 5
     topic: "Files"
@@ -571,7 +571,7 @@ rows:
     text: "Bitmaps and shapes of depth 0, which made `BBlit` run over 65536 planes in the original, stop at their creation with runtime error checking (\"Illegal BitMap Depth\")."
     short: "Depth 0 stops at creation with \"Illegal BitMap Depth\" (with runtime error checking)."
     page: libraries/commands/bitmaplib
-    anchor: bitmaps
+    anchor: depth-zero
   - issue: 76
     severity: 5
     topic: "Graphics"
@@ -589,7 +589,7 @@ rows:
     text: "A `BitMap` or `CludgeBitMap` of width or height 0 stops with runtime error checking (\"Illegal BitMap Size\"); the original accepted it and `CopyBitMap` overwrote memory."
     short: "Width or height 0 stops with \"Illegal BitMap Size\" (with runtime error checking)."
     page: libraries/commands/bitmaplib
-    anchor: bitmaps
+    anchor: bitmap-size
   - issue: 79
     severity: 5
     topic: "Graphics"
@@ -625,7 +625,7 @@ rows:
     text: "With runtime error checking, `SelectBox` with a box the page does not have stops with \"Illegal Box# For Page\"; the original selected and drew memory behind the table."
     short: "A box the page does not have stops with \"Illegal Box# For Page\" (with runtime error checking)."
     page: libraries/commands/blitzoslib
-    anchor: blitz-mode-boxes
+    anchor: selectbox-range
   - issue: 83
     severity: 3
     topic: "Gadgets & menus"
@@ -634,7 +634,7 @@ rows:
     text: "With runtime error checking, `SpotBox` on a page not set up or without boxes stops with \"UnInitialised Page\"; the original searched 65536 boxes of foreign memory."
     short: "A page not set up or without boxes stops with \"UnInitialised Page\" (with runtime error checking)."
     page: libraries/commands/blitzoslib
-    anchor: blitz-mode-boxes
+    anchor: spotbox-page
   - issue: 84
     severity: 5
     topic: "Gadgets & menus"
@@ -796,7 +796,7 @@ rows:
     text: "`SColl` tests its two channels in either order, and with runtime error checking two channels of one pair stop with \"different pairs\"; the original tested other channels."
     short: "Tests its two channels in either order; two of one pair stop with \"different pairs\" (with runtime error checking)."
     page: libraries/commands/collslib
-    anchor: shapes-and-sprites
+    anchor: scoll-same-pair
   - issue: 115
     severity: 5
     topic: "Files"
@@ -940,7 +940,7 @@ rows:
     text: "With runtime error checking, `FadeIn` and `FadeOut` accept a palette whose colours lie in the lowest 64 KB of memory; the original took it as uninitialised."
     short: "With runtime error checking, accept a palette whose colours lie in the lowest 64 KB of memory."
     page: libraries/commands/fadelib
-    anchor: blitz-mode-displays
+    anchor: fade-checks
   - issue: 138
     severity: 5
     topic: "Files"
@@ -1102,7 +1102,7 @@ rows:
     text: "With runtime error checking, `StringGadget` with a `Maxlen` of 0 stops with \"Maxlen MUST be greater than zero\"; the original cleared 64 KB of memory and crashed."
     short: "A `Maxlen` of 0 stops with \"Maxlen MUST be greater than zero\" (with runtime error checking)."
     page: libraries/commands/gadgetslib
-    anchor: gadgets
+    anchor: stringgadget-maxlen
   - issue: 167
     severity: 3
     topic: "Gadgets & menus"
@@ -1201,7 +1201,7 @@ rows:
     text: "`SaveBitmap` and `SaveShape` with a palette of 0 colours stop with runtime error checking (\"Uninitialized Palette\"); the original wrote 65536 colours over memory."
     short: "A palette of 0 colours stops with \"Uninitialized Palette\" (with runtime error checking)."
     page: libraries/commands/iffmakelib
-    anchor: iff-files
+    anchor: save-palette-no-colours
   - issue: 183
     severity: 5
     topic: "Graphics"
@@ -1246,7 +1246,7 @@ rows:
     text: "`LoadBitMap` and `LoadScreen` of a missing file stop with \"Can't Open File\", also without runtime error checking; the original showed an old picture or garbage."
     short: "A missing file stops with \"Can't Open File\", also without runtime error checking."
     page: libraries/commands/bitmaplib
-    anchor: iff-files
+    anchor: loadbitmap-missing-file
   - issue: 188
     severity: 5
     topic: "Graphics"
@@ -1336,7 +1336,7 @@ rows:
     text: "With runtime error checking, a Long or Quick division by 0 stops with \"Division by Zero\"; without it, the result has the dividend's sign, where the original always returned 2147483647."
     short: "Division by 0 stops with \"Division by Zero\" (with runtime error checking)."
     page: libraries/commands/ldivlib
-    anchor: dates-and-numbers
+    anchor: long-division-by-zero
   - issue: 201
     severity: 5
     topic: "Data structures"
@@ -1426,7 +1426,7 @@ rows:
     text: "With runtime error checking, `JumpMed` without a playing module is \"No Module Playing\"; the original wrote into an exception vector."
     short: "Without a playing module is \"No Module Playing\" (with runtime error checking)."
     page: libraries/commands/medlib
-    anchor: music-players
+    anchor: jumpmed-no-module
   - issue: 211
     severity: 5
     topic: "Sound"
@@ -1453,7 +1453,7 @@ rows:
     text: "`Peeks$` with a negative length returns the empty string and with checking stops (\"Can't Peeks$ a negative number\"); the original copied up to 4 GB and crashed."
     short: "A negative length returns the empty string; with runtime error checking it stops with \"Can't Peeks$ a negative number\"."
     page: libraries/commands/memacclib
-    anchor: other-strings
+    anchor: peeks-negative
   - issue: 216
     severity: 5
     topic: "Gadgets & menus"
@@ -1642,7 +1642,7 @@ rows:
     text: "`InitShape` with depth 0 stops with runtime error checking (\"Illegal Shape Depth\"); the original made a shape that `QBlit` blitted as 65536 planes."
     short: "Depth 0 stops with \"Illegal Shape Depth\" (with runtime error checking)."
     page: libraries/commands/bitmaplib
-    anchor: bitmaps
+    anchor: depth-zero
   - issue: 245
     severity: 5
     topic: "Input"
@@ -1786,7 +1786,7 @@ rows:
     text: "Shapes of 64 KB or more are saved, loaded and copied whole, and a picture with a 64 KB plane stops with \"Can't Read/Write Shapes File\", also without runtime error checking; the original overwrote memory."
     short: "Shapes of 64 KB or more are handled whole; a 64 KB plane stops with \"Can't Read/Write Shapes File\"."
     page: libraries/commands/shapeslib
-    anchor: shapes-and-sprites
+    anchor: loadshape-large-plane
   - issue: 265
     severity: 5
     topic: "Graphics"
@@ -1930,7 +1930,7 @@ rows:
     text: "With runtime error checking, `SpriteMode` above 2 stops with \"Illegal SpriteMode\"; the original read the sprite width from behind its table."
     short: "A mode above 2 stops with \"Illegal SpriteMode\" (with runtime error checking)."
     page: libraries/commands/spriteslib
-    anchor: shapes-and-sprites
+    anchor: spritemode-range
   - issue: 282
     severity: 5
     topic: "Graphics"
@@ -1984,7 +1984,7 @@ rows:
     text: "`Instr` with a start position below 1 searches from the first character and is \"Instr Startpos MUST be greater than zero\" with checking; the original compared bytes before the string."
     short: "A start below 1 searches from the start; with runtime error checking it stops with \"Instr Startpos MUST be greater than zero\"."
     page: libraries/commands/stringfunclib
-    anchor: other-strings
+    anchor: instr-startpos
   - issue: 288
     severity: 3
     topic: "Strings"
@@ -1993,7 +1993,7 @@ rows:
     text: "`Cvi`, `Cvl` and `Cvq` of a short string count missing bytes as 0 and with checking stop (\"Cvi needs a String\"); the original read bytes behind the string."
     short: "A short string counts missing bytes as 0; with runtime error checking it stops with \"Cvi needs a String\"."
     page: libraries/commands/stringfunclib
-    anchor: other-strings
+    anchor: cvi-short-string
   - issue: 289
     severity: 5
     topic: "Sound"
@@ -2083,7 +2083,7 @@ rows:
     text: "`CreateMsgPort` without a free signal stops with \"Failed to allocate signal\", also without runtime error checking; the original made a port that never woke the program."
     short: "Without a free signal stops with \"Failed to allocate signal\", also without runtime error checking."
     page: libraries/commands/utillib
-    anchor: tasks-and-message-ports
+    anchor: createmsgport-signal
   - issue: 299
     severity: 5
     topic: "System"
@@ -2300,7 +2300,7 @@ rows:
     text: "An include file name that is more than 127 characters with the `IncDir` path is \"Path too Long\"; the original overwrote the compiler's data."
     short: "An include file name of more than 127 characters with the `IncDir` path is \"Path too Long\"."
     page: compiler
-    anchor: paths-and-include-files
+    anchor: path-too-long
   - issue: 326
     severity: 3
     topic: "Graphics"
@@ -2309,7 +2309,7 @@ rows:
     text: "`SaveShape` of a shape of depth 0 or more than 14 stops with \"Illegal Shape Depth\", also without runtime error checking; the original overwrote the library's memory."
     short: "Depth 0 or more than 14 stops with \"Illegal Shape Depth\", also without runtime error checking."
     page: libraries/commands/iffmakelib
-    anchor: iff-files
+    anchor: saveshape-depth
   - issue: 327
     severity: 5
     topic: "Gadgets & menus"
@@ -2336,7 +2336,7 @@ rows:
     text: "With runtime error checking, `FadeIn` and `FadeOut` of a palette never made report \"Uninitialized Palette\"; the original reported \"Not enough colours in Slice\"."
     short: "With runtime error checking, a palette never made reports \"Uninitialized Palette\"."
     page: libraries/commands/fadelib
-    anchor: blitz-mode-displays
+    anchor: fade-checks
   - issue: 331
     severity: 3
     topic: "Graphics"
@@ -2345,7 +2345,7 @@ rows:
     text: "With runtime error checking, `FadeIn` and `FadeOut` with a colour beyond the slice's colours report \"Not enough colours in Slice\"; the original reported \"Uninitialized Slice\"."
     short: "A colour beyond the slice's colours reports \"Not enough colours in Slice\" (with runtime error checking)."
     page: libraries/commands/fadelib
-    anchor: blitz-mode-displays
+    anchor: fade-checks
   - issue: 334
     severity: 5
     topic: "Sound"
@@ -2372,7 +2372,7 @@ rows:
     text: "The Macro Buffer option sets the largest macro text, a longer one is \"Macro too Big\"; the original ignored the option and could crash when ending."
     short: "The Macro Buffer option sets the largest macro text; a longer one is \"Macro too Big\"."
     page: compiler
-    anchor: macros
+    anchor: macro-buffer
   - issue: 337
     severity: 5
     topic: "Compiler"
@@ -2832,7 +2832,7 @@ rows:
     text: "`CludgeBitMap` with depth 0 or above 8 stops with runtime error checking (\"Illegal BitMap Depth\"); the original made a bitmap the drawing commands treated as 65536 planes."
     short: "Depth 0 or above 8 stops with \"Illegal BitMap Depth\" (with runtime error checking)."
     page: libraries/commands/bitmaplib
-    anchor: bitmaps
+    anchor: depth-zero
   - issue: 395
     severity: 3
     topic: "Graphics"
@@ -2841,7 +2841,7 @@ rows:
     text: "The polygon commands draw sides of 11 to 15 edges right, and more than 16 points stop with runtime error checking (\"Too Many Points\"); the original crashed."
     short: "Sides of 11 to 15 edges are drawn right; over 16 points stop with \"Too Many Points\" (with runtime error checking)."
     page: libraries/commands/2dlib
-    anchor: drawing-and-polygons
+    anchor: too-many-points
   - issue: 396
     severity: 3
     topic: "Graphics"
@@ -2850,7 +2850,7 @@ rows:
     text: "`Poly` with fewer than 2 points stops with runtime error checking (\"Poly needs at least 2 Points\"); the original drew 65535 lines from memory."
     short: "Fewer than 2 points stop with \"Poly needs at least 2 Points\" (with runtime error checking)."
     page: libraries/commands/2dlib
-    anchor: drawing-and-polygons
+    anchor: poly-points
   - issue: 397
     severity: 5
     topic: "Graphics"
@@ -3003,7 +3003,7 @@ rows:
     text: "`DisplaySprite` of a sprite running into the `CustomSprites` channels stops with \"Not Enough Sprite Channels\", also without runtime error checking; the original overwrote copper instructions."
     short: "Stops with \"Not Enough Sprite Channels\" when a sprite runs into the `CustomSprites` channels."
     page: libraries/commands/displaylib
-    anchor: blitz-mode-displays
+    anchor: displaysprite-two-banks
   - issue: 415
     severity: 5
     topic: "Input"
@@ -3021,7 +3021,7 @@ rows:
     text: "`ChunkyVlin` without `CLIP` and `y1` above `y2` stops with runtime error checking (\"y1 MUST NOT be greater\"); the original wrote about 65536 words."
     short: "Without `CLIP` and `y1` above `y2` stops with \"y1 MUST NOT be greater\" (with runtime error checking)."
     page: libraries/commands/polylib
-    anchor: drawing-and-polygons
+    anchor: chunkyvlin-ends
   - issue: 420
     severity: 5
     topic: "Graphics"
@@ -3049,7 +3049,7 @@ rows:
     text: "`RenderPoly` after `RenderToChunky` with a colour above 14 stops with runtime error checking (\"Illegal Colour\"); the original read the colour from memory behind its table."
     short: "After `RenderToChunky` a colour above 14 stops with \"Illegal Colour\" (with runtime error checking)."
     page: libraries/commands/polylib
-    anchor: drawing-and-polygons
+    anchor: renderpoly-colour
   - issue: 424
     severity: 5
     topic: "Strings"
@@ -3112,7 +3112,7 @@ rows:
     text: "With runtime error checking, `FreeTrackerModule` of the module that plays is the runtime error \"Tracker: Stop the module before freeing it.\"; the original freed it and went on playing the freed memory."
     short: "Freeing the playing module is the runtime error \"Tracker: Stop the module before freeing it.\"."
     page: libraries/userlibs/ciatrklib
-    anchor: more-fixes
+    anchor: freetrackermodule-playing
   - issue: 437
     severity: 5
     topic: "Sound"
@@ -3436,7 +3436,7 @@ rows:
     text: "With runtime error checking, `CreateShape` with a count of 0 stops with \"CreateShape count must be at least 1!\"; the original made 65536 shapes over the memory behind the shape table."
     short: "A count of 0 stops with \"CreateShape count must be at least 1!\" (with runtime error checking)."
     page: libraries/userlibs/bb_blitlib
-    anchor: bb-blitlib-fixes
+    anchor: createshape-count
   - issue: 429
     severity: 3
     topic: "Graphics"
@@ -3445,7 +3445,7 @@ rows:
     text: "With runtime error checking, the blits of bb_blitlib stop with \"Uninitialized Shape\" for a shape never defined; the original blitted 65536 planes over memory all over the system."
     short: "The blits stop with \"Uninitialized Shape\" for a shape never defined (with runtime error checking)."
     page: libraries/userlibs/bb_blitlib
-    anchor: bb-blitlib-fixes
+    anchor: bb-blitlib-shape-undefined
   - issue: 1077
     severity: 3
     topic: "Graphics"
@@ -3454,7 +3454,7 @@ rows:
     text: "With runtime error checking, `CreateShape` stops with \"CreateShape start+count above Maximum Shapes!\" when its shapes would run past the shape table; the original wrote them over the memory behind it."
     short: "Stops with \"CreateShape start+count above Maximum Shapes!\" past the shape table (with runtime error checking)."
     page: libraries/userlibs/bb_blitlib
-    anchor: bb-blitlib-fixes
+    anchor: createshape-count
   - issue: 461
     severity: 5
     topic: "Strings"
@@ -3832,7 +3832,7 @@ rows:
     text: "With runtime error checking, too many arguments stop with \"Too Many EZRequest Arguments\"; the original wrote them over the library's code."
     short: "Too many arguments stop with \"Too Many EZRequest Arguments\" (with runtime error checking)."
     page: libraries/userlibs/rimisclib
-    anchor: rimisclib-fixes
+    anchor: ezrequest-too-many-arguments
   - issue: 749
     severity: 5
     topic: "Windows & screens"
@@ -4120,7 +4120,7 @@ rows:
     text: "With runtime error checking, `AddNotify` and `RemNotify` stop with a runtime error for a notify slot out of range; the original wrote around its table."
     short: "A notify slot out of range stops with a runtime error (with runtime error checking)."
     page: libraries/userlibs/ridoslib
-    anchor: ridoslib-fixes
+    anchor: notify-slot-range
   - issue: 627
     severity: 5
     topic: "Files"
@@ -4372,7 +4372,7 @@ rows:
     text: "With runtime error checking, the list commands stop with a runtime error for a list number out of range; the original wrote into the other lists."
     short: "A list number out of range stops with a runtime error (with runtime error checking)."
     page: libraries/userlibs/rilinkedlistlib
-    anchor: rilinkedlistlib-fixes
+    anchor: linked-list-number-range
   - issue: 733
     severity: 5
     topic: "Data structures"
@@ -5587,7 +5587,7 @@ rows:
     text: "With runtime error checking, a shadow set the scenario does not have stops with \"Shadow set must lie in the SHDW chunk\"; the original read behind the chunk."
     short: "A missing shadow set stops with \"Shadow set must lie in the SHDW chunk\" (runtime error checking)."
     page: libraries/userlibs/ribbmaplib
-    anchor: ribbmaplib-fixes
+    anchor: bbshadowvalue-set
   - issue: 833
     severity: 5
     topic: "Files"
@@ -5812,7 +5812,7 @@ rows:
     text: "With runtime error checking, `RIAnimInit`'s `x`,`y` outside the bitmap stops with \"Animation position outside the bitmap\"; the original drew outside it."
     short: "`x`,`y` outside the bitmap stops with \"Animation position outside the bitmap\" (with runtime error checking)."
     page: libraries/userlibs/rianimlib
-    anchor: rianimlib-fixes
+    anchor: anim-position-outside
   - issue: 515
     severity: 5
     topic: "Graphics"
@@ -5956,7 +5956,7 @@ rows:
     text: "With runtime error checking, a clip zone that starts below 0 stops with \"FNSClip zone must not start below 0\"; the original wrote text about 64 KB away."
     short: "A zone starting below 0 stops with \"FNSClip zone must not start below 0\" (runtime error checking)."
     page: libraries/userlibs/rifnslib
-    anchor: rifnslib-fixes
+    anchor: fns-clip-tab-checks
   - issue: 666
     severity: 3
     topic: "Graphics"
@@ -5965,7 +5965,7 @@ rows:
     text: "With runtime error checking, `FNSSetTab` with a size below 1 stops with \"FNSSetTab size must be at least 1\"; in the original a tab character then divided by zero."
     short: "A size below 1 stops with \"FNSSetTab size must be at least 1\" (with runtime error checking)."
     page: libraries/userlibs/rifnslib
-    anchor: rifnslib-fixes
+    anchor: fns-clip-tab-checks
   - issue: 1124
     severity: 5
     topic: "System"
@@ -6037,7 +6037,7 @@ rows:
     text: "With runtime error checking, the colour functions and `PalAdjust` before `PaletteInfo` stop with \"No palette selected with PaletteInfo\"; the original read address 0."
     short: "Before `PaletteInfo` stops with \"No palette selected with PaletteInfo\" (with runtime error checking)."
     page: libraries/userlibs/rigfxlib
-    anchor: rigfxlib-fixes
+    anchor: rigfxlib-palette-checks
   - issue: 677
     severity: 3
     topic: "Graphics"
@@ -6046,7 +6046,7 @@ rows:
     text: "With runtime error checking, a colour number the palette does not have stops with \"Colour number outside the PaletteInfo palette\"; the original read or wrote memory beside the palette."
     short: "A missing colour stops with \"Colour number outside the PaletteInfo palette\" (with runtime error checking)."
     page: libraries/userlibs/rigfxlib
-    anchor: rigfxlib-fixes
+    anchor: rigfxlib-palette-checks
   - issue: 684
     severity: 3
     topic: "Graphics"
@@ -6055,7 +6055,7 @@ rows:
     text: "With runtime error checking, `PalAdjust` with the end colour below the start stops with \"PalAdjust end colour before the start colour\"; the original wrote 256 KB behind the palette."
     short: "An end colour below the start stops with \"PalAdjust end colour before the start colour\"."
     page: libraries/userlibs/rigfxlib
-    anchor: rigfxlib-fixes
+    anchor: rigfxlib-palette-checks
   - issue: 685
     severity: 3
     topic: "Graphics"
@@ -6064,7 +6064,7 @@ rows:
     text: "With runtime error checking, `PalAdjust` into a target too small stops with \"PalAdjust colours outside the target palette\"; the original wrote behind the target's colours."
     short: "A target too small stops with \"PalAdjust colours outside the target palette\"."
     page: libraries/userlibs/rigfxlib
-    anchor: rigfxlib-fixes
+    anchor: rigfxlib-palette-checks
   - issue: 687
     severity: 5
     topic: "Files"
@@ -6118,7 +6118,7 @@ rows:
     text: "With runtime error checking, a bitmap of depth 0 stops with \"Illegal BitMap Depth\"; the original ran 65536 or 256 planes over memory."
     short: "A bitmap of depth 0 stops with \"Illegal BitMap Depth\" (with runtime error checking)."
     page: libraries/userlibs/rifxlib
-    anchor: rifxlib-fixes
+    anchor: rwe-effects-depth
   - issue: 674
     severity: 3
     topic: "Graphics"
@@ -6127,7 +6127,7 @@ rows:
     text: "With runtime error checking, a bitmap of more than 8 planes stops with \"Illegal BitMap Depth\"; the original wrote past its plane tables."
     short: "A bitmap of more than 8 planes stops with \"Illegal BitMap Depth\" (with runtime error checking)."
     page: libraries/userlibs/rifxlib
-    anchor: rifxlib-fixes
+    anchor: rwe-effects-depth
   - issue: 669
     severity: 3
     topic: "Graphics"
@@ -6136,7 +6136,7 @@ rows:
     text: "With runtime error checking, a delay of 0 stops with \"Delay must not be 0\"; the original waited 4294967296 turns per line."
     short: "A delay of 0 stops with \"Delay must not be 0\" (with runtime error checking)."
     page: libraries/userlibs/rifxlib
-    anchor: rifxlib-fixes
+    anchor: rifxlib-delay-zero
   - issue: 676
     severity: 3
     topic: "Graphics"
@@ -6145,7 +6145,7 @@ rows:
     text: "With runtime error checking, `ZoomyZoom` on a bitmap smaller than 640 x 32 stops with a runtime error; the original garbled it or wrote behind it."
     short: "On a bitmap smaller than 640 x 32 stops with a runtime error (with runtime error checking)."
     page: libraries/userlibs/rifxlib
-    anchor: rifxlib-fixes
+    anchor: zoomyzoom-size
   - issue: 675
     severity: 5
     topic: "Graphics"
@@ -6181,7 +6181,7 @@ rows:
     text: "With runtime error checking, `ZoomXY` before any `InitZoomXY` stops with \"ZoomXY needs InitZoomXY\"; the original zoomed a bitmap at address 0 and crashed."
     short: "`ZoomXY` before any `InitZoomXY` stops with \"ZoomXY needs InitZoomXY\" (with runtime error checking)."
     page: libraries/userlibs/rifxlib
-    anchor: rifxlib-fixes
+    anchor: zoomxy-without-initzoomxy
   - issue: 590
     severity: 1
     topic: "Graphics"
@@ -6226,7 +6226,7 @@ rows:
     text: "With runtime error checking, fewer than one line stops with \"Colour split needs at least one line\"; the original divided by zero or wrote up to 65536 lines."
     short: "Fewer than one line stops with \"Colour split needs at least one line\" (with runtime error checking)."
     page: libraries/userlibs/ricopperfxlib
-    anchor: ricopperfxlib-fixes
+    anchor: colsplit-numlines
   - issue: 591
     severity: 5
     topic: "Graphics"
@@ -6343,7 +6343,7 @@ rows:
     text: "With runtime error checking, an ANIM7 frame at an odd byte position of `RIAnimInit` stops with \"Animation position on an odd byte for ANIM7\"; the original crashed with a Software Failure on a 68000."
     short: "An ANIM7 frame at an odd byte stops with \"Animation position on an odd byte for ANIM7\"."
     page: libraries/userlibs/rianimlib
-    anchor: rianimlib-fixes
+    anchor: anim7-odd-byte
   - issue: 513
     severity: 5
     topic: "Graphics"
@@ -6460,7 +6460,7 @@ rows:
     text: "`ChunkyToPlanar` converts chunky bitmaps of other sizes, widths a multiple of 16, into any 8-plane bitmap at least as big, also interleaved; the original always converted 320 x 256 and wrote behind smaller bitmaps."
     short: "Converts chunky bitmaps of other sizes, widths a multiple of 16, into any big enough 8-plane bitmap."
     page: libraries/userlibs/richunkylib
-    anchor: richunkylib-fixes
+    anchor: chunkytoplanar-sizes
   - issue: 885
     severity: 5
     topic: "System"
@@ -6478,7 +6478,7 @@ rows:
     text: "With runtime error checking, `RaycastSky` outside the chunky bitmap stops with \"RaycastSky outside the chunky bitmap\", and a height below 1 copies nothing; the original wrote outside, for a height of 0 about 20 MB."
     short: "Outside the bitmap stops with \"RaycastSky outside the chunky bitmap\" (with runtime error checking)."
     page: libraries/userlibs/richunkylib
-    anchor: richunkylib-fixes
+    anchor: raycastsky-outside
   - issue: 883
     severity: 5
     topic: "Graphics"
@@ -6649,7 +6649,7 @@ rows:
     text: "`MapCanDraw` refuses negative positions, and with runtime error checking `MapDataAdr` outside the map stops with a runtime error; the original read and returned a word far behind the map."
     short: "`MapCanDraw` refuses negative positions, and `MapDataAdr` outside the map stops with a runtime error."
     page: libraries/userlibs/rimapeditorlib
-    anchor: rimapeditorlib-fixes
+    anchor: rimapeditorlib-map-checks
   - issue: 893
     severity: 3
     topic: "Graphics"
@@ -6658,7 +6658,7 @@ rows:
     text: "With runtime error checking, `MapCanDraw` without `SetStencil`, with a cell value of 32768 or more or on a map without data stops with \"MapCanDraw needs SetStencil\" or a similar error; the original read low memory."
     short: "Without `SetStencil` stops with \"MapCanDraw needs SetStencil\" or similar (runtime error checking)."
     page: libraries/userlibs/rimapeditorlib
-    anchor: rimapeditorlib-fixes
+    anchor: rimapeditorlib-map-checks
   - issue: 895
     severity: 3
     topic: "Graphics"
@@ -6667,7 +6667,7 @@ rows:
     text: "With runtime error checking, `FillBitplane` and `ShapeTo1616` with a size of 0 stop with \"FillBitplane width must be at least 16\" or a similar error, and `MapDataGrab` fills nothing into a map without data; the original wrote 65536 rows or words over memory."
     short: "A size of 0 stops with \"FillBitplane width must be at least 16\" or similar."
     page: libraries/userlibs/rimapeditorlib
-    anchor: rimapeditorlib-fixes
+    anchor: rimapeditorlib-size-checks
   - issue: 900
     severity: 3
     topic: "Graphics"
@@ -6676,7 +6676,7 @@ rows:
     text: "With runtime error checking, `ShapeTo1616` into a destination that is not 16 x 16 with the source's depth stops with \"ShapeTo1616 needs a 16 x 16 destination as deep as the source\"; the original overran it."
     short: "A wrong destination stops with \"ShapeTo1616 needs a 16 x 16 destination as deep as the source\"."
     page: libraries/userlibs/rimapeditorlib
-    anchor: rimapeditorlib-fixes
+    anchor: rimapeditorlib-size-checks
   - issue: 1152
     severity: 3
     topic: "Graphics"
@@ -6685,7 +6685,7 @@ rows:
     text: "With runtime error checking, `CreateMap` with a width above 32767 stops with \"Map width above 32767\"; the original allocated too little, and `MapDataGrab` wrote behind it."
     short: "A width above 32767 stops with \"Map width above 32767\" (with runtime error checking)."
     page: libraries/userlibs/rimapeditorlib
-    anchor: rimapeditorlib-fixes
+    anchor: createmap-width
   - issue: 894
     severity: 5
     topic: "System"
@@ -6739,7 +6739,7 @@ rows:
     text: "With runtime error checking, a snow field number outside 0 to 3 stops with \"Snow list number must be 0 to 3\", as do a field without `InitSnowDrop` and `KillPoint` outside the bitmap; the original wrote outside its table."
     short: "A bad field number stops with \"Snow list number must be 0 to 3\" (with runtime error checking)."
     page: libraries/userlibs/risnowlib
-    anchor: risnowlib-fixes
+    anchor: snow-list-checks
   - issue: 912
     severity: 5
     topic: "Graphics"
@@ -6847,7 +6847,7 @@ rows:
     text: "A group holds at most 63 members, so a group of 64 blits one less; with runtime error checking a 64th stops with \"Group holds at most 63 members\"; the original wrote behind the group."
     short: "A 64th member stops with \"Group holds at most 63 members\" (with runtime error checking)."
     page: libraries/userlibs/rimapshapeslib
-    anchor: rimapshapeslib-fixes
+    anchor: group-63-members
   - issue: 903
     severity: 3
     topic: "Graphics"
@@ -6856,7 +6856,7 @@ rows:
     text: "With runtime error checking, `ShapeToMapShape` of a shape of depth 0 or more than 8 stops with \"Illegal Shape Depth\"; the original overwrote memory."
     short: "A shape of depth 0 or more than 8 stops with \"Illegal Shape Depth\" (with runtime error checking)."
     page: libraries/userlibs/rimapshapeslib
-    anchor: rimapshapeslib-fixes
+    anchor: shapetomapshape-depth
   - issue: 906
     severity: 3
     topic: "Graphics"
@@ -6865,7 +6865,7 @@ rows:
     text: "Without map shapes the map shape commands do nothing, and with runtime error checking a number beyond `SetNumMapShapes` stops with \"Map shape not allocated by SetNumMapShapes\"; the original used map shapes at address 0 or behind its memory."
     short: "A number beyond `SetNumMapShapes` stops with \"Map shape not allocated by SetNumMapShapes\"."
     page: libraries/userlibs/rimapshapeslib
-    anchor: rimapshapeslib-fixes
+    anchor: mapshape-number-checks
   - issue: 1134
     severity: 5
     topic: "Graphics"
@@ -6928,7 +6928,7 @@ rows:
     text: "With runtime error checking a channel outside 0 to 7 stops with \"Sprite channel must be 0 to 7\"; the original read and freed the library's own data as sprites."
     short: "A channel outside 0 to 7 stops with \"Sprite channel must be 0 to 7\" (with runtime error checking)."
     page: libraries/userlibs/riwbspritelib
-    anchor: riwbspritelib-fixes
+    anchor: wbsprite-checks
   - issue: 917
     severity: 3
     topic: "Graphics"
@@ -6937,7 +6937,7 @@ rows:
     text: "With runtime error checking a shape of height or depth 0 stops with \"Illegal Shape Height\" or \"Illegal Shape Depth\"; the original would copy 65536 rows or planes."
     short: "A shape of height or depth 0 stops with \"Illegal Shape Height\" or \"Illegal Shape Depth\"."
     page: libraries/userlibs/riwbspritelib
-    anchor: riwbspritelib-fixes
+    anchor: wbsprite-checks
   - issue: 922
     severity: 3
     topic: "Graphics"
@@ -6946,7 +6946,7 @@ rows:
     text: "With runtime error checking `WBSpriteX` and `WBSpriteY` of a channel without a sprite stop with \"No sprite on this channel\"; the original returned words from low memory."
     short: "A channel without a sprite stops with \"No sprite on this channel\" (with runtime error checking)."
     page: libraries/userlibs/riwbspritelib
-    anchor: riwbspritelib-fixes
+    anchor: wbsprite-checks
   - issue: 859
     severity: 1
     topic: "System"
@@ -7243,7 +7243,7 @@ rows:
     text: "With runtime error checking a second `OpenCD` stops with \"CD device already open\"; the original lost the device opened first."
     short: "A second `OpenCD` stops with \"CD device already open\" (with runtime error checking)."
     page: libraries/userlibs/ricompactdisclib
-    anchor: ricompactdisclib-fixes
+    anchor: compactdisc-checks
   - issue: 583
     severity: 3
     topic: "Sound"
@@ -7252,7 +7252,7 @@ rows:
     text: "`CDTrackLength` of the last track is right, and with runtime error checking a track the CD lacks stops with \"Track number out of range\"."
     short: "The last track is right; a track the CD lacks stops with \"Track number out of range\"."
     page: libraries/userlibs/ricompactdisclib
-    anchor: ricompactdisclib-fixes
+    anchor: compactdisc-checks
   - issue: 586
     severity: 3
     topic: "Sound"
@@ -7261,7 +7261,7 @@ rows:
     text: "With runtime error checking an offset other than 0 or 1 stops with \"Offset must be 0 or 1\"; the original read other memory."
     short: "An offset other than 0 or 1 stops with \"Offset must be 0 or 1\" (with runtime error checking)."
     page: libraries/userlibs/ricompactdisclib
-    anchor: ricompactdisclib-fixes
+    anchor: compactdisc-checks
   - issue: 1138
     severity: 5
     topic: "System"
@@ -7919,7 +7919,7 @@ rows:
     text: "With runtime error checking, `WindowTags` with more than 15 tag pairs stops with \"Too Many Tags\"; the original wrote over data and code of the library."
     short: "More than 15 tag pairs stop with \"Too Many Tags\" (with runtime error checking)."
     page: libraries/commands/windowslib
-    anchor: windows-and-screens
+    anchor: windowtags-too-many-tags
   - issue: 962
     severity: 5
     topic: "Gadgets & menus"
@@ -7937,7 +7937,7 @@ rows:
     text: "A macro text of 65536 bytes or more is \"Macro too Big\"; the original cut it and lost part of its memory until a reboot."
     short: "A macro text of 65536 bytes or more is \"Macro too Big\"."
     page: compiler
-    anchor: macros
+    anchor: macro-buffer
   - issue: 965
     severity: 5
     topic: "Compiler"
@@ -7955,7 +7955,7 @@ rows:
     text: "A `~` inside a string literal is an ordinary character; the original evaluated `~...~` there as a constant expression, so `\"a~1+2~b\"` became `a3b`."
     short: "A `~` inside a string literal is an ordinary character."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: tilde-in-string
   - issue: 968
     severity: 5
     topic: "Compiler"
@@ -7964,7 +7964,7 @@ rows:
     text: "A macro line ending in `End` keeps the rest of the macro and of the calling line, as in AmiBlitz3; the original cut both off."
     short: "A macro line ending in `End` keeps the rest of the macro and of the calling line, as in AmiBlitz3."
     page: compiler
-    anchor: macros
+    anchor: macro-end-line
   - issue: 969
     severity: 5
     topic: "Compiler"
@@ -8000,7 +8000,7 @@ rows:
     text: "A constant defined without a value, a line `#c` alone, is 0; the original gave it a random value."
     short: "A constant defined without a value, a line `#c` alone, is 0."
     page: compiler
-    anchor: names-labels-and-constants
+    anchor: constant-without-value
   - issue: 973
     severity: 4
     topic: "Compiler"
@@ -8009,7 +8009,7 @@ rows:
     text: "A NewType field of the type being defined is \"Illegal Type\", a pointer to it stays allowed; the original gave the field a random size."
     short: "A NewType field of the type being defined is \"Illegal Type\"; a pointer to it stays allowed."
     page: compiler
-    anchor: newtypes
+    anchor: newtype-contains-itself
   - issue: 974
     severity: 4
     topic: "Compiler"
@@ -8099,7 +8099,7 @@ rows:
     text: "With runtime error checking, `GetaSprite` allows 4 colour shapes 8 sprites wide and 16 colour shapes 4, else \"Sprite too Wide\"; the original had the limits swapped."
     short: "4 colour shapes may be 8 sprites wide and 16 colour shapes 4, else \"Sprite too Wide\"."
     page: libraries/commands/spriteslib
-    anchor: shapes-and-sprites
+    anchor: getasprite-width
   - issue: 989
     severity: 5
     topic: "Gadgets & menus"
@@ -8153,7 +8153,7 @@ rows:
     text: "An inline assembler operand too long for its buffer is \"Operand too Long\"; the original cut it into wrong code or overwrote the compiler's data."
     short: "An inline assembler operand too long for its buffer is \"Operand too Long\"."
     page: compiler
-    anchor: inline-assembler
+    anchor: operand-too-long
   - issue: 998
     severity: 5
     topic: "Compiler"
@@ -8360,7 +8360,7 @@ rows:
     text: "`Inkey$` with a negative count stops with checking (\"Can't Inkey$ a negative number\"); the original tried about 4 billion reads and overwrote memory behind the string buffer."
     short: "With a negative count stops with \"Can't Inkey$ a negative number\" (with runtime error checking)."
     page: libraries/commands/editlib
-    anchor: input
+    anchor: inkey-negative
   - issue: 1032
     severity: 5
     topic: "Input"
@@ -8369,7 +8369,7 @@ rows:
     text: "With runtime error checking, the first `PopInput` or `PopOutput` with nothing to undo is reported; the original let it pass and reported only the next one."
     short: "With runtime error checking, the first `PopInput` or `PopOutput` with nothing to undo is reported."
     page: libraries/commands/inputoutputlib
-    anchor: input
+    anchor: pop-without-push
   - issue: 1033
     severity: 5
     topic: "Graphics"
@@ -8396,7 +8396,7 @@ rows:
     text: "With runtime error checking, `Dim a(65535)` and `Dim List a(65535)` stop with \"Array Dimension out of Range\"; the original made an empty array whose accesses lay outside its memory."
     short: "`Dim a(65535)` stops with \"Array Dimension out of Range\" (with runtime error checking)."
     page: libraries/commands/arrayslib
-    anchor: arrays-and-sorting
+    anchor: dim-65535
   - issue: 1039
     severity: 3
     topic: "Windows & screens"
@@ -8405,7 +8405,7 @@ rows:
     text: "With runtime error checking, `ScreenTags` with more than 15 tag pairs stops with \"Too Many Tags\"; the original wrote over code of the libraries."
     short: "More than 15 tag pairs stop with \"Too Many Tags\" (with runtime error checking)."
     page: libraries/commands/screenslib
-    anchor: windows-and-screens
+    anchor: screentags-too-many-tags
   - issue: 1040
     severity: 5
     topic: "Graphics"
@@ -8414,7 +8414,7 @@ rows:
     text: "`BitMap` with a depth of 0 or more than 8 reports \"Illegal BitMap Depth\"; the original showed \"No currently used object!\" or an empty text."
     short: "A depth of 0 or more than 8 reports \"Illegal BitMap Depth\"."
     page: libraries/commands/bitmaplib
-    anchor: bitmaps
+    anchor: bitmap-depth-text
   - issue: 1041
     severity: 3
     topic: "System"
@@ -8423,7 +8423,7 @@ rows:
     text: "`DeleteMsgPort` of a port not made by `CreateMsgPort` stops with runtime error checking (\"Port Not Created By CreateMsgPort\"); the original freed it and corrupted memory."
     short: "A port not made by `CreateMsgPort` stops with \"Port Not Created By CreateMsgPort\"."
     page: libraries/commands/utillib
-    anchor: tasks-and-message-ports
+    anchor: deletemsgport-foreign
   - issue: 1042
     severity: 5
     topic: "Files"
@@ -8441,7 +8441,7 @@ rows:
     text: "With runtime error checking, `InitPage` with 32768 boxes or more stops with \"Illegal Number of Boxes\"; the original took the number as negative and ran out of memory."
     short: "32768 boxes or more stop with \"Illegal Number of Boxes\" (with runtime error checking)."
     page: libraries/commands/blitzoslib
-    anchor: blitz-mode-boxes
+    anchor: initpage-numboxes
   - issue: 1044
     severity: 4
     topic: "Compiler"
@@ -8450,7 +8450,7 @@ rows:
     text: "A division or `Mod` by a constant 0 is the compile error \"Division by Zero\"; the original crashed the compiler or compiled the largest Long number."
     short: "A division or `Mod` by a constant 0 is the compile error \"Division by Zero\"."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: division-by-zero
   - issue: 1046
     severity: 1
     topic: "Graphics"
@@ -8469,7 +8469,7 @@ rows:
     text: "With runtime error checking, a shape too large for its size fields stops with \"Shape too Big\", and `InitShape` of size 0 with \"Illegal Shape Size\"; the original overwrote memory."
     short: "A shape too large for its size fields stops with \"Shape too Big\"; size 0 with \"Illegal Shape Size\"."
     page: libraries/commands/shapeslib
-    anchor: shapes-and-sprites
+    anchor: shape-too-big
   - issue: 1048
     severity: 5
     topic: "Compiler"
@@ -8505,7 +8505,7 @@ rows:
     text: "`LoadShape` of a picture with 0 bitplanes stops with \"Illegal Shape Depth\", also without runtime error checking; the original wrote the picture behind an empty shape."
     short: "A picture with 0 bitplanes stops with \"Illegal Shape Depth\", also without runtime error checking."
     page: libraries/commands/shapeslib
-    anchor: shapes-and-sprites
+    anchor: loadshape-no-planes
   - issue: 1053
     severity: 5
     topic: "Files"
@@ -8523,7 +8523,7 @@ rows:
     text: "`LoadShape` of a picture of width or height 0 stops with \"Illegal Shape Size\", also without runtime error checking; the original wrote the picture behind an empty shape."
     short: "A picture of width or height 0 stops with \"Illegal Shape Size\", also without runtime error checking."
     page: libraries/commands/shapeslib
-    anchor: shapes-and-sprites
+    anchor: loadshape-size-zero
   - issue: 1055
     severity: 1
     topic: "Graphics"
@@ -8577,7 +8577,7 @@ rows:
     text: "`Frac` of a Quick gives the exact fraction, also for an integer part of 256 or more, and takes a value of any numeric type; the original lost the low bits of the fraction."
     short: "Of a Quick gives the exact fraction, also for an integer part of 256 or more."
     page: libraries/commands/vallib
-    anchor: dates-and-numbers
+    anchor: frac-string
   - issue: 1065
     severity: 5
     topic: "Files"
@@ -8658,7 +8658,7 @@ rows:
     text: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"; the original gave it the size of the count modulo 65536, and programs wrote past it."
     short: "An array field of a NewType with 65536 or more elements, or a negative count, is \"Type too Big\"."
     page: compiler
-    anchor: newtypes
+    anchor: newtype-field-count
   - issue: 1076
     severity: 2
     topic: "Sound"
@@ -8730,7 +8730,7 @@ rows:
     text: "The font printer prints nothing from column 80 on; with runtime error checking a bitmap narrower than 640 pixels or a cursor row outside it stops with \"Font printer needs a bitmap of 640 pixels\" or \"Font printer row outside the bitmap\". The original printed the columns 208 to 255 into the next rows and never checked the bitmap."
     short: "A narrower bitmap stops with \"Font printer needs a bitmap of 640 pixels\"."
     page: libraries/userlibs/rilesdebuglib
-    anchor: rilesdebuglib-fixes
+    anchor: font-printer-bitmap
   - issue: 700
     severity: 3
     topic: "Strings"
@@ -8739,7 +8739,7 @@ rows:
     text: "`AddProcessPtr` keeps at most 20 codes and ignores more; with runtime error checking a 21st stops with \"AddProcessPtr table holds at most 20 entries\". The original wrote the 21st over the code behind its table."
     short: "A 21st code stops with \"AddProcessPtr table holds at most 20 entries\"; at most 20 codes are kept."
     page: libraries/userlibs/rilesdebuglib
-    anchor: rilesdebuglib-fixes
+    anchor: addprocessptr-20-codes
   - issue: 701
     severity: 5
     topic: "System"
@@ -9064,7 +9064,7 @@ rows:
     text: "An operator whose right operand needs a ninth register, such as `a+b*c` as the 7th or a later argument of a statement or function, is the compile error \"Expression too Complex\" (write `b*c+a` or `a+(b*c)`); the original computed a wrong value or crashed the program or the compiler."
     short: "An expression needing a ninth register is the compile error \"Expression too Complex\"."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: expression-too-complex
   - issue: 1187
     severity: 1
     topic: "Compiler"
@@ -9100,7 +9100,7 @@ rows:
     text: "The result of a comparison as the right operand of an operator is converted to the left operand's type, so a Long keeps its high word and a Float its fraction; the original converted the left operand down to Word (`If $10000 AND (a=b)` false, `lb+(a=b)` -31073 for `lb=100000`, `fh+(a=b)` -1 for `fh=0.5`). A Quick keeps its fraction in arithmetic (`q+(a=b)` 0.5 for `q=1.5`); `AND`, `OR` and `EOR` take its whole part, so `If q OR (a<>b)` is false for `q=0.5`, as in the original. `rf=fh AND (a=b)` with a Float `fh` is refused with \"Illegal Operator for Type\"."
     short: "A comparison as the right operand is converted to the left operand's type."
     page: compiler
-    anchor: expressions-and-statements
+    anchor: float-bit-operator-comparison
   - issue: 1188
     severity: 1
     topic: "Compiler"
@@ -9154,7 +9154,7 @@ rows:
     text: "`VWait 0` (also a variable count of 0) is \"Can't VWait 0 Frames!\" with checking; the original waited 65536 frames (about 22 minutes)."
     short: "`VWait 0` (also a variable count of 0) is \"Can't VWait 0 Frames!\" (with runtime error checking)."
     page: libraries/commands/intlib
-    anchor: debugger-fixes
+    anchor: vwait-zero
   - issue: 1206
     severity: 5
     topic: "Compiler"

@@ -51,11 +51,6 @@ New items and results:
   in the original: the others read and wrote memory from address 0 on,
   and `FirstListItem` and `LastListItem` returned -1
   ([#733](https://github.com/fubar-coder/bb2-c/issues/733)).
-* With runtime error checking, a list number outside 0 to 4 stops with
-  the error "List number must be 0 to 4"; the original wrote into the
-  other lists and the memory behind them
-  ([A list number outside 0 to 4]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#linked-list-number-range" >}}),
-  [#732](https://github.com/fubar-coder/bb2-c/issues/732)).
 
 The copies of the items:
 
@@ -78,5 +73,40 @@ The copies of the items:
   `AddLastListItem` and `SetListItem`; the original stored the size of
   the last variable any command had looked at, or kept the old size
   ([#735](https://github.com/fubar-coder/bb2-c/issues/735)).
+
+#### A list number outside 0 to 4 {#linked-list-number-range}
+
+**What happened.** The commands of
+[rilinkedlistlib]({{< relref "/docs/libraries/userlibs/rilinkedlistlib" >}})
+keep five linked lists, numbered 0 to 4. The library's guide warns
+against higher numbers, but the original did not check the list
+number, also not with runtime error checking: a number outside 0 to 4
+wrote into the other lists and the memory behind them. With the
+original, this program printed `-1` and `list 0 changed`, because
+`InitList 5` took over the last item of list 0:
+
+```
+NEWTYPE .t
+  a.l
+End NEWTYPE
+DEFTYPE .t v
+v\a=1
+r.l=InitList(0,v)
+a0.l=AddrListItem(0)
+r=InitList(5,v)
+NPrint r
+r=LastListItem(0)
+If AddrListItem(0)=a0 Then NPrint "list 0 kept" Else NPrint "list 0 changed"
+End
+```
+
+**With the port.** With runtime error checking, a list number outside 0
+to 4 is the error "List number must be 0 to 4", in every command with a
+list number; in the program above at `InitList(5,v)`. Without runtime
+error checking, the commands work as in the original.
+
+**What to change.** Use only the lists 0 to 4.
+
+Issue: [The list number is not checked: list# outside 0–4 indexes past the list tables (#732)](https://github.com/fubar-coder/bb2-c/issues/732).
 
 {{% fixed-bugs-library part="elsewhere" %}}

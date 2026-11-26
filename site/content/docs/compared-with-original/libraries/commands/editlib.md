@@ -26,10 +26,20 @@ otherwise.
   with `<` in the shell, returned a string of the length -1; it returns
   the empty string, and `Edit` there returns 0
   ([#132](https://github.com/fubar-coder/bb2-c/issues/132)).
-* `Inkey$` with a negative count tried about 4 billion times to read a
-  character and added every character it got behind the end of the
-  string buffer; with runtime error checking a negative count is the
-  error "Can't Inkey$ a negative number of Characters!"
-  ([#1031](https://github.com/fubar-coder/bb2-c/issues/1031)).
+
+#### `Inkey$` with a negative count {#inkey-negative}
+
+**What happened.** The original took the count of `Inkey$` as an
+unsigned number: `Inkey$(-1)` tried about 4 billion times to read a
+character, added every character it got behind the end of the string
+buffer, and did not come back.
+
+**With the port.** With runtime error checking, a negative count is the
+error "Can't Inkey$ a negative number of Characters!". `Inkey$(0)` is
+the empty string, as before.
+
+**What to change.** Use a count of 0 or more.
+
+Issue: [Inkey$ with a negative count made about 4 billion attempts (#1031)](https://github.com/fubar-coder/bb2-c/issues/1031).
 
 {{% fixed-bugs-library part="elsewhere" %}}

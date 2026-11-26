@@ -25,15 +25,29 @@ existing program shows:
   green of the first colour run ahead of the others in the steps of the
   fade; all colours fade evenly
   ([#134](https://github.com/fubar-coder/bb2-c/issues/134)).
-* With runtime error checking, `FadeIn` and `FadeOut` took a palette whose
-  colours lie in the lowest 64 KB of memory as uninitialised, and gave
-  two errors the wrong message: a palette that was never made was "Not
-  enough colours in Slice", a colour beyond the colours of the slice
-  "Uninitialized Slice". The palette is accepted, and the messages are
-  "Uninitialized Palette" and "Not enough colours in Slice"
-  ([#135](https://github.com/fubar-coder/bb2-c/issues/135),
-  [#330](https://github.com/fubar-coder/bb2-c/issues/330),
-  [#331](https://github.com/fubar-coder/bb2-c/issues/331);
-  [The checks of `FadeIn` and `FadeOut`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#fade-checks" >}})).
+
+#### The checks of `FadeIn` and `FadeOut` {#fade-checks}
+
+**What happened.** With runtime error checking, `FadeIn` and `FadeOut`
+check the used slice, the palette and the range of colours. The original
+took a palette whose colours lie in the lowest 64 KB of memory as one
+that was never made, and stopped the program with an error. Two errors
+had the wrong message: a palette that was never made gave "Not enough
+colours in Slice", and a colour of the range beyond the colours of the
+slice gave "Uninitialized Slice".
+
+**With the port.** A palette is accepted wherever its colours lie. A
+palette that was never made is the error "Uninitialized Palette", and a
+colour beyond the colours of the slice the error "Not enough colours in
+Slice". A slice that is not set up is still "Uninitialized Slice".
+
+**What to change.** Nothing; a program that stopped with one of these
+errors stops with the message that names its cause.
+
+Issues:
+
+* [The checks of the fades tested only the upper word of the palette (#135)](https://github.com/fubar-coder/bb2-c/issues/135)
+* [An uninitialised palette reported "Not enough colours in Slice" (#330)](https://github.com/fubar-coder/bb2-c/issues/330)
+* [A too large colour range reported "Uninitialized Slice" (#331)](https://github.com/fubar-coder/bb2-c/issues/331)
 
 {{% fixed-bugs-library part="elsewhere" %}}

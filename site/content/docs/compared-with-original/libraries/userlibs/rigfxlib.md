@@ -76,22 +76,12 @@ described above.
   counted as one with hundreds of bitplanes. With runtime error
   checking, a bitmap of depth 0 or more than 8 stops with "Illegal
   BitMap Depth"
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rwe-effects-depth" >}}),
+  ([Bitmap depths for the effects of rifxlib and `CPUCls`]({{< relref "/docs/compared-with-original/libraries/userlibs/rifxlib#rwe-effects-depth" >}}),
   [#679](https://github.com/fubar-coder/bb2-c/issues/679)).
 * `CopyColour` with a negative colour number fails and returns 0, as
   for a colour beyond the palette. The original copied from or to
   memory up to 786 KB away from the palette and returned -1
   ([#678](https://github.com/fubar-coder/bb2-c/issues/678)).
-* With runtime error checking, the functions that read a colour and
-  `PalAdjust` stop with a runtime error before `PaletteInfo` has chosen
-  a palette, for a colour number the palette does not have, and
-  `PalAdjust` also for an end colour before the start colour and for a
-  target palette too small for the colours it writes
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rigfxlib-palette-checks" >}}),
-  [#686](https://github.com/fubar-coder/bb2-c/issues/686),
-  [#677](https://github.com/fubar-coder/bb2-c/issues/677),
-  [#684](https://github.com/fubar-coder/bb2-c/issues/684),
-  [#685](https://github.com/fubar-coder/bb2-c/issues/685)).
 * `SaveCMAP` writes the pad byte that the IFF standard puts behind a
   chunk of odd length, so a palette with an odd number of colours gives
   a correct IFF file. The original's file was one byte short
@@ -104,5 +94,51 @@ described above.
   before, and the colour functions and `PalAdjust` read that run's
   freed palette
   ([#1125](https://github.com/fubar-coder/bb2-c/issues/1125)).
+
+#### The checks of the palette commands of rigfxlib {#rigfxlib-palette-checks}
+
+The functions of
+[rigfxlib]({{< relref "/docs/libraries/userlibs/rigfxlib" >}}) that read
+a colour, `PalRed`, `AGAPalRed` and the others, and `PalAdjust` work on
+the palette chosen with `PaletteInfo`. `PalAdjust` writes the adjusted
+colours into a target palette, all of them or those from `start_col`
+to `end_col`.
+
+**What happened.** The original checked none of the arguments, also not
+with runtime error checking. Before the first `PaletteInfo` the
+commands read the colours from address 0. A colour number beyond the
+palette read, or for `PalAdjust` wrote, the memory behind its colours,
+and one from 2731 on the memory before them. `PalAdjust` with an end
+colour one below the start colour wrote 256 KB of colours, and without
+a range it wrote as many colours as the palette of `PaletteInfo` has,
+also into a smaller target palette.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* a colour function or `PalAdjust` before `PaletteInfo`: "No palette
+  selected with PaletteInfo";
+* a colour number the palette of `PaletteInfo` does not have, also as
+  `start_col` or `end_col` of `PalAdjust`: "Colour number outside the
+  PaletteInfo palette";
+* an `end_col` of `PalAdjust` below its `start_col`: "PalAdjust end
+  colour before the start colour";
+* a target palette of `PalAdjust` with fewer colours than it writes:
+  "PalAdjust colours outside the target palette".
+
+Without runtime error checking, the commands work as in the original, so they
+stay as fast as in the original, for example when `PalAdjust` fades a
+palette in every frame.
+
+**What to change.** Choose the palette with `PaletteInfo` first, ask
+only for the colours it has, and give `PalAdjust` a target palette at
+least as large as the colours it writes, as the library's guide asks.
+
+Issues:
+
+* [PalRed/…/AGAPalBlue and PalAdjust read from address 0 before PaletteInfo (#686)](https://github.com/fubar-coder/bb2-c/issues/686)
+* [Colour numbers from 2731 on index before the palette (12 × colour used as a signed word) (#677)](https://github.com/fubar-coder/bb2-c/issues/677)
+* [PalAdjust with end < start runs up to 65536 × 3 channels (#684)](https://github.com/fubar-coder/bb2-c/issues/684)
+* [PalAdjust without start/end adjusts as many colours as PaletteInfo's palette has, not the target (#685)](https://github.com/fubar-coder/bb2-c/issues/685)
 
 {{% fixed-bugs-library part="elsewhere" %}}

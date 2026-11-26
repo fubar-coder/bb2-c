@@ -19,15 +19,6 @@ These fixes concern
 [risnowlib]({{< relref "/docs/libraries/userlibs/risnowlib" >}}), the
 falling snow of Reflective Images.
 
-* With runtime error checking, every snow command with a field number
-  outside 0 to 3 stops with "Snow list number must be 0 to 3",
-  `LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
-  `InitSnowDrop` with "Snow list needs InitSnowDrop", and `KillPoint`
-  outside the bitmap with "KillPoint outside the bitmap". The original
-  read and wrote outside the library's table, at address 0 or around
-  the bitmap
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#snow-list-checks" >}}),
-  [#913](https://github.com/fubar-coder/bb2-c/issues/913)).
 * `InitSnowDrop` with 1024 points or more allocates enough memory for
   the field's lists. The original computed the size in 16 bits, got a
   block far too small and wrote the lists behind it
@@ -59,5 +50,39 @@ falling snow of Reflective Images.
   up. In the original, a snow command before `InitSnowDrop` worked on
   the lists of the run before, which had been freed
   ([#1135](https://github.com/fubar-coder/bb2-c/issues/1135)).
+
+#### Snow field numbers of risnowlib {#snow-list-checks}
+
+The snow commands of
+[risnowlib]({{< relref "/docs/libraries/userlibs/risnowlib" >}}) work on
+one of 4 snow fields, numbered 0 to 3, which `InitSnowDrop` sets up on
+a bitmap. `KillPoint listnum,x,y` removes a pixel of the field's
+bitmap, which the library takes as 320 pixels wide.
+
+**What happened.** The original checked neither the number nor the
+pixel, also not with runtime error checking. A number from 4 on, or a
+negative one, read and wrote the memory behind or in front of the
+library's table of fields; `InitSnowDrop` wrote four pointers there.
+`LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
+`InitSnowDrop` read its lists and its bitmap at address 0, and
+`KillPoint` outside the bitmap changed the memory around it.
+
+**With the port.** With runtime error checking, these are runtime
+errors:
+
+* a field number outside 0 to 3, for every snow command: "Snow list
+  number must be 0 to 3";
+* `LDoSnow`, `LDoSnowActivate` and `KillPoint` on a field without
+  `InitSnowDrop`: "Snow list needs InitSnowDrop";
+* `KillPoint` with an `x` outside 0 to 319 or a `y` outside the rows of
+  the bitmap: "KillPoint outside the bitmap".
+
+Without runtime error checking, the commands work as in the original.
+
+**What to change.** Use the fields 0 to 3, set each up with
+`InitSnowDrop` before the other commands use it, and keep `KillPoint`
+inside the bitmap.
+
+Issue: [The list number is not checked: listnum outside 0–3 indexes past the list table (#913)](https://github.com/fubar-coder/bb2-c/issues/913).
 
 {{% fixed-bugs-library part="elsewhere" %}}

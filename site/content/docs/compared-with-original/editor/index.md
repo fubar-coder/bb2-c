@@ -302,7 +302,7 @@ is not a Latin-1 character and becomes `?`.
 
 Outside a string and a comment, a literal character is an error: the
 compiler stops with "Syntax Error" at its line
-([Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#latin1-outside-string" >}})).
+([An accented letter outside a string](#latin1-outside-string)).
 
 **With the original Blitz Basic 2**
 
@@ -323,6 +323,27 @@ the same number
 ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
 
 Issue: [Latin-1 characters in strings and comments (#1018)](https://github.com/fubar-coder/bb2-c/issues/1018).
+
+#### An accented letter outside a string {#latin1-outside-string}
+
+The original editor lost a Latin-1 letter other than the umlauts ä ö ü
+Ä Ö Ü, such as ß or é, as you typed it, so a name with it became another
+name without a message. The port's editor keeps the letter, and the
+compiler accepts it only in strings and comments.
+
+```
+; original: the editor makes the line caf=1 : NPrint caf
+; port:     "Syntax Error"
+café=1 : NPrint café
+```
+
+In the port such a letter in a name or as a statement stops the compiler
+with "Syntax Error" at its line; in AB3 mode the message is "Token Not
+Found". In a text file loaded into the original, the letter was taken for
+a keyword.
+
+**What to change:** write names with plain letters, and accented letters
+only in strings and comments.
 
 ### PRINT sent umlauts to the printer as control characters {#print-umlauts}
 

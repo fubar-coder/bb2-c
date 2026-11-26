@@ -4,7 +4,7 @@ weight: 1
 width: wide
 description: All fixed bugs of Blitz Basic 2 in one table, sorted by what they can change in an existing program, with the few fixes that change correct programs first.
 prev: /docs/compared-with-original
-aliases: [/docs/compared-with-original/fixed-bugs/]
+aliases: [/docs/compared-with-original/fixed-bugs/, /docs/compared-with-original/new-errors/]
 ---
 
 Before this page you should know what the chapter means by a fixed bug
@@ -133,6 +133,13 @@ error ranks above a new compile error, since the compiler shows the one
 at once and the other only comes when the program runs into it.
 
 {{< fix-overview part="levels" >}}
+
+A fix of level 3 or 4 makes the port stop a program with a runtime error,
+or refuse a source, where the original went on with a wrong or random
+result. Its entry on the pages of fixed bugs shows a program, with what
+the original did and what the port does, and what to change in a
+source. The table below lists them all when it is
+[filtered to levels 3 and 4]({{< relref "/docs/compared-with-original/important-fixes" >}}?level=3,4#all-fixes).
 
 ## All fixes
 

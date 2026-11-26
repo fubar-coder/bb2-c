@@ -112,11 +112,22 @@ bugs; a fix that makes the port refuse a source or stop with a new runtime
 error (levels 3 and 4) is described there with its example and what to
 change in a source.
 
+A fix of level 3 or 4 follows the list of its group on its page, as an
+entry with its own heading (`####` under the group's `###`): the
+program with comments for the original's and the port's results, the
+reason, and **What to change**. A form that only the port accepts, as a
+side of a fix, is on "Extensions", under "Forms the original refused".
+
 A page keeps the URLs that readers may have bookmarked as `aliases` in
-its front matter (the pages of fixed bugs: below `fixed-bugs/`). The
-template `layouts/alias.html` makes the page at such a URL; it forwards
-to the page and keeps the anchor of the link. A page that moves gets an
-alias for its old URL.
+its front matter (the pages of fixed bugs: below `fixed-bugs/`; the
+pages below `new-errors/`, whose entries are on the pages of fixed
+bugs and on Extensions). The template `layouts/alias.html` makes the
+page at such a URL; it forwards to the page and keeps the anchor of the
+link. An entry that went to another page than the alias names is listed
+in the front matter `anchorMoves` of the alias's page, by its anchor
+(`frac-string: libraries/commands/vallib`), and a link to that anchor
+goes there. A page that moves gets an alias for its old URL, and its
+headings keep their ids.
 
 ## The overview of fixed bugs
 

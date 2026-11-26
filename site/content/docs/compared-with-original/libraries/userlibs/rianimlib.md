@@ -40,11 +40,6 @@ Other fixes.
   more than 8 bitplanes. The original wrote through plane pointers from
   behind the bitmap's
   ([#509](https://github.com/fubar-coder/bb2-c/issues/509)).
-* With runtime error checking, `RIAnimInit` with a position `x`,`y`
-  outside the bitmap stops with the runtime error "Animation position
-  outside the bitmap". The original drew the frames far outside the
-  bitmap, as the port does without error checking
-  ([#514](https://github.com/fubar-coder/bb2-c/issues/514)).
 * `RIAnimFrameCount` counts only the frames. The original counted every
   chunk of the animation, an annotation as well
   ([#510](https://github.com/fubar-coder/bb2-c/issues/510)).
@@ -103,19 +98,77 @@ Other fixes.
   without drawing. On a 68000 the original crashed with a Software
   Failure on such a frame; the port refuses it on every processor
   ([#1121](https://github.com/fubar-coder/bb2-c/issues/1121)).
-* With runtime error checking, `RINextAnimFrame` stops with the runtime
-  error "Animation position on an odd byte for ANIM7" before an ANIM7
-  frame when the position given to `RIAnimInit` puts the frame at an odd
-  byte: an `x` of 8 to 15, 24 to 31 and so on, or an odd byte offset.
-  On a 68000 the original crashed with a Software Failure there. ANIM5
-  frames play at any position, and without error checking the port
-  plays as the original
-  ([#1122](https://github.com/fubar-coder/bb2-c/issues/1122)).
 * A program run a second time from the editor starts with no animation
   and with `AnimLoop` on. The original's `RIAnimFrameCount` and
   `RINextAnimFrame` worked on the animation of the run before, which may
   have been freed, and an `AnimLoop Off` stayed off
   ([#1107](https://github.com/fubar-coder/bb2-c/issues/1107)).
+
+#### An animation position outside the bitmap {#anim-position-outside}
+
+`RIAnimInit` of
+[rianimlib]({{< relref "/docs/libraries/userlibs/rianimlib" >}}) unpacks
+the first frame of an animation into a bitmap and takes the position of
+the animation in the bitmap either as a pixel position `x`,`y`, with `x`
+rounded down to a multiple of 8, or as a byte offset into the
+bitplanes. `RINextAnimFrame` then draws each frame at that position.
+
+**What happened.** The original turned `x`,`y` into a byte offset
+without a look at the bitmap, also not with runtime error checking. A
+position outside the bitmap put the frames into the memory behind it,
+and a negative `y` far away from it. With an animation loaded at address
+`a`, this program printed `before` and `after -1`, and the first frame
+went into the row below the one the position named:
+
+```
+BitMap 0,32,16,1
+NPrint "before"
+r=RIAnimInit(a,0,0,32,0)
+NPrint "after ",r
+```
+
+**With the port.** With runtime error checking, an `x` outside 0 to
+the bitmap's width minus 1 or a `y` outside 0 to its height minus 1 is
+the error "Animation position outside the bitmap"; the program above
+prints `before` and stops at `RIAnimInit`. The byte offset form is not
+checked. Without runtime error checking, the command works as in the original.
+
+**What to change.** Give a position inside the bitmap, and make the
+bitmap large enough for the whole animation at that position: that part
+is not checked.
+
+Issue: [RIAnimInit x,y: the row offset is MULU.w of the low words – a negative y gives a huge offset (#514)](https://github.com/fubar-coder/bb2-c/issues/514).
+
+#### An ANIM7 animation at an odd byte {#anim7-odd-byte}
+
+`RIAnimInit` places an animation at a byte of the bitmap
+([An animation position outside the bitmap](#anim-position-outside)).
+
+**What happened.** The decoder of the ANIM7 format writes whole words
+and longs into the bitplanes, which a 68000 can only do at an even
+address. The original did not check the position, also not with runtime
+error checking: at an odd byte, an `x` of 8 to 15, 24 to 31 and so on or
+an odd byte offset, the first ANIM7 frame crashed a 68000 with a Software
+Failure. With an ANIM7 animation loaded at address `m`, this crashed at
+`RINextAnimFrame`:
+
+```
+BitMap 0,64,16,1
+If RIAnimInit(m,0,0,8,0)
+  r=RINextAnimFrame(0)
+EndIf
+```
+
+**With the port.** With runtime error checking, `RINextAnimFrame` stops
+before an ANIM7 frame at an odd byte with the error "Animation position
+on an odd byte for ANIM7", on every processor. ANIM5 frames are written
+byte by byte and play at any position. Without runtime error checking,
+the commands work as in the original.
+
+**What to change.** Place ANIM7 animations at an even byte: an `x` of
+0 to 7, 16 to 23 and so on, or an even byte offset.
+
+Issue: [RIAnimInit with an odd byte offset (`x>>3` or `xy_offset`) for an ANIM7 animation: address error on a 68000 at RINextAnimFrame, no error check (#1122)](https://github.com/fubar-coder/bb2-c/issues/1122).
 
 ### More fixes {#more-fixes}
 

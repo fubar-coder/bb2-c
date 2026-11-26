@@ -105,10 +105,17 @@ size 250 100
 moved -1 20
 ```
 
-With runtime error checking, a size outside the limits of a window with a
-sizing gadget, as here, is the error "Can't Size Window", and the program
-above stops at `WSize`
-([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wsize-limits" >}})).
+#### `WSize` beyond the size limits of a window {#wsize-limits}
+
+**What happened.** Runtime error checking of the original tested only
+the edge of the screen, not the size limits of the window.
+
+**With the port.** With runtime error checking, a size outside the limits
+of a window with a sizing gadget, as in the program above, is the error
+"Can't Size Window", and the program stops at `WSize`.
+
+**What to change.** Size the window within the limits given with
+`SizeLimits` before it was opened.
 
 Issue: [WMove and WSize hung when Intuition limited the new position or size (#320)](https://github.com/fubar-coder/bb2-c/issues/320).
 
@@ -237,11 +244,6 @@ otherwise.
 * `WindowTags` without tags opened the window with the extra tags of the
   previous `WindowTags`, such as its position and size; it uses none
   ([#316](https://github.com/fubar-coder/bb2-c/issues/316)).
-* `WindowTags` with 16 or more tag and data pairs as arguments wrote
-  behind its tag buffer, over data and code of the library; with runtime
-  error checking more than 15 pairs are the error "Too Many Tags"
-  ([#961](https://github.com/fubar-coder/bb2-c/issues/961)). A longer
-  list can be given as the address of a tag list.
 * A `Window` with the super bitmap flag `$80` but without a `BitMap#`
   got the bitmap of the last `Window` that named one; only the form with
   `BitMap#` gives a super bitmap window
@@ -266,5 +268,34 @@ otherwise.
 * `Qualifier` set only the lower half of its long result, so the upper
   half held whatever was there before; the whole result is set
   ([#313](https://github.com/fubar-coder/bb2-c/issues/313)).
+
+#### `WindowTags` with too many tag pairs {#windowtags-too-many-tags}
+
+**What happened.** `WindowTags` copies the tag and data pairs given as
+arguments into a buffer of the library without a limit. With 16 pairs or
+more it wrote behind the buffer, over data and code of the library:
+
+```
+DEFTYPE .l
+WbToScreen 0
+t=$80000064
+WindowTags 0,$000E,"Tags",t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10,t,10
+DefaultOutput
+NPrint "opened"
+CloseWindow 0
+End
+```
+
+The 16 pairs all set the left edge of the window. Compiled with runtime
+error checking, the original printed `opened`.
+
+**With the port.** With runtime error checking, more than 15 pairs are
+the error "Too Many Tags"; the program above stops at `WindowTags`.
+
+**What to change.** Give a long list of tags as the address of a tag
+list, `WindowTags Window#,Flags,Title$,&TagList`: that form takes any
+number of tags.
+
+Issue: [WindowTags with tag pairs overflowed its tag buffer (#961)](https://github.com/fubar-coder/bb2-c/issues/961).
 
 {{% fixed-bugs-library part="elsewhere" %}}

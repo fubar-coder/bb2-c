@@ -88,22 +88,46 @@ changed results of `GetWBSprite` and `MoveWBSprite` are described in
   wide. The original copied the rows of such a shape out of step, so
   its image was sheared and its colours were wrong
   ([#918](https://github.com/fubar-coder/bb2-c/issues/918)).
-* With runtime error checking, every sprite command refuses a channel
-  outside 0 to 7 (-1 to 7 for `GetWBSprite`) with "Sprite channel must
-  be 0 to 7" or "Sprite channel must be -1 to 7". The original read and
-  freed the library's own data as sprites
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
-  [#916](https://github.com/fubar-coder/bb2-c/issues/916)).
-* With runtime error checking, `GetWBSprite` and `ChangeWBSprite` refuse
-  a shape of height 0 with "Illegal Shape Height" and one of depth 0 or
-  more than 8 with "Illegal Shape Depth". The original would copy 65536
-  rows or planes
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
-  [#917](https://github.com/fubar-coder/bb2-c/issues/917)).
-* With runtime error checking, `WBSpriteX` and `WBSpriteY` of a channel
-  without a sprite stop with "No sprite on this channel". The original
-  returned words from low memory
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
-  [#922](https://github.com/fubar-coder/bb2-c/issues/922)).
+
+#### Sprite channels and shapes of riwbspritelib {#wbsprite-checks}
+
+The commands of
+[riwbspritelib]({{< relref "/docs/libraries/userlibs/riwbspritelib" >}})
+name a Workbench sprite by its sprite channel, 0 to 7; `GetWBSprite`
+also takes -1 for any free channel. `GetWBSprite` and `ChangeWBSprite`
+copy a shape into the sprite.
+
+**What happened.** The original had no error checks at all. A channel
+outside 0 to 7 read and wrote the library's own data beside its table
+of sprites, and `FreeWBSprite` freed that data as a sprite.
+`GetWBSprite` with channel 8 even returned 8, as if it had got a sprite.
+A shape of height 0 or depth 0 would have been copied as 65536 rows or
+planes. `WBSpriteX` and `WBSpriteY` of a channel without a sprite
+returned words from low memory.
+
+**With the port.** With runtime error checking:
+
+* a channel outside 0 to 7 is the error "Sprite channel must be 0 to
+  7", and for `GetWBSprite` one outside -1 to 7 the error "Sprite
+  channel must be -1 to 7";
+* in `GetWBSprite` and `ChangeWBSprite`, a shape of height 0 is the
+  error "Illegal Shape Height", and one of depth 0 or more than 8 the
+  error "Illegal Shape Depth", as with the shape commands of Blitz
+  Basic 2;
+* `WBSpriteX` or `WBSpriteY` of a channel without a sprite of the
+  library is the error "No sprite on this channel".
+
+Without runtime error checking, the commands work as in the original. The shape
+commands of Blitz Basic 2 make no shape of height or depth 0, so only a
+shape changed in memory meets that check.
+
+**What to change.** Use the channels 0 to 7, or -1 with `GetWBSprite`,
+and ask for the position only of a sprite the program has got.
+
+Issues:
+
+* [The sprite channel is not checked: channels outside 0–7 index the tag lists, the library name and its base (#916)](https://github.com/fubar-coder/bb2-c/issues/916)
+* [A shape with height or depth 0 is copied as 65536 rows/planes (DBRA) (#917)](https://github.com/fubar-coder/bb2-c/issues/917)
+* [WBSpriteX/WBSpriteY on a channel without a sprite read the words at addresses 6 and 8 (#922)](https://github.com/fubar-coder/bb2-c/issues/922)
 
 {{% fixed-bugs-library part="elsewhere" %}}

@@ -80,10 +80,31 @@ Two more fixes of them change what an existing program does:
   twice the `DiskBuffer` length in chip memory, so a program that caught
   the error with `SetErr` lost that memory each time; the buffer is freed
   ([#950](https://github.com/fubar-coder/bb2-c/issues/950)).
-* With runtime error checking, `SetPeriod` tested the period as a channel
-  mask, so every period above 15, which is every useful one, was the
-  error "Illegal Chanel Mask"; it tests only that the sound is set up
-  ([#66](https://github.com/fubar-coder/bb2-c/issues/66);
-  [The check of `SetPeriod`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#setperiod-check" >}})).
+
+#### The check of `SetPeriod` {#setperiod-check}
+
+**What happened.** With runtime error checking, `SetPeriod Sound#,Period`
+tested the period as if it were a mask of audio channels, which runs
+from 0 to 15. Every period above 15, and so every one a sound is played
+with, stopped the program with "Illegal Chanel Mask":
+
+```
+InitSound 0,32
+NPrint "before"
+SetPeriod 0,428
+NPrint "after"
+End
+```
+
+The original printed `before` and stopped with the error.
+
+**With the port.** The check tests only that the sound is set up, and a
+sound that is not is still "Uninitialized Sound". The program above
+prints `before` and `after`. Without runtime error checking nothing
+changes.
+
+**What to change.** Nothing.
+
+Issue: [SetPeriod: error check tests the period as a channel mask (#66)](https://github.com/fubar-coder/bb2-c/issues/66).
 
 {{% fixed-bugs-library part="elsewhere" %}}

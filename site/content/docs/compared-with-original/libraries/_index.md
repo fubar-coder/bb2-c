@@ -2,7 +2,82 @@
 title: Libraries
 weight: 5
 description: Fixed bugs of Blitz Basic 2 in the command libraries, in AmigaOS calls and in the RWE userlibs, one page per library, with examples of the ones ordinary programs meet.
-aliases: [/docs/compared-with-original/fixed-bugs/libraries/]
+aliases: [/docs/compared-with-original/fixed-bugs/libraries/, /docs/compared-with-original/new-errors/runtime-errors/]
+# the entries of the old page new-errors/runtime-errors, by anchor: the
+# page at its old URL (layouts/alias.html) forwards a link to its entry
+anchorMoves:
+  frac-string: libraries/commands/vallib
+  long-division-by-zero: libraries/commands/ldivlib
+  windowtags-too-many-tags: libraries/commands/windowslib
+  screentags-too-many-tags: libraries/commands/screenslib
+  stringgadget-maxlen: libraries/commands/gadgetslib
+  inkey-negative: libraries/commands/editlib
+  vwait-zero: libraries/commands/intlib
+  peeks-negative: libraries/commands/memacclib
+  cvi-short-string: libraries/commands/stringfunclib
+  instr-startpos: libraries/commands/stringfunclib
+  dim-too-large: libraries/commands/arrayslib
+  dim-65535: libraries/commands/arrayslib
+  wsize-limits: libraries/commands/windowslib
+  depth-zero: libraries/commands/bitmaplib
+  bitmap-depth-text: libraries/commands/bitmaplib
+  bitmap-size: libraries/commands/bitmaplib
+  poly-points: libraries/commands/2dlib
+  too-many-points: libraries/commands/2dlib
+  chunkyvlin-ends: libraries/commands/polylib
+  renderpoly-colour: libraries/commands/polylib
+  loadshape-large-plane: libraries/commands/shapeslib
+  loadshape-blit-size: libraries/commands/shapeslib
+  loadshape-no-planes: libraries/commands/shapeslib
+  loadshape-size-zero: libraries/commands/shapeslib
+  shape-too-big: libraries/commands/shapeslib
+  createshape-count: libraries/userlibs/bb_blitlib
+  bb-blitlib-shape-undefined: libraries/userlibs/bb_blitlib
+  blocktoshape-too-large: libraries/userlibs/bb_blitlib
+  save-palette-no-colours: libraries/commands/iffmakelib
+  saveshape-depth: libraries/commands/iffmakelib
+  loadbitmap-missing-file: libraries/commands/bitmaplib
+  getasprite-width: libraries/commands/spriteslib
+  spritemode-range: libraries/commands/spriteslib
+  scoll-same-pair: libraries/commands/collslib
+  displaysprite-two-banks: libraries/commands/displaylib
+  fade-checks: libraries/commands/fadelib
+  setperiod-check: libraries/commands/audiolib
+  jumpmed-no-module: libraries/commands/medlib
+  freetrackermodule-playing: libraries/userlibs/ciatrklib
+  pop-without-push: libraries/commands/inputoutputlib
+  createmsgport-signal: libraries/commands/utillib
+  deletemsgport-foreign: libraries/commands/utillib
+  rexx-numbers: libraries/commands/arexxlib
+  spotbox-page: libraries/commands/blitzoslib
+  selectbox-range: libraries/commands/blitzoslib
+  initpage-numboxes: libraries/commands/blitzoslib
+  ezrequest-too-many-arguments: libraries/userlibs/rimisclib
+  notify-slot-range: libraries/userlibs/ridoslib
+  linked-list-number-range: libraries/userlibs/rilinkedlistlib
+  anim-position-outside: libraries/userlibs/rianimlib
+  anim7-odd-byte: libraries/userlibs/rianimlib
+  bbshadowvalue-set: libraries/userlibs/ribbmaplib
+  fns-clip-tab-checks: libraries/userlibs/rifnslib
+  rigfxlib-palette-checks: libraries/userlibs/rigfxlib
+  rwe-effects-depth: libraries/userlibs/rifxlib
+  rifxlib-delay-zero: libraries/userlibs/rifxlib
+  zoomyzoom-size: libraries/userlibs/rifxlib
+  zoomxy-without-initzoomxy: libraries/userlibs/rifxlib
+  colsplit-numlines: libraries/userlibs/ricopperfxlib
+  chunkytoplanar-sizes: libraries/userlibs/richunkylib
+  raycastsky-outside: libraries/userlibs/richunkylib
+  rimapeditorlib-map-checks: libraries/userlibs/rimapeditorlib
+  rimapeditorlib-size-checks: libraries/userlibs/rimapeditorlib
+  createmap-width: libraries/userlibs/rimapeditorlib
+  snow-list-checks: libraries/userlibs/risnowlib
+  shapetomapshape-depth: libraries/userlibs/rimapshapeslib
+  group-63-members: libraries/userlibs/rimapshapeslib
+  mapshape-number-checks: libraries/userlibs/rimapshapeslib
+  wbsprite-checks: libraries/userlibs/riwbspritelib
+  compactdisc-checks: libraries/userlibs/ricompactdisclib
+  font-printer-bitmap: libraries/userlibs/rilesdebuglib
+  addprocessptr-20-codes: libraries/userlibs/rilesdebuglib
 ---
 
 These bugs are in the libraries that provide the commands of Blitz Basic
@@ -21,6 +96,16 @@ The outputs shown were recorded in an emulator: the original is the
 program compiled with the libraries of the Blitz Basic 2 CD, the port the
 same program compiled with the port's libraries. The programs run without
 runtime error checking unless the text says otherwise.
+
+Some fixes make a command stop with a runtime error where the original
+went on with a wrong argument, wrote over memory or hung (level 3, a new
+runtime error). Such a fix follows the list of its group on the
+library's page, with a program, what the original did, what the port
+does and what to change in a source. Most of these are error checks:
+like the other checks of Blitz Basic 2, they come only in a program
+compiled with runtime error checking, and without it the program runs as
+with the original. An error is shown with the line number the compiler
+reported, counted in the program as it is shown.
 
 ## Fixes by library
 

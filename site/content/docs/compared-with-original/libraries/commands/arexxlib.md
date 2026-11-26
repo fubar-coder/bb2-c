@@ -92,13 +92,6 @@ One more fix of them changes what an existing program sees:
   the arguments behind it were lost; only a string address of 0 ends it,
   and `ClearRexxMsg` clears all 16 slots
   ([#50](https://github.com/fubar-coder/bb2-c/issues/50)).
-* `GetRexxResult` and `GetRexxCommand` read the fields next to the
-  results or the argument slots for a number out of range; with runtime
-  error checking, `GetRexxResult` with a number other than 1 or 2 is the
-  error "Illegal Result Number", and `GetRexxCommand` with one outside 1
-  to 16 the error "Illegal Argument Number"
-  ([#51](https://github.com/fubar-coder/bb2-c/issues/51);
-  [`GetRexxResult` and `GetRexxCommand` with a number out of range]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rexx-numbers" >}})).
 * `GetResultString` freed the result string of a message but left the
   message pointing to the freed memory, so a second call read and freed
   it again. The port clears the result, and a second call gives the
@@ -120,5 +113,28 @@ One more fix of them changes what an existing program sees:
   characters; it holds the first 65535 characters, the most an ArgString
   can describe
   ([#57](https://github.com/fubar-coder/bb2-c/issues/57)).
+
+#### `GetRexxResult` and `GetRexxCommand` with a number out of range {#rexx-numbers}
+
+`GetRexxResult(msg,ResultNum)` reads result 1 or 2 of an ARexx message,
+and `GetRexxCommand(msg,ARGNum)` the text of one of its 16 argument
+slots, counted from 1.
+
+**What happened.** The original did not check the number and read
+whatever lay at that place in the message: `GetRexxResult(msg,0)` gave
+the action of the message, `GetRexxResult(msg,3)` the first argument
+slot, and `GetRexxCommand(msg,0)` took the second result as the address
+of a text.
+
+**With the port.** With runtime error checking, `GetRexxResult` with a
+number other than 1 or 2 is the error "Illegal Result Number", and
+`GetRexxCommand` with a number outside 1 to 16 the error "Illegal
+Argument Number". Without runtime error checking, the program runs as
+with the original.
+
+**What to change.** Read the argument slots with `GetRexxCommand`, and
+other fields of the message with `Peek`.
+
+Issue: [GetRexxResult and GetRexxCommand did not check their number (#51)](https://github.com/fubar-coder/bb2-c/issues/51).
 
 {{% fixed-bugs-library part="elsewhere" %}}

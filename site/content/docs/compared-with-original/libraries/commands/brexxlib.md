@@ -94,7 +94,7 @@ the original did.
   `Tape#` in place of a running playback and waits for its end, but
   returns at once for an empty tape, where the original waited for ever
   ([#99](https://github.com/fubar-coder/bb2-c/issues/99);
-  [`PlayWait` without a tape number]({{< relref "/docs/compared-with-original/new-errors/refused-forms#playwait-without-tape" >}})).
+  [`PlayWait` without a tape number]({{< relref "/docs/compared-with-original/extensions#playwait-without-tape" >}})).
 * `PlayBack` plays a recorded event in front of the first input event
   that came after its time; the original compared the times only with
   the first of the input events that arrived together, so it could play

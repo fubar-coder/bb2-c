@@ -31,11 +31,21 @@ otherwise.
   overwrote code behind the library; up to 15 tags are copied and the
   rest of the list is linked, as for `WindowTags`
   ([#249](https://github.com/fubar-coder/bb2-c/issues/249)).
-* `ScreenTags` with 16 or more tag and data pairs as arguments wrote
-  behind its tag buffer, over code of the libraries; with runtime error
-  checking more than 15 pairs are the error "Too Many Tags", as for
-  `WindowTags`
-  ([#1039](https://github.com/fubar-coder/bb2-c/issues/1039)). A longer
-  list can be given as the address of a tag list.
+
+#### `ScreenTags` with too many tag pairs {#screentags-too-many-tags}
+
+**What happened.** `ScreenTags Screen#,Title$,Tag,Data...` copies its tag
+and data pairs into a buffer of the library in the same way as
+`WindowTags`, without a limit. With 16 pairs or more it wrote behind the
+buffer, over code of the libraries.
+
+**With the port.** With runtime error checking, more than 15 pairs are
+the error "Too Many Tags", as for `WindowTags`.
+
+**What to change.** Give a long list of tags as the address of a tag
+list, `ScreenTags Screen#,Title$,&TagList`: that form takes any number of
+tags.
+
+Issue: [ScreenTags with tag pairs had no limit for the user tags (#1039)](https://github.com/fubar-coder/bb2-c/issues/1039).
 
 {{% fixed-bugs-library part="elsewhere" %}}

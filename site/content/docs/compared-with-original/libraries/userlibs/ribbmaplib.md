@@ -52,14 +52,42 @@ the game Blitz Bombers from memory. `SetBBMapLoc` and
 * `BBGetPalette` reads only the colours that the scenario's COLR chunk
   really holds. The original took the rest from the bytes behind the
   chunk ([#1113](https://github.com/fubar-coder/bb2-c/issues/1113)).
-* With runtime error checking, `BBShadowValue` with a shadow set that
-  the scenario does not have stops with the runtime error "Shadow set
-  must lie in the SHDW chunk". The original returned bytes from behind
-  the chunk, as the port does without error checking
-  ([#1114](https://github.com/fubar-coder/bb2-c/issues/1114)).
 * A program run a second time from the editor starts without the map
   and the scenario of the run before. The original's commands found the
   files of the first run, which may have been freed
   ([#1108](https://github.com/fubar-coder/bb2-c/issues/1108)).
+
+#### `BBShadowValue` with a shadow set the scenario does not have {#bbshadowvalue-set}
+
+`BBShadowValue` of
+[ribbmaplib]({{< relref "/docs/libraries/userlibs/ribbmaplib" >}})
+returns one long number, a shadow set, from the `SHDW` chunk of the
+scenario chosen with `SetBBScenarioLoc`; the sets are counted from 0.
+
+**What happened.** The original did not compare the set with the length
+of the chunk, also not with runtime error checking: a set the scenario
+does not have returned the bytes behind the chunk, the next chunk or
+memory behind the file. With a scenario at address `m` whose `SHDW`
+chunk holds two sets, the values `$11111111` and `$22222222`, followed by
+a chunk `NEXT`, this program printed `-1`, `22222222` and `4E455854`,
+the name of the next chunk:
+
+```
+NPrint SetBBScenarioLoc(m)
+NPrint Hex$(BBShadowValue(1))
+NPrint Hex$(BBShadowValue(2))
+```
+
+**With the port.** With runtime error checking, a negative set or one
+the chunk does not hold is the error "Shadow set must lie in the SHDW
+chunk"; the program above prints `-1` and `22222222` and stops at
+`BBShadowValue(2)`. A scenario without a `SHDW` chunk is not checked,
+and `BBShadowValue` returns 0 for it. Without runtime error checking,
+the command works as in the original.
+
+**What to change.** Ask only for the sets the scenario holds, from 0 to
+one less than their number.
+
+Issue: [BBShadowValue reads outside the SHDW chunk for a set it does not hold, with no error check (#1114)](https://github.com/fubar-coder/bb2-c/issues/1114).
 
 {{% fixed-bugs-library part="elsewhere" %}}

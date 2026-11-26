@@ -131,17 +131,38 @@ above.
   original read a font number from 16 on, or a negative one, from
   memory behind or before the slots and returned a meaningless width
   ([#660](https://github.com/fubar-coder/bb2-c/issues/660)).
-* With runtime error checking, `FNSClip` with an `xmin` or `ymin` below
-  0 stops with "FNSClip zone must not start below 0", and
-  `FNSSetTab` with a size below 1 with "FNSSetTab size must be at least
-  1" ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#fns-clip-tab-checks" >}}),
-  [#664](https://github.com/fubar-coder/bb2-c/issues/664),
-  [#666](https://github.com/fubar-coder/bb2-c/issues/666)).
 * A program run a second time from the editor starts with no bitmap
   chosen, the slots 1 to 15 empty, and the style, colour, tab size and
   clip zone at their start values. The original kept those of the run
   before, and `FNSPrint` before `FNSOutput` drew into that run's bitmap,
   which had been freed
   ([#1124](https://github.com/fubar-coder/bb2-c/issues/1124)).
+
+#### `FNSClip` below 0 and `FNSSetTab` below 1 {#fns-clip-tab-checks}
+
+`FNSClip xmin,ymin,xmax,ymax` of
+[rifnslib]({{< relref "/docs/libraries/userlibs/rifnslib" >}}) sets the
+clip zone, the part of the bitmap that the FNS prints may draw in, and
+`FNSSetTab` the distance between the tab positions of a text.
+
+**What happened.** The original checked neither, also not with runtime
+error checking. With a clip zone that starts left of or above the
+bitmap, a text at a negative position was written about 64 KB away from
+the bitmap. After `FNSSetTab 0`, a tab character in a text divided by
+zero.
+
+**With the port.** With runtime error checking, an `xmin` or `ymin`
+below 0 is the error "FNSClip zone must not start below 0", and a tab
+size below 1 the error "FNSSetTab size must be at least 1". Without
+runtime error checking, the commands work as in the original.
+
+**What to change.** Start the clip zone at 0 or further right and down,
+for example with `FNSClipOutput`, and give `FNSSetTab` a size of 1 or
+more.
+
+Issues:
+
+* [A clip zone with negative xmin/ymin lets text at negative x/y be written about 64K bytes/rows away (#664)](https://github.com/fubar-coder/bb2-c/issues/664)
+* [FNSSetTab 0: a tab character divides by zero (#666)](https://github.com/fubar-coder/bb2-c/issues/666)
 
 {{% fixed-bugs-library part="elsewhere" %}}

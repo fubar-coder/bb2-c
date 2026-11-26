@@ -60,12 +60,6 @@ for several libraries together.
   the lines below 255, so the split appeared at line 256, or not at all
   on a display that ends before it
   ([#588](https://github.com/fubar-coder/bb2-c/issues/588)).
-* With runtime error checking, `DoColSplit` and `RedoColSplit` with
-  fewer than one line stop with "Colour split needs at least one line".
-  The original divided by zero for 0 lines and wrote up to 65536 lines
-  over the memory behind the custom space for a negative number
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#colsplit-numlines" >}}),
-  [#589](https://github.com/fubar-coder/bb2-c/issues/589)).
 * `CopperWait` with an `x` of 500 or more waits on the line given. The
   original waited one line later
   ([#591](https://github.com/fubar-coder/bb2-c/issues/591)).
@@ -80,5 +74,25 @@ for several libraries together.
   run before, which had been freed, and that run's `ColSplitBplcon3`
   value stayed in effect
   ([#1126](https://github.com/fubar-coder/bb2-c/issues/1126)).
+
+#### A colour split of fewer than one line {#colsplit-numlines}
+
+`DoColSplit` of
+[ricopperfxlib]({{< relref "/docs/libraries/userlibs/ricopperfxlib" >}})
+writes a colour gradient over `numlines` lines into the custom space of
+a coplist, and `RedoColSplit` writes new colours into such a split.
+
+**What happened.** The original did not check `numlines`, also not with
+runtime error checking. A count of 0 divided by zero and stopped the
+program with a processor exception; a negative count wrote up to 65536
+lines of copper instructions over the memory behind the custom space.
+
+**With the port.** With runtime error checking, a `numlines` below 1 is
+the error "Colour split needs at least one line". Without runtime error
+checking, the commands work as in the original.
+
+**What to change.** Give every colour split at least one line.
+
+Issue: [DoColSplit/RedoColSplit do not check numlines: 0 divides by zero, a negative value writes up to 65536 lines (#589)](https://github.com/fubar-coder/bb2-c/issues/589).
 
 {{% fixed-bugs-library part="elsewhere" %}}

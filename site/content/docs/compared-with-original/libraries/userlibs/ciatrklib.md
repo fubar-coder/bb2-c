@@ -260,11 +260,6 @@ does.
   64 KB of memory from the loop start, from address 0 on a voice that
   had not played a sample yet; it does nothing there
   ([#439](https://github.com/fubar-coder/bb2-c/issues/439)).
-* With runtime error checking, `FreeTrackerModule` of the module that
-  plays is the runtime error "Tracker: Stop the module before freeing
-  it."; the original freed it and went on playing the freed memory
-  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#freetrackermodule-playing" >}}),
-  [#436](https://github.com/fubar-coder/bb2-c/issues/436)).
 * `PauseModule` kept its pause whatever the program did in between.
   After a pause, the next `PauseModule` did not pause a module started
   again, but played a module that `StopTracker` had stopped, or the
@@ -283,5 +278,36 @@ does.
   interrupt, so a program that does not call `PlayTracker` itself
   stayed silent. Every run starts in CIA mode
   ([#1165](https://github.com/fubar-coder/bb2-c/issues/1165)).
+
+#### `FreeTrackerModule` of the module that plays {#freetrackermodule-playing}
+
+**What happened.** `FreeTrackerModule` freed a module that the CIA
+Protracker library was still playing. The module did not stop: the
+library went on reading its notes and samples from the freed memory,
+which other parts of the program or the system could already be using,
+also with runtime error checking.
+
+```
+DEFTYPE .l
+r=LoadTrackerModule(0,"mod.tune")
+If r<>-1 Then End
+r=StartTracker(0)
+FreeTrackerModule 0
+NPrint "freed"
+End
+```
+
+The original printed `freed`, and the music went on from the freed
+memory.
+
+**With the port.** With runtime error checking, `FreeTrackerModule` of
+the module that plays is the runtime error "Tracker: Stop the module
+before freeing it.", before anything is freed. A module stopped with
+`StopTracker` can be freed. Without runtime error checking, the module
+is freed as before.
+
+**What to change.** Call `StopTracker` before `FreeTrackerModule`.
+
+Issue: [FreeTrackerModule frees a module that is still playing (#436)](https://github.com/fubar-coder/bb2-c/issues/436).
 
 {{% fixed-bugs-library part="elsewhere" %}}

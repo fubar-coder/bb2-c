@@ -55,20 +55,51 @@ user interface
   always failed with "Value Out of Range"; it gets one entry for each part
   of the text
   ([#989](https://github.com/fubar-coder/bb2-c/issues/989)).
-* `SpotBox` on a page that was not made with `InitPage`, was freed or has
-  no boxes searched 65536 boxes in the memory behind the page and could
-  return one found there; with runtime error checking it is the error
-  "UnInitialised Page"
-  ([#83](https://github.com/fubar-coder/bb2-c/issues/83)).
-* `SelectBox Box#` with a number the page does not have selected and drew
-  whatever lay behind the box table; with runtime error checking it is
-  the error "Illegal Box# For Page"
-  ([#82](https://github.com/fubar-coder/bb2-c/issues/82)).
-* `InitPage` with 32768 boxes or more took the number as a negative one
-  and asked for a box table of a wrong size, which stopped the program
-  with "Out of Memory!"; with runtime error checking it is the error
-  "Illegal Number of Boxes"
-  ([#1043](https://github.com/fubar-coder/bb2-c/issues/1043);
-  [`InitPage` with 32768 boxes or more]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#initpage-numboxes" >}})).
+
+#### `SpotBox` on a page that is not set up {#spotbox-page}
+
+**What happened.** The other Blitz OS commands stop with "UnInitialised
+Page" on a page that was not made with `InitPage`, was freed or has no
+boxes. `SpotBox` did not check its page: on such a page it searched
+65536 boxes in the memory behind the page and could return one it found
+there.
+
+**With the port.** With runtime error checking, this is the error
+"UnInitialised Page".
+
+**What to change.** Make the page with `InitPage`, with at least one box,
+before `SpotBox`.
+
+Issue: [SpotBox did not check its page (#83)](https://github.com/fubar-coder/bb2-c/issues/83).
+
+#### `SelectBox` with a box the page does not have {#selectbox-range}
+
+**What happened.** The other Blitz OS commands stop with "Illegal Box#
+For Page" on a box number beyond the page's number of boxes.
+`SelectBox Box#` did not check the number: it selected and drew
+whatever lay behind the page's boxes.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Box# For Page". A negative `Box#` still selects no box.
+
+**What to change.** Select a box from 0 to one less than the number of
+boxes given to `InitPage`.
+
+Issue: [SelectBox did not check the box number (#82)](https://github.com/fubar-coder/bb2-c/issues/82).
+
+#### `InitPage` with 32768 boxes or more {#initpage-numboxes}
+
+**What happened.** `InitPage Page#,BitMap#,NumBoxes` took a `NumBoxes`
+of 32768 or more as a negative number, so the size of the box table came
+out wrong and far too large, and the program stopped with "Out of
+Memory!", a message that does not name the cause.
+
+**With the port.** With runtime error checking, this is the error
+"Illegal Number of Boxes". Without runtime error checking, the command
+is as before.
+
+**What to change.** Give a page fewer than 32768 boxes.
+
+Issue: [InitPage with NumBoxes of 32768 or more gives a negative table size (#1043)](https://github.com/fubar-coder/bb2-c/issues/1043).
 
 {{% fixed-bugs-library part="elsewhere" %}}

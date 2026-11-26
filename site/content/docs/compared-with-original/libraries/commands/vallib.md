@@ -20,13 +20,6 @@ otherwise.
   ([#1003](https://github.com/fubar-coder/bb2-c/issues/1003)).
 * `Sgn` of a float was always 1; it is -1, 0 or 1 by the value
   ([#301](https://github.com/fubar-coder/bb2-c/issues/301)).
-* `Frac` of a Quick with an integer part of 256 or more lost the low bits
-  of the fraction, because the Quick was turned into a float first, so
-  the Quick 30000 + 10/65536 gave 0; `Frac` takes a value of any numeric
-  type and gives the exact fraction of a Quick, 0 for an integer type,
-  and the same as before for a float
-  ([#1064](https://github.com/fubar-coder/bb2-c/issues/1064); see
-  [`Frac` of a string]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#frac-string" >}})).
 * `Val` of a string longer than 32768 characters gave 0 or read only a
   part of it; it reads the whole string
   ([#303](https://github.com/fubar-coder/bb2-c/issues/303)).
@@ -38,5 +31,34 @@ otherwise.
   behind the string and took a digit there as part of the number; it
   reads only the string
   ([#302](https://github.com/fubar-coder/bb2-c/issues/302)).
+
+#### `Frac` of a string {#frac-string}
+
+**What happened.** `Frac` took only a float. A Quick was turned into a
+float first, so a Quick with an integer part of 256 or more lost the low
+bits of its fraction: the Quick 30000 + 10/65536 gave 0. The original
+refused a string argument when compiling:
+
+```
+f.f=1.25 : NPrint "float ",Frac(f)
+a$="1.5"
+NPrint "string ",Frac(a$)
+End
+```
+
+The original stopped with "Can't Convert Types" in line 3.
+
+**With the port.** `Frac` takes a value of any numeric type, as `Int`
+does, and the program compiles. It gives the exact fraction of a Quick,
+0 for an integer type, and the same as the original for a float. With
+runtime error checking, a string is the error "Illegal Type", as it is
+for `Int` in the original and the port: the program above prints
+`float .25` and stops at line 3. Without runtime error checking, `Frac`
+of a string gives 0.
+
+**What to change.** Turn the string into a number first, for example
+`Frac(Val(a$))`.
+
+Issue: [Frac of a Quick loses low fraction bits for integer parts of 256 and more (#1064)](https://github.com/fubar-coder/bb2-c/issues/1064).
 
 {{% fixed-bugs-library part="elsewhere" %}}

@@ -2,7 +2,10 @@
 title: Compiling
 weight: 2
 description: Fixed bugs of Blitz Basic 2 in what the compiler makes of a source, with examples of the ones ordinary programs meet.
-aliases: [/docs/compared-with-original/fixed-bugs/compiler/]
+aliases: [/docs/compared-with-original/fixed-bugs/compiler/, /docs/compared-with-original/new-errors/expressions/, /docs/compared-with-original/new-errors/names-and-types/, /docs/compared-with-original/new-errors/files-macros-assembler/]
+# an entry of the old page new-errors/names-and-types that is on another page
+anchorMoves:
+  latin1-outside-string: editor
 ---
 
 These bugs of the original compiler changed what a source compiled to: a
@@ -73,8 +76,7 @@ gt 3
 
 Nothing, if `=<` was meant as less-or-equal: the program now does what
 its source says. A program that only worked because of the bug, with
-`=<` where it needed "not equal", has to write `<>` there
-([Operators and expressions]({{< relref "/docs/compared-with-original/new-errors/expressions#less-or-equal" >}})).
+`=<` where it needed "not equal", has to write `<>` there.
 
 Issue: [The operator =< meant "not equal" (#9)](https://github.com/fubar-coder/bb2-c/issues/9).
 
@@ -292,12 +294,36 @@ a Long is computed exactly and rounded once (`r.l=l+q+p` is 14), and
 a constant with a fraction, rounded down (`vb AND -1.5` is `vb AND -2`),
 and a constant with a point as a shift count, such as `vb LSL 2.0`, is
 the compile error "Illegal Operator for Type"
-([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}})).
+([A constant with a point as a shift count](#shift-count-with-point)).
 The examples, with the original's results, the port's and the reasons,
 are in
 [The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}}).
 
 Issue: [The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
+
+#### A constant with a point as a shift count {#shift-count-with-point}
+
+The count of `LSL`, `LSR`, `ASL` and `ASR` is a whole number of bits. The
+original accepted a constant written with a point as the count in many
+places and shifted by its whole part; the port refuses it everywhere.
+
+```
+vb.b=3 : vq.q=1.5
+rb.b=vb LSL 2.5    ; original: 12    port: "Illegal Operator for Type"
+rb.b=vq LSL 2.5    ; original: 6     port: "Illegal Operator for Type"
+rb.b=vb ASL 1.0    ; original: 6     port: "Illegal Operator for Type"
+```
+
+In the port a constant with a point is a number with a fraction wherever
+it is an operand, also when its value is whole, as `1.0`. The original
+accepted such a count only in some places, and in an array index after
+the first one only without runtime error checking; the port makes this
+one rule, in every type and every array index. A Quick variable as the
+count is still its whole part, rounded down
+([Shifts]({{< relref "/docs/compared-with-original/expression-types#shifts" >}})).
+
+**What to change:** write the count as a whole number, such as `vb LSL 2`,
+which gives the original's result.
 
 ### `NOT`, `AND`, `OR` and `EOR` on a Quick {#quick-bit-operators}
 
@@ -507,7 +533,7 @@ NewType were wrong, also after the type was defined.
 
 **What happened**
 
-```
+```blitzbasic
 NEWTYPE .pp
   *p.fwd
 End NEWTYPE
@@ -551,10 +577,48 @@ size 12
 **What to change**
 
 A program that worked with the wrong layout, for example one that reads
-files written with it, has to account for the new offsets. Some sources
-that the original compiled are refused now: a use of the NewType's size
-before the type is defined, and two types that would contain each other
-([Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-defined-later" >}})).
+files written with it, has to account for the new offsets.
+
+Two kinds of source that the original compiled are refused. Using the
+size of such a NewType, or a field behind the early field, before the
+type is defined is the error "Type not yet defined":
+
+```
+NEWTYPE .pp
+  *p.fwd
+End NEWTYPE
+NEWTYPE .dd
+  x.fwd
+End NEWTYPE
+; original: compiles, prints 4    port: "Type not yet defined"
+o.l=SizeOf .dd
+NEWTYPE .fwd
+  a.l
+End NEWTYPE
+NPrint o
+End
+```
+
+Two types that would contain each other are "Illegal Type", and a field
+of a type that is never defined is "Type Not Found":
+
+```
+NEWTYPE .pp
+  *p.tb
+End NEWTYPE
+NEWTYPE .ta
+  x.tb
+End NEWTYPE
+NEWTYPE .tb
+  ; original: compiles, prints compiled    port: "Illegal Type"
+  y.ta
+End NEWTYPE
+NPrint "compiled"
+End
+```
+
+Move a use of the NewType's size behind the definition of the type, and
+break a cycle of two types with a pointer field.
 
 Issue: [A NewType field of a type defined later got a wrong size (#974)](https://github.com/fubar-coder/bb2-c/issues/974).
 
@@ -608,9 +672,10 @@ Function$ f{}
 End Function
 ```
 
-A source that the original compiled and the port refuses for this reason
-is described with the others in
-[Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#end-of-procedure" >}}).
+A Statement closes with `End Statement` and is left with
+`Statement Return`. Two examples on the Blitz Basic 2 CD,
+`DARTS_POLY.BB` and `DARTS_WIRE.BB`, end the Function `gendart` with
+`End Statement` and are refused for this reason.
 
 Issue: [End Statement could close a Function, and the other way round (#940)](https://github.com/fubar-coder/bb2-c/issues/940).
 
@@ -773,7 +838,7 @@ never compiled.
 
 **What happened**
 
-```
+```blitzbasic
 a=1
 IncDir "RAM:" : a=2
 NPrint a
@@ -796,9 +861,20 @@ prints
 **What to change**
 
 After `Include` and `XInclude`, only a comment may follow the closing
-quote; a statement behind a `:` there is a "Syntax Error" and needs a line
-of its own
-([Include files, macros and inline assembler]({{< relref "/docs/compared-with-original/new-errors/files-macros-assembler#text-after-path" >}})).
+quote; a statement behind a `:` there is a "Syntax Error":
+
+```
+Include "inc.bb2" : a=1
+NPrint a
+End
+; original: "Can't open Include"    port: "Syntax Error", both in line 1
+```
+
+The original failed even where `inc.bb2` exists, since the rest of the
+line was part of the file name. Other text after the closing quote is a
+"Syntax Error" too. A path without quotes still takes the rest of the
+line. Put a statement that follows `Include` or `XInclude` on its own
+line.
 
 Issue: [Text after an IncDir path became part of the path (#17)](https://github.com/fubar-coder/bb2-c/issues/17).
 
@@ -949,10 +1025,12 @@ Issue: [A program ending with data of odd length crashed at its end (#979)](http
 
 ## Other fixes
 
-The fixes below need rarer conditions. Those that make the port refuse a
-source the original accepted are shown with examples on
-[Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors" >}}).
-Each point says first what the original did, then what the port does.
+The fixes below need rarer conditions. Each point says first what the
+original did, then what the port does. A fix that makes the port refuse a
+source the original accepted follows the list of its group, with a
+program whose comments give what the original did and what the port
+does, and what to change in a source. A program that the port compiles is
+run by the project's tests; one that it refuses is shown as plain text.
 
 ### Expressions and statements
 
@@ -960,30 +1038,6 @@ Each point says first what the original did, then what the port does.
   or a later register argument of a library command, such as the text of
   `AddBox`, got a wrong length; the length is right
   ([#971](https://github.com/fubar-coder/bb2-c/issues/971)).
-* A `~` inside a string literal started a constant expression, so
-  `"a~1+2~b"` became `a3b`; inside strings `~` is an ordinary character
-  ([#966](https://github.com/fubar-coder/bb2-c/issues/966)).
-* `For a$=… To …` with a global string variable compiled and treated the
-  string as a number; it gives "Bad Type for For...Next", as with a local
-  string variable ([#39](https://github.com/fubar-coder/bb2-c/issues/39)).
-* `Dcb` with a count of 0 made 2^32 copies and ran for hours; a count of 0
-  emits nothing, a negative count gives "Illegal Constant"
-  ([#37](https://github.com/fubar-coder/bb2-c/issues/37)).
-* A division or `Mod` by a constant 0, such as `a.w=5/0`, crashed the
-  compiler with "Software Failure" with Byte, Word or Float division and
-  with Word `Mod`. With Long or Quick division, and in constants such as
-  `#c=5/0`, it compiled to the largest Long number. In the port, both are
-  the compile error "Division by Zero"
-  ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors/expressions#division-by-zero" >}}),
-  [#1044](https://github.com/fubar-coder/bb2-c/issues/1044)).
-* An operator whose right operand needed a ninth register, such as
-  `a+b*c` as the 7th or a later argument of a statement or function, was
-  compiled for a register that does not exist: a wrong value, a crash of
-  the program with Word operands, or a crash of the compiler with
-  constants. In the port, it is the compile error "Expression too
-  Complex"; write `b*c+a` or `a+(b*c)` instead
-  ([An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors/expressions#expression-too-complex" >}}),
-  [#1185](https://github.com/fubar-coder/bb2-c/issues/1185)).
 * A Latin-1 character other than the umlauts, such as ß or é, could not
   reach a string, since the editor lost it. The port's editor keeps it as
   a literal character
@@ -1019,25 +1073,8 @@ Each point says first what the original did, then what the port does.
   `ja(1,vq AND 1.5)`, compile in both builds and take its whole part; a
   constant with a point as a shift count is a compile error in every
   index
-  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}}),
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/compiler#shift-count-with-point" >}}),
   [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
-* A comparison as the right operand of an operator, such as
-  `lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
-  converted the operator's left operand down to Word before the
-  operation: a Long lost its high word, a Quick or Float its fraction.
-  `If $10000 AND (a=b)` was false although `a=b` was true; with
-  `lb.l=100000`, `lb+(a=b)` gave -31073, with `q.q=1.5`, `q+(a=b)` gave 0,
-  and with `fh.f=0.5`, `fh+(a=b)` gave -1. The port converts the
-  comparison's result to the left operand's type and computes the
-  operation in that type: the condition is true, and the results are
-  99999, 0.5 and -0.5. A Byte or Word left operand gives the same result
-  as in the original. `AND`, `OR` and `EOR` take only the whole part of a
-  Quick ([`NOT`, `AND`, `OR` and `EOR` on a Quick](#quick-bit-operators)),
-  so `If q OR (a<>b)` is false for `q=0.5`, as in the original. A Float
-  has no `AND`, `OR`, `EOR` or shift, so a Float left of one of them with
-  a comparison on the right is a compile error
-  ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors/expressions#float-bit-operator-comparison" >}}),
-  [#1182](https://github.com/fubar-coder/bb2-c/issues/1182)).
 * When the type so far was Byte (a Byte destination, parameter, field or
   array element), the original cut a constant with a fraction to a whole
   number before the operation, where under a Word it stays a Float: with
@@ -1052,7 +1089,7 @@ Each point says first what the original did, then what the port does.
   such a constant, rounded down: `rb.b=1.5 AND vb` is `1 AND vb`, as in the
   original, but `rb.b=NOT -1.5` is 1 where the original, which cut -1.5 to
   -1, gave 0. A constant with a point as a shift count is a compile error
-  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}}),
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/compiler#shift-count-with-point" >}}),
   [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}}),
   [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
 * `AND`, `OR` and `EOR` of two Byte values with different signs left a
@@ -1089,20 +1126,183 @@ Each point says first what the original did, then what the port does.
   right side builds its string in the string work area
   ([#1214](https://github.com/fubar-coder/bb2-c/issues/1214)).
 
+#### A `~` inside a string {#tilde-in-string}
+
+Outside strings, `~expr~` puts the value of a constant expression into the
+source. The original did this inside strings too; in the port a `~`
+inside quotes is an ordinary character.
+
+```blitzbasic
+NPrint "a~1+2~b"    ; original: a3b    port: a~1+2~b
+NPrint ~1+2~        ; original: 3      port: 3
+NPrint "x~y"        ; original: "Illegal Constant Expression"    port: x~y
+End
+```
+
+A single `~` in a string, as in the third line, was the compile error
+"Illegal Constant Expression" in the original, so the original compiles
+the program only without that line.
+
+**What to change:** build a text from constants outside the quotes.
+
+Issue: [A ~ inside a string literal started a constant expression (#966)](https://github.com/fubar-coder/bb2-c/issues/966).
+
+#### `For` with a string variable {#for-string}
+
+The original refused a local string variable as the variable of a `For`
+loop, but accepted a global one and treated the string as a number. The
+port refuses both.
+
+```
+; original: compiles, prints done    port: "Bad Type for For...Next"
+For a$="a" To 10
+Next
+NPrint "done"
+End
+```
+
+**What to change:** use a numeric variable for the loop.
+
+Issue: [For a$=… To … with a global string variable compiled (#39)](https://github.com/fubar-coder/bb2-c/issues/39).
+
+#### `Dcb` with a count of 0 or less {#dcb-count}
+
+The original took the count of `Dcb` as an unsigned number, so a count of
+0 or -1 made about four thousand million copies. In the port a count of 0
+emits nothing and a negative count is an error.
+
+```blitzbasic
+Goto skip
+; original: the compiler does not finish    port: no data
+Dcb.w 0,0
+.skip
+NPrint "ok"
+End
+```
+
+```
+Goto skip
+; original: the compiler does not finish    port: "Illegal Constant"
+Dcb.w -1,0
+.skip
+NPrint "ok"
+End
+```
+
+The original's compiler ran for hours, or until it had overwritten its
+own memory.
+
+**What to change:** leave out a `Dcb` with a negative count.
+
+Issue: [Dcb with a count of 0 made 2^32 copies (#37)](https://github.com/fubar-coder/bb2-c/issues/37).
+
+#### A division by a constant 0 {#division-by-zero}
+
+When both operands of `/` or `Mod` are constants, the compiler computes
+the result itself. The original did not look at the divisor first; the
+port stops with "Division by Zero".
+
+```
+NPrint "before"
+; original: compiles, prints 2147483647    port: "Division by Zero"
+d.l=7/0
+NPrint d
+End
+```
+
+In the original a Long or Quick division by 0, also in a constant
+definition such as `#c=5/0`, gave the largest Long number, and a Long
+`Mod` by 0 gave the dividend. A Byte, Word or Float division by 0, and a
+Word `Mod` by 0, crashed the compiler with "Software Failure". The port
+gives the error for every type. It finds only a divisor that is a
+constant; a division by a variable that holds 0 is a matter of the
+running program
+([A Long or Quick division by 0]({{< relref "/docs/compared-with-original/libraries/commands/ldivlib#long-division-by-zero" >}})).
+
+**What to change:** write the value you meant instead of the division.
+
+Issue: [A division or Mod by a constant 0 crashed the compiler (#1044)](https://github.com/fubar-coder/bb2-c/issues/1044).
+
+#### An operator too deep in an expression {#expression-too-complex}
+
+The compiler works out an expression in the processor's eight data
+registers. The original did not check when an operator needed a ninth one
+and took a wrong value; the port stops with "Expression too Complex".
+
+```
+a.l=1 : b.l=5 : c.l=6
+; original: -1
+NPrint RectsHit(20,0,10,10,0,0,b*c+a,10)
+; original: 0    port: "Expression too Complex"
+NPrint RectsHit(20,0,10,10,0,0,a+b*c,10)
+End
+```
+
+Each level of an expression takes a register: when a tighter operator
+such as `*`, or a part in brackets, has to be computed first, the value
+on its left keeps its register and the rest goes into the next one. The
+arguments of a statement or function from the 7th on already start in the
+7th register, so `a+b*c` there needs a ninth register for `b*c`; so does
+such an operator inside six levels of brackets. The original computed
+`b*c` over `a` and took the second value of the addition from an address
+register: the two rectangles overlap, but the second call got a wrong
+width. With Word variables the compiled program crashed with "Software
+Failure", and with constants, such as `1+5*6`, the compiler itself
+crashed. Statements with many arguments, such as `InitCopList`, meet it
+most easily; none of the programs on the Blitz Basic 2 CD contains such
+an expression.
+
+An expression that stays within the eight registers compiles as before:
+a chain of one precedence (`a+b+c`), the tighter operator first
+(`b*c+a`), or brackets around the right part (`a+(b*c)`). A calculation
+of a Quick with a Long takes two registers in the port, so a few such
+expressions that the original compiled reach the limit; they are on
+[The type of each operation]({{< relref "/docs/compared-with-original/expression-types#edge-cases" >}}).
+
+**What to change:** write the tighter operation first, `b*c+a`, or put it
+in brackets, `a+(b*c)`; inside many levels of brackets, compute a part
+into a variable first.
+
+Issues:
+[An operator whose right operand needs a ninth register took a wrong value (#1185)](https://github.com/fubar-coder/bb2-c/issues/1185),
+and for the expressions with a Quick and a Long,
+[The type of an operation depends on the order of its operands and its place in a chain (#1216)](https://github.com/fubar-coder/bb2-c/issues/1216).
+
+#### A comparison as the right operand {#float-bit-operator-comparison}
+
+A comparison as the right operand of an operator, such as
+`lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
+converted the operator's left operand down to Word before the
+operation: a Long lost its high word, a Quick or Float its fraction.
+`If $10000 AND (a=b)` was false although `a=b` was true; with
+`lb.l=100000`, `lb+(a=b)` gave -31073, with `q.q=1.5`, `q+(a=b)` gave 0,
+and with `fh.f=0.5`, `fh+(a=b)` gave -1. The port converts the
+comparison's result to the left operand's type and computes the
+operation in that type: the condition is true, and the results are
+99999, 0.5 and -0.5. A Byte or Word left operand gives the same result
+as in the original. `AND`, `OR` and `EOR` take only the whole part of a
+Quick ([`NOT`, `AND`, `OR` and `EOR` on a Quick](#quick-bit-operators)),
+so `If q OR (a<>b)` is false for `q=0.5`, as in the original.
+
+A Float has no `AND`, `OR`, `EOR` or shift. The original's conversion cut
+a Float left of one of them to a whole number when a comparison stood on
+the right; in the port, a Float there is "Illegal Operator for Type", as
+it is with any other right operand.
+
+```
+l1.l=1 : fh.f=0.5 : rf.f=0
+; original: 0    port: "Illegal Operator for Type"
+rf=fh AND (l1=l1) : NPrint rf
+End
+```
+
+**What to change:** write `Int(fh) AND (l1=l1)`, which gives the
+original's result, or use a Long variable.
+
+Issue: [A comparison as the right operand converts the left operand down to Word: a Long loses its high word, a Float or Quick is cut (#1182)](https://github.com/fubar-coder/bb2-c/issues/1182).
+
 ### Names, labels and constants
 
-* A constant defined without a value, a line `#c` alone, held a random
-  value; its value is 0
-  ([#972](https://github.com/fubar-coder/bb2-c/issues/972)).
-* A constant definition without a name, `#=5`, was accepted and could make
-  the compiler search 65536 bytes of memory; it gives "Syntax Error"
-  ([#7](https://github.com/fubar-coder/bb2-c/issues/7)).
-* A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name made the
-  compiler compare 65536 bytes of memory for each search; it gives "Syntax
-  Error" ([#30](https://github.com/fubar-coder/bb2-c/issues/30)).
-* A name of more than 127 characters, possible through a macro, overwrote
-  the compiler's data; it gives "Syntax Error"
-  ([#29](https://github.com/fubar-coder/bb2-c/issues/29)).
 * A jump to a label with the name of a constant of value 0 gave a nonsense
   error at a line that does not exist, or read and wrote random memory; it
   gives "Label has been used as a Constant", as for any other value
@@ -1119,49 +1319,216 @@ Each point says first what the original did, then what the port does.
   `flag=On : flag=NOT flag` toggles the flag as in the original
   ([#1208](https://github.com/fubar-coder/bb2-c/issues/1208)).
 
+#### A constant definition without a name {#constant-without-name}
+
+The original accepted `#=5`, a constant with an empty name. The port
+refuses it.
+
+```
+; original: compiles, prints ok    port: "Syntax Error"
+#=5
+NPrint "ok"
+End
+```
+
+A second such line made the original's compiler search 65536 bytes of
+memory for the name.
+
+**What to change:** give the constant a name, or remove the line.
+
+Issue: [A constant definition without a name was accepted (#7)](https://github.com/fubar-coder/bb2-c/issues/7).
+
+#### A `#`, `Goto` or `Gosub` without a name {#missing-name}
+
+A `#`, `Goto`, `Gosub`, `Restore`, `?` or `.` without a name made the
+original search its lists for a name of length 0 and report an error
+that did not fit. The port reports the missing name.
+
+```
+a=#+1           ; original: "Constant Not Found"    port: "Syntax Error"
+NPrint a
+End
+```
+
+```
+Goto            ; port: "Syntax Error"
+Goto
+NPrint "ok"
+End
+; original: "Label not Found"
+```
+
+The original compared up to 65536 bytes of memory with the empty name
+before it gave up.
+
+**What to change:** write the missing name.
+
+Issue: [A #, Goto, Gosub, Restore, ? or . without a name made the compiler read far past the name (#30)](https://github.com/fubar-coder/bb2-c/issues/30).
+
+#### A constant without a value {#constant-without-value}
+
+A line with only a constant name, without `=` and a value, was accepted,
+but the original never gave the constant a value. In the port such a
+constant is 0.
+
+```blitzbasic
+#c
+#d=5
+#d
+NPrint #c               ; original: a random value    port: 0
+CNIF #c
+NPrint "cnif true"      ; original: this line, in the recording
+CELSE
+NPrint "cnif false"     ; port: this line
+CEND
+NPrint #d               ; original: 5    port: 5
+End
+```
+
+The original's constant held whatever was in the compiler's memory, so
+`CNIF #c` could be true or false from one compile to the next. In the
+recording, with the compiler's memory filled with the byte `$A5`, it
+printed -1515870811 and `cnif true`. A constant that already had a value,
+as `#d`, keeps it in both.
+
+**What to change:** give the constant the value it needs, `#c=1` for
+example.
+
+Issue: [A constant defined without a value held a random value (#972)](https://github.com/fubar-coder/bb2-c/issues/972).
+
+#### A name of more than 127 characters {#long-name}
+
+The original copied a name into a buffer of 128 bytes without a limit,
+and a longer name overwrote the compiler's data. The port accepts names
+of up to 127 characters.
+
+```
+Macro s
+`1`1`2=1
+NPrint `1`1`2
+End Macro
+; a name of 127 characters    original: prints 1    port: prints 1
+!s{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,aaaaaaa}
+; a name of 128 characters    original: prints 1    port: "Syntax Error"
+!s{bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,bbbbbbbb}
+End
+```
+
+A line of the editor has at most 128 characters, so such a name can only
+come from a macro that joins its parameters, as `s` does here.
+
+**What to change:** use names of at most 127 characters.
+
+Issue: [A name of more than 127 characters overwrote the compiler's data (#29)](https://github.com/fubar-coder/bb2-c/issues/29).
+
 ### NewTypes
 
-* A NewType that contained a field of its own type got a random size; the
-  compiler reports "Illegal Type", and a pointer to the own type stays
-  allowed ([#973](https://github.com/fubar-coder/bb2-c/issues/973)).
-* An array field of a NewType with 65536 or more elements, such as
-  `a.b[65540]`, or with a negative count got the size of the count
-  modulo 65536, here 4 bytes, and without runtime error checking a
-  program wrote past the field. Such a field is the compile error "Type
-  too Big", as is a NewType of 32768 bytes or more
-  ([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-field-count" >}}),
-  [#1084](https://github.com/fubar-coder/bb2-c/issues/1084)).
+#### A NewType that contains itself {#newtype-contains-itself}
+
+A NewType cannot contain a field of its own type: it would have to be
+larger than itself. The original gave such a field a random size; the
+port refuses it.
+
+```
+NEWTYPE .selft
+  x.selft                       ; port: "Illegal Type"
+  y.l
+End NEWTYPE
+DEFTYPE .selft v
+v\y=5
+o.l=SizeOf .selft\y
+NPrint "size ",SizeOf .selft    ; original: size 262
+NPrint "y at ",o                ; original: y at 258
+NPrint "y ",v\y                 ; original: y 5
+End
+```
+
+In the original the fields behind such a field and the size of the whole
+type were random too; the values above were recorded with the compiler's
+memory filled with the byte `$01`. What such a source usually means is a
+pointer to another item of the same type, and a pointer field is
+allowed:
+
+```blitzbasic
+NEWTYPE .node
+  value.l
+  *child.node
+End NEWTYPE
+```
+
+Issue: [A NewType field of its own type took a random size (#973)](https://github.com/fubar-coder/bb2-c/issues/973).
+
+#### An array field of 65536 elements or more {#newtype-field-count}
+
+A field of a NewType can be an array of a fixed number of elements, such
+as `a.b[10]`, a field of ten bytes. The original kept the count in 16
+bits; the port checks the whole count.
+
+```
+NEWTYPE .t
+  a.b[65540]        ; original: a field of 4 bytes    port: "Type too Big"
+End NEWTYPE
+NPrint SizeOf .t    ; original: 4
+End
+```
+
+A NewType must stay below 32768 bytes, so a larger one is the error
+"Type too Big". The original took a count of 65536 or more, and a
+negative one such as `a.b[-65532]`, modulo 65536, so the NewType passed
+the size check. With runtime error checking an index behind the fourth
+element stopped the program; without it, a program that used those
+elements wrote over the memory behind the field.
+
+**What to change:** give the array a count that fits the NewType, or keep
+the data in an array of its own with `Dim`.
+
+Issue: [An array field's element count of 65536 or more is taken modulo 65536 without an error (#1084)](https://github.com/fubar-coder/bb2-c/issues/1084).
 
 ### Paths and include files
 
-* An `IncDir` path of 96 characters or more overwrote the compiler's data,
-  and the program crashed when it ran; it gives "Path too Long"
-  ([#16](https://github.com/fubar-coder/bb2-c/issues/16)).
-* An include file name of more than 127 characters together with the
-  `IncDir` path overwrote the compiler's data; it gives "Path too Long"
-  ([#325](https://github.com/fubar-coder/bb2-c/issues/325)).
-* A `UsePath` path of 128 characters or more overwrote the compiler's own
-  code; it gives "Path too Long"
-  ([#31](https://github.com/fubar-coder/bb2-c/issues/31)).
 * `IncBin` kept a file or directory in use after an error; it is closed
   ([#38](https://github.com/fubar-coder/bb2-c/issues/38)).
 
+#### Paths that are too long {#path-too-long}
+
+The original copied paths into buffers of a fixed size without a limit.
+The port stops with "Path too Long" at the line of the path.
+
+```
+; a path of 98 characters
+; original: compiles, the program crashes    port: "Path too Long"
+IncDir "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+x=5
+NPrint x
+End
+```
+
+The original's program crashed with a "Software Failure" instead of
+printing 5. Three limits are checked:
+
+* an `IncDir` path of 96 characters or more, which overwrote the
+  compiler's data;
+* the `IncDir` path and the name of an `Include`, `XInclude` or `IncBin`
+  together, which could overwrite the compiler's data from 128
+  characters on;
+* a `UsePath` path of 128 characters or more, possible through a macro,
+  which overwrote the compiler's own code, so that the compiler did not
+  finish.
+
+**What to change:** use a shorter path, for example with an assign.
+
+Issues:
+[IncDir path of 96 characters or more (#16)](https://github.com/fubar-coder/bb2-c/issues/16),
+[include file name of more than 127 characters (#325)](https://github.com/fubar-coder/bb2-c/issues/325),
+[UsePath path of 128 characters or more (#31)](https://github.com/fubar-coder/bb2-c/issues/31).
+
 ### Macros
 
-* The Macro Buffer option had no effect, and blitz2 could crash when it
-  ended if a source set another size; the option sets the largest macro
-  text ([#336](https://github.com/fubar-coder/bb2-c/issues/336)).
-* A macro line ending in `End` cut off the rest of the macro and of the
-  line that called it; the rest is kept, as in AmiBlitz3
-  ([#968](https://github.com/fubar-coder/bb2-c/issues/968)).
 * A one-line macro with a colon right after its name, `Macro a:1:End
   Macro`, expanded to a text starting with a colon; `!a` expands to `1`
   ([#942](https://github.com/fubar-coder/bb2-c/issues/942)).
 * An error inside a macro definition could crash the compiler; the error
   is shown ([#965](https://github.com/fubar-coder/bb2-c/issues/965)).
-* A macro text of 65536 bytes or more was cut and part of its memory lost
-  until a reboot; it gives "Macro too Big"
-  ([#964](https://github.com/fubar-coder/bb2-c/issues/964)).
 * A compile error on a line that came from a macro kept the memory of the
   expanded line, in a nested macro also that of the outer one, until the
   next compile or for good; it is freed with the error
@@ -1180,6 +1547,61 @@ Each point says first what the original did, then what the port does.
   or number: `!mw b` with the text `!mq` became `!mqb` ("Macro not Found"
   or another macro); the blank is kept
   ([#1207](https://github.com/fubar-coder/bb2-c/issues/1207)).
+
+#### A macro line ending in `End` {#macro-end-line}
+
+In the original a line of a macro that ended in `End` cut off the rest of
+the macro and of the line that called it. The port keeps the rest of the
+macro, as AmiBlitz3 does.
+
+```blitzbasic
+Macro m
+  If `1
+    End
+  End If
+  NPrint "after"
+End Macro
+!m{0}            ; original: "If Without End If"    port: after
+NPrint "done"    ; port: done
+End
+```
+
+The original lost the `End If` and the rest of the macro, so it stopped
+at the call of the macro.
+
+**What to change:** nothing, unless a source relied on the cut; then
+remove the lines that the original left out.
+
+Issue: [A macro line ending in End cut off the rest of the macro (#968)](https://github.com/fubar-coder/bb2-c/issues/968).
+
+#### A macro larger than the Macro Buffer {#macro-buffer}
+
+The compiler options have a **Macro Buffer** size. In the original it had
+no effect: the buffer for macro texts always had its default size of
+8192 bytes. In the port the option counts, in both directions.
+
+A source with a macro text of 9120 bytes, whose options set the Macro
+Buffer to 16384 bytes, was refused by the original with "Macro too Big"
+inside the macro, and blitz2 hung afterwards; the port compiles it. A
+source with a macro text of 1520 bytes, whose options set the buffer to
+1024 bytes, compiled in the original; the port gives "Macro too Big" at
+the line where the macro's text passes the size. A source that set
+another size could also make blitz2 crash when it ended. A macro text of
+more than 65535 bytes is always "Macro too Big"; the original cut such a
+text, and part of its memory was lost until a reboot.
+
+The buffer gets its new size when a source is loaded or the COMPILER
+OPTIONS are closed. If there is not enough memory for it, the compiler
+reports out of memory and keeps the old buffer with its size; the next
+change of the options tries again.
+
+**What to change:** a source saved with the default size is not affected.
+If one of yours fails with "Macro too Big", set its Macro Buffer back to
+the default or larger in the COMPILER OPTIONS.
+
+Issues:
+[The Macro Buffer option had no effect (#336)](https://github.com/fubar-coder/bb2-c/issues/336),
+[A macro text of 65536 bytes or more was cut (#964)](https://github.com/fubar-coder/bb2-c/issues/964).
 
 ### Residents
 
@@ -1249,10 +1671,6 @@ Each point says first what the original did, then what the port does.
 * An inline assembler expression of 240 characters or more in a macro or
   include was freed with a wrong size; it is freed correctly
   ([#1](https://github.com/fubar-coder/bb2-c/issues/1)).
-* An inline assembler operand of more than 125 characters in a macro or
-  include was cut by the destination operand, and longer ones overwrote
-  the compiler's data; it gives "Operand too Long"
-  ([#997](https://github.com/fubar-coder/bb2-c/issues/997)).
 * `PutReg` into a local variable of a `Statement` or `Function` stored the
   register next to the global variables, overwriting 1 to 4 bytes there,
   and the local kept its old value; it is stored into the local. A program
@@ -1260,6 +1678,44 @@ Each point says first what the original did, then what the port does.
   example GMODPLAY's `GMInitMusic` on the CD, which reports a failed init
   of a module; with the original it always reported success
   ([#1202](https://github.com/fubar-coder/bb2-c/issues/1202)).
+
+#### An operand that is too long {#operand-too-long}
+
+The compiler keeps the text of an inline assembler operand in a buffer of
+a fixed size when the text comes from a macro or an include, or contains a
+local label. The original copied the text without a limit; the port stops
+with "Operand too Long".
+
+```
+Macro m
+move.l #`1+`1,dat
+End Macro
+Goto skip
+.dat
+Dc.l 0
+.skip
+; a source operand of 127 characters
+; original: "Syntax Error"    port: "Operand too Long"
+!m{1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1}
+NPrint Peek.l(?dat)
+End
+```
+
+There is one buffer for the source operand and `Dc`, and one for the
+destination operand right behind it. In the original a source operand of
+more than 125 characters reached into the destination's buffer, and the
+destination overwrote its end: wrong code or "Syntax Error", as here,
+where the program should store 64. Longer texts overwrote the compiler's
+data behind the buffers: a source operand or `Dc` of more than 261
+characters, a destination operand of more than 133. The port reports
+each of these at the line of the instruction, here the call of the
+macro. Every text that fits compiles as before, also a source operand of
+up to 261 characters when the destination is a register.
+
+**What to change:** split the expression, for example into a constant
+defined before the instruction, or use shorter macro parameters.
+
+Issue: [copyconst copies an operand text into namebuff without a length check (#997)](https://github.com/fubar-coder/bb2-c/issues/997).
 
 ### The progress bar while compiling
 
