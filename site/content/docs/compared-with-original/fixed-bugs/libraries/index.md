@@ -190,7 +190,7 @@ such a picture as a shape only to read its size with `ShapeWidth` and
 
 **What to change.** Load such a picture as a bitmap, with `LoadBitMap`,
 or cut it into shapes of at most 1023 rows and 992 pixels
-([`LoadShape` of a picture too large to blit]({{< relref "/docs/compared-with-original/new-errors#loadshape-blit-size" >}})).
+([`LoadShape` of a picture too large to blit]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadshape-blit-size" >}})).
 
 **A plane just under 64 KB.** A shape also keeps the size of one plane
 with an extra word per row in 16 bits: `BBlit` saves that many bytes of
@@ -208,7 +208,7 @@ picture of 992 by 520 pixels loads; one of 992 by 528 is refused.
 Only pictures 512 to 992 pixels wide and 521 to 1023 rows high can fall
 into this band. A program that loaded one and only blitted it with `Blit`
 stops here too
-([`LoadShape` of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors#loadshape-large-plane" >}})).
+([`LoadShape` of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadshape-large-plane" >}})).
 
 Issues:
 
@@ -581,7 +581,7 @@ colour 3. The port copies the whole shape, whatever its width; shapes
 checking, a shape that one blit cannot copy, one whose height times its
 depth is more than 1024 or one wider than 1024 pixels, is the error
 "Shape too large for BlockToShape!"
-([`BlockToShape` with a shape too large for one blit]({{< relref "/docs/compared-with-original/new-errors#blocktoshape-too-large" >}})).
+([`BlockToShape` with a shape too large for one blit]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#blocktoshape-too-large" >}})).
 
 **What to change.** A program that copies shapes wider than 16 pixels
 with `BlockToShape` now gets the whole shape. One that relied on the
@@ -2936,7 +2936,7 @@ moved -1 20
 With runtime error checking, a size outside the limits of a window with a
 sizing gadget, as here, is the error "Can't Size Window", and the program
 above stops at `WSize`
-([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wsize-limits" >}})).
+([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wsize-limits" >}})).
 
 Issue: [WMove and WSize hung when Intuition limited the new position or size (#320)](https://github.com/fubar-coder/bb2-c/issues/320).
 
@@ -3331,7 +3331,7 @@ the original did.
   `Tape#` in place of a running playback and waits for its end, but
   returns at once for an empty tape, where the original waited for ever
   ([#99](https://github.com/fubar-coder/bb2-c/issues/99);
-  [`PlayWait` without a tape number]({{< relref "/docs/compared-with-original/new-errors#playwait-without-tape" >}})).
+  [`PlayWait` without a tape number]({{< relref "/docs/compared-with-original/new-errors/refused-forms#playwait-without-tape" >}})).
 * `PlayBack` plays a recorded event in front of the first input event
   that came after its time; the original compared the times only with
   the first of the input events that arrived together, so it could play
@@ -3527,7 +3527,7 @@ user interface
   with "Out of Memory!"; with runtime error checking it is the error
   "Illegal Number of Boxes"
   ([#1043](https://github.com/fubar-coder/bb2-c/issues/1043);
-  [`InitPage` with 32768 boxes or more]({{< relref "/docs/compared-with-original/new-errors#initpage-numboxes" >}})).
+  [`InitPage` with 32768 boxes or more]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#initpage-numboxes" >}})).
 
 ### Windows and screens
 
@@ -3644,7 +3644,7 @@ user interface
   type and gives the exact fraction of a Quick, 0 for an integer type,
   and the same as before for a float
   ([#1064](https://github.com/fubar-coder/bb2-c/issues/1064); see
-  [`Frac` of a string]({{< relref "/docs/compared-with-original/new-errors#frac-string" >}})).
+  [`Frac` of a string]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#frac-string" >}})).
 * `Val` of a string longer than 32768 characters gave 0 or read only a
   part of it; it reads the whole string
   ([#303](https://github.com/fubar-coder/bb2-c/issues/303)).
@@ -3666,7 +3666,7 @@ user interface
   error without runtime error checking. With runtime error checking, it
   stops with "GURU! - Division by Zero", as a Word division by 0 does
   ([#200](https://github.com/fubar-coder/bb2-c/issues/200); see
-  [A Long or Quick division by 0]({{< relref "/docs/compared-with-original/new-errors#long-division-by-zero" >}})).
+  [A Long or Quick division by 0]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#long-division-by-zero" >}})).
 * A multiplication of longs or quicks whose product does not fit added
   part of the lost high bits back into the result. So `196608*30000` gave
   1603272705 instead of 1603272704, and the quick `300*300` came out
@@ -3830,7 +3830,7 @@ existing program shows:
   instructions of the list; it is the runtime error "Not Enough Sprite
   Channels", also without runtime error checking
   ([#414](https://github.com/fubar-coder/bb2-c/issues/414);
-  [`DisplaySprite` across the two sprite banks]({{< relref "/docs/compared-with-original/new-errors#displaysprite-two-banks" >}})).
+  [`DisplaySprite` across the two sprite banks]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#displaysprite-two-banks" >}})).
 * `FadeIn` and `FadeOut` of palette 2 or a higher one made the red or the
   green of the first colour run ahead of the others in the steps of the
   fade; all colours fade evenly
@@ -3844,7 +3844,7 @@ existing program shows:
   ([#135](https://github.com/fubar-coder/bb2-c/issues/135),
   [#330](https://github.com/fubar-coder/bb2-c/issues/330),
   [#331](https://github.com/fubar-coder/bb2-c/issues/331);
-  [The checks of `FadeIn` and `FadeOut`]({{< relref "/docs/compared-with-original/new-errors#fade-checks" >}})).
+  [The checks of `FadeIn` and `FadeOut`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#fade-checks" >}})).
 
 ### Shapes and sprites
 
@@ -3870,7 +3870,7 @@ of them can stop an existing program:
   is the runtime error "Can't Read/Write Shapes File", also without
   runtime error checking
   ([#263](https://github.com/fubar-coder/bb2-c/issues/263);
-  [LoadShape of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors#loadshape-large-plane" >}})).
+  [LoadShape of a picture with very large planes]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadshape-large-plane" >}})).
 * `LoadShape` of an IFF ANIM put the frames that come after the last
   shape object into the memory behind the table of shapes; it stops at the
   last shape object
@@ -3954,7 +3954,7 @@ of them can stop an existing program:
   the runtime error "Illegal Shape Depth", also without runtime error
   checking
   ([#1052](https://github.com/fubar-coder/bb2-c/issues/1052);
-  [`LoadShape` of a picture of 0 bitplanes]({{< relref "/docs/compared-with-original/new-errors#loadshape-no-planes" >}})).
+  [`LoadShape` of a picture of 0 bitplanes]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadshape-no-planes" >}})).
 * `InitShape`, `GetaShape`, `Rotate` and `Scale` made shapes too large
   for the size fields of a shape without a check, so the shape's memory
   was overwritten or blitted wrongly. With runtime error checking, a
@@ -3963,7 +3963,7 @@ of them can stop an existing program:
   width or height of 0 the error "Illegal Shape Size"
   ([#1047](https://github.com/fubar-coder/bb2-c/issues/1047),
   [#1046](https://github.com/fubar-coder/bb2-c/issues/1046);
-  [Shapes too large for their size fields]({{< relref "/docs/compared-with-original/new-errors#shape-too-big" >}})).
+  [Shapes too large for their size fields]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#shape-too-big" >}})).
 * `BBlit`, `UnBuffer` and `ShowStencil` stepped from plane to plane in
   the buffer by the shape's plane size as a signed number, so with a
   shape of 32 KB or more per plane they stepped backwards and wrote and
@@ -3974,7 +3974,7 @@ of them can stop an existing program:
   picture data behind it; such a picture is the runtime error "Illegal
   Shape Size", also without runtime error checking
   ([#1054](https://github.com/fubar-coder/bb2-c/issues/1054);
-  [`LoadShape` of a picture of width or height 0]({{< relref "/docs/compared-with-original/new-errors#loadshape-size-zero" >}})).
+  [`LoadShape` of a picture of width or height 0]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadshape-size-zero" >}})).
 
 ### Drawing and polygons
 
@@ -4107,20 +4107,20 @@ and the same colours.
   runtime error checking, a palette without colours is the error
   "Uninitialized Palette"
   ([#182](https://github.com/fubar-coder/bb2-c/issues/182);
-  [A palette of 0 colours for `SaveBitmap` and `SaveShape`]({{< relref "/docs/compared-with-original/new-errors#save-palette-no-colours" >}})).
+  [A palette of 0 colours for `SaveBitmap` and `SaveShape`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#save-palette-no-colours" >}})).
 * `SaveShape` of a shape of depth 0 or of more than 14 planes, such as
   one that `LoadShape` made from a 24-bit picture, wrote the addresses of
   its planes over the memory of the library; it is the runtime error
   "Illegal Shape Depth", also without runtime error checking
   ([#326](https://github.com/fubar-coder/bb2-c/issues/326);
-  [`SaveShape` of a shape of depth 0 or more than 14]({{< relref "/docs/compared-with-original/new-errors#saveshape-depth" >}})).
+  [`SaveShape` of a shape of depth 0 or more than 14]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#saveshape-depth" >}})).
 * `LoadBitMap` and `LoadScreen` of a file that could not be opened, or of
   one without a picture header (BMHD), went on with what an earlier load
   had left in the read buffer: they showed the old picture again or
   garbage, or stopped with a message that did not fit. They stop with
   "Can't Open File" or "Can't Find IFF 'BMHD'"
   ([#187](https://github.com/fubar-coder/bb2-c/issues/187);
-  [`LoadBitMap` and `LoadScreen` of a missing file]({{< relref "/docs/compared-with-original/new-errors#loadbitmap-missing-file" >}})).
+  [`LoadBitMap` and `LoadScreen` of a missing file]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#loadbitmap-missing-file" >}})).
 * A read error of the disk or device during an IFF load counted as 65535
   bytes read, and the old contents of the read buffer were taken as the
   file's data: `LoadShape` of a device that cannot be read loaded the
@@ -4190,7 +4190,7 @@ Two more fixes of them change what an existing program does:
   mask, so every period above 15, which is every useful one, was the
   error "Illegal Chanel Mask"; it tests only that the sound is set up
   ([#66](https://github.com/fubar-coder/bb2-c/issues/66);
-  [The check of `SetPeriod`]({{< relref "/docs/compared-with-original/new-errors#setperiod-check" >}})).
+  [The check of `SetPeriod`]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#setperiod-check" >}})).
 * `SetVoice` limited its values with a compare that overflowed, so a
   large negative rate, pitch or sample frequency became the highest
   value, for example a rate of -32768 the rate 400; such a value now
@@ -4226,7 +4226,7 @@ Two more fixes of them change what an existing program does:
   error "No Module Playing"; the original wrote the position into an
   exception vector of the processor
   ([#210](https://github.com/fubar-coder/bb2-c/issues/210);
-  [`JumpMed` without a playing module]({{< relref "/docs/compared-with-original/new-errors#jumpmed-no-module" >}})).
+  [`JumpMed` without a playing module]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#jumpmed-no-module" >}})).
 * A finetune outside -8 to 7, from the instrument or the command 15xx,
   made the MED player read a period table from outside its table; 15xx
   ignores such a value, and the instrument's is taken as 0
@@ -4333,7 +4333,7 @@ One more fix of them changes what an existing program sees:
   error "Illegal Result Number", and `GetRexxCommand` with one outside 1
   to 16 the error "Illegal Argument Number"
   ([#51](https://github.com/fubar-coder/bb2-c/issues/51);
-  [`GetRexxResult` and `GetRexxCommand` with a number out of range]({{< relref "/docs/compared-with-original/new-errors#rexx-numbers" >}})).
+  [`GetRexxResult` and `GetRexxCommand` with a number out of range]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rexx-numbers" >}})).
 * `GetResultString` freed the result string of a message but left the
   message pointing to the freed memory, so a second call read and freed
   it again. The port clears the result, and a second call gives the
@@ -4931,13 +4931,13 @@ blitter routines of the game Blitz Bombers; the fix of `BlockToShape` is
 * With runtime error checking, `CreateShape` with a count of 0 is the
   error "CreateShape count must be at least 1!"; the original made 65536
   shapes and wrote 2 MB over the memory behind the shape table
-  ([`CreateShape` with a count of 0 or past the last shape]({{< relref "/docs/compared-with-original/new-errors#createshape-count" >}}),
+  ([`CreateShape` with a count of 0 or past the last shape]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#createshape-count" >}}),
   [#428](https://github.com/fubar-coder/bb2-c/issues/428)).
 * With runtime error checking, `CreateShape` whose shapes would run past
   the last shape that the Object Maximums of the compiler options allow
   is the error "CreateShape start+count above Maximum Shapes!"; the
   original wrote those shapes over the memory behind the shape table
-  ([`CreateShape` with a count of 0 or past the last shape]({{< relref "/docs/compared-with-original/new-errors#createshape-count" >}}),
+  ([`CreateShape` with a count of 0 or past the last shape]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#createshape-count" >}}),
   [#1077](https://github.com/fubar-coder/bb2-c/issues/1077)).
 * With runtime error checking, the commands that blit a shape,
   `SpecialBlock`, `SpecialBlockBitmap`, `TBlock`, `PredatorBlit`,
@@ -4945,7 +4945,7 @@ blitter routines of the game Blitz Bombers; the fix of `BlockToShape` is
   shape that was never defined with "Uninitialized Shape"; with the
   original such a shape, of depth 0, made them blit 65536 planes over
   memory all over the system
-  ([A shape that was never defined for the Blitz Bombers blits]({{< relref "/docs/compared-with-original/new-errors#bb-blitlib-shape-undefined" >}}),
+  ([A shape that was never defined for the Blitz Bombers blits]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#bb-blitlib-shape-undefined" >}}),
   [#429](https://github.com/fubar-coder/bb2-c/issues/429)).
 
 ### Fixes in neilsreqtoolslib {#neilsreqtoolslib-fixes}
@@ -5555,7 +5555,7 @@ their conversion into planar bitmaps.
   is a runtime error. The original always converted 320 x 256 pixels
   into bitplanes 10240 bytes apart: it read behind a smaller chunky
   bitmap and wrote behind a smaller bitmap
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#chunkytoplanar-sizes" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#chunkytoplanar-sizes" >}}),
   [#884](https://github.com/fubar-coder/bb2-c/issues/884)).
 * `ChunkyToPlanar` reads the depth of the bitmap alone. The original
   read it together with the bitmap's flags: depending on the flags it
@@ -5574,7 +5574,7 @@ their conversion into planar bitmaps.
   outside the chunky bitmap" when the column it would write leaves the
   chunky bitmap, and with "RaycastSky column below 0" for a negative
   texture column. The original wrote or read outside
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#raycastsky-outside" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#raycastsky-outside" >}}),
   [#887](https://github.com/fubar-coder/bb2-c/issues/887)).
 * Freeing a chunky bitmap, when `ChunkyBitmap` makes it again or at the
   end of the program, leaves the audio filter and the power LED as they
@@ -5660,7 +5660,7 @@ and the SCSI flag of `OpenCD` are described in
 * With runtime error checking, `OpenCD` while a device is open stops with
   "CD device already open: CloseCD first". The original opened the new
   device and lost the one opened first, which stayed open
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#compactdisc-checks" >}}),
   [#578](https://github.com/fubar-coder/bb2-c/issues/578)).
 * `CDPlayTrack` uses a request of its own while the music plays. In the
   original every other command, such as `CDUpdateInfo`, `CDStatus`,
@@ -5695,14 +5695,14 @@ and the SCSI flag of `OpenCD` are described in
   and with runtime error checking a track the CD does not hold stops
   with "Track number out of range". The original read the last track's
   end from memory the table of contents does not fill
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#compactdisc-checks" >}}),
   [#583](https://github.com/fubar-coder/bb2-c/issues/583)).
 * `CDTrackLength` is right for track 44 and the tracks after it
   ([#585](https://github.com/fubar-coder/bb2-c/issues/585)).
 * With runtime error checking, `CDTrackMins` and `CDTrackSecs` with an
   offset other than 0 or 1 stop with "Offset must be 0 or 1". The
   original read other memory of the library
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#compactdisc-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#compactdisc-checks" >}}),
   [#586](https://github.com/fubar-coder/bb2-c/issues/586)).
 * `CDUpdateInfo` returns 0 without an open device. The original returned
   a meaningless address
@@ -5732,7 +5732,7 @@ described above.
   fewer than one line stop with "Colour split needs at least one line".
   The original divided by zero for 0 lines and wrote up to 65536 lines
   over the memory behind the custom space for a negative number
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#colsplit-numlines" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#colsplit-numlines" >}}),
   [#589](https://github.com/fubar-coder/bb2-c/issues/589)).
 * `CopperWait` with an `x` of 500 or more waits on the line given. The
   original waited one line later
@@ -5930,7 +5930,7 @@ File notification:
   outside 0 to 63 stop with the error "Notify number must be 0 to 63";
   the original wrote, ended and freed the library's data around its
   table of slots
-  ([A notification slot outside 0 to 63]({{< relref "/docs/compared-with-original/new-errors#notify-slot-range" >}}),
+  ([A notification slot outside 0 to 63]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#notify-slot-range" >}}),
   [#626](https://github.com/fubar-coder/bb2-c/issues/626)).
 
 The device list:
@@ -6174,7 +6174,7 @@ above.
 * With runtime error checking, `FNSClip` with an `xmin` or `ymin` below
   0 stops with "FNSClip zone must not start below 0", and
   `FNSSetTab` with a size below 1 with "FNSSetTab size must be at least
-  1" ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#fns-clip-tab-checks" >}}),
+  1" ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#fns-clip-tab-checks" >}}),
   [#664](https://github.com/fubar-coder/bb2-c/issues/664),
   [#666](https://github.com/fubar-coder/bb2-c/issues/666)).
 * A program run a second time from the editor starts with no bitmap
@@ -6205,7 +6205,7 @@ effects by Reflective Images. The fix of
   of depth 0 or more than 8, `ClearBitmap` and `FadeInBitmap` with
   "Delay must not be 0" for a delay of 0, and `ZoomyZoom` with "ZoomyZoom
   needs a bitmap of at least 640 x 32" for a smaller one
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rwe-effects-depth" >}}),
   [#947](https://github.com/fubar-coder/bb2-c/issues/947),
   [#674](https://github.com/fubar-coder/bb2-c/issues/674),
   [#669](https://github.com/fubar-coder/bb2-c/issues/669),
@@ -6222,7 +6222,7 @@ effects by Reflective Images. The fix of
 * With runtime error checking, `ZoomXY` before any `InitZoomXY` stops
   with "ZoomXY needs InitZoomXY". The original zoomed a bitmap at
   address 0 and crashed
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#zoomxy-without-initzoomxy" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#zoomxy-without-initzoomxy" >}}),
   [#1131](https://github.com/fubar-coder/bb2-c/issues/1131)).
 * A program run a second time from the editor starts without the
   bitmaps and offsets of an `InitZoomXY`. In the original, a `ZoomXY`
@@ -6253,7 +6253,7 @@ described above.
   counted as one with hundreds of bitplanes. With runtime error
   checking, a bitmap of depth 0 or more than 8 stops with "Illegal
   BitMap Depth"
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rwe-effects-depth" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rwe-effects-depth" >}}),
   [#679](https://github.com/fubar-coder/bb2-c/issues/679)).
 * `CopyColour` with a negative colour number fails and returns 0, as
   for a colour beyond the palette. The original copied from or to
@@ -6264,7 +6264,7 @@ described above.
   a palette, for a colour number the palette does not have, and
   `PalAdjust` also for an end colour before the start colour and for a
   target palette too small for the colours it writes
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rigfxlib-palette-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rigfxlib-palette-checks" >}}),
   [#686](https://github.com/fubar-coder/bb2-c/issues/686),
   [#677](https://github.com/fubar-coder/bb2-c/issues/677),
   [#684](https://github.com/fubar-coder/bb2-c/issues/684),
@@ -6402,7 +6402,7 @@ The font printer:
   runtime error checking, `FPrint`, `FNPrint` and `FPrintDetoke` stop
   with an error on a bitmap narrower than 640 pixels or a cursor row
   outside the bitmap
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#font-printer-bitmap" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#font-printer-bitmap" >}}),
   [#707](https://github.com/fubar-coder/bb2-c/issues/707)).
 * `FPrint` prints a string of 32769 characters or more up to the right
   edge, as a shorter one; the original printed nothing
@@ -6434,7 +6434,7 @@ The parser:
 * `AddProcessPtr` keeps at most 20 codes and ignores more; with runtime
   error checking a 21st stops with "AddProcessPtr table holds at most 20
   entries". The original wrote the 21st over the code behind its table
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#addprocessptr-20-codes" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#addprocessptr-20-codes" >}}),
   [#700](https://github.com/fubar-coder/bb2-c/issues/700)).
 
 The memory search:
@@ -6507,7 +6507,7 @@ New items and results:
 * With runtime error checking, a list number outside 0 to 4 stops with
   the error "List number must be 0 to 4"; the original wrote into the
   other lists and the memory behind them
-  ([A list number outside 0 to 4]({{< relref "/docs/compared-with-original/new-errors#linked-list-number-range" >}}),
+  ([A list number outside 0 to 4]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#linked-list-number-range" >}}),
   [#732](https://github.com/fubar-coder/bb2-c/issues/732)).
 
 The copies of the items:
@@ -6578,7 +6578,7 @@ the block maps and helpers of Reflective Images' map editor.
 * With runtime error checking, `MapDataAdr(x,y)` with a position outside
   the map stops with "Map position outside the map". The original
   returned an address in a later row or behind the map
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rimapeditorlib-map-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rimapeditorlib-map-checks" >}}),
   [#892](https://github.com/fubar-coder/bb2-c/issues/892)).
 * With runtime error checking, `MapCanDraw` before any `SetStencil`
   stops with "MapCanDraw needs SetStencil", a cell value of 32768 or
@@ -6586,7 +6586,7 @@ the block maps and helpers of Reflective Images' map editor.
   the stencil", and `MapCanDraw` and `MapDataGrab` on a map without
   data with "MapObject has no map data". The original read the stencil
   at address 0 or up to 32 KB in front of it, and the map at address 0
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rimapeditorlib-map-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rimapeditorlib-map-checks" >}}),
   [#893](https://github.com/fubar-coder/bb2-c/issues/893)).
 * `MapDataGrab` fills nothing into a map without data, such as one whose
   `CreateMap` got no memory or a width or height of 0. The original
@@ -6595,19 +6595,19 @@ the block maps and helpers of Reflective Images' map editor.
   a height of 0 and `ShapeTo1616` from a shape of height or depth 0
   stop with a runtime error; the original wrote 65536 words, rows or
   planes over memory
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rimapeditorlib-size-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rimapeditorlib-size-checks" >}}),
   [#895](https://github.com/fubar-coder/bb2-c/issues/895)).
 * With runtime error checking, `ShapeTo1616` into a destination that is
   not 16 by 16 pixels with at least the depth of the source stops with
   "ShapeTo1616 needs a 16 x 16 destination as deep as the source". The
   original wrote 16 rows for every plane of the source into any
   destination and overran a smaller one
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#rimapeditorlib-size-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#rimapeditorlib-size-checks" >}}),
   [#900](https://github.com/fubar-coder/bb2-c/issues/900)).
 * With runtime error checking, `CreateMap` with a width above 32767
   stops with "Map width above 32767". The original gave such a map far
   too little memory, and `MapDataGrab` wrote behind it
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#createmap-width" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#createmap-width" >}}),
   [#1152](https://github.com/fubar-coder/bb2-c/issues/1152)).
 * `CreateMap` frees the map the object held wherever its data lie. The
   original did not free a map whose data began at an address that is a
@@ -6657,12 +6657,12 @@ the map shapes and groups of Reflective Images' map editor.
   further ones; with runtime error checking a 64th member stops with
   "Group holds at most 63 members". The original wrote them behind the
   memory of the group
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#group-63-members" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#group-63-members" >}}),
   [#904](https://github.com/fubar-coder/bb2-c/issues/904)).
 * With runtime error checking, `ShapeToMapShape` of a shape of depth 0
   or more than 8 stops with "Illegal Shape Depth". The original wrote
   65536 plane pointers over memory, or into the next map shape
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#shapetomapshape-depth" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#shapetomapshape-depth" >}}),
   [#903](https://github.com/fubar-coder/bb2-c/issues/903)).
 * Without map shapes, before `SetNumMapShapes` or after one that got no
   memory, the map shape commands do nothing and `MapShapeAddr` returns
@@ -6671,7 +6671,7 @@ the map shapes and groups of Reflective Images' map editor.
   `SetNumMapShapes` stops with "Map shape not allocated by
   SetNumMapShapes", and a `BlitMapShapeSize` wider than the map shape
   with "BlitMapShapeSize wider than the map shape"
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#mapshape-number-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#mapshape-number-checks" >}}),
   [#906](https://github.com/fubar-coder/bb2-c/issues/906)).
 * A program run a second time from the editor starts with an empty
   group. In the original, `AddGroupMember` before `ResetGroup` added to
@@ -6716,7 +6716,7 @@ are described above.
   arguments than fit into their 16 longs stop with the error "Too Many
   EZRequest Arguments"; the original wrote the rest over the code of the
   library
-  ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors#ezrequest-too-many-arguments" >}}),
+  ([`EZRequest` and `EZRequestArgs` with too many arguments]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#ezrequest-too-many-arguments" >}}),
   [#748](https://github.com/fubar-coder/bb2-c/issues/748)).
 * `EZRequest`, `EZRequestArgs`, `ProgPath$`, `ProgDir$` and `ProgName$`
   work on Kickstart 1.x. The original called functions of Kickstart 2.0
@@ -7068,7 +7068,7 @@ falling snow of Reflective Images.
   outside the bitmap with "KillPoint outside the bitmap". The original
   read and wrote outside the library's table, at address 0 or around
   the bitmap
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#snow-list-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#snow-list-checks" >}}),
   [#913](https://github.com/fubar-coder/bb2-c/issues/913)).
 * `InitSnowDrop` with 1024 points or more allocates enough memory for
   the field's lists. The original computed the size in 16 bits, got a
@@ -7425,18 +7425,18 @@ changed results of `GetWBSprite` and `MoveWBSprite` are described in
   outside 0 to 7 (-1 to 7 for `GetWBSprite`) with "Sprite channel must
   be 0 to 7" or "Sprite channel must be -1 to 7". The original read and
   freed the library's own data as sprites
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
   [#916](https://github.com/fubar-coder/bb2-c/issues/916)).
 * With runtime error checking, `GetWBSprite` and `ChangeWBSprite` refuse
   a shape of height 0 with "Illegal Shape Height" and one of depth 0 or
   more than 8 with "Illegal Shape Depth". The original would copy 65536
   rows or planes
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
   [#917](https://github.com/fubar-coder/bb2-c/issues/917)).
 * With runtime error checking, `WBSpriteX` and `WBSpriteY` of a channel
   without a sprite stop with "No sprite on this channel". The original
   returned words from low memory
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#wbsprite-checks" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#wbsprite-checks" >}}),
   [#922](https://github.com/fubar-coder/bb2-c/issues/922)).
 
 ### Fixes in rizonejoylib {#rizonejoylib-fixes}
@@ -7613,7 +7613,7 @@ does.
 * With runtime error checking, `FreeTrackerModule` of the module that
   plays is the runtime error "Tracker: Stop the module before freeing
   it."; the original freed it and went on playing the freed memory
-  ([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#freetrackermodule-playing" >}}),
+  ([Runtime errors of the libraries]({{< relref "/docs/compared-with-original/new-errors/runtime-errors#freetrackermodule-playing" >}}),
   [#436](https://github.com/fubar-coder/bb2-c/issues/436)).
 * `PauseModule` kept its pause whatever the program did in between.
   After a pause, the next `PauseModule` did not pause a module started

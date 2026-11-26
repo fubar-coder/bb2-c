@@ -75,7 +75,7 @@ Without an index, `p\address` is element 0. An array field of 0
 elements takes no room: it lies on the same bytes as the field after it,
 so two names can share one place in memory. A field of 65536 elements or
 more is the compile error "Type too Big"
-([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors#newtype-field-count" >}})).
+([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-field-count" >}})).
 
 **SizeOf.** `SizeOf .Point` is the size of a NewType in bytes, and
 `SizeOf .Point\z` the offset of a field from its start. Fields are laid
@@ -84,7 +84,7 @@ out in order; a field of two bytes or more starts at an even offset.
 A NewType cannot contain a field of its own type (the compile error
 "Illegal Type"), but it can contain a pointer to it, which is how linked
 structures are built
-([A NewType that contains itself]({{< relref "/docs/compared-with-original/new-errors#newtype-contains-itself" >}})).
+([A NewType that contains itself]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-contains-itself" >}})).
 A field may have a NewType that is defined further down the source; its
 size is then known only from that definition on
 ([A field of a NewType defined later]({{< relref "/docs/compared-with-original/fixed-bugs/compiler#newtype-defined-later" >}})).

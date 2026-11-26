@@ -270,7 +270,7 @@ rb.b=vq LSL 2.5      ; original: 6    port: Illegal Operator for Type
 
 Write the count as a whole number (`vb LSL 2`), or use a variable. The
 compile error is also on
-[Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}}).
+[Operators and expressions]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}}).
 
 A constant with a point as the value that is shifted is taken as a Quick
 variable of that value:
@@ -315,7 +315,7 @@ original.
 the processor's eight data registers. An expression that would need a
 register beyond the eighth is the compile error "Expression too Complex",
 as for the ninth register of
-[An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors#expression-too-complex" >}}).
+[An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors/expressions#expression-too-complex" >}}).
 
 ```blitzbasic
 q.q=1.5 : l.l=2 : c1.l=1 : c2.l=2 : e.l=3 : h.l=4 : i.l=5

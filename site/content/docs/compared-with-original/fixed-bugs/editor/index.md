@@ -301,7 +301,7 @@ is not a Latin-1 character and becomes `?`.
 
 Outside a string and a comment, a literal character is an error: the
 compiler stops with "Syntax Error" at its line
-([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#latin1-outside-string" >}})).
+([Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#latin1-outside-string" >}})).
 
 **With the original Blitz Basic 2**
 

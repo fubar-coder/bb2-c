@@ -20,6 +20,14 @@ page-compared-with-original-expression-types-11 run content/docs/compared-with-o
 page-compared-with-original-expression-types-12 run content/docs/compared-with-original/expression-types.md#12
 page-compared-with-original-expression-types-13 run content/docs/compared-with-original/expression-types.md#13
 page-compared-with-original-expression-types-14 run content/docs/compared-with-original/expression-types.md#14
+page-compared-with-original-new-errors-expressions-1 run content/docs/compared-with-original/new-errors/expressions.md#1
+page-compared-with-original-new-errors-expressions-2 run content/docs/compared-with-original/new-errors/expressions.md#2
+page-compared-with-original-new-errors-expressions-3 run content/docs/compared-with-original/new-errors/expressions.md#3
+page-compared-with-original-new-errors-names-and-types-1 run content/docs/compared-with-original/new-errors/names-and-types.md#1
+page-compared-with-original-new-errors-names-and-types-2 compile content/docs/compared-with-original/new-errors/names-and-types.md#2 a fragment: it defines a type and has no output
+page-compared-with-original-new-errors-names-and-types-3 run content/docs/compared-with-original/new-errors/names-and-types.md#3
+page-compared-with-original-new-errors-files-macros-assembler-1 run content/docs/compared-with-original/new-errors/files-macros-assembler.md#1
+page-compared-with-original-new-errors-files-macros-assembler-2 run content/docs/compared-with-original/new-errors/files-macros-assembler.md#2
 cmd-acidlibs-displaylib-1 compile data/cmddesc/acidlibs/displaylib.yaml#1 needs hardware or a device the test machine does not have (a display)
 cmd-acidlibs-gtlib-1 run data/cmddesc/acidlibs/gtlib.yaml#1
 cmd-acidlibs-gtlib-2 compile data/cmddesc/acidlibs/gtlib.yaml#2 opens a screen or a window

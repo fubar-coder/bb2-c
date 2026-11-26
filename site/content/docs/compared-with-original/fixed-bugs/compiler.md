@@ -73,7 +73,7 @@ gt 3
 Nothing, if `=<` was meant as less-or-equal: the program now does what
 its source says. A program that only worked because of the bug, with
 `=<` where it needed "not equal", has to write `<>` there
-([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#less-or-equal" >}})).
+([Operators and expressions]({{< relref "/docs/compared-with-original/new-errors/expressions#less-or-equal" >}})).
 
 Issue: [The operator =< meant "not equal" (#9)](https://github.com/fubar-coder/bb2-c/issues/9).
 
@@ -291,7 +291,7 @@ a Long is computed exactly and rounded once (`r.l=l+q+p` is 14), and
 a constant with a fraction, rounded down (`vb AND -1.5` is `vb AND -2`),
 and a constant with a point as a shift count, such as `vb LSL 2.0`, is
 the compile error "Illegal Operator for Type"
-([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}})).
+([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}})).
 The examples, with the original's results, the port's and the reasons,
 are in
 [The type of each operation]({{< relref "/docs/compared-with-original/expression-types" >}}).
@@ -553,7 +553,7 @@ A program that worked with the wrong layout, for example one that reads
 files written with it, has to account for the new offsets. Some sources
 that the original compiled are refused now: a use of the NewType's size
 before the type is defined, and two types that would contain each other
-([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#newtype-defined-later" >}})).
+([Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-defined-later" >}})).
 
 Issue: [A NewType field of a type defined later got a wrong size (#974)](https://github.com/fubar-coder/bb2-c/issues/974).
 
@@ -609,7 +609,7 @@ End Function
 
 A source that the original compiled and the port refuses for this reason
 is described with the others in
-[Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#end-of-procedure" >}}).
+[Names, procedures and NewTypes]({{< relref "/docs/compared-with-original/new-errors/names-and-types#end-of-procedure" >}}).
 
 Issue: [End Statement could close a Function, and the other way round (#940)](https://github.com/fubar-coder/bb2-c/issues/940).
 
@@ -797,7 +797,7 @@ prints
 After `Include` and `XInclude`, only a comment may follow the closing
 quote; a statement behind a `:` there is a "Syntax Error" and needs a line
 of its own
-([Sources that compile differently]({{< relref "/docs/compared-with-original/new-errors#text-after-path" >}})).
+([Include files, macros and inline assembler]({{< relref "/docs/compared-with-original/new-errors/files-macros-assembler#text-after-path" >}})).
 
 Issue: [Text after an IncDir path became part of the path (#17)](https://github.com/fubar-coder/bb2-c/issues/17).
 
@@ -973,7 +973,7 @@ Each point says first what the original did, then what the port does.
   with Word `Mod`. With Long or Quick division, and in constants such as
   `#c=5/0`, it compiled to the largest Long number. In the port, both are
   the compile error "Division by Zero"
-  ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors#division-by-zero" >}}),
+  ([A division by a constant 0]({{< relref "/docs/compared-with-original/new-errors/expressions#division-by-zero" >}}),
   [#1044](https://github.com/fubar-coder/bb2-c/issues/1044)).
 * An operator whose right operand needed a ninth register, such as
   `a+b*c` as the 7th or a later argument of a statement or function, was
@@ -981,7 +981,7 @@ Each point says first what the original did, then what the port does.
   the program with Word operands, or a crash of the compiler with
   constants. In the port, it is the compile error "Expression too
   Complex"; write `b*c+a` or `a+(b*c)` instead
-  ([An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors#expression-too-complex" >}}),
+  ([An operator too deep in an expression]({{< relref "/docs/compared-with-original/new-errors/expressions#expression-too-complex" >}}),
   [#1185](https://github.com/fubar-coder/bb2-c/issues/1185)).
 * A Latin-1 character other than the umlauts, such as ß or é, could not
   reach a string, since the editor lost it. The port's editor keeps it as
@@ -1018,7 +1018,7 @@ Each point says first what the original did, then what the port does.
   `ja(1,vq AND 1.5)`, compile in both builds and take its whole part; a
   constant with a point as a shift count is a compile error in every
   index
-  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}}),
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}}),
   [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}})).
 * A comparison as the right operand of an operator, such as
   `lw AND (a=b)` or `lw AND a=b`, gives a Word (-1 or 0), and the original
@@ -1035,7 +1035,7 @@ Each point says first what the original did, then what the port does.
   so `If q OR (a<>b)` is false for `q=0.5`, as in the original. A Float
   has no `AND`, `OR`, `EOR` or shift, so a Float left of one of them with
   a comparison on the right is a compile error
-  ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors#float-bit-operator-comparison" >}}),
+  ([A Float with `AND`, `OR`, `EOR` or a shift and a comparison]({{< relref "/docs/compared-with-original/new-errors/expressions#float-bit-operator-comparison" >}}),
   [#1182](https://github.com/fubar-coder/bb2-c/issues/1182)).
 * When the type so far was Byte (a Byte destination, parameter, field or
   array element), the original cut a constant with a fraction to a whole
@@ -1051,7 +1051,7 @@ Each point says first what the original did, then what the port does.
   such a constant, rounded down: `rb.b=1.5 AND vb` is `1 AND vb`, as in the
   original, but `rb.b=NOT -1.5` is 1 where the original, which cut -1.5 to
   -1, gave 0. A constant with a point as a shift count is a compile error
-  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors#shift-count-with-point" >}}),
+  ([A constant with a point as a shift count]({{< relref "/docs/compared-with-original/new-errors/expressions#shift-count-with-point" >}}),
   [The type of each operation]({{< relref "/docs/compared-with-original/expression-types#bit-operators" >}}),
   [#1188](https://github.com/fubar-coder/bb2-c/issues/1188)).
 * `AND`, `OR` and `EOR` of two Byte values with different signs left a
@@ -1128,7 +1128,7 @@ Each point says first what the original did, then what the port does.
   modulo 65536, here 4 bytes, and without runtime error checking a
   program wrote past the field. Such a field is the compile error "Type
   too Big", as is a NewType of 32768 bytes or more
-  ([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors#newtype-field-count" >}}),
+  ([An array field of 65536 elements or more]({{< relref "/docs/compared-with-original/new-errors/names-and-types#newtype-field-count" >}}),
   [#1084](https://github.com/fubar-coder/bb2-c/issues/1084)).
 
 ### Paths and include files
