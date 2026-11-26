@@ -174,6 +174,20 @@ std::string table()
                            tname(size), tname(e.result), std::string(1, bit(e.litcut)) });
             }
         }
+    // the decisions left to the typing pass of rule P+ (#1216)
+    t += "# bypass OP LEFT RIGHT POINTS(left right) -> PASS: AND, OR, EOR, & and | with a constant\n"
+         "#   with a point, a shift of one, the build's refusal left to the typing pass\n"
+         "# bypassnot T POINT -> PASS: Not of such a constant\n";
+    for (unsigned op : { ETO_AND, ETO_OR, ETO_EOR, ETO_AMP, ETO_BAR, ETO_LSL, ETO_ASL, ETO_LSR, ETO_ASR, ETO_ADD })
+        for (unsigned l = 0; l < ET_NTYPES; l++)
+            for (unsigned r = 0; r < ET_NTYPES; r++)
+                for (unsigned pts = 0; pts < 4; pts++)
+                    t += row({ "bypass", oname(op), tname(l), tname(r), std::string{ bit(pts & 1), bit(pts & 2) },
+                               std::string(1, bit(exprtype_bypass(op, l, r, pts & 1, (pts >> 1) & 1))) });
+    for (unsigned ty = 0; ty < ET_NTYPES; ty++)
+        for (int point = 0; point <= 1; point++)
+            t += row({ "bypassnot", tname(ty), std::string(1, bit(point)),
+                       std::string(1, bit(exprtype_bypassnot(ty, point))) });
     return t;
 }
 

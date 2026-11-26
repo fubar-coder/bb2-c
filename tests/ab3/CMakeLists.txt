@@ -462,7 +462,7 @@ ab3_cli_case(quick_long_arith quick_long_arith.ab3 REF REF_EXPECT quick_long_ari
 # whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
 # AmiBlitz3 makes it a Float (docs/ab3/variant.md)
 ab3_cli_case(byte_fraction_const byte_fraction_const.ab3 REF)
-ab3_cli_case(byte_fraction_bitop byte_fraction_bitop.ab3 REF)
+ab3_cli_case(byte_fraction_bitop byte_fraction_bitop.ab3 REF REF_EXPECT byte_fraction_bitop.ref.expect)
 ab3_cli_case(byte_fraction_whole byte_fraction_whole.ab3 REF REF_EXPECT byte_fraction_whole.ref.expect)
 # a Byte AND, OR, EOR of operands of different sign (#1218, #1217): no stale
 # upper byte in the port, where AmiBlitz3 keeps it for the variables
@@ -873,7 +873,7 @@ foreach(mode same differs intended stale second unreadable)
 	set(prev_cases "atoi|Blitz3|atoi.ab3||${cli_dir}/atoi.expect\n")
 	if(mode STREQUAL "second")
 		# the second source of the block (a file of SOURCES, not one of AmiBlitz3's tests)
-		string(APPEND prev_cases "byte_fraction_bitop|Blitz3|byte_fraction_bitop.ab3||${cli_dir}/byte_fraction_bitop.expect\n")
+		string(APPEND prev_cases "chr_toolong|Blitz3|chr_toolong.ab3||${cli_dir}/chr_toolong.expect\n")
 	elseif(mode STREQUAL "unreadable")
 		string(APPEND prev_cases "no_such_source|Blitz3|no_such_source.ab3||${cli_dir}/atoi.expect\n")
 	endif()

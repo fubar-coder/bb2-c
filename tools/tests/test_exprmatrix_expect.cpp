@@ -393,11 +393,29 @@ TEST_CASE("exprmatrix expect: the named cells of the decided rule", "[exprmatrix
                                       "gives 1"));
     CHECK(g.report.find("named cells in tests: with another value 1, compiling after the change 1, refused after "
                         "the change 1; left out 1") != std::string::npos);
-    // with the decided rule as the port's rules there is no named cell and no test
-    gen d(std::string(HEAD) + POW, EM_RULES_DECIDED);
+    // the fix of #1216: with the decided rule as the port's rules the named
+    // cells are those of the port before it, their tests get fixed-orig and
+    // the values of the fixed port with the CD's libraries; a cell the open
+    // test left out (the original gives the decided value, the port refused
+    // it) is a cell of a source that compiles now
+    gen d(std::string(HEAD) + POW, EM_RULES_PORTFIX);
 
     REQUIRE(d.rc == 0);
+    CHECK(d.file(SRC + "named-cells.tsv") == g.file(SRC + "named-cells.tsv"));
+    CHECK(d.has(v + ".test.toml", "do not edit\nfixed-orig = 1216\n"));
+    CHECK(d.has(v + ".test.toml", "[deviations.\"compiler=orig195\"]\n"));
+    CHECK(d.has(v + ".test.toml", "\"check.cells.db-div-q-l-A.actual\" = \"== -1\"\n"));
+    CHECK(d.has(v + ".test.bas", "!CheckEq{rb,0,\"db-div-q-l-A\"}"));
+    CHECK(d.has(BUG + "compiler-expr-1216-db-a-now-01.test.bas", "\"db-and-cf-b-A\"}"));
+    CHECK(d.has(n + ".test.toml", "do not edit\nfixed-orig = 1216\n"));
+    CHECK(d.has(n + ".test.toml", "compile = \"contains \\\"Illegal Operator for Type\\\"\"\n"));
+    CHECK(d.has(r + ".test.toml", "do not edit\nfixed-orig = 1216\n"));
+    CHECK(!d.has(r + ".test.toml", "[deviations.\"libs=cd\"]"));
+    CHECK(!d.has(SRC + "left-out.txt", "db-and-cf-b-A\t"));
+    CHECK(d.report.find("named cells in tests: with another value 1, compiling after the change 2, refused after "
+                        "the change 1; left out 0") != std::string::npos);
+    // a named cell is in no other test of the fixed port
     for (const auto &[path, text] : d.files)
-        CHECK(path.find("compiler-expr-1216") == std::string::npos);
-    CHECK(d.report.find("named cells of the decided rule 0\n") != std::string::npos);
+        if (path.find("compiler-expr-1216") == std::string::npos && path.find(SRC) == std::string::npos)
+            CHECK(text.find("db-and-cf-b-A") == std::string::npos);
 }

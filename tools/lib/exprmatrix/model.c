@@ -1666,6 +1666,15 @@ static int pow_whole(struct ev *e, int asked, int64_t *v)
 {
     double x = e->pow.x;
 
+    if (e->powknown && asked == TQ && (e->rules & EM_R_PTYPED) && x > 2147483648.0 * (1 + 1e-4)) {
+        /* P+ types ^'s operands by their own types (a Long base is no raw
+           Quick), and the Float far above the Quick range goes to a Quick by
+           lib_ftoq, whose whole part and fraction both saturate: $FFFFFFFF
+           whatever SPPow's last bits are (expr-tree-5 4.1, "the `^` cells",
+           rounds/tree/decisions.md 2026-11-26) */
+        *v = 0xFFFFFFFF;
+        return 1;
+    }
     if (!e->powknown || asked == TF || asked == TQ || asked == 0)
         return 0;
     if (fabs(x) > 2147483648.0 * (1 + 1e-4)) {

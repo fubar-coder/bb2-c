@@ -1,6 +1,7 @@
-# compiler-compare-compound-left.test.bas: an open bug (#1183): the port has
-# the same behaviour as the original, so every cell shows the declared
-# deviations
+# compiler-compare-compound-left.test.bas: the original computes a compound
+# left operand of a comparison in the wanted type, the declared deviations
+fixed-orig = 1183
+
 [deviations."compiler=orig195"]
 "check.compound_left.times_greater" = "== fail"
 "check.compound_left.times_greater.actual" = "== 0"

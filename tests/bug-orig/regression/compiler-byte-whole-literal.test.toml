@@ -1,0 +1,9 @@
+# compiler-byte-whole-literal.test.bas: the data source asl-whole-point.bas,
+# a literal with a point as a shift count, refused since the operand typing
+# of #1216 (the original compiles it)
+
+[data]
+"asl-whole-point.bas" = "basic-compile"
+
+[asserts]
+"data.asl-whole-point.bas" = "== \"error 4 Illegal Operator for Type\""

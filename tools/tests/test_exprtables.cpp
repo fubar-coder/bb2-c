@@ -354,7 +354,7 @@ std::string candpage(int n, struct ett_stats *st, int (*mark)(void *, unsigned, 
     c.rules = rules;
     c.base = &base;
     ett_rules_cand(&r, &c);
-    struct ett_pageopts o = { "Candidate", "About.\n", "## Notes\n", &base, mark, nullptr, beside, &rules };
+    struct ett_pageopts o = { "Candidate", "About.\n", "## Notes\n", &base, mark, nullptr, beside, &rules, nullptr, nullptr, nullptr, nullptr, nullptr };
     char *page = ett_page_opts(&r, &o, st, &error);
     REQUIRE(page != nullptr);
     std::string s = page;

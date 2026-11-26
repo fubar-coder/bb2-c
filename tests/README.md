@@ -2017,13 +2017,13 @@ on the libraries (#1187), and cells where the port differs.
 cells whose value the decided rule of `expr-tree-5-operand-typing` (P+,
 `EM_RULES_DECIDED`) changes against the port's, with both values; the
 only matrix cells its implementation may change.
-Open tests of #1216 (the issue of that change): the cells with another
-value `compiler-expr-1216-CTX-SET[-u|-c]-NN`, the cells that compile after
-the change `compiler-expr-1216-CTX-SET-now[-u|-c]-NN` (the source is refused
-by the port and the original, the compile error is the deviation), the
-cells refused after it `compiler-expr-1216-refused` (data sources); only
-the cells where the port and the original agree, the others are in
-`left-out.txt`. The forms of the change's spec scenarios are
+The tests of #1216 (the issue of that change, `fixed-orig = 1216`): the
+cells with another value `compiler-expr-1216-CTX-SET[-u|-c]-NN` (the
+original's value is the deviation), the cells that compile after the
+change `compiler-expr-1216-CTX-SET-now[-u|-c]-NN` (the source is refused by
+the original, the compile error is the deviation), the cells refused after
+it `compiler-expr-1216-refused` (data sources); a named cell is in no other
+test of the matrix, one with no value to compare is in `left-out.txt`. The forms of the change's spec scenarios are
 `tests/bug-orig/compiler/compiler-operand-order[-print]` and
 `compiler-compare-compound-left` (#1183).
 

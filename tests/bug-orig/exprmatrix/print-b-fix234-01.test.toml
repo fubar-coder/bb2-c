@@ -4,5 +4,5 @@ fixed-orig = 234
 [asserts]
 output = "== \"print-div-q-l-B 0\n\""
 
-[deviations."libs=cd"]
+[deviations."compiler=orig210,libs=cd"]
 output = "== \"print-div-q-l-B -.\n\""

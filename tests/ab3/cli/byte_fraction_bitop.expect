@@ -1,5 +1,5 @@
 [compile]
-byte_fraction_bitop.ab3:5: Illegal Operator for Type
-rc=10
+rc=0
 [run]
-no executable
+0
+rc=0

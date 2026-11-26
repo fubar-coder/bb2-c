@@ -295,6 +295,8 @@ dq-mod-cf-b-A	dq	mod	value	00010000	00018000
 dq-mod-cf-w-A	dq	mod	value	00010000	00018000
 dq-mod-cf-l-A	dq	mod	value	00010000	00018000
 dq-mod-cf-f-A	dq	mod	value	00010000	00018000
+dq-pow-l-q-A	dq	pow	value	?	FFFFFFFF
+dq-pow-l-f-A	dq	pow	value	?	FFFFFFFF
 dq-and-cl-cf-A	dq	bit	compiles now	!noncompile	00000000
 dq-or-cl-cf-A	dq	bit	compiles now	!noncompile	86A10000
 dq-eor-cl-cf-A	dq	bit	compiles now	!noncompile	86A10000
@@ -552,6 +554,8 @@ pq-mod-cf-b-A	pq	mod	value	00010000	00018000
 pq-mod-cf-w-A	pq	mod	value	00010000	00018000
 pq-mod-cf-l-A	pq	mod	value	00010000	00018000
 pq-mod-cf-f-A	pq	mod	value	00010000	00018000
+pq-pow-l-q-A	pq	pow	value	?	FFFFFFFF
+pq-pow-l-f-A	pq	pow	value	?	FFFFFFFF
 pq-and-cl-cf-A	pq	bit	compiles now	!noncompile	00000000
 pq-or-cl-cf-A	pq	bit	compiles now	!noncompile	86A10000
 pq-eor-cl-cf-A	pq	bit	compiles now	!noncompile	86A10000

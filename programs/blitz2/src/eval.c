@@ -16,6 +16,7 @@
 #include "exprtype.h"
 #include "exprtree.h"
 #include "exprfold.h"
+#include "exprtyping.h"
 #include <proto/exec.h>
 #include <string.h>
 
@@ -227,10 +228,15 @@ static struct {
    Fixed (#1215): also the states a compile error inside an expression
    leaves set (the next index, the next element's minus sign, the armed
    intrinsic), so that they do not reach the next statement or compile. */
+static void p5reset(void);
+/* the unit being built has code of the typing pass of rule P+ (#1216, unitwrite) */
+static BOOL p5unit = FALSE;
+
 void exprbuildreset(void)
 {
     nbforth = 0;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
+    p5reset();
     idxnext = FALSE;
     negnext = FALSE;
     intrcur = NULL;
@@ -378,6 +384,21 @@ static UWORD function(UWORD c, UWORD *type);
 static UWORD afunction(UWORD oldtype, UWORD *type, UWORD namelen);
 static void dopusha3(void);
 static void dopulla3(void);
+/* the typing pass of rule P+ (the end of this file) */
+struct p5node;
+enum { P5L_CONT = 1, P5L_CONST, P5L_OTHER };     /* the kinds of leaf */
+static void p5reset(void);
+static void p5begin(void);
+static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD push, BOOL cond, BOOL wide);
+static void p5leaf(struct exprnode *l, unsigned kind);
+static void p5elemdone(struct expract *prev);
+static void p5wrap(unsigned kind, struct exprnode *x, struct expract *prev, struct expract *act);
+static void p5binop(struct exprnode *n, struct expract *act);
+static BOOL p5relaxbin(const struct exprnode *n, struct exprtype_bin *d);
+static BOOL p5relaxnot(UWORD t);
+static BOOL p5active(void);
+static void p5exit(struct exprnode *e, WORD push);
+static void p5check(const struct expract *a);
 
 
 /* ============================================ Poking to Object code stuff */
@@ -1037,6 +1058,8 @@ static void evalexit(struct expract *a)
     struct exprnode *e = a->p;
     UWORD t = e->tafter;
 
+    if (e->lflags & EVF_P5)
+        p5exit(e, (WORD)a->y);      /* the pass's consumer (#1216) */
     if (e->lflags & EVF_CONV)
         convtype(e->tbefore, t);    /* exg d2,d3 / convtype */
     pushflag = (WORD)a->y;
@@ -1046,7 +1069,8 @@ static void evalexit(struct expract *a)
         if (t == T_STRING)
             pokewd(regfield | *getstlen);
         stackuse += 2;                              /* .hi1 */
-        pokewd(((regfield | 0x7000) + 0x0200) | t); /* moveq #x,dREGAT+1 */
+        if (!(e->lflags & EVF_FIT))     /* set by p5exit at run time */
+            pokewd(((regfield | 0x7000) + 0x0200) | t); /* moveq #x,dREGAT+1 */
         pokewd((*pushut | regat) + 1);
         if (t == T_STRING)
             pokewd(*putstlen | regat);
@@ -1083,15 +1107,24 @@ static UWORD evalbuild(WORD push, UWORD *type, WORD unk)
     BOOL s_laterindex = laterindex;
     ULONG from;
     BOOL narrow = FALSE;
+    BOOL cond = evalcond, wide = evalwide;  /* #1216: for this evaluation only */
 
+    evalcond = evalwide = FALSE;
+    if (wide)
+        p5wide = FALSE;
     laterindex = idxnext;           /* Fixed (#1179) */
     idxnext = FALSE;
     stateact(evalenter, e, 0, (UWORD)push);
     evaldepth++;
     rawq = FALSE;
     from = codeseq;
+    p5begin();
     c = eval3(&t);
-    if (laterindex)                 /* Fixed (#1179): narrowed? */
+    /* the typing pass of rule P+ (#1216, #1183): its decisions written
+       into the actions, t the type it gives, or the code as built */
+    if (p5end(asked, unk, &t, e, push, cond, wide))
+        rawq = FALSE;
+    else if (laterindex)            /* Fixed (#1179): narrowed? */
         narrow = idxnarrow(from, rawq);
     if (rawq)                       /* Fixed (#1178): a raw Quick, floor */
         emitact(rawcutact, NULL, 0, (UWORD)narrow);
@@ -1158,6 +1191,8 @@ void unitbegin(struct stmtunit *u)
     bstrwork = FALSE;
     bconv.seq = blit.seq = bcst.seq = bbyte = 0;
     u->rb = relocunit();
+    u->p5 = p5unit;
+    p5unit = FALSE;
     exprtree_begin(&u->outer);
 }
 
@@ -1170,6 +1205,8 @@ void unitbuilt(struct stmtunit *u)
     if (pc != u->at)
         interr2();                  /* not reached: no code while it is built */
     u->acts = exprtree_end(&u->outer);
+    if (p5unit)
+        p5check(u->acts);           /* #1185: the typing pass's register pairs */
     bstrwork = sw || u->strwork;    /* for a build around the unit */
     u->strwork = sw;
 }
@@ -1178,6 +1215,12 @@ void unitbuilt(struct stmtunit *u)
 void unitwrite(struct stmtunit *u)
 {
     exprtree_run(u->acts);
+    /* the typing pass's code (#1216) may call no routine of a library the
+       build used: its relocations into the list all the same (the
+       library is in the program, its calls of other libraries too) */
+    if (p5unit)
+        relockeep();
+    p5unit = u->p5;
     relocdrop(u->rb);
     exprtree_unwind(u->m);
     actseq = u->actseq;
@@ -1816,13 +1859,20 @@ static UWORD binopbuild(struct exprnode *n, UWORD right)
         n->lflags |= BNF_RCMP;
     if (f.words)
         n->lflags |= BNF_WORDS;
-    binopprep(n->op, &d);
+    /* the typing pass of rule P+ takes a fraction under AND, OR and EOR
+       and a shifted constant with a point (#1216): no error here, the
+       pass decides (p5end) */
+    if (p5relaxbin(n, &d))
+        n->lflags |= BNF_P5 | BNF_NOFOLD;
+    else
+        binopprep(n->op, &d);
     if (!(bforth[nbforth - 2].constgot | bforth[nbforth - 1].constgot))
         n->lflags |= BNF_FOLD;
-    if (n->lflags & BNF_FOLD)
+    if ((n->lflags & (BNF_FOLD | BNF_P5)) == BNF_FOLD)
         divzerobuild(n, &d);       /* "Division by Zero" before the next element */
     if (n->op == ETO_POW || (n->op == ETO_MOD && (d.handler == T_LONG || d.handler == T_FLOAT))
-        || (d.path == ETP_MIXED && !d.handler && (n->op == ETO_MUL || n->op == ETO_DIV))) {
+        || (d.path == ETP_MIXED && !d.handler && (n->op == ETO_MUL || n->op == ETO_DIV))
+        || (n->lflags & BNF_P5)) {
         n->lflags |= BNF_NOFOLD;    /* nocando */
         bforth[nbforth - 1].constgot = 0xffff;
     }
@@ -1945,12 +1995,13 @@ void exprtree_done(void *x, struct exprnode *l)
    code ends in the conversion contemit makes gets the type it had
    before it (exprtype_ownleft): the conversion is not written
    (ELF_DROP), the relocations of the libraries its routine used first
-   are freed, the libraries stay.  Byte/Word to Long is exact and stays;
-   not covered, BUG(orig) (#1183): a compound left operand
-   (q*2) and a Long constant under a Float context are evaluated in the
-   wanted type before the comparison operator is read, so a Quick inside
-   is cut (`r.l=(q*2>2.5)` with q=1.5 gives 0).  *type is the type the
-   operand has then. */
+   are freed, the libraries stay.  Byte/Word to Long is exact and stays.
+   Fixed (#1183): a compound left operand (q*2) and a Long constant under
+   a Float context were evaluated in the wanted type before the
+   comparison operator is read, so a Quick inside was cut (`r.l=(q*2>2.5)`
+   with q=1.5 gave 0); the typing pass of rule P+ (exprtyping.c, p5end)
+   types the left subtree by its own operands and rewrites its code.
+   *type is the type the operand has then. */
 static BOOL ownleft(const struct exprnode *l, UWORD *type)
 {
     struct exprnode *n;
@@ -2043,6 +2094,7 @@ void exprtree_emit(void *x, struct exprnode *n)
 
     regat--;
     *e->type = binopbuild(n, *e->type);
+    p5binop(n, exprtree_lastact()); /* the typing pass's node (#1216) */
     e->c = reget();
 }
 
@@ -3040,6 +3092,7 @@ static void negemit(struct expract *a)
 static UWORD negate(UWORD *type)
 {
     struct exprnode *n = exprtree_new(EXN_NEG);
+    struct expract *prev = exprtree_building() ? exprtree_lastact() : NULL;
     UWORD c;
 
     n->op = 1;
@@ -3059,6 +3112,7 @@ static UWORD negate(UWORD *type)
     if (*type >= 5)
         tokuse(getffpbase);
     emitact(negemit, n, 0, *type);
+    p5wrap(ETN_NEG, n, prev, exprtree_lastact());   /* the typing pass (#1216) */
     exprtree_release(n);
     return c;
 }
@@ -3093,15 +3147,21 @@ static void notemit(struct expract *a)
    expression: eval4, whose node is the NOT's) */
 static UWORD notit(UWORD *type)
 {
+    struct expract *prev = exprtree_building() ? exprtree_lastact() : NULL;
     UWORD c = eval4(type, EXN_NOT);
 
     if (rawq) {                     /* Fixed (#1178): Not of floor(q) */
         emitact(cutact, NULL, 0, 0);
         rawq = FALSE;
     }
+    /* Not of a constant with a point: the typing pass of rule P+ decides
+       (#1216: its whole part) */
+    if (p5relaxnot(*type))
+        *type = T_LONG;
     if (*type >= 5)
         illoperr();
     emitact(notemit, NULL, 0, *type);
+    p5wrap(ETN_NOT, NULL, prev, exprtree_lastact());    /* the typing pass */
     eval4end();
     return c;
 }
@@ -3122,6 +3182,7 @@ static struct exprnode *newleaf(unsigned kind, UWORD tsf)
 
     l->op = (UWORD)kind;
     l->tbefore = tsf;
+    p5leaf(l, P5L_OTHER);           /* the typing pass (#1216) */
     return l;
 }
 
@@ -3182,9 +3243,30 @@ static void tokvalact(struct expract *a)
     ext_evalvalue(0, 0);
 }
 
+/* no asm counterpart: the element that begins with c (element0) and, for
+   the typing pass of rule P+ (#1216), its node: a leaf (a value, a
+   constant); a bracket, a minus and Not make theirs themselves */
+static UWORD element0(UWORD c, UWORD *type);
+
+static UWORD element(UWORD c, UWORD *type)
+{
+    BOOL sub = c == '(' || c == '{' || c == '-' || c == TOK_ASM_NOT;
+    struct expract *prev = NULL;
+    UWORD r;
+
+    if (!sub && p5active())
+        prev = exprtree_lastact();
+    if (!sub)
+        p5leaf(NULL, 0);
+    r = element0(c, type);
+    if (!sub)
+        p5elemdone(prev);
+    return r;
+}
+
 /* blitz2.s:9719 getelement2 after its bsr getchar3 - the element that
    begins with c (negate reads a run of minus signs itself) */
-static UWORD element(UWORD c, UWORD *type)
+static UWORD element0(UWORD c, UWORD *type)
 {
     BOOL neg = negnext;             /* Fixed (#1070) */
     UWORD k;
@@ -3551,6 +3633,7 @@ static void varleaf(struct exprnode *l, unsigned kind, UWORD tsf)
     l->tbefore = tsf;
     l->value = t ? t->u.code : 0;
     l->aux = flagmask;
+    p5leaf(l, P5L_OTHER);           /* the typing pass (#1216) */
 }
 
 /* blitz2.s:9910 ampersand2.  The parse part finds the variable (fetchvar
@@ -4940,6 +5023,7 @@ static void contrecord(struct exprnode *l, exprtree_actfn *fn)
     if (l->lflags & ELF_CONV)
         convprep(l->own, l->tafter);
     emitact(fn, l, 0, 0);
+    p5leaf(l, P5L_CONT);            /* the typing pass (#1216) */
     bforth[nbforth - 1].wordval = (l->lflags & ELF_WORD) != 0;
     if (l->lflags & ELF_BYTE)
         bbyte = codeseq;            /* #978: its code ends in the ext.w */
@@ -5154,4 +5238,1725 @@ static void stvar(const struct exprnode *l)
     pokecode(stvarget2, stvarget2f);
     /* NB: the template's beq.w skips exactly the 6 byte jsr from tokejsr */
     tokejsr(copstring);
+}
+
+
+/* ======================================================= the typing pass
+   No asm counterpart (OpenSpec change expr-tree-5-operand-typing, design
+   decisions 1, 6-10, task 4.1; issues #1216, #1183): rule P+.  While an
+   expression is built, the tree of the typing pass is made beside it
+   (struct p5node: exprtyping.h's node and the actions of its code: an
+   element's leaf, a minus sign, Not, an operator).  When the expression is
+   built (evalbuild, p5end), exprtyping_type decides every operation.
+   Where its decisions give the values the code built gives (p5same),
+   that code is written as it is; otherwise its actions are rewritten
+   (p5apply): a value is fetched in its own type, every operator, minus
+   sign, Not and folded constant writes the code of the pass's decision
+   (p5binopact, p5negact, p5notact, p5constact), and the end of the
+   evaluation takes the value as the pass says (p5exit).  The libraries
+   the new code calls are used when it is decided, while the expression
+   is built (the same functions with p5prep set).  A 48.16 intermediate
+   result is a register pair, D(r) its low and D(r+1) its high 32 bits
+   (design decision 9); the right operand of an operation whose left
+   operand is a pair is computed one register higher (p5shift); an
+   operand that needs a register beyond D7 is "Expression too Complex",
+   as #1185 (design decision 10).  The 48.16 operations are compilerlib's
+   routines (a in d0/d1, b in d2/d3, the result in d0/d1; d2 and d3
+   changed, every other register kept). */
+
+#define P5STACK 192                 /* the nodes pending in the build */
+#define P5C_PAIR 100                /* EVAL's vtype: the value as 48.16 (a Select's, T_SELWIDE) */
+
+BOOL evalcond = FALSE;              /* eval.h */
+BOOL evalwide = FALSE, p5wide = FALSE;
+#define P5MARKS 48                  /* the evaluations nested */
+#define P5DEPTH 64                  /* the deepest tree the pass types (its recursion) */
+
+enum {
+    P5F_RAW = 1,                    /* the build's code holds a raw Quick (#1178) */
+    P5F_RELAX = 2,                  /* the build's typing refused it: the pass decides */
+    P5F_KEEP = 4,                   /* a folded constant whose code stays the build's */
+    P5F_SIGNEXT = 8                 /* a constant compared with a byte value (#978) */
+};
+
+struct p5node {
+    struct exprtyping_node t;       /* the pass's node (first member) */
+    struct exprnode *x;             /* a leaf: the element's; NEG: its node; BIN: the BINOP */
+    struct expract *prev;           /* the action before its code */
+    struct expract *act;            /* CONST: constemit's action; NEG, NOT, BIN: its own */
+    struct expract *last;           /* its last action */
+    UBYTE lkind, flags;             /* P5L_*, P5F_* */
+    UBYTE tt;                       /* the type the build's code leaves it in */
+    UBYTE dt, df;                   /* the pass's code: the type and format it leaves */
+    UBYTE want;                     /* BIN: the wanted type of its expression */
+    UBYTE depth;                    /* the depth of its subtree */
+    ULONG whole, ffp;               /* CONST: its whole number, its FFP value */
+    ULONG enc;                      /* a folded constant the pass writes: its value */
+};
+#define P5(n) ((struct p5node *)(n))
+
+/* an exact value n/d (d > 0, lowest terms); ok FALSE: beyond int64_t */
+struct p5q {
+    int64_t n, d;
+    BOOL ok;
+};
+
+static struct p5node *p5stk[P5STACK];
+static UWORD p5sp;
+static struct {
+    UWORD sp;
+    BOOL bad, relax;
+} p5mk[P5MARKS];
+static UWORD p5nm, p5over;
+static struct exprnode *p5leafx;    /* the last leaf an element made */
+static UBYTE p5leafk;
+static UWORD p5leafd;               /* its evaldepth */
+static BOOL p5cpoint;               /* the last constant's facts (p5constleaf) */
+static ULONG p5cwhole, p5cffp;
+static struct expract *p5cact;
+static BOOL p5notrelax;
+/* the code functions record what they need and write nothing */
+static BOOL p5prep;
+
+#define P5_SPFIX (-30)
+#define P5_SPFLT (-36)
+#define P5_SPNEG (-60)
+#define P5_SPADD (-66)
+#define P5_SPSUB (-72)
+#define P5_SPMUL (-78)
+#define P5_SPDIV (-84)
+
+/* compilerlib's 48.16 routines (libs/compilerlib) */
+#define q48add 0xd603
+#define q48sub 0xd604
+#define q48mul 0xd605
+#define q48div 0xd606
+#define q48divq 0xd607
+#define q48divw 0xd608
+#define q48divb 0xd609
+#define q48mod 0xd60a
+
+static void p5reset(void)
+{
+    p5sp = p5nm = p5over = 0;
+    p5leafx = NULL;
+    p5notrelax = FALSE;
+    p5unit = FALSE;
+    evalcond = evalwide = p5wide = FALSE;
+}
+
+/* the build records the tree of the evaluation */
+static BOOL p5active(void)
+{
+    return p5nm && !p5over && !p5mk[p5nm - 1].bad && exprtree_building();
+}
+
+static void p5fail(void)
+{
+    if (p5nm && !p5over)
+        p5mk[p5nm - 1].bad = TRUE;
+}
+
+static struct p5node *p5new(unsigned kind)
+{
+    struct p5node *p = exprtree_alloc(sizeof *p);
+
+    memset(p, 0, sizeof *p);
+    p->t.kind = (UBYTE)kind;
+    p->depth = 1;
+    return p;
+}
+
+static void p5push(struct p5node *p)
+{
+    if (p5sp >= P5STACK) {
+        p5fail();
+        return;
+    }
+    p5stk[p5sp++] = p;
+}
+
+static struct p5node *p5pop(void)
+{
+    if (p5sp <= p5mk[p5nm - 1].sp) {
+        p5fail();
+        return NULL;
+    }
+    return p5stk[--p5sp];
+}
+
+/* an evaluation begins (evalbuild) */
+static void p5begin(void)
+{
+    if (p5over || p5nm >= P5MARKS) {
+        p5over++;
+        return;
+    }
+    p5mk[p5nm].sp = p5sp;
+    p5mk[p5nm].bad = !exprtree_building() || constmode;
+    p5mk[p5nm].relax = FALSE;
+    p5nm++;
+}
+
+/* the leaf l of kind kind (NULL: an element begins) */
+static void p5leaf(struct exprnode *l, unsigned kind)
+{
+    if (!p5active())
+        return;
+    p5leafx = l;
+    p5leafk = (UBYTE)kind;
+    p5leafd = evaldepth;
+}
+
+void p5constleaf(struct exprnode *l, BOOL point, ULONG whole, ULONG ffp)
+{
+    if (!p5active())
+        return;
+    p5leaf(l, P5L_CONST);
+    p5cpoint = point;
+    p5cwhole = whole;
+    p5cffp = ffp;
+    p5cact = exprtree_lastact();
+}
+
+/* the exact value of the FFP number f as num/den (FALSE: beyond the
+   range of the pass) */
+static BOOL p5ffpq(ULONG f, int64_t *num, int64_t *den)
+{
+    int64_t m = (int64_t)(f >> 8);
+    int e = (int)(f & 0x7f) - 64 - 24;
+
+    *num = 0;
+    *den = 1;
+    if (!m)
+        return TRUE;
+    while (!(m & 1) && e < 0) {
+        m >>= 1;
+        e++;
+    }
+    if (e >= 0) {
+        if (e > 36)
+            return FALSE;
+        *num = m << e;
+    } else {
+        if (e < -60)
+            return FALSE;
+        *num = m;
+        *den = (int64_t)1 << -e;
+    }
+    if (f & 0x80)
+        *num = -*num;
+    return TRUE;
+}
+
+/* the element is built (prev: the action before its code): its leaf */
+static void p5elemdone(struct expract *prev)
+{
+    struct exprnode *l = p5leafx;
+    struct p5node *p;
+
+    if (!p5active())
+        return;
+    if (!l || !prev || p5leafd != evaldepth) {
+        p5fail();
+        return;
+    }
+    if (p5leafk == P5L_CONST) {
+        p = p5new(ETN_CONST);
+        p->act = p5cact;
+        p->whole = p5cwhole;
+        p->ffp = p5cffp;
+        p->t.point = (UBYTE)p5cpoint;
+        if (p5cpoint) {
+            if (!p5ffpq(p5cffp, &p->t.num, &p->t.den)) {
+                p5fail();
+                return;
+            }
+        } else {
+            p->t.num = (LONG)p5cwhole;
+            p->t.den = 1;
+        }
+    } else {
+        UWORD t = l->own ? l->own : l->tafter;
+
+        if (t == T_ADDR)
+            t = T_LONG;
+        if (t < T_BYTE || t > T_STRING || t == T_ADDR) {
+            p5fail();
+            return;
+        }
+        p = p5new(ETN_VAR);
+        p->t.type = (UBYTE)t;
+    }
+    p->lkind = p5leafk;
+    p->x = l;
+    p->prev = prev;
+    p->last = exprtree_lastact();
+    p5push(p);
+}
+
+/* a run of minus signs (NEG, x its node) or Not (NOT) on the node on top */
+static void p5wrap(unsigned kind, struct exprnode *x, struct expract *prev, struct expract *act)
+{
+    struct p5node *c, *p;
+    BOOL relax = kind == ETN_NOT && p5notrelax;
+
+    p5notrelax = FALSE;
+    if (!p5active())
+        return;
+    c = p5pop();
+    if (!c)
+        return;
+    if (!prev) {
+        p5fail();
+        return;
+    }
+    p = p5new(kind);
+    p->t.l = &c->t;
+    p->x = x;
+    p->prev = prev;
+    p->act = p->last = act;
+    p->depth = (UBYTE)(c->depth + 1);
+    if (p->depth > P5DEPTH)
+        p->depth = P5DEPTH + 1;
+    if (relax)
+        p->flags |= P5F_RELAX;
+    p5push(p);
+}
+
+/* the operator n is built (act: its action) */
+static void p5binop(struct exprnode *n, struct expract *act)
+{
+    struct p5node *l, *r, *p;
+
+    if (!p5active())
+        return;
+    r = p5pop();
+    l = r ? p5pop() : NULL;
+    if (!l)
+        return;
+    p = p5new(ETN_BIN);
+    p->t.op = (UBYTE)n->op;
+    p->t.l = &l->t;
+    p->t.r = &r->t;
+    p->x = n;
+    p->prev = l->prev;
+    p->act = p->last = act;
+    p->depth = (UBYTE)((l->depth > r->depth ? l->depth : r->depth) + 1);
+    if (p->depth > P5DEPTH)
+        p->depth = P5DEPTH + 1;
+    if (n->lflags & BNF_P5)
+        p->flags |= P5F_RELAX;
+    p5push(p);
+}
+
+/* a constant with a point in the subtree */
+static BOOL p5point(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_CONST: return n->point;
+    case ETN_BIN: return p5point(n->l) || p5point(n->r);
+    case ETN_VAR: return FALSE;
+    default: return p5point(n->l);
+    }
+}
+
+/* a shift of a constant with a point in the subtree (the pass does not
+   fold it: the shifted constant is a Quick) */
+static BOOL p5shpoint(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_BIN:
+        if (n->op >= ETO_LSL && n->op <= ETO_ASR && p5point(n->l))
+            return TRUE;
+        return p5shpoint(n->l) || p5shpoint(n->r);
+    case ETN_NEG:
+    case ETN_NOT: return p5shpoint(n->l);
+    default: return FALSE;
+    }
+}
+
+/* a constant subtree whose value the pass folds */
+static BOOL p5folded(const struct exprtyping_node *n)
+{
+    return exprtyping_isconst(n) && !p5shpoint(n);
+}
+
+static BOOL p5isbit(unsigned op)
+{
+    return op == ETO_AND || op == ETO_OR || op == ETO_EOR || op == ETO_AMP || op == ETO_BAR
+           || (op >= ETO_BITTST && op <= ETO_BITCHG);
+}
+
+/* the build refuses the operator n (d its decision) for a constant with
+   a point under AND, OR, EOR (either operand) or as the shifted operand:
+   the pass decides (d gets a type for the build) */
+static BOOL p5relaxbin(const struct exprnode *n, struct exprtype_bin *d)
+{
+    const struct exprtyping_node *l, *r;
+
+    if (!p5active() || p5sp < p5mk[p5nm - 1].sp + 2)
+        return FALSE;
+    l = &p5stk[p5sp - 2]->t;
+    r = &p5stk[p5sp - 1]->t;
+    if (!exprtype_bypass(n->op, n->tbefore, n->vtype, exprtyping_isconst(l) && p5point(l),
+                         exprtyping_isconst(r) && p5point(r)))
+        return FALSE;
+    memset(d, 0, sizeof *d);
+    d->result = T_LONG;
+    p5mk[p5nm - 1].relax = TRUE;
+    return TRUE;
+}
+
+/* the same for Not of a constant with a point (of the Float type) */
+static BOOL p5relaxnot(UWORD t)
+{
+    const struct exprtyping_node *c;
+
+    if (!p5active() || p5sp <= p5mk[p5nm - 1].sp)
+        return FALSE;
+    c = &p5stk[p5sp - 1]->t;
+    if (!exprtype_bypassnot(t, exprtyping_isconst(c) && p5point(c)))
+        return FALSE;
+    p5notrelax = TRUE;
+    p5mk[p5nm - 1].relax = TRUE;
+    return TRUE;
+}
+
+/* --------------------------------------------- the build's code compared */
+
+static UWORD p5norm(UWORD t)
+{
+    return t == T_ADDR ? T_LONG : t;
+}
+
+/* the type the build's code leaves each node in (tt); a raw Quick (#1178) */
+static void p5today(struct p5node *p)
+{
+    struct exprnode *x = p->x;
+
+    switch (p->t.kind) {
+    case ETN_CONST:
+        p->tt = (UBYTE)((x->lflags & ELF_FFP) ? T_FLOAT : x->tafter);
+        break;
+    case ETN_VAR:
+        if (p->lkind == P5L_CONT && (x->lflags & ELF_RAW)) {
+            p->flags |= P5F_RAW;
+            p->tt = T_QUICK;
+        } else if (p->lkind == P5L_CONT && (x->lflags & ELF_DROP))
+            p->tt = x->own;
+        else
+            p->tt = (UBYTE)x->tafter;
+        break;
+    case ETN_NEG:
+        p5today(P5(p->t.l));
+        p->tt = (x->flags & EXF_ABSORBED) ? P5(p->t.l)->tt : (UBYTE)p->act->y;
+        break;
+    case ETN_NOT:
+        p5today(P5(p->t.l));
+        p->tt = (UBYTE)p->act->y;
+        break;
+    default:
+        p5today(P5(p->t.l));
+        p5today(P5(p->t.r));
+        p->tt = (UBYTE)x->tafter;
+        break;
+    }
+    p->tt = (UBYTE)p5norm(p->tt);
+}
+
+/* the build's decision for the operator n (operate's) */
+static struct exprtype_bin p5todaybin(const struct exprnode *n)
+{
+    struct exprtype_binfacts f;
+
+    memset(&f, 0, sizeof f);
+    f.lraw = (n->lflags & BNF_LRAW) != 0;
+    f.rraw = (n->lflags & BNF_RRAW) != 0;
+    f.rcmp = (n->lflags & BNF_RCMP) != 0;
+    f.words = (n->lflags & BNF_WORDS) != 0;
+    return exprtype_binop(n->op, n->tbefore, n->vtype, &f);
+}
+
+/* a conversion from a to b keeps every value */
+static BOOL p5lossless(UWORD a, UWORD b)
+{
+    a = p5norm(a);
+    b = p5norm(b);
+    return a == b || ((a == T_BYTE || a == T_WORD) && b > a && b <= T_FLOAT);
+}
+
+/* the constant subtree n is a single literal (with its minus signs) */
+static const struct exprtyping_node *p5literal(const struct exprtyping_node *n, int *negs)
+{
+    *negs = 0;
+    while (n->kind == ETN_NEG) {
+        (*negs)++;
+        n = n->l;
+    }
+    return n->kind == ETN_CONST ? n : NULL;
+}
+
+static BOOL p5fits(int64_t v, UWORD t)
+{
+    switch (t) {
+    case T_BYTE: return v >= -128 && v <= 127;
+    case T_WORD:
+    case T_QUICK: return v >= -32768 && v <= 32767;
+    case T_LONG: return v >= INT32_MIN && v <= INT32_MAX;
+    case T_FLOAT: return v >= -0xffffff && v <= 0xffffff;
+    default: return FALSE;
+    }
+}
+
+/* the folded constant p taken in las gives the value the build's code
+   gives */
+static BOOL p5consteq(const struct p5node *p, UWORD las)
+{
+    const struct exprtyping_node *k;
+    int negs;
+
+    if (p->tt == las)
+        return TRUE;
+    k = p5literal(&p->t, &negs);
+    return k && !k->point && k->den == 1 && p5fits(k->num, p->tt) && p5fits(k->num, las) && p->tt >= T_BYTE
+           && p->tt <= T_FLOAT && las >= T_BYTE && las <= T_FLOAT;
+}
+
+static BOOL p5eq(struct p5node *p, UWORD las);
+static struct p5q p5qval(const struct exprtyping_node *n);
+
+/* the type a constant is compared in exactly with a value of type x (a
+   comparison of the pass's ETY_EXACT): a whole number in x where it fits
+   (a Quick's range), else as a Long; a fraction as a Quick */
+static UWORD p5exactconst(const struct p5node *p, UWORD x)
+{
+    struct p5q v = p5qval(&p->t);
+
+    x = p5norm(x);
+    if (!v.ok)
+        return T_LONG;
+    if (v.d != 1)
+        return T_QUICK;
+    if (x >= T_BYTE && x <= T_QUICK && p5fits(v.n, x))
+        return x;
+    return T_LONG;
+}
+
+static UWORD p5max(UWORD a, UWORD b)
+{
+    return a > b ? a : b;
+}
+
+/* the pass's result type of the operator p */
+static UWORD p5result(const struct p5node *p)
+{
+    switch (p->t.o.path) {
+    case ETY_Q16: return T_QUICK;
+    case ETY_EXACT:
+    case ETY_COMPARE: return T_WORD;
+    case ETY_MIXED:
+    case ETY_Q48: return T_LONG;
+    default: return p->t.o.result;
+    }
+}
+
+/* the operator p as the pass decides it gives the value the build's
+   code gives */
+static BOOL p5eqbin(struct p5node *p)
+{
+    const struct exprtyping_op *o = &p->t.o;
+    struct p5node *l = P5(p->t.l), *r = P5(p->t.r);
+    struct exprtype_bin d;
+    UWORD lt, rt, T, res = p5result(p);
+
+    if ((p->flags & P5F_RELAX) || o->path == ETY_Q48)
+        return FALSE;
+    d = p5todaybin(p->x);
+    if (d.result != res)
+        return FALSE;
+    switch (o->path) {
+    case ETY_EXACT:
+        if (o->lwide || o->rwide)
+            return FALSE;
+        lt = o->las == ETY_CONST ? p5exactconst(l, o->ras) : o->las;
+        rt = o->ras == ETY_CONST ? p5exactconst(r, o->las) : o->ras;
+        if ((lt == T_LONG && rt == T_QUICK) || (lt == T_QUICK && rt == T_LONG))
+            return d.path == ETP_CMPLQ && p5eq(l, lt) && p5eq(r, rt);
+        T = lt == T_QUICK || rt == T_QUICK ? T_QUICK : p5max(lt, rt);
+        return d.path == ETP_COMPARE && d.handler == T && p5eq(l, T) && p5eq(r, T);
+    case ETY_COMPARE:
+        T = o->las;
+        return d.path == ETP_COMPARE && d.handler == T && p5eq(l, T) && p5eq(r, T);
+    case ETY_PLAIN:
+    case ETY_Q16:
+        if (p->t.op == ETO_MOD && (res == T_QUICK || res == T_FLOAT))
+            return FALSE;           /* the exact Mod */
+        T = o->path == ETY_Q16 ? T_QUICK : o->las;
+        if (o->path == ETY_PLAIN && o->las != o->ras)
+            return FALSE;
+        if (d.path != ETP_PLAIN && !(d.path == ETP_MIXED && d.handler))
+            return FALSE;
+        return d.handler == T && p5eq(l, T) && p5eq(r, T);
+    case ETY_MIXED:
+        return d.path == ETP_MIXED && !d.handler && d.lq == o->lwide && d.rq == o->rwide && p5eq(l, o->las)
+               && p5eq(r, o->ras);
+    default: return FALSE;
+    }
+}
+
+/* the node p taken in las by the pass gives the value the build's code
+   gives */
+static BOOL p5eq(struct p5node *p, UWORD las)
+{
+    las = p5norm(las);
+    if (p5folded(&p->t))
+        return p5consteq(p, las);
+    if (p->t.typed && p->t.fmt == ETF_Q48)
+        return FALSE;
+    switch (p->t.kind) {
+    case ETN_VAR:
+        if (p->flags & P5F_RAW)
+            return las == T_QUICK || las == T_LONG || las == T_FLOAT;
+        return p->tt == las || p5lossless(p->t.type, p->tt);
+    case ETN_NEG: return p5eq(P5(p->t.l), las);
+    case ETN_NOT:
+        if (p->flags & P5F_RELAX)
+            return FALSE;
+        return (p->t.t == p->tt || (p->t.t <= T_LONG && p->tt <= T_LONG)) && p5eq(P5(p->t.l), p->t.t);
+    case ETN_BIN: return p5eqbin(p);
+    default: return FALSE;
+    }
+}
+
+/* the whole expression: the pass's decisions give the build's values */
+static BOOL p5same(struct p5node *root, const struct exprtyping_result *res, UWORD want)
+{
+    switch (res->consumer) {
+    case ETC_TYPE:
+    case ETC_BOOL:
+    case ETC_KEEP:
+        if (res->fmt == ETF_Q48)
+            return FALSE;
+        return p5eq(root, want ? want : res->t);
+    case ETC_FLOOR:
+        if (res->fmt == ETF_Q48)
+            return FALSE;
+        return p5eq(root, T_QUICK);
+    default: return FALSE;
+    }
+}
+
+static BOOL p5hasstr(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_VAR: return n->type == T_STRING;
+    case ETN_CONST: return FALSE;
+    case ETN_BIN: return p5hasstr(n->l) || p5hasstr(n->r);
+    default: return p5hasstr(n->l);
+    }
+}
+
+/* ------------------------------------------------ the folded constants */
+
+static struct p5q p5qmake(int64_t n, int64_t d, BOOL ok)
+{
+    struct p5q r;
+    int64_t a, b, t;
+
+    r.ok = ok && d != 0 && n != INT64_MIN && d != INT64_MIN;
+    r.n = 0;
+    r.d = 1;
+    if (!r.ok)
+        return r;
+    if (d < 0) {
+        n = -n;
+        d = -d;
+    }
+    a = n < 0 ? -n : n;
+    b = d;
+    while (b) {
+        t = a % b;
+        a = b;
+        b = t;
+    }
+    if (!a)
+        a = 1;
+    r.n = n / a;
+    r.d = d / a;
+    return r;
+}
+
+static struct p5q p5qint(int64_t v)
+{
+    return p5qmake(v, 1, TRUE);
+}
+
+static int64_t p5qfloor(struct p5q a)
+{
+    int64_t q = a.n / a.d;
+
+    if (a.n % a.d && a.n < 0)
+        q--;
+    return q;
+}
+
+static struct p5q p5qop(struct p5q a, struct p5q b, unsigned op)
+{
+    int64_t x, y, n, d;
+
+    if (!a.ok || !b.ok)
+        return p5qmake(0, 1, FALSE);
+    switch (op) {
+    case ETO_ADD:
+    case ETO_SUB:
+        if (__builtin_mul_overflow(a.n, b.d, &x) || __builtin_mul_overflow(b.n, a.d, &y)
+            || __builtin_mul_overflow(a.d, b.d, &d)
+            || (op == ETO_ADD ? __builtin_add_overflow(x, y, &n) : __builtin_sub_overflow(x, y, &n)))
+            return p5qmake(0, 1, FALSE);
+        return p5qmake(n, d, TRUE);
+    case ETO_MUL:
+        if (__builtin_mul_overflow(a.n, b.n, &n) || __builtin_mul_overflow(a.d, b.d, &d))
+            return p5qmake(0, 1, FALSE);
+        return p5qmake(n, d, TRUE);
+    default:                        /* ETO_DIV, b not 0 */
+        if (__builtin_mul_overflow(a.n, b.d, &n) || __builtin_mul_overflow(a.d, b.n, &d))
+            return p5qmake(0, 1, FALSE);
+        return p5qmake(n, d, TRUE);
+    }
+}
+
+/* the value of the constant subtree n as the pass folds it: + - * / exact,
+   Mod by today's sign rule (domodlong: the divisor added to a negative
+   remainder), the bit operators and shifts on the whole parts (rounded
+   down), a comparison -1 or 0 */
+static struct p5q p5qval(const struct exprtyping_node *n)
+{
+    struct p5q a, b, t;
+    int64_t x, y;
+
+    if (n->kind == ETN_CONST)
+        return p5qmake(n->num, n->den, TRUE);
+    if (n->kind == ETN_NEG)
+        return p5qop(p5qint(0), p5qval(n->l), ETO_SUB);
+    if (n->kind != ETN_BIN)
+        return p5qmake(0, 1, FALSE);
+    a = p5qval(n->l);
+    b = p5qval(n->r);
+    if (!a.ok || !b.ok)
+        return p5qmake(0, 1, FALSE);
+    if (exprtype_iscompare(n->op)) {
+        int s;
+        BOOL r;
+
+        t = p5qop(a, b, ETO_SUB);
+        if (!t.ok)
+            return t;
+        s = t.n > 0 ? 1 : t.n < 0 ? -1 : 0;
+        switch (n->op) {
+        case ETO_EQ: r = s == 0; break;
+        case ETO_NE: r = s != 0; break;
+        case ETO_LT: r = s < 0; break;
+        case ETO_LE: r = s <= 0; break;
+        case ETO_GT: r = s > 0; break;
+        default: r = s >= 0; break;
+        }
+        return p5qint(r ? -1 : 0);
+    }
+    switch (n->op) {
+    case ETO_ADD:
+    case ETO_SUB:
+    case ETO_MUL: return p5qop(a, b, n->op);
+    case ETO_DIV: return b.n ? p5qop(a, b, ETO_DIV) : p5qint(0);
+    case ETO_MOD:
+        if (!b.n)
+            return a;
+        t = p5qop(a, b, ETO_DIV);
+        if (!t.ok)
+            return t;
+        t = p5qop(a, p5qop(b, p5qint(t.n / t.d), ETO_MUL), ETO_SUB);
+        if (t.ok && t.n < 0)
+            t = p5qop(t, b, ETO_ADD);
+        return t;
+    default: break;
+    }
+    x = p5qfloor(a);
+    y = p5qfloor(b);
+    switch (n->op) {
+    case ETO_AND:
+    case ETO_AMP: return p5qint(x & y);
+    case ETO_OR:
+    case ETO_BAR: return p5qint(x | y);
+    case ETO_EOR: return p5qint(x ^ y);
+    case ETO_LSL:
+    case ETO_ASL: return p5qint(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
+    case ETO_LSR:
+    case ETO_ASR: return p5qint(y >= 0 && y < 32 ? x >> y : 0);
+    default: return p5qmake(0, 1, FALSE);
+    }
+}
+
+/* the folded constant p as its code writes it in the type E (bit: its
+   whole part, rounded down; signext: a byte from 128 to 255 compared
+   with a byte value, sign-extended, #978); FALSE: not here */
+static BOOL p5encode(struct p5node *p, UWORD E, BOOL bit, ULONG *enc)
+{
+    const struct exprtyping_node *k;
+    struct p5q v = p5qval(&p->t);
+    int64_t x, m;
+    int negs;
+
+    if (!v.ok)
+        return FALSE;
+    if (bit)
+        v = p5qint(p5qfloor(v));
+    x = p5qfloor(v);
+    switch (E) {
+    case T_BYTE:
+    case T_WORD:
+        if ((p->flags & P5F_SIGNEXT) && x >= 128 && x <= 255)
+            x -= 256;
+        *enc = (UWORD)x;
+        return TRUE;
+    case T_LONG:
+        *enc = (ULONG)x;
+        return TRUE;
+    case T_QUICK:
+        if (v.d == 1) {
+            *enc = (ULONG)((uint64_t)x << 16);
+            return TRUE;
+        }
+        /* the magnitude's 16.16 value rounded down, negated (as a literal
+           and its minus sign) */
+        if (__builtin_mul_overflow(v.n < 0 ? -v.n : v.n, (int64_t)65536, &m))
+            return FALSE;
+        m /= v.d;
+        *enc = (ULONG)(v.n < 0 ? -m : m);
+        return TRUE;
+    case T_FLOAT:
+        k = p5literal(&p->t, &negs);
+        if (k && k->point && !bit) {
+            /* a literal: its FFP value, with its minus signs */
+            *enc = P5(k)->ffp;
+            if ((negs & 1) && *enc)
+                *enc ^= 0x80;
+            return TRUE;
+        }
+        if (v.d == 1 && x >= INT32_MIN && x <= INT32_MAX) {
+            *enc = ffpcall(P5_SPFLT, (ULONG)(LONG)x, 0, NULL);
+            return TRUE;
+        }
+        {
+            int64_t n = v.n, d = v.d;
+
+            while (n > INT32_MAX || n < -INT32_MAX || d > INT32_MAX) {
+                n /= 2;
+                d /= 2;
+            }
+            if (!d)
+                return FALSE;
+            *enc = ffpcall(P5_SPDIV, ffpcall(P5_SPFLT, (ULONG)(LONG)n, 0, NULL),
+                           ffpcall(P5_SPFLT, (ULONG)(LONG)d, 0, NULL), NULL);
+            return TRUE;
+        }
+    default: return FALSE;
+    }
+}
+
+/* ------------------------------------------------------- the code */
+
+static void p5w(UWORD w)
+{
+    if (!p5prep)
+        pokewd(w);
+}
+
+static void p5l(ULONG l)
+{
+    if (!p5prep)
+        pokel(l);
+}
+
+/* a register the pass's code needs */
+static void p5reg(UWORD r)
+{
+    if (r > 7)
+        conmemerr();                /* #1185: no register beyond d7 */
+}
+
+/* jsr lvo(a6) of mathffp */
+static void p5ffp(WORD lvo)
+{
+    p5w(0x4eae);
+    p5w((UWORD)lvo);
+}
+
+/* the 48.16 pair D(r)/D(r+1) to a Long in D(r), rounded down: its bits
+   16 to 47 */
+static void p5floor48(UWORD r)
+{
+    if (p5prep)
+        return;
+    p5reg(r + 1);
+    p5w(0x4840 | (r + 1));                  /* swap D(r+1) */
+    p5w(0x4840 | r);                        /* swap D(r) */
+    p5w(0x3000 | ((r + 1) << 9) | r);       /* move.w D(r),D(r+1) */
+    p5w(0x2000 | (r << 9) | (r + 1));       /* move.l D(r+1),D(r) */
+}
+
+/* the same towards zero: a negative value with a fraction plus 1 first */
+static void p5trunc48(UWORD r)
+{
+    if (p5prep)
+        return;
+    p5reg(r + 1);
+    p5w(0x4a80 | (r + 1));                  /* tst.l D(r+1) */
+    p5w(0x6a0e);                            /* bpl.s floor */
+    p5w(0x4a40 | r);                        /* tst.w D(r): a fraction */
+    p5w(0x670a);                            /* beq.s floor */
+    p5w(0x0680 | r);                        /* addi.l #$10000,D(r) */
+    p5l(0x00010000);
+    p5w(0x6402);                            /* bcc.s floor */
+    p5w(0x5280 | (r + 1));                  /* addq.l #1,D(r+1) */
+    p5floor48(r);
+}
+
+/* the 48.16 pair D(r)/D(r+1) to a Float in D(r): high * 65536 + (low
+   >> 1) * 2^-15 (the FFP value of both, rounded) */
+static void p5q48tof(UWORD r)
+{
+    ULONG push, pull;
+    UWORD s = regat;
+
+    if (p5prep) {
+        tokuse(getffpbase);
+        return;
+    }
+    p5reg(r + 1);
+    regat = r;
+    savereg(&push, &pull);
+    regat = s;
+    pokemovem(push);
+    tokejsr(getffpbase);
+    p5w(0x2f00 | r);                        /* move.l D(r),-(a7): the low part */
+    p5w(0x2000 | (r + 1));                  /* move.l D(r+1),d0 */
+    p5ffp(P5_SPFLT);
+    p5w(0x223c);                            /* move.l #65536.0,d1 */
+    p5l(0x80000051);
+    p5ffp(P5_SPMUL);
+    p5w(0x221f);                            /* move.l (a7)+,d1 */
+    p5w(0x2f00);                            /* move.l d0,-(a7) */
+    p5w(0x2001);                            /* move.l d1,d0 */
+    p5w(0xe288);                            /* lsr.l #1,d0 */
+    p5ffp(P5_SPFLT);
+    p5w(0x223c);                            /* move.l #2^-15,d1 */
+    p5l(0x80000032);
+    p5ffp(P5_SPMUL);
+    p5w(0x221f);                            /* move.l (a7)+,d1 */
+    p5ffp(P5_SPADD);
+    if (r)
+        p5w(0x2000 | (r << 9));             /* move.l d0,D(r) */
+    pokemovem(pull);
+}
+
+/* the value in D(regat) of type dt (a 48.16 pair when df is ETF_Q48) to
+   the type to; left: D(regat+1) holds the right operand (convtypef) */
+static void p5conv(UWORD dt, UWORD df, UWORD to, BOOL left)
+{
+    if (df == ETF_Q48) {
+        if (to == T_QUICK)
+            return;                 /* D(regat): its 16.16 value */
+        if (to == T_FLOAT) {
+            p5q48tof(regat);
+            return;
+        }
+        p5floor48(regat);
+        dt = T_LONG;
+    }
+    if (!to || dt == to || (p5norm(dt) == T_LONG && p5norm(to) == T_LONG))
+        return;
+    if (p5prep)
+        convprep(dt, to);
+    else if (left)
+        convtypef(dt, to);
+    else
+        convtype(dt, to);
+}
+
+/* the narrow value of type t in dn as the 48.16 pair dn/dn+1 */
+static void p5widen(UWORD n, UWORD t)
+{
+    t = p5norm(t);
+    if (t == T_BYTE || t == T_WORD) {
+        p5w(0x48c0 | n);                    /* ext.l dn */
+        t = T_LONG;
+    }
+    p5w(0x2000 | ((n + 1) << 9) | n);       /* move.l dn,dn+1 */
+    if (t == T_LONG) {
+        p5w(0x4840 | (n + 1));              /* swap dn+1 */
+        p5w(0x48c0 | (n + 1));              /* ext.l dn+1: the whole part's high word */
+        p5w(0x4840 | n);                    /* swap dn */
+        p5w(0x4240 | n);                    /* clr.w dn */
+    } else {                                /* a Quick: the sign */
+        p5w(0xd080 | ((n + 1) << 9) | (n + 1));     /* add.l dn+1,dn+1 */
+        p5w(0x9180 | ((n + 1) << 9) | (n + 1));     /* subx.l dn+1,dn+1 */
+    }
+}
+
+/* the registers p5callin saved (movem.l, d0 bit 0) */
+static UWORD p5saved;
+
+/* a 48.16 routine tok on a in D(r) (of type at, a pair when aw) and b in
+   D(r+1+aw) (of type bt, a pair when bw): the registers below D(r) among
+   d0-d3 saved, a in d0/d1 and b in d2/d3 (swap: the other way), each
+   widened to 48.16; trap: a divisor 0 raises the CPU's division trap
+   (a Quick Mod, as today) */
+static void p5callin(UWORD tok, UWORD r, UWORD at, BOOL aw, UWORD bt, BOOL bw, BOOL swap, BOOL trap)
+{
+    UWORD q = r + 1 + aw, k = r < 4 ? r : 4, i, mask = 0;
+    UWORD xr = swap ? q : r, yr = swap ? r : q, xt = swap ? bt : at, yt = swap ? at : bt;
+    BOOL xw = swap ? bw : aw, yw = swap ? aw : bw;
+
+    if (p5prep) {
+        tokuse(tok);
+        return;
+    }
+    p5reg(q + bw);
+    p5reg(r + 1);
+    for (i = 0; i < k; i++)
+        mask |= 0x8000 >> i;                /* predecrement: d0 is bit 15 */
+    if (mask) {
+        p5w(0x48e7);                        /* movem.l d0-..,-(a7) */
+        p5w(mask);
+    }
+    p5saved = 0;
+    for (i = 0; i < k; i++)
+        p5saved |= 1 << i;
+    if (r < 4) {
+        /* through the stack: the operands may lie in d0-d3 */
+        if (yw)
+            p5w(0x2f00 | (yr + 1));         /* move.l Dy+1,-(a7) */
+        p5w(0x2f00 | yr);
+        if (xw)
+            p5w(0x2f00 | (xr + 1));
+        p5w(0x2f00 | xr);
+        p5w(0x201f);                        /* move.l (a7)+,d0 */
+        if (xw)
+            p5w(0x221f);                    /* move.l (a7)+,d1 */
+        p5w(0x241f);                        /* move.l (a7)+,d2 */
+        if (yw)
+            p5w(0x261f);                    /* move.l (a7)+,d3 */
+    } else {
+        p5w(0x2000 | xr);                   /* move.l Dx,d0 */
+        if (xw)
+            p5w(0x2200 | (xr + 1));         /* move.l Dx+1,d1 */
+        p5w(0x2400 | yr);                   /* move.l Dy,d2 */
+        if (yw)
+            p5w(0x2600 | (yr + 1));         /* move.l Dy+1,d3 */
+    }
+    if (!xw)
+        p5widen(0, xt);
+    if (!yw)
+        p5widen(2, yt);
+    if (trap) {
+        p5w(0x4a82);                        /* tst.l d2 */
+        p5w(0x6602);                        /* bne.s +2 */
+        p5w(0x85c2);                        /* divs.w d2,d2: the trap */
+    }
+    tokejsr(tok);
+}
+
+/* the routine's result to D(r) (pair: d0/d1 to D(r)/D(r+1), else d0),
+   the saved registers back */
+static void p5callout(UWORD r, BOOL pair)
+{
+    if (p5prep)
+        return;
+    if (pair) {
+        if (r == 1) {
+            p5w(0x2401);                    /* move.l d1,d2 */
+            p5w(0x2200);                    /* move.l d0,d1 */
+        } else if (r >= 2) {
+            p5w(0x2000 | (r << 9));         /* move.l d0,D(r) */
+            p5w(0x2001 | ((r + 1) << 9));   /* move.l d1,D(r+1) */
+        }
+    } else if (r)
+        p5w(0x2000 | (r << 9));
+    if (p5saved) {
+        p5w(0x4cdf);                        /* movem.l (a7)+,d0-.. */
+        p5w(p5saved);
+    }
+}
+
+/* the operands of an operation: the right one in D(q) to rto, the left
+   one in D(r) to lto, the right one to D(r+1) */
+static void p5operands(struct p5node *L, struct p5node *R, UWORD r, UWORD q, UWORD lto, UWORD rto)
+{
+    regat = q;
+    p5conv(R->dt, R->df, rto, FALSE);
+    regat = r;
+    p5conv(L->dt, L->df, lto, TRUE);
+    if (q != r + 1)
+        p5w(0x2000 | ((r + 1) << 9) | q);   /* move.l D(q),D(r+1) */
+    regat = r;
+}
+
+static void p5doop(unsigned op, UWORD t)
+{
+    if (p5prep)
+        opprep(op, t, FALSE);
+    else
+        doop(&operators[op], t, FALSE);
+}
+
+/* a Mod in Float, exact: a - b * trunc(a / b), plus b when negative; b
+   0: a (D(r) a, D(r+1) b, the result in D(r)) */
+static void p5fmod(UWORD r)
+{
+    ULONG push, pull;
+    UWORD s = regat;
+
+    if (p5prep) {
+        tokuse(getffpbase);
+        return;
+    }
+    regat = r;
+    savereg(&push, &pull);
+    regat = s;
+    pokemovem(push);
+    tokejsr(getffpbase);
+    p5w(0x2f00 | (r + 1));                  /* move.l D(r+1),-(a7): b */
+    p5w(0x2f00 | r);                        /* move.l D(r),-(a7): a */
+    p5w(0x222f);                            /* move.l 4(a7),d1 */
+    p5w(4);
+    p5w(0x672c);                            /* beq.s .zero */
+    p5w(0x2017);                            /* move.l (a7),d0 */
+    p5ffp(P5_SPDIV);
+    p5ffp(P5_SPFIX);
+    p5ffp(P5_SPFLT);
+    p5w(0x222f);                            /* move.l 4(a7),d1 */
+    p5w(4);
+    p5ffp(P5_SPMUL);
+    p5w(0x2200);                            /* move.l d0,d1 */
+    p5w(0x2017);                            /* move.l (a7),d0 */
+    p5ffp(P5_SPSUB);
+    p5w(0x4a00);                            /* tst.b d0: the sign */
+    p5w(0x6a0c);                            /* bpl.s .done */
+    p5w(0x222f);                            /* move.l 4(a7),d1 */
+    p5w(4);
+    p5ffp(P5_SPADD);
+    p5w(0x6002);                            /* bra.s .done */
+    p5w(0x2017);                            /* .zero: move.l (a7),d0 */
+    p5w(0x508f);                            /* .done: addq.l #8,a7 */
+    if (r)
+        p5w(0x2000 | (r << 9));             /* move.l d0,D(r) */
+    pokemovem(pull);
+}
+
+/* the operator p in D(r) (its left operand, a pair when that is 48.16)
+   and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
+   48.16); in prep mode the libraries its code calls are used */
+static void p5bin(struct p5node *p, UWORD r)
+{
+    const struct exprtyping_op *o = &p->t.o;
+    struct p5node *L = P5(p->t.l), *R = P5(p->t.r);
+    UWORD q = r + 1 + (L->df == ETF_Q48), lt = p5norm(L->dt), rt = p5norm(R->dt), T;
+    unsigned op = p->t.op;
+    BOOL lw = L->df == ETF_Q48, rw = R->df == ETF_Q48;
+    UWORD s = regat;
+
+    switch (o->path) {
+    case ETY_Q48: {
+        UWORD tok;
+
+        switch (op) {
+        case ETO_ADD: tok = q48add; break;
+        case ETO_SUB: tok = q48sub; break;
+        case ETO_MUL: tok = q48mul; break;
+        case ETO_MOD: tok = q48mod; break;
+        default:
+            tok = p->want == T_QUICK ? q48divq : p->want == T_WORD ? q48divw : p->want == T_BYTE ? q48divb : q48div;
+            break;
+        }
+        p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
+        p5callout(r, TRUE);
+        if (op == ETO_DIV && p->want == T_LONG && !p5prep) {
+            /* part 3 (EM_R_PDIVL): under a wanted Long the quotient is a
+               whole number towards zero at the operator */
+            p5w(0x4a80 | (r + 1));          /* tst.l D(r+1) */
+            p5w(0x6a0e);                    /* bpl.s .cut */
+            p5w(0x4a40 | r);                /* tst.w D(r): a fraction */
+            p5w(0x670a);                    /* beq.s .cut */
+            p5w(0x0680 | r);                /* addi.l #$10000,D(r) */
+            p5l(0x00010000);
+            p5w(0x6402);                    /* bcc.s .cut */
+            p5w(0x5280 | (r + 1));          /* addq.l #1,D(r+1) */
+            p5w(0x4240 | r);                /* .cut: clr.w D(r) */
+        }
+        break;
+    }
+    case ETY_EXACT:
+        if (o->lwide || o->rwide || lw || rw) {
+            /* the difference of the two 48.16 values, its sign */
+            BOOL swap = op == ETO_GT || op == ETO_LE;
+            UWORD scc = op == ETO_EQ ? *mseq : op == ETO_NE ? *msne : op == ETO_LT || op == ETO_GT ? *mslt : *msge;
+
+            p5callin(q48sub, r, lt, lw, rt, rw, swap, FALSE);
+            if (op == ETO_EQ || op == ETO_NE)
+                p5w(0x8081);                /* or.l d1,d0 */
+            else
+                p5w(0x4a81);                /* tst.l d1 */
+            p5w(scc);                       /* scc d0 */
+            p5w(0x4880);                    /* ext.w d0 */
+            p5callout(r, FALSE);
+            break;
+        }
+        if ((lt == T_LONG && rt == T_QUICK) || (lt == T_QUICK && rt == T_LONG)) {
+            p5operands(L, R, r, q, lt, rt);
+            if (!p5prep)
+                cmplq(&operators[op], lt);
+            break;
+        }
+        T = lt == T_QUICK || rt == T_QUICK ? T_QUICK : p5max(lt, rt);
+        p5operands(L, R, r, q, T, T);
+        p5doop(op, T);
+        break;
+    case ETY_MIXED: {
+        struct exprtype_bin d;
+
+        memset(&d, 0, sizeof d);
+        d.path = ETP_MIXED;
+        d.lq = o->lwide;
+        d.rq = o->rwide;
+        p5operands(L, R, r, q, o->lwide ? T_QUICK : T_LONG, o->rwide ? T_QUICK : T_LONG);
+        if (p5prep) {
+            if (op == ETO_MUL)
+                tokuse(d.lq && d.rq ? qqmult : mixmult);
+            else if (op == ETO_DIV)
+                tokuse(d.rq && !d.lq ? lqdiv : longdiv);
+        } else
+            mixedop(&operators[op], &d, FALSE);
+        break;
+    }
+    default:
+        T = o->path == ETY_Q16 ? T_QUICK : o->las;
+        if (op == ETO_MOD && (p->dt == T_QUICK || p->dt == T_FLOAT)) {
+            /* the exact Mod (an operand with a fraction) */
+            p5operands(L, R, r, q, p->dt, p->dt);
+            if (p->dt == T_FLOAT)
+                p5fmod(r);
+            else {
+                p5callin(q48mod, r, T_QUICK, FALSE, T_QUICK, FALSE, FALSE, TRUE);
+                p5callout(r, FALSE);
+            }
+            break;
+        }
+        if (op == ETO_POW && o->las != o->ras) {
+            p5operands(L, R, r, q, o->las, o->ras);
+            regat = r + 1;
+            p5conv(o->ras, ETF_TYPE, T_FLOAT, FALSE);
+            regat = r;
+            p5conv(o->las, ETF_TYPE, T_FLOAT, TRUE);
+            if (p5prep)
+                tokuse(mathq * 128 + 1);
+            else
+                domylib(mathq * 128 + 1);
+            break;
+        }
+        p5operands(L, R, r, q, T, o->path == ETY_Q16 ? T_QUICK : o->ras);
+        p5doop(op, T);
+        break;
+    }
+    regat = s;
+}
+
+static void p5binopact(struct expract *a)
+{
+    p5bin(P5(a->x), regat);
+}
+
+static void p5nop(struct expract *a)
+{
+    (void)a;
+}
+
+/* a folded constant (a->x: its p5node) */
+static void p5constact(struct expract *a)
+{
+    const struct p5node *p = P5(a->x);
+
+    if (p->dt < T_LONG) {
+        pokewd((UWORD)(regat << 9) | 0x303c);   /* move.w #v,Dn */
+        pokewd((UWORD)p->enc);
+    } else {
+        pokewd((UWORD)(regat << 9) | 0x203c);   /* move.l #v,Dn */
+        pokel(p->enc);
+    }
+}
+
+/* the run of minus signs on its operand (a->x: its p5node) */
+static void p5neg(const struct p5node *p)
+{
+    const struct p5node *c = P5(p->t.l);
+    UWORD k;
+
+    for (k = p->x->op; k; k--) {
+        if (c->df == ETF_Q48) {
+            p5reg(regat + 1);
+            p5w(0x4480 | regat);                /* neg.l D(r) */
+            p5w(0x4080 | (regat + 1));          /* negx.l D(r+1) */
+        } else if (c->dt >= T_FLOAT) {
+            if (p5prep)
+                tokuse(getffpbase);
+            else
+                fdo2(P5_SPNEG);
+        } else
+            p5w((c->dt >= T_LONG ? 0x4480 : 0x4440) | regat);  /* neg.l / neg.w */
+    }
+}
+
+static void p5negact(struct expract *a)
+{
+    p5neg(P5(a->x));
+}
+
+/* Not of its operand in its type (a->p: its p5node) */
+static void p5not(const struct p5node *p)
+{
+    const struct p5node *c = P5(p->t.l);
+    UWORD t = p->dt;
+
+    p5conv(c->dt, c->df, t, FALSE);
+    p5w((t >= T_LONG ? 0x4680 : 0x4640) | regat);  /* not.l / not.w */
+    if (!p5prep)
+        quickwhole(t);              /* Fixed (#1209): Not of floor(q) */
+}
+
+static void p5notact(struct expract *a)
+{
+    p5not(a->p);
+}
+
+/* the actions of the node p's code, from its first one to its last */
+#define P5ACTS(a, p) for ((a) = (p)->prev->next; (a); (a) = (a) == (p)->last ? NULL : (a)->next)
+
+/* the right operand R of an operation whose left operand is a pair:
+   computed one register higher */
+static void p5shift(const struct p5node *R)
+{
+    struct expract *a;
+
+    P5ACTS(a, R) {
+        if (a->fn == spillact || ++a->ctx[0] > 7)
+            conmemerr();            /* #1185 */
+    }
+}
+
+static void p5nopall(struct p5node *p, struct p5node *keep)
+{
+    switch (p->t.kind) {
+    case ETN_CONST:
+        if (p != keep)
+            p->act->fn = p5nop;
+        break;
+    case ETN_NEG:
+        p->act->fn = p5nop;
+        p5nopall(P5(p->t.l), keep);
+        break;
+    case ETN_BIN:
+        p->act->fn = p5nop;
+        p5nopall(P5(p->t.l), keep);
+        p5nopall(P5(p->t.r), keep);
+        break;
+    default: break;
+    }
+}
+
+/* a node of the subtree that the build's typing refused (P5F_RELAX) */
+static BOOL p5relaxed(const struct exprtyping_node *n)
+{
+    switch (n->kind) {
+    case ETN_BIN: return (P5(n)->flags & P5F_RELAX) || p5relaxed(n->l) || p5relaxed(n->r);
+    case ETN_NEG:
+    case ETN_NOT: return (P5(n)->flags & P5F_RELAX) || p5relaxed(n->l);
+    default: return FALSE;
+    }
+}
+
+/* the folded constant p taken in the type take (0: as an operand of a
+   48.16 operation, a whole number a Long, else a Quick); bit: its whole
+   part */
+static void p5constapply(struct p5node *p, UWORD take, BOOL bit)
+{
+    struct p5node *k = p;
+    struct expract *a;
+    ULONG enc = 0;
+    BOOL ok, relax;
+
+    if (!take) {
+        struct p5q v = p5qval(&p->t);
+
+        take = v.ok && v.d == 1 && p5fits(v.n, T_LONG) ? T_LONG : T_QUICK;
+    }
+    ok = p5encode(p, take, bit, &enc);
+    relax = p5relaxed(&p->t);
+    if (!ok && relax)
+        illoperr();                 /* a value beyond the pass (an overflow) */
+    if (!relax && (p->tt == take || !ok)) {
+        /* the build's code: today's value in its type */
+        p->flags |= P5F_KEEP;
+        p->dt = p->tt;
+        p->df = ETF_TYPE;
+        return;
+    }
+    p->enc = enc;
+    p->dt = (UBYTE)take;
+    p->df = ETF_TYPE;
+    while (k->t.kind != ETN_CONST)
+        k = P5(k->t.l);             /* the first constant writes the value */
+    p5nopall(p, k);
+    k->act->fn = p5constact;
+    k->act->x = (ULONG)p;
+    /* getelement's spill of a constant after the first one (the spill of
+       the first one, at d7, lies around the subtree's code) */
+    P5ACTS(a, p) {
+        if (a->fn == spillact)
+            a->fn = p5nop;
+    }
+}
+
+static void p5apply(struct p5node *p, UWORD take, BOOL bit, UWORD want);
+
+/* the operator p, its operands */
+static void p5binapply(struct p5node *p, UWORD want)
+{
+    const struct exprtyping_op *o = &p->t.o;
+    struct p5node *L = P5(p->t.l), *R = P5(p->t.r);
+    unsigned op = p->t.op;
+    BOOL bit = p5isbit(op);
+    UWORD lt = o->las, rt = o->ras;
+
+    switch (o->path) {
+    case ETY_Q48: lt = rt = 0; break;
+    case ETY_Q16: lt = rt = T_QUICK; break;
+    case ETY_MIXED:
+        lt = o->lwide ? T_QUICK : T_LONG;
+        rt = o->rwide ? T_QUICK : T_LONG;
+        break;
+    case ETY_EXACT:
+        if (o->lwide || o->rwide) {
+            lt = o->las == ETY_CONST ? 0 : o->las;
+            rt = o->ras == ETY_CONST ? 0 : o->ras;
+            break;
+        }
+        if (o->las == ETY_CONST)
+            lt = p5exactconst(L, o->ras);
+        if (o->ras == ETY_CONST)
+            rt = p5exactconst(R, o->las);
+        break;
+    default: break;
+    }
+    /* #978: an equality comparison of a byte value with a constant from
+       128 to 255 takes the byte the constant stands for */
+    if ((op == ETO_EQ || op == ETO_NE) && o->path == ETY_COMPARE && o->las == T_WORD) {
+        if (L->t.kind == ETN_VAR && L->t.type == T_BYTE && R->t.kind == ETN_CONST)
+            R->flags |= P5F_SIGNEXT;
+        if (R->t.kind == ETN_VAR && R->t.type == T_BYTE && L->t.kind == ETN_CONST)
+            L->flags |= P5F_SIGNEXT;
+    }
+    /* the operands of a comparison have no wanted type (part 8) */
+    p5apply(L, lt, bit, exprtype_iscompare(op) ? 0 : want);
+    p5apply(R, rt, bit, exprtype_iscompare(op) ? 0 : want);
+    if (L->df == ETF_Q48)
+        p5shift(R);
+    p->want = (UBYTE)want;
+    switch (o->path) {
+    case ETY_Q48:
+        p->dt = T_LONG;
+        p->df = ETF_Q48;
+        break;
+    case ETY_Q16: p->dt = T_QUICK; break;
+    case ETY_EXACT:
+    case ETY_COMPARE: p->dt = T_WORD; break;
+    case ETY_MIXED: p->dt = T_LONG; break;
+    default: p->dt = o->result; break;
+    }
+    p->act->fn = p5binopact;
+    p->act->x = (ULONG)p;
+    p5prep = TRUE;
+    p5bin(p, p->x->reg);
+    p5prep = FALSE;
+}
+
+/* the pass's code for the node p (take: the type its consumer takes a
+   folded constant in, bit: as its whole part) */
+static void p5apply(struct p5node *p, UWORD take, BOOL bit, UWORD want)
+{
+    struct exprnode *x = p->x;
+    struct p5node *c;
+
+    if (p5folded(&p->t)) {
+        p5constapply(p, p5norm(take), bit);
+        return;
+    }
+    p->df = ETF_TYPE;
+    switch (p->t.kind) {
+    case ETN_VAR:
+        if (p->lkind == P5L_CONT) {
+            /* fetched in its own type */
+            x->tafter = x->own;
+            x->lflags &= ~(ELF_RAW | ELF_CONV | ELF_DROP | ELF_NARROW);
+        }
+        p->dt = (UBYTE)(x->own ? x->own : x->tafter);
+        break;
+    case ETN_NEG:
+        c = P5(p->t.l);
+        p5apply(c, take, FALSE, want);
+        p->dt = c->dt;
+        p->df = c->df;
+        p->act->fn = p5negact;
+        p->act->x = (ULONG)p;
+        p5prep = TRUE;
+        p5neg(p);
+        p5prep = FALSE;
+        break;
+    case ETN_NOT:
+        c = P5(p->t.l);
+        p->dt = p->t.t;
+        p5apply(c, p->t.t, TRUE, want);
+        p->act->fn = p5notact;
+        p->act->p = p;
+        p5prep = TRUE;
+        p5not(p);
+        p5prep = FALSE;
+        break;
+    default:
+        p5binapply(p, want);
+        break;
+    }
+}
+
+/* the evaluation is built (asked: the type asked for, unk: none): the
+   pass of rule P+; TRUE: its code is the pass's, *type the type it gets
+   (e: the evaluation's node) */
+static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD push, BOOL cond, BOOL wide)
+{
+    struct p5node *root = NULL;
+    struct exprtyping_result res;
+    struct expract *a;
+    BOOL relax, pair;
+    UWORD want, S;
+
+    if (p5over) {
+        p5over--;
+        return FALSE;
+    }
+    if (!p5nm)
+        return FALSE;
+    p5nm--;
+    relax = p5mk[p5nm].relax;
+    if (!p5mk[p5nm].bad && p5sp == p5mk[p5nm].sp + 1)
+        root = p5stk[p5sp - 1];
+    p5sp = p5mk[p5nm].sp;
+    if (!root || root->depth > P5DEPTH || asked > T_FLOAT || (unk && asked) || p5hasstr(&root->t)) {
+        if (relax)
+            illoperr();
+        return FALSE;
+    }
+    want = unk ? 0 : asked;
+    if (exprtyping_type(&root->t, want, &res))
+        illoperr();                 /* refused by rule P+ */
+    p5today(root);
+    /* a Select's 48.16 value is kept as 48.16 (#1216; a Quick or 16.16
+       Select as before) */
+    pair = wide && res.consumer != ETC_BOOL && res.fmt == ETF_Q48;
+    if (!relax && !pair && p5same(root, &res, want))
+        return FALSE;
+    /* the pass's code: the conversions of the raw Quicks (#1178) and
+       getelement's spills of this evaluation whole longs */
+    P5ACTS(a, root) {
+        if (a->ctx[2] != evaldepth)
+            continue;
+        if (a->fn == cutact)
+            a->fn = p5nop;
+        else if (a->fn == spillact) {
+            if (a->x & ACT_TWO) {
+                a->x = ACT_TWO | 0x2e06;    /* move.l d6,d7 */
+                a->y = 0x2c1f;              /* move.l (a7)+,d6 */
+            } else
+                a->x = 0x2f06;              /* move.l d6,-(a7) */
+        }
+    }
+    p5apply(root, res.t, FALSE, want);
+    switch (res.consumer) {
+    case ETC_BOOL: S = T_WORD; break;
+    case ETC_FLOOR: S = root->df == ETF_Q48 ? T_LONG : root->dt; break;
+    case ETC_TRUNC:
+    case ETC_FIT: S = T_LONG; break;
+    default: S = root->df == ETF_Q48 ? T_QUICK : root->dt; break;
+    }
+    if ((res.consumer == ETC_TRUNC || res.consumer == ETC_FIT) && root->df != ETF_Q48)
+        S = root->dt;               /* not reached: only for 48.16 */
+    e->lflags |= EVF_P5;
+    p5unit = TRUE;
+    if (res.consumer == ETC_FIT && root->df == ETF_Q48)
+        e->lflags |= EVF_FIT;
+    e->left = (struct exprnode *)root;
+    e->vtype = res.consumer;
+    if (pair) {
+        e->vtype = P5C_PAIR;
+        e->lflags &= ~EVF_FIT;
+        S = T_QUICK;
+        p5wide = TRUE;
+    } else if (res.consumer == ETC_FIT && push != 1 && !cond) {
+        /* no type word, no condition: as an assignment to a Quick takes it
+           (its low 32 bits, the 16.16 value) */
+        e->vtype = ETC_KEEP;
+        e->lflags &= ~EVF_FIT;
+        S = T_QUICK;
+    }
+    *type = S;
+    return TRUE;
+}
+
+/* the end of the evaluation e of the pass's code: its value taken as the
+   pass says (push > 0: the type got is pushed) */
+static void p5exit(struct exprnode *e, WORD push)
+{
+    const struct p5node *p = P5(e->left);
+    UWORD r = regat;
+
+    if (e->vtype == P5C_PAIR) {
+        /* a Select's value with a fraction (#1216): as 48.16 */
+        if (p->df != ETF_Q48) {
+            p5reg(r + 1);
+            p5widen(r, p->dt);
+        }
+        return;
+    }
+    if (p->df != ETF_Q48)
+        return;
+    switch (e->vtype) {
+    case ETC_FLOOR: p5floor48(r); break;
+    case ETC_TRUNC: p5trunc48(r); break;
+    case ETC_FIT:
+        /* a Quick when the value fits one, else its whole part */
+        p5reg(r + 2);
+        pokewd(0x2000 | ((r + 2) << 9) | r);        /* move.l D(r),D(r+2) */
+        pokewd(0xd080 | ((r + 2) << 9) | (r + 2));  /* add.l D(r+2),D(r+2) */
+        pokewd(0x9180 | ((r + 2) << 9) | (r + 2));  /* subx.l D(r+2),D(r+2): the sign */
+        pokewd(0xb080 | ((r + 2) << 9) | (r + 1));  /* cmp.l D(r+1),D(r+2) */
+        pokewd(push > 0 ? 0x670c : 0x6708);         /* beq.s: it fits */
+        p5floor48(r);
+        if (push > 0) {
+            pokewd(0x7003 | ((r + 1) << 9));        /* moveq #3,D(r+1): a Long */
+            pokewd(0x6002);                         /* bra.s */
+            pokewd(0x7004 | ((r + 1) << 9));        /* moveq #4,D(r+1): a Quick */
+        }
+        break;
+    default: break;                 /* its low 32 bits: the 16.16 value */
+    }
+}
+
+/* the unit a (its actions) is built: the registers of the typing pass's
+   code, its register pairs and the right operands it computes one
+   register higher (p5shift: also those of evaluations inside it), fit
+   d0-d7 (#1185, design decision 10: refused when the expression is
+   built, as exprtree_pre's check; the line is the statement's) */
+static void p5check(const struct expract *a)
+{
+    for (; a; a = a->next) {
+        UWORD r = a->ctx[0], need = r;
+
+        if (a->fn == p5binopact) {
+            const struct p5node *p = P5(a->x), *L = P5(p->t.l), *R = P5(p->t.r);
+
+            need = r + 1 + (L->df == ETF_Q48) + (R->df == ETF_Q48);
+            if (p->df == ETF_Q48 && need < r + 1)
+                need = r + 1;
+        } else if (a->fn == p5negact || a->fn == p5notact) {
+            const struct p5node *p = a->fn == p5negact ? P5(a->x) : P5(a->p);
+
+            if (P5(p->t.l)->df == ETF_Q48)
+                need = r + 1;
+        } else if (a->fn == evalexit) {
+            const struct exprnode *e = a->p;
+
+            if ((e->lflags & EVF_P5) && (P5(e->left)->df == ETF_Q48 || e->vtype == P5C_PAIR))
+                need = r + ((e->lflags & EVF_FIT) ? 2 : 1);
+        }
+        if (need > 7)
+            conmemerr();            /* "Expression too Complex" */
+    }
+}
+
+/* ------------------------------------------- Select with a 48.16 value
+   No asm counterpart (#1216; decisions "the Select value with a fraction",
+   "only a 48.16 Select is wide"):
+   a Select whose value rule P+ computes in 48.16 (T_SELWIDE, eval.h)
+   keeps it as 48.16 on the stack, the low 32 bits at P5SELLO(a7), the
+   high ones 4 bytes above; with runtime error checking a long $7345 on
+   top, so that casechkw finds the frame "sE" at 2(a7) as for a Byte or
+   Word Select (the "sE" doselect pushed lies below the value). */
+#define P5SELLO (debugga ? 4 : 0)
+
+/* doselect: the 48.16 value in D(regat)/D(regat+1) pushed */
+void selwidepush(void)
+{
+    UWORD r = regat;
+
+    p5reg(r + 1);
+    pokewd(0x2f00 | (r + 1));               /* move.l D(r+1),-(a7): the high part */
+    pokewd(0x2f00 | r);                     /* move.l D(r),-(a7): the low part */
+    if (debugga) {
+        pokewd(0x2f3c);                     /* move.l #$7345,-(a7) */
+        pokel(0x7345);
+    }
+}
+
+/* docase: the Case's value in D(regat) of type type (T_SELWIDE: a 48.16
+   value, p5wide) compared with the Select's: a whole number or a Quick as
+   48.16, a Float with the Select's value made a Float; the flags for
+   docase's bne */
+void selwidecase(UWORD type)
+{
+    UWORD r = regat, lo = P5SELLO;
+
+    if (r)
+        interr2();                  /* not reached: a statement's evaluation */
+    if (p5wide) {
+        p5wide = FALSE;
+        type = T_SELWIDE;
+    }
+    if (type == T_STRING)
+        noconerr();                 /* as a Case of a numeric Select */
+    if (type == T_FLOAT) {
+        pokewd(0x2f00);                     /* move.l d0,-(a7): the Case */
+        pokewd(0x202f);                     /* move.l lo+4(a7),d0 */
+        pokewd(lo + 4);
+        pokewd(0x222f);                     /* move.l lo+8(a7),d1 */
+        pokewd(lo + 8);
+        p5q48tof(0);
+        pokewd(0x221f);                     /* move.l (a7)+,d1 */
+        pokewd(0xb081);                     /* cmp.l d1,d0 */
+        return;
+    }
+    if (type == T_BYTE)
+        pokewd(0x4880);                     /* ext.w d0 */
+    if (type != T_SELWIDE)
+        p5widen(0, type);
+    pokewd(0xb0af);                         /* cmp.l lo(a7),d0 */
+    pokewd(lo);
+    pokewd(0x6604);                         /* bne.s: not equal */
+    pokewd(0xb2af);                         /* cmp.l lo+4(a7),d1 */
+    pokewd(lo + 4);
+}
+
+/* End Select and Pop Select: the value and its frame off the stack */
+void selwidedrop(void)
+{
+    if (debugga)
+        tokejsr(casechkw);          /* the frame "sE" */
+    pokewd(0x4fef);                         /* lea d(a7),a7 */
+    pokewd(debugga ? 4 + 8 + 2 : 8);
 }

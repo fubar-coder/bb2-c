@@ -1,5 +1,5 @@
 ; compiler-expr-1188-refused (#1188) - expression matrix: the cells
-; refused after the fix, 198 cells in 29 data sources of
+; refused after the fix, 56 cells in 8 data sources of
 ; compiler-expr-1188-refused.test/, each one cell of an operator and
 ; operand classes
 ; BUG(orig) (#1188): a constant with a fraction is cut to a whole number

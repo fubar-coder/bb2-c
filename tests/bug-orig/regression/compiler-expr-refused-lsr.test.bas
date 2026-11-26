@@ -1,5 +1,5 @@
 ; compiler-expr-refused-lsr - expression matrix: the refused cells of
-; the operator LSR, 934 cells in 17 data sources of
+; the operator LSR, 822 cells in 17 data sources of
 ; compiler-expr-refused-lsr.test/, each one cell of an operand class;
 ; blitz2 refuses them, as 1.95 and 2.10 do
 ; The operand classes: I a whole number, Q a Quick, F a Float, C a

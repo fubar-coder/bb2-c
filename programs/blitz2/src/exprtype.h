@@ -142,6 +142,18 @@ int exprtype_ownleft(unsigned from, unsigned to);
  *         type so far right. */
 struct exprtype_bin exprtype_binop(unsigned op, unsigned left, unsigned right, const struct exprtype_binfacts *f);
 
+/** @brief The build leaves the operator op on a left operand of type left
+ *         and a right one ending with the type so far right to the typing
+ *         pass of rule P+ (exprtyping.h; #1216): AND, OR and EOR (also &
+ *         and |) with an operand that is a constant with a point (lpoint,
+ *         rpoint), a shift of such a constant (lpoint), where the decision
+ *         of exprtype_binop for these types refuses it ("Illegal Operator
+ *         for Type"): the pass takes its whole part or shifts it as a
+ *         Quick, or refuses it.  Not of a constant with a point of type t
+ *         the same (exprtype_bypassnot). */
+int exprtype_bypass(unsigned op, unsigned left, unsigned right, int lpoint, int rpoint);
+int exprtype_bypassnot(unsigned t, int point);
+
 /** @brief The decision for an element of its own type own under the type
  *         so far tsf.
  *

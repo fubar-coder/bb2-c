@@ -1,10 +1,10 @@
 # page-broken.cmake - the broken-input test of the check of the page
 # docs/blitz2/expression-type-tables.md (CMakeLists.txt here): two copies of
 # the committed page in WORK, one with a changed cell (the first "W W → L"
-# made "W W → W") and one without the note of #1209, each checked by
-# exprtables page --check -o OUT: the check must fail (exit status 1), name
-# the changed line, and leave no OUT (one there from an earlier run is
-# removed).
+# made "W W → W") and one without the note of the bit operators (#1209),
+# each checked by exprtables page --check -o OUT: the check must fail (exit
+# status 1), name the changed line, and leave no OUT (one there from an
+# earlier run is removed).
 #   cmake -DEXPRTABLES=exprtables -DPAGE=page.md -DWORK=DIR -P page-broken.cmake
 foreach(v EXPRTABLES PAGE WORK)
 	if(NOT DEFINED ${v})
@@ -65,8 +65,8 @@ else()
 	endif()
 endif()
 
-# a missing note: the line of #1209 in the notes of the bit operators
-string(FIND "${page}" "Under a Quick type so far (#1209)" at)
+# a missing note: the first line of the note of the bit operators (#1209)
+string(FIND "${page}" "A Quick operand of these operators is taken by its whole part" at)
 if(at LESS 0)
 	string(APPEND bad "no note of #1209 in ${PAGE}\n")
 else()

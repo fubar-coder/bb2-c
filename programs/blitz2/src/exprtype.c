@@ -220,6 +220,26 @@ struct exprtype_bin exprtype_binop(unsigned op, unsigned left, unsigned right, c
     return d;
 }
 
+/* no asm counterpart (the typing pass of rule P+, #1216): the operators
+   whose refusal the pass decides */
+int exprtype_bypass(unsigned op, unsigned left, unsigned right, int lpoint, int rpoint)
+{
+    struct exprtype_binfacts f = { 0 };
+    struct exprtype_bin d;
+    int bit = op == ETO_AND || op == ETO_OR || op == ETO_EOR || op == ETO_AMP || op == ETO_BAR;
+    int shift = op >= ETO_LSL && op <= ETO_ASR;
+
+    if (!((bit && (lpoint || rpoint)) || (shift && lpoint)))
+        return 0;
+    d = exprtype_binop(op, left, right, &f);
+    return !d.result || d.handler == ET_FLOAT || !exprtype_optype(op, d.handler);
+}
+
+int exprtype_bypassnot(unsigned t, int point)
+{
+    return point && t == ET_FLOAT;
+}
+
 /* no asm counterpart; replaces the type decisions of blitz2.s:10479
    varcont and blitz2.s:10913 consttype2 */
 struct exprtype_elem exprtype_element(unsigned tsf, unsigned own, const struct exprtype_constfacts *c)

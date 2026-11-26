@@ -52,6 +52,7 @@ struct ett_cell {
     unsigned char exact;        /* a Long and a Quick compared exactly (#1177) */
     unsigned char wordop;       /* two Word values in a later index (#1179) */
     unsigned char byteext;      /* the constant taken as a sign-extended byte (#978; ETB_*) */
+    unsigned char wide;         /* a 48.16 operation (rule P+ of #1216): result is the Long of its whole part */
 };
 
 /** @brief One element (a variable, a function value or a constant). */
@@ -155,6 +156,12 @@ struct ett_pageopts {
         under the wanted type want; NULL: no such table */
     int (*constbeside)(void *ctx, unsigned want, unsigned partner, const char *text);
     void *constctx;
+    /** the texts of the rule set in place of today's (NULL: today's): after
+        the tables of the bit operators and of Mod, before those of the
+        comparisons (in place of #1177's), the section "Elements" (in place
+        of its table) and the introduction of "Constants" (in place of it
+        and of the Byte column's sentences of #1188) */
+    const char *bitnote, *modnote, *cmpnote, *elements, *constabout;
 };
 char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, struct ett_stats *stats,
                     char **error);
@@ -170,6 +177,12 @@ struct ett_cand {
     const struct ett_rules *base;
 };
 void ett_rules_cand(struct ett_rules *r, struct ett_cand *c);
+
+/** @brief The type a constant (text: decimal digits, a point, an exponent;
+ *         no sign) is taken in as the right operand of a `+` beside a
+ *         variable of type partner under the wanted type want, by the typing
+ *         pass of rule P+ (programs/blitz2/src/exprtyping.c); 0: refused. */
+int ett_pplus_beside(unsigned want, unsigned partner, const char *text);
 
 /** @brief Compares the committed page want (name for the messages) with
  *         the generated page got line by line.  Returns 0 equal, 1 they

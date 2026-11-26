@@ -1,5 +1,5 @@
 ; compiler-expr-refused-not - expression matrix: the refused cells of
-; the operator NOT, 74 cells in 4 data sources of
+; the operator NOT, 58 cells in 4 data sources of
 ; compiler-expr-refused-not.test/, each one cell of an operand class;
 ; blitz2 refuses them, as 1.95 and 2.10 do
 ; The operand classes: I a whole number, Q a Quick, F a Float, C a

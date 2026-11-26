@@ -980,6 +980,13 @@ void relocdrop(UWORD base)
     relocbase = base;
 }
 
+/* no asm counterpart (asmlibs.h): the unit's entries put into the list */
+void relockeep(void)
+{
+    while (npendrelocs > relocbase)
+        relocsplice(pendrelocs[relocbase].lib);
+}
+
 /* the number of entries (relocpending); the entries from the one from on
    freed (relocforget), the code that would take their relocations is not
    written: the conversion a comparison drops (#1177) */

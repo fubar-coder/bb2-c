@@ -1,5 +1,5 @@
 ; compiler-expr-refused-and - expression matrix: the refused cells of
-; the operator AND, 934 cells in 17 data sources of
+; the operator AND, 698 cells in 16 data sources of
 ; compiler-expr-refused-and.test/, each one cell of an operand class;
 ; blitz2 refuses them, as 1.95 and 2.10 do
 ; The operand classes: I a whole number, Q a Quick, F a Float, C a

@@ -80,14 +80,22 @@ enum {
     BNF_WORDS = 8,              /* a later array index, both operands Byte or Word values (#1179) */
     BNF_FOLD = 16,              /* both operands constants: folded */
     BNF_OWNLEFT = 32,           /* a comparison's left operand gets its own type back (#1177) */
-    BNF_NOFOLD = 64             /* the result is no constant (^: nocando) */
+    BNF_NOFOLD = 64,            /* the result is no constant (^: nocando) */
+    BNF_P5 = 128                /* the build's typing refused it, rule P+ may take it (a fraction
+                                   under a bit operator, a shifted constant with a point): its
+                                   code is the typing pass's or "Illegal Operator for Type" */
 };
 
 /** @brief The facts of an EVAL (exprnode.lflags). */
 enum {
     EVF_RAWCUT = 1,             /* a raw Quick rounded down at the end (#1178) */
     EVF_CONV = 2,               /* converted from tbefore to the type asked for, tafter */
-    EVF_FILLER = 4              /* AmiBlitz3's filler below a string argument (ext_strfiller) */
+    EVF_FILLER = 4,             /* AmiBlitz3's filler below a string argument (ext_strfiller) */
+    EVF_P5 = 8,                 /* the code is the typing pass's (rule P+, eval.c p5exit): left
+                                   its root (a struct p5node), vtype how its value is taken
+                                   (exprtyping.h ETC_*) */
+    EVF_FIT = 16                /* p5exit writes the type got (no wanted type, 48.16: a Quick
+                                   or a Long at run time) */
 };
 
 /** @brief The kinds of call (exprnode.op of a CALL).

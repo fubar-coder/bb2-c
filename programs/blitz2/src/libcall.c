@@ -51,6 +51,11 @@ static BOOL litcut;
    libcall.h); consttype2 takes it and clears it */
 BOOL litneg;
 
+/* No asm counterpart (the typing pass of rule P+, eval.c p5constleaf):
+   the whole number consttype2 sized last, before a Float type made it an
+   FFP value */
+static ULONG constint;
+
 
 static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data);
 static ULONG consttype2(UWORD *type, ULONG val, BOOL data);
@@ -346,6 +351,7 @@ static ULONG fetchnum3(ULONG val, UWORD tsf, UWORD *type, BOOL data)
         mismatcherr();
     constword = !numfloat && (l->tafter == T_LONG || l->tafter == T_QUICK) && val <= 32767;
     emitact(constemit, l, 0, 0);
+    p5constleaf(l, numfloat != 0, constint, numval);   /* the typing pass */
     constrec(l);
     exprtree_release(l);
     return reget();
@@ -476,6 +482,7 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
     (void)val;
     litneg = FALSE;
     litcut = FALSE;                 /* #1186 */
+    constint = numval;              /* the typing pass (p5constleaf) */
 
     k.point = numfloat != 0;
     k.data = data;

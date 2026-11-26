@@ -3,8 +3,7 @@
 ; BUG(orig) (#1216): an operand is typed by the type so far and its
 ; place in the chain, not by its own type and the wanted type.
 ; Correct: the values of the decided rule (EM_RULES_DECIDED, tools/lib/exprmatrix/
-; model.c); the values of the port and the original, which agree, are the declared
-; deviations of the test.
+; model.c); the original's values are the declared deviations of the test.
 ; cells: if-div-q-l-B if-mod-b-q-B if-mod-w-q-B if-mod-w-cf-B
 ; cells: if-mod-l-q-B if-mod-l-cf-B if-mod-f-q-B if-mod-f-cf-B
 ; cells: if-mod-cb-q-B if-mod-cw-q-B if-mod-cl-q-B

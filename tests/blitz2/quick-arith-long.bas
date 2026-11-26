@@ -6,9 +6,10 @@
 ; fraction; each operation is computed with it and rounded at the
 ; operator, down for + - * and negation, towards zero for /: r.l=q*2 gives
 ; 3, r.l=l-q 8, r.l=q/h 3.  A Long constant that makes the type Long
-; itself takes the fraction under * and / (35, 36).  The type so far
-; flows as before: w+v+q gives 8 (Word+Word is a Long; an interim value
-; until the expression tree, #1180), shifts round the Quick down (09).
+; itself takes the fraction under * and / (35, 36).  Without a wanted
+; type (NPrint) each operand keeps its own type since the fix of #1216
+; (rule P+): 1+1+1+q gives 4.5, w+v+q 8.5 (20-22); shifts round the Quick
+; down (09).
 ; blitz2 1.95 cut the Quick at fetch (r.l=q*2 gave 2).
 ; Arithmetic only: comparisons are #1177, array indexes are left out.
 Function.q fq{a.q}

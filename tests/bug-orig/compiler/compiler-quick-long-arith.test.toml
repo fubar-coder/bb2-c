@@ -41,5 +41,7 @@ fixed-orig = 1178
 "check.quick_long_arith.c26.actual" = "== 2"
 "check.quick_long_arith.c28" = "== fail"
 "check.quick_long_arith.c28.actual" = "== 9"
+"check.quick_long_arith.c30" = "== fail"
+"check.quick_long_arith.c30.actual" = "== 13"
 "check.quick_long_arith.c31" = "== fail"
 "check.quick_long_arith.c31.actual" = "== 12"

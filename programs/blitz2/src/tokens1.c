@@ -1119,6 +1119,7 @@ void doif2(UWORD kind, WORD negate)
 
     iflineat = linenumat;
     type = 0;
+    evalcond = TRUE;                            /* #1216: tested as itself */
     bakevalu(&type);                            /* Get True/False Expression! */
     if (type == T_FLOAT) {                      /* .float */
         /* Fixed (#1187): mathffp SPTst tests d1, not d0; blitz2.s:13299
@@ -1274,8 +1275,8 @@ static void fillbra(struct selnode *s)
 /* blitz2.s:13121 casechk */
 static void casechk(UWORD type)
 {
-    if (debugga)
-        tokejsr(type < T_LONG ? casechkw : casechkl);
+    if (debugga)                /* a 48.16 Select (#1216): its "sE" at 2(a7) */
+        tokejsr(type < T_LONG || type == T_SELWIDE ? casechkw : casechkl);
 }
 
 /* blitz2.s:13032 doendsel - END SELECT */
@@ -1335,9 +1336,19 @@ void docase(UWORD c)
     t = s->type;                                /* type to get! */
     casechk(t);
     type = t;
-    bakeval(&type);
+    if (t == T_SELWIDE) {
+        /* #1216: a Select with a 48.16 value, the Case compared with its
+           48.16 value exactly (the Case's own type, no wanted one) */
+        type = 0;
+        evalwide = TRUE;
+        bakevalu(&type);
+        selwidecase(type);
+    } else
+        bakeval(&type);
     /* types to compare: the select's type (asm: popped d2) */
-    if (t == T_BYTE)
+    if (t == T_SELWIDE)
+        ;                                       /* selwidecase's compare */
+    else if (t == T_BYTE)
         pokecode(selcomb, selcombf);
     else if (t == T_WORD)
         pokecode(selcomw, selcombf);
@@ -1371,8 +1382,13 @@ void doselect(UWORD c)
         pokel(tl(pcchk));                       /* move #"sE",-(a7) */
     sellineat = linenumat;
     type = 0;
+    evalwide = TRUE;                            /* #1216: with a fraction 48.16 */
     bakevalubefore(&type, selclr);              /* Evaluate; .nos */
-    if (type == T_BYTE) {
+    if (p5wide) {
+        p5wide = FALSE;
+        type = T_SELWIDE;
+        selwidepush();
+    } else if (type == T_BYTE) {
         pokecode(selpushb, selpushbf);
     } else if (type == T_WORD) {
         pokecode(selpushw, selpushbf);

@@ -249,7 +249,7 @@ int run(const std::string &me, const std::string &name, bool scopeb, const std::
                         (scopeb ? ", scope (b)" : "");
     std::string about = std::string(about_common) + "\n" + about_c[n] + k7;
     struct ett_pageopts o = { title.c_str(), about.c_str(), notes, &base, marksfile.empty() ? nullptr : mark, &m,
-                              beside, &rules };
+                              beside, &rules, nullptr, nullptr, nullptr, nullptr, nullptr };
     struct ett_stats st;
     char *error = nullptr;
     char *page = ett_page_opts(&r, &o, &st, &error);

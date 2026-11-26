@@ -143,13 +143,13 @@ static void celltext(struct sb *s, const struct ett_cell *c, unsigned l, unsigne
     sb_puts(s, " ");
     operand(s, &c->r, r);
     sb_puts(s, " \xe2\x86\x92 ");      /* a right arrow */
-    sb_puts(s, tletter(c->result));
+    sb_puts(s, c->wide ? "48" : tletter(c->result));
 }
 
 static int samecell(const struct ett_cell *a, const struct ett_cell *b)
 {
     return a->result == b->result && a->l.as == b->l.as && a->l.how == b->l.how && a->r.as == b->r.as
-           && a->r.how == b->r.how && a->exact == b->exact;
+           && a->r.how == b->r.how && a->exact == b->exact && a->wide == b->wide;
 }
 
 /* the operator with the operands swapped (a comparison mirrored); ETO_END:
@@ -477,6 +477,11 @@ static void intro(struct gen *g, struct sb *s)
 
 static void elements(struct gen *g, struct sb *s)
 {
+    if (g->o && g->o->elements) {
+        sb_puts(s, "## Elements\n\n");
+        sb_puts(s, g->o->elements);
+        return;
+    }
     sb_puts(s, "## Elements\n\n"
                "A variable or a function value of the type *own* under each type so far: the\n"
                "type so far after it. `W\xe2\x86\x92L`: the value is converted to the type so far; a\n"
@@ -567,6 +572,24 @@ static void constants(struct gen *g, struct sb *s)
     struct ett_elem e;
     struct exprtype_constfacts data = { 1, 1, 0, 1, 1, ET_BYTE };
 
+    if (g->o && g->o->constabout) {
+        sb_puts(s, "## Constants\n\n");
+        sb_puts(s, g->o->constabout);
+        sb_puts(s, "| constant | kind | \xe2\x80\x93 | B | W | L | Q | F |\n|---|---|---|---|---|---|---|---|\n");
+        for (size_t i = 0; i < NKINDS && !g->fail; i++) {
+            sb_printf(s, "| `%s` | %s |", kinds[i].example, kinds[i].what);
+            for (size_t k = 0; k < NTSF; k++) {
+                if (constant(g, tsftypes[k], &kinds[i].k, kinds[i].example, &e))
+                    return;
+                sb_puts(s, " ");
+                consttext(s, &e);
+                sb_puts(s, " |");
+            }
+            sb_puts(s, "\n");
+        }
+        sb_puts(s, "\n");
+        return;
+    }
     sb_puts(s, "## Constants\n\n"
                "A constant takes the type it is wanted in, or the size it needs; it is written in\n"
                "that type, without conversion code. The cell is the type so far after it;\n"
@@ -691,9 +714,12 @@ char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, str
     sb_puts(&s, "## Bit operators\n\n"
                 "`&` and `AND`, `|` and `OR` are the same operators; `EOR` is the exclusive or.\n\n");
     group(&g, ETG_BIT, bit, 5, &st);
-    sb_puts(&s, "Under a Quick type so far (#1209) a Quick operand of these operators is made a\n"
-                "whole number first (rounded down, its fraction bits cleared), and the result is\n"
-                "a Quick: `q AND p` with `q=1.5` and `p=2.5` is 0. A Float has none of them.\n\n");
+    if (o && o->bitnote)
+        sb_puts(&s, o->bitnote);
+    else
+        sb_puts(&s, "Under a Quick type so far (#1209) a Quick operand of these operators is made a\n"
+                    "whole number first (rounded down, its fraction bits cleared), and the result is\n"
+                    "a Quick: `q AND p` with `q=1.5` and `p=2.5` is 0. A Float has none of them.\n\n");
 
     sb_puts(&s, "## Shifts\n\n"
                 "The right operand is the count. A shift of a Quick works on its 16.16 value, so\n"
@@ -702,31 +728,38 @@ char *ett_page_opts(const struct ett_rules *r, const struct ett_pageopts *o, str
 
     sb_puts(&s, "## Mod\n\n");
     group(&g, ETG_MOD, mod, 1, &st);
-    sb_puts(&s, "Under a Long type so far a Quick operand of `Mod` keeps its fraction only when\n"
-                "the other operand is a Float; with a whole-number divisor it is rounded down\n"
-                "(`L\xe2\x86\x93`, #1178).\n\n");
+    if (o && o->modnote)
+        sb_puts(&s, o->modnote);
+    else
+        sb_puts(&s, "Under a Long type so far a Quick operand of `Mod` keeps its fraction only when\n"
+                    "the other operand is a Float; with a whole-number divisor it is rounded down\n"
+                    "(`L\xe2\x86\x93`, #1178).\n\n");
 
     sb_puts(&s, "## Power\n\n");
     group(&g, ETG_POW, pow, 1, &st);
 
-    sb_puts(&s, "## Comparisons\n\n"
-                "A comparison leaves a Word, its boolean (-1 or 0), as the type so far. Its\n"
-                "operands are compared with their own values (#1177): the right operand starts\n"
-                "with no type so far, a left operand that is one element (a variable, field,\n"
-                "array element or function value) keeps its own type, and the lower of the\n"
-                "two is converted up to the other.");
-    any = 0;
-    for (size_t i = 0; i < NNUM && !any; i++)
-        for (size_t j = 0; j < NNUM && !any; j++) {
-            if (cell(&g, ETO_LT, ET_NONE, numtypes[i], numtypes[j], NULL, &c))
-                break;
-            any = c.exact;
-        }
-    if (any)
-        sb_puts(&s, " A Long and a Quick (`L Q`, `Q L`) are compared exactly:\n"
-                    "the Long against the whole part of the Quick, on equality the fraction decides;\n"
-                    "the Long is not converted to a Quick.");
-    sb_puts(&s, "\n\n");
+    sb_puts(&s, "## Comparisons\n\n");
+    if (o && o->cmpnote)
+        sb_puts(&s, o->cmpnote);
+    else {
+        sb_puts(&s, "A comparison leaves a Word, its boolean (-1 or 0), as the type so far. Its\n"
+                    "operands are compared with their own values (#1177): the right operand starts\n"
+                    "with no type so far, a left operand that is one element (a variable, field,\n"
+                    "array element or function value) keeps its own type, and the lower of the\n"
+                    "two is converted up to the other.");
+        any = 0;
+        for (size_t i = 0; i < NNUM && !any; i++)
+            for (size_t j = 0; j < NNUM && !any; j++) {
+                if (cell(&g, ETO_LT, ET_NONE, numtypes[i], numtypes[j], NULL, &c))
+                    break;
+                any = c.exact;
+            }
+        if (any)
+            sb_puts(&s, " A Long and a Quick (`L Q`, `Q L`) are compared exactly:\n"
+                        "the Long against the whole part of the Quick, on equality the fraction decides;\n"
+                        "the Long is not converted to a Quick.");
+        sb_puts(&s, "\n\n");
+    }
     group(&g, ETG_COMPARE, cmp, 6, &st);
     if (!g.o)
         sb_puts(&s, "A left operand that is itself an operation (`q*2`, `q+q`) is not one element: it\n"

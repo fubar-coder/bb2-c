@@ -8,7 +8,9 @@
 ; Correct: the operation is computed with the fraction and rounded at the
 ; operator, down for + - * and negation, towards zero for /; a Float
 ; operand or ^ takes the Quick with its fraction (spec
-; compiler/expression-types).
+; compiler/expression-types).  Since the fix of #1216 (rule P+) the
+; operands of a chain or a bracket keep their fractions and the result is
+; rounded once where the Long takes it: (q+p)*l is 42, l+q+p 14.
 
 Function.q fq{x.q}
   Function Return x
@@ -63,9 +65,9 @@ DEFTYPE .tq s
   r=big*z
   !CheckEq{r,-1294917296,"c20"} ; r.l=big*z
   r=(q+p)*l
-  !CheckEq{r,40,"c21"} ; r.l=(q+p)*l
+  !CheckEq{r,42,"c21"} ; r.l=(q+p)*l
   r=l*(q+p)
-  !CheckEq{r,40,"c22"} ; r.l=l*(q+p)
+  !CheckEq{r,42,"c22"} ; r.l=l*(q+p)
   r=l-(q)
   !CheckEq{r,8,"c23"} ; r.l=l-(q)
   r=aq(1)*2
@@ -81,7 +83,7 @@ DEFTYPE .tq s
   t=q*2+w+v
   !CheckEq{t,10,"c29"} ; x.w=q*2+w+v
   r=l+q+p
-  !CheckEq{r,13,"c30"} ; r.l=l+q+p
+  !CheckEq{r,14,"c30"} ; r.l=l+q+p
   r=l-n
   !CheckEq{r,11,"c31"} ; r.l=l-n
   r=l-e

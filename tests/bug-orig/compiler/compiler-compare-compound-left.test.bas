@@ -12,10 +12,10 @@
 ; holds 24 bits, a Quick 16 bits of whole part).
 ; The count cases of the spec (compiler/expression-types, "The left
 ; operand of a comparison") whose sums, products and quotients keep their
-; results (-1) are the checks that pass; the others fail until #1183 is
-; fixed.
-; Needs the expression tree (#1180); the left operand that is a single
-; element is #1177 (compiler-quick-compare).
+; results (-1) are the checks the original already passes.
+; Fixed (#1183) by the operand typing of #1216 (rule P+): the left operand
+; is typed by its own operands; the left operand that is a single element
+; is #1177 (compiler-quick-compare).
 !TestCase{compound_left}
   q.q=1.25 : r.l=0
   r=(q*2>2.4)

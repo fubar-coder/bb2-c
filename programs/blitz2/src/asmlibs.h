@@ -154,6 +154,10 @@ void relocdrop(UWORD base);
 void relocreset(void);
 UWORD relocpending(void);
 void relocforget(UWORD from);
+/* the unit's entries that no code took into the list (a library the
+   build used and the typing pass's code of rule P+ does not call, #1216):
+   put into it, the library is in the program */
+void relockeep(void);
 /* 6237 use every lib of the dependency list at lib+off+6 except self.
    off == 0: nothing (asm: Z flag from the caller's move.l) */
 void uselib2(struct blitzlib *l, ULONG off, UWORD self);

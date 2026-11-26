@@ -2,13 +2,9 @@
 fixed-orig = 1178
 
 [deviations."compiler=orig195"]
-"check.cells.dq-sub-cl-q-A" = "== fail"
-"check.cells.dq-sub-cl-q-A.actual" = "== -2036400128"
 "check.cells.dq-mul-q-cl-A" = "== fail"
 "check.cells.dq-mul-q-cl-A.actual" = "== -2036334592"
 "check.cells.dq-mul-cl-q-A" = "== fail"
 "check.cells.dq-mul-cl-q-A.actual" = "== -2036334592"
 "check.cells.dq-mul-cf-cl-A" = "== fail"
 "check.cells.dq-mul-cf-cl-A.actual" = "== -2036334592"
-"check.cells.dq-div-cl-q-A" = "== fail"
-"check.cells.dq-div-cl-q-A.actual" = "== -2036334592"

@@ -1165,6 +1165,14 @@ the libraries (`libs_emulator`) now run here via `amiga_emulation`
     `expr-tree-4a-emit-after-build`, its decision 4).
   - First count in the corpus how often such expressions occur
     (`Len` of a literal, of a concatenation, of a plain variable).
+- [ ] **The typing pass iterative** (user decision 2026-11-26, expr-tree-5
+  4.1, "Accept, document"): `exprtyping.c` (rule P+, #1216) recurses over
+  the tree of an expression, so blitz2 types only trees of at most 64
+  levels by it (`P5DEPTH` in `eval.c`); a deeper tree is typed by the type
+  so far as before (`docs/blitz2/expression-types.md`, "The operand
+  typing"). Make the pass iterative (an explicit stack, as the build's
+  precedence stack) and drop the limit, with a test of a tree deeper than
+  64 levels.
 - [ ] **`x/2*2` as an even-number operation** (user decision 2026-11-24,
   expr-tree-5 Q4, F3: a candidate for after the expression tree, #1180
   step 6): under a wanted Long the quotient of `/` is whole at once

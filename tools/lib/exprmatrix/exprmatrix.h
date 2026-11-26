@@ -192,7 +192,7 @@ enum {
 #define EM_RULES_ORIG EM_R_CDLIB
 #define EM_RULES_PORTCD (EM_R_CDLIB | EM_R_1177)    /* the port as measured, CD's libraries */
 #define EM_RULES_PORT EM_R_1177                     /* the port as measured, C libraries */
-#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209 | EM_R_1218)  /* the port of this commit, C libraries */
+#define EM_RULES_PORTNOW (EM_R_1177 | EM_R_1186 | EM_R_1178 | EM_R_1179 | EM_R_1187 | EM_R_1188 | EM_R_1189 | EM_R_1209 | EM_R_1218)  /* the port before the fix of #1216, C libraries (EM_RULES_PORTFIX: this commit) */
 /* the port's rules when the matrix was committed: the cells of an issue
    fixed later (a rule outside this set) stay in their bug-orig tests, which
    get fixed-orig = N (expect.c, option T1) */
@@ -323,7 +323,7 @@ struct em_file {
 };
 int em_expect(const struct em_matrix *m, const char *desc, const struct em_table *meas, struct em_file **files,
               size_t *nfiles, char **report, char **errors);
-/* as em_expect, with the port's rules port in place of EM_RULES_PORTNOW
+/* as em_expect, with the port's rules port in place of EM_RULES_PORTFIX
    (the tests of a rule set in which an issue is fixed) */
 int em_expect_port(const struct em_matrix *m, const char *desc, const struct em_table *meas, uint64_t port,
                    struct em_file **files, size_t *nfiles, char **report, char **errors);
@@ -463,6 +463,13 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
      | EM_R_PQDIV)
 #define EM_RULES_DECIDED                                                                                              \
     (EM_RULES_P | EM_R_PREACH | EM_R_PCMP | EM_R_PBITS | EM_R_PTAKE | EM_R_PMODX | EM_R_PBITK | EM_R_P48 | EM_R_PCMPW)
+/* the rules of P+ beyond the port's before it (#1216, #1183): a port's
+   rules with all of them are the decided rule, the fix of #1216 */
+#define EM_RULES_PPLUS (EM_RULES_DECIDED & ~(uint64_t)EM_RULES_CANDBASE)
+/* the port of this commit, C libraries: the decided rule (expect.c keeps
+   the classes and the named cells of EM_RULES_PORTNOW, the port before
+   it) */
+#define EM_RULES_PORTFIX EM_RULES_DECIDED
 
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);

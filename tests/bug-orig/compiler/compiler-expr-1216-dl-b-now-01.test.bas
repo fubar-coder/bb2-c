@@ -3,8 +3,8 @@
 ; BUG(orig) (#1216): an operand is typed by the type so far and its
 ; place in the chain, not by its own type and the wanted type.
 ; Correct: the source compiles and each cell has the value of the decided rule
-; (EM_RULES_DECIDED, tools/lib/exprmatrix/model.c); the port and the original refuse
-; a cell of it (Illegal Operator for Type), so nothing runs: the declared deviations.
+; (EM_RULES_DECIDED, tools/lib/exprmatrix/model.c); the original refuses a cell of
+; it (Illegal Operator for Type), so nothing runs: the declared deviations.
 ; cells: dl-not-cf-B dl-and-b-cf-B dl-and-w-cf-B dl-and-l-cf-B
 ; cells: dl-and-q-cf-B dl-and-cb-cf-B dl-and-cw-cf-B dl-and-cl-cf-B
 ; cells: dl-and-cf-b-B dl-and-cf-w-B dl-and-cf-l-B dl-and-cf-q-B

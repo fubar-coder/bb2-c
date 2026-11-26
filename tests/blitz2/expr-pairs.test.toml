@@ -1,0 +1,30 @@
+# expr-pairs.test.bas: the data sources whose 48.16 register pairs need a
+# register beyond d7; each compile ends with "Expression too Complex" at the
+# expression's line, or with an error read later in the same expression.
+# The original (blitz2 1.95) computes the expressions in the type so far:
+# the case's values and its compile of the data sources (no register pairs)
+# are the declared deviations
+fixed-orig = 1216
+exclude = ["compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[data]
+"pair-d8.bas" = "basic-compile"
+"pair-d8-later.bas" = "basic-compile"
+"pair-d8-next.bas" = "basic-compile"
+
+[asserts]
+"data.pair-d8.bas" = "== \"error 5 Expression too Complex\""
+"data.pair-d8-later.bas" = "== \"error 6 Type Mismatch\""
+"data.pair-d8-next.bas" = "== \"error 4 Expression too Complex\""
+
+[deviations."compiler=orig195"]
+"check.pairs.pair_d7" = "== fail"
+"check.pairs.pair_d7.actual" = "== 19"
+"check.pairs.pair_d6" = "== fail"
+"check.pairs.pair_d6.actual" = "== 17"
+"data.pair-d8.bas" = "== ok"
+"data.pair-d8-next.bas" = "== \"error 5 Type Mismatch\""

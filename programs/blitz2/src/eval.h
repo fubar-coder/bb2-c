@@ -152,6 +152,7 @@ struct stmtunit {
     ULONG at, actseq, codeseq;
     UWORD rb;
     BOOL bsbase, strwork;
+    BOOL p5;                    /* the unit around it has code of the typing pass of rule P+ (#1216) */
 };
 void unitbegin(struct stmtunit *u);
 void unitbuilt(struct stmtunit *u);
@@ -161,6 +162,29 @@ void unitwrite(struct stmtunit *u);
    #1186 for the comparison it is an operand of */
 BOOL elemconst(void);
 void constrec(struct exprnode *l);
+/* the constant leaf l (its code the last action) for the typing pass of
+   rule P+: written with a point, its whole number (consttype2's, before
+   a Float made it an FFP value), its FFP value */
+void p5constleaf(struct exprnode *l, BOOL point, ULONG whole, ULONG ffp);
+/* the evaluation read next is a condition (If, While, Until: doif2): a
+   48.16 value without a wanted type is tested as itself (the pass's FIT);
+   every other consumer without a type word takes such a value as an
+   assignment to a Quick would (#1216) */
+extern BOOL evalcond;
+/* Select with a 48.16 value (#1216; decisions "the Select value with a
+   fraction", "only a 48.16 Select is wide"): evalwide asks the evaluation
+   read next to keep its value as 48.16 when rule P+ computes it in 48.16
+   (a Quick or 16.16 Select stays as before); p5wide says it did, in
+   D(regat)/D(regat+1).  The Select's
+   type is then T_SELWIDE: the value kept as 48.16 on the stack (8 bytes,
+   in a program with runtime error checking 6 more: the frame "sE" for
+   casechkw), each Case compared with it exactly (selwidepush,
+   selwidecase, selwidedrop) */
+extern BOOL evalwide, p5wide;
+#define T_SELWIDE 9
+void selwidepush(void);
+void selwidecase(UWORD type);
+void selwidedrop(void);
 /* findtoke and uselib for an expression being built: the use now, the
    library's relocations where its code is written (eval.c) */
 UBYTE *findtokeact(UWORD tok, struct blitzlib **libp);

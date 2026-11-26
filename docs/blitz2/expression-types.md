@@ -9,13 +9,16 @@ runtime error checking off (AmiBlitz3 v3.14.0 has the same code), and
 where the port differs: comparisons (#1177), the arithmetic of a
 Quick under a Long (#1178), the later array index (#1179), a constant
 with a fraction under a Byte (#1188), the power with a negative base
-(#1189) and the bit operators under a Quick type so far (#1209), original
-bugs fixed in the port.
+(#1189), the bit operators under a Quick type so far (#1209), and the
+order of the operands: the port types every operation by its own
+operands and the wanted type ([The operand
+typing](#the-operand-typing-rule-p-1216), #1216, with the left operand
+of a comparison, #1183), original bugs fixed in the port.
 
 Every rule as a table (each operator with each pair of operand types under
-each type so far, the elements and the constants): [Expression type
+each wanted type, and the constants): [Expression type
 tables](expression-type-tables.md), a page generated from the compiler's
-type decisions.
+type rules.
 
 ## The types and the "type so far"
 
@@ -75,10 +78,11 @@ Quick rounded down for `+`, `-` and the other operators, as in the
 original, and takes the fraction for `*` and `/`: `NPrint q*100000` gives
 150000 (the original 100000), `NPrint q+&l-&l` gives 1; `Int(q)` gives the
 original's result. For a Quick without a fraction every result is the
-original's (as long as no Long overflows). The type so far flows as in the
-original, so the order still matters where it differs: `NPrint 1+1+1+q`
-gives 4 and `NPrint w+v+q` 8 (Word+Word is a Long), `NPrint q+w+v` 8.5;
-the expression tree (#1180) is to give 4.5 there.
+original's (as long as no Long overflows). Since the operand typing
+(#1216, below) a chain of such operations is computed exactly and rounded
+once, where its value is taken (`r.l=(q+p)*l` is 42 for `q=1.5`, `p=2.75`,
+`l=10`), and the order of the operands does not matter: `NPrint 1+1+1+q`
+gives 4.5, `NPrint w+v+q` and `NPrint q+w+v` 8.5.
 
 The products and the division `l/q` need more than 32 bits (`l*q`: bits
 16..47 of the 64 bit product; `l/q`: `l` shifted by 16 bits divided by the
@@ -99,6 +103,78 @@ The type so far is Long when
   `eval.c:1282-1288`, `eval.c:1431-1447`),
 * a whole-number constant that does not fit a Quick stands in a Quick
   expression (it becomes a Long, `consttype2`, `libcall.c:420-470`).
+
+## The operand typing (rule P+, #1216)
+
+In the original an expression has one type so far from left to right
+(above), so the type of an operation depends on the place of its
+operands in the expression and on the operand before it: `NPrint
+1+1+1+q` is 4 and `NPrint q+1+1+1` 4.5, `w/2` beside a Quick is the
+whole-number division before it and the fractional one after it.
+
+In the port (original bug #1216, fixed with #1183; spec
+`compiler/expression-types`, rule P+ of the OpenSpec change
+`expr-tree-5-operand-typing`) a typing pass over the finished tree of the
+expression (`programs/blitz2/src/exprtyping.c`) types every operation by
+its operator, the types of its two operands and the *wanted type* (the
+destination's or parameter's type, Long for an index, none for `If`,
+`While`, `Until`, `Print`, `Select` and the operands of a comparison),
+and the code is written from those decisions (the errors are still
+found while the expression is read, as in the original):
+
+* whole numbers are computed in their own types (Byte+Byte a Word as the
+  original's handler gives it), a whole-number operation in a comparison
+  at least as a Long;
+* a Quick with a Quick or a whole number up to a Word is a 16.16
+  operation with the original's routines; a Quick with a Long, and every
+  operation with a Quick under a wanted Long, is a 48.16 operation: a
+  whole part of 48 bits and 16 bits of fraction in a register pair,
+  computed exactly by the routines of the port's `compilerlib`
+  (`q48add` to `q48trunc`); a Float operand makes the operation Float;
+* the value is rounded once, where it is taken: a wanted whole number its
+  whole part rounded down (a `/` at the top under a wanted Long towards
+  zero), a wanted Quick its 16.16 value, no wanted type a Quick where it
+  fits, else its whole part (decided at run time for a 48.16 value);
+* `Mod` with an operand that has a fraction (a Quick, a Float, a constant
+  with a point) is exact with the whole numbers' sign rule (`NPrint q Mod
+  2` is 1.5 for `q=7.5`, `f Mod g` 1.5 for 7.5 and 2); whole operands keep
+  the whole-number `Mod`;
+* a constant with a point is fractional as an operand, never a whole
+  number: a Quick where a Quick is in its expression or wanted, else a
+  Float; `AND`, `OR`, `EOR` and `NOT` take its whole part, and the whole
+  part of a Quick or 48.16 value (#1209); a constant with a point as a
+  shift count is refused;
+* a comparison gives a Word, compares its operands exactly in their own
+  formats, and makes no Float of the expression around it;
+* `^` takes both operands as Floats of their own values;
+* a constant subtree is folded by the same rule (`1.5 AND 3` is 1).
+
+So both orders of an operation give the same value: `l+q+p` and `q+p+l`
+are 14 for `l=10`, `q=1.5`, `p=2.75` (the original 13), `NPrint
+1+1+1+q` 4.5, `w/2+q` and `q+w/2` both use 1.5. The tables of every
+operation: [Expression type tables](expression-type-tables.md).
+
+Limits and consequences:
+
+* A tree deeper than 64 levels is typed by the type so far as before (the
+  pass recurses).
+* A `Select` value that is 48.16 is kept as 48.16 (8 bytes on the stack)
+  and each `Case` is compared with it exactly (a Float `Case` in Float); a
+  Quick, whole or Float `Select` is as before. The other consumers of a
+  value without a type of its own (the arguments of the intrinsics such
+  as `Int`) take a 48.16 value as an assignment to a Quick takes it.
+* A 48.16 operation takes a register pair, the right operand of an
+  operation on it the register after them; one that would need a
+  register beyond d7 is "Expression too Complex" (#1185). It is found when
+  the whole expression has been read, so an error read later in the same
+  expression (a Type Mismatch) is reported first.
+* `rq.q=l^n` with `l=100000`, `n.q=2` converts the Float power (1e10)
+  to the Quick ($FFFFFFFF, the conversion of a Float beyond the Quick
+  range); the original converted the base to a Quick first ($E5400000).
+* The compiled code of an expression with a Quick in a chain or beside a
+  Long, a `Mod` with a fraction or a constant with a point beside an
+  operator changes; a 48.16 operation costs a library call (`q48add` 54
+  cycles, `q48mul` 372 to 1316, `q48div` 1045 to 3183 on the A500).
 
 ## A constant with a fraction under a Byte type so far (#1188)
 
@@ -128,19 +204,22 @@ result converted to the Byte at the end (towards zero, as every Float):
 
 Where the port differs from a Word type so far:
 
-* a constant written with a point or an exponent whose value is whole
-  (`2.0`, `1e2`, `1.5e1`) stays the whole number it is under a Byte, as in
-  the original (under a Word it is a Float): `rb.b=vb+2.0` is a Byte
-  addition and `rb.b=vb AND 2.0` compiles;
+* a constant alone written with a point or an exponent whose value is
+  whole (`rb.b=2.0`, `1e2`, `1.5e1`) stays the whole number it is under a
+  Byte, as in the original; as an operand it is fractional since the
+  operand typing (#1216): `rb.b=vb+2.0` is a Float addition (5 for
+  `vb=3`, as before);
 * `Data.b` keeps the cut: `Data.b 1.5` gives 1 (`Data.w 1.5` is "Bad
   Data").
 
-A constant with a fraction is a Float, so an operator without a Float
-form refuses it, as under a Word: `rb.b=1.5 AND vb`, `OR`, `EOR`, the
-shifts and `rb.b=NOT 1.5` give "Illegal Operator for Type" (the original
-computed them with the cut constant). AmiBlitz3 v3.14.0 keeps the fraction
+`AND`, `OR`, `EOR` and `NOT` take the whole part of a constant with a
+point, as of a variable (#1216): `rb.b=1.5 AND vb` is `1 AND vb`,
+`rb.b=NOT 1.5` is -2; a constant with a point as a shift count is refused
+("Illegal Operator for Type", `rb.b=vb LSL 2.0`, where the original
+computed it with the cut constant). AmiBlitz3 v3.14.0 keeps the fraction
 as the port does; it makes a whole-valued constant with a point a Float as
-well and refuses `vb AND 2.0` and `Data.b 1.5` (`docs/ab3/variant.md`).
+well and refuses `vb AND 2.0`, `1.5 AND vb` and `Data.b 1.5`
+(`docs/ab3/variant.md`).
 
 ## The power with a negative base (#1189)
 
@@ -292,20 +371,12 @@ fraction decides; a Long is not converted to Quick (range +-32768). So
 as Longs (`rf.f=(l2=l3)` is 0 for 100000001 and 100000000, which are the
 same FFP value).
 
-Limits until the expression tree (#1180):
-
-* a left operand that is an expression keeps the type so far (#1183): it
-  is computed in it with the rounding of #1178, so `r.l=(q*2>2)` is -1
-  for `q=1.5` (3 > 2), but `r.l=(q*2>2.4)` is 0 for `q=1.25` (2.5 is
-  rounded down to 2); a negated Quick keeps its fraction
-  (`r.l=(-q<-1)` is -1);
-* a Long constant on the left under a Float context is still an FFP value:
-  `rf.f=(100000001>l3)` is 0;
-* the right operand is computed in its own types: in `If base<i*4+base`
-  (`base.l=$40000`, a default-typed `i=20000`) `i*4` is a Quick and
-  overflows (false; the original computed it in Long, true), and a
-  constant with a fraction on the right is a Float (`If q>1.4` is a Float
-  comparison).
+Since the operand typing (#1216, above) a left operand that is an
+operation is typed by its own operands too (#1183): `r.l=(q*2>2.4)` is -1
+for `q=1.25`, `rf.f=(100000001>l3)` -1 for `l3.l=100000000`; and both
+operands are compared exactly: `If base<i*4+base` (`base.l=$40000`, a
+default-typed `i=20000`) and `If q=0.1` (`q=0.1`) are true, as in the
+original.
 
 A comparison that is the right operand of another operator (`lw AND
 (l1=l1)`, also bound by precedence as in `lw AND l1=l1`, in brackets,
@@ -425,8 +496,12 @@ the four give the same results, except for `Dim a(65535)` with checking
   under a Long type so far is cut to a whole number before the operation,
   so a program that uses fractions in such an expression gets another
   result than its source suggests, depending on the order of the
-  operands. The port keeps the order of the type so far (#1180 is to make
-  it independent of the order).
+  operands.
+* **The order of the operands** was original bug #1216, fixed in the port
+  with the left operand of a comparison (#1183; above, "The operand
+  typing"): in the original the type of an operation depends on its place
+  in the expression (`NPrint 1+1+1+q` 4, `NPrint q+1+1+1` 4.5), so the same
+  terms in another order give another value.
 * **Array indexes** were original bug #1179, fixed in the port (spec
   `compiler/expression-types`): in the original a later index (the second
   and every further one) is evaluated as a Word without runtime error
@@ -440,9 +515,10 @@ the four give the same results, except for `Dim a(65535)` with checking
   evaluated as a Long by the rules of a Long evaluation (above, #1178),
   with and without the checking: both builds use element 20000 and 16,
   and `b(1,q*10)` is element 15 in both. A shift or bit operator of a
-  Quick and a constant with a fraction in a later index (`ja(1,vq AND
-  1.5)`) is now refused without the checking too, with "Illegal Operator
-  for Type", as the first index and the checked build refuse it.
+  Quick and a constant with a fraction in a later index is typed as in
+  the first index and the checked build: `ja(1,vq AND 1.5)` takes the
+  whole part of the constant (#1216), a shift count with a point is
+  refused ("Illegal Operator for Type").
   Without the checking the size check stays off: an index above 65535
   still uses its low word (`g(1,l4*2)` with 80000 is element 14464).
   The code: without the checking only the low word of a later index is
@@ -481,7 +557,8 @@ the four give the same results, except for `Dim a(65535)` with checking
   -3.0000153.
 
 The comments `Fixed (#1178)` and `Fixed (#1179)` in
-`programs/blitz2/src/eval.c` (`contemit`, `mixedop`, `arrevalchk`) and
+`programs/blitz2/src/eval.c` (`contemit`, `mixedop`, `arrevalchk`),
+`Fixed (#1183)` there (`ownleft`) and
 `Fixed (#1188)` in `programs/blitz2/src/libcall.c` (`consttype2`) and
 `Fixed (#1189)` in `programs/blitz2/src/eval.c` (`dopow`) and
 `libs/acidlibs/mathtranslib.c` and `Fixed (#1209)` in
@@ -489,9 +566,17 @@ The comments `Fixed (#1178)` and `Fixed (#1179)` in
 
 ## Where the rules are in the code
 
-Every type decision described on this page is taken in one place,
-`programs/blitz2/src/exprtype.c` (issue #1180, step 1 of the expression
-tree): `exprtype_binop` for a binary operator (the conversions of its
+The operand typing (#1216) is the typing pass
+`programs/blitz2/src/exprtyping.c` over the tree the evaluator records
+while it builds the expression (`p5end` in `programs/blitz2/src/eval.c`,
+at the end of `evalbuild`): where its decision is the code the build
+wrote, that code stays; otherwise the code is rewritten from the
+decisions (`exprarith.c` and `exprfold.c` fold the constants). The pass
+is pinned by the host test `blitz2_exprtyping` against the expression
+matrix's model (`EM_RULES_DECIDED`). The flow of the type so far, which
+the build still uses for the errors and the strings, is taken in one
+place, `programs/blitz2/src/exprtype.c` (issue #1180, step 1 of the
+expression tree): `exprtype_binop` for a binary operator (the conversions of its
 operands, the type whose handler computes it, the type so far after it;
 the rules of #978, #1177, #1178, #1179 and #1182 included),
 `exprtype_element` for a variable, a function value or a constant (the
@@ -505,6 +590,6 @@ table `programs/blitz2/tests/host/exprtype.tsv`, which lists every
 operator, type so far, operand type and operand fact, and against the
 expression matrix's model for its two-operand cells. The tables of
 [expression-type-tables.md](expression-type-tables.md) are generated from
-these functions by `tools/exprtables`; the build checks that the committed
-page is up to date. Which routine of the original each rule comes from:
+the rule of the pass and these functions by `tools/exprtables`; the build
+checks that the committed page is up to date. Which routine of the original each rule comes from:
 [expression-tree.md](expression-tree.md).

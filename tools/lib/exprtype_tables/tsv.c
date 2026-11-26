@@ -30,7 +30,7 @@ static int keyfields(const char *kind, size_t len)
         int n;
     } k[] = {
         { "optype", 3 }, { "cutsraw", 2 }, { "left", 4 }, { "ownleft", 3 },
-        { "binop", 5 },  { "element", 3 }, { "const", 4 },
+        { "binop", 5 },  { "element", 3 }, { "const", 4 },  { "bypass", 5 }, { "bypassnot", 3 },
     };
 
     for (size_t i = 0; i < sizeof k / sizeof k[0]; i++)

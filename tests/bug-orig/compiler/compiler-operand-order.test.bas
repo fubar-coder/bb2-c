@@ -14,10 +14,10 @@
 ; common format, a constant with a point is a Quick beside a Quick; the
 ; values are the declared deviations of the original.  The decided rule
 ; is P+ (design.md of expr-tree-5-operand-typing, decisions 6 and 7).
-; The cells are those where the port and the original give the same
-; value (an open test shows its declared deviations in both): the forms
-; the port already computes right (base+q*4, the Word chains, the second
-; order of a bit operator, q+p+l) are the fixed tests of #1178.  The
+; The cells are those where the port before the fix of #1216 and the
+; original gave the same value: the forms the port already computed
+; right (base+q*4, the Word chains, the second order of a bit operator,
+; q+p+l) are the fixed tests of #1178.  The
 ; other forms of the change: compiler-expr-1216-* (the matrix's named
 ; cells), compiler-operand-order-print (NPrint).
 !TestCase{order}

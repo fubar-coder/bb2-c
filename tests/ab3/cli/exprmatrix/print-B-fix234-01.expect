@@ -1,5 +1,5 @@
 [compile]
 rc=0
 [run]
-print-div-q-l-B -.
+print-div-q-l-B 0
 rc=0

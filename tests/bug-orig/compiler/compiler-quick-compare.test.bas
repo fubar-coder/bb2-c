@@ -14,7 +14,7 @@
 ; matter; a Long and a Quick are compared exactly (the whole part
 ; decides, on equality the fraction), and two whole numbers are compared
 ; as whole numbers in every context.  A compound left operand such as
-; q*2>3 is the open bug of compiler-compare-compound-left (#1183).
+; q*2>3 is compiler-compare-compound-left (#1183).
 
 Function.q fq{a.q}
   Function Return a

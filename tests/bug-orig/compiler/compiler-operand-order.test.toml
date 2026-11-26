@@ -1,7 +1,9 @@
-# compiler-operand-order.test.bas: an open bug (#1216): the port has the same
-# behaviour as the original for these checks, so every cell shows the
-# declared deviations; the checks that pass (float_quick_long, the limit of
-# both orders, float_dest, quick_dest, if_word_half_twice_word) have none
+# compiler-operand-order.test.bas: the original's values of the forms of
+# #1216 are the declared deviations; the checks the original passes
+# (float_quick_long, the limit of both orders, float_dest, quick_dest,
+# if_word_half_twice_word) have none
+fixed-orig = 1216
+
 [deviations."compiler=orig195"]
 "check.order.long_quick_quick" = "== fail"
 "check.order.long_quick_quick.actual" = "== 13"

@@ -42,9 +42,11 @@ endfunction()
 # src/exprtype.c: the type decisions of an expression, src/exprtree.c:
 # the nodes of an expression and the walk over them, src/exprarith.c: the
 # arithmetic of whole numbers, 16.16 and 48.16 for the constant folding,
-# src/exprfold.c: the constant folding of whole and Quick operations in C
+# src/exprfold.c: the constant folding of whole and Quick operations in C,
+# src/exprtyping.c: the typing pass of rule P+ over an expression's tree
 # (no chunk of blitz2.s; pure C, also compiled by the host test tests/host)
 add_library(blitz2_core OBJECT ${chunk_sources} src/exprtype.c src/exprtree.c src/exprarith.c src/exprfold.c
+	src/exprtyping.c
 	${glue_sources})
 blitz2_compile(blitz2_core)
 # the compiler's own library (libs/compilerlib, #1178), embedded in

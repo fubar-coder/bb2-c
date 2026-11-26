@@ -285,6 +285,10 @@ void popselect(struct selnode *s)
 {
     UWORD seltype = s->type, drop;
 
+    if (seltype == T_SELWIDE) {
+        selwidedrop();          /* a 48.16 Select (#1216) */
+        return;
+    }
     if (DEBUGGA)
         tokejsr(seltype < 3 ? casechkw : casechkw + 1); /* make sure next
                                                     thing on stack is a select */

@@ -2,15 +2,16 @@
 
 Readable tables of the type rules of an expression in `blitz2` (OpenSpec
 change `expr-tree-5-operand-typing`, design decision 3): for one operation
-of two values, keyed by operator, left type, right type and type so far,
+of two values, keyed by operator, left type, right type and wanted type,
 the type each operand is taken in and the result type, with the exceptions
-as notes naming their issues; the elements and the constants under each
-type so far. `page` writes them as the page
+as notes naming their issues; the constants under each wanted type and
+beside an operand. `page` writes them as the page
 [`docs/blitz2/expression-type-tables.md`](../../docs/blitz2/expression-type-tables.md)
 or checks the committed page. The logic is `tools/lib/exprtype_tables`
-(`exprtype_tables.h`: the rule set in `rules.c`, the rows of `exprtype.tsv`
-as decisions in `tsv.c`, the page and its comparison in `page.c`), which
-links `programs/blitz2/src/exprtype.c`; tested by
+(`exprtype_tables.h`: the rule set of the type so far in `rules.c`, the rows
+of `exprtype.tsv` as decisions in `tsv.c`, the operand typing of rule P+ and
+the candidates in `cand.c`, the page and its comparison in `page.c`), which
+links `programs/blitz2/src/exprtype.c` and `exprtyping.c`; tested by
 `tools/tests/test_exprtables.cpp`.
 
 ## Usage
@@ -48,9 +49,14 @@ FILE:LINE: ..., at most ten, and their number), a file cannot be read or
 written, or a decision has no row in the --tsv table, 2 usage error.
 ```
 
-`page` makes the page by today's rules: the type so far flows from left
-to right through the decisions of `exprtype.c`. `--tsv` takes the
-decisions from the rows of the committed table
+`page` makes the page by the compiler's rule, the operand typing of rule
+P+ (#1216): the operations from the expression matrix's model
+(`EM_RULES_DECIDED`, `ett_rules_cand`; the typing pass `exprtyping.c`
+agrees with it on every cell, `test_exprtyping`), the constants beside an
+operand from `exprtyping.c` (`ett_pplus_beside`), and what the pass does
+not type (a constant alone, the bit test operators, the Word operations of
+a later index, #978) from the decisions of `exprtype.c`. `--tsv` takes
+those decisions from the rows of the committed table
 `programs/blitz2/tests/host/exprtype.tsv` instead (each decision the page
 needs must have its row there). Without `--out` and `--check` the page
 goes to stdout; `--out` writes it to a file; `--check` compares the

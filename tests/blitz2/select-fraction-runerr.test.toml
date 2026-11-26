@@ -1,0 +1,2 @@
+# select-fraction-runerr.test.bas: with runtime error checking
+runtime-errors = "on"

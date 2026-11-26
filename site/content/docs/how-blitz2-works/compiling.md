@@ -133,16 +133,19 @@ r.l=l/q     : NPrint r   ; 6, 6.67 towards zero (the original: 10)
 r.l=-q*2    : NPrint r   ; -3 (the original: -2)
 x.w=w+v+q*2 : NPrint x   ; 10 (the original: 9)
 x.w=q*2+w+v : NPrint x   ; 10
-NPrint 1+1+1+q           ; 4, not 4.5: 1+1+1 gives a Long
-NPrint 1+1+q             ; 3.5: 1+1 is still a Word
+NPrint 1+1+1+q           ; 4.5 (the original: 4, 1+1+1 gives a Long)
+NPrint q+1+1+1           ; 4.5
 ```
 
-The computation still follows the type so far, so the last two lines
-differ: a sum that starts with whole numbers is a Long, and adding the
-Quick to it gives a whole number. Shifts and the logic operators (`AND`,
-`OR`, `EOR`, `Not`) take the Quick rounded down, as in the original. A
-program that relies on the old result writes `Int(q)`: `r.l=Int(q)*2`
-gives 2.
+In the original the type of an operation depends on its place in the
+expression, so the last two lines differ there. The port types every
+operation by its own operands and the type the result is wanted in
+([#1216](https://github.com/fubar-coder/bb2-c/issues/1216)), so the order
+of the operands does not matter: a Quick and a Long are computed exactly
+(with a whole part of 48 bits), and the result is rounded once, where it
+is taken. Shifts and the logic operators (`AND`, `OR`, `EOR`, `Not`) take
+the Quick rounded down, as in the original. A program that relies on the
+old result writes `Int(q)`: `r.l=Int(q)*2` gives 2.
 
 A Float is never rounded on the way: in a Long computation it makes the
 type Float, and `r.l=2.0*q` gives 3. A Float and a Quick round
@@ -179,17 +182,11 @@ The example prints -1 and both lines. The same holds for a Quick or Float
 destination, where the original compared whole numbers as Quick or Float
 values (`rq.q=(l>1)` gives 0 there for `l.l=65537`).
 
-Two cases are not fixed yet, because the compiler emits the code of the
-left operand before it sees the comparison: a left operand that is an
-expression, such as `r.l=(q*2>2.4)` with `q=1.25`, is computed as a whole
-number first (2.5 is rounded down to 2, so the comparison is false;
-[#1183](https://github.com/fubar-coder/bb2-c/issues/1183)), and
-a large whole-number constant on the left in a Float context
-(`rf.f=(100000001>l)`) is still compared as a Float. Put such an
-operand on the right side of the comparison, or compute it into a
-variable first. The right operand is computed in its own types:
-`If base<i*4+base` with a default-typed (Quick) `i` computes `i*4` as a
-Quick, which overflows from `i=8192` on; give `i` the type Long there.
+A left operand that is an expression is compared with its own value
+too ([#1183](https://github.com/fubar-coder/bb2-c/issues/1183)):
+`r.l=(q*2>2.4)` with `q=1.25` is -1 (the original rounds 2.5 down to 2
+first), and a large whole-number constant on the left in a Float context
+(`rf.f=(100000001>l)`) is compared as a Long.
 
 ### Array indexes
 

@@ -62,7 +62,5 @@ fixed-orig = 1178
 "check.cells.pl-div-cw-q-B.actual" = "== 500"
 "check.cells.pl-div-cl-q-B" = "== fail"
 "check.cells.pl-div-cl-q-B.actual" = "== 50000"
-"check.cells.pl-mod-q-f-B" = "== fail"
-"check.cells.pl-mod-q-f-B.actual" = "== 0"
 "check.cells.pl-pow-q-cf-B" = "== fail"
 "check.cells.pl-pow-q-cf-B.actual" = "== 11"
