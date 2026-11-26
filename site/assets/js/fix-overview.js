@@ -68,12 +68,27 @@
     var sevSelect = select("fix-overview-severity", "Level", "severity", severities, levelNames);
     var topicSelect = select("fix-overview-topic", "Topic", "topic", topics, null);
 
+    // a filter given in the URL: ?level=3,4 (one level or several) and
+    // ?topic=Name; several levels become an option of their own
+    var params = new URLSearchParams(window.location.search);
+    var wanted = (params.get("level") || "").split(",").filter(function (v) {
+      return severities.indexOf(v) >= 0;
+    });
+    if (wanted.length > 1) {
+      var several = document.createElement("option");
+      several.value = wanted.join(",");
+      several.textContent = wanted.slice(0, -1).join(", ") + " and " + wanted[wanted.length - 1];
+      sevSelect.appendChild(several);
+    }
+    if (wanted.length) sevSelect.value = wanted.join(",");
+    if (topics.indexOf(params.get("topic")) >= 0) topicSelect.value = params.get("topic");
+
     function filter() {
-      var sev = sevSelect.value;
+      var sev = sevSelect.value ? sevSelect.value.split(",") : [];
       var topic = topicSelect.value;
       var shown = 0;
       rows.forEach(function (r) {
-        var ok = (!sev || r.dataset.severity === sev) && (!topic || r.dataset.topic === topic);
+        var ok = (!sev.length || sev.indexOf(r.dataset.severity) >= 0) && (!topic || r.dataset.topic === topic);
         r.hidden = !ok;
         if (ok) shown++;
       });
@@ -86,7 +101,6 @@
     var headers = Array.prototype.slice.call(table.tHead.rows[0].cells);
     function keyOf(row, th) {
       var key = th.dataset.sort;
-      if (key === "text") return row.cells[th.cellIndex].textContent.trim();
       return row.dataset[key];
     }
     function sortBy(th, dir) {

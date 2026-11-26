@@ -15,5 +15,6 @@ rows:
     library: polylib
     command: RenderToBitmap
     text: A row.
+    short: A short row.
     page: libraries/commands/polylib
     anchor: rendertobitmap-dither

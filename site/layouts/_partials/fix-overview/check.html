@@ -47,7 +47,7 @@
 {{- range $d.rows -}}
   {{- $row := . -}}
   {{- $id := printf "%v" (.issue | default "?") -}}
-  {{- range slice "issue" "severity" "topic" "library" "text" "page" "anchor" -}}
+  {{- range slice "issue" "severity" "topic" "library" "text" "short" "page" "anchor" -}}
     {{- if not (index $row .) -}}
       {{- errorf "fixoverview (%s): row #%s has no %s" $name $id . -}}
     {{- end -}}

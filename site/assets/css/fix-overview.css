@@ -8,7 +8,7 @@
   opacity: 0.75;
 }
 /* The table fits the content column: fixed layout, the narrow columns
-   (level, issue) get a fixed width, topic and library a share, and the
+   (level, issue) get a fixed width, topic and component a share, and the
    fix text takes the rest. Long names break inside their cell. Only on a
    very narrow screen the table keeps a minimum width and scrolls inside
    its box. */
@@ -28,7 +28,7 @@
   width: 14%;
 }
 .fix-overview-table th:nth-child(3) {
-  width: 22%;
+  width: 16%;
 }
 .fix-overview-table th:nth-child(5) {
   width: 4.5rem;
@@ -89,8 +89,10 @@ html.dark .fix-overview-level-1 {
 html.dark .fix-overview-level-2 {
   color: #fbbf24;
 }
-.fix-overview-library {
-  opacity: 0.75;
+/* the commands of a row, on their own line above its sentence */
+.fix-overview-commands {
+  display: block;
+  margin-bottom: 0.2rem;
   font-size: 0.9em;
 }
 .fix-overview-filters {

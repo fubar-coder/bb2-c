@@ -10,7 +10,9 @@
                                           (layouts/_partials/fix-overview/check.html)
 
   The table is in its initial order: by severity, inside a severity by
-  issue number. assets/js/fix-overview.js adds sorting and the filters.
+  issue number; a row shows its "short" sentence, the warning box its
+  "text". assets/js/fix-overview.js adds sorting and the filters (also
+  from the URL: ?level=3,4 shows levels 3 and 4).
 */ -}}
 {{- $part := .Get "part" | default "table" -}}
 {{- $name := site.Params.fixOverviewData | default "fixoverview" -}}
@@ -57,19 +59,35 @@
     <tr>
       <th scope="col" data-sort="severity" data-type="number">Level</th>
       <th scope="col" data-sort="topic">Topic</th>
-      <th scope="col" data-sort="library">Library or command</th>
-      <th scope="col" data-sort="text">Fix</th>
+      <th scope="col" data-sort="component">Component</th>
+      <th scope="col" data-sort="fix">Fix</th>
       <th scope="col" data-sort="issue" data-type="number">Issue</th>
     </tr>
   </thead>
   <tbody>
     {{- range $rows }}
+    {{- $row := . }}
     {{- $href := relref $.Page (printf "%s/%s#%s" $base .page .anchor) }}
-    <tr data-severity="{{ .severity }}" data-topic="{{ .topic }}" data-library="{{ .library }}{{ with .command }} {{ . }}{{ end }}" data-issue="{{ .issue }}">
+    {{- /* the component: blitz2 for the compiler (also blitz2 as a
+      program, the page running-blitz2), ted for the editor, else the
+      library; a deflibs library of the AmigaOS calls by the AmigaOS
+      library it opens */}}
+    {{- $components := slice }}
+    {{- range split .library "," }}
+      {{- $c := trim . " " }}
+      {{- if eq $c "Compiler" }}{{ $c = "blitz2" }}
+      {{- else if eq $c "TED" }}{{ $c = "ted" }}
+      {{- else if eq $row.page "libraries/amigaos" }}
+        {{- with index site.Data.libraries.deflibs $c }}{{ with .opens }}{{ $c = . }}{{ end }}{{ end }}
+      {{- end }}
+      {{- $components = $components | append $c }}
+    {{- end }}
+    {{- $component := delimit $components ", " }}
+    <tr data-severity="{{ .severity }}" data-topic="{{ .topic }}" data-component="{{ $component }}" data-fix="{{ with .command }}{{ . }} {{ end }}{{ .short | plainify }}" data-issue="{{ .issue }}">
       <td><span class="fix-overview-level fix-overview-level-{{ .severity }}" title="{{ index $levelName (string .severity) }}">{{ .severity }}</span></td>
       <td>{{ .topic }}</td>
-      <td>{{ with .command }}{{ range $i, $c := split . "," }}{{ if $i }}, {{ end }}<code>{{ trim $c " " }}</code>{{ end }}<br>{{ end }}<span class="fix-overview-library">{{ .library }}</span></td>
-      <td><a href="{{ $href }}">{{ .text | markdownify }}</a></td>
+      <td>{{ $component }}</td>
+      <td>{{ with .command }}<span class="fix-overview-commands">{{ range $i, $c := split . "," }}{{ if $i }}, {{ end }}<code>{{ trim $c " " }}</code>{{ end }}</span>{{ end }}<a href="{{ $href }}">{{ .short | markdownify }}</a></td>
       <td><a href="https://github.com/fubar-coder/bb2-c/issues/{{ .issue }}">#{{ .issue }}</a></td>
     </tr>
     {{- end }}

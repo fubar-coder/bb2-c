@@ -124,7 +124,6 @@ In the editor ([Editor]({{< relref "/docs/compared-with-original/editor" >}})):
   and the options turned every value of 80 and more into 0.
 * [The editor did not start with the small font on a 512-row Workbench]({{< relref "/docs/compared-with-original/editor#small-font-screen" >}}).
 
-
 ## The five levels
 
 Every fix has one of five levels. The level answers one question: can a
@@ -137,10 +136,14 @@ at once and the other only comes when the program runs into it.
 
 ## All fixes
 
-Each row names the topic, the library or the part of Blitz Basic 2 that
-is concerned (the compiler or the editor TED), and the commands. The
-sentence of a row leads to its description on the pages of fixed bugs,
-and the issue to its details and its test on GitHub. The table starts
+Each row names the topic and the component the fix is in: blitz2 for the
+compiler, also for blitz2 as a program (loading the libraries, starting
+and ending), ted for the editor, the name of the library for a command
+library or an RWE userlib, and the AmigaOS library, such as
+`exec.library`, for a call of an AmigaOS function. The Fix column gives
+the commands concerned and one short sentence; the sentence leads to the
+description of the fix, and the issue to its details and its test on
+GitHub. The table starts
 sorted by level and, inside a level, by issue number. With JavaScript,
 the column headers sort the table and the two lists above it show only
 one level or one topic.

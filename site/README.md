@@ -143,6 +143,7 @@ add sorting and filters. The file has four parts:
                          # separated by ", "), or "Compiler" or "TED"
     command: "RenderToBitmap, RenderPoly"   # may be ""
     text: "One sentence for the reader: what the port does, and what the original did."
+    short: "Draws on the first bitmap, with the second as the pattern."
     page: libraries/commands/polylib   # the page of fixed bugs: compiler,
                          # running-blitz2, editor, libraries (the index),
                          # libraries/commands/NAME, libraries/userlibs/NAME
@@ -160,6 +161,20 @@ add sorting and filters. The file has four parts:
   or form of output). A new runtime error (3) ranks above a new compile
   error (4) because it is harder to foresee. A level-3 sentence names the
   runtime error in at most five words. Quote every text value.
+
+  `short` is the row's sentence in the table: one short sentence (about
+  40 to 80 characters) with the key fact of `text`, what the port does.
+  The table shows the row's commands right above it, so a sentence about
+  the one command of its row does not begin by naming it. `text` stays
+  the full sentence: the warning box, the command reference and the
+  lists "Fixes described with other libraries" show it.
+
+  The table's Component column is made from `library`: "Compiler" is
+  shown as blitz2 (also for the rows of the page running-blitz2), "TED"
+  as ted, a deflibs library of the page `libraries/amigaos` as the AmigaOS
+  library it opens (`execlib` as `exec.library`), any other name as it
+  is. The URL parameters `?level=3,4` and `?topic=Name` set the filters
+  when the page opens (`assets/js/fix-overview.js`).
 
   The page's warning box shows only the rows with `highlight: true` (a
   boolean; any level), the few fixes an ordinary program meets most
