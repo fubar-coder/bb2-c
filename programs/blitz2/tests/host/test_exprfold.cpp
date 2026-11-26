@@ -375,12 +375,21 @@ TEST_CASE("exprfold: what is not folded here", "[exprfold]")
     // a Long whose high word is not known (a move.w)
     fold(ETO_ADD, ET_LONG, W(1), ET_LONG, L(1), &ok);
     CHECK(!ok);
-    // a Quick Mod by a divisor below 1: DIVS.W by 0, the CPU's trap
-    fold(ETO_MOD, ET_QUICK, Q(5.0), ET_QUICK, Q(0.5), &ok);
-    CHECK(!ok);
     // a division by 0: "Division by Zero" before the fold
     fold(ETO_DIV, ET_WORD, W(5), ET_WORD, W(0), &ok);
     CHECK(!ok);
+}
+
+TEST_CASE("exprfold: a Quick Mod by a divisor below 1", "[exprfold]")
+{
+    int ok;
+
+    // #1219: folded, no DIVS.W by 0; the exact Mod's whole part as the
+    // Word of the handler (the typing pass writes the exact value itself)
+    CHECK(fold(ETO_MOD, ET_QUICK, Q(5.0), ET_QUICK, Q(0.5), &ok) == 0);
+    CHECK(ok);
+    CHECK(fold(ETO_MOD, ET_QUICK, Q(5.75), ET_QUICK, Q(0.5), &ok) == 0);
+    CHECK(ok);
 }
 
 TEST_CASE("exprfold: lmullib's products are left to the library loaded", "[exprfold]")

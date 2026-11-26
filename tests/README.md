@@ -2543,8 +2543,7 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     `compiler-maxs-libjsr` (#335: addresses of the compiler's memory in the
     executable) and three tests where the compiler gives up before the job
     (no result: `compiler-optreqprep-allocmem`, `compiler-wb-info-progfile`,
-    `compiler-wbexit-returncode`), and `compiler-constmod-quick-fraction`,
-    where the compiler crashes while folding (#1219, until its fix); the tests with `@rwe` userlibs are left out (their variants' libraries).
+    `compiler-wbexit-returncode`); the tests with `@rwe` userlibs are left out (their variants' libraries).
     `compiler_selftest_*_prev` (no prev build needed) are their tests with
     broken input: a source whose include differs between `clib` and `prev` fails
     and names the source and the line to quote; the same one passes; a

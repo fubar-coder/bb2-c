@@ -282,7 +282,20 @@ static struct rq const_value(const struct exprtyping_node *n)
     case ETO_OR:
     case ETO_BAR: return rq_int(x | y);
     case ETO_EOR: return rq_int(x ^ y);
-    case ETO_MOD: return y ? rq_int(x % y) : rq_int(0);
+    case ETO_MOD:
+        if (b.ok && b.n > 0 && b.n < b.d) {
+            /* Fixed (#1219): a divisor above 0 and below 1 makes Mod exact (as
+               the pass's code does, today's sign rule): a - trunc(a/b)*b,
+               plus b when negative */
+            struct rq t;
+
+            t = rq_op(a, b, '/');
+            if (!t.ok)
+                return t;
+            t = rq_op(a, rq_op(b, rq_int(t.n / t.d), '*'), '-');
+            return t.ok && t.n < 0 ? rq_op(t, b, '+') : t;
+        }
+        return y ? rq_int(x % y) : rq_int(0);
     case ETO_LSL:
     case ETO_ASL: return rq_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
     case ETO_LSR:
@@ -417,6 +430,15 @@ static unsigned const_flow(struct ctx *c, const struct exprtyping_node *n, unsig
         rt = lt;                /* #1182: a comparison's Word up to the left operand's type */
     if (rt == ET_FLOAT && (is_bit(n->op) || is_shift(n->op)))
         return refuse(c);
+    if (n->op == ETO_MOD && (rt == ET_QUICK || rt == ET_FLOAT)) {
+        struct rq b = const_value(n->r);
+
+        /* Fixed (#1219): the exact Mod by a divisor above 0 and below 1,
+           where it has a fraction, in the Quick or Float it is computed in
+           (a whole result keeps the handler's type) */
+        if (b.ok && b.n > 0 && b.n < b.d && !rq_isint(const_value(n)))
+            return rt;
+    }
     return handler_result(n->op, rt);
 }
 

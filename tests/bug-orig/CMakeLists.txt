@@ -163,11 +163,8 @@ bug_orig_fixed_orig_check(${CMAKE_CURRENT_SOURCE_DIR})
 #   compiler-optreqprep-allocmem, compiler-wb-info-progfile, compiler-wbexit-returncode
 #                         the compiler gives up before the job, there is no result (no RESULT
 #                         line) to compare
-#   compiler-constmod-quick-fraction
-#                         the compiler crashes while folding the constants (#1219), there is
-#                         no result to compare; the entry goes with the fix
 set(prev_not_compared compiler-maxs-libjsr compiler-optreqprep-allocmem
-	compiler-wb-info-progfile compiler-wbexit-returncode compiler-constmod-quick-fraction)
+	compiler-wb-info-progfile compiler-wbexit-returncode)
 # bug_orig_test(BAS NAME [WANT RC]): tokenise, pass file, ctest NAME.
 # WANT: the test passes if corpusrun returns RC (the self test).
 set(bug_orig_sources)

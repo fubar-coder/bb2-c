@@ -370,6 +370,9 @@ static void mixedop(struct opentry *op, const struct exprtype_bin *d, BOOL zeroo
 static void doplus2(UWORD opcode);
 /* the operator operate emits has two constants (BNF_FOLD) */
 static BOOL foldnow = FALSE;
+/* divzerochk saw a Quick Mod by a divisor above 0 and below 1 (#1219): its
+   DIVS.W would divide by 0, constfold does not run the code */
+static BOOL foldmodtrap = FALSE;
 /* where its left operand's code begins (divzerochk) */
 static ULONG foldfrom = 0;
 static void compareop(struct opentry *op, UWORD left, const struct exprtype_bin *d);
@@ -1272,7 +1275,7 @@ void exprresume(struct exprunit *s)
    the code from the left operand's start to the operation without a gap
    and that code is still the one noted.  Otherwise (a Float, code that is
    not noted, an overflow check of the debugger in the operation's code,
-   the CPU's trap of a Quick Mod by a divisor below 1, a Long or Quick *
+   a Long or Quick *
    of lmullib, whose overflow depends on the library loaded:
    exprfold_libdep) the code is run, as the original did. */
 #define FOLDNOTES 32                /* the notes kept: the operands of one fold need a few */
@@ -1433,6 +1436,12 @@ static void constfold(const struct expract *s, UWORD type)
     lasta6 = (WORD)s->y;
     inc = !exprfold_libdep(foldop, &foldd) && foldoperands(at, &left, &right)
           && exprfold_binop(foldop, &foldd, foldleft, &left, &right) && exprfold_value(&left, type, &value);
+    if (!inc && foldmodtrap && foldop == ETO_MOD && foldd.handler == ET_QUICK) {
+        /* Fixed (#1219): the exact Mod is below its divisor, a Word 0 */
+        value = 0;
+        inc = TRUE;
+    }
+    foldmodtrap = FALSE;
     pc = at;
     if (!inc) {
         /* DIFF: asm saved d2/a5 and did jsr (a0) with the compiler's
@@ -2372,6 +2381,7 @@ static void divzerochk(const struct opentry *op, UWORD type)
     WORD s_nomemleft = nomemleft;
     BOOL divzero;
 
+    foldmodtrap = FALSE;
     if ((op != opdiv && op != opmod) || type < T_BYTE || type > T_FLOAT)
         return;                     /* doop refuses the other types */
     if (!foldnow || nomemleft)
@@ -2413,6 +2423,7 @@ static void divzerochk(const struct opentry *op, UWORD type)
         divzero = value == 0;
     if (divzero)
         divzeroerr();
+    foldmodtrap = type == T_QUICK && op == opmod && (value >> 16) == 0;
 }
 
 /* ============================================ PLUS / compare operators */
@@ -5817,11 +5828,32 @@ static BOOL p5eqbin(struct p5node *p)
     }
 }
 
+/* the constant subtree n has a Mod by a divisor above 0 and below 1: the
+   pass's exact Mod (#1219), not the fold of today's Mod of the whole parts
+   (DIVS.W by 0) */
+static BOOL p5constmodfrac(const struct exprtyping_node *n)
+{
+    struct p5q b;
+
+    if (n->kind == ETN_NEG)
+        return p5constmodfrac(n->l);
+    if (n->kind != ETN_BIN)
+        return FALSE;
+    if (n->op == ETO_MOD) {
+        b = p5qval(n->r);
+        if (b.ok && b.n > 0 && b.n < b.d)
+            return TRUE;
+    }
+    return p5constmodfrac(n->l) || p5constmodfrac(n->r);
+}
+
 /* the node p taken in las by the pass gives the value the build's code
    gives */
 static BOOL p5eq(struct p5node *p, UWORD las)
 {
     las = p5norm(las);
+    if (p5folded(&p->t) && p5constmodfrac(&p->t))
+        return FALSE;
     if (p5folded(&p->t))
         return p5consteq(p, las);
     if (p->t.typed && p->t.fmt == ETF_Q48)
@@ -7510,7 +7542,7 @@ static void p5constapply(struct p5node *p, UWORD take, BOOL bit)
     relax = p5relaxed(&p->t);
     if (!ok && relax)
         illoperr();                 /* a value beyond the pass (an overflow) */
-    if (!relax && (p->tt == take || !ok)) {
+    if (!relax && (p->tt == take || !ok) && !(ok && p5constmodfrac(&p->t))) {
         /* the build's code: today's value in its type */
         p->flags |= P5F_KEEP;
         p->dt = p->tt;

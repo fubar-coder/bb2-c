@@ -328,13 +328,15 @@ static int handler(unsigned op, const struct exprtype_bin *d, struct exprfold_re
     if (h == ET_QUICK) {
         if (op == ETO_MOD) {
             v = (uint32_t)exprarith_qmod_today(a, b, &f);       /* domodquick: a Word */
-            /* BUG(orig) (#1219): a divisor whose whole part is 0 (5 Mod
-               0.5) passes divzerochk (the whole Quick is not 0), and the
-               fold's DIVS.W traps in the compiler ("Software Failure");
-               eval.c runs the code here as the original did (test
+            /* Fixed (#1219): a divisor whose whole part is 0 (5 Mod 0.5)
+               passes divzerochk (the whole Quick is not 0), and the
+               original's fold ran DIVS.W by 0 in the compiler ("Software
+               Failure").  The exact Mod of rule P+ is below the divisor,
+               its whole part 0, the Word the handler gives (the typing
+               pass writes the exact value itself; test
                compiler-constmod-quick-fraction) */
             if (f & EXA_TRAP)
-                return 0;           /* DIVS.W by a whole part 0: the CPU's trap */
+                v = 0;
             setlo(l, v);
             return 1;
         }

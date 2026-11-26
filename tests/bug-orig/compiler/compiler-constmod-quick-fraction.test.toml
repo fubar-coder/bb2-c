@@ -1,7 +1,8 @@
-# compiler-constmod-quick-fraction.test.bas: an open bug (#1219): the
-# original compiler and the port run into the division trap while folding
-# the constants: a Software Failure, no compile result, the session ends at
-# its limit
+# compiler-constmod-quick-fraction.test.bas: the original compiler runs into
+# the division trap while folding the constants (#1219): a Software Failure,
+# no compile result, the session ends at its limit
+fixed-orig = 1219
+isolate = ["compiler=orig195"]
 timeout = 30
 
 [deviations."compiler=orig195"]
