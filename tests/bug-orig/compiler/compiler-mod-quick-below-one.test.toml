@@ -1,0 +1,29 @@
+# compiler-mod-quick-below-one.test.bas: the original's values are the
+# declared deviations: a Quick divisor below 1 (the whole part 0 is the
+# DIVS.W divisor) is the CPU's division trap at run time, a Software
+# Failure after which the session runs to its limit; b Mod 1.5 is 0
+fixed-orig = 1216
+
+[asserts."case=mod_byte_const_fraction_print"]
+output = "== \"1\n\""
+
+[deviations."compiler=orig195,case=mod_quick_below_one"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195,case=mod_quick_below_one_zero"]
+requester = "contains \"Software Failure\""
+session = "== timeout"
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
+
+[deviations."compiler=orig195,case=mod_byte_const_fraction"]
+"check.mod_byte_const_fraction.quick_dest" = "== fail"
+"check.mod_byte_const_fraction.quick_dest.actual" = "== 0"
+
+[deviations."compiler=orig195,case=mod_byte_const_fraction_print"]
+output = "== \"0\n\""
