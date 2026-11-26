@@ -2522,7 +2522,8 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     `compiler-maxs-libjsr` (#335: addresses of the compiler's memory in the
     executable) and three tests where the compiler gives up before the job
     (no result: `compiler-optreqprep-allocmem`, `compiler-wb-info-progfile`,
-    `compiler-wbexit-returncode`); the tests with `@rwe` userlibs are left out (their variants' libraries).
+    `compiler-wbexit-returncode`), and `compiler-constmod-quick-fraction`,
+    where the compiler crashes while folding (#1219, until its fix); the tests with `@rwe` userlibs are left out (their variants' libraries).
     `compiler_selftest_*_prev` (no prev build needed) are their tests with
     broken input: a source whose include differs between `clib` and `prev` fails
     and names the source and the line to quote; the same one passes; a
@@ -2538,7 +2539,7 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     and `_unnamed_prev` (prev's compiler is `hangstub`, a program that never ends).
   * `PREFIX_ID_prev` of a test of the BASIC test model (`ID.test.bas` in
     `tests/blitz2`, and in `tests/bug-orig` those of `compiler/` and
-    `regression/compiler-*` but the four above; `cmake/prev.cmake`,
+    `regression/compiler-*` but the five above; `cmake/prev.cmake`,
     `prev_compile_model_test`; change `basic-test-runner` D10): the build
     writes the driver of all cases of the source (`corpusrun case
     --write-driver`, in `model-drivers/` of the directory's build
