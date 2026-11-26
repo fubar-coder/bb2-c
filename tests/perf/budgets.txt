@@ -428,6 +428,12 @@
 # 219.1/219.1, iflmulq 592.5/592.5, selladdq 280.6/280.6, xqmodc
 # 1537.0/1537.0, xlmodq 1493.0/1493.0, xldivq 1855.0/1855.0 (ifqltl
 # unchanged, no 48.16).
+# The tree optimisations of task 4.3 (a 48.16 root under a wanted Long
+# by the routines of #1178, under a wanted Quick in its low 32 bits),
+# two runs: lmulq 311.1/311.1, lxmulq 468.6/468.6, qmull 284.6/284.6,
+# xlmulq 214.1/214.1, xlxmulq 218.1/218.1, laddqp 180.6/180.6, xladdqp
+# 91.1/91.1, ifladdq 216.6/216.6 (the other loops as before, within
+# their budgets).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -628,16 +634,16 @@ bproc.pstr                    8121     10038.3  pstr{a$} (a Statement with a str
 bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
 bq48.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
-bq48.lmulq                    511          -  r=l*q (l=100, q=2.5: a Long times a Quick under a Long, 48.16)
-bq48.lxmulq                   937          -  r=lx*q (lx=100000: the product beyond 32 bits)
-bq48.qmull                    494          -  r=q*l (the other order)
-bq48.xlmulq                   495          -  x=l*q (under a Quick: the low 32 bits of the 48.16 product)
-bq48.xlxmulq                  917          -  x=lx*q (under a Quick, lx=100000)
-bq48.laddqp                   188          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
-bq48.xladdqp                  170          -  x=l+q+p (the same under a Quick)
+bq48.lmulq                    318          -  r=l*q (l=100, q=2.5: a Long times a Quick under a Long)
+bq48.lxmulq                   477          -  r=lx*q (lx=100000: the product beyond 32 bits)
+bq48.qmull                    291          -  r=q*l (the other order)
+bq48.xlmulq                   220          -  x=l*q (under a Quick: the low 32 bits of the 48.16 product)
+bq48.xlxmulq                  224          -  x=lx*q (under a Quick, lx=100000)
+bq48.laddqp                   186          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
+bq48.xladdqp                   96          -  x=l+q+p (the same under a Quick)
 bq48.qmulpaddl                667          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
 bq48.qmulwaddp                543          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16)
-bq48.ifladdq                  225          -  If l+q>p Then c=1 (a 48.16 comparison)
+bq48.ifladdq                  222          -  If l+q>p Then c=1 (a 48.16 comparison)
 bq48.iflmulq                  602          -  If l*q>p Then c=1 (a 48.16 product compared)
 bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
 bq48.selladdq                 287          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)

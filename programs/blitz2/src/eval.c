@@ -5328,6 +5328,10 @@ static BOOL p5prep;
 #define P5_SPMUL (-78)
 #define P5_SPDIV (-84)
 
+/* the path of an operation whose value is taken as its low 32 bits only
+   (p5lowmark: an ETY_Q48 operation under ETC_KEEP, task 4.3) */
+#define P5Y_LOW 'l'
+
 /* compilerlib's 48.16 routines (libs/compilerlib; q48add $D603 and q48sub
    $D604 are written inline) */
 #define q48mul 0xd605
@@ -6456,6 +6460,36 @@ static void p5bin(struct p5node *p, UWORD r)
         p5operands(L, R, r, q, T, T);
         p5doop(op, T);
         break;
+    case P5Y_LOW:
+        /* the low 32 bits of the 48.16 value: a whole operand as l << 16
+           modulo 2^32, a 16.16 one as it is */
+        p5operands(L, R, r, q, o->las, o->ras);
+        if (op == ETO_MUL) {
+            /* l * q modulo 2^32 (one operand whole, the 48.16 product of
+               the two is exact): three MULU in D(r+2), D(r+3) */
+            p5w(0x2000 | ((r + 2) << 9) | r);           /* move.l D(r),D(r+2) */
+            p5w(0x4840 | (r + 2));                      /* swap D(r+2) */
+            p5w(0xc0c0 | ((r + 2) << 9) | (r + 1));     /* mulu.w D(r+1),D(r+2): ah*bl */
+            p5w(0x2000 | ((r + 3) << 9) | (r + 1));     /* move.l D(r+1),D(r+3) */
+            p5w(0x4840 | (r + 3));                      /* swap D(r+3) */
+            p5w(0xc0c0 | ((r + 3) << 9) | r);           /* mulu.w D(r),D(r+3): al*bh */
+            p5w(0xd040 | ((r + 2) << 9) | (r + 3));     /* add.w D(r+3),D(r+2) */
+            p5w(0x4840 | (r + 2));                      /* swap D(r+2) */
+            p5w(0x4240 | (r + 2));                      /* clr.w D(r+2) */
+            p5w(0xc0c0 | (r << 9) | (r + 1));           /* mulu.w D(r+1),D(r): al*bl */
+            p5w(0xd080 | (r << 9) | (r + 2));           /* add.l D(r+2),D(r) */
+            break;
+        }
+        if (o->ras == T_LONG) {
+            p5w(0x4840 | (r + 1));                      /* swap D(r+1) */
+            p5w(0x4240 | (r + 1));                      /* clr.w D(r+1) */
+        }
+        if (o->las == T_LONG) {
+            p5w(0x4840 | r);                            /* swap D(r) */
+            p5w(0x4240 | r);                            /* clr.w D(r) */
+        }
+        p5w((op == ETO_ADD ? 0xd080 : 0x9080) | (r << 9) | (r + 1));   /* add.l / sub.l D(r+1),D(r) */
+        break;
     case ETY_MIXED: {
         struct exprtype_bin d;
 
@@ -6674,6 +6708,7 @@ static void p5binapply(struct p5node *p, UWORD want)
     switch (o->path) {
     case ETY_Q48: lt = rt = 0; break;
     case ETY_Q16: lt = rt = T_QUICK; break;
+    case P5Y_LOW: break;            /* las, ras: T_LONG or T_QUICK */
     case ETY_MIXED:
         lt = o->lwide ? T_QUICK : T_LONG;
         rt = o->rwide ? T_QUICK : T_LONG;
@@ -6714,6 +6749,7 @@ static void p5binapply(struct p5node *p, UWORD want)
     case ETY_EXACT:
     case ETY_COMPARE: p->dt = T_WORD; break;
     case ETY_MIXED: p->dt = T_LONG; break;
+    case P5Y_LOW: p->dt = T_QUICK; break;
     default: p->dt = o->result; break;
     }
     p->act->fn = p5binopact;
@@ -6771,6 +6807,135 @@ static void p5apply(struct p5node *p, UWORD take, BOOL bit, UWORD want)
     }
 }
 
+/* an operand of an operation under ETC_FLOOR (p5mixfloor): 1 a whole
+   number in one register (a Word or Long value, a whole constant of the
+   Long range), 2 a 16.16 value (a Quick, a 16.16 result, a constant with
+   a fraction in the Quick range), 0 else (a 48.16 value, a Byte, a Float) */
+static int p5mixkind(const struct exprtyping_node *n)
+{
+    if (p5folded(n)) {
+        struct p5q v = p5qval(n);
+
+        if (!v.ok)
+            return 0;
+        if (v.d == 1)
+            return p5fits(v.n, T_LONG) ? 1 : 0;
+        return p5fits(p5qfloor(v), T_QUICK) ? 2 : 0;
+    }
+    if (!n->typed)
+        return 0;
+    if (n->fmt == ETF_Q16)
+        return 2;
+    if (n->fmt != ETF_TYPE)
+        return 0;
+    if (n->kind == ETN_VAR && n->type == ET_QUICK)
+        return 2;
+    return n->t == ET_WORD || n->t == ET_LONG ? 1 : 0;
+}
+
+/* task 4.3 (a tree optimisation, design decision 9): the root of an
+   expression taken as its whole part rounded down (ETC_FLOOR), a 48.16
+   +, - or * of a whole number and a 16.16 value (+ and - also of two
+   16.16 values), is the routine of #1178 that gives that whole part
+   directly (mixedop: l + floor(q), l - ceil(q), mixmult's bits 16..47 of
+   the product), the same value: neither operand has more than 32 bits,
+   so the 48.16 operation is exact and its floor is the routine's. */
+static void p5mixfloor(struct p5node *root, struct exprtyping_result *res)
+{
+    struct exprtyping_op *o = &root->t.o;
+    int lk, rk;
+
+    if (res->consumer != ETC_FLOOR || res->fmt != ETF_Q48 || root->t.kind != ETN_BIN || o->path != ETY_Q48
+        || (root->t.op != ETO_ADD && root->t.op != ETO_SUB && root->t.op != ETO_MUL))
+        return;
+    lk = p5mixkind(root->t.l);
+    rk = p5mixkind(root->t.r);
+    if (!lk || !rk || (lk == 1 && rk == 1) || (root->t.op == ETO_MUL && lk == 2 && rk == 2))
+        return;
+    o->path = ETY_MIXED;
+    o->lwide = (unsigned char)(lk == 2);
+    o->rwide = (unsigned char)(rk == 2);
+    o->las = lk == 2 ? ET_QUICK : ET_LONG;
+    o->ras = rk == 2 ? ET_QUICK : ET_LONG;
+    o->result = ET_LONG;
+    o->fast = 0;
+    root->t.t = ET_LONG;
+    root->t.fmt = ETF_TYPE;
+    res->fmt = ETF_TYPE;
+}
+
+/* n, a 48.16 + or - whose value is taken as its low 32 bits, can compute
+   them alone: each operand a whole number, a 16.16 value or such an
+   operation (p5mixkind) */
+static BOOL p5lowable(const struct exprtyping_node *n)
+{
+    const struct exprtyping_node *k[2];
+    int i;
+
+    if (n->kind != ETN_BIN || !n->typed || n->o.path != ETY_Q48 || (n->op != ETO_ADD && n->op != ETO_SUB))
+        return FALSE;
+    k[0] = n->l;
+    k[1] = n->r;
+    for (i = 0; i < 2; i++)
+        if (!p5mixkind(k[i]) && !p5lowable(k[i]))
+            return FALSE;
+    return TRUE;
+}
+
+/* the operation n (and the + and - below it, p5lowable) on the path
+   P5Y_LOW */
+static void p5lowset(struct exprtyping_node *n)
+{
+    struct exprtyping_op *o = &n->o;
+    struct exprtyping_node *k[2];
+    unsigned char *as[2];
+    int i;
+
+    k[0] = n->l;
+    k[1] = n->r;
+    as[0] = &o->las;
+    as[1] = &o->ras;
+    for (i = 0; i < 2; i++) {
+        int m = p5mixkind(k[i]);
+
+        if (!m)
+            p5lowset(k[i]);
+        *as[i] = m == 1 ? ET_LONG : ET_QUICK;
+    }
+    o->path = P5Y_LOW;
+    o->lwide = o->rwide = 0;
+    o->result = ET_QUICK;
+    o->fast = 0;
+    n->t = ET_QUICK;
+    n->fmt = ETF_TYPE;
+}
+
+/* task 4.3 (a tree optimisation, design decision 9): an expression taken
+   as its low 32 bits (ETC_KEEP: a wanted Quick takes the 16.16 value)
+   whose root is a 48.16 operation that needs no more than the low 32 bits
+   of its operands: a chain of + and - of whole numbers and 16.16 values
+   (the low 32 bits of a sum are the sum of the low 32 bits), or a * of a
+   whole number and a 16.16 value (the exact product l * q, its low 32
+   bits by three MULU; D(r+2), D(r+3) free below d6) computes in 32 bits
+   (P5Y_LOW): the same value without the 48.16 operations */
+static void p5lowmark(struct p5node *root, struct exprtyping_result *res)
+{
+    struct exprtyping_node *n = &root->t;
+
+    if (res->consumer != ETC_KEEP || res->fmt != ETF_Q48 || n->kind != ETN_BIN || !n->typed
+        || n->o.path != ETY_Q48)
+        return;
+    if (n->op == ETO_MUL) {
+        int lk = p5mixkind(n->l), rk = p5mixkind(n->r);
+
+        if (lk + rk != 3 || root->x->reg + 3 > 5)
+            return;
+    } else if (!p5lowable(n))
+        return;
+    p5lowset(n);
+    res->fmt = ETF_TYPE;
+}
+
 /* the evaluation is built (asked: the type asked for, unk: none): the
    pass of rule P+; TRUE: its code is the pass's, *type the type it gets
    (e: the evaluation's node) */
@@ -6805,6 +6970,10 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
     /* a Select's 48.16 value is kept as 48.16 (#1216; a Quick or 16.16
        Select as before) */
     pair = wide && res.consumer != ETC_BOOL && res.fmt == ETF_Q48;
+    if (!pair) {
+        p5mixfloor(root, &res);
+        p5lowmark(root, &res);
+    }
     if (!relax && !pair && p5same(root, &res, want))
         return FALSE;
     /* the pass's code: the conversions of the raw Quicks (#1178) and
