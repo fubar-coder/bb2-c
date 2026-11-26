@@ -99,11 +99,15 @@ In an expression with a Quick, `+`, `-`, `*`, `/` and `Mod` SHALL be computed in
 - **THEN** it prints 150000, 100000 and 1.5 (today 1)
 
 ### Requirement: The result is rounded once, where it is used
-The result of an expression with a Quick SHALL be rounded once, where it is used: down to a whole number, as the 16.16 value for a Quick, and without a wanted type (`If`, `Print`) as the Quick when it fits, else its whole part. A `/` under a wanted Long SHALL give a whole number towards zero at the operator; `+`, `-` and `*` SHALL keep the fraction until the result is used.
+A Quick expression's result SHALL be rounded once, where it is used: down to a whole number, the 16.16 value for a Quick, without a wanted type the Quick when it fits, else rounded down. A `/` under a wanted Long SHALL be whole, towards zero, at the operator. A 48.16 product or quotient SHALL be cut to 1/65536 in the direction of the final rounding (down under a wanted Byte, Word or Long, else towards zero) (#1221).
 
 #### Scenario: Long destination
 - **WHEN** a program evaluates `r.l=q*2`, `r.l=l-q`, `r.l=l*q`, `r.l=q/h`, `r.l=l+q`, `r.l=q+p` with `q=1.5`, `h=0.5`, `p=2.75`, `l=10`
 - **THEN** it gets 3, 8, 15, 3, 11 and 4, as today
+
+#### Scenario: The 48.16 cut under a Long destination
+- **WHEN** a program evaluates `r.l=q*p` and `r.l=q*p+l` with `q=-0.5`, `p=1/65536`, `l=5`
+- **THEN** it gets -1 and 4 (the exact value rounded down once; test `expr-q48-cut-down`)
 
 #### Scenario: Division under a Long destination
 - **WHEN** a program evaluates `r.l=i/2*2` with `i=7` and `r.l=q/2+0` with `q=-3`
