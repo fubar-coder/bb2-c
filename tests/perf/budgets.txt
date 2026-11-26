@@ -407,6 +407,19 @@
 # minus load's (q48div 1.5/2.5: 1741, the JSR and RTS included; libgcc's
 # __divdi3 3566 and the prototype's 5912 for the same division, the call
 # excluded). No target: the original has no such routines.
+# bq48 (new, expr-tree-5-operand-typing task 4.3, 2026-11-26) measures no
+# library loop but the code blitz2 writes for the expressions rule P+
+# computes in 48.16 (a Long beside a Quick; If, Select, Mod with a
+# fraction, a division under a Quick), the routines it calls included;
+# three runs on main 80c220d5a: lmulq 547.1/546.8/546.6, lxmulq
+# 969.6/969.8/969.6, qmull 530.6/531.2/531.1, xlmulq 531.1/531.2/530.6,
+# xlxmulq 953.6/951.8/951.6, laddqp 374.1/375.8/374.1, xladdqp
+# 355.6/355.8/356.1, qmulpaddl 814.1/814.2/814.1, qmulwaddp
+# 690.6/690.8/691.1, ifladdq 403.1/401.2/401.1, iflmulq
+# 739.6/741.8/741.6, ifqltl 103.1/103.2/103.1, selladdq
+# 467.1/467.2/467.1, xqmodc 1583.6/1583.8/1583.6, xlmodq
+# 1538.1/1538.8/1538.6, xldivq 1897.1/1897.2/1897.1. No target: the
+# original computes these expressions in other types.
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -606,6 +619,23 @@ bproc.emptylong                 3          -  the empty loop again, 150000 itera
 bproc.pstr                    8121     10038.3  pstr{a$} (a Statement with a string parameter and a local string)
 bproc.fstr                    8822     10783.6  c=fstr{a$} (the same as a Function.l, Function Return Len(u$))
 bproc.pgrow                  11203     13322.6  pgrow{a$} (u$="a" : u$=s$, the second assignment frees and allocates)
+bq48.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
+bq48.lmulq                    556          -  r=l*q (l=100, q=2.5: a Long times a Quick under a Long, 48.16)
+bq48.lxmulq                   983          -  r=lx*q (lx=100000: the product beyond 32 bits)
+bq48.qmull                    540          -  r=q*l (the other order)
+bq48.xlmulq                   540          -  x=l*q (under a Quick: the low 32 bits of the 48.16 product)
+bq48.xlxmulq                  967          -  x=lx*q (under a Quick, lx=100000)
+bq48.laddqp                   383          -  r=l+q+p (p=1.25: a chain of two 48.16 additions under a Long)
+bq48.xladdqp                  363          -  x=l+q+p (the same under a Quick)
+bq48.qmulpaddl                826          -  r=q*p+l (a 48.16 product of two Quicks, then a Long added)
+bq48.qmulwaddp                702          -  r=q*w+p (w=3, a Word: no Long, under a Long all 48.16)
+bq48.ifladdq                  411          -  If l+q>p Then c=1 (a 48.16 comparison)
+bq48.iflmulq                  753          -  If l*q>p Then c=1 (a 48.16 product compared)
+bq48.ifqltl                   108          -  If q<l Then c=1 (a Quick with a Long: the exact comparison of #1177, no 48.16)
+bq48.selladdq                 475          -  Select l+q : Case 1 : Case 2 : Case 3 : Default (a 48.16 Select, no Case matches)
+bq48.xqmodc                  1603          -  x=q Mod 1.5 (an exact Mod with a fraction: compilerlib q48mod)
+bq48.xlmodq                  1558          -  x=l Mod q (a Long Mod a Quick, exact)
+bq48.xldivq                  1920          -  x=l/q (a 48.16 division under a Quick: compilerlib q48divq)
 brec.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 brec.rec20                   5385     6534.8  rec{20,a$} (a recursive Statement with a string parameter, depth 1 to 21 and back; per call)
 bsnow.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)

@@ -2247,7 +2247,7 @@ cycle values do not depend on the host's load or on what else runs
 ("Speed" below), so the tests need no `RUN_SERIAL`.
 
 * **The programs:** `tests/perf/bench/*.bas`, one per area (`bmath`,
-  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`, `bsnow`, `bzone`, `bcmp`, `bcompilerlib`), tokenised by
+  `bstr`, `bgfx`, `binput`, `bmisc`, `bdisp`, `bmod`, `bproc`, `brec`, `bbblit`, `bstc`, `banim`, `bfns`, `bchunky`, `bmapshapes`, `bsnow`, `bzone`, `bcmp`, `bcompilerlib`, `bq48`), tokenised by
   `tedsrc tok` like the corpus. In Blitz mode each runs one
   `For i=1 To N ... Next` loop per command (`N` = 2000 for most) and times
   it with a CIA-B cascade: timer A divides the E clock by 100, timer B
@@ -2330,11 +2330,16 @@ cycle values do not depend on the host's load or on what else runs
   orders, `If n/2=Int(n/2)`, a constant on the right, a `While`
   condition; #1177): its targets are the values of the original's code,
   measured with the prev build (`budgets.txt`), not by `perf-original`.
-  `bcompilerlib` times compilerlib's 48.16 routines (`$D603`-`$D60E`),
-  which no compiled code calls yet: inline assembler loads the operands
+  `bcompilerlib` times compilerlib's 48.16 routines (`$D603`-`$D60E`)
+  alone: inline assembler loads the operands
   into d0-d3 and calls each with `SysJsr`; its `load` loop is the loads
   alone, so a routine's own cycles are its value minus that one. No
   targets: the original has no such routines.
+  `bq48` measures the code blitz2 writes for the expressions rule P+
+  computes in 48.16 (`expr-tree-5-operand-typing`: a Long beside a Quick
+  under a Long and a Quick, a chain, `If`, a `Select` with constant Cases,
+  `Mod` with a fraction, a division under a Quick), the routines it calls
+  included. No targets: the original computes these in other types.
 * **The run:** `tests/perf/perf.cmake` (through `cmake/with-workdir.cmake`)
   runs the configuration `clib`, this build's `blitz2` with its C
   libraries, of the pass `build/<preset>/tests/perf/perf_NAME.pass` (the
