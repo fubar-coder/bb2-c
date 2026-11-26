@@ -165,15 +165,18 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    of them, also in the name of a `[fixed #NNN]` test case. Write such
    a name rephrased ("the fixed case of #NNN");
 3. the entry on the website page of fixed original bugs
-   (the area page in `site/content/docs/compared-with-original/fixed-bugs/`:
-   a one-sentence entry, or a section with an example of the original's
-   and the port's output for a bug ordinary programs meet; a source the
-   port refuses or compiles differently also goes into `new-errors.md`),
+   (in `site/content/docs/compared-with-original/`: `compiler.md`,
+   `running-blitz2.md`, `editor/`, `libraries/` with `commands/`,
+   `userlibs/` and `amigaos.md`: a one-sentence entry; a fix of level 3
+   or 4 is an entry of its own with the program (the original's and the
+   port's comments) and "What to change"; a source the port refuses or
+   compiles differently also goes to "Forms the original refused" on
+   `extensions.md`),
    and the issue's row in the overview of fixed bugs
    (`site/data/fixoverview.yaml`: severity by the level texts at the top
-   of that file, topic, library or command,
-   one sentence, page and anchor, `site/README.md`); the site build fails
-   for an issue linked on a fixed-bugs page without a row;
+   of that file, topic, library or command, one sentence `text`, one
+   short sentence `short`, page and anchor, `site/README.md`); the site
+   build fails for an issue linked on one of these pages without a row;
 4. the label `fixed-in-port` on the issue (every fix);
 5. after the push: the issue is closed (by `Fixes #NNN`; otherwise with
    a comment naming the commit).

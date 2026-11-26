@@ -23,7 +23,7 @@ Names and place are decided (proposal, "Decisions of the user"). An enhancement,
 
 ## 5. Documents
 
-- [ ] 5.1 `docs/libs/bb2-readme.md` (the #199 section: the functions first, OldMul{} for the CD's libraries and AB3 mode), the library's head comment; site: "Getting the old products" on the fixed-bugs page points to the functions, the intro and command texts of the generated page. Verify: coordinator's review; the cmdref data checked by the build; links resolve.
+- [ ] 5.1 `docs/libs/bb2-readme.md` (the #199 section: the functions first, OldMul{} for the CD's libraries and AB3 mode), the library's head comment; site: "Getting the old products" on the page `compared-with-original/libraries/commands/lmullib.md` points to the functions, the intro and command texts of the generated page. Verify: coordinator's review; the cmdref data checked by the build; links resolve.
 
 ## 6. Commit and report
 

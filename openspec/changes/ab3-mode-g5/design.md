@@ -17,7 +17,7 @@ See `proposal.md` for the survey and the scope. State of the code:
   commit `712dda50`); it is core behaviour of both modes, recorded in
   `docs/blitz2/deviations.md` (kind F), the bug-orig tests
   `compiler-procend-kind*`, the CD table rows of `DARTS_POLY`/`DARTS_WIRE`
-  and the two site pages (`new-errors.md`, `fixed-bugs/compiler.md`). No
+  and the two site pages (`compared-with-original/compiler.md`, `compared-with-original/extensions.md`). No
   OpenSpec spec states it.
 - Named warnings exist (`compiler/warnings`, `W_RESCLASH`); `blitz2-ab3`
   prints them on the console and returns 5 after one.
@@ -156,8 +156,9 @@ BB2 mode must not gain `.d`: it stays "Type Not Found"
     keeps the string Function error;
   - `docs/blitz2/deviations.md` (row #940, kind F) is reworded; the draft of
     the issue comment for the coordinator names the narrowing of the fix;
-  - the site pages `compared-with-original/new-errors.md` (section "End of
-    procedure") and `fixed-bugs/compiler.md` need an update: the CD
+  - the site pages `compared-with-original/extensions.md` ("Forms the
+    original refused") and `compared-with-original/compiler.md` (the #940
+    entry) need an update: the CD
     example `gendart` compiles again, with a warning; only the string case
     and the other mismatches remain errors. The tasks draft the text; the
     coordinator owns the pages.

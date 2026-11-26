@@ -25,7 +25,7 @@ The user's decisions 1-9 are in the proposal; no question is open. An enhancemen
 
 ## 5. Documents
 
-- [ ] 5.1 `docs/ab3/usage.md` (the option table and a paragraph: what it covers, AB3 mode and libraries without the entries ignored with a plain note, the return code unchanged, TED has no such option yet), `docs/blitz2/extensions.md`, `docs/libs/deviations.md` (inputoutputlib's two entries; not kind F), the comment at `makelsub3`; the site: `ab3-mode/command-line.md` (the option), `compared-with-original/extensions.md` (a section), a sentence and a link in the #43 entry of the fixed-bugs page. Verify: coordinator's review; links resolve.
+- [ ] 5.1 `docs/ab3/usage.md` (the option table and a paragraph: what it covers, AB3 mode and libraries without the entries ignored with a plain note, the return code unchanged, TED has no such option yet), `docs/blitz2/extensions.md`, `docs/libs/deviations.md` (inputoutputlib's two entries; not kind F), the comment at `makelsub3`; the site: `ab3-mode/command-line.md` (the option), `compared-with-original/extensions.md` (a section), a sentence and a link in the #43 entry of `compared-with-original/libraries/commands/rundebuglib.md`. Verify: coordinator's review; links resolve.
 
 ## 6. Commit and report
 

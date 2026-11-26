@@ -114,6 +114,6 @@ Not in this change:
 - Docs: `docs/ab3/variant.md` (measured share, G5 section, "Differences"),
   `docs/blitz2/deviations.md` (the #940 row), `TODO.md`.
 - Site: `ab3-compared/not-supported.md` and the pages on AB3 types and
-  assembler; `compared-with-original/new-errors.md` and
-  `fixed-bugs/compiler.md` (the #940 entries).
+  assembler; `compared-with-original/extensions.md` and
+  `compared-with-original/compiler.md` (the #940 entries).
 - BB2 mode: no result changes except the sources of item 4.
