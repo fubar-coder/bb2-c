@@ -1,0 +1,6 @@
+# AmiBlitz3 calls its library for Int of a Quick (docs/ab3/variant.md, row
+# intrinsic_int): one extra call, the same values
+[deviations."compiler=amiblitz3"]
+variant = "intrinsic_int"
+"check.intrinsic_int.l9" = "== fail"
+"check.intrinsic_int.l9.actual" = "== \"-1 extra calls 1\""

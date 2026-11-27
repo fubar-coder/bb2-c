@@ -1,0 +1,3 @@
+# pow-negative-base.test.bas prints the Floats: their output verbatim
+[asserts]
+output = "== \"15.62499\n15.62499\n4\n.5\n15\n46.76537\n\""

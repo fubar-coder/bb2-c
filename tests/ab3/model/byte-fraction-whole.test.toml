@@ -1,0 +1,8 @@
+# AmiBlitz3 v3.14.0 refuses vb AND 2.0 and Data.b 1.5 and makes no
+# executable (docs/ab3/variant.md, row byte_fraction_whole)
+[deviations."compiler=amiblitz3"]
+variant = "byte_fraction_whole"
+compile = "contains \"Illegal operator for this type\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

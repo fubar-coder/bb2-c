@@ -1,0 +1,12 @@
+# AmiBlitz3 v3.14.0 keeps the stale upper byte of a Byte AND, OR or EOR of
+# variables (docs/ab3/variant.md, row byte_bitop_stale)
+[deviations."compiler=amiblitz3"]
+variant = "byte_bitop_stale"
+"check.byte_bitop_stale.l1" = "== fail"
+"check.byte_bitop_stale.l1.actual" = "== 0"
+"check.byte_bitop_stale.l3" = "== fail"
+"check.byte_bitop_stale.l3.actual" = "== 0"
+"check.byte_bitop_stale.l5" = "== fail"
+"check.byte_bitop_stale.l5.actual" = "== 0"
+"check.byte_bitop_stale.l6" = "== fail"
+"check.byte_bitop_stale.l6.actual" = "== 0"

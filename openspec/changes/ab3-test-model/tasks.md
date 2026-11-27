@@ -47,7 +47,7 @@ the prev comparison of the new tests.
 - [x] 6.1 `proc_*` and `funcstmt_*` (by `OPTIMIZE`/`SYNTAX` groups; `proc_fastname` and others whose names are the subject in files of their own).
 - [x] 6.2 `macthen_*`, `macend_*` (but `macend_inc`), `macro_ns`, `label_*`, `underscore`, `dotlabel`, `shared_global`, `const_novalue`.
 - [x] 6.3 `esc_*` (but the include cases of D10), `str_expr`, `tilde_string`, `latin1_string`, `chr_*`.
-- [ ] 6.4 `byte_*`, `quick_long_arith`, `intrinsic_*`, `pow`, `pow_negative_base`, `expr_depth`, `opt_*`, `libtoken_past_block`, `asm_short_s`.
+- [x] 6.4 `byte_*`, `quick_long_arith`, `intrinsic_*`, `pow`, `pow_negative_base`, `expr_depth`, `opt_*`, `libtoken_past_block`, `asm_short_s`.
 - [ ] 6.5 The header cases (`runerrs`, `debugconst_*`, `cnifdef`, `ptr_accept`, `esc_ver`) and the `-r` cases; `join`, `join_op`, `join_funcpar`, `comment_code`, `plus`, `tokens`.
 - [ ] 6.6 The BB2-mode cases with `source-mode = "bb2"` (`inctext_bb2` stays by D10; `ptr_bb2`, `esc_bb2`, `esc_dcb_bb2`, `macend_bb2`, `proc_bb2_fast`, `asm_short_s_bb2`).
 - [ ] 6.7 After the last move: `tests/ab3/CMakeLists.txt` and `cli/` hold only the cases of D10's "stays" list and the other kinds; the comments of `ab3_cli_case` and `cli.cmake` say so. Verify: the one-off count of design.md Context gives only those kinds; `ab3_cli_broken*` and `ab3_cli_prev_*` pass.

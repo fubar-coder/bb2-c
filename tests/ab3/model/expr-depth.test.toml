@@ -1,0 +1,2 @@
+# not a case of ab3_cli_ref before: AmiBlitz3 is not asked
+exclude = ["compiler=amiblitz3"]

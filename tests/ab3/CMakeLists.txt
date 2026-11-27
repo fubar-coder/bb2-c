@@ -298,7 +298,6 @@ ab3_cli_case(memoryleak_test memoryleak_test.ab3 REF)
 ab3_cli_case(setint setint.ab3 REF)
 ab3_cli_case(test_newtypes test_newtypes.ab3 REF)
 ab3_cli_case(trim trim.ab3 REF)
-ab3_cli_case(pow pow.ab3 REF)
 ab3_cli_case(resident resident.ab3 REF)
 ab3_cli_case(resident_path resident_path.ab3 REF)
 # a program without End (with runtime error checking): blitz2's empty
@@ -362,11 +361,7 @@ ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
 ab3_cli_case(wclash_err wclash_err.ab3)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
-ab3_cli_case(opt_expr opt_expr.ab3 REF)
-ab3_cli_case(opt_020 opt_020.ab3 REF)
 ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
-ab3_cli_case(opt_short opt_short.ab3 REF)
-ab3_cli_case(opt_cnif opt_cnif.ab3 REF)
 ab3_cli_case(syntax2_none syntax2_none.ab3 ARGS -r REF)
 ab3_cli_case(syntax2 syntax2.ab3 ARGS -r REF SAME syntax2_none)
 ab3_cli_case(runerrs runerrs.ab3 REF REF_EXPECT runerrs.ref.expect)
@@ -462,16 +457,11 @@ ab3_cli_case(jsr jsr.ab3 REF)
 # its fraction, as in AmiBlitz3; with a bit operator refused in both; a
 # whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
 # AmiBlitz3 makes it a Float (docs/ab3/variant.md)
-ab3_cli_case(byte_fraction_const byte_fraction_const.ab3 REF)
-ab3_cli_case(byte_fraction_bitop byte_fraction_bitop.ab3 REF REF_EXPECT byte_fraction_bitop.ref.expect)
-ab3_cli_case(byte_fraction_whole byte_fraction_whole.ab3 REF REF_EXPECT byte_fraction_whole.ref.expect)
 # a Byte AND, OR, EOR of operands of different sign (#1218, #1217): no stale
 # upper byte in the port, where AmiBlitz3 keeps it for the variables
 # (docs/ab3/variant.md)
-ab3_cli_case(byte_bitop_stale byte_bitop_stale.ab3 REF REF_EXPECT byte_bitop_stale.ref.expect)
 # ^ with a negative base (#1189): AB3 mode keeps AmiBlitz3's library 44,
 # which drops the sign as AmiBlitz3 v3.14.0 does (docs/ab3/variant.md)
-ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 # the character literals @"..." (change ab3-mode-g3, spec
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,
@@ -496,8 +486,6 @@ ab3_cli_case(chr_const chr_const.ab3 REF)
 # docs/ab3/variant.md).  Frac of a Quick stays the call in AB3 mode:
 # AmiBlitz3's vallib Frac takes a Float (not the form of the intrinsic;
 # qutofl, Frac and fltoqu, as in AmiBlitz3)
-ab3_cli_case(intrinsic_int intrinsic_int.ab3 REF REF_EXPECT intrinsic_int.ref.expect)
-ab3_cli_case(intrinsic_frac intrinsic_frac.ab3 REF)
 # the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
 # the program run under inject datestamp=2026-10-25.  AmiBlitz3's
 # SystemDate (run time) and __DATE__ (compile time) go through DateStamp
@@ -604,13 +592,11 @@ ab3_cli_case(inc_error inc_error.ab3 REF)
 # a library whose entries run past its block of 127 numbers while the next
 # number is free keeps them (#960: a library's range ends only where the
 # next loaded library's begins): Mildred's MProcessor
-ab3_cli_case(libtoken_past_block libtoken_past_block.ab3 REF)
 # the size suffix .s of an assembler instruction is .b in AB3 mode (#1068;
 # BRA and BSR take a size suffix and stay word branches, as in AmiBlitz3
 # v3.14.0); in BB2 mode .s is .b too, and a branch with .s/.b is a short
 # branch as in blitz2 (extension #1075): out of range or to the next
 # instruction it is "Illegal Displacement", BRA.l stays refused
-ab3_cli_case(asm_short_s asm_short_s.ab3 REF)
 ab3_cli_case(asm_short_s_bb2 asm_short_s_bb2.bb)
 ab3_cli_case(asm_short_range_bb2 asm_short_range_bb2.bb)
 ab3_cli_case(asm_short_zero_bb2 asm_short_zero_bb2.bb)
@@ -621,7 +607,6 @@ ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)
 # blitz2's; AmiBlitz3 v3.14.0 compiles 64 parentheses, and its session
 # did not end after expr_depth's compile and after its "Expression too
 # complex!" (both measured once)
-ab3_cli_case(expr_depth expr_depth.ab3)
 ab3_cli_case(expr_depth_prec expr_depth_prec.ab3)
 ab3_cli_case(expr_depth_complex expr_depth_complex.ab3)
 

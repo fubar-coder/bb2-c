@@ -208,3 +208,113 @@ Dc.b "J~",0
 Even
 .tsd1
 Data$ "d~1"
+; byte_fraction_const: a constant with a fraction under a Byte type so far
+; (#1188): it keeps its fraction, the operation is computed in Float and
+; the result converted to the Byte at the end, as under a Word type so
+; far; the same in AmiBlitz3 v3.14.0 (the whole-valued literals:
+; byte-fraction-whole.test.bas)
+NEWTYPE.nb
+  f.b
+End NEWTYPE
+Statement sb{x.b}
+  SHARED zn
+  zn=x
+End Statement
+Function.b fb{x.b}
+  Function Return x
+End Function
+; intrinsic_frac: Frac of a Quick assigned to a Quick in AB3 mode (change
+; compiler-intrinsics, spec compiler/intrinsics): the fraction with the
+; sign of the value. AB3 mode's vallib (AmiBlitz3's) takes a Float for
+; Frac, which is not the form of the intrinsic: the call stays ("calls 3":
+; qutofl, Frac, fltoqu), as in AmiBlitz3
+Function.l jsrs{a.l,b.l}
+  n.l = 0
+  While a < b
+    If Peek.w(a) = $4EB9
+      n = n + 1 : a = a + 4
+    EndIf
+    a = a + 2
+  Wend
+  Function Return n
+End Function
+!TestCase{byte_fraction_const}
+  vb.b=2 : rb.b=0
+  Dim ab.b(2) : nv.nb\f=0
+  rb=(1.5+1.5)
+  !CheckEq{rb,3,"l1"}
+  rb=(0.5*4)
+  !CheckEq{rb,2,"l2"}
+  rb=(1.5*vb)
+  !CheckEq{rb,3,"l3"}
+  rb=(2.5*2)
+  !CheckEq{rb,5,"l4"}
+  rb=(-1.5*vb)
+  !CheckEq{rb,-3,"l5"}
+  rb=(1.25e1*2)
+  !CheckEq{rb,25,"l6"}
+  rb=1.5
+  !CheckEq{rb,1,"l7"}
+  rb=-1.5
+  !CheckEq{rb,-1,"l8"}
+  sb{1.5*vb}
+  !CheckEq{zn,3,"l9"}
+  rb=fb{1.5*vb}
+  !CheckEq{rb,3,"l10"}
+  nv\f=(1.5+1.5)
+  !CheckEq{nv\f,3,"l11"}
+  ab(1)=(1.5*vb)
+  !CheckEq{ab(1),3,"l12"}
+!EndTestCase
+!TestCase{intrinsic_frac}
+  q1.q = 0 : q2.q = 0
+  q1 = 1.25 : q2 = Frac(q1)
+  !CheckQEq{q2,0.25,"l1"}
+  q1 = -1.25 : q2 = Frac(q1)
+  !CheckQEq{q2,-0.25,"l2"}
+  q1 = 0.5 : q2 = Frac(q1)
+  !CheckQEq{q2,0.5,"l3"}
+  q1 = -3 : q2 = Frac(q1)
+  !CheckQEq{q2,0,"l4"}
+  q1 = 300.75 : q2 = Frac(q1)
+  !CheckQEq{q2,0.75,"l5"}
+  q1 = -1.25
+.a1
+  q2 = Frac(q1)
+.a2
+  k.l=jsrs{?a1, ?a2} : zs$=Str$(q2)+" calls "+Str$(k)
+  !CheckStrEq{zs$,"-.25 calls 3","l6"}
+!EndTestCase
+!TestCase{opt_cnif}
+  ; OPTIMIZE inside a skipped CNIF block has no effect: the FPU bit there
+  ; is no error
+  CNIF 1 = 0
+  OPTIMIZE 7
+  CEND
+  !CheckStrEq{"compiled","compiled","l1"}
+!EndTestCase
+!TestCase{libtoken_past_block}
+  ; a library whose entries run past its block of 127 numbers while the
+  ; next library number is free (#960): Mildred (library 15, there is no
+  ; library 16) has MProcessor as its entry 206, the token of library 16's
+  ; entry 78; the compiler finds it in Mildred. The CPU number is not
+  ; checked, only that the function gives one of 0..6 (MC68000..MC68060)
+  p.w = MProcessor : If p >= 0 AND p <= 6 Then zs$="cpu ok" Else zs$="cpu "+Str$(p)
+  !CheckStrEq{zs$,"cpu ok","l1"}
+!EndTestCase
+!TestCase{asm_short_s}
+  ; the size suffix .s of an assembler instruction (AmiBlitz3 v3.14.0: .s
+  ; is .b; a branch with .s stays a word branch): BEQ.s is taken, and the
+  ; BRA.s with its target is 4 bytes
+  MOVEQ #5,d0
+  CMP.l #5,d0
+  BEQ.s ok
+  MOVEQ #0,d0
+ok:
+  a.l = PutD0
+  !CheckEq{a,5,"l1"}
+l1:
+  BRA.s l2
+l2:
+  !CheckEq{?l2 - ?l1,4,"l2"}
+!EndTestCase

@@ -1,5 +1,0 @@
-[compile]
-byte_fraction_whole.ab3:8: Illegal Operator for Type
-rc=10
-[run]
-no executable

@@ -1,0 +1,9 @@
+# AmiBlitz3 v3.14.0 refuses the bit operator with a constant with a
+# fraction and makes no executable (docs/ab3/variant.md, the row
+# byte_fraction_bitop of #1216, which gives AmiBlitz3's message)
+[deviations."compiler=amiblitz3"]
+variant = "byte_fraction_bitop"
+compile = "contains \"Illegal operator for this type\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
