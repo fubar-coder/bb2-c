@@ -765,6 +765,13 @@ wrong result. The fix is told from the bug by the port cell's plain
 assertions: `session == done`, `rc == 0`, `end.case`, `end.run`, the
 checks passing.
 
+An idea for such a test, not implemented and not a rule: prefill memory
+and stack so that the original's wrong return always lands in a clean end
+of the wrong kind, for example an exit stub with a recognisable end. The
+end then becomes deterministic, and the test can declare that specific end
+instead of `any`. Where that needs excessive effort, a stable hang or halt
+is declared as the specific end.
+
 A test keeps a specific end (the requester text, the alert number, a single
 `session == timeout` or `halt`) only if that end is the bug itself and not
 a consequence of corrupted memory: an odd address on the 68000, a V36
