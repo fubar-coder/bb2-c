@@ -24,5 +24,14 @@ cmake-build-*/
 /.claude/skills/
 /.agents/
 
+# Codex: share project agent definitions and keep other files local
+/.codex/*
+!/.codex/agents/
+/.codex/agents/*
+!/.codex/agents/*.toml
+
+# GitHub Copilot CLI: local repository settings
+/.github/copilot/settings.local.json
+
 # the API reference, built by the Pages workflow (Doxyfile)
 /site/public/api/
