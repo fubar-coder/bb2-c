@@ -124,7 +124,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 5. The site's shortcodes and the command reference
 
-- [ ] 5.1 Remark plugin: `fixed-bugs-library` (head with the counts by
+- [x] 5.1 Remark plugin: `fixed-bugs-library` (head with the counts by
   level and the reference link; part `elsewhere`), `fixed-bugs-libraries`,
   `library-list`, the issue links of the library fix pages with the level
   badge and the command links (port of `render-link.html`), heading ids
@@ -134,7 +134,7 @@ Work data (reports, counts, screenshots) goes to
   directory); the heading-id comparison of 2.3 over the library fix pages
   shows no id of the Hugo build missing (the 31
   `#fixes-described-with-other-libraries` headings).
-- [ ] 5.2 The command reference loader (port of `_content.gotmpl` and
+- [x] 5.2 The command reference loader (port of `_content.gotmpl` and
   `cmdref/*`): one page per command library, AmigaOS library and userlib,
   with `libintros` and `cmddesc`, the per-command fix rows and "Fixed
   original bugs"; the AmigaOS call tables with break opportunities after

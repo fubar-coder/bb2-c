@@ -115,11 +115,8 @@ export function writeRedirects(contentDir, dist, origin, base) {
 // The pages that come with later tasks of site-starlight: an old URL of
 // one of them is counted, not failed, while the page is missing. A task
 // removes its entry when it builds the pages (design.md, "Findings",
-// group 7).
-const AWAITED = [
-  // the pages of the command reference
-  { task: "5.2", match: (path) => /^\/docs\/libraries\/(commands|userlibs|amigaos)\/[^/]+\/$/.test(path) },
-];
+// group 7). None is left: the command reference (task 5.2) was the last.
+const AWAITED = [];
 
 /**
  * Checks that every URL of the lists listDir/*.txt (site paths without the

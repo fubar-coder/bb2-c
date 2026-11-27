@@ -99,14 +99,17 @@ export function anchorize(s) {
     .replace(/[^\p{L}\p{N}_-]/gu, "");
 }
 
+/** Hugo's sort of texts (its sort function and ByTitle: the language's collator) */
+export const byText = new Intl.Collator("en").compare;
+
 /**
  * The heading ids of a command library's entries, in page order (sorted by
- * name), a repeated id with -1, -2, ...: [{entry, id}]
+ * name as Hugo sorts them), a repeated id with -1, -2, ...: [{entry, id}]
  */
 export function entryIds(entries) {
   const seen = {};
   return [...entries]
-    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    .sort((a, b) => byText(a.name, b.name))
     .map((e) => {
       let id = anchorize(e.name);
       const n = seen[id] ?? 0;

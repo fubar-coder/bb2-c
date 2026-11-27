@@ -540,6 +540,74 @@ The listings are in `~/.local/share/bb2-c-work/site-starlight/group4/`
   (variables of the build); the four fixtures are in
   `site/tests/starlight/`. Each case is a full build (10-15 s).
 
+### Group 5 (2026-11-27)
+
+The comparisons, listings and screenshots are in
+`~/.local/share/bb2-c-work/site-starlight/group5/` (`page-counts.txt`,
+`heading-ids.txt`, `fix-pages-compared.txt`, `reference-links.txt`,
+`reference-text-differences.txt`, `data-links-output.txt`,
+`sidebar-libraries-*.txt`, `browser-checks.txt`, the PNGs and the one-off
+scripts), against a Hugo build of the same tree.
+
+- **Modules.** `src/lib/fixed-bugs.mjs` holds the ports of the partials
+  `fixed-bugs/{level,refpage,reflinks}.html`, the shortcodes
+  `fixed-bugs-library` and `fixed-bugs-libraries` and the link hook of the
+  library fix pages (6.1 can take `levelBadge` and `splitList` from it);
+  `src/lib/cmdref.mjs` the content adapter and `cmdref/*`. The remark
+  plugin handles the three directives, the issue links, the table cells of
+  the AmigaOS pages (`<wbr>` after each comma of an argument list) and the
+  explicit ids. The badges' colours, which Hugo takes from Hextra's
+  classes, are `src/styles/fixed-bugs.css` (`fixed-bug-level-N`); the
+  Hugo assets are unchanged.
+- **Library fix pages (5.1).** 116 pages below
+  `compared-with-original/libraries/` plus its index, as in Hugo (tasks.md
+  says 120). The generated parts (head, the badge and reference links after
+  each issue link, the "elsewhere" list, the rows of
+  `fixed-bugs-libraries`) are equal to Hugo's on 116 of the 117 pages,
+  among them windowslib, shapeslib, amigaos, riapplib and the 3 index
+  pages; the one difference is Hugo's: on freqlib's "elsewhere" list Hugo
+  escapes a code span twice and shows `FileRequest$(...)&#43;&#34;.bak&#34;`
+  (the published site has it), Starlight shows `FileRequest$(...)+".bak"`.
+  The link hook also applies to the section's index page, which Hugo's
+  section-level hook does too. `freqlib` is a page with its images
+  (`freqlib/index.md`), which `fixed-bugs-libraries` must list.
+- **Command reference (5.2).** 83 + 53 = 136 command and userlib pages and
+  37 AmigaOS pages, the same URLs as Hugo's. Every link of their content is
+  Hugo's, in Hugo's order, on all 173; the text differs only in Hugo's
+  heading of the page inside the content, Starlight's anchor labels, and
+  the typographer: Goldmark and Starlight's smartypants differ on a few
+  quotes next to punctuation (`""` before a full stop: Hugo `“”`, Starlight
+  `""`; 22 places on the reference pages; the other lines of the listing
+  come from the comparison's tag stripping in code blocks). The sidebar of the Libraries
+  chapter equals Hugo's entry for entry (`sidebar-libraries-*.txt`); the
+  loader entries are listed by `src/lib/sidebar.mjs` by title (Starlight's
+  autogenerate sorts by path, which puts `batmemlib` (battmem.resource)
+  before `battclocklib`).
+- **Hugo's sort.** Hugo sorts with the language's collator (case is
+  secondary: `LCase$` before `Left$`); `entryIds` sorted by code unit, so
+  `src/lib/data.mjs` now sorts with `Intl.Collator("en")` (`byText`), used
+  for the commands, the calls, `fixed-bugs-libraries` and `library-list`.
+- **Heading ids.** The comparison of 2.3 over the 295 reference and
+  library fix pages: no id of Hugo's missing, none added, same order (the
+  31 `#fixes-described-with-other-libraries` are there).
+- **The widest call table** (`graphics.library`, `TextFit_`) fits the
+  content column at 768 to 1920 px (`browser-checks.txt`); at 420 px it
+  scrolls inside its own box (Starlight's tables are `display: block`
+  with `overflow: auto`), the page does not.
+- **The data links (4.2).** All 46 internal links of libintros and cmddesc
+  are on their reference page with the base (`data-links-output.txt`); 4.2
+  had been ticked already.
+- **AWAITED.** The entries of 5.2 in `src/lib/links.mjs` and
+  `src/lib/redirects.mjs` are removed; the lists are empty and their
+  mechanism stays (and the build prints no "not yet built"). The build
+  checks 146715 internal links and all 497 old URLs.
+- **The content cache.** Astro keeps the rendered pages in
+  `node_modules/.astro` and renders a page file again only when the file
+  changes, so a local build after a change of `site/data` or of the remark
+  plugin showed the old library fix pages. The loader clears the store
+  first, so every build renders every page (the tests' fresh copy never
+  had the cache).
+
 ### Group 7 (2026-11-27)
 
 The browser check and the comparison with Hugo's redirect pages are in

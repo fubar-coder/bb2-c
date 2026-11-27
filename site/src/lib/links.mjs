@@ -11,12 +11,12 @@
 // anchor must be an id of the target page.
 //
 // The links of the data (libintros, cmddesc: src/lib/data.mjs) are checked
-// as written, with the base added to a site path, against the same pages;
-// they are named by their data file, as the command reference shows them
-// only from task 5.2 on.
+// as written, with the base added to a site path, against the same pages
+// (relative to the reference page that shows them); they are named by
+// their data file, which is where a writer fixes them.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { dataLinks, entryIds, libraries } from "./data.mjs";
+import { dataLinks } from "./data.mjs";
 
 /** The HTML entities of attribute values the output uses */
 const decode = (s) =>
@@ -35,27 +35,12 @@ function walk(dir) {
 }
 
 // The pages that come with later tasks of site-starlight: a link to one of
-// them is counted, not failed, while the page is missing. A task removes its
-// entry when it builds the pages, so that from then on the links are
-// checked like every other (design.md, "Findings", group 4).
-const REFERENCE = /^\/docs\/libraries\/(commands|userlibs|amigaos)\/([^/]+)\/$/;
-const AWAITED = [
-  {
-    // the pages of the command reference: a library of site/data and, as
-    // the anchor, one of its commands or a section of the page
-    task: "5.2",
-    match(path, id) {
-      const m = REFERENCE.exec(path);
-      if (!m) return false;
-      const group = { commands: "acidlibs", userlibs: "userlibs", amigaos: "deflibs" }[m[1]];
-      const lib = libraries()[group][m[2]];
-      if (!lib || (group === "deflibs" && !lib.opens)) return false;
-      if (!id) return true;
-      if (group === "deflibs") return ["calls", "fixed-original-bugs"].includes(id);
-      return ["commands", "fixed-original-bugs"].includes(id) || entryIds(lib.entries).some((e) => e.id === id);
-    },
-  },
-];
+// them is counted, not failed, while the page is missing ({task,
+// match(sitePath, id)}). A task removes its entry when it builds the pages,
+// so that from then on the links are checked like every other (design.md,
+// "Findings", group 4). None is left: the command reference (task 5.2) was
+// the last.
+const AWAITED = [];
 
 /**
  * Checks the links of the built site in dist (a directory) with the base
