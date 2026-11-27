@@ -900,3 +900,17 @@ build with the fixes).
   search and the menu button. Its colour is Starlight's gray of the
   header's other items, white on hover and on `/docs/` itself
   (`aria-current`). The link check covers it (every page links it).
+- **"Overview" in the sidebar (2).** `src/lib/sidebar.mjs` labels a
+  section's own page, the first entry of its group, "Overview" where its
+  title would repeat the group's label: in every group at every level
+  (the chapters, the sections such as Libraries > Command libraries, the
+  reference groups and the groups of library fix pages); the page titles,
+  the headings and the URLs are unchanged. Starlight's pager takes a
+  neighbour's label from the sidebar, which would read "Previous:
+  Overview" on the page after an index page; the route middleware
+  `src/lib/route-base.mjs` sets the pager's label to the title of the page
+  it leads to ("Previous: Introduction" on Building the BB2 C port, "Next:
+  Differences from the original" after Libraries in a compiled program), as
+  Hugo's pager named it; a label of the front matter's `prev`/`next`
+  stays. Chosen: the page title, as the pager stands outside the sidebar
+  and "Overview" alone does not say of what.

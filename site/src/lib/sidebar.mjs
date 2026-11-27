@@ -4,7 +4,9 @@
 // * one group per chapter (a directory below docs/), in the order of the
 //   chapters' sidebar.order (Hugo's weight), labelled with the title of the
 //   chapter's index page;
-// * in a group the chapter's index page first, then its pages and its
+// * in a group the chapter's index page first (labelled "Overview", as the
+//   group already carries its title; the page's title is unchanged), then
+//   its pages and its
 //   sections (a directory with an index page: a group of its own, labelled
 //   and ordered the same way), sorted as Hugo sorts a section: by
 //   sidebar.order, pages without one last, then by title;
@@ -34,6 +36,9 @@ const COLLAPSED = new Set([
 ]);
 
 const PAGE = /\.mdx?$/;
+
+/** The sidebar label of a section's own page (the first entry of its group) */
+const OVERVIEW = "Overview";
 
 /** The front matter of a page file */
 function frontMatter(file) {
@@ -73,7 +78,11 @@ function section(root, slug) {
   const fm = frontMatter(join(dir, index));
   const group = { label: fm.title, items: [] };
   if (COLLAPSED.has(slug)) group.collapsed = true;
-  if (LOADED.has(slug)) group.items.push({ slug }, ...sectionPages(slug.split("/").pop()).map((p) => ({ slug: p.id })));
+  // the section's own page, first in its group: "Overview" where its title
+  // would repeat the group's label (the pager names the page by its title,
+  // src/lib/route-base.mjs)
+  const own = fm.title === group.label ? { slug, label: OVERVIEW } : { slug };
+  if (LOADED.has(slug)) group.items.push(own, ...sectionPages(slug.split("/").pop()).map((p) => ({ slug: p.id })));
   else {
     const children = [];
     const page = (file, s) => {
@@ -90,7 +99,7 @@ function section(root, slug) {
         else page(join(p, i), `${slug}/${name}`);
       } else if (PAGE.test(name) && name !== index) page(p, `${slug}/${name.replace(PAGE, "")}`);
     }
-    group.items.push({ slug }, ...children.sort(byWeight).map((c) => c.item));
+    group.items.push(own, ...children.sort(byWeight).map((c) => c.item));
   }
   return { order: fm.sidebar?.order, title: fm.title, item: group };
 }
