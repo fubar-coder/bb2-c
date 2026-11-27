@@ -832,3 +832,24 @@ The browser check and the comparison with Hugo's redirect pages are in
   pages have none. With the API reference in place Pagefind finds 939 HTML
   files and indexes 366 pages (`page_count`), none below `/api/` (the URLs
   of all fragments checked).
+- **The Pages workflow (8.3)** is `openspec/changes/site-starlight/pages.yml`
+  until 9.3 copies it to `.github/workflows/pages.yml`: the api job as
+  today with `site/public/api`; the build job in the container
+  `docker.io/library/node:26.13.1-bookworm-slim` (Q3), `npm ci` and
+  `npm run build` in `site/` with `BB2_SITE_GITINFO=1`, the upload of
+  `site/dist`; the path filters, permissions, concurrency and the deploy
+  job unchanged. The image has no git, which `actions/checkout` needs for
+  the history (without it, it downloads the tree without history) and the
+  build for the dates: the first step installs Debian's `git` and
+  `ca-certificates` with apt (the package versions are those of the
+  image's Debian release, not pinned further). `actions/configure-pages`
+  is gone: Hugo took the base URL from it; Astro's `site` and `base` are
+  in `astro.config.mjs`. Debian's GNU tar serves
+  `upload-pages-artifact` (Hugo's image needed it installed). The local
+  run of the steps (`ci-local-run.sh` and its log in
+  `~/.local/share/bb2-c-work/site-starlight/group8/`): Doxygen in its
+  image into `site/public/api`, then in the Node.js image the git
+  install, `npm ci`, the converter and `astro build` with
+  `BB2_SITE_GITINFO=1`, Astro's `publicDir` set to `public` by a temporary
+  config (the layout after 9.3), on the worktree in place of a checkout:
+  `dist/api/index.html` is there, no warning, 173 pages with the meta tag.

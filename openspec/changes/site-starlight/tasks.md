@@ -195,7 +195,7 @@ Work data (reports, counts, screenshots) goes to
   excludes `public/api/`. Verify: `site_starlight` passes with the API
   reference in place; the meta tag is in a CI-style build and not in a
   plain one.
-- [ ] 8.3 `.github/workflows/pages.yml` for Starlight (a new file content
+- [x] 8.3 `.github/workflows/pages.yml` for Starlight (a new file content
   kept in the change until 9.3): Doxygen into `site/public/api` (the layout after 9.3), the build
   job's container the pinned Node.js image (Q3), `npm ci`, the build with `BB2_SITE_GITINFO=1`, upload of
   `site/dist`; the path filters as today. Verify: the same steps run
