@@ -473,3 +473,17 @@ file of the round.
   generator's (task 7.2 removes it). AmiBlitz3's measured values of the
   #1187 cells hold in the new form too (the checks between the cells do
   not change d1 at the `If`).
+- Measurement (task 8.3; targeted -R runs, -j16, same machine, wall
+  time and the sum of the tests' times). The tests/ab3 share of `all`
+  without ab3_bb2_equivalence, the tokenise/tokens tests and the
+  broken-input self tests: before group 5 the ab3_cli and ab3_cli_prev
+  blocks, 44.5 s (sum 152 s, 8 tests); after groups 6/7 the remaining
+  blocks, their prev, the bundles, the case tests and the ab3_ID_prev
+  comparisons, 51.7 s (sum 813 s, 270 tests: ab3_ID_prev 112 tests 557
+  s, bundles 146 s, case tests 64 s, blocks 27 s, block prev 19 s). The
+  preset oracle on tests/ab3: before ab3_cli_ref_1..4, 50.6 s (sum 107
+  s, 4 sessions); after 55.2 s (sum 853 s, 142 sessions: 86 model case
+  tests 365 s, 54 matrix tests 419 s, 2 blocks 69 s), below the user's
+  limit of 10 minutes. Slower in wall time by 7 s and 5 s and several
+  times the machine time: the per-test prev compiles and the per-case
+  AmiBlitz3 sessions.
