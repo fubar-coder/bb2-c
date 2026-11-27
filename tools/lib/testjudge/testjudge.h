@@ -219,9 +219,20 @@ int tj_case_alone(const struct tc_config *conf, const struct tc_matrix *m, const
                   const struct tp_source *src, const char *case_name);
 
 /**
+ * @brief The key by which the case tests of a cell are grouped into
+ *        bundles: its session key (tc_session_key), for a cell of
+ *        compiler = "ab3" with the line "compiler=ab3" before it, so the
+ *        cases of blitz2-ab3 share bundles with each other and never with
+ *        those of the port (change ab3-test-model D14).
+ * @return malloc'd, NULL = out of memory
+ */
+char *tj_bundle_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env);
+
+/**
  * @brief Whether a case may be a member of a run shared with other sources
  *        (a bundle), and the cell it would run in: the source has exactly
- *        one cell on the side port (none needs original material), that
+ *        one cell on the side port (none needs original material, and a
+ *        cell of amiblitz3 is not on that side: never bundled), that
  *        cell is not isolated (tc_cell_isolated), its `serial` is not "on",
  *        it does not run from the editor (`editor-run`), the test has no
  *        test-local data (`data`) and sets no `hang-after`, the cell's

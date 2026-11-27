@@ -8,6 +8,9 @@
 #     run), the cells behind it in a second session; passes and touched
 #     stored, hangs and fails not;
 #   - the bundle b of open-bug with --require-deviation: REPRODUCED stored;
+#   - the bundle c of ab3-one and ab3-two, cells of blitz2-ab3 compiled from
+#     the command line (change ab3-test-model): one session, both stored and
+#     served (ab3-one's cell of AmiBlitz3 is in no bundle);
 #   - touched.test.bas changed;
 #   - the case tests with --from-bundle: passes and open-bug served (exit
 #     status 0 and 1, no session), hangs alone (no entry), fails alone (an
@@ -102,7 +105,17 @@ want("bundle a" "${a}" "\nselftest_bundle_a: 4 members, 2 stored\n")
 run(b rc --require-deviation --bundle selftest_bundle_b --member t_open_bug ${s}/open-bug.test.bas one)
 want_rc("bundle b" "${rc}" 0)
 want("bundle b" "${b}" "open-bug\\.test\\.bas: case one: REPRODUCED \\(bundle selftest_bundle_b\\)\nt_open_bug: REPRODUCED stored\n")
-foreach(t t_passes t_touched t_open_bug)
+# the bundle c of two sources of blitz2-ab3 (change ab3-test-model D14):
+# one session of both cells, compiled from the command line; ab3-one's
+# cell of AmiBlitz3 is not a member (the side oracle is never bundled)
+run(c rc --bundle selftest_bundle_c --member t_ab3_one ${s}/ab3-one.test.bas one
+	--member t_ab3_two ${s}/ab3-two.test.bas one)
+want_rc("bundle c" "${rc}" 0)
+want("bundle c" "${c}" "corpusrun case: emulator session 0: c0 c1\n")
+want("bundle c" "${c}" "ab3-one\\.test\\.bas: case one: PASSED \\(bundle selftest_bundle_c\\)\nt_ab3_one: PASSED stored\n")
+want("bundle c" "${c}" "ab3-two\\.test\\.bas: case one: PASSED \\(bundle selftest_bundle_c\\)\nt_ab3_two: PASSED stored\n")
+want_not("bundle c" "${c}" "amiblitz3")
+foreach(t t_passes t_touched t_open_bug t_ab3_one t_ab3_two)
 	if(NOT EXISTS ${store}/${t})
 		message(FATAL_ERROR "bundle-selftest: no entry ${store}/${t}")
 	endif()
@@ -153,6 +166,13 @@ run(c rc --require-deviation --source ${s}/open-bug.test.bas ${case} --test t_op
 want_rc("t_open_bug" "${rc}" 1)
 want("t_open_bug" "${c}" "open-bug\\.test\\.bas: case one: REPRODUCED\ncorpusrun case: verdict from the bundle selftest_bundle_b\n@served v=1 test=t_open_bug bundle=selftest_bundle_b\n")
 want_not("t_open_bug" "${c}" "@stat")
+foreach(t ab3_one ab3_two)
+	string(REPLACE "_" "-" id ${t})
+	run(c rc --source ${s}/${id}.test.bas ${case} --test t_${t} --from-bundle selftest_bundle_c)
+	want_rc("t_${t}" "${rc}" 0)
+	want("t_${t}" "${c}" "corpusrun case: verdict from the bundle selftest_bundle_c\n")
+	want_not("t_${t}" "${c}" "@stat")
+endforeach()
 # every entry read once: the store is gone
 if(EXISTS ${store})
 	message(FATAL_ERROR "bundle-selftest: ${store} is left")

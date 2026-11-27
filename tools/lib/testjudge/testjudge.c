@@ -1123,6 +1123,21 @@ static char *plain_key(const struct tc_env *env, long long timeout)
     return tc_session_key(&conf, &m, 0, env);
 }
 
+char *tj_bundle_key(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env)
+{
+    char buf[24], *key = tc_session_key(conf, m, cell, env), *r;
+    const char *comp = tc_cell_value(conf, m, cell, tc_key("compiler"), buf);
+
+    /* blitz2-ab3 from the command line: bundles of their own (D14) */
+    if (!key || strcmp(comp, "ab3"))
+        return key;
+    r = malloc(strlen(key) + 14);
+    if (r)
+        sprintf(r, "compiler=ab3\n%s", key);
+    free(key);
+    return r;
+}
+
 int tj_bundle_case(const struct tc_config *conf, const struct tc_matrix *m, const struct tp_source *src,
                    const struct tc_env *env, const char *case_name, size_t *cell)
 {
@@ -1131,8 +1146,9 @@ int tj_bundle_case(const struct tc_config *conf, const struct tc_matrix *m, cons
     char buf[24], *key;
     int r = 0;
 
+    /* the side port: no original material, not AmiBlitz3's (never bundled) */
     for (size_t i = 0; i < m->ncells; i++)
-        if (!m->cells[i].originals) {
+        if (!m->cells[i].originals && !m->cells[i].oracle) {
             c = i;
             n++;
         }

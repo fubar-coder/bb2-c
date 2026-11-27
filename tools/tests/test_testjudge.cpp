@@ -1467,6 +1467,28 @@ TEST_CASE("testjudge: the cases that may be bundled", "[testjudge]")
     CHECK(bundled("", "machine = \"a1200\"\n") == 1);
     // a run from the editor
     CHECK(bundled("", "editor-run = \"on\"\n") == 0);
+    // AB3 mode (change ab3-test-model D14): blitz2-ab3's cell beside one of
+    // AmiBlitz3 (the side oracle, never bundled), AmiBlitz3's alone
+    CHECK(bundled("", "[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n", "a", sharedsrc, &cell) == 1);
+    {
+        fixture f("", "[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n", "a", sharedsrc, env90);
+        char *k0 = tj_bundle_key(&f.conf, &f.m, f.cell("ab3"), &f.env);
+        char *k1 = tc_session_key(&f.conf, &f.m, f.cell("ab3"), &f.env);
+
+        CHECK(cell == f.cell("ab3"));
+        // the key of the cases of blitz2-ab3: never that of the port
+        REQUIRE((k0 && k1));
+        CHECK(std::string(k0) == "compiler=ab3\n" + std::string(k1));
+        free(k0);
+        k0 = tj_bundle_key(&f.conf, &f.m, f.cell("amiblitz3"), &f.env);
+        free(k1);
+        k1 = tc_session_key(&f.conf, &f.m, f.cell("amiblitz3"), &f.env);
+        CHECK((k0 && k1 && std::string(k0) == k1));
+        free(k0);
+        free(k1);
+    }
+    CHECK(bundled("", "compiler = \"amiblitz3\"\n") == 0);
+    CHECK(bundled("", "compiler = \"ab3\"\n") == 1);
 }
 
 TEST_CASE("testjudge: a case with test-local data is not bundled", "[testjudge]")

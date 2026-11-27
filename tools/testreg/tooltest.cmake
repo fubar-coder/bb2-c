@@ -522,6 +522,32 @@ file(READ ${WORK}/nobundles.cmake inc)
 if(inc MATCHES "bundle_|DEPENDS|--from-bundle|--test")
 	message(FATAL_ERROR "--no-bundle: a bundle in\n${inc}")
 endif()
+# AB3 mode (change ab3-test-model D14): two sources of blitz2-ab3 share a
+# bundle, the port's source has one of its own, the cell of AmiBlitz3 is in
+# none (its case test runs alone)
+file(MAKE_DIRECTORY ${b}/ab3)
+file(WRITE ${b}/ab3/ab3-a.test.bas "!TestCase{a}\n  !Check{1}\n!EndTestCase\n")
+file(WRITE ${b}/ab3/ab3-a.test.toml "[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n")
+file(WRITE ${b}/ab3/ab3-b.test.bas "!TestCase{a}\n  !Check{1}\n!EndTestCase\n")
+file(WRITE ${b}/ab3/ab3-b.test.toml "compiler = \"ab3\"\n")
+run(0 --prefix ab3_ --output ${WORK}/ab3bundles.cmake ${benv} --command run
+	${b}/ab3/ab3-a.test.bas ${b}/x/plain-b.test.bas ${b}/ab3/ab3-b.test.bas)
+file(READ ${WORK}/ab3bundles.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+foreach(want
+		"add_test( ab3_bundle_1 run --bundle ab3_bundle_1 --member ab3_ab3_a__a ${b}/ab3/ab3-a.test.bas a --member ab3_ab3_b__a ${b}/ab3/ab3-b.test.bas a)"
+		"add_test( ab3_bundle_2 run --bundle ab3_bundle_2 --member ab3_plain_b__a ${b}/x/plain-b.test.bas a)"
+		"add_test( ab3_ab3_a__a_oracle run --source ${b}/ab3/ab3-a.test.bas --case a --side oracle)\n")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "AB3 bundles: the include file lacks\n  ${want}\nin\n${inc}")
+	endif()
+endforeach()
+if(inc MATCHES "_oracle [^\n]*DEPENDS")
+	message(FATAL_ERROR "AB3 bundles: a case of AmiBlitz3 depends on a bundle:\n${inc}")
+endif()
+file(REMOVE_RECURSE ${b}/ab3)
 # broken input: a bundle's name is the name of a test of the old form
 file(WRITE ${WORK}/border.cmake "# @test bug_orig_bundle_1 5\nadd_test(x run)\n")
 file(REMOVE ${WORK}/bad.cmake)

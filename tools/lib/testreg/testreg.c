@@ -745,7 +745,7 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
                 char buf[24];
                 const char *to = tc_cell_value(&conf, &m, cell, tc_key("timeout"), buf);
 
-                if (!(t->key = tc_session_key(&conf, &m, cell, o->env)))
+                if (!(t->key = tj_bundle_key(&conf, &m, cell, o->env)))
                     goto out;
                 t->limit = *to ? strtoll(to, NULL, 10) : o->timeout_default;
             }

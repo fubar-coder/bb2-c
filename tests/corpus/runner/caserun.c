@@ -2903,7 +2903,10 @@ static int served(struct ctx *x, FILE *log)
     /* the key as the bundle makes it: the cell's pass (its paths below a
        work directory that is not made), the session key */
     if (nside == 1
-        && !cr_cell_pass(&x->conf, &x->m, cell, &x->env, "c0", "/-", "/-/" CR_PROGRAM ".bb2", &pt, err, sizeof err)
+        && !cr_cell_pass(&x->conf, &x->m, cell, &x->env, "c0", "/-",
+                         !cell_cli(&x->conf, &x->m, cell) ? "/-/" CR_PROGRAM ".bb2"
+                         : tc_cell_ab3(&x->conf, &x->m, cell) ? "/-/" CR_PROGRAM ".ab3" : "/-/" CR_PROGRAM ".bb",
+                         &pt, err, sizeof err)
         && !corpus_parse(pt, &p, err, sizeof err) && (skey = tc_session_key(&x->conf, &x->m, cell, &x->env))
         && !case_key(x, &p, skey, o->test, NULL, key))
         have = 1;
