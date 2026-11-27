@@ -15,6 +15,7 @@ import starlight from "@astrojs/starlight";
 import mermaid from "astro-mermaid";
 import { unified } from "@astrojs/markdown-remark";
 import { remarkBb2 } from "./src/plugins/remark-bb2.mjs";
+import { remarkTypographer } from "./src/plugins/remark-typographer.mjs";
 import { sidebar } from "./src/lib/sidebar.mjs";
 import { blitzbasicGrammar } from "./src/lib/grammar.mjs";
 import { siteChecks } from "./src/integrations/site-checks.mjs";
@@ -29,9 +30,11 @@ export default defineConfig({
   // Hugo's static/ until the cut-over
   publicDir: "static",
   // remark/rehype, so that the site's remark plugins and astro-mermaid run;
-  // Astro's default processor (Sätteri) has a plugin API of its own
+  // Astro's default processor (Sätteri) has a plugin API of its own. The
+  // typography is Hugo's (src/plugins/remark-typographer.mjs), not Astro's
+  // smartypants
   markdown: {
-    processor: unified({ remarkPlugins: [[remarkBb2, { base }]] }),
+    processor: unified({ smartypants: false, remarkPlugins: [[remarkBb2, { base }], remarkTypographer] }),
   },
   vite: {
     build: {

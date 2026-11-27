@@ -775,3 +775,35 @@ The browser check and the comparison with Hugo's redirect pages are in
   image and taken with headless Chromium in
   `mcr.microsoft.com/playwright:v1.52.0-noble` (`--network=none`, the
   build served from a Node.js server in the container).
+- **Typography (8.2).** Hugo's Goldmark has its typographer on (no
+  setting in `hugo.yaml`, so its defaults: `“”`, `‘’`, the apostrophe `’`,
+  `--` en dash, `---` em dash, `...`, `<<`/`>>`); Astro's `unified()`
+  processor has smartypants on, which is not Goldmark's: it makes `--` an
+  em dash and decides quotes next to punctuation otherwise (`""`, `"+"`,
+  `":"`). The comparison of the text outside code of all 365 pages of both
+  builds (Hugo's from `cmake/site-fixoverview-test.cmake`, CASE real):
+  with smartypants 48 places on 22 pages differ (`""` 21, `"+"`-like 13,
+  apostrophes 10, `Amiga-\-` an em dash, `.....`), not the straight quotes
+  site-wide that group 5's 22 places suggested (those were all of this
+  kind). smartypants is off (`unified({ smartypants: false })`, which the
+  MDX pages follow too) and `src/plugins/remark-typographer.mjs` is a port
+  of Goldmark v1.8.5's typographer (the version in Hugo 0.165.0), run
+  after the site's remark plugin: per paragraph, heading and table cell
+  over the source line rebuilt from the tree (stand-ins for code spans,
+  links, emphasis, HTML, directives; escapes and entities in their source
+  form), on UTF-8 bytes as Goldmark. No new dependency; Goldmark's MIT
+  notice is in the file's head. Where Hextra renders a shortcode's text
+  with markdownify, the port applies too: a file name of the filetree and
+  a card's subtitle (`LinkCard`'s `description`); a filetree folder name
+  (Hextra writes it as it is) gets none. After it: no difference on the
+  365 pages outside the "Fixes described with other libraries" lists.
+  Those lists differ on 15 library fix pages (60 places): Hugo's template
+  writes the row texts HTML-escaped into the Markdown (`&#34;`, `&#39;`),
+  which Goldmark leaves straight (the cause of freqlib's double escape of
+  group 5); Starlight's lists are typographic, as the same texts are in the
+  overview and on the reference pages. Kept. The listings:
+  `~/.local/share/bb2-c-work/site-starlight/group8/` (`typography-*.txt`,
+  the one-off `typography-compare.py`); the per-page counts of typographic
+  characters that still differ come from the comparison (Expressive Code's
+  `data-code` attribute, Starlight's `…` placeholder of an empty FileTree
+  folder, the overview of task 6.1 not ported yet).
