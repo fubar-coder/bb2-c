@@ -1,7 +1,5 @@
-# Hugo
-public/
-resources/
-# Starlight (Astro)
+# what the builds write (site/README.md, "Layout"); the API reference in
+# public/api/ is ignored by the .gitignore of the repository
 node_modules/
 dist/
 .astro/

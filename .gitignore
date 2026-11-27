@@ -25,4 +25,4 @@ cmake-build-*/
 /.agents/
 
 # the API reference, built by the Pages workflow (Doxyfile)
-/site/static/api/
+/site/public/api/

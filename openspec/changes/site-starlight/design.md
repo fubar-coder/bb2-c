@@ -976,3 +976,20 @@ build with the fixes).
   changed). The last-modified dates from 9.2 on are those of the page
   files in `src/content/docs/`, so every page dates from the cut-over
   until it changes (git has no rename from `content/`).
+- **The workflow and `public/` (9.3).** `.github/workflows/pages.yml` is
+  the file of 8.3 without its head comment; Astro's `publicDir` is the
+  default `public/`, Doxygen writes into `site/public/api`
+  (`/site/public/api/` in the repository's `.gitignore`; `site/.gitignore`
+  lists only `node_modules/`, `dist/`, `.astro/`), and
+  `cmake/api-doxygen-test.cmake` names no path (it overrides
+  `OUTPUT_DIRECTORY`), so it is unchanged. The local run of the workflow's
+  steps on the worktree (Doxygen 1.16.1 in its image with the `Doxyfile`
+  as committed, then in the Node.js image the git install, `npm ci` and
+  `BB2_SITE_GITINFO=1 npm run build`): no warning, `dist/api/index.html`
+  there, 173 pages with the meta tag, Pagefind 940 HTML files and 367
+  pages indexed, none below `/api/`; the link check also covers Doxygen's
+  pages then (219824 links instead of 148899) and passes. The site tests
+  leave `public/` out of their copy, so they build without the API
+  reference. The path filter of the workflow names `libs/userlibs/rwe/**`,
+  while the `Doxyfile` reads all of `libs/userlibs` (testlib too): kept
+  as it was ("the path filters as today"), an open point.

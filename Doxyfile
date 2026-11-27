@@ -7,7 +7,8 @@
 # letter index of the file members with links to pages they never write,
 # docs/external-bugs/doxygen-member-index-letters.md)
 # from the repository root
-# into site/static/api/, served as api/ of the website (site/README.md).
+# into site/public/api/ (Astro's public directory), served as api/ of the
+# website (site/README.md).
 # Only the settings that differ from Doxygen's defaults are listed.
 #
 # The sources are read as text, with no Amiga toolchain: the GCC-only
@@ -18,7 +19,7 @@
 
 PROJECT_NAME           = "BB2 C port"
 PROJECT_BRIEF          = "API reference: Blitz libraries in C and the shared code"
-OUTPUT_DIRECTORY       = site/static/api
+OUTPUT_DIRECTORY       = site/public/api
 HTML_OUTPUT            = .
 GENERATE_LATEX         = NO
 HAVE_DOT               = NO

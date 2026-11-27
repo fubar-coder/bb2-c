@@ -8,7 +8,8 @@
 #         -DCACHE=<dir> -DWORK=<dir> -P site-starlight-test.cmake
 #
 # The copy leaves out what the builds write (node_modules/, dist/, .astro/)
-# and public/ (not committed); the dependencies are installed into it
+# and public/ (the API reference, not committed); the dependencies are
+# installed into it
 # with `npm ci` from the lock file, CACHE keeping npm's download cache
 # between runs. CASE real: the site as it is must install and build with
 # exit status 0 and without a warning line. Another CASE names a fixture

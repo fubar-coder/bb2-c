@@ -33,7 +33,7 @@ jobs:
 
       - name: Doxygen
         run: |
-          mkdir -p site/static/api
+          mkdir -p site/public/api
           docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src \
             ghcr.io/doxygen/doxygen:Release_1_16_1 Doxyfile
 
@@ -41,19 +41,27 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: api
-          path: site/static/api
+          path: site/public/api
           if-no-files-found: error
 
   build:
     needs: api
     runs-on: ubuntu-latest
-    # Same image as the local preview (site/README.md); the tag pins Hugo.
-    container: hugomods/hugo:go-git-0.165.0
+    # The pinned Node.js image of the local build and the site tests
+    # (site/README.md); the tag pins Node.js.
+    container: docker.io/library/node:26.13.1-bookworm-slim
     steps:
+      - name: Install git
+        # The image has no git. actions/checkout needs it for the history,
+        # and the build reads the pages' dates from it (BB2_SITE_GITINFO).
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+
       - name: Check out
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # --enableGitInfo needs the full history
+          fetch-depth: 0 # the pages' dates need the full history
 
       - name: Trust the workspace
         # The container user differs from the owner of the checkout.
@@ -63,23 +71,25 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: api
-          path: site/static/api
+          path: site/public/api
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v6
+      - name: Install
+        working-directory: site
+        run: npm ci
 
       - name: Build
-        run: hugo --gc --minify --enableGitInfo --source site --baseURL "${{ steps.pages.outputs.base_url }}/"
-
-      - name: Install GNU tar
-        # The image's BusyBox tar lacks the options upload-pages-artifact uses.
-        run: apk add --no-cache tar
+        # Astro's site and base are in site/astro.config.mjs; the package
+        # script turns Astro's telemetry off. BB2_SITE_GITINFO=1: the pages'
+        # last-modified dates from git as meta tags.
+        working-directory: site
+        env:
+          BB2_SITE_GITINFO: '1'
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: site/public
+          path: site/dist
 
   deploy:
     needs: build

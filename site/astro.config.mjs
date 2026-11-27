@@ -31,9 +31,8 @@ export default defineConfig({
   site: "https://fubar-coder.github.io",
   base,
   trailingSlash: "always",
-  // Hugo writes its output into public/, so Astro's static files come from
-  // Hugo's static/ until the cut-over
-  publicDir: "static",
+  // the static files are in public/ (Astro's default): the API reference
+  // public/api/, which Doxygen writes there (site/README.md); not committed
   // remark/rehype, so that the site's remark plugins and astro-mermaid run;
   // Astro's default processor (Sätteri) has a plugin API of its own. The
   // typography is Hugo's (src/plugins/remark-typographer.mjs), not Astro's

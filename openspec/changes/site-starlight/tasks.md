@@ -228,7 +228,7 @@ Work data (reports, counts, screenshots) goes to
   125 entries; `ctest --preset host`; the site example passes
   (`site_examples_run`, `site_examples_compile` and the rwe groups) with
   unchanged expected files; `-DHOST_SANITIZE=ON` for the tool test.
-- [ ] 9.3 `pages.yml` switched (8.3); Astro's `publicDir` back to the
+- [x] 9.3 `pages.yml` switched (8.3); Astro's `publicDir` back to the
   default `public/` (`site/.gitignore`: Hugo's `public/`, `resources/`
   removed); `Doxyfile` `OUTPUT_DIRECTORY =
   site/public/api` and its comment; `.gitignore` `/site/public/api/`;
