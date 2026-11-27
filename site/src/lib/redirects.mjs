@@ -4,7 +4,7 @@
 //
 // * writeRedirects: the redirect pages. Every URL of a page's front matter
 //   `aliases` gets a page that sends the reader to the page, with the HTML
-//   of Hugo's layouts/alias.html: JavaScript keeps the anchor of the old
+//   of the former Hugo site's redirect pages: JavaScript keeps the anchor of the old
 //   link, and an anchor named in the page's `anchorMoves` (heading id ->
 //   a page below /docs/compared-with-original/) goes to that page instead;
 //   without JavaScript a meta refresh and a link lead to the page, without

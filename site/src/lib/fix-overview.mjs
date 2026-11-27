@@ -1,9 +1,7 @@
 // The overview of the fixed original bugs on the page "Important Fixes &
 // Breaking Changes" (site-starlight, tasks 6.1, 6.2, design D9): the rows
-// of the component src/components/FixOverview.astro (the port of Hugo's
-// shortcode layouts/_shortcodes/fix-overview.html) and the check of the
-// data against the pages of fixed bugs (the port of
-// layouts/_partials/fix-overview/check.html), which the site's integration
+// of the component src/components/FixOverview.astro and the check of the
+// data against the pages of fixed bugs, which the site's integration
 // (src/integrations/site-checks.mjs) runs after the build.
 //
 // The data file is data/fixoverview.yaml, or the file the environment
@@ -28,7 +26,7 @@
 // * an issue linked on a page of fixed bugs (Language, Expressions with its
 //   sub-page, Compiled programs, Running blitz2, Editor, and Libraries with
 //   the pages below it) that is neither a row nor on the notRows list: a
-//   raw-text scan of the pages' Markdown (the converted pages of
+//   raw-text scan of the pages' Markdown (the pages of
 //   src/content/docs/), code blocks included.
 //
 // The limits are Hugo's: an anchor is proven to exist, not that the entry
@@ -120,13 +118,13 @@ export async function markdownify(md) {
   return m && !m[1].includes("<p>") ? m[1] : html;
 }
 
-/** The files of a page of the converted site (key "docs/a/b"): a.md(x) or a/index.md(x) */
+/** The files of a page of the site (key "docs/a/b"): a.md(x) or a/index.md(x) */
 function pageFile(docs, key) {
   for (const f of [`${key}.md`, `${key}.mdx`, `${key}/index.md`, `${key}/index.mdx`]) if (existsSync(join(docs, f))) return f;
   return null;
 }
 
-/** The page files below a directory of the converted site */
+/** The page files below a directory of the site */
 function below(docs, dir) {
   const out = [];
   const walk = (d) => {
@@ -160,7 +158,7 @@ function headingIds(dist, path) {
 
 /**
  * Checks the overview's data against the pages of fixed bugs: the site
- * directory site (the converted pages in src/content/docs/), the built site
+ * directory site (the pages in src/content/docs/), the built site
  * in dist with the base base ("/bb2-c/"). Returns the messages.
  */
 export function checkFixOverview(site, dist, base) {

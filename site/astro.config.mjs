@@ -1,7 +1,6 @@
-// The website with Astro Starlight (site-starlight; Hugo, hugo.yaml, stays
-// the published site until the cut-over). Built with Node.js 26.13.1 (the
-// exact version of engines.node in package.json; .npmrc has engine-strict),
-// either installed on the host, in site/:
+// The website with Astro Starlight (site/README.md). Built with Node.js
+// 26.13.1 (the exact version of engines.node in package.json; .npmrc has
+// engine-strict), either installed on the host, in site/:
 //
 //   npm ci && npm run build
 //

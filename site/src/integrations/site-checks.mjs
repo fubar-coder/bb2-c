@@ -5,8 +5,8 @@
 //   of the front matter, which Starlight uses as written: prev/next and the
 //   hero's buttons. (The Markdown links and the cards get it from the
 //   site's remark plugin, src/plugins/remark-bb2.mjs.)
-// * The leftover-syntax check, before the build: a shortcode of Hugo
-//   (`{{<`, `{{%`) outside a code block in a page (src/content/docs/) or a
+// * The leftover-syntax check, before the build: a shortcode of Hugo, the
+//   former generator (`{{<`, `{{%`), outside a code block in a page (src/content/docs/) or a
 //   data file (data/) fails the build, naming the file and the line.
 // * The check of the overview of fixed bugs, after the build
 //   (src/lib/fix-overview.mjs; first, so that a row's broken anchor is

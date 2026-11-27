@@ -218,7 +218,7 @@ Work data (reports, counts, screenshots) goes to
   and `src/content/docs/index.mdx`). Verify: `site_starlight` and
   all `site_*` tests pass; `git grep -n '{{[<%]' site/src site/data` finds
   nothing outside code blocks.
-- [ ] 9.2 Hugo removed: `hugo.yaml`, `go.mod`, `go.sum`, `layouts/`,
+- [x] 9.2 Hugo removed: `hugo.yaml`, `go.mod`, `go.sum`, `layouts/`,
   `content/`, the converter, `.hugo_build.lock` from `.gitignore`; the
   Hugo variants of the site tests. `siteexamples` scans `src/content` and
   `data` (`tools/siteexamples/main.cpp`, its README and `tooltest.cmake`);

@@ -3,15 +3,14 @@
 // with "_") and the pages of the command reference, and the i18n collection
 // with Starlight's UI strings.
 //
-// The command reference (src/lib/cmdref.mjs, the port of Hugo's content
-// adapter content/docs/libraries/_content.gotmpl) adds one entry per
+// The command reference (src/lib/cmdref.mjs) adds one entry per
 // library, rendered with the site's Markdown pipeline (the remark plugin
 // included, which gets the entry's path as its file). The entries carry a
 // filePath below src/content/docs/ that has no file, as Starlight takes an
 // entry's place from it; src/lib/sidebar.mjs lists them in the sidebar.
 //
-// The docs schema is Starlight's with the front matter the pages keep from
-// Hugo (scripts/convert-hugo.mjs): aliases (the old URLs of the page, for
+// The docs schema is Starlight's with the site's own front matter:
+// aliases (the old URLs of the page, for
 // the redirect pages of src/lib/redirects.mjs), anchorMoves (heading id ->
 // the page it moved to, below /docs/compared-with-original/) and width
 // ("wide": the page uses the full width).

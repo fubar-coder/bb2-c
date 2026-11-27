@@ -1,4 +1,4 @@
-# The Blitz Basic examples of the website (site/content, site/data), run in
+# The Blitz Basic examples of the website (site/src/content, site/data), run in
 # Amiberry (tests/README.md, "Site examples").
 #   examples.txt  the manifest: every fenced ```blitzbasic block of the site
 #                 once, "run", or "compile" with the reason it is not run, and
@@ -76,8 +76,7 @@ set(se_vout_default ${BLITZ2_DIR})
 # the sources: one extract step for all, one tokenise step each (with the
 # token list of the group); every site file that can hold a block is a
 # dependency (a new or changed example re-runs the check)
-file(GLOB_RECURSE _se_site CONFIGURE_DEPENDS ${SE_SITE}/content/* ${SE_SITE}/data/*
-	${SE_SITE}/layouts/* ${SE_SITE}/assets/*)
+file(GLOB_RECURSE _se_site CONFIGURE_DEPENDS ${SE_SITE}/src/content/* ${SE_SITE}/data/*)
 set(_se_text)
 foreach(n IN LISTS se_names)
 	list(APPEND _se_text ${SE_TEXT}/${n}.bas)

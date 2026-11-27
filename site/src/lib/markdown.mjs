@@ -1,7 +1,6 @@
-// Markdown text outside its code blocks, for the converter of the Hugo
-// pages (scripts/convert-hugo.mjs) and the site's checks
-// (src/integrations/site-checks.mjs), which look only at the text that a
-// reader sees as text.
+// Markdown text outside its code blocks, for the site's checks
+// (src/integrations/site-checks.mjs) and the data layer (src/lib/data.mjs),
+// which look only at the text that a reader sees as text.
 
 /**
  * Splits a Markdown text into code blocks and the text between them

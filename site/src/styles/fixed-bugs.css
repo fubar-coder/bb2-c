@@ -1,8 +1,6 @@
 /* The colours of the level badges (src/lib/fixed-bugs.mjs) in the light
-   and the dark theme: those of Hextra's badges (Tailwind red, amber,
-   purple, blue, gray), which Hugo sets as the theme's classes on each
-   badge. The rest of their style is assets/css/fixed-bugs.css, shared with
-   Hugo. */
+   and the dark theme (Tailwind red, amber, purple, blue, gray). The rest
+   of their style is assets/css/fixed-bugs.css. */
 .fixed-bug-level { border: 1px solid; }
 .fixed-bug-level-1 { border-color: #fecaca; background: #fee2e2; color: #7f1d1d; }
 .fixed-bug-level-2 { border-color: #fde68a; background: #fef3c7; color: #78350f; }
@@ -14,5 +12,5 @@
 [data-theme="dark"] .fixed-bug-level-3 { border-color: rgb(233 213 255 / 0.3); background: rgb(88 28 135 / 0.3); color: #e9d5ff; }
 [data-theme="dark"] .fixed-bug-level-4 { border-color: rgb(191 219 254 / 0.3); background: rgb(30 58 138 / 0.3); color: #bfdbfe; }
 [data-theme="dark"] .fixed-bug-level-5 { border-color: #404040; background: #262626; color: #e5e5e5; }
-/* Hextra's icon of the reference links, inline with the text */
+/* The book icon of the reference links, inline with the text */
 .fixed-bug-book { display: inline; vertical-align: text-bottom; }

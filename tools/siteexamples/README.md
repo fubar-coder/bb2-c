@@ -10,7 +10,7 @@ NPrint "Hello"
 ```
 ````
 
-in its pages (`site/content`) and in the data of the library pages
+in its pages (`site/src/content`) and in the data of the library pages
 (`site/data`, where the fence is indented inside a YAML block; the
 indentation of the opening fence is taken off). `siteexamples` finds
 every block, names it by its file and its number in the file
@@ -46,15 +46,16 @@ Usage: siteexamples check [OPTIONS] SITE MANIFEST
 every example has an entry and every entry an example
 
 POSITIONALS:
-  SITE TEXT REQUIRED          the site directory (site/: content, data, layouts, assets)
+  SITE TEXT REQUIRED          the site directory (site/: src/content, data)
   MANIFEST TEXT REQUIRED      the manifest (tests/site-examples/examples.txt)
 
 OPTIONS:
   -h,     --help              Print this help message and exit
 ```
 
-Reads the text files of `content`, `data`, `layouts` and `assets` in
-`SITE`, and prints `siteexamples: N examples, R run, C compiled only`
+Reads the text files of `src/content` (the pages) and `data` in `SITE`,
+and nothing else (not `node_modules`, `dist` or `.astro`), and prints
+`siteexamples: N examples, R run, C compiled only`
 when every block has an entry and every entry a block. The first problem
 stops it (exit status 1, on stderr): a block without an entry (the
 message names its file, number and line), an entry whose block is not
@@ -69,7 +70,7 @@ Usage: siteexamples extract [OPTIONS] SITE MANIFEST OUTDIR
 the check, then every example as NAME.bas
 
 POSITIONALS:
-  SITE TEXT REQUIRED          the site directory (site/: content, data, layouts, assets)
+  SITE TEXT REQUIRED          the site directory (site/: src/content, data)
   MANIFEST TEXT REQUIRED      the manifest (tests/site-examples/examples.txt)
   OUTDIR TEXT REQUIRED        the directory of the sources (made if missing)
 

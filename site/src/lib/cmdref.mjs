@@ -1,10 +1,8 @@
 // The command reference (site-starlight, task 5.2, design D8): one page per
 // command library (acidlibs), user library (the RWE userlibs and testlib) and AmigaOS library or resource,
-// made from site/data (src/lib/data.mjs). The port of Hugo's content adapter
-// content/docs/libraries/_content.gotmpl and its partials
-// layouts/_partials/cmdref/{commands,entry,form,arg,escape,fixes,oscalls}.html;
-// the loader of src/content.config.mjs adds the pages to the docs
-// collection, src/lib/sidebar.mjs lists them.
+// made from site/data (src/lib/data.mjs), with the URLs and heading ids of
+// the former Hugo site; the loader of src/content.config.mjs adds the pages
+// to the docs collection, src/lib/sidebar.mjs lists them.
 //
 // * data/libraries/GROUP/NAME.json: the commands of a library;
 // * data/libintros/GROUP/NAME.yaml: "description" (one sentence, for the
@@ -15,10 +13,10 @@
 //   the commands their row names and the others in a section of their own.
 //
 // The Markdown links with site paths, to which the site's remark plugin adds
-// the base. The headings of the commands carry Hugo's ids ({#id}, entryIds),
-// which the links of the pages of fixed bugs (src/lib/fixed-bugs.mjs) name;
-// the call tables of the AmigaOS pages get their break opportunities from
-// the remark plugin (the port of render-table.html).
+// the base. The headings of the commands carry the ids of the former Hugo
+// site ({#id}, entryIds), which the links of the pages of fixed bugs
+// (src/lib/fixed-bugs.mjs) name; the call tables of the AmigaOS pages get
+// their break opportunities from the remark plugin.
 import { byText, cmddesc, entryIds, fixoverview, libintros, libraries } from "./data.mjs";
 import { commandName, levelBadge, rowHref, splitList } from "./fixed-bugs.mjs";
 
@@ -26,16 +24,16 @@ const notation = { byte: ".b", word: ".w", long: ".l", quick: ".q", float: ".f",
 const resultNotation = { byte: ".b", word: ".w", long: ".l", quick: ".q", float: ".f", string: "$", any: "any" };
 const kinds = { statement: "Statement", function: "Function", command: "Statement or function", object: "Object name", keyword: "Keyword" };
 
-/** A name as Markdown text, the characters of Markdown markup escaped (cmdref/escape.html) */
+/** A name as Markdown text, the characters of Markdown markup escaped */
 const escapeMd = (s) => s.replace(/[\\`*_[\]<>#|]/g, (c) => `\\${c}`);
 
-/** One argument in Blitz notation (cmdref/arg.html) */
+/** One argument in Blitz notation */
 function arg(a) {
   const s = notation[a.type] ?? a.type;
   return (a.flags ?? []).includes("address") ? `&${s}` : s;
 }
 
-/** The arguments of a form, a repetition group as "{ ... }..." (cmdref/form.html) */
+/** The arguments of a form, a repetition group as "{ ... }..." */
 function form(f) {
   const args = (f.args ?? []).map(arg);
   if (!args.length) return "no arguments";
@@ -49,14 +47,14 @@ function form(f) {
   return "`" + parts.join(", ") + "`";
 }
 
-/** The Markdown list of fixed original bugs, by issue (cmdref/fixes.html) */
+/** The Markdown list of fixed original bugs, by issue */
 const fixes = (rows) =>
   [...rows]
     .sort((a, b) => a.issue - b.issue)
     .map((r) => `- [${r.text.trim()}](${rowHref(r)}) <span class="fixed-bug-meta">${levelBadge(r.severity)}</span>\n`)
     .join("");
 
-/** One entry of a command library (cmdref/entry.html) */
+/** One entry of a command library */
 function entry(e, id, desc, rows) {
   const facts = [kinds[e.kind] ?? e.kind];
   if (e.typed) facts.push("takes a type suffix such as `.w`");
@@ -75,7 +73,7 @@ function entry(e, id, desc, rows) {
   return md;
 }
 
-/** The page of a command library or userlib (cmdref/commands.html) */
+/** The page of a command library or userlib */
 function commandsMarkdown(lib, intro, descs, libFixes, fixpage) {
   let md = intro ? `${intro}\n\n` : "";
   let facts = `Library number ${lib.number}`;
@@ -113,7 +111,7 @@ function commandsMarkdown(lib, intro, descs, libFixes, fixpage) {
   return md;
 }
 
-/** The page of an AmigaOS library (cmdref/oscalls.html) */
+/** The page of an AmigaOS library */
 function oscallsMarkdown(calls, numbers, intro, osFixes) {
   let md = intro ? `${intro}\n\n` : "";
   const list = numbers.length > 1 ? `${numbers.slice(0, -1).join(", ")} and ${numbers.at(-1)}` : `${numbers[0]}`;

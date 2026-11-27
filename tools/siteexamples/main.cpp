@@ -38,8 +38,8 @@ static bool read_text(const fs::path &p, std::string &out)
     return true;
 }
 
-/* the blocks of the site: the text files of its content, data, layouts and
-   assets, in the order of their paths */
+/* the blocks of the site: the text files of its pages (src/content) and its
+   data, in the order of their paths */
 static int scan_site(const fs::path &site, se_blocks *b, std::string &err)
 {
     std::vector<fs::path> files;
@@ -49,7 +49,7 @@ static int scan_site(const fs::path &site, se_blocks *b, std::string &err)
         err = site.string() + ": not a directory";
         return -1;
     }
-    for (const char *dir : { "content", "data", "layouts", "assets" }) {
+    for (const char *dir : { "src/content", "data" }) {
         fs::path d = site / dir;
 
         if (!fs::is_directory(d))
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
     app.footer("Exit status 0 ok, 1 an example without an entry, an entry without an example, a "
                "malformed manifest or a file that cannot be read or written, 2 usage error.");
     for (CLI::App *c : { check, extract }) {
-        c->add_option("SITE", site, "the site directory (site/: content, data, layouts, assets)")
+        c->add_option("SITE", site, "the site directory (site/: src/content, data)")
             ->required();
         c->add_option("MANIFEST", manifest, "the manifest (tests/site-examples/examples.txt)")
             ->required();

@@ -1,9 +1,8 @@
-// The site's remark plugin: the port of the Hugo features that work on the
-// Markdown itself (site-starlight, design D4, D6, D7). Options: {base}, the
-// site's base path ("/bb2-c").
+// The site's remark plugin: the site's features that work on the Markdown
+// itself (site-starlight, design D4, D6, D7). Options: {base}, the site's
+// base path ("/bb2-c").
 //
-// * The site's directives (the converter writes them for Hugo's
-//   shortcodes; src/lib/fixed-bugs.mjs, src/lib/cmdref.mjs):
+// * The site's directives (src/lib/fixed-bugs.mjs, src/lib/cmdref.mjs):
 //   - ::fixed-bugs-library on a page of fixed library bugs: the head (the
 //     fixes by level, the reference page); {part="elsewhere"}: the section
 //     "Fixes described with other libraries", as Markdown, so that its
@@ -12,20 +11,18 @@
 //     the pages of fixed bugs of the group;
 //   - ::library-list{what="commands"} on an index page of the command
 //     reference: the table of the section's libraries.
-//   The overview page's shortcode fix-overview is a component instead
+//   The overview of fixed bugs is a component instead
 //   (src/components/FixOverview.astro).
 // * On the pages of fixed library bugs (docs/compared-with-original/libraries/
 //   and the pages below it), a link to an issue that has a
 //   row in data/fixoverview.yaml is followed by the badge of the row's level
-//   and its links to the command reference (Hugo's link hook render-link.html
-//   of that section).
+//   and its links to the command reference.
 // * On the AmigaOS pages of the command reference, an argument list in a
-//   table cell ("(rp,string,count)") may break after each comma (Hugo's
-//   table hook render-table.html of that section).
-// * Heading ids written as "## Heading {#id}" (Hugo's syntax; Astro's
-//   Markdown has none): the id is set on the heading and the text taken
-//   off. In an MDX page the converter writes it escaped ("\{#id\}"), which
-//   reaches the plugin as the same text. Astro's heading-id step keeps an
+//   table cell ("(rp,string,count)") may break after each comma.
+// * Heading ids written as "## Heading {#id}" (Astro's Markdown has no
+//   syntax for them): the id is set on the heading and the text taken
+//   off. In an MDX page it is written escaped ("\{#id\}"), which reaches
+//   the plugin as the same text. Astro's heading-id step keeps an
 //   id that is set.
 // * Links: a page links with site paths ("/docs/a/b/#c"); the plugin adds
 //   the base to them, in Markdown links and link definitions and in the

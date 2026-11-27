@@ -1,9 +1,8 @@
 // The parts of the pages of fixed library bugs and of the command reference
-// that come from data/fixoverview.yaml (site-starlight, task 5.1): the port
-// of Hugo's partials layouts/_partials/fixed-bugs/{level,refpage,reflinks}.html,
-// the shortcodes fixed-bugs-library and fixed-bugs-libraries and the link
-// hook layouts/docs/compared-with-original/libraries/_markup/render-link.html.
-// The site's remark plugin (src/plugins/remark-bb2.mjs) puts them on the
+// that come from data/fixoverview.yaml (site-starlight, task 5.1): the
+// level badges, the links to the command reference, the directives
+// ::fixed-bugs-library and ::fixed-bugs-libraries and the badges after the
+// issue links of the pages of fixed library bugs. The site's remark plugin (src/plugins/remark-bb2.mjs) puts them on the
 // pages; the command reference (src/lib/cmdref.mjs) uses the badges.
 //
 // Every link is a site path without the base ("/docs/a/b/#c"): in Markdown
@@ -36,10 +35,9 @@ export const commandName = (c) => c.replace(/\s*\(.*\)$/, "").trim();
 export const rowHref = (row) => `${FIXBASE}/${row.page}/#${row.anchor}`;
 
 /**
- * A badge with the name of a level (layouts/_partials/fixed-bugs/level.html),
- * with count shown after the name if given. The colours: the classes
- * fixed-bug-level-N (src/styles/fixed-bugs.css), Hugo sets the theme's
- * badge classes instead.
+ * A badge with the name of a level, with count shown after the name if
+ * given. The colours: the classes fixed-bug-level-N
+ * (src/styles/fixed-bugs.css).
  */
 export function levelBadge(level, count) {
   const l = levels()[String(level)];
@@ -57,7 +55,7 @@ export const levelBadges = (rows) =>
 
 /**
  * The page of the command reference for a library name of a row
- * (layouts/_partials/fixed-bugs/refpage.html; page: the row's page):
+ * (page: the row's page):
  * {path, title} or null. A row of the page of the AmigaOS calls names a
  * deflibs library (its page under amigaos/ if it opens an AmigaOS library),
  * any other row a command library or an RWE userlib.
@@ -74,8 +72,7 @@ export function refpage(lib, page) {
 }
 
 /**
- * The links of a row to the command reference
- * (layouts/_partials/fixed-bugs/reflinks.html): each command of the row
+ * The links of a row to the command reference: each command of the row
  * that its library declares links to the command's heading, a library none
  * of whose commands is found to its page. [{href, text, title, code}]
  */
@@ -103,9 +100,9 @@ const BOOK =
   '<svg class="fixed-bug-book" height="1em" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747.0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746.0-3.332.477-4.5 1.253"/></svg>';
 
 /**
- * The HTML after an issue link on a page of fixed library bugs (the link
- * hook render-link.html): the badge of the issue's level and its links to
- * the command reference; "" for an issue without a row.
+ * The HTML after an issue link on a page of fixed library bugs: the badge
+ * of the issue's level and its links to the command reference; "" for an
+ * issue without a row.
  */
 export function issueMeta(issue, url) {
   const row = rowsByIssue()[String(issue)];
@@ -162,7 +159,7 @@ function frontMatter(file) {
 /**
  * The table of the pages of fixed library bugs of a group (the shortcode
  * fixed-bugs-libraries; group "commands" or "userlibs"), as HTML: each page
- * (the converted pages of src/content/docs, by title) with its number of
+ * (the pages of src/content/docs, by title) with its number of
  * fixes, the badges by level and its page in the command reference.
  */
 export function fixedBugsLibraries(group, url) {

@@ -1,16 +1,11 @@
 # The check of the overview of fixed original bugs
-# (cmake/site-fixoverview-test.cmake), in both generators until Hugo is
-# removed (site-starlight, task 9.2): the site as it is builds cleanly, and
-# every broken data file of fixoverview/data/ fails with its message. The
-# Starlight build (src/lib/fix-overview.mjs, the data file named by
-# BB2_FIXOVERVIEW_DATA; a failed build leaves no dist/): site_fixoverview and
-# site_fixoverview_*; Hugo's (layouts/_partials/fix-overview/check.html):
-# site_hugo_fixoverview and site_hugo_fixoverview_*, the same cases and
-# messages. Label site; Hugo's skipped (77) without podman or the image, the
-# Starlight ones as the Starlight build below. One at a time per generator:
-# they share npm's cache or Hugo's module cache.
+# (cmake/site-fixoverview-test.cmake, src/lib/fix-overview.mjs): the site as
+# it is builds cleanly (site_fixoverview), and every broken data file of
+# fixoverview/data/, named by BB2_FIXOVERVIEW_DATA, fails the build with its
+# message and leaves no dist/ (site_fixoverview_*). Label site; skipped (77)
+# as the Starlight builds below. One at a time: they share npm's cache.
 #
-# SITE_NODE: where the Starlight builds run Node.js
+# SITE_NODE: where the site builds run Node.js
 # (cmake/site-starlight-test.cmake): auto (the host's node when it has the
 # version of engines.node in site/package.json, else the pinned image via
 # podman, else skipped), host or container (that way only; not available
@@ -21,7 +16,6 @@ set_property(CACHE SITE_NODE PROPERTY STRINGS auto host container)
 if(NOT SITE_NODE MATCHES "^(auto|host|container)$")
 	message(FATAL_ERROR "SITE_NODE is auto, host or container, not ${SITE_NODE}")
 endif()
-set(_site_cache ${CMAKE_BINARY_DIR}/site-hugo-cache)
 set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
 set(_cases
 	"real|"
@@ -33,37 +27,24 @@ set(_cases
 	"bad-highlight|row #421 has the highlight \"yes\", not true or false"
 	"duplicate|issue #421 has more than one row"
 	"no-row|issue #999 is linked on [^ ]+ but has no row")
-foreach(generator starlight hugo)
-	if(generator STREQUAL "starlight")
-		set(prefix site_fixoverview)
-		set(cache ${_starlight_cache})
-		set(lock site_npm_cache)
-		set(timeout 600)
+foreach(c IN LISTS _cases)
+	string(REPLACE "|" ";" c "${c}")
+	list(GET c 0 case)
+	list(GET c 1 expect)
+	if(case STREQUAL "real")
+		set(name site_fixoverview)
 	else()
-		set(prefix site_hugo_fixoverview)
-		set(cache ${_site_cache})
-		set(lock site_hugo_cache)
-		set(timeout 300)
+		set(name site_fixoverview_${case})
+		string(REPLACE "-" "_" name ${name})
 	endif()
-	foreach(c IN LISTS _cases)
-		string(REPLACE "|" ";" c "${c}")
-		list(GET c 0 case)
-		list(GET c 1 expect)
-		if(case STREQUAL "real")
-			set(name ${prefix})
-		else()
-			set(name ${prefix}_${case})
-			string(REPLACE "-" "_" name ${name})
-		endif()
-		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
-			-DSITE=${PROJECT_SOURCE_DIR}/site -DGENERATOR=${generator} -DCASE=${case}
-			"-DEXPECT=${expect}" -DSITE_NODE=${SITE_NODE}
-			-DCACHE=${cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
-			-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-fixoverview-test.cmake
-			-P ${WITH_WORKDIR})
-		set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
-			RESOURCE_LOCK ${lock} TIMEOUT ${timeout})
-	endforeach()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+		-DSITE=${PROJECT_SOURCE_DIR}/site -DCASE=${case}
+		"-DEXPECT=${expect}" -DSITE_NODE=${SITE_NODE}
+		-DCACHE=${_starlight_cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
+		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-fixoverview-test.cmake
+		-P ${WITH_WORKDIR})
+	set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
+		RESOURCE_LOCK site_npm_cache TIMEOUT 600)
 endforeach()
 
 # The Starlight build (cmake/site-starlight-test.cmake), Node.js at the

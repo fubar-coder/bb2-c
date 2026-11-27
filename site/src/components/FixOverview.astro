@@ -1,9 +1,7 @@
 ---
-// The overview of the fixed original bugs (site-starlight, task 6.1): the
-// port of Hugo's shortcode layouts/_shortcodes/fix-overview.html, with its
-// markup, on the page "Important Fixes & Breaking Changes" (the converter,
-// scripts/convert-hugo.mjs, writes <FixOverview part="..." /> for the
-// shortcode and makes the page MDX).
+// The overview of the fixed original bugs (site-starlight, task 6.1), on
+// the page "Important Fixes & Breaking Changes" (an MDX page, which imports
+// the component).
 //
 //   <FixOverview part="levels" />    the five severity levels, as a list
 //   <FixOverview part="breaking" />  the rows marked highlight in a warning
@@ -15,7 +13,7 @@
 // data runs after the build (src/integrations/site-checks.mjs). The table is
 // in its initial order: by severity, inside a severity by issue number; a
 // row shows its "short" sentence, the warning box its "text".
-// assets/js/fix-overview.js (Hugo's, unchanged) adds sorting and the
+// assets/js/fix-overview.js adds sorting and the
 // filters (also from the URL: ?level=3,4 shows levels 3 and 4); its style
 // is assets/css/fix-overview.css (the site's custom CSS) and
 // src/styles/fix-overview.css.

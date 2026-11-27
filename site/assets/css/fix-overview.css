@@ -1,5 +1,5 @@
-/* The table of the page "Important Fixes & Breaking Changes" (shortcode
-   fix-overview). The table itself keeps the theme's table style; colours
+/* The table of the page "Important Fixes & Breaking Changes"
+   (src/components/FixOverview.astro). The table itself keeps the theme's table style; colours
    come from currentColor, so the light and the dark theme both work. */
 .fix-overview-table caption {
   caption-side: top;
@@ -80,14 +80,8 @@
 .fix-overview-level-1 {
   color: #b91c1c;
 }
-html.dark .fix-overview-level-1 {
-  color: #f87171;
-}
 .fix-overview-level-2 {
   color: #b45309;
-}
-html.dark .fix-overview-level-2 {
-  color: #fbbf24;
 }
 /* the commands of a row, on their own line above its sentence */
 .fix-overview-commands {

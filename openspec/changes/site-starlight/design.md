@@ -956,3 +956,23 @@ build with the fixes).
   keeps its name and fixture). The built site equals the build of the
   parent commit file for file, but for Pagefind's index files (their
   names are hashes that differ from build to build).
+- **Hugo removed (9.2).** With `hugo.yaml`, `go.mod`, `go.sum`,
+  `layouts/`, `content/` and the converter (`scripts/`) went
+  `tests/fixoverview/config.yaml` (Hugo's mount of the broken data files)
+  and the `GENERATOR` of `cmake/site-fixoverview-test.cmake`; the
+  `site_hugo_fixoverview*` tests are gone, `site_fixoverview*` stay. The
+  comments of `site/src`, `assets/` and `astro.config.mjs` no longer name
+  the removed files; the two `html.dark` rules of
+  `assets/css/fix-overview.css` (Hextra's dark theme, never matched by
+  Starlight, whose rules are in `src/styles/fix-overview.css`) are gone,
+  the only change of the built CSS. `assets/css/fixed-bugs.css` keeps its
+  rule `.content .fixed-bugs-breakcode > table:first-child` with Hextra's
+  `--hx-spacing` (no element matches `.content` in Starlight's pages; not
+  touched, so the look stays as reviewed). `siteexamples` reads
+  `src/content` and `data` only (its tool test puts a block into
+  `node_modules`, `dist`, `.astro`, `content` and `src/components` of the
+  fake site and expects the same counts); the rewritten manifest is the
+  one of the gate (`examples-rewritten.txt`, 125 entries, 29 paths
+  changed). The last-modified dates from 9.2 on are those of the page
+  files in `src/content/docs/`, so every page dates from the cut-over
+  until it changes (git has no rename from `content/`).

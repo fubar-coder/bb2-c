@@ -14,10 +14,6 @@
 // collection below its directory (the command reference's index pages
 // have only loader entries there); a page with its images
 // (freqlib/index.md) is a regular page.
-//
-// Until the cut-over (task 9.1) the converted pages are not in git: the
-// date is that of the Hugo page they come from (content/..., _index.md for
-// an index page); task 9.2 removes that fallback with content/.
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -57,8 +53,5 @@ export function modifiedTime(file, files) {
   // a section's index page: an index.md(x) with other pages below its directory
   const dir = file.replace(/[^/]*$/, "");
   if (/(^|\/)index\.mdx?$/.test(file) && files.some((f) => f !== file && f.startsWith(dir))) return null;
-  const d = gitDates();
-  const hugo = file.replace(/^src\/content\/docs\//, "content/").replace(/\.mdx$/, ".md");
-  for (const f of [file, hugo, hugo.replace(/(^|\/)index\.md$/, "$1_index.md")]) if (d.has(f)) return d.get(f);
-  return null;
+  return gitDates().get(file) ?? null;
 }

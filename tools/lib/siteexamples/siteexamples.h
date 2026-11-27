@@ -2,7 +2,7 @@
  * siteexamples - the Blitz Basic examples of the website
  * (tests/site-examples).
  *
- * The site (site/content, site/data) shows programs in fenced blocks
+ * The site (site/src/content, site/data) shows programs in fenced blocks
  *
  *     ```blitzbasic
  *     NPrint "Hello"
