@@ -1,12 +1,17 @@
 ---
 title: The test library
 weight: 5
-description: Every macro a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions, expected runtime errors and started programs - with what each records, how cases, procedures, the batch init and the batch cleanup are written, the placeholders, and the known limits.
+description: Every macro of the test library testlib (user library 81) that a test that judges itself can use - the blocks, the checks of long, quick, float and string values, preconditions, expected runtime errors and started programs - with what each records, how cases, procedures, the batch init and the batch cleanup are written, the placeholders, and the known limits.
 ---
 
 A [test that judges itself]({{< relref "self-judging-tests" >}}) checks
-its results with the *test library*: a small Blitz Basic user library and
-a set of macros for it. This page describes every macro a test source can
+its results with the test library: the Blitz Basic user library
+**testlib** (user library 81, the file `testlib.obj`) and its macros in
+`shared/basictest/macros.bas`. A test source uses only the macros, such
+as `!TestCase` and `!CheckEq`; each of them calls a command of testlib,
+and the
+[reference page of testlib]({{< relref "/docs/libraries/userlibs/testlib" >}})
+lists those commands. This page describes every macro a test source can
 use, what it records, and the rules for writing the source around it.
 
 The source does not load the library or include the macros. The test

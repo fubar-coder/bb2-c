@@ -1,7 +1,7 @@
 ---
 title: Tests that judge themselves
 weight: 3
-description: How to write a Blitz Basic test that checks its own result, and every setting of its configuration files ID.test.toml and tests.toml - what to run, how to run it, the test's own data, the matrix of compilers and libraries, assertions, the declared deviations and alternative ends of an original bug - with step-by-step guides for adding cases, tests, directories and tests of original bugs.
+description: How to write a Blitz Basic test that checks its own result with the test library testlib, and every setting of its configuration files ID.test.toml and tests.toml - what to run, how to run it, the test's own data, the matrix of compilers and libraries, assertions, the declared deviations and alternative ends of an original bug - with step-by-step guides for adding cases, tests, directories and tests of original bugs.
 ---
 
 Before this page you should know how the tests are run and what the
@@ -9,15 +9,17 @@ presets are ([Tests]({{< relref "tests" >}})).
 
 {{< callout type="info" >}}
 To run one test or one of its cases, directly or with CTest, see
-[Running a single test]({{< relref "running-tests" >}}). Every macro a
-test source can use is described in
+[Running a single test]({{< relref "running-tests" >}}). Every macro of
+the test library testlib that a test source can use is described in
 [The test library]({{< relref "test-library" >}}).
 {{< /callout >}}
 
 Most emulator tests compare what a program prints with a file of
 expected output. A *test that judges itself* works the other way round:
-the Blitz Basic program checks its results with a small test library,
-and the expected values are written in the program itself. A
+the Blitz Basic program checks its results with the port's test library,
+the user library **testlib** (user library 81, the file `testlib.obj`)
+and its macros in `shared/basictest/macros.bas`, and the expected values
+are written in the program itself. A
 configuration file next to it says how the program is run, with which
 compiler and which libraries, and what else the run must show. This
 page explains how such a test is written and every setting of its

@@ -10,7 +10,10 @@ Before this page you should have built the port (see the
 The tests check that the port does what the original does, and, where a
 bug of the original has been fixed, that the port does what is correct.
 Some run on your machine in seconds; most run the Amiga programs in an
-emulator.
+emulator. Many of the emulator tests are Blitz Basic programs that check
+their own results with the port's test library, the user library
+**testlib** (user library 81, the file `testlib.obj`) and its macros
+([The test library]({{< relref "test-library" >}})).
 
 What the original does is written down once and committed with the
 tests: the *expected data*. The normal test runs compare the port with
@@ -85,7 +88,7 @@ correctly.
   show that behaviour, which needs no original material; the `originals`
   run checks that the original still shows the bug.
 * **Tests that judge themselves** are Blitz Basic programs that check
-  their results with a small test library; the expected values are in
+  their results with the test library testlib; the expected values are in
   the program, and a configuration file says with which compilers and
   libraries it runs. How to write one and every setting of its
   configuration:
