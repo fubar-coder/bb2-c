@@ -204,7 +204,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 9. Visual review and cut-over
 
-- [ ] 9.0 Visual review by the user: a local build of the whole site
+- [x] 9.0 Visual review by the user: a local build of the whole site
   served next to the Hugo site (two ports), with a list of pages to look
   at (home, the chapter indexes, type-system, important-fixes with
   filters, two library fix pages, two reference pages, one AmigaOS page,
