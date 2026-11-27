@@ -475,3 +475,49 @@ served by request interception.
 - **The home page (3.3)** has no menu button at a narrow width (the splash
   template has no sidebar); Hugo's navbar had a Documentation link. The
   hero's button and the cards lead into the docs.
+
+### Group 8 (2026-11-27)
+
+- **The keyword export (8.1, Q1).** `tools/toklist` (`toklist json`, the
+  logic in `tools/lib/toklist`, the snitch test `test_toklist`) reads
+  `programs/blitz2/src/toklist.h` as text and writes
+  `site/data/compiler/blitz2.json`: the 92 keywords of blitz2's list (91
+  `TK` entries and the `TKLAST` one) in the order of the list, each with
+  blitz2's name and help (the first of an `M(...)`), none of the 118 `TA`
+  mnemonics and none of AmiBlitz3's 8 `TK3` nodes. blitz2's names keep
+  their spelling, so `Jimi` (the two slots AmiBlitz3 names `SYNTAX` and
+  `EXTB`), `Runerrson` and `Runerrsoff` are among them. The check runs
+  after every link of `blitz2` (POST_BUILD; the JSON is a link dependency,
+  so a change of the file alone relinks and checks); the update target is
+  `blitz2_keywords_update`; the broken-input test `blitz2_keywords_broken`
+  changes `Wend` to `WEnd` in a copy of the list; the host side has the
+  same check as `toklist_json`. No result changes: `prev_results` 794
+  library files equal, and `blitz2`, `blitz2-ab3`, `ted` byte-identical
+  with the prev build of main's head.
+- **Operator words.** `AND`, `OR`, `EOR`, `NOT`, `LSL`, `LSR`, `ASL`, `ASR`
+  are `TA` nodes that the expression evaluator takes as operators
+  (`eval.c`, its operator table), so the export leaves them out and the
+  grammar names these eight itself; `MOD` and `BitTst`/`BitSet`/
+  `BitClr`/`BitChg` are `TK` keywords, which the grammar marks as operator
+  words (it fails if the export no longer has one of them).
+- **The grammar (D11)** is `src/lib/grammar.mjs`: the spike's patterns,
+  the keywords from `blitz2.json`, the commands (1257 names without case),
+  objects (18) and AmigaOS calls (992) from `site/data/libraries`, and one
+  pattern more than the spike, the call of a macro (`!name`). It reads the
+  files itself (the data layer `src/lib/data.mjs` is task 4.2's; the
+  grammar can take its readers after the merge). Hugo's blitzbasic render
+  hook stays until Hugo goes (9.2).
+- **The `basic` fences: the grammar.** The 14 fragments on
+  `project-structure/self-judging-tests` and `project-structure/test-library`
+  are Blitz sources (statements and the test library's macro calls
+  `!TestCase{...}`, `!CheckEq{...}`), so they are highlighted like every
+  other Blitz block: `langAlias: { basic: "blitzbasic" }`. Their fence
+  stays `basic`, which keeps them out of the site-examples manifest (it
+  takes only `blitzbasic` blocks; the fragments do not compile alone).
+- **Screenshot.** `~/.local/share/bb2-c-work/site-starlight/group8/`
+  (`8.1-grammar-light.png`, `-dark.png`): a sample page (not committed)
+  with a `blitzbasic` block (`If`, `NPrint`, a string, comments,
+  `Open_`/`Close_`) and a `basic` fragment, built in the pinned Node.js
+  image and taken with headless Chromium in
+  `mcr.microsoft.com/playwright:v1.52.0-noble` (`--network=none`, the
+  build served from a Node.js server in the container).

@@ -174,7 +174,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 8. Grammar, warnings, search, workflow
 
-- [ ] 8.1 The grammar (design D11) with the keywords exported from
+- [x] 8.1 The grammar (design D11) with the keywords exported from
   `toklist.h` (Q1): the host tool in `tools/` (logic in `tools/lib/`, a snitch test in
   `tools/tests/`), the committed `site/data/compiler/blitz2.json`, its
   check in blitz2's build step and a broken-input test, a `cmdref_update`-

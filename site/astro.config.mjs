@@ -16,6 +16,7 @@ import mermaid from "astro-mermaid";
 import { unified } from "@astrojs/markdown-remark";
 import { remarkBb2 } from "./src/plugins/remark-bb2.mjs";
 import { sidebar } from "./src/lib/sidebar.mjs";
+import { blitzbasicGrammar } from "./src/lib/grammar.mjs";
 
 export default defineConfig({
   site: "https://fubar-coder.github.io",
@@ -49,11 +50,14 @@ export default defineConfig({
       customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css"],
       components: { Head: "./src/components/Head.astro" },
       sidebar: sidebar(fileURLToPath(new URL("./src/content/docs", import.meta.url))),
-      // blitzbasic: plain text until the Blitz Basic grammar (task 8.1);
-      // basic: the fragments of test programs on the test pages, plain text
-      // as in Hugo
+      // the Blitz Basic grammar (src/lib/grammar.mjs: blitzbasic, bb2,
+      // blitz2), also for basic: the fragments of test programs on the test
+      // pages, which are Blitz sources too
       expressiveCode: {
-        shiki: { langAlias: { blitzbasic: "plaintext", basic: "plaintext" } },
+        shiki: {
+          langs: [blitzbasicGrammar(fileURLToPath(new URL("./data", import.meta.url)))],
+          langAlias: { basic: "blitzbasic" },
+        },
       },
     }),
   ],
