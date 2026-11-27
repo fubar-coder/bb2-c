@@ -2068,7 +2068,7 @@ committed).
 ### Site examples
 
 The website shows Blitz Basic programs in fenced ` ```blitzbasic ` blocks
-(`site/content`, and the introductions and command descriptions of the
+(`site/src/content`, and the introductions and command descriptions of the
 library pages in `site/data`). `tests/site-examples/` compiles every one
 of them with blitz2-c and runs those that can be run. The manifest
 `tests/site-examples/examples.txt` lists **every block once**, by its file

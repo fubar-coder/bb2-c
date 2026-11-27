@@ -42,7 +42,7 @@ shared/xtra/                 the companion settings of a source (.xtra)
                              ab3cli, the host tools)
 Doxyfile                     the API reference (Doxygen, Pages workflow;
                              docs/development.md)
-site/                        the website (Hugo, site/README.md); data/
+site/                        the website (Astro Starlight, site/README.md); data/
                              libraries/: the command tables of the
                              libraries (blitzlib cmdref, checked by the build)
 shared/tokenizer/            source text to tokenised lines with a rule

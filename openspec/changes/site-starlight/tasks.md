@@ -235,7 +235,7 @@ Work data (reports, counts, screenshots) goes to
   `cmake/api-doxygen-test.cmake` if it names the path. Verify:
   `api_doxygen` and `api_doxygen_broken` pass; the workflow file is
   checked with the steps of 8.3.
-- [ ] 9.4 Docs: a `dev` script in `site/package.json` (`astro dev --host
+- [x] 9.4 Docs: a `dev` script in `site/package.json` (`astro dev --host
   0.0.0.0 --port 4321`, telemetry off), run with the host's Node.js at the
   pinned version or in the pinned Node.js image with the port published
   (design D5, Q3): the counterpart of `hugo server`, live reload of the

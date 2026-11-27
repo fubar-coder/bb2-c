@@ -1,7 +1,7 @@
 /*
  * cmdref.h - the command table of a Blitz Basic 2 library file as JSON,
  * the data of the command reference of the website
- * (site/data/libraries/GROUP/NAME.json, rendered by Hugo).
+ * (site/data/libraries/GROUP/NAME.json, rendered by the site build).
  *
  * The file is meant to be diffed and compared byte by byte: fixed key
  * order, two-space indentation, one line per form, ASCII only (every

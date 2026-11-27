@@ -165,8 +165,8 @@ deliberately"; spec `testing/bug-fix-workflow`). A fix delivers:
    of them, also in the name of a `[fixed #NNN]` test case. Write such
    a name rephrased ("the fixed case of #NNN");
 3. the entry on the website page of fixed original bugs
-   (in `site/content/docs/compared-with-original/`: for the compiler
-   `language.md` (what a source may contain), `expressions/_index.md`
+   (in `site/src/content/docs/docs/compared-with-original/`: for the compiler
+   `language.md` (what a source may contain), `expressions/index.md`
    (the value of an expression) or `compiled-programs.md` (the generated
    program), then `running-blitz2.md`, `editor/`, `libraries/` with
    `commands/`, `userlibs/` and `amigaos.md`: a row in its group's table
@@ -244,7 +244,7 @@ userlibs (`libs/userlibs`, a new userlib directory is included), and
 `shared/` (main page `docs/api-mainpage.md`). Not part of
 the CMake build: the Pages workflow runs it in
 `ghcr.io/doxygen/doxygen:Release_1_16_1` with warnings as errors into
-`site/static/api/` (not committed), served as `/bb2-c/api/`. A comment
+`site/public/api/` (not committed), served as `/bb2-c/api/`. A comment
 error (a `@param` of no parameter, a `@return` on a void routine, an
 unclosed backquote) fails the publication of the site; run it locally
 as `site/README.md` describes, or as the ctest `api_doxygen` (label `site`,
@@ -253,7 +253,7 @@ checks that a bad `@param` fails it).
 
 **Command reference** (Blitz programmers): the command tables of the
 built library files, `blitzlib cmdref`, committed in `site/data/libraries/`
-and rendered by Hugo (`site/README.md`); checked in the build, see
+and rendered by the site build (`site/README.md`); checked in the build, see
 below.
 
 ## Checking a rework against the previous commit

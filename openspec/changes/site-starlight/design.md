@@ -993,3 +993,26 @@ build with the fixes).
   reference. The path filter of the workflow names `libs/userlibs/rwe/**`,
   while the `Doxyfile` reads all of `libs/userlibs` (testlib too): kept
   as it was ("the path filters as today"), an open point.
+- **The docs (9.4).** The `dev` script is `astro dev --host 0.0.0.0
+  --port 4321` with telemetry off. Every command of `site/README.md` and of
+  the page `project-structure/build-docs` was run as written, both ways:
+  `npm ci`, `npm run dev` (a changed page is served at the next request),
+  `npm run build` (no warning) and `npm run preview` on the host and in
+  the pinned image; Doxygen into `site/public/api`; `cmake --preset amiga
+  -DSITE_NODE=container` (then `site_starlight` reports the image);
+  `npm install --save-exact` in a copy (the pinned version again leaves
+  both files unchanged); the `siteexamples check` line. Two findings:
+  podman's port forwarding answers `localhost` on `::1`, which the
+  server in the container (`--host 0.0.0.0`) does not, so the docs name
+  `http://127.0.0.1:4321/bb2-c/` for the container; and Astro 7.4 starts
+  `astro dev` and `astro preview` in the background when it detects an AI
+  agent (`isRunByAgent`), stopped with `npx astro dev stop` /
+  `npx astro preview stop` (named in `site/README.md`; a person's
+  terminal keeps them in the foreground). The raw HTML rule: the old
+  README said "Raw HTML in Markdown is switched off; use shortcodes",
+  while `hugo.yaml` had `unsafe: true` for the home page; Astro's Markdown
+  passes HTML through without a switch, and the README now states one
+  rule (only `<details>`/`<summary>` and a styling `<div>`, the forms the
+  pages use). The site-writer agent and the memory note keep their Hugo
+  wording until the user's OK to the drafts
+  (`bb2-c-work/site-starlight/q6-drafts.md`, Q6).
