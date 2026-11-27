@@ -1,0 +1,147 @@
+---
+// The overview of the fixed original bugs (site-starlight, task 6.1): the
+// port of Hugo's shortcode layouts/_shortcodes/fix-overview.html, with its
+// markup, on the page "Important Fixes & Breaking Changes" (the converter,
+// scripts/convert-hugo.mjs, writes <FixOverview part="..." /> for the
+// shortcode and makes the page MDX).
+//
+//   <FixOverview part="levels" />    the five severity levels, as a list
+//   <FixOverview part="breaking" />  the rows marked highlight in a warning
+//                                    box, with the count of the rows of
+//                                    levels 1 and 2
+//   <FixOverview part="table" />     the table
+//
+// The rows and the data file: src/lib/fix-overview.mjs; the check of the
+// data runs after the build (src/integrations/site-checks.mjs). The table is
+// in its initial order: by severity, inside a severity by issue number; a
+// row shows its "short" sentence, the warning box its "text".
+// assets/js/fix-overview.js (Hugo's, unchanged) adds sorting and the
+// filters (also from the URL: ?level=3,4 shows levels 3 and 4); its style
+// is assets/css/fix-overview.css (the site's custom CSS) and
+// src/styles/fix-overview.css.
+import { Aside } from "@astrojs/starlight/components";
+import { markdownify, overviewData, overviewRows } from "../lib/fix-overview.mjs";
+
+interface Props {
+  part?: "levels" | "breaking" | "table";
+}
+const { part = "table" } = Astro.props;
+if (!["levels", "breaking", "table"].includes(part)) throw new Error(`fix-overview: unknown part "${part}" on ${Astro.url.pathname}`);
+
+const url = (p: string) => import.meta.env.BASE_URL.replace(/\/$/, "") + p;
+const issueUrl = (n: unknown) => `https://github.com/fubar-coder/bb2-c/issues/${n}`;
+const { data } = overviewData();
+const levels: { level: number; name: string; text: string }[] = data.levels ?? [];
+const levelName = Object.fromEntries(levels.map((l) => [String(l.level), l.name]));
+const rows = overviewRows(data);
+
+const levelItems =
+  part === "levels"
+    ? await Promise.all(levels.map(async (l) => ({ l, html: await markdownify(l.text) })))
+    : [];
+const highlights =
+  part === "breaking"
+    ? await Promise.all(rows.filter((r) => r.row.highlight === true).map(async (r) => ({ r, html: await markdownify(r.row.text) })))
+    : [];
+const changes = rows.filter((r) => r.row.severity <= 2).length;
+const tableRows = part === "table" ? await Promise.all(rows.map(async (r) => ({ r, html: await markdownify(r.row.short) }))) : [];
+---
+
+{
+  part === "levels" && (
+    <ul>
+      {levelItems.map(({ l, html }) => (
+        <li>
+          <strong>
+            {l.level}, {String(l.name ?? "").toLowerCase()}.
+          </strong>{" "}
+          <Fragment set:html={html} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+{
+  part === "breaking" && (
+    <Aside type="caution">
+      <p>
+        <strong>
+          These fixes can change a program that ran correctly with Blitz Basic 2, and they are the ones an ordinary
+          program meets most easily.
+        </strong>{" "}
+        Check your sources for the commands they name.
+      </p>
+      {highlights.length > 0 && (
+        <ul>
+          {highlights.map(({ r, html }) => (
+            <li>
+              <a href={url(r.href)} set:html={html} /> (<a href={issueUrl(r.row.issue)}>#{r.row.issue}</a>)
+            </li>
+          ))}
+        </ul>
+      )}
+      <p>
+        These are only the highlights. All {changes} fixes that can change such a program are at the top of{" "}
+        <a href="#all-fixes">the table below</a>, at levels 1 and 2; its level filter can show one of the two levels
+        alone.
+      </p>
+    </Aside>
+  )
+}
+{
+  part === "table" && (
+    <div class="fix-overview" data-total={rows.length}>
+      <table class="fix-overview-table">
+        <caption>{rows.length} fixed original bugs, by level and issue number</caption>
+        <thead>
+          <tr>
+            <th scope="col" data-sort="severity" data-type="number">Level</th>
+            <th scope="col" data-sort="topic">Topic</th>
+            <th scope="col" data-sort="component">Component</th>
+            <th scope="col" data-sort="fix">Fix</th>
+            <th scope="col" data-sort="issue" data-type="number">Issue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableRows.map(({ r, html }) => (
+            <tr
+              data-severity={r.row.severity}
+              data-topic={r.row.topic}
+              data-component={r.component}
+              data-fix={r.fixKey}
+              data-issue={r.row.issue}
+            >
+              <td>
+                <span class={`fix-overview-level fix-overview-level-${r.row.severity}`} title={levelName[String(r.row.severity)]}>
+                  {r.row.severity}
+                </span>
+              </td>
+              <td>{r.row.topic}</td>
+              <td>{r.component}</td>
+              <td>
+                {r.commands.length > 0 && (
+                  <span class="fix-overview-commands">
+                    {r.commands.map((c, i) => (
+                      <>
+                        {i > 0 && ", "}
+                        <code>{c}</code>
+                      </>
+                    ))}
+                  </span>
+                )}
+                <a href={url(r.href)} set:html={html} />
+              </td>
+              <td>
+                <a href={issueUrl(r.row.issue)}>#{r.row.issue}</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  import "../../assets/js/fix-overview.js";
+</script>

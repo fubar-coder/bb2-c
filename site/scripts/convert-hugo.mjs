@@ -20,9 +20,11 @@
 //   Steps and FileTree; such a page becomes `.mdx`, and its text outside
 //   code is escaped for MDX (`{`, `}`, `<`; an autolink becomes a link).
 // * The site's shortcodes (fixed-bugs-library, fixed-bugs-libraries,
-//   library-list, fix-overview) -> leaf directives with the same
-//   attributes (`::fixed-bugs-library{part="elsewhere"}`), handled by the
-//   site's remark plugin.
+//   library-list) -> leaf directives with the same attributes
+//   (`::fixed-bugs-library{part="elsewhere"}`), handled by the site's
+//   remark plugin; fix-overview -> the component
+//   `<FixOverview part="table" />` (src/components/FixOverview.astro),
+//   which makes the page `.mdx`.
 // * Front matter: title, description; weight -> sidebar.order; prev/next
 //   -> Starlight's {link, label} with the target page's title; aliases,
 //   anchorMoves and width kept (src/content.config.mjs extends the schema).
@@ -115,7 +117,8 @@ export function convertPage(file, raw, titles) {
   let body = m ? raw.slice(m[0].length) : raw;
   const home = file === "_index.md";
   const components = new Set();
-  const mdx = home || /\{\{[<%]\s*(cards|steps|filetree\/container)\b/.test(body);
+  const mdx = home || /\{\{[<%]\s*(cards|steps|filetree\/container|fix-overview)\b/.test(body);
+  let fixOverview = false;
 
   const data = { title: fm.title };
   if (fm.description) data.description = fm.description;
@@ -242,8 +245,14 @@ export function convertPage(file, raw, titles) {
         count("relref");
         return refPath(r, file);
       })
-      // the site's shortcodes: leaf directives
-      .replace(/\{\{[<%]\s*(fixed-bugs-library|fixed-bugs-libraries|fix-overview|library-list)\s*([^>%]*?)\s*[>%]\}\}/g, (_, name, a) => {
+      // the overview of fixed bugs: its component
+      .replace(/\{\{[<%]\s*fix-overview\s*([^>%]*?)\s*[>%]\}\}/g, (_, a) => {
+        count("component:FixOverview");
+        fixOverview = true;
+        return `<FixOverview ${jsxAttr("part", attrs(a).part ?? "table")} />`;
+      })
+      // the site's other shortcodes: leaf directives
+      .replace(/\{\{[<%]\s*(fixed-bugs-library|fixed-bugs-libraries|library-list)\s*([^>%]*?)\s*[>%]\}\}/g, (_, name, a) => {
         const at = Object.entries(attrs(a)).map(([k, v]) => `${k}="${v}"`).join(" ");
         count(`directive:${name}`);
         return `::${name}${at ? `{${at}}` : ""}`;
@@ -280,7 +289,10 @@ export function convertPage(file, raw, titles) {
   let out = home ? "index.mdx" : file.replace(/(^|\/)_index\.md$/, "$1index.md");
   if (mdx) {
     out = out.replace(/\.md$/, ".mdx");
-    if (components.size) body = `import { ${[...components].sort().join(", ")} } from "@astrojs/starlight/components";\n\n${body.replace(/^\n+/, "")}`;
+    const imports = [];
+    if (components.size) imports.push(`import { ${[...components].sort().join(", ")} } from "@astrojs/starlight/components";`);
+    if (fixOverview) imports.push(`import FixOverview from "${posix.relative(posix.dirname(`src/content/docs/${out}`), "src/components")}/FixOverview.astro";`);
+    if (imports.length) body = `${imports.join("\n")}\n\n${body.replace(/^\n+/, "")}`;
     count("mdx");
   }
   return { out, text: `---\n${YAML.stringify(data).trim()}\n---\n\n${body.replace(/^\n+/, "")}`, applied };

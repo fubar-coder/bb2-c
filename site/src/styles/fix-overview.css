@@ -1,0 +1,9 @@
+/* The overview's table (src/components/FixOverview.astro) in Starlight;
+   the rest of its style is assets/css/fix-overview.css, shared with Hugo.
+   The dark theme of the level badges: that file selects it by Hextra's
+   html.dark, Starlight sets data-theme. */
+[data-theme="dark"] .fix-overview-level-1 { color: #f87171; }
+[data-theme="dark"] .fix-overview-level-2 { color: #fbbf24; }
+/* Starlight's content spacing puts a margin above every element after the
+   first; the two filters stand side by side */
+.fix-overview-filters > * { margin-top: 0; }

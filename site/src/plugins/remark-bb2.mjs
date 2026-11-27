@@ -12,7 +12,8 @@
 //     the pages of fixed bugs of the group;
 //   - ::library-list{what="commands"} on an index page of the command
 //     reference: the table of the section's libraries.
-//   ::fix-overview is the overview page's (task 6.1).
+//   The overview page's shortcode fix-overview is a component instead
+//   (src/components/FixOverview.astro).
 // * On the pages of fixed library bugs (docs/compared-with-original/libraries/
 //   and the pages below it), a link to an issue that has a
 //   row in data/fixoverview.yaml is followed by the badge of the row's level

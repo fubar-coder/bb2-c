@@ -148,7 +148,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 6. The overview of fixed bugs and its check
 
-- [ ] 6.1 `FixOverview.astro` (parts `levels`, `breaking`, `table`) with
+- [x] 6.1 `FixOverview.astro` (parts `levels`, `breaking`, `table`) with
   the markup of the Hugo shortcode; `assets/js/fix-overview.js` and
   `assets/css/fix-overview.css` unchanged. Verify: sorting, the filters,
   `?level=3,4` and `?topic=Graphics` work (browser check); with
