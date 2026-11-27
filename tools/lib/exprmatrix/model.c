@@ -99,14 +99,41 @@ static struct rat rat_op(struct rat a, struct rat b, char op)
         default: return rat_dbl(a.x / b.x);
         }
     }
-    switch (op) {
-    case '+': return rat_make(a.n * b.d + b.n * a.d, a.d * b.d);
-    case '-': return rat_make(a.n * b.d - b.n * a.d, a.d * b.d);
-    case '*': return rat_make(a.n * b.n, a.d * b.d);
-    default:
-        if (!b.n)
-            return rat_dbl(a.x / b.x);  /* by zero (an expression's value): not exact */
-        return rat_make(a.n * b.d, a.d * b.n);
+    {
+        /* exact while the products fit 128 bits, else the double (#1232: a
+           product of two denominators near RAT_LIMIT wrapped to 0, and a
+           later division by it raised SIGFPE) */
+        __int128 p, q, s;
+        int ovf = 0;
+
+        switch (op) {
+        case '+':
+        case '-':
+            ovf |= __builtin_mul_overflow(a.n, b.d, &p);
+            ovf |= __builtin_mul_overflow(b.n, a.d, &q);
+            ovf |= op == '+' ? __builtin_add_overflow(p, q, &s) : __builtin_sub_overflow(p, q, &s);
+            ovf |= __builtin_mul_overflow(a.d, b.d, &q);
+            break;
+        case '*':
+            ovf |= __builtin_mul_overflow(a.n, b.n, &s);
+            ovf |= __builtin_mul_overflow(a.d, b.d, &q);
+            break;
+        default:
+            if (!b.n)
+                return rat_dbl(a.x / b.x);      /* by zero (an expression's value): not exact */
+            ovf |= __builtin_mul_overflow(a.n, b.d, &s);
+            ovf |= __builtin_mul_overflow(a.d, b.n, &q);
+            break;
+        }
+        if (ovf) {
+            switch (op) {
+            case '+': return rat_dbl(a.x + b.x);
+            case '-': return rat_dbl(a.x - b.x);
+            case '*': return rat_dbl(a.x * b.x);
+            default: return rat_dbl(a.x / b.x);
+            }
+        }
+        return rat_make(s, q);
     }
 }
 

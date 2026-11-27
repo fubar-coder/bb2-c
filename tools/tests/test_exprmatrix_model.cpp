@@ -1291,3 +1291,14 @@ TEST_CASE("exprmatrix model: P+, the readings of the four rule points", "[exprma
     // "Ja, auch Float exakt": a Float Mod is exact
     CHECK(expr("f MOD g", "f.f=7.5 g.f=2").value(EM_PRINT, DEC) == "1.5");
 }
+
+// #1232: the model stopped with SIGFPE on (1.25/1000)^7 under a whole
+// destination (an exact rational whose denominator wrapped to 0)
+TEST_CASE("exprmatrix model: no crash on a tiny power under a whole destination (#1232)", "[exprmatrix]")
+{
+    for (enum em_ctx c : { EM_DB, EM_DW, EM_DL })
+        for (uint64_t r : { (uint64_t)EM_RULES_ORIG, (uint64_t)EM_RULES_PORTFIX }) {
+            CHECK(!expr("(1.25/1000)^7", "").value(c, r).empty());
+            CHECK(!expr("(q/1000)^7", "q=1.25").value(c, r).empty());
+        }
+}
