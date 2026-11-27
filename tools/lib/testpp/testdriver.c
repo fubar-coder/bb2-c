@@ -119,6 +119,8 @@ int tp_driver_write(const struct tp_source *src, const struct tp_driver_params *
         }
     }
 
+    if (src->header)
+        add_lines(&o, src->header, src->header_len);
     add_lines(&o, dp->macros, dp->macros_len);
     addf(&o, "TLBegin \"%s\"\nGoto tc__skip\n", dp->result);
     d->first = o.lines + 1;

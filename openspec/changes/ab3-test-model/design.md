@@ -374,3 +374,11 @@ file of the round.
   not only for a check (the compiler's "No line to join with @@"; in the
   driver the line would join `.tc__skip`). The form check
   (`tp_check_form`) reads the joined lines as one line as well.
+- D9, header (task 1.2): the header block is the run of comment lines
+  the source starts with, up to the first other line or up to the line
+  that ends AmiBlitz3's embedded header (`/XTRA` by the rule of
+  `tokenizer_ab3_header`), and only if one of its lines reads
+  `; KEY = VALUE`; so the real headers of the cases (`; XTRA`, `; Version
+  = 1.2.3`, `; /XTRA`) are written whole, and a source that starts with a
+  plain description comment gets no header. The lines stay in the source
+  part of the driver as comments, so no line number moves.

@@ -58,6 +58,16 @@
  * joins it).  A "@@" in the last line, with no line to join, is refused.
  * In BB2 mode "@@" is not special.
  *
+ * The header block of an AB3 source (tp_source.header): the comment lines
+ * (a ';' first after blanks) the source starts with, up to the first other
+ * line or up to the line that ends AmiBlitz3's embedded header (its
+ * letters, '_', '/' and '-' before a '=' read "/xtra" in any case, the rule
+ * of shared/tokenizer tokenizer_ab3_header), if one of them reads
+ * `; KEY = VALUE` (KEY letters, digits and '_').  The driver writes it as
+ * its first lines (testdriver.h), where the compilers read the header; the
+ * lines stay in the source text as well (comments there), so the line
+ * numbers do not change.  BB2 mode has no header block.
+ *
  * The source is text: a byte >= $80 is one Latin-1 character.  findit's
  * rule that such a byte takes the next one with it is a rule of the
  * tokenised source (a token is two bytes; TED stores a Latin-1 character
@@ -137,6 +147,8 @@ struct tp_source {
     unsigned init_line;         /* the line of !TestBatchInit, 0: none */
     unsigned cleanup_line;      /* of !TestBatchCleanup, 0: none */
     unsigned nlines;
+    char *header;               /* AB3 mode: the header block (below), NULL: none */
+    size_t header_len;
     struct tp_errors errors;
 };
 

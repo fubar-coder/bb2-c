@@ -24,10 +24,11 @@ struct drv {
     char err[300] = "";
 
     drv(const std::string &text, std::vector<const char *> cases, const char *result = "CORPUS:c0/out/x.result",
-        const char *mac = macros)
+        const char *mac = macros, int ab3 = 0)
     {
         tp_params p = {};
 
+        p.ab3 = ab3;
         p.file = "x.test.bas";
         p.test_id = "x";
         p.testdata = "TEST:data";
@@ -204,5 +205,52 @@ TEST_CASE("testdriver: refused input", "[testdriver]")
         drv x("!TestCase{a}\n!EndTestCase\n", { "" });
 
         CHECK(x.rc == -1);
+    }
+}
+
+// AB3 mode (change ab3-test-model D9): the header block of the source as
+// the first lines of the driver, where the compilers read it
+TEST_CASE("testdriver: the header block of an AB3 source", "[testdriver]")
+{
+    static const std::string tail = "TLBegin \"CORPUS:c0/out/x.result\"\nGoto tc__skip\n";
+    static const std::string calls = ".tc__skip\nGosub tc_a\nEnd\n";
+    static const std::string cases = "!TestCase{a}\n!EndTestCase\n";
+    {
+        // a header of three lines: first in the driver, and in the copied source
+        std::string src = "; XTRA\n;  RuntimeDebug  = 1\n; /XTRA\n; the case\n" + cases;
+        drv x(src, { "a" }, "CORPUS:c0/out/x.result", macros, 1);
+
+        REQUIRE(x.rc == 0);
+        CHECK(x.text() == "; XTRA\n;  RuntimeDebug  = 1\n; /XTRA\n" + std::string(macros) + tail + src + calls);
+        unsigned line = 0;
+        const char *name = nullptr;
+        CHECK(x.d.first == 9);
+        CHECK(tp_driver_where(&x.d, 9, &line, &name) == TP_IN_SOURCE);
+        CHECK(line == 1);
+        CHECK(tp_driver_where(&x.d, 1, &line, &name) == TP_IN_MACROS);
+    }
+    {
+        // without /XTRA: the comment lines up to the first other line
+        std::string src = "; RuntimeDebug = 0\n;\n\n" + cases;
+        drv x(src, { "a" }, "CORPUS:c0/out/x.result", macros, 1);
+
+        REQUIRE(x.rc == 0);
+        CHECK(x.text() == "; RuntimeDebug = 0\n;\n" + std::string(macros) + tail + src + calls);
+    }
+    {
+        // no header: comments without KEY = VALUE, a header after code, BB2 mode
+        for (const std::string &src : { "; a comment\n; no key = here\n" + cases, "#a=1\n; RuntimeDebug = 0\n" + cases,
+                                         "; Version: 1 = 2\n" + cases }) {
+            drv x(src, { "a" }, "CORPUS:c0/out/x.result", macros, 1);
+
+            INFO(src);
+            REQUIRE(x.rc == 0);
+            CHECK(x.text() == std::string(macros) + tail + src + calls);
+        }
+        std::string src = "; RuntimeDebug = 0\n" + cases;
+        drv b(src, { "a" });
+
+        REQUIRE(b.rc == 0);
+        CHECK(b.text() == std::string(macros) + tail + src + calls);
     }
 }

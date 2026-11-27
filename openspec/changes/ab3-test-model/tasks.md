@@ -11,7 +11,7 @@ rounds/tree decisions, "2026-11-27 ab3-test-model Q1-Q5" (design.md D8, D10, D14
 ## 1. testpp: `@@` and the AB3 header
 
 - [x] 1.1 `tools/lib/testpp`: the source mode of a test source (AB3 or BB2, given by the caller); in AB3 mode a line ending in `@@` outside strings and comments joins the next for the parsing of the macros (the rule of `ab3syn.c` `findjoin`/`ext_nextline`); a check macro so continued is written on one line with empty lines after it; other lines unchanged. Verify: host tests of testpp (a check continued with `@@` once and twice, `@@` inside a string and after `;`, `@@` outside a check kept, the source line of the check in the table, an unclosed macro at the last line refused naming file and line), also with `-DHOST_SANITIZE=ON`.
-- [ ] 1.2 testpp: in AB3 mode the leading `; KEY = VALUE` block of the source as the first lines of the driver. Verify: host test (a header of three lines first in the driver; a source without header unchanged; a header after code is no header).
+- [x] 1.2 testpp: in AB3 mode the leading `; KEY = VALUE` block of the source as the first lines of the driver. Verify: host test (a header of three lines first in the driver; a source without header unchanged; a header after code is no header).
 - [ ] 1.3 Byte check of the existing drivers: the drivers of `model-drivers/` of `tests/blitz2` and `tests/bug-orig` written before and after 1.1/1.2 are identical (a host test with a BB2 source holding `@@` that must stay as is, and a diff of the build's `model-drivers/` before/after, named in the commit). Verify: the diff is empty; the prev comparisons of the model (`ctest -R '_prev$' -L emulator` on the model tests) pass without `PREV_INTENDED`.
 
 ## 2. The run configuration

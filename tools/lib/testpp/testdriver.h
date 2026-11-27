@@ -5,6 +5,8 @@
  *
  * The runner writes one driver per run: a program that
  *
+ *   0. starts with the header block of an AB3 source (testpp.h,
+ *      tp_source.header; change ab3-test-model D9), if it has one,
  *   1. holds the macro text of the test library (shared/basictest/
  *      macros.bas, as the build gives it: TESTLIB_MACROS),
  *   2. starts the library with the name of the result file

@@ -751,6 +751,7 @@ static void one_line(struct ctx *c, const char *l, size_t len, struct buf *out)
 void tp_free(struct tp_source *s)
 {
     free(s->text);
+    free(s->header);
     for (size_t i = 0; i < s->nchecks; i++) {
         free(s->checks[i].ns);
         free(s->checks[i].name);
@@ -783,6 +784,47 @@ const struct tp_check *tp_by_k(const struct tp_source *src, unsigned k)
         if (src->checks[i].k == k)
             return &src->checks[i];
     return NULL;
+}
+
+/* the header block of an AB3 source (testpp.h): its length, 0 = none */
+static size_t header_block(const char *text, size_t len)
+{
+    size_t p = 0, hdr = 0;
+    int keyvalue = 0;
+
+    while (p < len) {
+        const char *nl = memchr(text + p, '\n', len - p);
+        size_t e = nl ? (size_t)(nl - text) : len, q = tp_blanks(text, p, e), k;
+        static const char key[] = "/xtra";
+        int xtra = 1;
+
+        if (q >= e || text[q] != ';')
+            break;
+        /* ; KEY = VALUE */
+        k = tp_blanks(text, q + 1, e);
+        if (k < e && is_ident((unsigned char)text[k])) {
+            while (k < e && is_ident((unsigned char)text[k]))
+                k++;
+            k = tp_blanks(text, k, e);
+            keyvalue |= k < e && text[k] == '=';
+        }
+        /* the end of the embedded header: "/xtra" (tokenizer_ab3_header) */
+        k = 0;
+        for (size_t i = p; i < e && text[i] != '='; i++) {
+            int ch = (unsigned char)text[i];
+
+            if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_' || ch == '/' || ch == '-'))
+                continue;
+            if (k >= sizeof key - 1 || tolower(ch) != key[k])
+                xtra = 0;
+            k++;
+        }
+        p = nl ? e + 1 : len;
+        hdr = p;
+        if (xtra && k == sizeof key - 1)
+            break;
+    }
+    return keyvalue ? hdr : 0;
 }
 
 /* whether the line l[0..len) holds a check macro outside strings and the
@@ -825,6 +867,9 @@ int tp_process(const char *text, size_t len, const struct tp_params *par, struct
         err(&c, "a 0 byte in the source");
         return c.oom ? -1 : (int)src->errors.n;
     }
+    if (par->ab3 && (src->header_len = header_block(text, len))
+        && !(src->header = tp_strndup(text, src->header_len)))
+        c.oom = 1;
     while (p < end) {
         const char *nl = memchr(p, '\n', (size_t)(end - p));
         size_t n = nl ? (size_t)(nl - p) : (size_t)(end - p);
