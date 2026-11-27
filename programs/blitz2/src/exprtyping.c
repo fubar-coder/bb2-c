@@ -234,8 +234,10 @@ static int folded(const struct exprtyping_node *n)
 }
 
 /* the exact value of a constant subtree (a whole-number operator on the
-   whole parts; a division by 0: 0) */
-static struct rq const_value(const struct exprtyping_node *n)
+   whole parts; a division by 0: 0); signmod: a whole Mod by today's sign
+   rule (the divisor added to a negative remainder), the value the code
+   folds, else as C's % */
+static struct rq const_value2(const struct exprtyping_node *n, int signmod)
 {
     struct rq a, b;
     int64_t x, y;
@@ -243,9 +245,9 @@ static struct rq const_value(const struct exprtyping_node *n)
     if (n->kind == ETN_CONST)
         return rq_make(n->num, n->den, 1);
     if (n->kind == ETN_NEG)
-        return rq_op(rq_int(0), const_value(n->l), '-');
-    a = const_value(n->l);
-    b = const_value(n->r);
+        return rq_op(rq_int(0), const_value2(n->l, signmod), '-');
+    a = const_value2(n->l, signmod);
+    b = const_value2(n->r, signmod);
     if (exprtype_iscompare(n->op)) {
         /* a comparison of constants evaluated ("expr-tree-5 group 3: three
            readings of the four rule points": "Auch nach Regel falten") */
@@ -295,6 +297,8 @@ static struct rq const_value(const struct exprtyping_node *n)
             t = rq_op(a, rq_op(b, rq_int(t.n / t.d), '*'), '-');
             return t.ok && t.n < 0 ? rq_op(t, b, '+') : t;
         }
+        if (signmod && y && x % y < 0)
+            return rq_int(x % y + y);   /* #1227: today's sign rule, as the code */
         return y ? rq_int(x % y) : rq_int(0);
     case ETO_LSL:
     case ETO_ASL: return rq_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
@@ -302,6 +306,11 @@ static struct rq const_value(const struct exprtyping_node *n)
     case ETO_ASR: return rq_int(y >= 0 && y < 32 ? x >> y : 0);
     default: return rq_int(-1);         /* no other operator */
     }
+}
+
+static struct rq const_value(const struct exprtyping_node *n)
+{
+    return const_value2(n, 0);
 }
 
 int exprtyping_constvalue(const struct exprtyping_node *n, int64_t *num, int64_t *den)
@@ -426,6 +435,25 @@ static int const_wholesub(const struct exprtyping_node *n)
     return a.ok && rq_isint(a);
 }
 
+/* #1227: the operation n of a constant subtree, its left operand of type
+   lt and its right one of the whole type rt below it, is computed in lt:
+   +, -, *, / or Mod with a Float on the left, or a Quick and a Byte or
+   Word (a Mod's Word), or a Quick and a Long where the right operand and
+   the result are in the Quick range ((6 Mod 4)*2, 40000-39999); not a /
+   or Mod by 0, which stays as before (the values as the code folds
+   them, a whole Mod by today's sign rule) */
+static int const_raise(const struct exprtyping_node *n, unsigned lt, unsigned rt)
+{
+    if (!is_arith(n->op) || !rt || rt >= lt)
+        return 0;
+    if ((n->op == ETO_DIV || n->op == ETO_MOD) && !const_value2(n->r, 1).n)
+        return 0;
+    if (lt == ET_FLOAT || (lt == ET_QUICK && rt <= ET_WORD))
+        return 1;
+    return lt == ET_QUICK && rt == ET_LONG && rq_fits(const_value2(n->r, 1), ET_QUICK)
+           && rq_fits(const_value2(n, 1), ET_QUICK);
+}
+
 /* a constant subtree typed as today's flow types it under the type so
    far t (a constant alone, or one not beside an operand): each operation
    in the type so far after its right operand; a bit operator or shift in
@@ -454,6 +482,12 @@ static unsigned const_flow(struct ctx *c, const struct exprtyping_node *n, unsig
     rt = const_flow(c, n->r, lt);
     if (is_cmp(n->r) && lt > rt && rt)
         rt = lt;                /* #1182: a comparison's Word up to the left operand's type */
+    else if (const_raise(n, lt, rt))
+        /* Fixed (#1227): a whole-number result of the right operation (a
+           Mod's Word in a Quick, its Long in a Float) up to the left
+           operand's Quick or Float, not the left operand down to it
+           (0.5+6 Mod 4 is 2.5, as with variables) */
+        rt = lt;
     if (rt == ET_FLOAT && (is_bit(n->op) || is_shift(n->op)))
         return refuse(c);
     if (n->op == ETO_MOD && (rt == ET_QUICK || rt == ET_FLOAT)) {

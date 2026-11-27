@@ -833,6 +833,43 @@ TEST_CASE("exprmatrix model: such a Mod in a larger constant expression as with 
     CHECK(expr("-1-5.25 MOD 2", "").value(EM_DQ, DEC) == "FFFDC000");
 }
 
+TEST_CASE("exprmatrix model: a whole-number operation right of a fraction in a constant expression (#1227)",
+          "[exprmatrix][cand][decided]")
+{
+    // the user's decision of 2026-11-27: the constant form gives the exact
+    // value of the variable form (the Mod's whole result up to the left
+    // operand's Quick or Float)
+    struct { const char *c, *v, *vars; } const k[] = {
+        { "0.5+6 MOD 4", "0.5+w MOD 4", "w.w=6" },
+        { "0.5-6 MOD 4", "0.5-w MOD 4", "w.w=6" },
+        { "0.5*6 MOD 4", "0.5*w MOD 4", "w.w=6" },
+        { "-1.5+6.0 MOD 4", "-1.5+t MOD 4", "t.q=6" },
+        { "-1.5*6.0 MOD 4", "-1.5*t MOD 4", "t.q=6" },
+        { "0.5+2*(6 MOD 4)", "0.5+2*(w MOD 4)", "w.w=6" },
+        { "0.5+(6 MOD 4)*2", "0.5+(w MOD 4)*2", "w.w=6" },
+        { "0.5/(6 MOD 4)", "0.5/(w MOD 4)", "w.w=6" },
+        { "0.5 MOD (6 MOD 4)", "0.5 MOD (w MOD 4)", "w.w=6" },
+    };
+    for (const auto &t : k)
+        for (enum em_ctx ctx : { EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PRINT }) {
+            INFO(t.c, " ", em_ctx_name(ctx));
+            CHECK(expr(t.c, "").value(ctx, DEC) == expr(t.v, t.vars).value(ctx, DEC));
+        }
+    CHECK(expr("0.5+6 MOD 4", "").value(EM_DQ, DEC) == "00028000");
+    CHECK(expr("0.5+6 MOD 4", "").value(EM_DQ, DEC & ~EM_R_1227) == "00020000");
+    CHECK(expr("0.5+6 MOD 4", "").value(EM_PRINT, DEC) == "2.5");
+    CHECK(expr("-1.5*6.0 MOD 4", "").value(EM_DQ, DEC) == "FFFD0000");
+    CHECK(expr("-1.5*6.0 MOD 4", "").value(EM_DQ, DEC & ~EM_R_1227) == "FFFC0000");
+    CHECK(expr("0.5*6 MOD 4", "").value(EM_DL, DEC) == "1");
+    // a Long in a Quick in the Quick range; beyond it, and a / or Mod by 0,
+    // as before
+    CHECK(expr("0.5+(40000-39999)", "").value(EM_DQ, DEC) == "00018000");
+    CHECK(expr("0.5+(100000+1)-100000", "").value(EM_DQ, DEC) == "00010000");
+    CHECK(expr("0.5 MOD ((-6 MOD 4)-2)", "").value(EM_DQ, DEC) == "!trap");
+    // the original's rules keep the whole type (the bug)
+    CHECK(expr("0.5+6 MOD 4", "").value(EM_DQ, EM_RULES_ORIG) == "00020000");
+}
+
 TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")
 {
     // 1-4: a / under a wanted Long whole at once (F3), the top-level / of

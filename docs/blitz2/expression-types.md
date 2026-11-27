@@ -168,7 +168,18 @@ found while the expression is read, as in the original):
 * a comparison gives a Word, compares its operands exactly in their own
   formats, and makes no Float of the expression around it;
 * `^` takes both operands as Floats of their own values;
-* a constant subtree is folded by the same rule (`1.5 AND 3` is 1).
+* a constant subtree is folded by the same rule (`1.5 AND 3` is 1); a
+  whole-number result on the right of a fraction is taken up to the
+  left operand's Quick or Float (#1227: `0.5+6 Mod 4` is 2.5 under a
+  Quick, a Float and Print, as `0.5+w Mod 4` with `w=6`; `-1.5*6.0 Mod
+  4` -3; under a whole destination the Float of a constant with a point,
+  towards zero: `x.l=0.5*6 Mod 4` 1, `x.l=0.5-6 Mod 4` -1). The original
+  computed the operation in the right operand's whole type (a `Mod`'s
+  Word in a Quick, its Long in a Float), which cut the fraction on the
+  left (`0.5+6 Mod 4` 2 everywhere, `0.5*6 Mod 4` 0, `-1.5*6.0 Mod 4` -4
+  under a Quick); a Long under a Quick is taken up
+  only where the right operand and the result are in the Quick range
+  (`0.5+(40000-39999)` 1.5), a `/` or `Mod` by 0 stays as before.
 
 So both orders of an operation give the same value: `l+q+p` and `q+p+l`
 are 14 for `l=10`, `q=1.5`, `p=2.75` (the original 13), `NPrint

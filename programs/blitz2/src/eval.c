@@ -5848,12 +5848,69 @@ static BOOL p5constmodfrac(const struct exprtyping_node *n)
     return p5constmodfrac(n->l) || p5constmodfrac(n->r);
 }
 
+/* the value v in the range of a Quick (-32768 .. 32767) */
+static BOOL p5qquick(struct p5q v)
+{
+    return v.ok && v.n >= -32768 * v.d && v.n <= 32767 * v.d;
+}
+
+/* the operation p of a constant subtree, its operands folded by the build
+   in lt and rt, is one the pass computes in lt (#1227, exprtyping.c's
+   const_raise): +, -, *, / or Mod, the right operand no comparison
+   (#1182) of a whole type below a Float on the left, a Byte or Word below
+   a Quick, or a Long below a Quick where the right operand and the result
+   are in the Quick range; not a / or Mod by 0 */
+static BOOL p5raised(const struct p5node *p, UWORD lt, UWORD rt)
+{
+    const struct exprtyping_node *r = p->t.r;
+
+    switch (p->t.op) {
+    case ETO_ADD:
+    case ETO_SUB:
+    case ETO_MUL: break;
+    case ETO_DIV:
+    case ETO_MOD:
+        if (!p5qval(r).n)
+            return FALSE;
+        break;
+    default: return FALSE;
+    }
+    if ((r->kind == ETN_BIN && exprtype_iscompare(r->op)) || rt < T_BYTE || rt >= lt)
+        return FALSE;
+    if (lt == T_FLOAT || (lt == T_QUICK && rt <= T_WORD))
+        return TRUE;
+    return lt == T_QUICK && rt == T_LONG && p5qquick(p5qval(r)) && p5qquick(p5qval(&p->t));
+}
+
+/* the constant subtree p has an operation the build folded in the whole
+   type of its right operand below the left operand's Quick or Float (a
+   Mod's Word in a Quick, its Long in a Float: 0.5+6 Mod 4 added in Long;
+   a Long in a Quick where the right operand and the result are in the
+   Quick range; not a / or Mod by 0): the pass's value, its right operand
+   raised (#1227, as exprtyping.c's const_raise), not the build's */
+static BOOL p5constlowered(const struct p5node *p)
+{
+    const struct p5node *l, *r;
+
+    switch (p->t.kind) {
+    case ETN_NEG:
+    case ETN_NOT: return p5constlowered(P5(p->t.l));
+    case ETN_BIN: break;
+    default: return FALSE;
+    }
+    l = P5(p->t.l);
+    r = P5(p->t.r);
+    if (p5raised(p, l->tt, r->tt))
+        return TRUE;
+    return p5constlowered(l) || p5constlowered(r);
+}
+
 /* the node p taken in las by the pass gives the value the build's code
    gives */
 static BOOL p5eq(struct p5node *p, UWORD las)
 {
     las = p5norm(las);
-    if (p5folded(&p->t) && p5constmodfrac(&p->t))
+    if (p5folded(&p->t) && (p5constmodfrac(&p->t) || p5constlowered(p)))
         return FALSE;
     if (p5folded(&p->t))
         return p5consteq(p, las);
@@ -7543,7 +7600,7 @@ static void p5constapply(struct p5node *p, UWORD take, BOOL bit)
     relax = p5relaxed(&p->t);
     if (!ok && relax)
         illoperr();                 /* a value beyond the pass (an overflow) */
-    if (!relax && (p->tt == take || !ok) && !(ok && p5constmodfrac(&p->t))) {
+    if (!relax && (p->tt == take || !ok) && !(ok && (p5constmodfrac(&p->t) || p5constlowered(p)))) {
         /* the build's code: today's value in its type */
         p->flags |= P5F_KEEP;
         p->dt = p->tt;

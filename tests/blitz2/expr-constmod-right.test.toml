@@ -1,0 +1,64 @@
+# expr-constmod-right.test.bas: a bug of the original (blitz2 1.95): it computes
+# such a constant expression (and its variable form) in the Mod's whole type,
+# 0.5+6 Mod 4 is 2 under every destination; its values are the declared
+# deviations of compiler=orig195
+fixed-orig = 1227
+exclude = ["compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[deviations."compiler=orig195"]
+"check.whole.l_sub_value" = "== fail"
+"check.whole.l_sub_value.actual" = "== -2"
+"check.whole.w_sub_value" = "== fail"
+"check.whole.w_sub_value.actual" = "== -2"
+"check.whole.b_sub_value" = "== fail"
+"check.whole.b_sub_value.actual" = "== -2"
+"check.whole.l_mul_value" = "== fail"
+"check.whole.l_mul_value.actual" = "== 0"
+"check.whole.w_mul_value" = "== fail"
+"check.whole.w_mul_value.actual" = "== 0"
+"check.whole.b_mul_value" = "== fail"
+"check.whole.b_mul_value.actual" = "== 0"
+"check.whole.l_addpoint_value" = "== fail"
+"check.whole.l_addpoint_value.actual" = "== 1"
+"check.whole.l_mulpoint_value" = "== fail"
+"check.whole.l_mulpoint_value.actual" = "== -2"
+"check.whole.w_mulpoint_value" = "== fail"
+"check.whole.w_mulpoint_value.actual" = "== -2"
+"check.whole.b_mulpoint_value" = "== fail"
+"check.whole.b_mulpoint_value.actual" = "== -2"
+"check.fractional.q_add_value" = "== fail"
+"check.fractional.q_add_value.actual" = "== $00020000"
+"check.fractional.f_add_value" = "== fail"
+"check.fractional.f_add_value.actual" = "== $80000042"
+"check.fractional.q_sub_value" = "== fail"
+"check.fractional.q_sub_value.actual" = "== $FFFE0000"
+"check.fractional.f_sub_value" = "== fail"
+"check.fractional.f_sub_value.actual" = "== $800000C2"
+"check.fractional.q_mul_value" = "== fail"
+"check.fractional.q_mul_value.actual" = "== $00000000"
+"check.fractional.f_mul_value" = "== fail"
+"check.fractional.f_mul_value.actual" = "== $00000000"
+"check.fractional.q_addpoint_value" = "== fail"
+"check.fractional.q_addpoint_value.actual" = "== $00000000"
+"check.fractional.q_mulpoint_value" = "== fail"
+"check.fractional.q_mulpoint_value.actual" = "== $FFFC0000"
+"check.fractional.f_mulpoint_value" = "== fail"
+"check.fractional.f_mulpoint_value.actual" = "== $800000C2"
+"check.fractional.q_nested_value" = "== fail"
+"check.fractional.q_nested_value.actual" = "== $00040000"
+"check.fractional.f_nested_value" = "== fail"
+"check.fractional.f_nested_value.actual" = "== $80000043"
+"check.fractional.q_long_value" = "== fail"
+"check.fractional.q_long_value.actual" = "== $00040000"
+"check.fractional.q_bigsub_value" = "== fail"
+"check.fractional.q_bigsub_value.actual" = "== $00010000"
+"check.fractional.q_div_value" = "== fail"
+"check.fractional.q_div_value.actual" = "== $00000000"
+"check.fractional.f_div_value" = "== fail"
+"check.fractional.f_div_value.actual" = "== $00000000"
+"check.fractional.q_mod_value" = "== fail"
+"check.fractional.q_mod_value.actual" = "== $00000000"

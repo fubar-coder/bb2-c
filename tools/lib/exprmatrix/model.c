@@ -2317,6 +2317,33 @@ static int modexact(struct ev *e, const struct em_tnode *n, int T, struct reg *r
     return 1;
 }
 
+/* EM_R_1227: in the range of a 16.16 value whose fraction is cut up
+   (-32768 .. 32767) */
+static int quickrange(struct rat a)
+{
+    return a.ok && rat_cmp(a, rat_int(-32768)) >= 0 && rat_cmp(a, rat_int(32767)) <= 0;
+}
+
+/* EM_R_1227: the operation n of a subtree of constants, its left operand
+   of type left and its right one of the whole type right below it, is
+   computed in left: +, -, *, / or Mod with a Float on the left, or a
+   Quick and a Byte or Word (a Mod's Word), or a Quick and a Long where the
+   right operand and the result are in the Quick range (the values as the
+   code folds them: modx 2, a whole Mod by the sign rule); not a / or Mod by
+   0, which stays as before */
+static int constraise(const struct em_tnode *n, int left, int right)
+{
+    if (!is_consttree(n) || !(n->op == EM_ADD || n->op == EM_SUB || n->op == EM_MUL || n->op == EM_DIV
+                              || n->op == EM_MOD)
+        || !right || right >= left)
+        return 0;
+    if ((n->op == EM_DIV || n->op == EM_MOD) && !rat_sign(const_ideal(n->r, 2)))
+        return 0;
+    if (left == TF || (left == TQ && right <= TW))
+        return 1;
+    return left == TQ && right == TL && quickrange(const_ideal(n->r, 2)) && quickrange(const_ideal(n, 2));
+}
+
 /* the node n with the type so far *T (eval5 over the tree: the left
    operand, then the right one at the type so far after it); 0, 1 refused */
 static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, struct trec *tr)
@@ -2428,6 +2455,12 @@ static int flow(struct ev *e, const struct em_tnode *n, int *T, struct reg *r, s
         if (rcmp && left > t2 && t2) {
             /* #1182 (fixed): the comparison's boolean is converted up to
                the left operand's type */
+            conv(e, &b, t2, left);
+            t2 = left;
+        } else if ((e->rules & EM_R_1227) && constraise(n, left, t2)) {
+            /* EM_R_1227: a whole-number result of the right operation (a
+               Mod's Word in a Quick, its Long in a Float) converted up to
+               the left operand's Quick or Float, not the left operand down */
             conv(e, &b, t2, left);
             t2 = left;
         }
@@ -2702,6 +2735,8 @@ static struct rat const_ideal2(const struct em_tnode *n, int cmp, int modx)
 
                 return rat_sign(v) < 0 ? rat_op(v, b, '+') : v;
             }
+            if (modx == 2 && y && x % y < 0)
+                return rat_int(x % y + y);  /* EM_R_1227: today's sign rule, as the code */
             return y ? rat_int(x % y) : rat_int(0);
         case EM_LSL: case EM_ASL: return rat_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
         case EM_LSR: case EM_ASR: return rat_int(y >= 0 && y < 32 ? x >> y : 0);
