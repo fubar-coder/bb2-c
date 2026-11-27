@@ -17,12 +17,12 @@ The page "Important Fixes & Breaking Changes" under `compared-with-original/` SH
 - **THEN** it has no row
 
 ### Requirement: Links keep the base path
-Links of the page to other pages of the site SHALL be made with `relref`,
-so that they work under the `/bb2-c/` base; the issue links point to
-GitHub.
+Links of the page to other pages of the site SHALL be written as site
+paths (`/docs/...`), to which the site build adds the base, so that they
+work under the `/bb2-c/` base; the issue links point to GitHub.
 
 #### Scenario: Built for GitHub Pages
-- **WHEN** the site is built with `--baseURL https://fubar-coder.github.io/bb2-c/`
+- **WHEN** the site is built with the base URL `https://fubar-coder.github.io/bb2-c/`
 - **THEN** every detail link starts with `/bb2-c/docs/compared-with-original/`
 
 ### Requirement: The detail pages stay
@@ -131,11 +131,15 @@ fixes of levels 1 and 2 and gives their count.
 - **THEN** the warning box does not list it, and its last sentence counts it with the other rows of levels 1 and 2
 
 ### Requirement: The old URLs still work
-A page of fixed bugs that moved, and the removed sections `fixed-bugs/` and `new-errors/`, SHALL keep their old URLs as `aliases` in the front matter of the page that now holds their content. The template `layouts/alias.html` SHALL make the page at such a URL, forward to the page and keep the anchor of the link.
+A page of fixed bugs that moved, and the removed sections `fixed-bugs/` and `new-errors/`, SHALL keep their old URLs as `aliases` in the front matter of the page that now holds their content. The site build SHALL write a page at such a URL that forwards to the page and keeps the anchor of the link.
 
 #### Scenario: An old link with an anchor
 - **WHEN** a reader opens `/docs/compared-with-original/fixed-bugs/compiler/#arrays-256`
 - **THEN** the page at that URL forwards to `/docs/compared-with-original/language/#arrays-256`
+
+#### Scenario: Without JavaScript
+- **WHEN** a reader opens an old URL with JavaScript off
+- **THEN** the page forwards to the page that holds the content (without the anchor) and links it
 
 ### Requirement: Fixes of levels 3 and 4 are entries with a program
 A fix of level 3 or 4 SHALL be described on its page of fixed bugs as an

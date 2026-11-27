@@ -253,10 +253,13 @@ Work data (reports, counts, screenshots) goes to
   'hugo\|hextra\|relref' site/README.md docs/ tests/README.md
   tools/siteexamples/README.md site/src` finds nothing that describes the
   current state.
-- [ ] 9.5 Full acceptance with a clean rebuild (D-026: `all`, `bug-orig`,
+- [x] 9.5 Full acceptance with a clean rebuild (D-026: `all`, `bug-orig`,
   `originals`) and `ctest -L site`; no result changes (rule 3: the prev
   comparison passes without `-DPREV_INTENDED`). Verify: the logs'
-  summaries in the work directory.
+  summaries in the work directory. Done 2026-11-27 as the reduced run the
+  user decided for this batch (clean rebuild, `all` with the prev
+  comparison against 650b9739a; `bug-orig` and `originals` left out):
+  2333 of 2333, `bb2-c-work/acceptance-batch-9/result.md`.
 
 ## Workflow follow-up
 

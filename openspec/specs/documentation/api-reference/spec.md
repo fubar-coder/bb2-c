@@ -25,7 +25,7 @@ the CMake build.
 ### Requirement: Built without warnings in the Pages workflow
 The Pages workflow SHALL run Doxygen 1.16.1 in its official container
 image, pinned by tag, with warnings treated as errors, into
-`site/static/api/` before Hugo builds the site, so that the reference is
+`site/public/api/` before the site is built, so that the reference is
 served under `api/` of the website. The generated tree SHALL NOT be
 committed. A comment that makes Doxygen warn SHALL be corrected in the
 comment; no result of the build SHALL change by it.
@@ -37,6 +37,10 @@ comment; no result of the build SHALL change by it.
 #### Scenario: Comment fixes
 - **WHEN** the comments are corrected
 - **THEN** the programs, acidlibs, deflibs and every library file are byte-identical to the build before
+
+#### Scenario: Served beside the site
+- **WHEN** the Pages workflow has built the site with the API reference
+- **THEN** `/bb2-c/api/index.html` is the Doxygen main page and the site's search does not index it
 
 ### Requirement: The command name starts the brief
 The `@brief` of a library routine that implements a Blitz command SHALL
