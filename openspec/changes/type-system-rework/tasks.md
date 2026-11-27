@@ -13,7 +13,7 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 - [x] 0.1 The user's answers to Q1-Q20 are recorded by the coordinator and folded into the change (spec delta, design.md "Answers to the planning questions"); `openspec validate type-system-rework --strict` passes.
 - [x] 0.2 The user's answers to the Q12 classes (A, B, C1, C3, D, E, J adopted; F not) and to N1, N2 are recorded and written into the spec delta as named exceptions; the measurements repeated with all of them (`scripts/cdrun3.py`; design.md "Measurements").
 - [x] 0.4 The user's answers to the interaction questions I1-I9 (design.md, "Open questions") are recorded and folded in with `openspec-update-change`. Verify: `openspec validate type-system-rework --strict`; the spec scenarios that depend on them updated.
-- [ ] 0.3 The coordinator files the issue "[blitz2] the operand-only type system" (enhancement, compiler; Q19) and the bug-port issue "a constant shift beside a Quick is folded as a 16.16 shift" (shift-print/report.md, option A). Verify: both numbers written into this file and design.md.
+- [x] 0.3 The coordinator files the issue "[blitz2] the operand-only type system" (enhancement, compiler; Q19) and the bug-port issue "a constant shift beside a Quick is folded as a 16.16 shift" (shift-print/report.md, option A). Verify: both numbers written into this file and design.md. Filed: #1235 (the type system), #1236 (the constant shift).
 
 ## 1. The model as the oracle (#1232)
 
@@ -24,7 +24,7 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 
 ## 2. Tests of the new rules (they fail until section 3/4)
 
-- [ ] 2.1 `tests/blitz2/expr-tsr-*.test.bas`/`.toml`, one per spec requirement of the delta, with the spec's values (including the I1, I4 and I8 scenarios, a real divisor 0 of a quotient reached by C1 under a Quick and under a Float, and each I4 form with variables and with constants); `extension = N` (the issue of 0.3, Q19), the deviations 1.95's values. Verify: they come out as the expected failures on main (listed in the commit), compile on both sides.
+- [ ] 2.1 `tests/blitz2/expr-tsr-*.test.bas`/`.toml`, one per spec requirement of the delta, with the spec's values (including the I1, I4 and I8 scenarios, a real divisor 0 of a quotient reached by C1 under a Quick and under a Float, and each I4 form with variables and with constants); `extension = 1235` (Q19), the deviations 1.95's values. Verify: they come out as the expected failures on main (listed in the commit), compile on both sides.
 - [ ] 2.2 #1231 before its fix: a bug-orig test `tests/bug-orig/compiler/compiler-point-whole-div` (`NPrint 3/2.0` 1.5, `NPrint 7/2.0+0.5` 4) with its `.orig` from `bug-orig-record`; the comment `BUG(orig) (#1231)` at `const_fetch`. Verify: `ctest --preset bug-orig -R point-whole-div` REPRODUCED.
 
 ## 3. Typing pass and folding
@@ -34,7 +34,7 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 - [ ] 3.3 Fix #1231 by the bug-fix workflow (docs/development.md, "Fixing an original bug"): `fixed-orig = 1231`, `Fixed (#1231)`, the kind-F entry in `docs/blitz2/deviations.md`, the changed results named, `Fixes #1231`; fix-scope run. Verify: the test of 2.2 FIXED; fix-scope.
 - [ ] 3.5 Warnings (compiler/warnings delta): `divfrac`, `divquick`, `floattop`, `shiftfrac`, `shiftwrap` at every place where an exception changes the type, `longwrap` for a wrap known at compile time, `datafrac` for a Data.b value with a nonzero fraction; at most 8 per name and compile in the editor plus `NAME: N more`, every place on the console; both modes. Verify: one test per warning (its line and name), one with no exception, the editor limit with 10 places, a check with deliberately broken input; the executables unchanged with the warnings disabled.
 - [ ] 3.6 Test runners: a command-line compile with only these warnings ends with return code 5; the runners that compile corpus, CD, matrix and site sources handle it (warnings disabled for them or RETURN_WARN accepted; the choice named in the report). Verify: `ctest --preset host`, the corpus and matrix registrations, `originals` on a sample.
-- [ ] 3.4 Folding = variable form: `exprfold.c`/`exprarith.c` compute a constant subtree with the same rule table (whole int32 wrap, 48.16 int64 with the cut of Q1, FFP fold as today); `const_value`'s shifts as the 68000 (#1233); `p5consteq`/`p5constapply` compare the value; tests `fixed = N` for #1225, #1229, #1230, #1233 and the constant-shift issue, one `Fixes` line each. Verify: the issues' cases on both sides; a host test that folds every matrix cell's constant form and compares it with the variable form under the model.
+- [ ] 3.4 Folding = variable form: `exprfold.c`/`exprarith.c` compute a constant subtree with the same rule table (whole int32 wrap, 48.16 int64 with the cut of Q1, FFP fold as today); `const_value`'s shifts as the 68000 (#1233); `p5consteq`/`p5constapply` compare the value; tests `fixed = N` for #1225, #1229, #1230, #1233 and #1236, one `Fixes` line each. Verify: the issues' cases on both sides; a host test that folds every matrix cell's constant form and compares it with the variable form under the model.
 
 ## 4. Code generation
 
@@ -73,5 +73,5 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 ## Workflow follow-up
 
 - The coordinator: fix-scope again for #1231, the targeted checks after each merge, the full acceptance (`all`, `bug-orig`, `originals`, clean rebuild) before the push (D-026).
-- The website rows and the fix-overview row of #1231, the labels, closing #1197, #1198, #1225, #1229, #1230, #1232, #1233 and the constant-shift issue after the push: the coordinator.
+- The website rows and the fix-overview row of #1231, the labels, closing #1197, #1198, #1225, #1229, #1230, #1232, #1233, #1235 and #1236 after the push: the coordinator.
 - Archive the change after the merge (`openspec-archive-change`).

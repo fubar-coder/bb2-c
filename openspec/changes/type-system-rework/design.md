@@ -43,6 +43,10 @@ quoted there; read by heading, not reworded here):
   29 (destination influence)", and "2026-11-27 type-system-rework
   warnings: scope, names, volume" (all active).
 
+Issues: #1235 "[blitz2] The operand-only type system" (enhancement,
+compiler) tracks the change; #1236 is the constant shift beside a Quick
+(bug-port, shift-print/report.md option A, closed by task 3.4).
+
 ## Goals / Non-Goals
 
 **Goals:** one type system for constants and variables, independent of the
@@ -188,7 +192,7 @@ value (spec "Optimizations keep the value"):
   rule" is met by the new rule set). Point: spec scope — L2 Possible / I1
   Low / E2 Reasoned → Monitor.
 - **P7 (Plan):** the folding commit (task 3.4) fixes #1225, #1229, #1230,
-  #1233 and the constant-shift issue together (one `Fixes` line and one
+  #1233 and #1236 (the constant shift beside a Quick) together (one `Fixes` line and one
   `fixed = N` test each): one rule table makes all of them the variable
   form at once; round 4 folded the series ("one commit per issue") into
   the change. Point: one commit for five bug-port issues — L2 Possible /

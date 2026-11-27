@@ -120,10 +120,10 @@ array index range checks, new operators or types, the 68020+ code.
 - Docs: `docs/blitz2/expression-types.md`, `expression-type-tables.md`,
   `deviations.md`, `docs/ab3/variant.md`, the site pages
   `language/expressions.md` and `language/types.md`, `TODO.md`.
-- Issues: #1197, #1198, #1225, #1229, #1230, #1232, #1233 and the not yet
-  filed "constant shift beside a Quick" are closed by the change; #1231
-  (bug-orig) by its fix workflow; one new issue "[blitz2] the operand-only
-  type system" (enhancement), its tests `extension = N` (Q19).
+- Issues: #1197, #1198, #1225, #1229, #1230, #1232, #1233 and #1236 (the
+  constant shift beside a Quick) are closed by the change; #1231 (bug-orig)
+  by its fix workflow; #1235 "[blitz2] The operand-only type system"
+  (enhancement) tracks the change, its tests `extension = 1235` (Q19).
 - Open changes sharing files: `ab3-test-model` (the exprmatrix generator,
   tests/ab3 matrix, tests/README.md), `ab3-mode-g5` (`docs/ab3/variant.md`,
   `docs/blitz2/deviations.md`, tests/README.md), `compiler-function-optimizer`
