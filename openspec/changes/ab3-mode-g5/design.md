@@ -92,7 +92,7 @@ AmiBlitz3 without the FPU bit treats `.d` as an FFP float in an 8-byte slot
 executables differ in 15 bytes, all sizes and offsets). The port does the
 same: a type entry `.d` with size 8 whose arithmetic path is `.f`'s.
 
-Open details are verified first (task 2.1, probes in `ab3_cli_ref`):
+Open details are verified first (task 2.1, run-output probes in `tests/ab3/model/`):
 
 | Detail | How it is verified |
 |---|---|
@@ -122,12 +122,12 @@ BB2 mode must not gain `.d`: it stays "Type Not Found"
 - The gate. The survey shows that `convert.include.ab3:609` compiles in
   AmiBlitz3 under a wrapper with `OPTIMIZE 4` (bit 1 clear), so as far as
   measured the instructions are not gated by the 68020 bit. Task 3.1
-  confirms it with `ab3_cli_ref` cases (`OPTIMIZE 4`, `OPTIMIZE 5`, no
+  confirms it with `tests/ab3/model/` cases (`OPTIMIZE 4`, `OPTIMIZE 5`, no
   `OPTIMIZE`) and copies AmiBlitz3's rule, whatever it is.
 - `asmlibs.c` is shared by both modes: the new entries are reachable only
   in AB3 mode (a mode check where the size nibbles are read), so BB2 mode
   keeps its error and its tables' results.
-- The tests compare the emitted words with AmiBlitz3's: an `ab3_cli_ref`
+- The tests compare the emitted words with AmiBlitz3's: a `tests/ab3/model/`
   case assembles each instruction and prints the bytes.
 
 ### D4. The #940 relaxation
@@ -171,7 +171,7 @@ BB2 mode must not gain `.d`: it stays "Type Not Found"
 
 ### D5. The small items
 
-Each item starts with a verification task: a probe (an `ab3_cli_ref` case)
+Each item starts with a verification task: a probe (a model case for run output or a CLI case for include lookup and compiler diagnostics)
 fixes AmiBlitz3's behaviour, the spec text that says "as AmiBlitz3" is
 completed with it, then the code follows. Sources that use them (survey):
 `USELASTPATH` (the `image.include` family, 27 programs), `USEPATH2` (1

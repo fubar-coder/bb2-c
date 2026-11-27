@@ -43,7 +43,7 @@ All of this is in AB3 mode, except item 4, which holds in both modes.
    8-byte slot and is computed as FFP like `.f`, as AmiBlitz3 does without
    the FPU bit (measured: `SizeOf` 10 for `.d`, 6 for `.f`, same output).
    First, the open details are checked against AmiBlitz3 with
-   `ab3_cli_ref` cases: which 4 of the 8 bytes hold the value, `.d`
+   run-output cases in `tests/ab3/model/`: which 4 of the 8 bytes hold the value, `.d`
    parameters from the 7th on, `.d` in residents and NewTypes, `SizeOf`,
    library arguments of type 8. With the FPU bit `.d` stays "Not
    supported" until G6.
@@ -106,7 +106,7 @@ Not in this change:
   items; `ext.h` only if an item needs a new extension point.
 - Residents: the loader of `.res` files must know `.d` (AmiBlitz3's
   `newtype_double`).
-- Tests: `tests/ab3` cases with `ab3_cli_ref` counterparts; a new test
+- Tests: `tests/ab3/model/` run-output cases with both compiler cells, and CLI cases for compiler diagnostics and include lookup; a new test
   `ab3_examples` with its table under `tests/data/`; the bug-orig test
   `compiler-procend-kind*` and `corpus_cd`'s table rows of `DARTS_POLY`
   and `DARTS_WIRE`.
