@@ -853,3 +853,13 @@ The browser check and the comparison with Hugo's redirect pages are in
   `BB2_SITE_GITINFO=1`, Astro's `publicDir` set to `public` by a temporary
   config (the layout after 9.3), on the worktree in place of a checkout:
   `dist/api/index.html` is there, no warning, 173 pages with the meta tag.
+- **The checks run once (8.2).** Group 6 saw the lines "internal links
+  checked" and "redirect pages written" twice. Not reproduced: in every
+  build of group 8 (plain, with the API reference, the CI-style run, before
+  and after the merge of group 6, and the site tests with `-V`) the build
+  prints each line once, at one time stamp, and the `astro:build:done` hook
+  is registered once: `siteChecks()` is the one entry of Starlight's
+  `plugins`, Starlight calls a plugin's `config:setup` once, and that hook
+  adds the integration once. No guard added (it would hide a second
+  registration rather than find it); a doubled line seen again needs the
+  command and its whole output.
