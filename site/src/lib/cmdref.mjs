@@ -1,5 +1,5 @@
 // The command reference (site-starlight, task 5.2, design D8): one page per
-// command library (acidlibs), RWE userlib and AmigaOS library or resource,
+// command library (acidlibs), user library (the RWE userlibs and testlib) and AmigaOS library or resource,
 // made from site/data (src/lib/data.mjs). The port of Hugo's content adapter
 // content/docs/libraries/_content.gotmpl and its partials
 // layouts/_partials/cmdref/{commands,entry,form,arg,escape,fixes,oscalls}.html;
