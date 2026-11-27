@@ -1,0 +1,107 @@
+{
+  "name": "testlib",
+  "group": "userlibs",
+  "number": 81,
+  "entries": [
+    {
+      "name": "TLBegin",
+      "kind": "statement",
+      "help": "path$: start the test library, result file path$",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "TLInit",
+      "kind": "function",
+      "help": "run=TLInit: open the batch init (0: does not run)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TLFinal",
+      "kind": "function",
+      "help": "run=TLFinal: open the batch cleanup (0: does not run)",
+      "result": "long",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TLCase",
+      "kind": "function",
+      "help": "run=TLCase(name$): open a case (0: does not run)",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "TLBlockEnd",
+      "kind": "statement",
+      "help": "close the open block",
+      "forms": [
+        {"args": []}
+      ]
+    },
+    {
+      "name": "TLCheck",
+      "kind": "statement",
+      "help": "K,expected,actual",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "TLCheckStr",
+      "kind": "statement",
+      "help": "K,expected$,actual$",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}, {"type": "string", "code": 7}]}
+      ]
+    },
+    {
+      "name": "TLRequire",
+      "kind": "statement",
+      "help": "K,condition: 0 leaves the block",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "TLExpectError",
+      "kind": "statement",
+      "help": "K: an expected runtime error follows",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}]}
+      ]
+    },
+    {
+      "name": "TLCheckQ",
+      "kind": "statement",
+      "help": "K,expected.q,actual.q",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "quick", "code": 4}, {"type": "quick", "code": 4}]}
+      ]
+    },
+    {
+      "name": "TLCheckFlt",
+      "kind": "statement",
+      "help": "K,expected.f,actual.f,delta.f: ok if |actual-expected|<=delta",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "float", "code": 5}, {"type": "float", "code": 5}, {"type": "float", "code": 5}]}
+      ]
+    },
+    {
+      "name": "TLRunProgram",
+      "kind": "function",
+      "help": "*r.TLRun=TLRunProgram(K,command$): start a command line, its output to CORPUS:out/run-K.out; the result (rc, rcknown, cut, size, printed) is the library's, read only, overwritten by the next run",
+      "result": "long",
+      "forms": [
+        {"args": [{"type": "long", "code": 3}, {"type": "string", "code": 7}]}
+      ]
+    }
+  ]
+}

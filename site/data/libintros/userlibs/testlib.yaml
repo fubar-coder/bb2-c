@@ -1,0 +1,22 @@
+description: The test library of the port, user library 81 - the routines behind the macros with which a Blitz Basic test that judges itself checks its results.
+intro: |
+  testlib is the port's test library: the user library with the number
+  81, built as `variants/bb2-2.10/userlibs/testlib/testlib.obj`. A
+  [test that judges itself]({{< relref "/docs/project-structure/self-judging-tests" >}})
+  checks its results with it. It is part of the tests, not of the
+  libraries a program is built with: an ordinary program does not need
+  it.
+
+  A test source does not call these commands itself. It uses the macros
+  of `shared/basictest/macros.bas`, such as `!TestCase`, `!CheckEq` and
+  `!RunProgram`, and each macro expands to one of the commands below.
+  The test runner loads the library, puts the macros in front of the
+  source and adds the driver, the main program that calls `TLBegin` and
+  then the blocks of the source.
+  [The test library]({{< relref "/docs/project-structure/test-library" >}})
+  describes every macro and how to write a test with them.
+
+  `K` is the number the runner gives each check, precondition,
+  announcement and started program, counted from 0 over the whole
+  source. The library writes it into the result file, and the runner
+  looks up the check's name, line and expression by it for the report.

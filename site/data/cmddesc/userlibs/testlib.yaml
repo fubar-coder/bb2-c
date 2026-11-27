@@ -1,0 +1,33 @@
+"TLBegin":
+  text: Opens the result file `path$` and starts the run. The driver calls it once, before the first block.
+"TLInit":
+  text: Opens the batch init, the block of `!TestBatchInit`. Gives 1, or 0 when the block does not run.
+"TLFinal":
+  text: Opens the batch cleanup, the block of `!TestBatchCleanup`. Gives 1, or 0 when the block does not run.
+"TLCase":
+  text: Opens the case `name$`, the block of `!TestCase{NAME}`. Gives 1, or 0 when the case does not run.
+  notes: |
+    After a failed precondition the call returns a second time, with 0,
+    and the block's macro returns at once. A failed precondition in the
+    batch init gives 0 for every case.
+"TLBlockEnd":
+  text: Closes the open block; the closing macros `!EndTestCase`, `!EndTestBatchInit` and `!EndTestBatchCleanup` call it.
+"TLCheck":
+  text: Records check `K`, which passes when `expected` and `actual` are equal. `!CheckEq` calls it with its two values, `!Check` with -1 and the condition's truth.
+"TLCheckQ":
+  text: Records check `K` of `!CheckQEq`, which passes when the two quick values are exactly equal.
+"TLCheckFlt":
+  text: Records check `K` of `!CheckFltNear`, which passes when the two float values differ by at most `delta`.
+"TLCheckStr":
+  text: Records check `K` of `!CheckStrEq`, which passes when the two strings are equal byte for byte. Each string is recorded with its length and its CRC-32.
+"TLRequire":
+  text: Records precondition `K` of `!Require`. When `condition` is 0, the rest of the block does not run and the case is broken.
+"TLExpectError":
+  text: Records announcement `K` of `!ExpectError`, that the next statement raises a runtime error. The runner looks for its requester.
+"TLRunProgram":
+  text: Starts the command line `command$` for `!RunProgram`, waits for its end and gives the address of its result, a `TLRun` structure with the return code and the start of what the program printed.
+  notes: |
+    The structure belongs to the library: read its fields through the
+    pointer and never assign to one; the next `TLRunProgram` overwrites
+    it. Outside a block or in Blitz mode it starts nothing and the case
+    is broken.

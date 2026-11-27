@@ -28,7 +28,7 @@ the libraries the build produces:
 {{< cards >}}
   {{< card link="commands" title="Command libraries" subtitle="The commands of acidlibs, one page per library." >}}
   {{< card link="amigaos" title="AmigaOS libraries" subtitle="The AmigaOS functions of deflibs, with their registers." >}}
-  {{< card link="userlibs" title="RWE userlibs" subtitle="The commands of the RWE userlibs the port builds." >}}
+  {{< card link="userlibs" title="User libraries" subtitle="The commands of the RWE userlibs the port builds and of its test library, testlib." >}}
 {{< /cards >}}
 
 **In the source**, every library of the port is a C file whose
