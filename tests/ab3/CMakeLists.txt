@@ -210,7 +210,10 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 # ab3_cli_case(NAME SOURCE [TREE Blitz3|Blitz3-nolib|Blitz3-nobase|Blitz3-userlib|none]
 #              [ARGS ARG...] [REF] [REF_EXPECT FILE] [REF_NORUN] [DIR SUBDIR]
 #              [NORUN] [SAME CASE] [HUNKS LAYOUT] [DATESTAMP ISO-DATE]
-#              [RUN_DATESTAMP ISO-DATE]): a case of the suite; DATESTAMP: the
+#              [RUN_DATESTAMP ISO-DATE]): a case of the suite (a case that
+#              only checks the program's output without other arguments
+#              than -r is a test of tests/ab3/model/ instead, change
+#              ab3-test-model); DATESTAMP: the
 #              compiler runs under inject datestamp=DATE (cli.cmake:
 #              dos.library's DateStamp gives that date, so a compile-time
 #              date is fixed), RUN_DATESTAMP: the same for the program (its
@@ -286,8 +289,17 @@ macro(ab3_cli_case name source)
 	endif()
 endmacro()
 
-# AmiBlitz3's test programs of the spike (ab3-mode-g1 task 5.2), the float
-# power, header residents
+# The cases of the command line form (cli.cmake). The run-output cases
+# are tests of the BASIC test model in tests/ab3/model/ (change
+# ab3-test-model, its design D10); these are the others: AmiBlitz3's own
+# test programs (fetched, not rewritten), the compiler's input files (an
+# include or resident found by its name), the source forms a driver
+# cannot have (a tokenised main source with its .xtra, a program without
+# End or one that ends inside a macro line), compile errors and warnings,
+# other arguments, the trees, fixed dates, SAME, HUNKS and NORUN.
+#
+# AmiBlitz3's test programs of the spike (ab3-mode-g1 task 5.2), header
+# residents
 ab3_cli_case(atoi atoi.ab3 REF)
 ab3_cli_case(compilersignals compilersignals.ab3 REF)
 ab3_cli_case(data_restore_in_function data_restore_in_function.ab3 REF)
@@ -307,7 +319,6 @@ ab3_cli_case(noend noend.ab3 REF REF_EXPECT noend.ref.expect)
 ab3_cli_case(inctext inctext.ab3 REF)
 ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF)
 ab3_cli_case(inctext_bb2 inctext_bb2.bb)
-# AB3 mode's tokeniser (ab3-mode-g2 task 1.2)
 # AmiBlitz3's include rules in AB3 mode (ab3-mode-g2 task 4.1): the
 # extension fallback, a refused name, a tokenised include by its name, a
 # repeated XINCLUDE
@@ -379,24 +390,17 @@ ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
 ab3_cli_case(macro_off macro_off.ab3 REF)
 ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
-# a '~' inside a string literal is an ordinary character (#966), as with
-# AmiBlitz3 (its constant maker has another marker)
+# lines joined with @@ in an include (the run-output cases of @@: tests/ab3/model)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
 # in an include @@ joins every form inside a Macro definition (also on
 # its Macro line), as in AmiBlitz3
 ab3_cli_case(join_incmacro join_incmacro.ab3 REF)
-# @@ after a comma inside parentheses with a parameter still to come
 # @@ on an End Macro line is an error (AmiBlitz3 ignores it there)
 ab3_cli_case(join_endmacro join_endmacro.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 ab3_cli_case(join_endmacro1 join_endmacro1.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 # the constants of the include mechanism: #__include, #__debug, CNIF @
 ab3_cli_case(incguard incguard.ab3 REF)
-# #__debug (change debug-constant): -1 with runtime error checking, 0
-# without; ab3_cli_ref passes no -r, so debugconst_r is ours only, and
-# AmiBlitz3 has no debugger in CLI mode (no Defaultdbug): 0 for
-# debugconst_on too (docs/ab3/variant.md)
-# a resident with its own #__debug (all.res): the compile's value
 ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # AmiBlitz3's test programs G2 makes compile (ab3-mode-g2 task 5.1;
 # memoryleak_test above with its OPTIMIZE 13 line; exec_data above, an
@@ -419,8 +423,8 @@ ab3_cli_case(windowtags windowtags.ab3 ARGS -r REF)
 # the type rules of AB3 mode (change ab3-pointer-assign, spec
 # ab3-compat/type-rules): a pointer takes no basic value other than long.
 # AmiBlitz3 types the right side by its last variable or function outside
-# parameters (design D2): the refused right sides, those it takes, BB2
-# mode unchanged
+# parameters (design D2): the refused right sides (those it takes and
+# BB2 mode: tests/ab3/model)
 ab3_cli_case(ptr_word ptr_word.ab3 REF)
 ab3_cli_case(ptr_byte ptr_byte.ab3 REF)
 ab3_cli_case(ptr_float ptr_float.ab3 REF)
@@ -433,30 +437,17 @@ ab3_cli_case(ptr_exprconst ptr_exprconst.ab3 REF)
 ab3_cli_case(ptr_addr ptr_addr.ab3 REF)
 ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
 # a Function called as a statement (change ab3-function-statement, spec
-# ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode;
-# AmiBlitz3's test program jsr
+# ab3-compat/syntax-rules): BB2 mode; AmiBlitz3's test program jsr
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
-# a constant without a value is 0 (#972; the same in AmiBlitz3)
-# a constant with a fraction under a Byte type so far (#1188): it keeps
-# its fraction, as in AmiBlitz3; with a bit operator refused in both; a
-# whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
-# AmiBlitz3 makes it a Float (docs/ab3/variant.md)
-# a Byte AND, OR, EOR of operands of different sign (#1218, #1217): no stale
-# upper byte in the port, where AmiBlitz3 keeps it for the variables
-# (docs/ab3/variant.md)
-# ^ with a negative base (#1189): AB3 mode keeps AmiBlitz3's library 44,
-# which drops the sign as AmiBlitz3 v3.14.0 does (docs/ab3/variant.md)
 # the character literals @"..." (change ab3-mode-g3, spec
-# ab3-compat/strings): byte, word and long targets, in memory and in a
-# file; the errors (too many characters, without new syntax, in BB2 mode,
-# a space behind the @, quick and string targets, a constant expression);
-# among AB3 mode's other forms with @ (chr_at, in tests/ab3/model).
-# AmiBlitz3's text of an error is its own; its bugs are implemented as intended, its output
-# recorded with REF_EXPECT (docs/ab3/variant.md): it writes the long of the
-# characters into a float target unconverted, and compiles a string target
-# too (the line the program prints, 28 NUL bytes in the measured run, is
-# matched as any line)
+# ab3-compat/strings): the errors (too many characters, without new
+# syntax, in BB2 mode, a space behind the @, quick and string targets, a
+# constant expression; the values: tests/ab3/model). AmiBlitz3's text of
+# an error is its own; its bugs are implemented as intended, its output
+# recorded with REF_EXPECT (docs/ab3/variant.md): it compiles a string
+# target (the line the program prints, 28 NUL bytes in the measured run,
+# is matched as any line)
 ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
 ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)
 ab3_cli_case(chr_off chr_off.ab3 REF)
@@ -465,24 +456,16 @@ ab3_cli_case(chr_space chr_space.ab3 REF)
 ab3_cli_case(chr_quick chr_quick.ab3 REF)
 ab3_cli_case(chr_string chr_string.ab3 REF REF_EXPECT chr_string.ref.expect)
 ab3_cli_case(chr_const chr_const.ab3 REF)
-# the intrinsics (change compiler-intrinsics, spec compiler/intrinsics):
-# Int of a Quick compiled inline in AB3 mode, with the values of the
-# library; AmiBlitz3 calls its library (REF_EXPECT: its count of calls,
-# docs/ab3/variant.md).  Frac of a Quick stays the call in AB3 mode:
-# AmiBlitz3's vallib Frac takes a Float (not the form of the intrinsic;
-# qutofl, Frac and fltoqu, as in AmiBlitz3)
 # the system date fixed by inject (ab3-mode-g3 task 1.2): the compiler and
 # the program run under inject datestamp=2026-10-25.  AmiBlitz3's
 # SystemDate (run time) and __DATE__ (compile time) go through DateStamp
 ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 2026-10-25)
 # the escape sequences of string literals (change ab3-mode-g3, spec
-# ab3-compat/strings): only with new syntax in AB3 mode, not in Data
-# strings, the forms AmiBlitz3 shares, the procedure's name, the version
-# of the header.  AmiBlitz3's bugs are implemented as intended, its output
-# recorded with REF_EXPECT (docs/ab3/variant.md): \\R repeats once more
-# and in upper case, \\R00 runs over, an unknown form is copied, a name
-# that only begins like a known one is matched by its prefix,
-# \\__THIS_POINTER gives an address (ours: refused)
+# ab3-compat/strings; the printed forms: tests/ab3/model).  AmiBlitz3's
+# bugs are implemented as intended, its output recorded with REF_EXPECT
+# (docs/ab3/variant.md): an unknown form is copied, a name that only
+# begins like a known one is matched by its prefix, \\__THIS_POINTER
+# gives an address (ours: refused)
 ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
 ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
 ab3_cli_case(esc_prefix_func esc_prefix_func.ab3 REF REF_EXPECT esc_prefix_func.ref.expect)
@@ -499,9 +482,6 @@ ab3_cli_case(esc_codeline esc_codeline.ab3 REF)
 ab3_cli_case(esc_codeline_hdr esc_codeline_hdr.ab3 REF)
 ab3_cli_case(esc_codeline_join esc_codeline_join.ab3 REF REF_EXPECT esc_codeline_join.ref.expect)
 ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
-# escapes in string expressions (change expr-tree-3e-strings): chains of
-# +, the comparisons, AND and OR, string parameters of Functions and
-# library functions
 # Dc.b strings: the date and version escapes in AB3 mode, with or without
 # new syntax, every other \\ as written; BB2 mode as written.  AmiBlitz3
 # compares the names in upper case and by a prefix (esc_dcb_names,
@@ -518,39 +498,24 @@ ab3_cli_case(inc_datetime inc_datetime.ab3 REF RUN_DATESTAMP 2026-10-25)
 # chunk IDs written to a file and read back
 ab3_cli_case(inc_longlong inc_longlong.ab3 REF)
 # a one-line If in a macro ends with its macro line (change ab3-mode-g3,
-# spec ab3-compat/macros): AmiBlitz3 appends ": End If" to a macro line
-# with Then.  Inside a While of another macro, the line after it, a line
-# already closed, lines joined with @@, a caller's Then, Else, Then in a
-# string or comment, an End If before the Then, a block If around it; BB2
-# mode keeps blitz2's error (#967, not a bug: the programmer writes the
-# End If; AB3 mode follows AmiBlitz3).  AmiBlitz3's bugs are implemented as
-# intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
-# appends one End If for two Thens, and a second one after EndIf
+# spec ab3-compat/macros; AB3 mode's cases: tests/ab3/model): BB2 mode
+# keeps blitz2's error (#967, not a bug: the programmer writes the End
+# If; AB3 mode follows AmiBlitz3)
 ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 # End at the end of a macro line ends its statement (change ab3-mode-g3,
 # spec ab3-compat/macros): AmiBlitz3 stores only End before a line end,
-# a comment or a ':', the rest of the macro is kept.  Inside a block If,
-# If ... Then End with a comment (the Then closed at the line end),
-# End : and End with trailing spaces, End right before End Macro in an
-# include; BB2 mode keeps the rest of the macro as well (#968, fixed in
-# both modes)
+# a comment or a ':', the rest of the macro is kept.  If ... Then End
+# with a comment (the Then closed at the line end) and End : end the
+# program inside the macro line (a form a driver cannot have), End right
+# before End Macro in an include; inside a block If and BB2 mode (#968,
+# fixed in both modes): tests/ab3/model
 ab3_cli_case(macend_then macend_then.ab3 REF)
 ab3_cli_case(macend_colon macend_colon.ab3 REF)
 ab3_cli_case(macend_inc macend_inc.ab3 REF)
 # the procedures of AB3 mode (change ab3-mode-g4, spec
-# ab3-compat/procedures).  Optional parameters (@): the defaults of each
-# type, the string default, name{} with only optional parameters (also
-# seven and eight of them: AmiBlitz3 refuses those, an intended
-# difference), the rules of the argument list, without new syntax, a
-# parameter without @ behind one with @, a NewType pointer.  Up to ten
-# parameters, 7 to 10 on the stack (AmiBlitz3: in static longs, which a
-# call inside an argument overwrites - proc_nested, proc_stack), every
-# type there, strings and string Functions (AmiBlitz3 returns a wrong
-# result from a Function with a string parameter from the 7th on -
-# proc_strfunc).  FAST (locals not cleared, refused with local memory, a
-# procedure named FAST), NewType return types (no check of Function
-# Return - proc_ntret0).  Optional and stack parameters in calls inside
-# expressions (proc_expr).  AmiBlitz3's hang at "Not enough parameters"
+# ab3-compat/procedures; the run-output cases: tests/ab3/model): the
+# errors of the argument list, eleven parameters, FAST refused with
+# strings and local memory.  AmiBlitz3's hang at "Not enough parameters"
 # keeps proc_notenough out of ab3_cli_ref; the error texts are blitz2's.
 # BB2 mode keeps blitz2's procedures
 ab3_cli_case(proc_gap proc_gap.ab3 REF)
@@ -569,14 +534,12 @@ ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
 ab3_cli_case(function_problem function_problem.ab3 REF)
 ab3_cli_case(serial_read serial_read.ab3 REF NORUN)
 ab3_cli_case(inc_error inc_error.ab3 REF)
-# a library whose entries run past its block of 127 numbers while the next
-# number is free keeps them (#960: a library's range ends only where the
-# next loaded library's begins): Mildred's MProcessor
 # the size suffix .s of an assembler instruction is .b in AB3 mode (#1068;
 # BRA and BSR take a size suffix and stay word branches, as in AmiBlitz3
 # v3.14.0); in BB2 mode .s is .b too, and a branch with .s/.b is a short
 # branch as in blitz2 (extension #1075): out of range or to the next
-# instruction it is "Illegal Displacement", BRA.l stays refused
+# instruction it is "Illegal Displacement", BRA.l stays refused (the
+# branches that compile: tests/ab3/model)
 ab3_cli_case(asm_short_range_bb2 asm_short_range_bb2.bb)
 ab3_cli_case(asm_short_zero_bb2 asm_short_zero_bb2.bb)
 ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)
@@ -584,7 +547,8 @@ ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)
 # shell's default stack (#1080: the compiler runs on a stack of its own),
 # one level more is the compile error.  Without REF: the limits are
 # blitz2's; AmiBlitz3 v3.14.0 compiles 64 parentheses, and its session
-# did not end after expr_depth's compile and after its "Expression too
+# did not end after the compile of the deepest expressions
+# (tests/ab3/model/expr-depth.test.bas) and after its "Expression too
 # complex!" (both measured once)
 ab3_cli_case(expr_depth_prec expr_depth_prec.ab3)
 ab3_cli_case(expr_depth_complex expr_depth_complex.ab3)

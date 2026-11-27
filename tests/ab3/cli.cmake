@@ -3,6 +3,11 @@
 #         -DCASES=FILE -DBLITZ2_DIR=DIR -DAB3=DIR -DSOURCES=FILE;...
 #         -DUSERLIB=OBJ -DINJECT=TOOL -DWORK=DIR [-DTIMEOUT=SEC] [-DSAME=A=B,...]
 #         [-DHUNKCHECK=TOOL -DHUNKS=NAME=LAYOUT|...] [-DCOMPILE_ONLY=ON] -P cli.cmake
+# The cases are those of the command line form: AmiBlitz3's test
+# programs, the compiler's input files, the source forms a driver cannot
+# have, compile errors and warnings, other arguments, trees, dates, SAME,
+# HUNKS and NORUN; the run-output cases are tests of the BASIC test model
+# (tests/ab3/model/, corpusrun case, change ab3-test-model).
 # One emulator session compiles every case of CASES and runs the program
 # through reqtrap (tests/corpus/amiga: a requester is printed and answered
 # at once, nothing waits for a click):

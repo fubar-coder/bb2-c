@@ -228,7 +228,9 @@ windowtags, is one of AmiBlitz3's programs below), except:
 |---|---|---|
 | AmiBlitz3's own test programs, fetched | atoi, compilersignals, data_restore_in_function, fabrizio_speedquestion, function_problem, hexdigits, hex_error, int_problem, int_tests_nostop, jsr, kick13, localization, macro_test, memoryleak_test, optimizer_regression, setint, test_newtypes, trim, windowtags (`-r`) | they come from `archive/amiblitz3/` (`cli.cmake` reads `AB3/Sourcecodes/Amiblitz3/Tests`); rewriting them into `Case` blocks would check a derived copy into the repository (rule 7, "License": AmiBlitz3's licence is unclear) |
 | The compiler's input files | inctext, inctext_bbname, inctext_bb2, incfallback, inctok_ab3, incxtwice, incitwice, join_incok, join_incmacro, incguard, esc_codeline, esc_codeline_hdr, esc_codeline_join, esc_include, inc_longlong, macend_inc, inc_error, resident, resident_path | the subject is the lookup of an include or resident by its name next to the main source; in a driver on `CORPUS:` with the files under `CORPUS:ID.test/` the names would change, and with them what the case tests |
-| The source form itself | macrobuf_xtra (a tokenised main source with its `.xtra`), noend (a program without `End`: a driver always ends) | a driver cannot have that form |
+| The source form itself | macrobuf_xtra (a tokenised main source with its `.xtra`), noend (a program without `End`: a driver always ends); macend_then, macend_colon (the program ends inside the case: a macro line ends it) | a driver cannot have that form |
+| Input files and the console | ab3xtra_tok, ab3xtra_tok_r (a tokenised `.bb2` with AmiBlitz3's `.xtra` beside it; the case asserts the compiler's console line) | the input-file and console kinds of the Context count |
+| A `SAME` partner | syntax2_none (syntax2 compares its executable with it, `SAME`) | the `SAME` kind of the Context count |
 
 The `output` cases of D8 are marked in the conversion table of task 5.1.
 The expression matrix's 54 cases move too, by its generator (group 7):
