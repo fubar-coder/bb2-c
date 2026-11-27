@@ -97,6 +97,10 @@ with expect files (`results match`, `tools/results`; docs/ab3/variant.md, "The c
 line"); `ab3_cli_ref_1` … compile the AmiBlitz3 cases with AmiBlitz3
 v3.14.0's own compiler in CLI mode and compare the programs' output
 with the same files (their differences: docs/ab3/variant.md).
+The run-output cases are tests of the BASIC test model in
+`tests/ab3/model/` (`ab3_FILE__CASE` on blitz2-ab3 and
+`ab3_FILE__CASE_oracle` on AmiBlitz3's compiler, both from the command
+line; `tests/README.md`, "Tests of AB3 mode").
 `ab3_tokenise` (`tests/ab3/tokenise.cmake`) compares the tokens of AB3
 mode with AmiBlitz3's: AmiBlitz3 writes the lines it loaded (`-save
 NAME.bb2`), `bbsrc ab3-cmp` tokenises the same sources with

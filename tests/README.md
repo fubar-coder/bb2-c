@@ -9,7 +9,7 @@ labels select within them.
 | `host` | tools with broken inputs, host tests, declaration comparisons (against committed data), token lists (seconds) | native compiler |
 | `emulator` | the C libraries against the committed expected data of the library tests (`libs_emulator`), corpus against the committed expect files, TED A/B (`ted_ab`: TED-C under blitz2-c), the port regression tests, the Blitz examples of the website (`site_examples_run`, `site_examples_compile`, ...; "Site examples"), the fixed bug-orig tests (`; @fixed-orig #N`), the compilation of the CD's sources (`corpus_cd`, `corpus_cd_ab3`) | Amiberry (`AMIGA-EMULATION-SETUP.md`); the CD only for `corpus_cd` and `corpus_cd_ab3` |
 | `all` | `host` and `emulator`, the acceptance run: it starts no session of an original; without the CD it skips only `corpus_cd` and `corpus_cd_ab3` | Amiberry, native compiler; the CD for the skipped ones |
-| `oracle` | `ab3_cli_ref_1` … `ab3_cli_ref_N` and their broken-input tests: our expect files of `tests/ab3` against AmiBlitz3 v3.14.0's own compiler (label `oracle`, not in `emulator`/`all`) | Amiberry; the fetched AmiBlitz3 files |
+| `oracle` | AmiBlitz3 v3.14.0's own compiler against our expectations of `tests/ab3` (label `oracle`, not in `emulator`/`all`): the cells `compiler = "amiblitz3"` of the tests of `tests/ab3/model/` (`ab3_ID__CASE_oracle`), and `ab3_cli_ref_1` … `ab3_cli_ref_N` with their broken-input tests for the command line cases | Amiberry; the fetched AmiBlitz3 files |
 | `bug-orig` | original bugs not fixed yet (label `bug-orig`) and known port defects (label `bug-port`): they fail on purpose; a fixed test leaves this preset. A test of the BASIC test model is judged against its declared deviations, a test of the old form against the recorded observation of the original (`ID.orig`); no session of the original | Amiberry; the CD for the TED tests, for `port` and for the few tests that mount `BB2:` |
 | `originals` | everything that compares with the original (label `originals`, in no other preset): the compare tests of the recorded originals (`bug_orig_record_ID`: the original's observation of every bug-orig test, open or fixed, against its `tests/bug-orig/*/ID.orig`; they write nothing, the target `bug-orig-record` records), the corpus runs of the original compiler with the original and with the C libraries (configurations `ref` and `orig-clib`) and of the port with the CD's libraries (`corpus_originals`, `corpus_runerr_originals`, ...; "Corpus"), `libs_emulator_originals` (the library tests' scenarios with the original libraries against the same expected data), the recording and update targets are not tests (`libs-capture`, `libs-update`: "Libraries"), `ted_ab_originals` ("TED A/B"), the fixed TED bug-orig tests with the original compiler (`bug_orig_ID_originals`), the RWE reference build (`rwe_refbuild`, `rwe_refbuild_NAME`, `rwe_refbuild_selftest`), `asmcmp_*`, `rwe_residents_cd`, `rwe_lesfont_cd`, `tokens_cd`, and the committed data against a fresh run of the original: `declarations_GROUP_data`, `blitz2_cd_reference` (the CD result table), `ted_oracle_reference` (the oracle data of the TED tests), `ted_checkdata_reference` | Amiberry; the CD (and the reference build for the RWE tests) |
 | `coverage` | `all` and the original bugs with the coverage compilers (`coverage/` per test) | as `all` |
@@ -39,12 +39,16 @@ the corpus (`NAME.orig.out` / `NAME.fixed-N.out`, [Corpus](#corpus)) and
 the site examples (`expect/GROUP/NAME.out`, [Site examples](#site-examples))).
 The table form of the model: one row per case, a note row with `#NNN` per
 deviation (the CD's compile table `tests/data/blitz2-cd.tsv`, the TED
-oracle; later `ab3_examples`). Not yet moved, each for a technical reason:
-`tests/ab3` (a cell compiles through tedstub with BB2's libraries; an
-`ab3_cli` case is compiled from the command line by blitz2-ab3 or
-AmiBlitz3 and judged on the compiler's console output, and AmiBlitz3's
-differences, `NAME.ref.expect`, mostly have no issue); TED A/B (the editor
-driven by scripts, the runs compared with each other at test time).
+oracle; later `ab3_examples`). The run-output cases of `tests/ab3` are
+tests of the BASIC test model in `tests/ab3/model/` ([Tests of AB3
+mode](#tests-of-ab3-mode)). Not yet moved, each for a technical reason:
+the command line cases of `tests/ab3` (`ab3_cli`: AmiBlitz3's own test
+programs, fetched and not rewritten; the compiler's input files, an
+include or resident found by its name next to the main source; the
+source forms a driver cannot have; compile errors and warnings judged on
+the compiler's console output; other arguments, `Blitz3:` trees, fixed
+dates, `SAME`, `HUNKS`); TED A/B (the editor driven by scripts, the runs
+compared with each other at test time).
 Outside the model: host tests, perf budgets, the comparisons of build
 results and data, the tools' self tests and the `lsclear` checker of
 [bug-port](#bug-port-tests). A test is a list of **cases**; a case is a key, an input
@@ -424,7 +428,8 @@ escapes) is refused with file and line.
 
 | Key | Value | |
 |---|---|---|
-| `compiler` | `port`, `orig195`, `orig210` | blitz2-c (default), blitz2 1.95 (the build of `blitz2.s`), the CD's blitz2 2.10 |
+| `compiler` | `port`, `orig195`, `orig210`, `ab3`, `amiblitz3` | blitz2-c (default), blitz2 1.95 (the build of `blitz2.s`), the CD's blitz2 2.10, blitz2-ab3 from the command line, AmiBlitz3 v3.14.0's compiler from the command line (the side `oracle`; [Tests of AB3 mode](#tests-of-ab3-mode)) |
+| `source-mode` | `ab3`, `bb2` | the mode of the source of a cell of `ab3` or `amiblitz3`: `ab3` (what such a cell reads without the key) the driver `ID.ab3`, `@@` joining lines; `bb2` the driver `ID.bb`, blitz2-ab3's BB2 mode; refused with another compiler, `bb2` with `amiblitz3`, and a side whose cells read the source in both modes |
 | `libs` | `cd`, `clib` | the CD's libraries, the C libraries (default) |
 | `machine` | string | the emulated machine (default `a1200`) |
 | `runtime-errors` | `off`, `on` | runtime error checking (default `off`) |
@@ -1142,12 +1147,17 @@ fixtures are not added automatically): only the named tests are repeated.
 The fixture must then be in place from the earlier run.
 
 The preset `oracle` (label `oracle`) holds the tests that run the original
-tool to validate our expectations: `ab3_cli_ref_1` … `ab3_cli_ref_N`
-compile the cases of `tests/ab3` marked REF with AmiBlitz3 v3.14.0's own
-compiler (Amiberry without the JIT: the compiler crashes in its exit path
-under the JIT when the host is loaded, #976) and compare the program
+tool to validate our expectations, in both forms of `tests/ab3`: the
+`amiblitz3` cells of the tests of `tests/ab3/model/` (`ab3_ID__CASE_oracle`,
+one emulator session per case test, never bundled; AmiBlitz3's
+differences are their declared deviations), and `ab3_cli_ref_1` …
+`ab3_cli_ref_N`, which compile the command line cases of `tests/ab3`
+marked REF with AmiBlitz3 v3.14.0's own compiler and compare the program
 output with the same expect files; `ab3_cli_ref_broken` and
-`ab3_cli_ref_broken_date` check it with a wrong expect file.
+`ab3_cli_ref_broken_date` check it with a wrong expect file. Amiberry runs
+without the JIT there: the compiler crashes in its exit path under the
+JIT when the host is loaded (#976); now and then a session of AmiBlitz3
+still hangs silently until its time limit.
 
 The cases of `ab3_cli` and `ab3_cli_ref` run in blocks, one emulator
 session and one test each: `ab3_cli_1` … `ab3_cli_N`, `ab3_cli_ref_1` …
@@ -1739,6 +1749,71 @@ tokenised by the build like TED does (`tedsrc tok`) into the test data
 (`@TESTDATA@`) and staged as `CORPUS:src/literal-include.inc` by the
 test's `files`.
 
+### Tests of AB3 mode
+
+The run-output cases of blitz2-ab3's AB3 mode are tests of the BASIC test
+model in `tests/ab3/model/` (change `ab3-test-model`; registered by
+`tests/ab3/CMakeLists.txt` with the prefix `ab3_`, the expression matrix's
+in `exprmatrix/`). The directory's `tests.toml` gives every test two cells:
+`compiler = "ab3"` (blitz2-ab3 of the build from the command line, `-s
+DRIVER -e EXE`, the side port, label `emulator`; its cells of default
+settings share the bundles) and `compiler = "amiblitz3"` (AmiBlitz3
+v3.14.0's compiler, the side `oracle`, one session per case test), both
+with `runtime-errors = "on"`: the command line without `-r`, as
+`ab3_cli`; a test that needs `-r` sets `runtime-errors = "off"` (or an
+axis of both values). The runner stages the `Blitz3:` tree of `cli.cmake`
+(the BigLibs, `all.res`, the test library in `UserLibs/`) in the cell's
+volume and assigns it again before every AmiBlitz3 compile; AmiBlitz3
+runs without its debugger (no `Defaultdbug`), so a test with a cell of
+`amiblitz3` has no `!ExpectError` (refused): a runtime error is observed
+by the query `requester`, AmiBlitz3's "not checked" is its deviation.
+`compile` of such a cell is `ok` if the executable exists, else
+`error LINE MESSAGE` from the compiler's error line.
+
+**AmiBlitz3's differences.** Where AmiBlitz3 gives another value, the test
+declares it in `[deviations."compiler=amiblitz3"]` with the key `variant`:
+the name (in backticks in the first column) of the row of
+`docs/ab3/variant.md` that records the difference. Such a deviation needs
+no `fixed-orig` and gives no label `bug-orig`; a deviation of the
+`amiblitz3` cells without `variant`, `variant` elsewhere and a name that
+is no row are refused when the build registers the tests. A case
+AmiBlitz3 does not compile is a test of its own (`compile = "contains
+..."` with `"end.case"`, `"end.run"` and `rc` `not exists`), so the other
+cases still run there. A case that was never asked of AmiBlitz3 (BB2
+mode) excludes its cell (`exclude = ["compiler=amiblitz3"]`).
+
+**Writing an AB3 test.**
+* Group the cases by the compiler state: `OPTIMIZE`, `SYNTAX` and the
+  header hold for the whole driver, so a file holds the cases of one
+  state (`proc-opt4.test.bas`); a case whose names are its subject (a
+  label, a macro or a procedure named `FAST`), a case that asserts the
+  output, one with a header and one AmiBlitz3 does not compile get a file
+  of their own. The plain cases without a state of their own stand in
+  `plain.test.bas`. The case name is the old `ab3_cli` case name.
+* Values are checks (`!CheckEq`, `!CheckStrEq` of a `Str$` built line,
+  `!CheckQEq`, `!CheckFltNear`); a case whose subject is printing (the
+  escapes of strings, `Print`'s form of a Quick or Float) keeps its
+  `NPrint` lines and asserts `output` verbatim. A check argument holds
+  no comma (`Chr$(44)`), and no character literal of a byte from `$80`
+  (AmiBlitz3: "Syntax error!"): assign it first.
+* Procedures and macros of a shared file carry the prefix of their case
+  where two clash; a value a procedure computed goes out through a
+  shared variable, `SHARED` in upper case (mixed case is "Garbage at End
+  of Line" in AB3 mode on both compilers); a `FAST` Statement passes a
+  Long, never a string (both refuse strings there), and no check stands
+  between two of its calls (a check overwrites its locals on the stack).
+  `SHARED` of the main program stands in the batch init.
+* `@@` joins lines: testpp joins a check macro continued with `@@` and
+  writes it on one line; a case whose subject is `@@` keeps it in its own
+  statements (AmiBlitz3 joins in `NPrint`'s list, not in the braces of a
+  call).
+* The header: the leading comment block with a `; KEY = VALUE` line
+  (`; XTRA` … `; /XTRA`) is written first in the driver, where both
+  compilers read it.
+* Data behind `.label` stands behind the case that reads it: AmiBlitz3's
+  `Restore` of a label above it reads nothing. A statement behind a label
+  on the same line starts with a token (`.zgo Let a=1`).
+
 ### Corpus
 
 The corpus (`tests/corpus/`): `corpus` (71 test programs
@@ -2013,16 +2088,16 @@ key as `left-out.txt`, `measured.tsv` and the classify tables; a
   test per issue set for the cells a fix refuses
   (`compiler-expr-N-refused`, the original's compile `== ok` its
   deviation);
-* the AmiBlitz3 cases of the agreement and fixed sources without runtime
-  error checking (`tests/ab3/cli/exprmatrix/`, in `ab3_cli_N` and the
-  oracle's `ab3_cli_ref_N`): the sources as `.ab3` (a program that
-  prints `KEY VALUE` per cell) without the cells AmiBlitz3 refuses (and
-  the `If` cells on a folded Float constant, where AmiBlitz3's d1 depends
-  on the line before), compiled with `-r`; their expectation is the
-  output of blitz2-ab3 in AB3 mode (the port's compiler with AmiBlitz3's
-  libraries), AmiBlitz3's measured output is `REF_EXPECT` where it
-  differs (`docs/ab3/variant.md`, "Differences to AmiBlitz3's
-  compiler").
+* the AmiBlitz3 tests of the agreement and fixed sources without
+  runtime error checking (`tests/ab3/model/exprmatrix/ID.test.bas`,
+  ctest `ab3_ID__cells` and the oracle's `ab3_ID__cells_oracle`): the
+  case `cells` of the corpus test without the cells AmiBlitz3 refuses
+  (and the `If` cells on a folded Float constant, where AmiBlitz3's d1
+  depends on the line before), `runtime-errors = "off"` (`-r`); its
+  checks have the values of blitz2-ab3 in AB3 mode (the port's compiler
+  with AmiBlitz3's libraries), AmiBlitz3's measured values are the
+  deviations of its cells where they differ, with their `variant` row of
+  `docs/ab3/variant.md`.
 
 **Bundles.** The case tests of the side port of the agreement, baseline,
 fixed and open sources share emulator sessions in the bundles of their
@@ -2608,6 +2683,11 @@ passed; "without" means `BLITZ2_PREV` unset or `OFF` - a leftover
     (`cli-prev-test.cmake`, no prev build needed); `ab3_prev_entries_ok` and
     `_unknown` check the configure-time test of an `ab3_cli_prev:CASE` entry
     (`check-prev-cases.cmake`).
+  * `ab3_ID_prev`: the driver of all cases of a test of `tests/ab3/model/`
+    compiled by the current and the previous commit's `blitz2-ab3`, once
+    per value of `runtime-errors` among its `ab3` cells (the compiles `ID`
+    and `ID-runerrs`; a test with `source-mode = "bb2"` staged as `ID.bb`);
+    AmiBlitz3's cells are not compared (it never changes).
 
 A fix changes results on purpose: its commit names them (CLAUDE.md), the
 differences that report must be exactly those, and `-DPREV_INTENDED`
@@ -2628,6 +2708,7 @@ must really exist (a stale entry fails), an unlisted difference fails, and
 | `blitz2_ID_prev:ID/FILE`, `blitz2_ID_prev:ID/FILE-runerrs` (and `bug_orig_`, `regression_`, `corpus_exprmatrix_`) | a data source `ID.test/FILE` of the test compiled without, with runtime error checking: the same |
 | `site_examples_run:NAME`, `site_examples_compile:NAME`, `site_examples_run_rwe_1999:NAME` ... | the site example `NAME` in that pass (the ctest name of the pass, `_` for `-` in the group) |
 | `ab3_cli_prev:CASE` | the case `CASE` of `ab3_cli` (any block; a name that is no case is refused when CMake configures) |
+| `ab3_ID_prev:ID`, `ab3_ID_prev:ID-runerrs` | the driver of the test `ID` of `tests/ab3/model/` compiled by blitz2-ab3 without, with runtime error checking: the same |
 
 The part before the first colon is the ctest name of the test, so an
 entry says which comparison it is for: the same source is listed once per
@@ -3841,11 +3922,15 @@ on Kickstart 1.3 only the first is FAIL, with counted bytes; all PASS
 on Kickstart 3.2), `lsclear_selftest_wrong_*` (wrong expectations must
 fail), `lsclear_ted_a1200` (control: `ted` passes on Kickstart 3.2).
 
-A defect of AB3 mode is a one-case `ab3_cli` session of its own (label
-`bug-port`), its expectation checked by a one-case `ab3_cli_ref` session
-(label `oracle`) against AmiBlitz3's compiler; the fix moves the case into
-the lists of the `ab3_cli`/`ab3_cli_ref` blocks and removes both sessions (#1068, the
-size suffix `.s`: case `asm_short_s`).
+A defect of AB3 mode that the program's run shows is a test of
+`tests/ab3/model/` with `labels = ["bug-port"]` (both cells; [Tests of
+AB3 mode](#tests-of-ab3-mode)); a defect of the compile step (an error
+message, a warning, the console) is a one-case `ab3_cli` session of its
+own (label `bug-port`), its expectation checked by a one-case
+`ab3_cli_ref` session (label `oracle`) against AmiBlitz3's compiler; the
+fix moves the case into the lists of the `ab3_cli`/`ab3_cli_ref` blocks
+and removes both sessions (#1068, the size suffix `.s`: now the case
+`asm_short_s` of `tests/ab3/model/plain.test.bas`).
 
 
 ## Oracle data of the TED tests
