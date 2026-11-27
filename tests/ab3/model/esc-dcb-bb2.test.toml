@@ -1,0 +1,7 @@
+# BB2 mode from the command line; AmiBlitz3 has none (not in ab3_cli_ref)
+source-mode = "bb2"
+exclude = ["compiler=amiblitz3"]
+
+# esc-dcb-bb2.test.bas prints the string: its output verbatim
+[asserts]
+output = "== \"V\\\\\\\\__VER_MAJOR.\\\\\\\\__VER_MINOR [\\\\\\\\41] [\\\\\\\\__DATE__]\n\""

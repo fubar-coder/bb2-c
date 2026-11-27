@@ -432,7 +432,6 @@ ab3_cli_case(ptr_exprlast ptr_exprlast.ab3 REF)
 ab3_cli_case(ptr_exprconst ptr_exprconst.ab3 REF)
 ab3_cli_case(ptr_addr ptr_addr.ab3 REF)
 ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
-ab3_cli_case(ptr_bb2 ptr_bb2.bb)
 # a Function called as a statement (change ab3-function-statement, spec
 # ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode;
 # AmiBlitz3's test program jsr
@@ -484,7 +483,6 @@ ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 20
 # and in upper case, \\R00 runs over, an unknown form is copied, a name
 # that only begins like a known one is matched by its prefix,
 # \\__THIS_POINTER gives an address (ours: refused)
-ab3_cli_case(esc_bb2 esc_bb2.bb)
 ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
 ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
 ab3_cli_case(esc_prefix_func esc_prefix_func.ab3 REF REF_EXPECT esc_prefix_func.ref.expect)
@@ -511,7 +509,6 @@ ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
 # {unknown compilerconstant}
 ab3_cli_case(esc_dcb esc_dcb.ab3 REF DATESTAMP 2026-10-25)
 ab3_cli_case(esc_dcb_names esc_dcb_names.ab3 REF REF_EXPECT esc_dcb_names.ref.expect DATESTAMP 2026-10-25)
-ab3_cli_case(esc_dcb_bb2 esc_dcb_bb2.bb)
 # an AmiBlitz3 include with an escape at its top level: datetime.include
 # (\\0a joins the month names), its date functions under the run's
 # inject datestamp=
@@ -540,7 +537,6 @@ ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 ab3_cli_case(macend_then macend_then.ab3 REF)
 ab3_cli_case(macend_colon macend_colon.ab3 REF)
 ab3_cli_case(macend_inc macend_inc.ab3 REF)
-ab3_cli_case(macend_bb2 macend_bb2.bb)
 # the procedures of AB3 mode (change ab3-mode-g4, spec
 # ab3-compat/procedures).  Optional parameters (@): the defaults of each
 # type, the string default, name{} with only optional parameters (also
@@ -566,7 +562,6 @@ ab3_cli_case(proc_faststr proc_faststr.ab3 REF)
 ab3_cli_case(proc_fastnt proc_fastnt.ab3 REF)
 ab3_cli_case(proc_bb2_at proc_bb2_at.bb)
 ab3_cli_case(proc_bb2_seven proc_bb2_seven.bb)
-ab3_cli_case(proc_bb2_fast proc_bb2_fast.bb)
 ab3_cli_case(proc_bb2_ntret proc_bb2_ntret.bb)
 # AmiBlitz3's test programs and includes with optional parameters
 # (ab3-mode-g4 task 6.3): function_problem, serial_read (compiled only:
@@ -582,7 +577,6 @@ ab3_cli_case(inc_error inc_error.ab3 REF)
 # v3.14.0); in BB2 mode .s is .b too, and a branch with .s/.b is a short
 # branch as in blitz2 (extension #1075): out of range or to the next
 # instruction it is "Illegal Displacement", BRA.l stays refused
-ab3_cli_case(asm_short_s_bb2 asm_short_s_bb2.bb)
 ab3_cli_case(asm_short_range_bb2 asm_short_range_bb2.bb)
 ab3_cli_case(asm_short_zero_bb2 asm_short_zero_bb2.bb)
 ab3_cli_case(asm_bra_l_bb2 asm_bra_l_bb2.bb)

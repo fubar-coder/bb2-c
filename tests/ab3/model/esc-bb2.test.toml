@@ -1,0 +1,7 @@
+# BB2 mode from the command line; AmiBlitz3 has none (not in ab3_cli_ref)
+source-mode = "bb2"
+exclude = ["compiler=amiblitz3"]
+
+# esc-bb2.test.bas prints the string: its output verbatim
+[asserts]
+output = "== \"> [\\\\\\\\41] [\\\\\\\\n] [\\\\\\\\__THIS_FUNCTION]\n\""
