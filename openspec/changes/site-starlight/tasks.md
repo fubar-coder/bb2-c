@@ -46,7 +46,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 2. The converter over all pages (gate)
 
-- [ ] 2.1 `site/scripts/convert-hugo.mjs` from the spike, for all pages:
+- [x] 2.1 `site/scripts/convert-hugo.mjs` from the spike, for all pages:
   relrefs → site paths, `_index.md` → `index.md`, callout/details,
   Hextra shortcodes (cards, steps, filetree, hero, feature grid) → the
   forms of design D6 (`.mdx` only where a component is needed), the site
@@ -56,7 +56,7 @@ Work data (reports, counts, screenshots) goes to
   same number of ` ```blitzbasic ` blocks per page in the same order
   (`siteexamples check` on the converted tree with a manifest rewritten by
   the path rules of D15, in the work directory).
-- [ ] 2.2 Build all 193 converted pages (with the reference loader of 5.2
+- [x] 2.2 Build all 193 converted pages (with the reference loader of 5.2
   stubbed if it is not done yet) and count every manual fix by class (MDX
   escapes, shortcode forms the converter misses, broken links, heading id
   differences, front matter, layout), each with the file and the kind of

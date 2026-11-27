@@ -381,3 +381,35 @@ The user's answers of 2026-11-27 (`rounds/tree/decisions.md`,
   and the 404 route still takes the entry.
 - **Telemetry.** `ASTRO_TELEMETRY_DISABLED=1` is set in the package
   scripts (`build`, `preview`), so every call through npm has it.
+
+### Group 2 (2026-11-27)
+
+- **The converter run (2.1, 2.2).** The report is
+  `~/.local/share/bb2-c-work/site-starlight/converter-run.md`. All 193
+  pages convert and build without a warning (165 `.md`, 28 `.mdx`); every
+  fixed code block (527) is unchanged and in its place; no Hugo source
+  edit and no per-file patch was needed, every fix is a converter rule or
+  configuration. MDX escapes: none (the risk of D6 did not occur).
+- **Steps.** Hextra takes the headings of the first level in a steps
+  block as the steps (`####` on `self-judging-tests`); filetree and cards
+  are converted before steps, which indents them into the list items.
+- **The home page** is converted too (`src/content/docs/index.mdx`, the
+  splash template with the hero in the front matter); the placeholder of
+  1.3 is gone and the file is ignored like the converted tree (9.1 removes
+  both rules).
+- **Languages.** Expressive Code warns for a fence language it does not
+  know: `blitzbasic` (until the grammar, 8.1) and `basic` (14 fragments of
+  test programs on two test pages, outside the site-examples manifest) are
+  aliased to `plaintext`; 8.1 decides on `basic`.
+- **The base outside remark.** The `href` of the 80 `LinkCard`s (MDX JSX
+  attributes), `prev`/`next` (front matter, used by Starlight as written)
+  and the hero's action are no Markdown links: the base step of 4.1 must
+  reach them, or they keep a site path without the base.
+- **Heading ids (2.3).** Hugo's and Starlight's ids agree on every
+  heading the pages write (no explicit `{#id}` needed); the only missing
+  ids are the 31 `fixes-described-with-other-libraries` that the
+  `elsewhere` part of `fixed-bugs-library` writes from the data (5.1).
+  Unhandled directives are shown as text until 5.1 and 6.1 (no warning).
+- **FileTree** opens every folder that has children: Hugo's closed
+  `Sourcecodes` folder (`ab3-mode/setup`) shows open.
+- The manifest has 125 entries (9.2 names 124).

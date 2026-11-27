@@ -6,5 +6,6 @@ resources/
 node_modules/
 dist/
 .astro/
-# the pages converted from content/ at every build
+# the pages converted from content/ at every build (scripts/convert-hugo.mjs)
 src/content/docs/docs/
+src/content/docs/index.mdx

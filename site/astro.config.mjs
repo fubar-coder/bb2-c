@@ -10,6 +10,7 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import { unified } from "@astrojs/markdown-remark";
+import { remarkBb2 } from "./src/plugins/remark-bb2.mjs";
 
 export default defineConfig({
   site: "https://fubar-coder.github.io",
@@ -21,13 +22,19 @@ export default defineConfig({
   // remark/rehype, so that the site's remark plugins and astro-mermaid run;
   // Astro's default processor (Sätteri) has a plugin API of its own
   markdown: {
-    processor: unified({ remarkPlugins: [] }),
+    processor: unified({ remarkPlugins: [remarkBb2] }),
   },
   integrations: [
     starlight({
       title: "BB2 C port",
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/fubar-coder/bb2-c" }],
       customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css"],
+      // blitzbasic: plain text until the Blitz Basic grammar (task 8.1);
+      // basic: the fragments of test programs on the test pages, plain text
+      // as in Hugo
+      expressiveCode: {
+        shiki: { langAlias: { blitzbasic: "plaintext", basic: "plaintext" } },
+      },
     }),
   ],
 });
