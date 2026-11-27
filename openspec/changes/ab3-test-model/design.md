@@ -382,3 +382,15 @@ file of the round.
   = 1.2.3`, `; /XTRA`) are written whole, and a source that starts with a
   plain description comment gets no header. The lines stay in the source
   part of the driver as comments, so no line number moves.
+- D2/D6/D11 (task 2.1): `source-mode` has no written default (`ab3` is
+  what a cell of `ab3`/`amiblitz3` without it reads, `tc_cell_ab3`), so
+  `--print-config` of the existing tests is unchanged. `variant` is kept
+  apart from the queries (`tc_config.variants`, one per selector); a
+  table whose selector matches cells of `amiblitz3` and others is refused
+  (its other cells would carry a variant). A deviation with a variant is
+  no deviation of the original: `fixed-orig`/`extension` still need one of
+  those, `fixed` may stand beside it. The `!ExpectError` refusal is
+  `tc_expect_error_ok` in testconf (the matrix), called where the source
+  is read (testreg, task 2.2): testconf does not read the source. The
+  side of a cell: `amiblitz3` is `oracle` (not `originals`); `ab3` is
+  `port` unless `libs = "cd"`.

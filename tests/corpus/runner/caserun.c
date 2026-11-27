@@ -1045,6 +1045,8 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
     if (conf->ndeviations) {
         fprintf(out, "deviations:\n");
         print_tab(out, "deviations", conf->deviations, conf->ndeviations);
+        /* the rows of docs/ab3/variant.md of AmiBlitz3's deviations */
+        print_tab(out, "deviations", conf->variants, conf->nvariants);
     }
     if (conf->nends) {
         fprintf(out, "alternative ends:\n");
@@ -1085,7 +1087,8 @@ int cr_print_config(FILE *out, const struct tc_config *conf, const struct tc_mat
     }
     fprintf(out, "cells:\n");
     for (size_t i = 0; i < m->ncells; i++)
-        fprintf(out, "  %s    # side %s\n", m->cells[i].name, m->cells[i].originals ? "originals" : "port");
+        fprintf(out, "  %s    # side %s\n", m->cells[i].name,
+                m->cells[i].oracle ? "oracle" : m->cells[i].originals ? "originals" : "port");
     return ferror(out) ? -1 : 0;
 }
 

@@ -494,6 +494,77 @@ static int check_editor_run(const struct tc_config *conf, const struct tc_matrix
     return 0;
 }
 
+/* the cells of AB3 mode (tc_matrix_build in testconf.h): source-mode only
+   with the compilers ab3 and amiblitz3, bb2 not with amiblitz3; the
+   deviations of amiblitz3 cells with their variant, no variant elsewhere */
+static int check_ab3(const struct tc_config *conf, const struct tc_matrix *m, char *err, size_t errlen)
+{
+    for (size_t c = 0; c < m->ncells; c++) {
+        char b1[24], b2[24];
+        const char *comp = tc_cell_value(conf, m, c, tc_key("compiler"), b1);
+        const char *mode = tc_cell_value(conf, m, c, tc_key("source-mode"), b2);
+        const struct tc_origin *at = key_at(conf, m, "source-mode");
+
+        if (!*mode)
+            continue;
+        if (strcmp(comp, "ab3") && strcmp(comp, "amiblitz3"))
+            return tc_err(err, errlen, "%s:%u: source-mode in the cell %s of compiler = \"%s\": only the compilers "
+                          "ab3 and amiblitz3 read a source mode", at->file, at->line, m->cells[c].name, comp);
+        if (!strcmp(comp, "amiblitz3") && !strcmp(mode, "bb2"))
+            return tc_err(err, errlen, "%s:%u: source-mode = \"bb2\" in the cell %s of compiler = \"amiblitz3\": "
+                          "AmiBlitz3 has no BB2 mode", at->file, at->line, m->cells[c].name);
+    }
+    for (size_t i = 0; i < conf->ndeviations; i++) {
+        const struct tc_tabkey *d = &conf->deviations[i];
+        const struct tc_tabkey *v = tc_variant_of(conf, d->sel);
+        size_t oracle = 0, other = 0;
+        const char *other_name = NULL;
+
+        for (size_t c = 0; c < m->ncells; c++) {
+            int r = sel_cell(d->sel, conf, m, c);
+
+            if (r == -2)
+                return tc_err(err, errlen, "out of memory");
+            if (r != 1)
+                continue;
+            if (m->cells[c].oracle)
+                oracle++;
+            else if (!other++)
+                other_name = m->cells[c].name;
+        }
+        if (oracle && other)
+            return tc_err(err, errlen, "%s:%u: [deviations.\"%s\"] matches the cells of amiblitz3 and the cell %s: "
+                          "a difference of AmiBlitz3 is declared for its cells alone", d->at.file, d->at.line, d->sel,
+                          other_name);
+        if (oracle && !v)
+            return tc_err(err, errlen, "%s:%u: [deviations.\"%s\"] of the cells of amiblitz3 has no variant (the "
+                          "row of docs/ab3/variant.md that records the difference)", d->at.file, d->at.line, d->sel);
+        if (!oracle && v)
+            return tc_err(err, errlen, "%s:%u: variant in [deviations.\"%s\"], which matches no cell of "
+                          "amiblitz3: a variant names a difference of AmiBlitz3", v->at.file, v->at.line, d->sel);
+    }
+    return 0;
+}
+
+int tc_cell_ab3(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+{
+    char b1[24], b2[24];
+    const char *comp = tc_cell_value(conf, m, cell, tc_key("compiler"), b1);
+
+    return (!strcmp(comp, "ab3") || !strcmp(comp, "amiblitz3"))
+           && strcmp(tc_cell_value(conf, m, cell, tc_key("source-mode"), b2), "bb2");
+}
+
+int tc_expect_error_ok(const struct tc_matrix *m, const char *file, unsigned line, char *err, size_t errlen)
+{
+    for (size_t c = 0; c < m->ncells; c++)
+        if (m->cells[c].oracle)
+            return tc_err(err, errlen, "%s:%u: !ExpectError in a test with the cell %s of compiler = \"amiblitz3\": "
+                          "AmiBlitz3 runs without its debugger and reports no runtime error (exclude the cell)", file,
+                          line, m->cells[c].name);
+    return 0;
+}
+
 int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err, size_t errlen)
 {
     size_t nkeys, total = 1;
@@ -578,7 +649,9 @@ int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err
             const char *comp = tc_cell_value(conf, m, m->ncells - 1, tc_key("compiler"), buf);
             const char *libs = tc_cell_value(conf, m, m->ncells - 1, tc_key("libs"), buf);
 
-            cell->originals = strcmp(comp, "port") != 0 || strcmp(libs, "cd") == 0;
+            cell->oracle = !strcmp(comp, "amiblitz3");
+            cell->originals = !cell->oracle && (!strcmp(comp, "orig195") || !strcmp(comp, "orig210")
+                                                || !strcmp(libs, "cd"));
         }
     }
     if (m->ncells == 0) {
@@ -608,7 +681,7 @@ int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err
                 goto out;
             }
     }
-    if (check_editor_run(conf, m, err, errlen))
+    if (check_editor_run(conf, m, err, errlen) || check_ab3(conf, m, err, errlen))
         goto out;
     r = 0;
     goto out;

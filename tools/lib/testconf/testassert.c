@@ -612,22 +612,57 @@ static int check_ends(const struct tc_config *c, char *err, size_t errlen)
     return 0;
 }
 
+static int same_selector(const char *a, const char *b)
+{
+    return a && b ? !strcmp(a, b) : a == b;
+}
+
+const struct tc_tabkey *tc_variant_of(const struct tc_config *conf, const char *sel)
+{
+    for (size_t i = 0; i < conf->nvariants; i++)
+        if (same_selector(conf->variants[i].sel, sel))
+            return &conf->variants[i];
+    return NULL;
+}
+
+int tc_variants_only(const struct tc_config *conf)
+{
+    if (!conf->ndeviations || conf->nends)
+        return 0;
+    for (size_t i = 0; i < conf->ndeviations; i++)
+        if (!tc_variant_of(conf, conf->deviations[i].sel))
+            return 0;
+    return 1;
+}
+
 int tc_assert_validate(const struct tc_config *c, char *err, size_t errlen)
 {
     const struct tc_setting *fo = tc_get(c, "fixed-orig"), *fx = tc_get(c, "fixed");
     const struct tc_setting *ex = tc_get(c, "extension");
+    size_t orig = 0;            /* the deviations of the original (no variant) */
 
     if (check_entries(c, c->asserts, c->nasserts, "asserts", err, errlen)
         || check_entries(c, c->deviations, c->ndeviations, "deviations", err, errlen) || check_ends(c, err, errlen))
         return -1;
+    for (size_t i = 0; i < c->nvariants; i++) {
+        size_t k;
+
+        for (k = 0; k < c->ndeviations && !same_selector(c->deviations[k].sel, c->variants[i].sel); k++)
+            ;
+        if (k == c->ndeviations)
+            return tc_err(err, errlen, "%s:%u: [deviations.\"%s\"] has a variant but no deviation (what AmiBlitz3 "
+                          "does instead)", c->variants[i].at.file, c->variants[i].at.line, c->variants[i].sel);
+    }
+    for (size_t i = 0; i < c->ndeviations; i++)
+        orig += !tc_variant_of(c, c->deviations[i].sel);
     /* the alternative ends are a declared deviation */
-    if (fo && c->ndeviations == 0 && c->nends == 0)
+    if (fo && orig == 0 && c->nends == 0)
         return tc_err(err, errlen, "%s:%u: test %s: fixed-orig without a declared deviation", fo->at.file,
                       fo->at.line, c->id);
-    if (ex && c->ndeviations == 0 && c->nends == 0)
+    if (ex && orig == 0 && c->nends == 0)
         return tc_err(err, errlen, "%s:%u: test %s: extension without a declared deviation (what the original "
                       "does instead)", ex->at.file, ex->at.line, c->id);
-    if (fx && c->ndeviations)
+    if (fx && orig)
         return tc_err(err, errlen, "%s:%u: test %s: fixed with a declared deviation (an original bug is "
                       "fixed-orig)", fx->at.file, fx->at.line, c->id);
     if (fx && c->nends)

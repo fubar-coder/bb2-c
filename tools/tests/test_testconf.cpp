@@ -274,7 +274,7 @@ TEST_CASE("testconf: unknown keys and wrong values", "[testconf]")
     t.write("tests.toml", "root = true\nlibs = \"clibs\"\n");
     refused(t, "x.test.bas", { ":2: libs must be one of cd|clib, not \"clibs\"" });
     t.write("tests.toml", "root = true\ncompiler = \"orig\"\n");
-    refused(t, "x.test.bas", { ":2: compiler must be one of port|orig195|orig210, not \"orig\"" });
+    refused(t, "x.test.bas", { ":2: compiler must be one of port|orig195|orig210|ab3|amiblitz3, not \"orig\"" });
     t.write("tests.toml", "root = true\nrwe = \"a\"\n");
     refused(t, "x.test.bas", { ":2: rwe must be a list of strings, not a string" });
     t.write("tests.toml", "root = 1\n");
@@ -754,5 +754,148 @@ TEST_CASE("testconf: test-local data", "[testconf]")
     matrix("[matrix]\nlibs = [\"clib\", \"cd\"]\n[data.\"child.bas\"]\naction = \"basic-compile\"\n"
            "compiler = \"port\"\nlibs = \"clib\"\n",
            0, {});
+    tc_env_free(&e);
+}
+
+// the compilers of AB3 mode (change ab3-test-model): the values, the sides,
+// source-mode, the variant of AmiBlitz3's deviations and !ExpectError
+TEST_CASE("testconf: the compilers of AB3 mode", "[testconf]")
+{
+    tree t;
+    std::string own = t.path("x.test.toml");
+
+    t.write("x.test.bas", "");
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n");
+    tc_env e = env_of(t);
+    // the matrix of x.test.toml: want the rc of tc_matrix_build and the parts of its message
+    auto matrix = [&](const std::string &toml, int want, std::initializer_list<std::string> what,
+                      tc_matrix *keep = nullptr, tc_config *keepc = nullptr) {
+        tc_config cc;
+        tc_matrix m = {};
+
+        t.write("x.test.toml", toml);
+        REQUIRE(resolve(t, "x.test.bas", &cc, &e) == 0);
+        err[0] = 0;
+        CHECK(tc_matrix_build(&cc, &m, err, sizeof err) == want);
+        for (const std::string &w : what) {
+            INFO(w);
+            INFO(err);
+            CHECK(strstr(err, w.c_str()) != nullptr);
+        }
+        if (keep) {
+            *keep = m;
+            *keepc = cc;
+            return;
+        }
+        tc_matrix_free(&m);
+        tc_free(&cc);
+    };
+
+    CHECK(tc_enum_ok(tc_key("compiler"), "ab3"));
+    CHECK(tc_enum_ok(tc_key("compiler"), "amiblitz3"));
+    CHECK(tc_key("source-mode")->flags == TC_RUN);
+    CHECK(tc_key("source-mode")->defval == nullptr);
+    {
+        // ab3 on the side port, amiblitz3 on the side oracle; neither needs
+        // original material
+        tc_matrix m;
+        tc_config c;
+
+        matrix("", 0, {}, &m, &c);
+        REQUIRE(m.ncells == 2);
+        CHECK(std::string(m.cells[0].name) == "ab3");
+        CHECK((m.cells[0].originals == 0 && m.cells[0].oracle == 0));
+        CHECK(std::string(m.cells[1].name) == "amiblitz3");
+        CHECK((m.cells[1].originals == 0 && m.cells[1].oracle == 1));
+        // !ExpectError: refused with a cell of amiblitz3, naming file and line
+        CHECK(tc_expect_error_ok(&m, "x.test.bas", 12, err, sizeof err) == -1);
+        CHECK(std::string(err).starts_with("x.test.bas:12: !ExpectError in a test with the cell amiblitz3"));
+        tc_matrix_free(&m);
+        tc_free(&c);
+        matrix("exclude = [\"compiler=amiblitz3\"]\n", 0, {}, &m, &c);
+        REQUIRE(m.ncells == 1);
+        CHECK(tc_expect_error_ok(&m, "x.test.bas", 12, err, sizeof err) == 0);
+        tc_matrix_free(&m);
+        tc_free(&c);
+    }
+    // the other compilers keep their sides
+    t.write("y.test.bas", "");
+    t.write("y.test.toml", "[matrix]\ncompiler = [\"port\", \"orig195\", \"orig210\"]\n");
+    {
+        tc_config c;
+        tc_matrix m = {};
+
+        REQUIRE(resolve(t, "y.test.bas", &c, &e) == 0);
+        REQUIRE(tc_matrix_build(&c, &m, err, sizeof err) == 0);
+        REQUIRE(m.ncells == 3);
+        CHECK((m.cells[0].originals == 0 && m.cells[1].originals == 1 && m.cells[2].originals == 1));
+        CHECK((m.cells[0].oracle == 0 && m.cells[1].oracle == 0 && m.cells[2].oracle == 0));
+        CHECK(tc_expect_error_ok(&m, "y.test.bas", 3, err, sizeof err) == 0);
+        tc_matrix_free(&m);
+        tc_free(&c);
+    }
+
+    // source-mode: ab3 or bb2, only with the compilers of AB3 mode, bb2 not with amiblitz3
+    matrix("source-mode = \"ab3\"\n", 0, {});
+    matrix("source-mode = \"bb2\"\nexclude = [\"compiler=amiblitz3\"]\n", 0, {});
+    matrix("\nsource-mode = \"bb2\"\n", -1,
+           { own + ":2: source-mode = \"bb2\" in the cell amiblitz3 of compiler = \"amiblitz3\"" });
+    matrix("[matrix]\ncompiler = [\"port\", \"ab3\"]\nsource-mode = [\"ab3\", \"bb2\"]\n", -1,
+           { own + ":3: source-mode in the cell port,ab3 of compiler = \"port\"" });
+    t.write("x.test.toml", "source-mode = \"bb3\"\n");
+    refused(t, "x.test.bas", { own + ":1: source-mode must be one of ab3|bb2, not \"bb3\"" });
+
+    // the deviations of AmiBlitz3: with their variant, for its cells alone
+    matrix("[deviations.\"compiler=amiblitz3\"]\nvariant = \"chr_nospace\"\ncompile = \"contains \\\"convert\\\"\"\n",
+           0, {});
+    matrix("[deviations.\"compiler=amiblitz3,case=a\"]\n\"check.a.l1\" = \"== fail\"\nvariant = \"row\"\n", 0, {});
+    matrix("\n[deviations.\"compiler=amiblitz3\"]\ncompile = \"contains \\\"convert\\\"\"\n", -1,
+           { own + ":3: [deviations.\"compiler=amiblitz3\"] of the cells of amiblitz3 has no variant" });
+    matrix("[deviations.\"case=a\"]\n\"check.a.l1\" = \"== fail\"\nvariant = \"row\"\n", -1,
+           { own + ":2: [deviations.\"case=a\"] matches the cells of amiblitz3 and the cell ab3" });
+    matrix("exclude = [\"compiler=amiblitz3\"]\n[deviations.\"compiler=ab3\"]\n\"check.a.l1\" = \"== fail\"\n"
+           "variant = \"row\"\n",
+           -1, { own + ":4: variant in [deviations.\"compiler=ab3\"], which matches no cell of amiblitz3" });
+    // the key itself: a non-empty string, with a deviation, only in a test's own file
+    t.write("x.test.toml", "[deviations.\"compiler=amiblitz3\"]\nvariant = 3\nrc = \"== 5\"\n");
+    refused(t, "x.test.bas", { own + ":2: variant of [deviations.\"compiler=amiblitz3\"] must be a non-empty "
+                                     "string" });
+    t.write("x.test.toml", "[deviations.\"compiler=amiblitz3\"]\nvariant = \"\"\nrc = \"== 5\"\n");
+    refused(t, "x.test.bas", { own + ":2: variant of [deviations.\"compiler=amiblitz3\"] must be a non-empty" });
+    t.write("x.test.toml", "[deviations.\"compiler=amiblitz3\"]\nvariant = \"row\"\n");
+    refused(t, "x.test.bas", { own + ":2: [deviations.\"compiler=amiblitz3\"] has a variant but no deviation" });
+    t.write("x.test.toml", "variant = \"row\"\n");
+    refused(t, "x.test.bas", { own + ":1: unknown key variant" });
+    t.write("x.test.toml", "");
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n"
+                          "[deviations.\"compiler=amiblitz3\"]\nvariant = \"row\"\nrc = \"== 5\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":4: deviations is a key of a single test" });
+    t.write("tests.toml", "root = true\nvariant = \"row\"\n");
+    refused(t, "x.test.bas", { t.path("tests.toml") + ":2: unknown key variant" });
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n");
+    {
+        // the variant beside the deviations; no fixed issue needed, and fixed
+        // takes it (it is no deviation of the original)
+        tc_config c;
+
+        t.write("x.test.toml", "fixed = 9\n[deviations.\"compiler=amiblitz3\"]\nrc = \"== 5\"\nvariant = \"row\"\n");
+        REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+        CHECK(c.ndeviations == 1);
+        REQUIRE(c.nvariants == 1);
+        CHECK(!strcmp(c.variants[0].value.str, "row"));
+        CHECK(c.variants[0].at.line == 4);
+        CHECK(tc_variant_of(&c, "compiler=amiblitz3") == &c.variants[0]);
+        CHECK(tc_variant_of(&c, "compiler=ab3") == nullptr);
+        CHECK(tc_variants_only(&c));
+        tc_free(&c);
+        // fixed-orig needs a deviation of the original
+        t.write("x.test.toml", "fixed-orig = 9\n[deviations.\"compiler=amiblitz3\"]\nrc = \"== 5\"\nvariant = \"r\"\n");
+        refused(t, "x.test.bas", { own + ":1: test x: fixed-orig without a declared deviation" });
+        t.write("x.test.toml", "[deviations.\"compiler=amiblitz3\"]\nrc = \"== 5\"\nvariant = \"r\"\n"
+                               "[deviations.\"compiler=ab3\"]\nrc = \"== 6\"\n");
+        REQUIRE(resolve(t, "x.test.bas", &c, &e) == 0);
+        CHECK(!tc_variants_only(&c));
+        tc_free(&c);
+    }
     tc_env_free(&e);
 }

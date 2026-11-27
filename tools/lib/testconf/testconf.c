@@ -17,10 +17,14 @@
 /* the keys of the top table, in the order of the documentation and of the
    axes of a cell's name */
 static const struct tc_keydef keys[] = {
-    { "compiler", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "port|orig195|orig210", 0, -1,
-      "the compiler: port (blitz2-c), orig195 (blitz2 1.95, the build of blitz2.s), orig210 (the CD's blitz2 2.10)", "port" },
+    { "compiler", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "port|orig195|orig210|ab3|amiblitz3", 0, -1,
+      "the compiler: port (blitz2-c), orig195 (blitz2 1.95, the build of blitz2.s), orig210 (the CD's blitz2 2.10), "
+      "ab3 (blitz2-ab3 from the command line), amiblitz3 (AmiBlitz3 v3.14.0's compiler in CLI mode)", "port" },
     { "libs", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "cd|clib", 0, -1,
       "the libraries: cd (the CD's acidlibs and deflibs), clib (the C libraries)", "clib" },
+    { "source-mode", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "ab3|bb2", 0, -1,
+      "the mode of the driver of the compilers ab3 and amiblitz3: ab3 (ID.ab3, the default) or bb2 (ID.bb, "
+      "blitz2-ab3's BB2 mode)", NULL },
     { "machine", TC_V_STRING, TC_IN_BOTH, TC_RUN, NULL, 0, -1,
       "the emulated machine (a1200, a500, a500-68010, a500-204, a600)", "a1200" },
     { "runtime-errors", TC_V_ENUM, TC_IN_BOTH, TC_RUN, "off|on", 0, -1,
@@ -657,6 +661,13 @@ static int check_file(const struct cfile *f, char *err, size_t errlen)
                               !strcmp(e->key, "abnormal") ? " (the general abnormal end: abnormal = [\"any\"])" : "");
             continue;
         }
+        if (!strcmp(e->table[0], "deviations") && !strcmp(e->key, "variant")) {
+            /* the row of docs/ab3/variant.md of a difference of AmiBlitz3 */
+            if (e->value.type != TT_STRING || !*e->value.str)
+                return tc_err(err, errlen, "%s:%u: variant of [deviations.\"%s\"] must be a non-empty string (the "
+                              "row of docs/ab3/variant.md)", d->file, e->line, e->table[1]);
+            continue;
+        }
         if (e->value.type != TT_STRING)
             return tc_err(err, errlen, "%s:%u: the assertion %s must be a string", d->file, e->line, e->key);
     }
@@ -689,6 +700,9 @@ void tc_free(struct tc_config *c)
     for (size_t i = 0; i < c->nends; i++)
         tc_tabkey_free(&c->ends[i]);
     free(c->ends);
+    for (size_t i = 0; i < c->nvariants; i++)
+        tc_tabkey_free(&c->variants[i]);
+    free(c->variants);
     for (size_t i = 0; i < c->ndata; i++) {
         free(c->data[i].file);
         for (int k = 0; k < TC_DO_N; k++)
@@ -829,6 +843,10 @@ static int merge(struct tc_config *c, struct cfile *files, size_t nfiles, const 
                 } else if (!strcmp(tab, "ends")) {
                     v = &c->ends;
                     n = &c->nends;
+                } else if (!strcmp(e->key, "variant")) {
+                    /* deviations."SEL": its row of docs/ab3/variant.md */
+                    v = &c->variants;
+                    n = &c->nvariants;
                 } else {
                     v = &c->deviations;
                     n = &c->ndeviations;

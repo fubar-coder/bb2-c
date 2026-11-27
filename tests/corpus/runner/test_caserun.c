@@ -508,6 +508,33 @@ static void test_print_config(void)
     unload(&t);
 }
 
+/* the configuration of AB3 mode: source-mode, the variant of a deviation,
+   the side oracle */
+static void test_print_config_ab3(void)
+{
+    struct t t;
+    char *buf = NULL;
+    size_t len = 0;
+    FILE *f;
+
+    put("pa/tests.toml", "root = true\nsource-mode = \"ab3\"\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n");
+    put("pa/q.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    put("pa/q.test.toml", "[deviations.\"compiler=amiblitz3\"]\ncompile = \"contains \\\"x\\\"\"\nvariant = \"row\"\n");
+    load(&t, "pa/q.test.bas", ENV_RUNNER);
+    f = open_memstream(&buf, &len);
+    CHECK(f && cr_print_config(f, &t.conf, &t.m) == 0);
+    fclose(f);
+    CHECK(buf && strstr(buf, "  compiler: an axis, below\n"));
+    CHECK(buf && strstr(buf, "  source-mode = \"ab3\"    # "));
+    CHECK(buf && strstr(buf, "deviations:\n  deviations.\"compiler=amiblitz3\".compile = \"contains \"x\"\"    # "));
+    CHECK(buf && strstr(buf, "/pa/q.test.toml:2\n  deviations.\"compiler=amiblitz3\".variant = \"row\"    # "));
+    CHECK(buf && strstr(buf, "cells:\n  ab3    # side port\n  amiblitz3    # side oracle\n"));
+    if (buf && !strstr(buf, "# side oracle"))
+        fprintf(stderr, "printed:\n%s", buf);
+    free(buf);
+    unload(&t);
+}
+
 /* the comparison with prev: a cell's pass becomes a compile with clib and prev */
 static void test_prev_pass(void)
 {
@@ -1591,6 +1618,7 @@ int main(int argc, char **argv)
     test_inject();
     test_compile_mapped();
     test_print_config();
+    test_print_config_ab3();
     test_prev_pass();
     test_clean();
     test_open_case();

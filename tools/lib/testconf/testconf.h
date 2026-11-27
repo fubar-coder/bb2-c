@@ -263,6 +263,10 @@ struct tc_config {
     struct tc_data *data;       /* the files of ID.test/, in file order; the
                                    test's own file only */
     size_t ndata;
+    struct tc_tabkey *variants; /* the key variant of the tables
+                                   deviations."SELECTOR" (below), one per
+                                   selector; the test's own file only */
+    size_t nvariants;
 };
 
 /** @brief What a name of a compile job is (tc_job_of). */
@@ -345,8 +349,10 @@ int tc_placeholders(const struct tc_env *env, const char *text, char **out,
  * tc_keys(), minus the cells an `exclude` selector matches.  A cell is
  * named by its axis values, "," between them ("orig195,cd,on"); the only cell
  * of a test without axes is "default".  A cell needs original material
- * (the side "originals") if its compiler is not port or its libraries are
- * the CD's.
+ * (the side "originals") if its compiler is orig195 or orig210 or its
+ * libraries are the CD's; a cell of compiler = "amiblitz3" (AmiBlitz3's own
+ * compiler, change ab3-test-model) is on the side "oracle" instead, the
+ * other cells on the side "port".
  *
  * A cell selector is TERM[,TERM...] without blanks, a TERM KEY=VALUE: KEY
  * a run setting that is no list setting (nor isolate), VALUE one of its
@@ -394,6 +400,8 @@ struct tc_cell {
     char *name;
     const char **values;        /* one per axis */
     int originals;              /* needs original material */
+    int oracle;                 /* compiler = "amiblitz3": the side oracle
+                                   (originals is 0) */
 };
 
 /** @brief The axes and cells of a test. */
@@ -406,10 +414,47 @@ struct tc_matrix {
 
 /**
  * @brief The axes and cells of a resolved configuration.
+ *
+ * The cells of AB3 mode (change ab3-test-model): `source-mode` (ab3, the
+ * default, or bb2) is refused in a cell whose compiler is neither ab3 nor
+ * amiblitz3, and bb2 in a cell of amiblitz3.  A table
+ * `deviations."SELECTOR"` whose selector matches a cell of amiblitz3 holds
+ * what AmiBlitz3 does differently: it needs the key `variant`, the row of
+ * docs/ab3/variant.md that records the difference, and its selector may
+ * match no other cell; `variant` is refused in a table whose selector
+ * matches no cell of amiblitz3.  Each error names file and line.
  * @return 0 = ok, -1 = error (err: an exclusion naming no run setting, no
  *         cell left, with file and line)
  */
 int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err, size_t errlen);
+
+/**
+ * @brief The row of docs/ab3/variant.md of the deviations of selector sel
+ *        (the key variant of deviations."SEL"), or NULL.
+ */
+const struct tc_tabkey *tc_variant_of(const struct tc_config *conf, const char *sel);
+
+/**
+ * @brief Whether the test declares deviations and every one is a
+ *        difference of AmiBlitz3 (its selector has a variant): such a test
+ *        shows no open bug, its cells are judged as those of a fixed one.
+ */
+int tc_variants_only(const struct tc_config *conf);
+
+/**
+ * @brief Whether cell compiles its driver as an AB3 source: its compiler is
+ *        ab3 or amiblitz3 and its source-mode is not bb2 (the source mode
+ *        of the preprocessor, testpp.h tp_params.ab3).
+ */
+int tc_cell_ab3(const struct tc_config *conf, const struct tc_matrix *m, size_t cell);
+
+/**
+ * @brief The check of an `!ExpectError` of the test source (file, line):
+ *        refused in a test with a cell of amiblitz3, which runs without its
+ *        debugger (no runtime error is reported).
+ * @return 0 = ok, -1 = refused (err: "FILE:LINE: TEXT")
+ */
+int tc_expect_error_ok(const struct tc_matrix *m, const char *file, unsigned line, char *err, size_t errlen);
 
 /** @brief Free a matrix (zeroed). */
 void tc_matrix_free(struct tc_matrix *m);
@@ -469,7 +514,10 @@ char *tc_session_key(const struct tc_config *conf, const struct tc_matrix *m, si
  * An assertion is a key QUERY = "PREDICATE" of the table `asserts` (all
  * cells) or `asserts."SELECTOR"` (the cells the selector matches), or of
  * the table `deviations."SELECTOR"` of a test's own file (the deviations
- * the original's faulty part causes in the cells the selector matches).
+ * the original's faulty part causes in the cells the selector matches;
+ * for the cells of compiler = "amiblitz3" what AmiBlitz3 does differently,
+ * with the key `variant` beside the queries, kept in tc_config.variants,
+ * tc_matrix_build).
  * The grammar is in tests/README.md, "Assertions"; tc_query_parse and
  * tc_pred_parse implement it.
  *
