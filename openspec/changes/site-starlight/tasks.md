@@ -190,7 +190,7 @@ Work data (reports, counts, screenshots) goes to
   14 `basic` fences (Blitz test-program fragments on 2 pages, outside the
   manifest, aliased to `plaintext` until then) get the grammar too or stay
   plain text: the decision is recorded in design.md.
-- [ ] 8.2 No warnings in the full build (chunk size, D12); the
+- [x] 8.2 No warnings in the full build (chunk size, D12); the
   modified-time meta tag only with `BB2_SITE_GITINFO=1` (D13); Pagefind
   excludes `public/api/`. Verify: `site_starlight` passes with the API
   reference in place; the meta tag is in a CI-style build and not in a

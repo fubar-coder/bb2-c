@@ -807,3 +807,28 @@ The browser check and the comparison with Hugo's redirect pages are in
   characters that still differ come from the comparison (Expressive Code's
   `data-code` attribute, Starlight's `…` placeholder of an empty FileTree
   folder, the overview of task 6.1 not ported yet).
+- **Warnings (8.2, D12).** The full build has no warning line, also with
+  the API reference in place (Doxygen's 1015 files in `static/api`, the
+  `publicDir` until 9.3); the largest chunk is mermaid's ELK layout,
+  1500.7 kB, under the limit of 1510 kB of group 3.
+- **The modified-time meta tag (8.2, D13)** is written by the `Head`
+  override with `src/lib/gitinfo.mjs` when `BB2_SITE_GITINFO=1`: one
+  `git log --no-merges --name-only` over `site/` (Hugo's GitInfo: the
+  newest commit's author date in its time zone, no rename tracking),
+  `<meta property="article:modified_time">` as Hextra's opengraph partial
+  writes it. Hugo writes it for regular pages only (`.IsPage`), so a
+  section's index page (an `index.md(x)` with other entries below its
+  directory, the command reference's three index pages among them), the
+  404 page (a draft entry) and the loader's reference pages (no file) get
+  none. Until 9.1 the converted pages are not in git and the date is that
+  of the Hugo page (`content/…`, `_index.md` for an index page); 9.2 drops
+  that fallback with `content/`. Compared with a Hugo build with
+  `--enableGitInfo` of the same tree: the same 173 pages, the same dates;
+  a plain build has none. Without git the CI-style build fails with the
+  message (`spawnSync git ENOENT`) rather than leaving the tags out.
+- **Pagefind (8.2, D13)** needs no setting to leave out the API
+  reference: Starlight marks its pages with `data-pagefind-body`, and
+  Pagefind indexes only the pages with it once one page has it; Doxygen's
+  pages have none. With the API reference in place Pagefind finds 939 HTML
+  files and indexes 366 pages (`page_count`), none below `/api/` (the URLs
+  of all fragments checked).

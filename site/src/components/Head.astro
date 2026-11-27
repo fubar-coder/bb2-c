@@ -4,10 +4,19 @@
 // src/content.config.mjs; Hugo's page width of Hextra) gets a wider
 // content column. Starlight sets --sl-content-width on :root in a cascade
 // layer, so the unlayered rule here takes precedence.
+//
+// In the CI build (BB2_SITE_GITINFO=1, design D13) a page's last-modified
+// date from git as the meta tag article:modified_time (src/lib/gitinfo.mjs).
+import { getCollection } from "astro:content";
 import Default from "@astrojs/starlight/components/Head.astro";
+import { GITINFO, modifiedTime } from "../lib/gitinfo.mjs";
 
-const wide = Astro.locals.starlightRoute.entry.data.width === "wide";
+const { entry } = Astro.locals.starlightRoute;
+const wide = entry.data.width === "wide";
+const modified =
+  GITINFO && !entry.data.draft && modifiedTime(entry.filePath, (await getCollection("docs")).map((e) => e.filePath));
 ---
 
 <Default />
 {wide && <style is:inline>:root { --sl-content-width: 64rem; }</style>}
+{modified && <meta property="article:modified_time" content={modified} />}
