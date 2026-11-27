@@ -1,0 +1,8 @@
+# AmiBlitz3 refuses name{} of a Statement with seven or more optional
+# parameters and makes no executable (docs/ab3/variant.md, row proc_onlyopt8)
+[deviations."compiler=amiblitz3"]
+variant = "proc_onlyopt8"
+compile = "contains \"Syntax error!\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

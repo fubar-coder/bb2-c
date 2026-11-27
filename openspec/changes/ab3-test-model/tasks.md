@@ -44,7 +44,7 @@ every case of the commit (the one-off comparison's output in the report),
 the new tests on both sides, the remaining `ab3_cli_N`/`ab3_cli_ref_N`,
 the prev comparison of the new tests.
 
-- [ ] 6.1 `proc_*` and `funcstmt_*` (by `OPTIMIZE`/`SYNTAX` groups; `proc_fastname` and others whose names are the subject in files of their own).
+- [x] 6.1 `proc_*` and `funcstmt_*` (by `OPTIMIZE`/`SYNTAX` groups; `proc_fastname` and others whose names are the subject in files of their own).
 - [ ] 6.2 `macthen_*`, `macend_*` (but `macend_inc`), `macro_ns`, `label_*`, `underscore`, `dotlabel`, `shared_global`, `const_novalue`.
 - [ ] 6.3 `esc_*` (but the include cases of D10), `str_expr`, `tilde_string`, `latin1_string`, `chr_*`.
 - [ ] 6.4 `byte_*`, `quick_long_arith`, `intrinsic_*`, `pow`, `pow_negative_base`, `expr_depth`, `opt_*`, `libtoken_past_block`, `asm_short_s`.

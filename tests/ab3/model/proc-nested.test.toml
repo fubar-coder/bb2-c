@@ -1,0 +1,10 @@
+# AmiBlitz3 passes parameters 7 to 10 in static longs, which an inner call
+# overwrites (docs/ab3/variant.md, row proc_nested)
+[deviations."compiler=amiblitz3"]
+variant = "proc_nested"
+"check.proc_nested.l1" = "== fail"
+"check.proc_nested.l1.actual" = "== \"p7=100 p8=100\""
+"check.proc_nested.l2" = "== fail"
+"check.proc_nested.l2.actual" = "== 100"
+"check.proc_stack.l2" = "== fail"
+"check.proc_stack.l2.actual" = "== \"<s3212>\""

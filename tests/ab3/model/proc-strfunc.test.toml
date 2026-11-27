@@ -1,0 +1,8 @@
+# AmiBlitz3 returns a wrong result from a Function with a string parameter
+# from the 7th on (docs/ab3/variant.md, row proc_strfunc): its value varies
+# from run to run (the old .ref.expect lines ~* and ~#: any value), so the
+# two checks may pass or fail; in this form they were measured to pass
+[deviations."compiler=amiblitz3"]
+variant = "proc_strfunc"
+"check.proc_strfunc.l4" = "!= not-run"
+"check.proc_strfunc.l7" = "!= not-run"

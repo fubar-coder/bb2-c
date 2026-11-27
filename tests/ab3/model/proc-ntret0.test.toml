@@ -1,0 +1,8 @@
+# AmiBlitz3 refuses Function Return 0 of a NewType Function and makes no
+# executable (docs/ab3/variant.md, row proc_ntret0)
+[deviations."compiler=amiblitz3"]
+variant = "proc_ntret0"
+compile = "contains \"Type Error: Function Returntype is diffrent to function declaration\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
