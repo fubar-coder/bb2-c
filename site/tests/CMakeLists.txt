@@ -34,6 +34,31 @@ foreach(c IN LISTS _cases)
 		RESOURCE_LOCK site_hugo_cache TIMEOUT 300)
 endforeach()
 
+# The Starlight build (cmake/site-starlight-test.cmake), Node.js in its
+# pinned image via podman, in a copy of site/: the site as it is installs and
+# builds without a warning (site_starlight), and the fixture
+# starlight/warning/ (two pages with one slug) makes a warning that fails the
+# check (site_starlight_warning). Label site; skipped (77) without podman or
+# the image or when the dependencies cannot be downloaded. One at a time:
+# they share npm's cache.
+set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
+foreach(case real warning)
+	if(case STREQUAL "real")
+		set(name site_starlight)
+		set(expect "")
+	else()
+		set(name site_starlight_${case})
+		set(expect "multiple entries with the same slug")
+	endif()
+	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+		-DSITE=${PROJECT_SOURCE_DIR}/site -DCASE=${case} "-DEXPECT=${expect}"
+		-DCACHE=${_starlight_cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
+		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-starlight-test.cmake
+		-P ${WITH_WORKDIR})
+	set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
+		RESOURCE_LOCK site_npm_cache TIMEOUT 600)
+endforeach()
+
 # The Doxygen run of the Pages workflow, out of tree
 # (cmake/api-doxygen-test.cmake): the comments of the libraries give no
 # warning (api_doxygen), and a broken comment fails the run

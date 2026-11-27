@@ -1,3 +1,10 @@
+# Hugo
 public/
 resources/
 .hugo_build.lock
+# Starlight (Astro)
+node_modules/
+dist/
+.astro/
+# the pages converted from content/ at every build
+src/content/docs/docs/

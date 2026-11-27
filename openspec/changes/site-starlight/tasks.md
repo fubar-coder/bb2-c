@@ -12,7 +12,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 1. The Astro project next to Hugo
 
-- [ ] 1.1 `site/package.json` (private, `type: module`, exact versions of
+- [x] 1.1 `site/package.json` (private, `type: module`, exact versions of
   astro, @astrojs/starlight, @astrojs/markdown-remark, astro-mermaid,
   mermaid, yaml, mdast-util-from-markdown and the unist/mdast utilities
   the plugins need: the then-current releases of the spike's set),
@@ -23,12 +23,12 @@ Work data (reports, counts, screenshots) goes to
   `src/content/docs/docs/` (the converter's output until 9.1). Verify:
   `npm ci` in the container in a fresh clone leaves `git status` clean; `npm ls` shows only
   the pinned versions.
-- [ ] 1.2 Licences: list the licence of every package of the lock file
+- [x] 1.2 Licences: list the licence of every package of the lock file
   (a one-off listing from the lock file) and which packages are shipped to
   the browser; every shipped one is GPL-3.0-compatible (`khroma`: check
   its repository). Verify: the list in the work directory; a package that
   is not compatible stops the task and goes to the coordinator (D14).
-- [ ] 1.3 `site/astro.config.mjs` (site `https://fubar-coder.github.io`,
+- [x] 1.3 `site/astro.config.mjs` (site `https://fubar-coder.github.io`,
   base `/bb2-c`, `trailingSlash: "always"`, `unified()` processor (D4),
   Starlight with title, GitHub link, `customCss` with
   `site/assets/css/*.css` in place; `publicDir: "static"` until 9.3,
@@ -36,7 +36,7 @@ Work data (reports, counts, screenshots) goes to
   docs collection, a placeholder home page; telemetry off. Verify: `npm run
   build` exits 0 and prints no warning (the empty i18n collection solved,
   D12); Hugo's build in its image is unchanged (`site_fixoverview` passes).
-- [ ] 1.4 The ctest `site_starlight` (label `site`): a CMake script that
+- [x] 1.4 The ctest `site_starlight` (label `site`): a CMake script that
   runs the Starlight build in the pinned Node.js image via podman, in a
   work directory of its own,
   and fails on a non-zero exit or any warning line; skipped (77) without

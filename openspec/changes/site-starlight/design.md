@@ -341,3 +341,43 @@ The user's answers of 2026-11-27 (`rounds/tree/decisions.md`,
   stays. Task 9.4 drafts the agent's wording and shows it; it is changed
   only with the user's OK (rule 1). The memory note is the coordinator's,
   with the user's OK.
+
+## Findings
+
+### Group 1 (2026-11-27)
+
+- **Versions (1.1).** The then-current releases of the spike's set:
+  astro 7.4.13, @astrojs/starlight 0.43.2, @astrojs/markdown-remark
+  7.3.10, astro-mermaid 2.2.0, mdast-util-from-markdown 2.1.0, yaml 2.9.1
+  (all as in the spike) and mermaid 12.3.0 (the spike had 11.17.2;
+  astro-mermaid 2.2.0 accepts `^12`). The spike's plugins need no other
+  unist/mdast utility (the remark plugin walks the tree itself; the
+  directives come with Starlight's remark-directive). Node.js 26.13.1, the
+  Active LTS ("Lithium"), in `docker.io/library/node:26.13.1-bookworm-slim`
+  (npm 11.20.0); astro 7.4.13 needs Node.js >= 22.23.4. `engines.node` is
+  the image's version exactly.
+- **Licences (1.2).** The listing is
+  `~/.local/share/bb2-c-work/site-starlight/licences.md`. Shipped to the
+  browser (the closure of mermaid and the client code of Starlight,
+  Pagefind, Expressive Code, astro and astro-mermaid): MIT, ISC,
+  BSD-3-Clause, Apache-2.0, Unlicense, dompurify MPL-2.0 OR Apache-2.0,
+  elkjs EPL-2.0 OR GPL-3.0-or-later; `khroma` 2.1.0 has no licence field,
+  its repository and its package carry the MIT licence. All
+  GPL-3.0-compatible. Build time only: MPL-2.0 (lightningcss),
+  LGPL-3.0-or-later (sharp's libvips), BlueOak-1.0.0, CC0-1.0, 0BSD.
+- **The i18n warning (1.3, D12).** Neither option of D12 is free of the
+  warning: Starlight reads the i18n collection on every page, and Astro
+  7.4.13 warns for a collection that is not in its data store, which an
+  undeclared collection and a glob without a match alike are not (the
+  store holds only collections with an entry; Starlight's own
+  `console.warn` muting does not reach Astro's logger). The collection is
+  declared with Starlight's `i18nLoader()` and holds
+  `src/content/i18n/en.json` with no override (`{}`).
+- **The 404 page (1.3).** Without a docs entry `404` Astro warns "Entry
+  docs → 404 was not found" (Starlight's 404 route looks it up); a plain
+  `src/content/docs/404.md` is also rendered by Starlight's `[...slug]`
+  route, for which Astro warns of a route conflict. `404.md` has
+  `draft: true`: the production build leaves drafts out of the page routes,
+  and the 404 route still takes the entry.
+- **Telemetry.** `ASTRO_TELEMETRY_DISABLED=1` is set in the package
+  scripts (`build`, `preview`), so every call through npm has it.
