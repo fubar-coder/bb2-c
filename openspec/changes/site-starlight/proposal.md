@@ -109,9 +109,10 @@ step; no result changes.
   (only with the user's OK to the wording).
 - New dependencies (npm, build time; MIT, Apache-2.0, ISC, BSD, MPL-2.0;
   sharp's libvips LGPL-3.0-or-later, build time only): Astro, Starlight,
-  astro-mermaid, mermaid, yaml, mdast/unist utilities; Node.js in a
-  pinned container image (podman locally and in the tests, the container
-  of the Pages job).
+  astro-mermaid, mermaid, yaml, mdast/unist utilities; Node.js at a
+  pinned version (locally and in the tests the host's Node.js at that
+  version or the pinned container image via podman; the container of the
+  Pages job).
 - Open changes that edit site pages: `ab3-mode-g5` (task 6.1,
   `ab3-compared/not-supported.md`), `console-break-option` (Extensions,
   `ab3-mode/command-line.md`, `rundebuglib.md`),

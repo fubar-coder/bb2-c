@@ -6,8 +6,21 @@
 # BB2_FIXOVERVIEW_DATA; a failed build leaves no dist/): site_fixoverview and
 # site_fixoverview_*; Hugo's (layouts/_partials/fix-overview/check.html):
 # site_hugo_fixoverview and site_hugo_fixoverview_*, the same cases and
-# messages. Label site; skipped (77) without podman or the image. One at a
-# time per generator: they share npm's cache or Hugo's module cache.
+# messages. Label site; Hugo's skipped (77) without podman or the image, the
+# Starlight ones as the Starlight build below. One at a time per generator:
+# they share npm's cache or Hugo's module cache.
+#
+# SITE_NODE: where the Starlight builds run Node.js
+# (cmake/site-starlight-test.cmake): auto (the host's node when it has the
+# version of engines.node in site/package.json, else the pinned image via
+# podman, else skipped), host or container (that way only; not available
+# fails the test).
+set(SITE_NODE auto CACHE STRING
+	"Where the site tests run Node.js: auto, host (node at the pinned version) or container (podman)")
+set_property(CACHE SITE_NODE PROPERTY STRINGS auto host container)
+if(NOT SITE_NODE MATCHES "^(auto|host|container)$")
+	message(FATAL_ERROR "SITE_NODE is auto, host or container, not ${SITE_NODE}")
+endif()
 set(_site_cache ${CMAKE_BINARY_DIR}/site-hugo-cache)
 set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
 set(_cases
@@ -44,7 +57,8 @@ foreach(generator starlight hugo)
 		endif()
 		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
 			-DSITE=${PROJECT_SOURCE_DIR}/site -DGENERATOR=${generator} -DCASE=${case}
-			"-DEXPECT=${expect}" -DCACHE=${cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
+			"-DEXPECT=${expect}" -DSITE_NODE=${SITE_NODE}
+			-DCACHE=${cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
 			-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-fixoverview-test.cmake
 			-P ${WITH_WORKDIR})
 		set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
@@ -52,8 +66,9 @@ foreach(generator starlight hugo)
 	endforeach()
 endforeach()
 
-# The Starlight build (cmake/site-starlight-test.cmake), Node.js in its
-# pinned image via podman, in a copy of site/: the site as it is installs and
+# The Starlight build (cmake/site-starlight-test.cmake), Node.js at the
+# pinned version (on the host or in the pinned image via podman, SITE_NODE
+# above), in a copy of site/: the site as it is installs and
 # builds without a warning (site_starlight); the fixture starlight/warning/
 # (two pages with one slug) makes a warning that fails the check
 # (site_starlight_warning); the fixtures of the build's checks
@@ -63,9 +78,9 @@ endforeach()
 # (site_links_data), a data file with a relref while the leftover-syntax
 # check is on (site_hugo_syntax), an anchorMoves naming a missing page
 # (site_alias_bad_move), a list of old URLs (site/tests/urls/) with a URL
-# the build does not write (site_urls_missing). Label site; skipped (77) without podman or
-# the image or when the dependencies cannot be downloaded. One at a time:
-# they share npm's cache.
+# the build does not write (site_urls_missing). Label site; skipped (77) when
+# neither way is available (SITE_NODE auto) or when the dependencies cannot
+# be downloaded. One at a time: they share npm's cache.
 set(_starlight_cases
 	"site_starlight|real|||"
 	"site_starlight_warning|warning|warning|multiple entries with the same slug|"
@@ -84,7 +99,7 @@ foreach(c IN LISTS _starlight_cases)
 	list(GET c 4 env)
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
 		-DSITE=${PROJECT_SOURCE_DIR}/site -DCASE=${case} "-DEXPECT=${expect}"
-		-DKIND=${kind} -DENV=${env}
+		-DKIND=${kind} -DENV=${env} -DSITE_NODE=${SITE_NODE}
 		-DCACHE=${_starlight_cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
 		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-starlight-test.cmake
 		-P ${WITH_WORKDIR})

@@ -2,14 +2,15 @@
 # overview of fixed original bugs:
 #
 #   cmake -DSITE=<repo>/site -DGENERATOR=starlight|hugo -DCASE=real|<broken case>
-#         [-DEXPECT=regex] -DCACHE=<dir> -DWORK=<dir> -P site-fixoverview-test.cmake
+#         [-DEXPECT=regex] [-DSITE_NODE=auto|host|container]
+#         -DCACHE=<dir> -DWORK=<dir> -P site-fixoverview-test.cmake
 #
 # CASE real: the site as it is must build without errors or warnings.
 # Another CASE names a broken data file site/tests/fixoverview/data/CASE.yaml;
 # the build must fail with output matching EXPECT.
 #
 # GENERATOR starlight: the Starlight build (cmake/site-starlight-test.cmake,
-# CACHE npm's cache), the check src/lib/fix-overview.mjs; the data file is
+# CACHE npm's cache, SITE_NODE where Node.js runs), the check src/lib/fix-overview.mjs; the data file is
 # given by the environment variable BB2_FIXOVERVIEW_DATA (data/fixoverview.yaml
 # for CASE real), and a failed build must leave no dist/.
 # GENERATOR hugo: Hugo in podman (the image of site/README.md), the check
@@ -18,8 +19,9 @@
 # Hugo's module cache between runs (the theme). Hugo's tests stay until Hugo
 # is removed (site-starlight, task 9.2).
 #
-# Exits 77 (skipped) without podman, without the image or when the theme or
-# the dependencies cannot be downloaded.
+# Exits 77 (skipped) when the build cannot run (Starlight: as
+# site-starlight-test.cmake; Hugo: without podman or the image) or when the
+# theme or the dependencies cannot be downloaded.
 foreach(v SITE GENERATOR CASE CACHE WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "site-fixoverview-test: ${v} is needed")

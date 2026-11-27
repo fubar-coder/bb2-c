@@ -11,9 +11,11 @@ still leads to its content.
 
 ### Requirement: Pinned generator versions
 The site's dependencies SHALL be pinned to exact versions, with a
-committed lock file, and installed only from that lock file; the Pages
-workflow, the tests and the local build SHALL run Node.js in one container
-image pinned by tag. No build
+committed lock file, and installed only from that lock file; Node.js SHALL
+be pinned to one version: the Pages workflow SHALL run it in the container
+image pinned by that version's tag, the tests and the local build either
+in that image or with the host's Node.js when its version is the pinned
+one. No build
 SHALL update a dependency; an update SHALL be a commit of its own.
 
 #### Scenario: A clean install
@@ -94,10 +96,20 @@ to a library is highlighted without a change to the grammar.
 
 ### Requirement: The site is tested outside the CMake build
 The site SHALL NOT be a target of the CMake build. The ctests of the
-label `site` SHALL build the site in the pinned container image and
-SHALL be skipped (not failed) when podman, the image or the dependencies
-are not available.
+label `site` SHALL build the site with the host's Node.js when its version
+is the pinned one, else in the pinned container image, and SHALL be
+skipped (not failed) when neither way or the dependencies are not
+available. Either way SHALL be selectable for the tests; a selected way
+that is not available SHALL fail the tests.
 
-#### Scenario: No container
-- **WHEN** `ctest -L site` runs on a machine without podman or without the pinned image
+#### Scenario: The host's Node.js
+- **WHEN** `ctest -L site` runs on a machine whose Node.js has the pinned version
+- **THEN** the site is built with the host's Node.js, without podman
+
+#### Scenario: No Node.js at the pinned version
+- **WHEN** `ctest -L site` runs on a machine whose Node.js is missing or of another version, and without podman or without the pinned image
 - **THEN** the site tests are reported as skipped
+
+#### Scenario: A selected way is not available
+- **WHEN** the tests are configured for the container and podman or the image is missing, or for the host and its Node.js is missing or of another version
+- **THEN** the site tests fail with a message naming what is missing

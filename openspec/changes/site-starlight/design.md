@@ -134,8 +134,14 @@ Node.js version in `engines`; Astro's telemetry off
 (`ASTRO_TELEMETRY_DISABLED=1` in every documented call and in the
 workflow). An update is its own commit, as for Hextra today. The versions
 are the then-current releases of the spike's set, taken in task 1.1.
-Node.js runs in the pinned container image of Q3 ("Decisions of the
-user"); its tag is the pin of the Node.js version.
+Node.js runs at the pinned version (Q3, "Decisions of the user"): locally
+and in the tests the host's Node.js when its `node --version` is the
+version of `engines.node`, or the pinned container image, whose tag is
+that version; the Pages workflow runs in the pinned container. The site
+tests choose by the CMake cache variable `SITE_NODE` (`auto`, the default:
+the host when its version matches, else the container, else skipped;
+`host` or `container`: that way only, failing when it is not available),
+so both ways can be tested.
 
 Point: a pinned version has a known security fix pending — L2 Possible /
 I1 Low / E2 Reasoned → Monitor (the build runs on trusted content only)
@@ -330,6 +336,14 @@ The user's answers of 2026-11-27 (`rounds/tree/decisions.md`,
   native packages are those of a glibc host) via podman locally (preview
   and build) and in the ctests, and as the container of the Pages build
   job. The tests are skipped (77) without podman or the image.
+  Revised by the user's answer of 2026-11-27 (`rounds/tree/decisions.md`,
+  "site-starlight: Node on the host, podman optional"): "Ich habe node auf
+  Version 26 aktualisiert. podman sollte nicht mehr notwendig sein. Es
+  sollten aber beide Wege dokumentiert werden." Locally and in the ctests
+  the host's Node.js at the pinned version or the pinned container (D5);
+  the tests are skipped (77) only when neither is available; the Pages
+  job keeps the pinned container. `site/README.md` documents both ways
+  (task 9.4).
 - **Q5 The order with the open changes that edit site pages**
   (`ab3-mode-g5` 6.1, `console-break-option`,
   `original-products-commands`): "No freeze (Recommended)". They edit
