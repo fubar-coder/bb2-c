@@ -84,6 +84,7 @@ set(RESULTS ${HOST_TOOLS_DIR}/results/results)                  # results agains
 set(SITEEXAMPLES ${HOST_TOOLS_DIR}/siteexamples/siteexamples)    # the site's Blitz examples against their manifest
 set(EXPRMATRIX ${HOST_TOOLS_DIR}/exprmatrix/exprmatrix)         # the expression matrix
 set(TESTREG ${HOST_TOOLS_DIR}/testreg/testreg)                  # the tests of the BASIC test model at build time
+set(TOKLIST ${HOST_TOOLS_DIR}/toklist/toklist)                  # the compiler's keywords as the website's JSON
 set(TEDSRC ${HOST_DIR}/ted-tools/tedsrc/tedsrc)                 # tokenise like TED, show as TED
 set(CORPUSRUN ${HOST_DIR}/corpus-runner/corpusrun)              # corpus passes and the CD in Amiberry
 set(TEDAB ${HOST_DIR}/ted-ab-runner/tedab)                      # the TED A/B tests in Amiberry
@@ -113,7 +114,7 @@ ExternalProject_Add(host_tools
 		"-DCMAKE_CXX_COMPILER_LAUNCHER:STRING=${BB2C_HOST_LAUNCHER}"
 	INSTALL_COMMAND ""
 	BUILD_ALWAYS ON
-	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${SITEEXAMPLES} ${EXPRMATRIX} ${TESTREG} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
+	BUILD_BYPRODUCTS ${BLITZLIB} ${BBSRC} ${REFCHECK} ${HUNKCHECK} ${TEDFONT} ${AMIGA_RUN} ${MKTESTDATA} ${BLITZRES} ${RESULTS} ${SITEEXAMPLES} ${EXPRMATRIX} ${TESTREG} ${TOKLIST} ${TEDSRC} ${CORPUSRUN} ${TEDAB})
 
 include(cmake/BlitzLibrary.cmake)
 include(cmake/prev.cmake)                # the build of the previous commit, on request

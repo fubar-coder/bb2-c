@@ -22,6 +22,7 @@ its logic.
 | [`testreg`](testreg/README.md) | the Blitz tests that judge themselves (`ID.test.bas`): their sources and run configurations checked at build time and registered as ctest tests, one per case and side |
 | [`exprmatrix`](exprmatrix/README.md) | the expression matrix of blitz2: every cell (context, operator, operand kinds in order, value set) a keyed line of a generated Blitz source |
 | [`exprtables`](exprtables/README.md) | readable tables of the type rules of an expression in blitz2 (operator, operand types, wanted type), the generated page `docs/blitz2/expression-type-tables.md` and its check in the build |
+| [`toklist`](toklist/README.md) | the compiler's own token list (`programs/blitz2/src/toklist.h`): its BASIC keywords as the website's JSON `site/data/compiler/blitz2.json` and its check in blitz2's build step |
 | [`amiga_run`](amiga_run/README.md) | an AmigaDOS script in Amiberry, without a window and isolated (front end of `lib/amiga_emulation`) |
 
 Three tools live with the component they belong to:

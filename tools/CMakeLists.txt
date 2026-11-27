@@ -23,5 +23,6 @@ add_subdirectory(siteexamples)
 add_subdirectory(testreg)
 add_subdirectory(exprmatrix)
 add_subdirectory(exprtables)
+add_subdirectory(toklist)
 
 add_subdirectory(tests)

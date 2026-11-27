@@ -96,6 +96,30 @@ function(blitz2_program target)
 	set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS ${blitz2_src_files})
 endfunction()
 blitz2_program(blitz2 src/ext_bb2.c)
+# the compiler's keywords for the grammar of the website's code blocks: the
+# TK entries of the token list (src/toklist.h) as the committed
+# site/data/compiler/blitz2.json, checked after every link of blitz2
+# (toklist json --check, tools/toklist; blitz2 relinks after a change of
+# src/ and of the file).  After an intended change of the keywords: build
+# blitz2_keywords_update (writes the committed file) and commit it.
+set(blitz2_keywords_json ${PROJECT_SOURCE_DIR}/site/data/compiler/blitz2.json)
+set(blitz2_toklist ${CMAKE_CURRENT_SOURCE_DIR}/src/toklist.h)
+add_custom_command(TARGET blitz2 POST_BUILD
+	COMMAND ${TOKLIST} json --check ${blitz2_keywords_json} ${blitz2_toklist}
+	VERBATIM)
+add_dependencies(blitz2 host_tools)
+set_property(TARGET blitz2 APPEND PROPERTY LINK_DEPENDS ${blitz2_keywords_json})
+add_custom_target(blitz2_keywords_update
+	COMMAND ${TOKLIST} json -o ${blitz2_keywords_json} ${blitz2_toklist}
+	DEPENDS host_tools
+	COMMENT "Writing site/data/compiler/blitz2.json from programs/blitz2/src/toklist.h"
+	VERBATIM)
+# the check with broken input: a copy of the token list with a changed
+# keyword must fail it, naming the line of the committed file
+add_test(NAME blitz2_keywords_broken COMMAND ${CMAKE_COMMAND} -DTOKLIST=${TOKLIST}
+	-DJSON=${blitz2_keywords_json} -DLIST=${blitz2_toklist} -DWORK=${CMAKE_CURRENT_BINARY_DIR}/keywords-broken
+	-DTEST_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/tests/keywords-broken.cmake -P ${WITH_WORKDIR})
+set_tests_properties(blitz2_keywords_broken PROPERTIES PASS_REGULAR_EXPRESSION "keywords-broken: as expected")
 # blitz2-ab3: the AB3 modules; the mode of a source is decided with
 # shared/xtra, the command line (-s SOURCE -e EXE: a compile with ab3cli
 # as the editor, src/ab3main.c) parsed by shared/ab3job, AmiBlitz3's

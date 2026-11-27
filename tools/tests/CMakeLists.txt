@@ -4,7 +4,7 @@ foreach(t hunk biglib hunkcheck vasmlisting sha256 checklabels asmcmp mktestdata
 		bbdetok statline outmatch oracletable prevcmp previntended epcheck
 		blitzlib blitztokens checkdata bb22 blitzres tedfont cmdref cdtable bugorigcmp
 		teststats covmap covsel hdf corpusexpect perfbudget amiga_emulation siteexamples
-		testtoml testconf testpp testjudge testreg exprmatrix)
+		testtoml testconf testpp testjudge testreg exprmatrix toklist)
 	add_executable(test_${t} test_${t}.cpp)
 	target_link_libraries(test_${t} PRIVATE lib_${t} lib_hunk snitch::snitch)
 	target_compile_options(test_${t} PRIVATE -Wall -Wextra)
@@ -32,6 +32,9 @@ target_compile_definitions(test_exprtables PRIVATE
 target_compile_options(test_exprtables PRIVATE -Wall -Wextra)
 set_target_properties(test_exprtables PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 add_test(NAME exprtables COMMAND test_exprtables)
+# the token list (lib/toklist; toklist is in the list above): also the
+# compiler's own list, programs/blitz2/src/toklist.h
+target_compile_definitions(test_toklist PRIVATE TOKLIST_H="${tests_repo}/programs/blitz2/src/toklist.h")
 
 # the matrix of the run configuration of the Blitz tests (lib/testconf;
 # testconf is in the list above): snitch programs

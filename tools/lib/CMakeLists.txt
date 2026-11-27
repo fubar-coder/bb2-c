@@ -91,6 +91,9 @@
 #   exprtype_tables  readable tables of the type rules of an expression
 #              (exprtyping.c and exprtype.c, its table exprtype.tsv) and their page
 #              docs/blitz2/expression-type-tables.md (tools/exprtables)
+#   toklist    the compiler's own token list (programs/blitz2/src/toklist.h)
+#              read as text, its BASIC keywords as the website's JSON
+#              (site/data/compiler/blitz2.json, tools/toklist)
 add_subdirectory(hunk)
 add_subdirectory(blitzlib)
 add_subdirectory(biglib)
@@ -136,3 +139,4 @@ add_subdirectory(testjudge)
 add_subdirectory(testreg)
 add_subdirectory(exprmatrix)
 add_subdirectory(exprtype_tables)
+add_subdirectory(toklist)

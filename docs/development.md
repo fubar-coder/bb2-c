@@ -382,6 +382,15 @@ again):
   change of the rules, build the target `expression_type_tables_update`
   and commit the page with the change. ctest `exprtables_page_broken`: a
   copy with a changed cell and one without a note fail the check.
+* the compiler's keywords of the website (`toklist json`, `tools/toklist`,
+  after every link of `blitz2`, POST_BUILD): the JSON the tool writes from
+  the `TK` entries of `programs/blitz2/src/toklist.h` equals the committed
+  `site/data/compiler/blitz2.json`, from which the grammar of the site's
+  code blocks takes the keywords (`blitz2` relinks after a change of
+  `src/` and of the file). After an intended change of the keywords, build
+  the target `blitz2_keywords_update` (writes the committed file) and
+  commit it with the change. ctest `blitz2_keywords_broken`: a copy of the
+  list with a changed keyword fails the check, naming the line.
 * a fixed bug-orig test keeps no recorded original (`ID.orig` next to a
   `.bas` or a TED `.drv`, each with `; @fixed-orig #N`):
   configuring `tests/bug-orig` fails naming the file
