@@ -234,7 +234,10 @@ Work data (reports, counts, screenshots) goes to
   `cmake/api-doxygen-test.cmake` if it names the path. Verify:
   `api_doxygen` and `api_doxygen_broken` pass; the workflow file is
   checked with the steps of 8.3.
-- [ ] 9.4 Docs: `site/README.md` (preview, build, pins and their update,
+- [ ] 9.4 Docs: a `dev` script in `site/package.json` (`astro dev --host
+  0.0.0.0 --port 4321`, telemetry off), run in the pinned Node.js image with
+  the port published: the counterpart of `hugo server`, live reload of the
+  pages in `src/content` (after 9.1); `site/README.md` (dev server, preview, build, pins and their update,
   writing pages: site paths, asides, components, directives, raw HTML
   rule, the URL list, the checks and their tests), `docs/development.md`
   ("rendered by Hugo"), `docs/structure.md` (the `site/` line), the site
