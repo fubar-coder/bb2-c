@@ -9246,3 +9246,12 @@ rows:
     short: "`5 Mod 0.5` compiles and gives the exact `Mod`."
     page: expressions
     anchor: mod-fraction-divisor
+  - issue: 1227
+    severity: 1
+    topic: "Compiler"
+    library: "Compiler"
+    command: "+, -, *, /, Mod"
+    text: "A fractional constant is preserved in a larger expression when the right operand is a whole-number `Mod` result (`0.5+6 Mod 4` is 2.5 as Quick or Float); the original cut the fraction and gave 2."
+    short: "Keeps a fraction before a whole-number `Mod` in a constant expression."
+    page: expressions
+    anchor: fraction-before-whole-mod

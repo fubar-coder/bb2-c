@@ -646,3 +646,18 @@ End
 original's result, or use a Long variable.
 
 Issue: [A comparison as the right operand converts the left operand down to Word: a Long loses its high word, a Float or Quick is cut (#1182)](https://github.com/fubar-coder/bb2-c/issues/1182).
+
+### A fractional constant before a whole-number `Mod` {#fraction-before-whole-mod}
+
+When the right operand of an operation is a whole-number `Mod` result, the
+original cut the fraction from a constant on the left before doing the
+operation. In a Quick or Float destination, `0.5+6 Mod 4` gave 2. The port
+keeps the fraction and gives 2.5:
+
+```blitzbasic
+q.q=0.5+6 Mod 4 : NPrint q  ; original: 2    port: 2.5
+f.f=0.5+6 Mod 4 : NPrint f  ; original: 2    port: 2.5
+End
+```
+
+Issue: [A constant left of a whole-number Mod loses its fraction (#1227)](https://github.com/fubar-coder/bb2-c/issues/1227).
