@@ -80,8 +80,21 @@ export function component(row) {
     .join(", ");
 }
 
-/** Hugo's plainify: the text without its HTML tags */
-export const plainify = (s) => String(s ?? "").replace(/<[^>]*>/g, "");
+/**
+ * Hugo's plainify: the text without its HTML tags. A tag is `<` and a
+ * letter, or `</` and a letter, up to the next `>` with no `<` or `>` in
+ * between; any other `<` or `>` is text (`<=` or "`<` and `>`" in a
+ * Markdown short). Repeated until nothing changes, so that removing one
+ * tag cannot join the text around it into a new one (`<scr<b>ipt>`).
+ */
+export function plainify(s) {
+  let text = String(s ?? "");
+  for (let before; before !== text; ) {
+    before = text;
+    text = text.replace(/<\/?[A-Za-z][^<>]*>/g, "");
+  }
+  return text;
+}
 
 /**
  * The rows in the table's initial order (by severity, inside a severity by

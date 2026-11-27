@@ -29,7 +29,7 @@ source of facts, but is not included here; the pages are new texts.
   `integrations/site-checks.mjs` (the checks of the build), `styles/`.
 * `assets/`: the script and the styles of the overview of fixed bugs and
   of the level badges.
-* `tests/`: the inputs of the site's tests (below).
+* `tests/`: the inputs of the site's tests and its unit tests (`unit/`; below).
 * `public/`: static files served as they are, below the base: the site's
   icon `favicon.svg`.
 * Written by the build and not committed: `node_modules/`, `.astro/`,
@@ -456,6 +456,11 @@ build. Each has a ctest with broken input (label `site`; the fixtures in
 | internal links | a link of a page or a data file leads to no page or to an id the page does not have | `site_links_missing_page`, `site_links_missing_anchor`, `site_links_data` |
 | redirect pages | an `anchorMoves` names a page that is not built, an alias is a page or the alias of two pages | `site_alias_bad_move` |
 | old URLs | a URL of `tests/urls/*.txt` is not in the output | `site_urls_missing` |
+
+The unit tests of the site's code are in `tests/unit/` (`*.test.mjs`,
+`node:test`; one file per module of `src/lib/`): `npm test` runs them, and
+the ctest `site_unit` runs `npm test` in a copy of the site, Node.js as for
+the build (`SITE_NODE`).
 
 The API reference has its own tests, `api_doxygen` (no warning) and
 `api_doxygen_broken` (a bad `@param` fails it), skipped without podman or

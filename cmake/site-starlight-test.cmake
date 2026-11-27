@@ -3,7 +3,7 @@
 # site/ in the work directory:
 #
 #   cmake -DSITE=<repo>/site -DCASE=real|<fixture> [-DEXPECT=regex]
-#         [-DKIND=warning|error] [-DENV=VAR=value...]
+#         [-DKIND=warning|error|unit] [-DENV=VAR=value...]
 #         [-DSITE_NODE=auto|host|container]
 #         -DCACHE=<dir> -DWORK=<dir> -P site-starlight-test.cmake
 #
@@ -18,7 +18,9 @@
 # line matching EXPECT; KIND error (a check of the build) with a non-zero
 # exit status, an output matching EXPECT and no dist/ left behind. KIND
 # error also takes CASE real: the site as it is, broken by ENV alone. ENV:
-# the environment variables of the build (a list of VAR=value).
+# the environment variables of the build (a list of VAR=value). KIND unit
+# (CASE real): instead of the build, the unit tests of the site's code
+# (`npm test`: node --test on tests/unit/), which must pass.
 #
 # SITE_NODE, where Node.js runs: host, the host's node and npm, whose
 # `node --version` must be the version of `engines.node` in
@@ -126,6 +128,15 @@ if(NOT rc EQUAL 0 AND out MATCHES "ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|E
 endif()
 if(NOT rc EQUAL 0 OR out MATCHES "${warning_line}")
 	message(FATAL_ERROR "npm ci does not install cleanly (${rc}):\n${out}")
+endif()
+
+if(KIND STREQUAL "unit")
+	run(test test)
+	if(NOT rc EQUAL 0)
+		message(FATAL_ERROR "the unit tests of the site fail (${rc}):\n${out}")
+	endif()
+	message(STATUS "the unit tests of the site pass:\n${out}")
+	return()
 endif()
 
 run(build run build)

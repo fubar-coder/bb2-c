@@ -50,7 +50,8 @@ endforeach()
 # The Starlight build (cmake/site-starlight-test.cmake), Node.js at the
 # pinned version (on the host or in the pinned image via podman, SITE_NODE
 # above), in a copy of site/: the site as it is installs and
-# builds without a warning (site_starlight); the fixture starlight/warning/
+# builds without a warning (site_starlight), and the unit tests of its code
+# (tests/unit/, `npm test`) pass (site_unit); the fixture starlight/warning/
 # (two pages with one slug) makes a warning that fails the check
 # (site_starlight_warning); the fixtures of the build's checks
 # (src/integrations/site-checks.mjs) fail the build with their message: a
@@ -64,6 +65,7 @@ endforeach()
 # be downloaded. One at a time: they share npm's cache.
 set(_starlight_cases
 	"site_starlight|real|||"
+	"site_unit|real|unit||"
 	"site_starlight_warning|warning|warning|multiple entries with the same slug|"
 	"site_links_missing_page|links-missing-page|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/no-such-page/ leads to no page|"
 	"site_links_missing_anchor|links-missing-anchor|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/libraries/#no-such-heading names the id \"no-such-heading\"|"
