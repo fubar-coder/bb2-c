@@ -914,3 +914,29 @@ build with the fixes).
   Hugo's pager named it; a label of the front matter's `prev`/`next`
   stays. Chosen: the page title, as the pager stands outside the sidebar
   and "Overview" alone does not say of what.
+- **The mermaid labels (3).** mermaid (12.3.0, `addHtmlSpan`) measures a
+  label in a box of the wrapping width (flowcharts: 120 px; mermaid 11 had
+  200) without wrapping and wraps it only when the measured width equals
+  that width exactly; the foreignObject that holds the text gets the
+  measured size, and SVG clips a foreignObject to its box. A label
+  measured a hair narrower than it is drawn (fonts, zoom, rounding) stays
+  on one line and loses its end: "A Quick operand:", "or a Long wantec".
+  The screenshots here do not show it (Chromium in the playwright image
+  with the host's fonts at scale factors 0.9 to 2, Firefox there at 1:
+  every label's text fits its box, `browser-checks-*.txt`), so the fix
+  does not depend on the measurement: `src/styles/mermaid.css` lets a
+  label's text reach past its foreignObject (`overflow: visible`; the
+  shapes have room around the label). The edge labels ("yes", "no") get
+  room: their background reaches 2 px above and below and 6 px to each
+  side of the text (padding with the same negative margin, so the text
+  stays where mermaid placed it) and covers the line next to it. The
+  type-system diagram wraps its labels at 200 px (an `init` directive in
+  the diagram source, which mermaid 11 under Hugo reads too and where 200
+  is the default), so its hexagons hold "A Quick operand?" and "or a Long
+  wanted?" on one line, as on the Hugo site. The other 7 diagrams keep
+  mermaid's default: a wider wrapping made the wide `flowchart LR` of the
+  emulator page smaller on the page. `flowchart.rankSpacing` in the
+  config had no visible effect on the type-system diagram (70 and 120
+  gave the same layout), so the room comes from the label's background,
+  not from longer edges. The Hugo site keeps its look until 9.2 (the CSS
+  is the Starlight build's).

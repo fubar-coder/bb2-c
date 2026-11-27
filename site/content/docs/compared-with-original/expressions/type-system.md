@@ -43,6 +43,7 @@ an array index). `If`, `While`, `Until`, `Select`, `Print` and the two
 sides of a comparison want no type.
 
 ```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 200}}}%%
 flowchart TD
   F{{"A Float operand?"}} -- yes --> FL["Float"]
   F -- no --> Q{{"A Quick operand?"}}

@@ -48,14 +48,14 @@ export default defineConfig({
   },
   integrations: [
     // ```mermaid blocks, rendered in the browser in the light or dark theme
-    // of the page
+    // of the page; the room of their labels: src/styles/mermaid.css
     mermaid({ theme: "default", autoTheme: true, enableLog: false }),
     starlight({
       title: "BB2 C port",
       // the base on the links of the front matter; the checks of the build
       plugins: [siteChecks()],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/fubar-coder/bb2-c" }],
-      customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css", "./src/styles/fixed-bugs.css", "./src/styles/fix-overview.css"],
+      customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css", "./src/styles/fixed-bugs.css", "./src/styles/fix-overview.css", "./src/styles/mermaid.css"],
       components: { Head: "./src/components/Head.astro", SiteTitle: "./src/components/SiteTitle.astro" },
       sidebar: sidebar(fileURLToPath(new URL("./src/content/docs", import.meta.url))),
       // the Blitz Basic grammar (src/lib/grammar.mjs: blitzbasic, bb2,

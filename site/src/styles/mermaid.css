@@ -1,0 +1,23 @@
+/*
+ * The labels of the mermaid diagrams (astro-mermaid, astro.config.mjs).
+ * mermaid puts a label's HTML text into a foreignObject of the width it
+ * measured when it rendered the diagram, and SVG clips a foreignObject to
+ * that box. Where the text comes out wider than measured (a font or zoom
+ * whose widths differ from the measurement by a pixel or two), the end of
+ * the text was cut off ("A Quick operand:" for "A Quick operand?"). The
+ * text may reach past the box; the shapes around it have room for that.
+ */
+pre.mermaid svg foreignObject {
+  overflow: visible;
+}
+
+/*
+ * Some room around an edge label ("yes", "no"): its background reaches a
+ * little past the text and so covers the line next to it. The negative
+ * margins keep the text where mermaid placed it; mermaid's rule
+ * "#<diagram id> p { margin: 0 }" needs the !important.
+ */
+pre.mermaid svg .edgeLabel p {
+  padding: 2px 6px;
+  margin: -2px -6px !important;
+}
