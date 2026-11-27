@@ -56,7 +56,7 @@ export default defineConfig({
       plugins: [siteChecks()],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/fubar-coder/bb2-c" }],
       customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css", "./src/styles/fixed-bugs.css", "./src/styles/fix-overview.css"],
-      components: { Head: "./src/components/Head.astro" },
+      components: { Head: "./src/components/Head.astro", SiteTitle: "./src/components/SiteTitle.astro" },
       sidebar: sidebar(fileURLToPath(new URL("./src/content/docs", import.meta.url))),
       // the Blitz Basic grammar (src/lib/grammar.mjs: blitzbasic, bb2,
       // blitz2), also for basic: the fragments of test programs on the test

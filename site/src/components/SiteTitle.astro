@@ -1,0 +1,33 @@
+---
+// Starlight's site title with a "Documentation" link next to it
+// (site-starlight, task 9.0): the way into the docs and their sidebar from
+// every page, also from the home page (the splash template has no sidebar)
+// and at a narrow width, where Starlight's header keeps only the title, the
+// search and the menu button. Hugo's navbar (Hextra) had the same link.
+import Default from "@astrojs/starlight/components/SiteTitle.astro";
+
+const href = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/docs/`;
+const current = Astro.url.pathname === href;
+---
+
+<Default />
+<a href={href} class="docs-link" aria-current={current ? "page" : undefined}>Documentation</a>
+
+<style>
+  @layer starlight.core {
+    .docs-link {
+      align-self: center;
+      flex-shrink: 0;
+      margin-inline-start: 1.5rem;
+      font-size: var(--sl-text-sm);
+      font-weight: 500;
+      color: var(--sl-color-gray-2);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .docs-link:hover,
+    .docs-link[aria-current="page"] {
+      color: var(--sl-color-white);
+    }
+  }
+</style>

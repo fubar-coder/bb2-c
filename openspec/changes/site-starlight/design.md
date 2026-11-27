@@ -880,3 +880,23 @@ The browser check and the comparison with Hugo's redirect pages are in
   adds the integration once. No guard added (it would hide a second
   registration rather than find it); a doubled line seen again needs the
   command and its whole output.
+
+### The visual review (9.0, 2026-11-27)
+
+The user's findings (rounds/tree/decisions.md, "2026-11-27 site-starlight
+9.0: the user's visual review"). Screenshots before and after, the browser
+checks and the one-off scripts:
+`~/.local/share/bb2-c-work/site-starlight/review/` (headless Chromium in
+`mcr.microsoft.com/playwright:v1.52.0-noble`, `--network=none`, the host's
+fonts mounted; `before-*` from the build of main, `after-*` from the
+build with the fixes).
+
+- **The Documentation link (1).** `src/components/SiteTitle.astro`
+  overrides Starlight's `SiteTitle`: the default title, then a link
+  "Documentation" to `/bb2-c/docs/` (Hextra's navbar link). The title area
+  is the part of Starlight's header that stays at every width and on the
+  splash template, so the link is there on the home page and at 420 px
+  (`after-home-420.png`), where Starlight keeps only the title, the
+  search and the menu button. Its colour is Starlight's gray of the
+  header's other items, white on hover and on `/docs/` itself
+  (`aria-current`). The link check covers it (every page links it).
