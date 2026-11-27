@@ -1,0 +1,14 @@
+# expr-constmod-sign.test.bas: a defect of the port's rule P+ (#1216), not the
+# original's: blitz2 1.95 gives the expected output
+fixed = 1228
+exclude = ["compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=printed"]
+output = "== \"299\n299\n398\n69999\n40099\n39999\n2\n\""
+
+[asserts."case=assigned"]
+output = "== \"if true\nif true\nlt false\nlt false\n4463\n9999\n69999\n\""

@@ -870,6 +870,30 @@ TEST_CASE("exprmatrix model: a whole-number operation right of a fraction in a c
     CHECK(expr("0.5+6 MOD 4", "").value(EM_DQ, EM_RULES_ORIG) == "00020000");
 }
 
+TEST_CASE("exprmatrix model: a whole Mod of constants by today's sign rule (#1228)", "[exprmatrix][cand][decided]")
+{
+    // the value the code computes (the divisor added to a negative
+    // remainder), and the constant typed by it: 39999 a Long, beyond a Word
+    // and a Quick (blitz2 1.95 and the port on the emulator, test
+    // expr-constmod-sign)
+    CHECK(expr("-6 MOD 4", "").value(EM_PRINT, DEC) == "2");
+    CHECK(expr("-6 MOD 4", "").value(EM_DL, DEC) == "2");
+    CHECK(expr("w+(-1 MOD 40000)", "w.w=30000").value(EM_PRINT, DEC) == "69999");
+    CHECK(expr("(-1 MOD 40000)+b", "b.b=100").value(EM_PRINT, DEC) == "40099");
+    CHECK(expr("q+(-1 MOD 40000)", "q=0.5").value(EM_PRINT, DEC) == "39999");
+    CHECK(expr("w+(-1 MOD 40000)", "w.w=30000").value(EM_DL, DEC) == "69999");
+    CHECK(expr("w+(-1 MOD 40000)", "w.w=30000").value(EM_DW, DEC) == "4463");
+    CHECK(expr("b+(-1 MOD 200)", "b.b=100").value(EM_PRINT, DEC) == "299");
+    CHECK(expr("c*(-1 MOD 200)", "c.b=2").value(EM_PRINT, DEC) == "398");
+    // a comparison with the constant Mod: 4<1.5 is false
+    CHECK(expr("-3 MOD 7<q", "q=1.5").value(EM_PRINT, DEC) == "0");
+    CHECK(expr("-3 MOD 7<q", "q=1.5").value(EM_IF, DEC) == "F");
+    CHECK(expr("-3 MOD 7<1.5", "").value(EM_IF, DEC) == "F");
+    // the original's rules alike
+    CHECK(expr("w+(-1 MOD 40000)", "w.w=30000").value(EM_PRINT, EM_RULES_ORIG) == "69999");
+    CHECK(expr("(-1 MOD 40000)+b", "b.b=100").value(EM_PRINT, EM_RULES_ORIG) == "40099");
+}
+
 TEST_CASE("exprmatrix model: P+ on the conflicts of the analysis", "[exprmatrix][cand][decided]")
 {
     // 1-4: a / under a wanted Long whole at once (F3), the top-level / of

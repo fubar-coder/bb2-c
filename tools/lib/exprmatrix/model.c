@@ -2328,8 +2328,7 @@ static int quickrange(struct rat a)
    of type left and its right one of the whole type right below it, is
    computed in left: +, -, *, / or Mod with a Float on the left, or a
    Quick and a Byte or Word (a Mod's Word), or a Quick and a Long where the
-   right operand and the result are in the Quick range (the values as the
-   code folds them: modx 2, a whole Mod by the sign rule); not a / or Mod by
+   right operand and the result are in the Quick range; not a / or Mod by
    0, which stays as before */
 static int constraise(const struct em_tnode *n, int left, int right)
 {
@@ -2337,11 +2336,11 @@ static int constraise(const struct em_tnode *n, int left, int right)
                               || n->op == EM_MOD)
         || !right || right >= left)
         return 0;
-    if ((n->op == EM_DIV || n->op == EM_MOD) && !rat_sign(const_ideal(n->r, 2)))
+    if ((n->op == EM_DIV || n->op == EM_MOD) && !rat_sign(const_ideal(n->r, 1)))
         return 0;
     if (left == TF || (left == TQ && right <= TW))
         return 1;
-    return left == TQ && right == TL && quickrange(const_ideal(n->r, 2)) && quickrange(const_ideal(n, 2));
+    return left == TQ && right == TL && quickrange(const_ideal(n->r, 1)) && quickrange(const_ideal(n, 1));
 }
 
 /* the node n with the type so far *T (eval5 over the tree: the left
@@ -2690,9 +2689,12 @@ static int consttarget(int cand, struct rat a, int W, int pt)
 /* a subtree of constants: folded by today's rules under the type it
    takes (exprtree's fold), its value a constant of that type */
 /* the exact value of a subtree of constants (a whole-number operator on
-   the whole parts; a division by zero: 0); a comparison -1 whatever it
-   compares, or with cmp (EM_R_PBITK: "Auch nach Regel falten", "expr-tree-5
-   group 3: three readings of the four rule points") its value, -1 or 0 */
+   the whole parts; a division by zero: 0); a Mod by today's sign rule, as
+   the code computes it (the divisor added to a negative remainder: -6 Mod 4
+   is 2), with modx (EM_R_1223) exact where an operand has a fraction; a
+   comparison -1 whatever it compares, or with cmp (EM_R_PBITK: "Auch nach
+   Regel falten", "expr-tree-5 group 3: three readings of the four rule
+   points") its value, -1 or 0 */
 static struct rat const_ideal2(const struct em_tnode *n, int cmp, int modx)
 {
     struct rat a, b;
@@ -2735,9 +2737,10 @@ static struct rat const_ideal2(const struct em_tnode *n, int cmp, int modx)
 
                 return rat_sign(v) < 0 ? rat_op(v, b, '+') : v;
             }
-            if (modx == 2 && y && x % y < 0)
-                return rat_int(x % y + y);  /* EM_R_1227: today's sign rule, as the code */
-            return y ? rat_int(x % y) : rat_int(0);
+            if (!y)
+                return rat_int(0);
+            /* today's sign rule, as the code (domodword, domodlong; #1228) */
+            return rat_int(x % y < 0 ? x % y + y : x % y);
         case EM_LSL: case EM_ASL: return rat_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
         case EM_LSR: case EM_ASR: return rat_int(y >= 0 && y < 32 ? x >> y : 0);
         default: return rat_int(-1);    /* a comparison: true or false, whole */

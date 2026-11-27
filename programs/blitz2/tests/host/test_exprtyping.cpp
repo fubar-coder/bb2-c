@@ -626,6 +626,15 @@ const chain CHAINS[] = {
     { "0.5+(100000+1)-100000", "" },
     { "0.5 MOD ((-6 MOD 4)-2)", "" },
     { "0.5/((6 MOD 4)-2)", "" },
+    // a whole Mod of constants by today's sign rule, the constant's type by
+    // that value (#1228)
+    { "w+(-1 MOD 40000)", "w.w=30000" },
+    { "(-1 MOD 40000)+b", "b.b=100" },
+    { "q+(-1 MOD 40000)", "q=0.5" },
+    { "b+(-1 MOD 200)", "b.b=100" },
+    { "c*(-1 MOD 200)", "c.b=2" },
+    { "-6 MOD 4", "" },
+    { "6 MOD -4", "" },
     // Float beside a Quick, ^
     { "q*f+l", "q=1.5 f.f=2 l.l=3" },
     { "(q+l)*f", "q=1.5 f.f=2 l.l=3" },

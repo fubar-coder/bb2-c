@@ -234,10 +234,10 @@ static int folded(const struct exprtyping_node *n)
 }
 
 /* the exact value of a constant subtree (a whole-number operator on the
-   whole parts; a division by 0: 0); signmod: a whole Mod by today's sign
-   rule (the divisor added to a negative remainder), the value the code
-   folds, else as C's % */
-static struct rq const_value2(const struct exprtyping_node *n, int signmod)
+   whole parts; a division by 0: 0); a Mod by today's sign rule, the
+   value the code computes (the divisor added to a negative remainder:
+   -6 Mod 4 is 2) */
+static struct rq const_value(const struct exprtyping_node *n)
 {
     struct rq a, b;
     int64_t x, y;
@@ -245,9 +245,9 @@ static struct rq const_value2(const struct exprtyping_node *n, int signmod)
     if (n->kind == ETN_CONST)
         return rq_make(n->num, n->den, 1);
     if (n->kind == ETN_NEG)
-        return rq_op(rq_int(0), const_value2(n->l, signmod), '-');
-    a = const_value2(n->l, signmod);
-    b = const_value2(n->r, signmod);
+        return rq_op(rq_int(0), const_value(n->l), '-');
+    a = const_value(n->l);
+    b = const_value(n->r);
     if (exprtype_iscompare(n->op)) {
         /* a comparison of constants evaluated ("expr-tree-5 group 3: three
            readings of the four rule points": "Auch nach Regel falten") */
@@ -297,20 +297,16 @@ static struct rq const_value2(const struct exprtyping_node *n, int signmod)
             t = rq_op(a, rq_op(b, rq_int(t.n / t.d), '*'), '-');
             return t.ok && t.n < 0 ? rq_op(t, b, '+') : t;
         }
-        if (signmod && y && x % y < 0)
-            return rq_int(x % y + y);   /* #1227: today's sign rule, as the code */
-        return y ? rq_int(x % y) : rq_int(0);
+        if (!y)
+            return rq_int(0);
+        /* #1228: today's sign rule (domodword, domodlong), not C's % */
+        return rq_int(x % y < 0 ? x % y + y : x % y);
     case ETO_LSL:
     case ETO_ASL: return rq_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
     case ETO_LSR:
     case ETO_ASR: return rq_int(y >= 0 && y < 32 ? x >> y : 0);
     default: return rq_int(-1);         /* no other operator */
     }
-}
-
-static struct rq const_value(const struct exprtyping_node *n)
-{
-    return const_value2(n, 0);
 }
 
 int exprtyping_constvalue(const struct exprtyping_node *n, int64_t *num, int64_t *den)
@@ -440,18 +436,17 @@ static int const_wholesub(const struct exprtyping_node *n)
    +, -, *, / or Mod with a Float on the left, or a Quick and a Byte or
    Word (a Mod's Word), or a Quick and a Long where the right operand and
    the result are in the Quick range ((6 Mod 4)*2, 40000-39999); not a /
-   or Mod by 0, which stays as before (the values as the code folds
-   them, a whole Mod by today's sign rule) */
+   or Mod by 0, which stays as before */
 static int const_raise(const struct exprtyping_node *n, unsigned lt, unsigned rt)
 {
     if (!is_arith(n->op) || !rt || rt >= lt)
         return 0;
-    if ((n->op == ETO_DIV || n->op == ETO_MOD) && !const_value2(n->r, 1).n)
+    if ((n->op == ETO_DIV || n->op == ETO_MOD) && !const_value(n->r).n)
         return 0;
     if (lt == ET_FLOAT || (lt == ET_QUICK && rt <= ET_WORD))
         return 1;
-    return lt == ET_QUICK && rt == ET_LONG && rq_fits(const_value2(n->r, 1), ET_QUICK)
-           && rq_fits(const_value2(n, 1), ET_QUICK);
+    return lt == ET_QUICK && rt == ET_LONG && rq_fits(const_value(n->r), ET_QUICK)
+           && rq_fits(const_value(n), ET_QUICK);
 }
 
 /* a constant subtree typed as today's flow types it under the type so

@@ -169,6 +169,11 @@ found while the expression is read, as in the original):
   formats, and makes no Float of the expression around it;
 * `^` takes both operands as Floats of their own values;
 * a constant subtree is folded by the same rule (`1.5 AND 3` is 1); a
+  whole `Mod` in it has the value the code computes, the divisor added
+  to a negative remainder, and a constant of that value takes the type
+  of its magnitude (#1228: `-1 Mod 40000` is 39999, a Long, so
+  `NPrint w+(-1 Mod 40000)` is 69999 for `w=30000` and
+  `NPrint q+(-1 Mod 40000)` 39999 for `q=0.5`, as in the original); a
   whole-number result on the right of a fraction is taken up to the
   left operand's Quick or Float (#1227: `0.5+6 Mod 4` is 2.5 under a
   Quick, a Float and Print, as `0.5+w Mod 4` with `w=6`; `-1.5*6.0 Mod
