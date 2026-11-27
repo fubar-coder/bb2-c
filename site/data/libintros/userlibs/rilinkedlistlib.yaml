@@ -41,6 +41,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rilinkedlistlib]({{< relref "/docs/compared-with-original/libraries/userlibs/rilinkedlistlib#rilinkedlistlib-fixes" >}}).
+  [Fixes in rilinkedlistlib](/docs/compared-with-original/libraries/userlibs/rilinkedlistlib/#rilinkedlistlib-fixes).
 
   *Based on the RI LinkList Library guide by Steven Matty.*

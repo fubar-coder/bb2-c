@@ -44,4 +44,4 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in rilesdebuglib]({{< relref "/docs/compared-with-original/libraries/userlibs/rilesdebuglib#rilesdebuglib-fixes" >}}).
+  [Fixes in rilesdebuglib](/docs/compared-with-original/libraries/userlibs/rilesdebuglib/#rilesdebuglib-fixes).

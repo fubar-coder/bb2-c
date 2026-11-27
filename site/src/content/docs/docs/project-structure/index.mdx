@@ -1,0 +1,87 @@
+---
+title: Project structure
+description: The parts of the BB2 C port's repository, how the build fits them
+  together, the tests, and the original material the project uses.
+sidebar:
+  order: 11
+prev:
+  link: /docs/blitz2-internals/compiler-source/
+  label: Inside the compiler source
+next:
+  link: /docs/project-structure/repository/
+  label: Finding your way in the repository
+---
+
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+This chapter is the map of the repository: what its parts are, how one
+build makes both the Amiga programs and the tools that check them, how
+the tests compare the port with the original, and which original
+material the project uses and why most of it is not in the repository.
+
+## One build, two compilers
+
+The repository holds two kinds of programs, and one CMake build makes
+both:
+
+```mermaid
+flowchart TB
+  S["Sources of compiler,<br/>editor and libraries"] -->|cross compiler| B["blitz2 directory"]
+  H["Sources of the tools"] -->|native compiler| T["Host tools"]
+  T -->|check each result| B
+  O["Original material"] -->|recorded once| R["Expected data"]
+  R -->|tests compare| B
+```
+
+* **The Amiga side** is built with the cross compiler for 68000 AmigaOS:
+  the compiler, the editor, the libraries, and some small Amiga programs
+  the tests use.
+* **The host side** is built with the normal compiler of your machine: the
+  tools that join, read and check library files and executables, the
+  emulator runner, and the host tests. The Amiga build needs these tools,
+  so it builds the host side first, as a project of its own inside its
+  build directory.
+
+## The original material
+
+The project relies on original material in three ways:
+
+* **The sources of Blitz Basic 2 and TED** are in the repository,
+  unchanged: the compiler's source of version 1.95 and the editor's source
+  of TED 1.1, from the archive of the original sources on Aminet. Acid
+  Software released them under the GNU licence; that is where the GPL of
+  the port comes from.
+* **The Blitz Basic 2.1 CD and the rest of the Aminet archive** are not in
+  the repository, because the licence of much of their content, above all
+  third-party contributions, is unclear. One command downloads them for
+  the tests, checks them by their checksums and unpacks them:
+
+  ```
+  cmake -P cmake/fetch-originals.cmake
+  ```
+
+  The build of the port does not need them. The tests compare the port
+  with expected data recorded from these originals, so only these need
+  them:
+
+  * the runs that compare with the originals themselves;
+  * the recording of expected data;
+  * a few tests;
+  * some optional build targets.
+* **Some files of AmiBlitz3** (Apache licence) are downloaded the same way,
+  for the tests of AB3 mode.
+
+What each downloaded part is, where it comes from and what is known about
+its licence is listed in the repository's
+[description of the originals](https://github.com/fubar-coder/bb2-c/blob/main/archive/README.md).
+
+<CardGrid>
+  <LinkCard title="Finding your way in the repository" href="/docs/project-structure/repository/" description="The directories and what you find in them." />
+  <LinkCard title="Tests" href="/docs/project-structure/tests/" description="The test runs, what they compare, and how to set up the emulator tests." />
+  <LinkCard title="Tests that judge themselves" href="/docs/project-structure/self-judging-tests/" description="Writing a Blitz Basic test that checks its own result, and every setting of its configuration files." />
+  <LinkCard title="Running a single test" href="/docs/project-structure/running-tests/" description="One test or one case, directly with the test runner or with CTest: names, labels, the verdict and the files of a run." />
+  <LinkCard title="The test library" href="/docs/project-structure/test-library/" description="testlib, user library 81, and every macro a test that judges itself checks with, with examples and the known limits." />
+  <LinkCard title="Reading library test results" href="/docs/project-structure/library-test-cases/" description="What a line of the library tests' expected data or a failure message says." />
+  <LinkCard title="What the build checks" href="/docs/project-structure/build-checks/" description="The checks a result must pass before it counts as built." />
+  <LinkCard title="Building the documentation" href="/docs/project-structure/build-docs/" description="The website, its API reference and the command reference, locally and in the Pages workflow." />
+</CardGrid>

@@ -14,4 +14,4 @@ intro: |
   ```
 
   The fixed bug of the library is described in
-  [Fixes in riarrayslib]({{< relref "/docs/compared-with-original/libraries/userlibs/riarrayslib#riarrayslib-fixes" >}}).
+  [Fixes in riarrayslib](/docs/compared-with-original/libraries/userlibs/riarrayslib/#riarrayslib-fixes).

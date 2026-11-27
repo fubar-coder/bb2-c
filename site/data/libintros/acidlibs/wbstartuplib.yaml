@@ -14,4 +14,4 @@ intro: |
   and `ParPath$`, read what this library collected.
 
   What brings this library into a program, and when its routines run, is
-  explained in [Libraries in a compiled program]({{< relref "/docs/libraries/in-a-program" >}}).
+  explained in [Libraries in a compiled program](/docs/libraries/in-a-program/).

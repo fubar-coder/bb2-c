@@ -11,7 +11,7 @@ intro: |
   `EraseMode`, `InvMode` and `SolidMode` give the usual modes, for example
   `BlitMode EraseMode`: with the cookie mode, the shape's pixels of colour
   0 leave the background visible. This needs the shape's cookie
-  ([shapeslib]({{< relref "/docs/libraries/commands/shapeslib" >}})).
+  ([shapeslib](/docs/libraries/commands/shapeslib/)).
 
   In Amiga mode the commands take the blitter from the system and give it
   back after each blit; in Blitz mode they use it directly. With runtime

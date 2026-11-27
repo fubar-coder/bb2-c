@@ -1,0 +1,55 @@
+---
+title: Documentation
+---
+
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+The BB2 C port is a translation of Blitz Basic 2 into C: the compiler, the editor and
+the libraries that provide the commands. The chapters below explain how to
+build and use it, how it works inside, and where it differs from the
+original. They are in reading order: the first chapters are for everyone who
+wants to use the port, the last ones for people who write libraries or work
+on the port itself.
+
+## Where to start
+
+* **You wrote Blitz Basic 2 programs and want to again.** Build the port,
+  set up the emulator and write your first program
+  ([Building the BB2 C port](/docs/introduction/building/),
+  [Running it in an emulator](/docs/introduction/emulator/),
+  [Your first program](/docs/introduction/first-program/)),
+  then read [The editor](/docs/editor/),
+  [How blitz2 works](/docs/how-blitz2-works/),
+  [The language](/docs/language/) for looking up a
+  statement or an operator,
+  and [Differences from the original](/docs/compared-with-original/).
+* **You want to work on the port.** After the Introduction, read
+  [Project structure](/docs/project-structure/) and its
+  [Tests](/docs/project-structure/tests/), then
+  [How blitz2 works](/docs/how-blitz2-works/) and
+  [Inside the compiler source](/docs/blitz2-internals/compiler-source/),
+  and [Comparing with the original yourself](/docs/compared-with-original/comparing/).
+* **You want to write a library.** After the Introduction and How blitz2
+  works, follow the chapter
+  [blitz2 internals](/docs/blitz2-internals/) up to
+  [Writing your own userlib](/docs/blitz2-internals/own-userlib/)
+  and [Library variants](/docs/blitz2-internals/variants/).
+* **You use AmiBlitz3.** After the Introduction, read
+  [AB3 mode](/docs/ab3-mode/) and
+  [AB3 compared with blitz2](/docs/ab3-compared/).
+
+## The chapters
+
+<CardGrid>
+  <LinkCard title="Introduction" href="/docs/introduction/" description="What the BB2 C port is, how to build it and how to try it in an emulator." />
+  <LinkCard title="The editor" href="/docs/editor/" description="TED, the editor of Blitz Basic 2: typing, blocks, search and replace, files, options, keys and menus." />
+  <LinkCard title="How blitz2 works" href="/docs/how-blitz2-works/" description="A program on its way from source text to an executable." />
+  <LinkCard title="The language" href="/docs/language/" description="A reference of the language: types, expressions, program flow, procedures, directives and macros." />
+  <LinkCard title="Libraries" href="/docs/libraries/" description="What the libraries provide, and how to look up a command." />
+  <LinkCard title="Differences from the original" href="/docs/compared-with-original/" description="Where the port differs from Blitz Basic 2: the fixed bugs, the bugs not fixed yet and the extensions." />
+  <LinkCard title="AB3 mode" href="/docs/ab3-mode/" description="Compiling AmiBlitz3 sources." />
+  <LinkCard title="AB3 compared with blitz2" href="/docs/ab3-compared/" description="What the AB3 mode changes." />
+  <LinkCard title="How-to" href="/docs/how-to/" description="Recipes: library variants and RWE userlibs, AmiBlitz3 sources from the Shell, readable sources, running the tests." />
+  <LinkCard title="blitz2 internals" href="/docs/blitz2-internals/" description="Writing libraries in C and reading the compiler's source." />
+  <LinkCard title="Project structure" href="/docs/project-structure/" description="The parts of the project, the tests and the checks of the build." />
+</CardGrid>

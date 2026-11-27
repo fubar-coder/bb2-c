@@ -41,6 +41,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ripacklib]({{< relref "/docs/compared-with-original/libraries/userlibs/ripacklib#ripacklib-fixes" >}}).
+  [Fixes in ripacklib](/docs/compared-with-original/libraries/userlibs/ripacklib/#ripacklib-fixes).
 
   *Based on the RI Pack Lib guide by Reflective Images.*

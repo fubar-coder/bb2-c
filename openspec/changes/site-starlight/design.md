@@ -940,3 +940,19 @@ build with the fixes).
   gave the same layout), so the room comes from the label's background,
   not from longer edges. The Hugo site keeps its look until 9.2 (the CSS
   is the Starlight build's).
+
+### The cut-over (9.1-9.4, 2026-11-27)
+
+- **The converted tree (9.1).** The last converter run wrote the 193
+  pages (and the page bundles' images) as they are on main; they are
+  committed, and `npm run build` no longer runs the converter (the pages
+  in `src/content/docs/` are the source from then on; the converter and
+  `content/` go with 9.2). The data files: 48 relrefs in 40 files of
+  `data/libintros` and `data/cmddesc`, all absolute, replaced in the text
+  by the converter's `refPath`, so the YAML keeps its form; for each file
+  the parsed result equals what the resolver of `src/lib/data.mjs` made of
+  the old file, and the resolver is gone. The leftover-syntax check runs
+  in every build (`BB2_HUGO_SYNTAX_CHECK` is gone; `site_hugo_syntax`
+  keeps its name and fixture). The built site equals the build of the
+  parent commit file for file, but for Pagefind's index files (their
+  names are hashes that differ from build to build).

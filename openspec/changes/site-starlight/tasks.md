@@ -210,7 +210,7 @@ Work data (reports, counts, screenshots) goes to
   filters, two library fix pages, two reference pages, one AmigaOS page,
   a page with steps and filetree, dark mode, narrow width). Verify: the
   user's answer recorded by the coordinator; findings fixed before 9.1.
-- [ ] 9.1 The converted tree committed: the final converter run over the
+- [x] 9.1 The converted tree committed: the final converter run over the
   pages as they are then (with the site edits of other changes merged
   by then: no freeze, Q5), the
   data files converted to site paths, the leftover-syntax check on, both

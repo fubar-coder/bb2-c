@@ -34,4 +34,4 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ribbmaplib]({{< relref "/docs/compared-with-original/libraries/userlibs/ribbmaplib#ribbmaplib-fixes" >}}).
+  [Fixes in ribbmaplib](/docs/compared-with-original/libraries/userlibs/ribbmaplib/#ribbmaplib-fixes).

@@ -5,7 +5,7 @@ intro: |
   Protracker 2.3A routine by Peter "Crayon" Hanning of Mushroom Studios,
   which was released as public domain, with commands by Reflective Images
   around it. It is not the module player of Blitz Basic 2 itself
-  ([trackerlib]({{< relref "/docs/libraries/commands/trackerlib" >}})):
+  ([trackerlib](/docs/libraries/commands/trackerlib/)):
   the two have no commands in common, and this one has no module objects.
 
   The module is a Protracker file that the program has in chip memory,
@@ -31,5 +31,5 @@ intro: |
   pauses and continues the module, and `Tracker` switches the player off
   and on. The known faults of the play routine and of these commands are
   fixed
-  ([Fixes in the Protracker play routine]({{< relref "/docs/compared-with-original/libraries/userlibs/ciatrklib#protracker-play-routine" >}}),
-  [Other fixes in ritrackerlib]({{< relref "/docs/compared-with-original/libraries/userlibs/ritrackerlib#ritrackerlib-fixes" >}})).
+  ([Fixes in the Protracker play routine](/docs/compared-with-original/libraries/userlibs/ciatrklib/#protracker-play-routine),
+  [Other fixes in ritrackerlib](/docs/compared-with-original/libraries/userlibs/ritrackerlib/#ritrackerlib-fixes)).

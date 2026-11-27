@@ -1,0 +1,28 @@
+---
+title: BB2 C port
+template: splash
+hero:
+  title: Blitz Basic 2, rebuilt in C
+  tagline: The Blitz Basic 2 compiler, its editor and its libraries, translated to
+    C and built for the Amiga with a modern toolchain
+  actions:
+    - text: Get started
+      link: /docs/introduction/
+      variant: primary
+---
+
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+<CardGrid>
+  <LinkCard title="Building the BB2 C port" href="/docs/introduction/building/" description="You want to try it: build the compiler, the editor and the libraries from the sources on Linux." />
+  <LinkCard title="Your first program" href="/docs/introduction/first-program/" description="You wrote Blitz Basic 2 programs and want to again: type, run and compile a program in the emulator." />
+  <LinkCard title="Writing your own userlib" href="/docs/blitz2-internals/own-userlib/" description="You want to add commands: write a Blitz library in C, build it and call it from a program." />
+  <LinkCard title="AB3 mode" href="/docs/ab3-mode/" description="You use AmiBlitz3: compile its sources from the Shell with AmiBlitz3's own libraries." />
+</CardGrid>
+
+## Advanced topics
+
+<CardGrid>
+  <LinkCard title="How blitz2 works" href="/docs/how-blitz2-works/" description="A program on its way through the compiler, from the line you type to the executable." />
+  <LinkCard title="Differences from the original" href="/docs/compared-with-original/" description="The port behaves like Blitz Basic 2, with the original's bugs fixed one by one. Every difference is listed here." />
+</CardGrid>

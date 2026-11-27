@@ -13,8 +13,8 @@
 //
 // The output is dist/; the build must finish without errors or warnings
 // (ctest site_starlight). Astro's telemetry is off in the package scripts.
-// The sidebar is built from the converted pages (src/lib/sidebar.mjs), so
-// the converter (scripts/convert-hugo.mjs) runs before Astro reads this.
+// The sidebar is built from the pages in src/content/docs/
+// (src/lib/sidebar.mjs).
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";

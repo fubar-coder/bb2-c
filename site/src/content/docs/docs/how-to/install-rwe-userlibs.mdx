@@ -1,0 +1,173 @@
+---
+title: Install the RWE userlibs
+description: Where blitz2 looks for userlibs, which RWE userlibs to copy into a
+  blitz2 directory with which acidlibs and deflibs, the two libraries with a
+  variant of their own, and how to load them into a running blitz2.
+sidebar:
+  order: 2
+---
+
+import { FileTree, Steps } from "@astrojs/starlight/components";
+
+The BB2 C port builds the libraries that Red When Excited released in
+1999, most of them by Reflective Images, as *userlibs*: library files
+that blitz2 loads in addition to its `acidlibs` and `deflibs`
+([The RWE userlibs](/docs/blitz2-internals/rwe-userlibs/)).
+This page shows where the files are after the build, where blitz2 looks
+for them, and which other files they need.
+
+## Where blitz2 looks for userlibs
+
+When it starts, blitz2 loads the library files of every directory in
+`blitz2:userlibs/`. The name of each directory is free; it only groups
+the files:
+
+<FileTree>
+
+- blitz2:
+  - blitz2
+  - ted
+  - acidlibs (of the variant rwe-1999)
+  - deflibs (of the variant rwe-1999)
+  - userlibs
+    - rwe
+      - rimisclib.obj
+      - rishapeslib.obj
+      - ...
+
+</FileTree>
+
+Three rules follow from the way blitz2 reads this directory:
+
+* A file directly in `blitz2:userlibs/`, outside a directory, is not
+  loaded. Neither is a file in a directory below `userlibs/rwe/`: blitz2
+  looks one level deep.
+* Icon files (names ending in `.info`) are left out, so the directories
+  can have icons.
+* A directory whose name has 32 characters or more is skipped.
+
+`acidlibs` and `deflibs` are loaded first, the userlibs after them. If
+two libraries have the same number, blitz2 and the editor use the one
+loaded first, and the commands of the other are unknown.
+
+## Which files
+
+The build puts the RWE userlibs into the directories of their variants:
+
+| Directory | What it holds |
+|---|---|
+| `build/amiga/variants/rwe-1999/` | `acidlibs`, `deflibs` and 51 userlibs in `userlibs/rwe/` |
+| `build/amiga/variants/rwe-1999-eval/` | `acidlibs`, `deflibs` and `userlibs/rwe/rievallib.obj`, the expression evaluator |
+| `build/amiga/variants/rwe-1999-ahi/` | `acidlibs`, `deflibs` and `userlibs/rwe/risoundlib2.obj`, the newer sound library |
+
+The RWE userlibs have numbers that the default libraries do not know, so
+they need the `acidlibs` and `deflibs` of their variant, not those of
+the build's `blitz2` directory. How to make such a `blitz2` directory is
+on [Build and use a library variant](/docs/how-to/library-variant/).
+
+<Steps>
+
+1. ### Take the variant's acidlibs and deflibs
+
+   For a `blitz2` directory `~/bb2-rwe/blitz2`, made as on
+   [Build and use a library variant](/docs/how-to/library-variant/):
+
+   ```
+   d=~/bb2-rwe/blitz2
+   v=build/amiga/variants/rwe-1999
+   cp $v/acidlibs $v/deflibs $d/
+   ```
+
+1. ### Copy the userlibs
+
+   Copy all of them, or only those your sources use, into one directory
+   below `userlibs`:
+
+   ```
+   mkdir -p $d/userlibs/rwe
+   cp $v/userlibs/rwe/*.obj $d/userlibs/rwe/
+   ```
+
+   Every library loaded costs memory, which matters on a small Amiga. The
+   command reference shows which library holds a command
+   ([RWE userlibs](/docs/libraries/userlibs/)); its page
+   name is the file name without `.obj`.
+
+1. ### Start blitz2
+
+   Start blitz2 with `blitz2:` assigned to that directory. If blitz2 is
+   already running and only the userlibs changed, choose RELOAD ALL LIBS in
+   the COMPILER menu instead: it loads the userlibs again. A line typed
+   before the reload holds a new command's name as plain text; type it
+   again, and the editor turns the name into the command.
+
+</Steps>
+
+Each command's short help text is in its library, and the editor's HELP
+key shows it.
+
+## The two libraries with a variant of their own
+
+**rievallib**, the expression evaluator, has a number that the default
+libraries give to one of their own. The variant rwe-1999-eval moves that
+library elsewhere. Use the `acidlibs` and `deflibs` of rwe-1999-eval, the
+userlibs of rwe-1999, and add rievallib. In a `blitz2` directory of its
+own:
+
+```
+cmake --install build/amiga --prefix ~/bb2-eval
+d=~/bb2-eval/blitz2
+e=build/amiga/variants/rwe-1999-eval
+cp $e/acidlibs $e/deflibs $d/
+mkdir -p $d/userlibs/rwe
+cp build/amiga/variants/rwe-1999/userlibs/rwe/*.obj $d/userlibs/rwe/
+cp $e/userlibs/rwe/rievallib.obj $d/userlibs/rwe/
+```
+
+With the `acidlibs` of rwe-1999 instead, the library of the same number
+there is loaded first, and the compiler knows none of rievallib's
+commands: a line such as `ConvToPostFix e$,&b$` is a `Syntax Error`.
+
+**risoundlib2**, the sound library that plays through AHI, is the
+successor of risoundlib and has its number, so only one of the two can be
+loaded. Use the `acidlibs` and `deflibs` of rwe-1999-ahi and the userlibs
+of rwe-1999, without `risoundlib.obj`, and add
+`build/amiga/variants/rwe-1999-ahi/userlibs/rwe/risoundlib2.obj`.
+
+:::caution
+The RWE variants have no literal characters: RIDosLib has the number
+that the default libraries give to literallib, the library behind the
+editor's literal characters
+([Tokenised sources](/docs/how-blitz2-works/tokens/)).
+For the same reason, do not put RIDosLib into the same `blitz2:userlibs/`
+as the userlib `literallib.obj` when you use the original Blitz Basic 2.
+:::
+
+## Check that it works
+
+A program with a command of an RWE userlib shows whether blitz2 found
+it. With the example of rievallib from the command reference, saved as a
+text file `eval.bb`:
+
+```
+e$="2+6*3"
+b$=String$(" ",80)
+ConvToPostFix e$,&b$
+v.l=PFEvaluate(Peek$(&b$))
+If PFErrorType=0
+  NPrint v
+Else
+  NPrint PFErrorText
+EndIf
+End
+```
+
+compiled and run in the Shell with the directory of rwe-1999-eval:
+
+```
+1> blitz2:blitz2-ab3 -s eval.bb -e RAM:eval
+1> RAM:eval
+20
+```
+
+*The example is based on the RI Eval Lib guide by Reflective Images.*

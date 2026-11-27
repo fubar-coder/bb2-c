@@ -4,7 +4,7 @@ intro: |
   `CludgeShapes` does for shapes: it takes an IFF 8SVX sample that the
   program already has in memory, for example loaded into a bank, and
   makes a sound object of it, the same object that `LoadSound` of
-  [audiolib]({{< relref "/docs/libraries/commands/audiolib" >}}) fills.
+  [audiolib](/docs/libraries/commands/audiolib/) fills.
   The sample is copied into chip memory, so the file in memory can be
   freed afterwards, and the sound is played with `Sound` as usual.
 
@@ -13,11 +13,11 @@ intro: |
   sample data among its first seven chunks (see the command's notes).
 
   Its successor, the second sound library
-  ([risoundlib2]({{< relref "/docs/libraries/userlibs/risoundlib2" >}})),
+  ([risoundlib2](/docs/libraries/userlibs/risoundlib2/)),
   has the same library number and the same `CludgeSound`, so only one of
   the two can be installed. This one belongs to the library variant
   rwe-1999; the variant rwe-1999-ahi has the second one instead
-  ([The RWE userlibs]({{< relref "/docs/blitz2-internals/rwe-userlibs" >}})).
+  ([The RWE userlibs](/docs/blitz2-internals/rwe-userlibs/)).
 
   ```blitzbasic
   LoadBank 0,"sound.8svx"

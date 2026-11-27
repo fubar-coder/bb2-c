@@ -1,6 +1,6 @@
-# The fixture of site_hugo_syntax: with the leftover-syntax check on
-# (BB2_HUGO_SYNTAX_CHECK=1), a relref of Hugo outside a code block fails
-# the build, naming this file.
+# The fixture of site_hugo_syntax: a relref of Hugo, the former
+# generator, outside a code block fails the build (the leftover-syntax
+# check), naming this file and the line.
 "Fixture":
   text: Does nothing.
   notes: |

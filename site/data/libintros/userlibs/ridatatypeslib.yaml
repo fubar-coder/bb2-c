@@ -40,6 +40,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in ridatatypeslib]({{< relref "/docs/compared-with-original/libraries/userlibs/ridatatypeslib#ridatatypeslib-fixes" >}}).
+  [Fixes in ridatatypeslib](/docs/compared-with-original/libraries/userlibs/ridatatypeslib/#ridatatypeslib-fixes).
 
   *Based on the RI DataTypes Lib guide by Red When Excited.*

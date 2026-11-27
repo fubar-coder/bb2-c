@@ -22,4 +22,4 @@ intro: |
   addresses.
 
   The fixed bugs of the library are listed in
-  [Fixes in popupwinlib]({{< relref "/docs/compared-with-original/libraries/userlibs/popupwinlib#popupwinlib-fixes" >}}).
+  [Fixes in popupwinlib](/docs/compared-with-original/libraries/userlibs/popupwinlib/#popupwinlib-fixes).

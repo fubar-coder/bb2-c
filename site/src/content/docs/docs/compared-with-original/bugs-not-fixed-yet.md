@@ -1,0 +1,103 @@
+---
+title: Bugs not fixed yet
+description: The known bugs of Blitz Basic 2 that the BB2 C port still shows,
+  where they are recorded, and the tests that check the correct behaviour.
+sidebar:
+  order: 9
+aliases:
+  - /docs/compared-with-original/kept-bugs/
+---
+
+Before this page you should know which bugs have been fixed ([Important
+Fixes & Breaking Changes](/docs/compared-with-original/important-fixes/)).
+
+If a program behaves strangely with the BB2 C port, the first question is
+whether it behaves the same way with the original. Often it does: the
+bugs of Blitz Basic 2 are fixed one at a time, area by area, and a bug
+that is not fixed yet shows in the port as it did in the original.
+
+## Where they are recorded
+
+Every known bug of the original has an issue on GitHub with the label
+[bug-orig](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig),
+which describes it and, where possible, names a small program that shows
+it. The open issues with that label are the bugs not fixed yet; a fixed
+one also gets the label
+[fixed-in-port](https://github.com/fubar-coder/bb2-c/issues?q=label%3Afixed-in-port)
+and is listed on the page of fixed bugs. In the source code, the place of
+a bug not fixed yet carries a comment that starts with `BUG(orig)` and
+names the issue.
+
+If you suspect a bug, search these issues first. If it is there and still
+open, the port behaves as the original did, and the issue tells you how
+to work around it.
+
+## Bugs that stay
+
+A few issues are closed without a fix:
+
+* Some issues have the label
+  [wontfix](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig+label%3Awontfix).
+  These bugs are real, but fixing them would add more complexity than the fix is worth.
+  They stay as they are in the original. Four examples:
+
+  * **PANIC in the stop requester:** for a program run from the editor,
+    PANIC removes the program without any cleanup, so its files stay open
+    and its memory and screens stay allocated
+    ([#24](https://github.com/fubar-coder/bb2-c/issues/24)).
+  * **The polygon commands of the 3D rendering library:** BitMapPoly,
+    ChunkyPoly and RenderPoly compute in 16 bit words. A polygon with an
+    edge of 4096 lines or more that is at least as wide as high, or with
+    points 32768 or more apart, is drawn with a vertical edge or not at
+    all. A range check on every call would cost speed, so clip such
+    polygons before the call
+    ([#1019](https://github.com/fubar-coder/bb2-c/issues/1019)).
+  * **The circular zones of rizonejoylib:** `Zone` and `ZoneTest` compute
+    the distance of a point from the centre of a circle in 16 bits, so a
+    point more than 32767 pixels away, far outside any screen, can be
+    found inside the circle. Computing it in 32 bits would slow down the
+    test that games run for every frame
+    ([#1153](https://github.com/fubar-coder/bb2-c/issues/1153)).
+  * **`SyncSerial` of rifastseriallib:** the command decides which of two
+    linked machines is the master. When both start at the same moment, each
+    takes the other's sync byte for its answer, and both become the
+    master. A fix would need a new handshake on both ends, so start one
+    machine first, or set the roles with `SetSerialMode`
+    ([#655](https://github.com/fubar-coder/bb2-c/issues/655)).
+* Some issues have the label
+  [not-a-bug](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-orig+label%3Anot-a-bug).
+  Their behaviour turned out to be intended, or harmless in practice.
+
+## Tests of the correct behaviour
+
+Many of these bugs have a test. A test checks the *correct* behaviour,
+taken from the documentation of the command or from the issue, not what
+the original does. Most tests run a program in an emulator with the
+port. The result is compared with two things: the expectation, and a
+recording of what the original compiler and libraries did with the same
+program. The recording was made once and is kept in the repository. So
+the tests themselves do not need the original; only a new recording
+does. Each test comes out as one of:
+
+| Result | Meaning |
+|---|---|
+| REPRODUCED | The port shows the bug as the original does: the normal state of a bug not fixed yet. The test fails. |
+| FIXED | The port behaves correctly. The test passes. |
+| DIFFERS | The port neither behaves correctly nor like the original: a mistake of the port. |
+| BROKEN | The original already behaves correctly: the test does not show a bug. |
+
+Because they fail as long as the bug is there, these tests are not part
+of the normal test runs; they have a run of their own. When a bug is
+fixed, its test becomes a *fixed test*. From then on it runs with the
+normal emulator tests, checks only the port against the expectation, and
+must come out FIXED
+([Tests](/docs/project-structure/tests/)).
+
+## Bugs of the port itself
+
+A mistake of the port, where the port behaves differently from the
+original without it being intended, is a different matter: it is always
+fixed. Such bugs have the label
+[bug-port](https://github.com/fubar-coder/bb2-c/issues?q=label%3Abug-port).
+A known one also gets a test that fails until the fix, and it runs
+together with the tests of the original's bugs.

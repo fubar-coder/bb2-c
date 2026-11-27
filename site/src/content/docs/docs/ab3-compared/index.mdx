@@ -1,0 +1,38 @@
+---
+title: AB3 compared with blitz2
+description: What changes when blitz2-ab3 compiles a source in AB3 mode, what is
+  not supported yet, and where it differs from AmiBlitz3 itself.
+sidebar:
+  order: 8
+prev:
+  link: /docs/ab3-mode/command-line/
+  label: Compiling from the command line
+next:
+  link: /docs/ab3-compared/language/
+  label: Language additions
+---
+
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+AmiBlitz3 grew out of Blitz Basic 2, so most of a Blitz Basic 2 program
+is also an AmiBlitz3 program. But over the years AmiBlitz3 added to the
+language, renumbered and extended the libraries, and changed some rules.
+This chapter describes what AB3 mode does differently from blitz2, so
+that you know what to expect when you compile an AmiBlitz3 source with
+blitz2-ab3.
+
+One rule holds throughout: all of this applies only in AB3 mode. A Blitz
+Basic 2 source, compiled by blitz2 or by blitz2-ab3 in BB2 mode, is
+compiled exactly as before, to the same executable.
+
+AB3 mode follows AmiBlitz3 v3.14.0. Where AmiBlitz3's own compiler has a
+bug, AB3 mode does what AmiBlitz3 obviously means, and the last page of
+this chapter lists those cases.
+
+<CardGrid>
+  <LinkCard title="Language additions" href="/docs/ab3-compared/language/" description="New syntax, line joining, escapes in strings, character literals and AmiBlitz3's procedures." />
+  <LinkCard title="Directives: OPTIMIZE, SYNTAX and runtime errors" href="/docs/ab3-compared/directives/" description="AmiBlitz3's compiler directives and what AB3 mode does with them." />
+  <LinkCard title="Libraries, tokens and includes" href="/docs/ab3-compared/libraries-and-includes/" description="AmiBlitz3's libraries and token list, and how includes are found." />
+  <LinkCard title="What AB3 mode does not support yet" href="/docs/ab3-compared/not-supported/" description="The AmiBlitz3 features that are missing, and how the compiler tells you." />
+  <LinkCard title="Where AB3 mode differs from AmiBlitz3" href="/docs/ab3-compared/differences-from-amiblitz3/" description="Cases where AmiBlitz3's own compiler gives another result, and why." />
+</CardGrid>

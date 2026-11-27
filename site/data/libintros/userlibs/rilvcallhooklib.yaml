@@ -37,4 +37,4 @@ intro: |
   two listviews that are drawn at the same time by different tasks.
 
   The fixed bugs of the library are listed in
-  [Fixes in rilvcallhooklib]({{< relref "/docs/compared-with-original/libraries/userlibs/rilvcallhooklib#rilvcallhooklib-fixes" >}}).
+  [Fixes in rilvcallhooklib](/docs/compared-with-original/libraries/userlibs/rilvcallhooklib/#rilvcallhooklib-fixes).

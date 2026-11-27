@@ -6,7 +6,7 @@
     "node": "26.13.1"
   },
   "scripts": {
-    "build": "node scripts/convert-hugo.mjs && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview --host 0.0.0.0 --port 4321"
   },
   "dependencies": {

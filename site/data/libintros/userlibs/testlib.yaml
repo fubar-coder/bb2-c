@@ -2,7 +2,7 @@ description: The test library of the port, user library 81 - the routines behind
 intro: |
   testlib is the port's test library: the user library with the number
   81, built as `variants/bb2-2.10/userlibs/testlib/testlib.obj`. A
-  [test that judges itself]({{< relref "/docs/project-structure/self-judging-tests" >}})
+  [test that judges itself](/docs/project-structure/self-judging-tests/)
   checks its results with it. It is part of the tests, not of the
   libraries a program is built with: an ordinary program does not need
   it.
@@ -13,7 +13,7 @@ intro: |
   The test runner loads the library, puts the macros in front of the
   source and adds the driver, the main program that calls `TLBegin` and
   then the blocks of the source.
-  [The test library]({{< relref "/docs/project-structure/test-library" >}})
+  [The test library](/docs/project-structure/test-library/)
   describes every macro and how to write a test with them.
 
   `K` is the number the runner gives each check, precondition,

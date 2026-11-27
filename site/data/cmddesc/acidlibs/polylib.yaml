@@ -20,7 +20,7 @@
   notes: |
     `RenderPoly` draws on the first bitmap, with the pattern of the
     second; Blitz Basic 2 took them the other way round
-    ([`RenderToBitmap` with a dither bitmap drew on the wrong bitmap]({{< relref "/docs/compared-with-original/libraries/commands/polylib#rendertobitmap-dither" >}})).
+    ([`RenderToBitmap` with a dither bitmap drew on the wrong bitmap](/docs/compared-with-original/libraries/commands/polylib/#rendertobitmap-dither)).
 "RenderToChunky":
   text: Makes `RenderPoly` draw as `ChunkyPoly` on the chunky area of the CopList given, or with a `split` of 1 on the second part of an area split by `CustomChunky`. The colour is then a number from 0 to 14 for a fixed set of colours.
   notes: |

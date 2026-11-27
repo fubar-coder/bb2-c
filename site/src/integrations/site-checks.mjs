@@ -7,12 +7,7 @@
 //   site's remark plugin, src/plugins/remark-bb2.mjs.)
 // * The leftover-syntax check, before the build: a shortcode of Hugo
 //   (`{{<`, `{{%`) outside a code block in a page (src/content/docs/) or a
-//   data file (data/) fails the build, naming the file and the line. Until
-//   the cut-over the data link with Hugo's relref, which src/lib/data.mjs
-//   resolves, so the check runs only with BB2_HUGO_SYNTAX_CHECK=1; the
-//   cut-over (task 9.1) converts the data and turns it on for good. The
-//   pages are converted from Hugo's at every build until then, and the
-//   converter fails on a shortcode it leaves.
+//   data file (data/) fails the build, naming the file and the line.
 // * The check of the overview of fixed bugs, after the build
 //   (src/lib/fix-overview.mjs; first, so that a row's broken anchor is
 //   named by its row, not as a broken link): its data against the pages of
@@ -113,7 +108,6 @@ export function siteChecks() {
               base = config.base.replace(/\/?$/, "/");
             },
             "astro:build:start"({ logger }) {
-              if (process.env.BB2_HUGO_SYNTAX_CHECK !== "1") return;
               const found = hugoSyntax(site);
               if (found.length) fail(outDir, "Hugo's shortcode syntax outside a code block", found, logger);
             },

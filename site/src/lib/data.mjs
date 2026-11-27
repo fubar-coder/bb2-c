@@ -8,12 +8,9 @@
 //   commands;
 // * data/fixoverview.yaml: the overview of fixed original bugs.
 //
-// The text fields of libintros and cmddesc are Markdown. Until the cut-over
-// (task 9.1) they link with Hugo's relref shortcode; the readers here
-// return them with every relref replaced by its site path ("/docs/a/b/#c",
-// without the base, which the site's remark plugin adds when the text is
-// rendered). At the cut-over the data files are converted to site paths
-// and the resolver goes.
+// The text fields of libintros and cmddesc are Markdown; they link with
+// site paths ("/docs/a/b/#c", without the base, which the site's remark
+// plugin adds when the text is rendered).
 //
 // The site directory: in the build, Vite bundles this module into the
 // page chunks, which do not keep its path, so the site's integration
@@ -25,7 +22,6 @@ import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
 import { outsideCode } from "./markdown.mjs";
-import { refPath } from "../../scripts/convert-hugo.mjs";
 
 /* global __BB2_SITE__ */
 export const SITE = typeof __BB2_SITE__ === "string" ? __BB2_SITE__ : fileURLToPath(new URL("../..", import.meta.url));
@@ -52,21 +48,6 @@ function readDir(dir, ext, parse) {
   return out;
 }
 
-/** Hugo's relrefs of a Markdown text (outside code blocks) as site paths */
-export function resolveRelrefs(md) {
-  return outsideCode(md, (t) => t.replace(/\{\{<\s*relref\s+"([^"]+)"\s*>\}\}/g, (_, r) => refPath(r, "docs/data.md")));
-}
-
-/** value with resolveRelrefs applied to every string in it */
-const resolveAll = (value) =>
-  typeof value === "string"
-    ? resolveRelrefs(value)
-    : Array.isArray(value)
-      ? value.map(resolveAll)
-      : value && typeof value === "object"
-        ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolveAll(v)]))
-        : value;
-
 /** data/fixoverview.yaml */
 export const fixoverview = () => cached("fixoverview", () => YAML.parse(readFileSync(join(DATA, "fixoverview.yaml"), "utf8")));
 
@@ -74,16 +55,16 @@ export const fixoverview = () => cached("fixoverview", () => YAML.parse(readFile
 export const libraries = () =>
   cached("libraries", () => Object.fromEntries(GROUPS.map((g) => [g, readDir(join(DATA, "libraries", g), ".json", JSON.parse)])));
 
-/** data/libintros/GROUP/NAME.yaml, relrefs resolved: {GROUP: {NAME: intro}} */
+/** data/libintros/GROUP/NAME.yaml: {GROUP: {NAME: intro}} */
 export const libintros = () =>
   cached("libintros", () =>
-    Object.fromEntries(GROUPS.map((g) => [g, readDir(join(DATA, "libintros", g), ".yaml", (s) => resolveAll(YAML.parse(s) ?? {}))])),
+    Object.fromEntries(GROUPS.map((g) => [g, readDir(join(DATA, "libintros", g), ".yaml", (s) => YAML.parse(s) ?? {})])),
   );
 
-/** data/cmddesc/GROUP/NAME.yaml, relrefs resolved: {GROUP: {NAME: {command: desc}}} */
+/** data/cmddesc/GROUP/NAME.yaml: {GROUP: {NAME: {command: desc}}} */
 export const cmddesc = () =>
   cached("cmddesc", () =>
-    Object.fromEntries(GROUPS.map((g) => [g, readDir(join(DATA, "cmddesc", g), ".yaml", (s) => resolveAll(YAML.parse(s) ?? {}))])),
+    Object.fromEntries(GROUPS.map((g) => [g, readDir(join(DATA, "cmddesc", g), ".yaml", (s) => YAML.parse(s) ?? {})])),
   );
 
 /** The levels of fixoverview.yaml by level ("1".."5") */
@@ -123,7 +104,7 @@ export function entryIds(entries) {
 export const REFDIR = { acidlibs: "/docs/libraries/commands/", userlibs: "/docs/libraries/userlibs/", deflibs: "/docs/libraries/amigaos/" };
 
 /**
- * The Markdown texts of libintros and cmddesc, relrefs resolved, each with
+ * The Markdown texts of libintros and cmddesc, each with
  * the data file, the place in it and the reference page that shows it (to
  * which a relative link is relative): [{file, where, page, text}]
  */

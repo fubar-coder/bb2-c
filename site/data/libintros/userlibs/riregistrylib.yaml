@@ -18,4 +18,4 @@ intro: |
   still held are released when the program ends.
 
   The fixed bugs of the library are listed in
-  [Fixes in riregistrylib]({{< relref "/docs/compared-with-original/libraries/userlibs/riregistrylib#riregistrylib-fixes" >}}).
+  [Fixes in riregistrylib](/docs/compared-with-original/libraries/userlibs/riregistrylib/#riregistrylib-fixes).

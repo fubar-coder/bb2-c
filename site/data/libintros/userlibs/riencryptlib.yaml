@@ -22,6 +22,6 @@ intro: |
   ```
 
   The fixed bugs of the library are listed in
-  [Fixes in riencryptlib]({{< relref "/docs/compared-with-original/libraries/userlibs/riencryptlib#riencryptlib-fixes" >}}).
+  [Fixes in riencryptlib](/docs/compared-with-original/libraries/userlibs/riencryptlib/#riencryptlib-fixes).
 
   *Based on the RI Encrypt Lib guide by Reflective Images.*
