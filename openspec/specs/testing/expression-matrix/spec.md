@@ -95,11 +95,16 @@ The test sources, their configuration files and their data sources SHALL be gene
 - **THEN** the host test fails naming the file
 
 ### Requirement: AmiBlitz3 checks the agreement cells
-The sources of the agreement and fixed cells SHALL also be cases of `tests/ab3` compiled by AmiBlitz3 v3.14.0's own compiler in the preset `oracle`, judged against AmiBlitz3's recorded output; a cell where AmiBlitz3 differs from the port SHALL be named in `docs/ab3/variant.md`.
+The sources of the agreement and fixed cells SHALL also be tests of the
+BASIC test model in `tests/ab3/model/exprmatrix/`, with the cells
+`compiler = "ab3"` and `compiler = "amiblitz3"`, the latter run in the
+preset `oracle`; a cell where AmiBlitz3 differs from the port SHALL be a
+deviation of the `amiblitz3` cells naming its row of `docs/ab3/variant.md`
+(`testing/ab3-tests`).
 
 #### Scenario: AmiBlitz3 keeps the old rule
 - **WHEN** a cell is a fixed cell of #1177
-- **THEN** AmiBlitz3's recorded output holds the original's value and the difference is named in `docs/ab3/variant.md`
+- **THEN** the `amiblitz3` cell's check fails with the original's value, declared as a deviation naming its row in `docs/ab3/variant.md`
 
 ### Requirement: The matrix changes no result
 Adding the matrix SHALL change no executable the compilers write, no library file and no file TED writes.
