@@ -208,9 +208,10 @@ OPTIONS:
           --case CASE Excludes: --bundle
                               the case; without it every case of the source (not with
                               --print-config, --write-driver, --prev)
-          --side SIDE:{port,originals}
-                              the cells without original material (port, the default) or with
-                              it (originals: the original compilers, the CD's libraries)
+          --side SIDE:{port,originals,oracle}
+                              the cells without original material (port, the default), with it
+                              (originals: the original compilers, the CD's libraries), or of
+                              AmiBlitz3's compiler (oracle: compiler = "amiblitz3")
           --require-deviation a bug-orig test: a test that declares no deviation of the
                               original is broken
           --print-config      print the effective configuration (every key with its value and

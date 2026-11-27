@@ -8,7 +8,10 @@ result file") at build time, without the emulator. For every source it
   calls, the blocks paired in source order with the case at fault named,
   no conditional compilation or loop crossing a block, only a comment
   after a block macro, no executable code outside the blocks, the case
-  names against the token lists of `--tokens`);
+  names against the token lists of `--tokens`), in the source mode of its
+  cells (AB3 for a cell of `compiler = "ab3"` or `"amiblitz3"` without
+  `source-mode = "bb2"`, with `@@` joining lines; BB2 for the others;
+  both if its cells have both);
 - resolves its run configuration (`tools/lib/testconf`: the `tests.toml`
   files up to `root = true` and its own `ID.test.toml`, the matrix and its
   cells) and checks the check queries and case selectors of its
@@ -16,17 +19,23 @@ result file") at build time, without the emulator. For every source it
 - checks the test's own files (change `basic-test-local-data`): every
   file of the directory `ID.test/` beside the source is declared in the
   table `data` of `ID.test.toml`, and every declared one is there;
+- refuses an `!ExpectError` in a test with a cell of `amiblitz3`, which
+  runs without its debugger;
 - registers one ctest test per case and side: `PREFIX_ID__CASE` for the
   cells without original material, `PREFIX_ID__CASE_originals` for those
-  with it (a compiler other than the port, or the CD's libraries); a side
-  without cells is not registered, a name given twice is an error.
+  with it (the compilers `orig195` and `orig210`, or the CD's libraries),
+  `PREFIX_ID__CASE_oracle` for the cells of AmiBlitz3's compiler
+  (`amiblitz3`, change `ab3-test-model`); a side without cells is not
+  registered, a name given twice is an error.
 
 The include file (for the directory property `TEST_INCLUDE_FILES`, as
 `gtest_discover_tests` does it) holds per test an `add_test()` running
-`COMMAND... --source SOURCE --case CASE --side port|originals` and a
+`COMMAND... --source SOURCE --case CASE --side port|originals|oracle` and a
 `set_tests_properties()`: the labels (`originals` for the side with
-original material, else `bug-orig` and `emulator` for a case with a
-declared deviation of an open bug, `emulator` for the others, then the
+original material, `oracle` for the side oracle, else `bug-orig` and
+`emulator` for a case with a declared deviation of an open bug (not when
+every deviation is a difference of AmiBlitz3, declared with its
+`variant`), `emulator` for the others, then the
 configuration's `labels`, then `flaky` on both sides of a test with
 the key `flaky`), `TIMEOUT` (the sum of the cells' `timeout`,
 else `--timeout-default`, plus `--timeout-extra`), `SKIP_RETURN_CODE 77`,

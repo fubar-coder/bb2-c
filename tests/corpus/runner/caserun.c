@@ -68,6 +68,23 @@ static const char *need(const struct tc_env *env, const char *key, char *err, si
     return v;
 }
 
+/* the side of a run: port, originals or oracle (AmiBlitz3's cells) */
+static int on_side(const struct tc_cell *c, const struct caserun_opts *o)
+{
+    return o->oracle ? c->oracle : !c->oracle && c->originals == o->originals;
+}
+
+static const char *side_name(const struct caserun_opts *o)
+{
+    return o->oracle ? "oracle" : o->originals ? "originals" : "port";
+}
+
+/* the suffix of the side's names: the test, its work directory */
+static const char *side_suffix(const struct caserun_opts *o)
+{
+    return o->oracle ? "_oracle" : o->originals ? "_originals" : "";
+}
+
 /* ------------------------------------------------------- the pass of a cell */
 
 /* the compiler, deflibs and acidlibs of a build configuration (compiler,
@@ -1965,7 +1982,8 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
             break;
         }
         for (cell = 0; cell < m->ncells; cell++)
-            if (!m->cells[cell].originals && !strcmp(val(conf, m, cell, "runtime-errors", b), values[v]))
+            if (!m->cells[cell].originals && !m->cells[cell].oracle
+                && !strcmp(val(conf, m, cell, "runtime-errors", b), values[v]))
                 break;
         /* the data sources compiled with this setting: the cell's, or a fixed one */
         for (size_t i = 0; i < conf->ndata; i++) {
@@ -1991,7 +2009,7 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
                 free(dname);
                 continue;
             }
-            for (cell = 0; cell < m->ncells && m->cells[cell].originals; cell++)
+            for (cell = 0; cell < m->ncells && (m->cells[cell].originals || m->cells[cell].oracle); cell++)
                 ;
         } else if (r == 0) {
             if (!(names[nnames] = str_printf("%s%s", conf->id, v ? CR_PREV_RUNERRS : "")))
@@ -2386,7 +2404,7 @@ static int judge_case(struct ctx *x, const char *name, const struct set *const *
             t.ncases = from[i]->ncases;
         }
     }
-    fprintf(out, "== %s, case %s, side %s:", x->file, name, x->o->originals ? "originals" : "port");
+    fprintf(out, "== %s, case %s, side %s:", x->file, name, side_name(x->o));
     for (size_t i = 0; i < n; i++)
         if (from[i]->label)
             fprintf(out, " %s (%s/%s)", x->m.cells[idx[i]].name, from[i]->label, from[i]->c[at[i]].tag);
@@ -2653,7 +2671,7 @@ static int case_key(const struct ctx *x, const struct corpus_pass *p, const char
         for (size_t i = 0; i < CORPUS_FLOPPIES; i++)
             f[n++] = p->floppy[i];
         in.test = test;
-        in.side = x->o->originals ? "originals" : "port";
+        in.side = side_name(x->o);
         in.case_name = x->o->case_name;
         in.conf = &x->conf;
         in.env = &x->env;
@@ -2682,7 +2700,7 @@ static int served(struct ctx *x, FILE *log)
     if (!dir)
         return -1;
     for (size_t i = 0; i < x->m.ncells; i++)
-        if (x->m.cells[i].originals == o->originals) {
+        if (on_side(&x->m.cells[i], o)) {
             cell = i;
             nside++;
         }
@@ -2826,11 +2844,11 @@ int caserun(const struct caserun_opts *o, FILE *log)
         goto out;
     }
     for (size_t i = 0; i < x.m.ncells; i++)
-        if (x.m.cells[i].originals == o->originals)
+        if (on_side(&x.m.cells[i], o))
             x.side[x.nside++] = i;
     if (!x.nside) {
         fprintf(log, "corpusrun case: %s has no cell of the side %s\n", x.conf.id,
-                o->originals ? "originals" : "port");
+                side_name(o));
         goto out;
     }
     {
@@ -2839,9 +2857,9 @@ int caserun(const struct caserun_opts *o, FILE *log)
         if (!work)
             workbase = NULL;
         else if (o->case_name)
-            workbase = str_printf("%s/%s__%s%s", work, x.conf.id, o->case_name, o->originals ? "_originals" : "");
+            workbase = str_printf("%s/%s__%s%s", work, x.conf.id, o->case_name, side_suffix(o));
         else
-            workbase = str_printf("%s/%s%s", work, x.conf.id, o->originals ? "_originals" : "");
+            workbase = str_printf("%s/%s%s", work, x.conf.id, side_suffix(o));
         if (!workbase) {
             fprintf(log, "corpusrun case: %s\n", work ? "out of memory" : err);
             goto out;

@@ -145,6 +145,45 @@ file(WRITE ${s}/flaky/flaky-two.test.toml "flaky = \"\"\n")
 refused("flaky/flaky-two\\.test\\.toml:1: flaky must be a non-empty string" ${s}/flaky/flaky-two.test.bas)
 file(REMOVE_RECURSE ${s}/flaky)
 
+# AB3 mode (change ab3-test-model): a test with the cells of blitz2-ab3
+# (side port) and AmiBlitz3 (side oracle) has two tests per case, the
+# oracle one with the label oracle and never emulator; a deviation of
+# AmiBlitz3 with its variant gives no bug-orig; the source is read in AB3
+# mode (a check continued with @@), in BB2 mode with source-mode = "bb2";
+# a deviation of AmiBlitz3 without variant and !ExpectError beside a cell
+# of amiblitz3 are refused
+file(MAKE_DIRECTORY ${s}/ab3)
+file(WRITE ${s}/ab3/tests.toml "libs = \"clib\"\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n")
+file(WRITE ${s}/ab3/both.test.bas "!TestCase{a}\n  !CheckStrEq{\"x\", @@\n    \"x\",\"same\"}\n!EndTestCase\n")
+file(WRITE ${s}/ab3/both.test.toml
+	"[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\nvariant = \"chr_nospace\"\n")
+run(0 --prefix ab3_ --output ${WORK}/ab3.cmake ${env} --command run ${s}/ab3/both.test.bas)
+file(READ ${WORK}/ab3.cmake inc)
+string(REPLACE "]==]" "" inc "${inc}")
+string(REPLACE "[==[" "" inc "${inc}")
+foreach(want
+		"add_test( ab3_both__a run --source ${s}/ab3/both.test.bas --case a --side port)"
+		"set_tests_properties( ab3_both__a PROPERTIES LABELS emulator TIMEOUT 60 SKIP_RETURN_CODE 77)"
+		"add_test( ab3_both__a_oracle run --source ${s}/ab3/both.test.bas --case a --side oracle)"
+		"set_tests_properties( ab3_both__a_oracle PROPERTIES LABELS oracle TIMEOUT 60 SKIP_RETURN_CODE 77)")
+	string(FIND "${inc}" "${want}" at)
+	if(at LESS 0)
+		message(FATAL_ERROR "AB3 mode: the include file lacks\n  ${want}\nin\n${inc}")
+	endif()
+endforeach()
+if(inc MATCHES "_originals|bug-orig")
+	message(FATAL_ERROR "AB3 mode: a side originals or the label bug-orig:\n${inc}")
+endif()
+file(WRITE ${s}/ab3/both.test.toml "[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\n")
+refused("ab3/both.test.toml:2: \\[deviations.\"compiler=amiblitz3\"\\] of the cells of amiblitz3 has no variant"
+	${s}/ab3/both.test.bas)
+file(WRITE ${s}/ab3/both.test.toml "source-mode = \"bb2\"\nexclude = [\"compiler=amiblitz3\"]\n")
+refused("ab3/both.test.bas:2: !CheckStrEq: the line ends before the closing }" ${s}/ab3/both.test.bas)
+file(WRITE ${s}/ab3/err.test.bas "!TestCase{a}\n  !ExpectError{\"Overflow\"}\n!EndTestCase\n")
+refused("ab3/err.test.bas:2: !ExpectError in a test with the cell amiblitz3 of compiler = \"amiblitz3\""
+	${s}/ab3/err.test.bas)
+file(REMOVE_RECURSE ${s}/ab3)
+
 # --order: the bug-orig tests of the old form (cmake/bug-orig-order.cmake)
 # declared with the tests of an open bug, the largest COST first and equal
 # ones by name; an open bug without a configured cost gets the sum of its

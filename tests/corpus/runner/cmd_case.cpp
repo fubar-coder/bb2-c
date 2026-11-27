@@ -2,7 +2,7 @@
  * corpusrun case - one case of a Blitz test of the BASIC test model in
  * Amiberry, or all cases of its source, the cells of one side (caserun.h).
  *
- *   corpusrun case --env FILE --source ID.test.bas [--case CASE] --side port|originals
+ *   corpusrun case --env FILE --source ID.test.bas [--case CASE] --side port|originals|oracle
  *                  [--require-deviation] [--print-config] [--print-driver]
  *   corpusrun case --env FILE --source ID.test.bas --write-driver NAME.bb2
  *   corpusrun case --env FILE --source ID.test.bas --prev --driver NAME.bb2 --test TEST
@@ -48,9 +48,10 @@ void cmd_case(CLI::App &app, int &status)
                                             "the case; without it every case of the source (not with "
                                             "--print-config, --write-driver, --prev)")
                                 ->type_name("CASE");
-    sub->add_option("--side", o->side, "the cells without original material (port, the default) or with it "
-                                       "(originals: the original compilers, the CD's libraries)")
-        ->check(CLI::IsMember({ "port", "originals" }))
+    sub->add_option("--side", o->side, "the cells without original material (port, the default), with it "
+                                       "(originals: the original compilers, the CD's libraries), or of "
+                                       "AmiBlitz3's compiler (oracle: compiler = \"amiblitz3\")")
+        ->check(CLI::IsMember({ "port", "originals", "oracle" }))
         ->type_name("SIDE");
     sub->add_flag("--require-deviation", o->require_deviation,
                   "a bug-orig test: a test that declares no deviation of the original is broken");
@@ -142,6 +143,7 @@ void cmd_case(CLI::App &app, int &status)
         co.case_name = o->case_name.empty() || !o->write_driver.empty() || o->prev ? nullptr
                                                                                   : o->case_name.c_str();
         co.originals = o->side == "originals";
+        co.oracle = o->side == "oracle";
         co.require_deviation = o->require_deviation;
         co.print_config = o->print_config;
         co.print_driver = o->print_driver;

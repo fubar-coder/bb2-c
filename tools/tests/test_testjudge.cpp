@@ -746,6 +746,37 @@ TEST_CASE("testjudge: the test of an extension", "[testjudge]")
     CHECK(verdict(f, obs(width_fails), obs(good), m) == TJ_V_PASSED);
 }
 
+// the differences of AmiBlitz3 (change ab3-test-model D6): its cells are
+// judged with their deviations, the cells of blitz2-ab3 plain; no open bug
+TEST_CASE("testjudge: a difference of AmiBlitz3", "[testjudge]")
+{
+    fixture f("[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n",
+              "[deviations.\"compiler=amiblitz3\"]\n\"check.frames_maximum.width\" = \"== fail\"\n"
+              "variant = \"row\"\n");
+    size_t cells[2] = { f.cell("ab3"), f.cell("amiblitz3") };
+    std::string m;
+    auto v = [&](const obs &port, const obs &oracle) {
+        tj_obs o[2] = { port.o, oracle.o };
+        tj_msgs ms = {};
+        // the side oracle alone, then the side port alone (the registered tests)
+        int r1 = tj_verdict(&f.t, &cells[1], &o[1], 1, &ms), r0;
+
+        m = join(ms);
+        tj_msgs_free(&ms);
+        r0 = tj_verdict(&f.t, &cells[0], &o[0], 1, &ms);
+        m += join(ms);
+        tj_msgs_free(&ms);
+        return r0 == TJ_V_PASSED && r1 == TJ_V_PASSED ? 0 : r0 * 10 + r1;
+    };
+
+    CHECK(tj_case_has_deviation(&f.t));
+    CHECK(v(obs(good), obs(width_fails)) == 0);
+    // AmiBlitz3 no longer deviates: its cell fails, the port's passes
+    CHECK(v(obs(good), obs(good)) == TJ_V_PASSED * 10 + TJ_V_FAILED);
+    // blitz2-ab3 shows AmiBlitz3's value: the port fails, it is no open bug
+    CHECK(v(obs(width_fails), obs(width_fails)) == TJ_V_FAILED * 10 + TJ_V_PASSED);
+}
+
 TEST_CASE("testjudge: an open original bug", "[testjudge]")
 {
     fixture f(matrix, declared);

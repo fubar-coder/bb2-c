@@ -88,6 +88,8 @@ struct caserun_opts {
     const char *source;         /* ID.test.bas */
     const char *case_name;      /* NULL: with print_config only */
     int originals;              /* the side with original material */
+    int oracle;                 /* the side oracle: the cells of AmiBlitz3's
+                                   compiler (change ab3-test-model) */
     int require_deviation;      /* a bug-orig test */
     int print_config;           /* print the effective configuration, run nothing */
     int print_driver;           /* print the driver of the case, run nothing */

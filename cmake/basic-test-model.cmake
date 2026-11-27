@@ -19,8 +19,10 @@
 #   the tests of the sources DIR/GLOB (e.g. "*/*.test.bas"; those whose path
 #   below DIR matches REGEX left out): ctest
 #   PREFIX + ID + "__" + CASE (and "_originals" for the side with original
-#   material); REQUIRE_DEVIATION: bug-orig tests (a test without a declared
-#   deviation is broken).  PREV: the sources whose path below DIR matches
+#   material, "_oracle" for the cells of AmiBlitz3's compiler, label
+#   oracle: tests/ab3/model, change ab3-test-model); REQUIRE_DEVIATION:
+#   bug-orig tests (a test without a declared deviation is broken).  PREV:
+#   the sources whose path below DIR matches
 #   REGEX (but the ids PREV_EXCLUDE) are compared with the prev build
 #   (basic_test_driver, cmake/prev.cmake prev_compile_model_test): ctest
 #   PREFIX + ID + "_prev".  ORDER: the order file of bug_orig_declare_tests

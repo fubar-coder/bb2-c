@@ -1029,7 +1029,9 @@ static int case_has_deviation(const struct tc_config *conf, const struct tp_sour
 static int cell_mode(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const char *case_name,
                      int dev)
 {
-    int fixed = tc_get(conf, "fixed-orig") != NULL || tc_get(conf, "extension") != NULL;
+    /* a fixed bug, an extension, or only the differences of AmiBlitz3 */
+    int fixed = tc_get(conf, "fixed-orig") != NULL || tc_get(conf, "extension") != NULL
+                || tc_variants_only(conf);
     int faulty;
 
     if (!dev)
@@ -1247,8 +1249,10 @@ int tj_verdict(const struct tj_test *t, const size_t *cells, const struct tj_obs
                struct tj_msgs *msgs)
 {
     int dev = tj_case_has_deviation(t);
-    /* the test of an extension is judged like that of a fixed original bug */
-    int fixed = tc_get(t->conf, "fixed-orig") != NULL || tc_get(t->conf, "extension") != NULL;
+    /* the test of an extension, and one whose deviations are all differences
+       of AmiBlitz3, are judged like that of a fixed original bug */
+    int fixed = tc_get(t->conf, "fixed-orig") != NULL || tc_get(t->conf, "extension") != NULL
+                || tc_variants_only(t->conf);
     int any_error = 0, any_broken = 0, any_fail = 0;
     char head[400];
 

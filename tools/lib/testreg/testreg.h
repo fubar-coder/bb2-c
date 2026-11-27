@@ -4,17 +4,23 @@
  * sources (`ID.test.bas`) and their resolved configurations, without the
  * emulator, one ctest test per case and side.
  *
- * For each source: the preprocessor and the form check (testpp.h), the
+ * For each source: the preprocessor and the form check (testpp.h) in the
+ * source mode of its cells (AB3 for a cell of ab3 or amiblitz3 without
+ * source-mode = "bb2", tc_cell_ab3; both modes if its cells have both), an
+ * `!ExpectError` refused with a cell of amiblitz3 (tc_expect_error_ok), the
  * configuration (testconf.h) and its cells; the check queries of its
  * assertions and deviations against the table and the case selectors
  * against the cases.  A case gets a test for the side without original
  * material ("port": its cells that need no original material) and one for
- * the side with it ("originals"); a side without cells is not
+ * the side with it ("originals"), and one for the cells of AmiBlitz3's
+ * compiler ("oracle", change ab3-test-model); a side without cells is not
  * registered.  Names: PREFIX + ID ("-" as "_") + "__" + CASE, and
- * "_originals" behind it for the side with original material; only
- * [a-z0-9_]; a name given twice is an error.  Labels: "originals" for the
- * side with original material, else "bug-orig" and "emulator" for a case
- * with a declared deviation of an open bug (no fixed-orig or extension) and "emulator"
+ * "_originals" behind it for the side with original material, "_oracle"
+ * for the side oracle; only [a-z0-9_]; a name given twice is an error.
+ * Labels: "originals" for the side with original material, "oracle" for
+ * the side oracle, else "bug-orig" and "emulator" for a case with a
+ * declared deviation of an open bug (no fixed-orig or extension, and not
+ * only the differences of AmiBlitz3, tc_variants_only) and "emulator"
  * for the others, then the configuration's `labels`, then "flaky" for a
  * test with the key `flaky` (both sides); the time limit is
  * the sum of the cells' `timeout` (else the default) plus an extra; the
@@ -63,6 +69,7 @@ struct treg_test {
     char *source;               /* the source, absolute */
     char *case_name;
     int originals;              /* the side with original material */
+    int oracle;                 /* the side oracle: AmiBlitz3's cells */
     struct treg_strs labels;
     long long timeout;
     int has_cost;
@@ -182,7 +189,7 @@ void treg_apply_costs(struct treg_result *r, const struct tcosts *c);
 /**
  * @brief Write the ctest include file (TEST_INCLUDE_FILES): an add_test()
  *        and a set_tests_properties() per test; the test runs COMMAND...
- *        --source SOURCE --case CASE --side port|originals, a member of a
+ *        --source SOURCE --case CASE --side port|originals|oracle, a member of a
  *        bundle also --test TEST --from-bundle NAME and the property
  *        DEPENDS NAME; a bundle test runs COMMAND... --bundle NAME and
  *        --member TEST SOURCE CASE per member.  First the

@@ -394,3 +394,12 @@ file of the round.
   is read (testreg, task 2.2): testconf does not read the source. The
   side of a cell: `amiblitz3` is `oracle` (not `originals`); `ab3` is
   `port` unless `libs = "cd"`.
+- D5 (task 2.2): testreg reads a source in the source mode of its cells,
+  so it builds the matrix before the source; a test whose matrix fails
+  now reports that error alone (before, its source errors came first).
+  A test with cells of both modes (a `port` cell and an `amiblitz3` one)
+  is read in both, each message once. A test whose deviations are all
+  variants is judged like a fixed one (`tj_verdict`: the `amiblitz3`
+  cells with their deviations, the others plain; never REPRODUCED). The
+  registration of `tests/ab3/model/` is in place; it registers nothing
+  until the pilot adds sources.

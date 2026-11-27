@@ -67,6 +67,15 @@ endfunction()
 equivalence_pass(ab3_bb2_equivalence off)
 equivalence_pass(ab3_bb2_equivalence_runerr on)
 
+# The run-output cases of AB3 mode as tests of the BASIC test model
+# (change ab3-test-model; cmake/basic-test-model.cmake): model/*.test.bas
+# with the cells compiler = "ab3" (blitz2-ab3, side port, label emulator)
+# and "amiblitz3" (AmiBlitz3's own compiler, side oracle, label oracle),
+# ctest ab3_ID__CASE and ab3_ID__CASE_oracle.  Their drivers are AB3
+# sources, not BB2 ones: the equivalence passes above do not compile them
+# (BASIC_TEST_DRIVERS is read before this registration).
+basic_test_register(ab3_ ${CMAKE_CURRENT_SOURCE_DIR}/model "*.test.bas")
+
 # AB3 mode's token list (spec ab3-compat/libraries): blitz2-ab3's
 # AmiBlitz3 list (the one ending with $80DB, programs/blitz2/src/toklist.h)
 # followed by the tokens of AmiBlitz3 v3.14.0's BigLibs in its load order

@@ -259,8 +259,20 @@ static int check_queries(const struct tc_tabkey *v, size_t n, const struct tp_so
     return 0;
 }
 
+/* the sides of a case: its cells without original material, with it, and
+   AmiBlitz3's */
+enum { TREG_PORT, TREG_ORIGINALS, TREG_ORACLE };
+static const char *const side_suffix[] = { "", "_originals", "_oracle" };
+
+static int in_side(const struct tc_matrix *m, size_t c, int side)
+{
+    if (side == TREG_ORACLE)
+        return m->cells[c].oracle;
+    return !m->cells[c].oracle && m->cells[c].originals == (side == TREG_ORIGINALS);
+}
+
 static int add_test(struct treg_result *r, const char *source, const struct tc_config *conf,
-                    const struct tc_matrix *m, const struct tp_source *src, const char *case_name, int originals,
+                    const struct tc_matrix *m, const struct tp_source *src, const char *case_name, int side,
                     const struct treg_opts *o, int deviation)
 {
     struct treg_test t;
@@ -272,7 +284,7 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         char buf[24];
         const char *to;
 
-        if (m->cells[c].originals != originals)
+        if (!in_side(m, c, side))
             continue;
         if (push(&t.cells, m->cells[c].name))
             goto oom;
@@ -283,18 +295,22 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         return 0;               /* an empty side */
     (void)src;
     t.timeout += o->timeout_extra;
-    snprintf(name, sizeof name, "%s%s__%s%s", o->prefix, conf->id, case_name, originals ? "_originals" : "");
+    snprintf(name, sizeof name, "%s%s__%s%s", o->prefix, conf->id, case_name, side_suffix[side]);
     for (p = name; *p; p++)
         if (*p == '-')
             *p = '_';
     if (!(t.name = strdup(name)) || !(t.source = strdup(source)) || !(t.case_name = strdup(case_name)))
         goto oom;
-    t.originals = originals;
-    if (originals) {
+    t.originals = side == TREG_ORIGINALS;
+    t.oracle = side == TREG_ORACLE;
+    if (side == TREG_ORACLE) {
+        if (push(&t.labels, "oracle"))
+            goto oom;
+    } else if (side == TREG_ORIGINALS) {
         if (push(&t.labels, "originals"))
             goto oom;
     } else {
-        if (deviation && !tc_get(conf, "fixed-orig") && !tc_get(conf, "extension")
+        if (deviation && !tc_get(conf, "fixed-orig") && !tc_get(conf, "extension") && !tc_variants_only(conf)
             && push(&t.labels, "bug-orig"))
             goto oom;
         if (push(&t.labels, "emulator"))
@@ -339,7 +355,7 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         if (rc)
             continue;
         for (size_t c = 0; c < m->ncells && !any; c++)
-            any = m->cells[c].originals == originals && tc_selector_matches(&sel, conf, m, c, NULL);
+            any = in_side(m, c, side) && tc_selector_matches(&sel, conf, m, c, NULL);
         tc_selector_free(&sel);
         if (any && !has(&t.fixtures, bar + 1) && push(&t.fixtures, bar + 1))
             goto oom;
@@ -581,14 +597,49 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
     par.testdir = "";
     par.tokens = o->tokens;
     par.ntokens = o->ntokens;
-    if (tp_process(text, len, &par, &src) < 0 || tp_check_form(text, len, &par, &src) < 0)
-        goto out;
-    for (size_t i = 0; i < src.errors.n; i++) {
-        /* the messages name the file as given */
-        const char *msg = src.errors.v[i] + strlen(par.file);
+    /* the source modes of the cells (bit 0 BB2, bit 1 AB3): the source is
+       read in each, AB3 first, whose table is the test's */
+    {
+        struct tc_matrix probe = { 0 };
+        int modes = 1;
 
-        if (pushf(&r->errors, "%s%s", source, msg))
-            goto out;
+        if (r->errors.n == before && conf.id) {
+            if (tc_matrix_build(&conf, &probe, err, sizeof err)) {
+                /* without cells no source mode: the matrix's error alone */
+                rc = pushf(&r->errors, "%s", err) ? -1 : 1;
+                goto out;
+            }
+            modes = 0;
+            for (size_t c = 0; c < probe.ncells; c++)
+                modes |= tc_cell_ab3(&conf, &probe, c) ? 2 : 1;
+            tc_matrix_free(&probe);
+        }
+        for (int k = 1; k >= 0; k--) {
+            struct tp_source other = { 0 }, *s = src.text ? &other : &src;
+            int bad;
+
+            if (!(modes & (1 << k)))
+                continue;
+            par.ab3 = k;
+            bad = tp_process(text, len, &par, s) < 0 || tp_check_form(text, len, &par, s) < 0;
+            for (size_t i = 0; !bad && i < s->errors.n; i++) {
+                /* the messages name the file as given; once if both modes give it */
+                const char *msg = s->errors.v[i] + strlen(par.file);
+                char *full = malloc(strlen(source) + strlen(msg) + 1);
+
+                if (!full)
+                    bad = 1;
+                else {
+                    sprintf(full, "%s%s", source, msg);
+                    bad = !has(&r->errors, full) && push(&r->errors, full);
+                    free(full);
+                }
+            }
+            if (s == &other)
+                tp_free(&other);
+            if (bad)
+                goto out;
+        }
     }
     if (r->errors.n > before) {
         rc = 1;
@@ -606,6 +657,13 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         rc = pushf(&r->errors, "%s", err) ? -1 : 1;
         goto out;
     }
+    /* AmiBlitz3 runs without its debugger: no !ExpectError beside its cells */
+    for (size_t i = 0; i < src.nchecks; i++)
+        if (src.checks[i].kind == TP_EXPECTERROR
+            && tc_expect_error_ok(&m, source, src.checks[i].line, err, sizeof err)) {
+            rc = pushf(&r->errors, "%s", err) ? -1 : 1;
+            goto out;
+        }
     if (r->errors.n > before) {
         rc = 1;
         goto out;
@@ -619,7 +677,7 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
         int dev = tj_case_has_deviation(&jt);
         size_t n = r->n;
 
-        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 0, o, dev))
+        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, TREG_PORT, o, dev))
             goto out;
         /* the case test of the side port that may be bundled: its key */
         if (o->bundle && r->n > n) {
@@ -638,7 +696,8 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
                 t->limit = *to ? strtoll(to, NULL, 10) : o->timeout_default;
             }
         }
-        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, 1, o, dev))
+        if (add_test(r, abs, &conf, &m, &src, src.cases[c].name, TREG_ORIGINALS, o, dev)
+            || add_test(r, abs, &conf, &m, &src, src.cases[c].name, TREG_ORACLE, o, dev))
             goto out;
     }
     rc = 0;
@@ -805,7 +864,7 @@ static int write_test(FILE *f, const struct treg_result *r, const struct treg_te
                 return -1;
         }
     } else if (bracket(f, "--source") || bracket(f, t->source) || bracket(f, "--case") || bracket(f, t->case_name)
-               || bracket(f, "--side") || bracket(f, t->originals ? "originals" : "port"))
+               || bracket(f, "--side") || bracket(f, t->oracle ? "oracle" : t->originals ? "originals" : "port"))
         return -1;
     /* a member: served from its bundle (I2) */
     if (t->from_bundle
