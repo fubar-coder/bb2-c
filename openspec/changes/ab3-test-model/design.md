@@ -416,8 +416,8 @@ file of the round.
   blitz2-ab3 runs as `blitz2:blitz2` with `blitz2:ab3cli` beside it
   (PROGDIR:ab3cli). The runner reads a side's source in one mode; a side
   whose cells need both (e.g. `source-mode` as an axis of `ab3` cells) is
-  refused at run time with exit status 2 (open point: the registration
-  accepts it).
+  refused by the registration (testreg, naming the line of `source-mode`
+  or `compiler`) and, as before, by the runner with exit status 2.
 - D4 (task 3.2): AmiBlitz3 names the line of an error ("Compiler Error #1
   in <FILE>:" then "Line N: MESSAGE", in bold with ANSI escapes, return
   code 0), so its `compile` is `error LINE MESSAGE` mapped to the test

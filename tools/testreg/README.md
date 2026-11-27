@@ -11,7 +11,9 @@ result file") at build time, without the emulator. For every source it
   names against the token lists of `--tokens`), in the source mode of its
   cells (AB3 for a cell of `compiler = "ab3"` or `"amiblitz3"` without
   `source-mode = "bb2"`, with `@@` joining lines; BB2 for the others;
-  both if its cells have both);
+  both if its cells have both, but one per side: a side whose cells
+  read it in both modes is refused, as the runner reads a side's source
+  in one);
 - resolves its run configuration (`tools/lib/testconf`: the `tests.toml`
   files up to `root = true` and its own `ID.test.toml`, the matrix and its
   cells) and checks the check queries and case selectors of its

@@ -312,6 +312,24 @@ static int in_side(const struct tc_matrix *m, size_t c, int side)
     return !m->cells[c].oracle && m->cells[c].originals == (side == TREG_ORIGINALS);
 }
 
+/* where the source mode of a test's cells is given: the axis or setting
+   source-mode, else the axis or setting compiler; NULL neither */
+static const struct tc_origin *mode_origin(const struct tc_config *conf)
+{
+    static const char *const keys[] = { "source-mode", "compiler" };
+
+    for (size_t k = 0; k < 2; k++) {
+        const struct tc_setting *s;
+
+        for (size_t i = 0; i < conf->nmatrix; i++)
+            if (!strcmp(conf->matrix[i].key, keys[k]))
+                return &conf->matrix[i].at;
+        if ((s = tc_get(conf, keys[k])))
+            return &s->at;
+    }
+    return NULL;
+}
+
 static int add_test(struct treg_result *r, const char *source, const struct tc_config *conf,
                     const struct tc_matrix *m, const struct tp_source *src, const char *case_name, int side,
                     const struct treg_opts *o, int deviation)
@@ -653,6 +671,29 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
             modes = 0;
             for (size_t c = 0; c < probe.ncells; c++)
                 modes |= tc_cell_ab3(&conf, &probe, c) ? 2 : 1;
+            /* the runner reads a side's source in one mode (caserun.c
+               side_mode): a side with cells of both is refused here */
+            for (int side = TREG_PORT; side <= TREG_ORACLE; side++) {
+                int sm = 0;
+
+                for (size_t c = 0; c < probe.ncells; c++)
+                    if (in_side(&probe, c, side))
+                        sm |= tc_cell_ab3(&conf, &probe, c) ? 2 : 1;
+                if (sm == 3) {
+                    static const char *const side_name[] = { "port", "originals", "oracle" };
+
+                    const struct tc_origin *at = mode_origin(&conf);
+
+                    tc_matrix_free(&probe);
+                    rc = (at ? pushf(&r->errors, "%s:%u: test %s: the cells of the side %s read the source in "
+                                     "AB3 and in BB2 mode; a side has one source mode", at->file, at->line,
+                                     conf.id, side_name[side])
+                             : pushf(&r->errors, "%s: test %s: the cells of the side %s read the source in AB3 "
+                                     "and in BB2 mode; a side has one source mode", source, conf.id,
+                                     side_name[side])) ? -1 : 1;
+                    goto out;
+                }
+            }
             tc_matrix_free(&probe);
         }
         for (int k = 1; k >= 0; k--) {

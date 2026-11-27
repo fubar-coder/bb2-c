@@ -202,6 +202,20 @@ refused("ab3/both.test.bas:2: !CheckStrEq: the line ends before the closing }" $
 file(WRITE ${s}/ab3/err.test.bas "!TestCase{a}\n  !ExpectError{\"Overflow\"}\n!EndTestCase\n")
 refused("ab3/err.test.bas:2: !ExpectError in a test with the cell amiblitz3 of compiler = \"amiblitz3\""
 	${s}/ab3/err.test.bas)
+# a side whose cells read the source in both modes (the runner reads a
+# side's source in one): source-mode as an axis of the cells of blitz2-ab3,
+# and the BB2 compiler beside blitz2-ab3 on the side port
+file(WRITE ${s}/ab3/modes.test.bas "!TestCase{a}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n")
+file(WRITE ${s}/ab3/modes.test.toml "exclude = [\"compiler=amiblitz3\"]\n[matrix]\nsource-mode = [\"ab3\", \"bb2\"]\n")
+refused("ab3/modes.test.toml:3: test modes: the cells of the side port read the source in AB3 and in BB2 mode"
+	${s}/ab3/modes.test.bas)
+file(WRITE ${s}/ab3/modes.test.toml "[matrix]\ncompiler = [\"port\", \"ab3\"]\n")
+refused("ab3/modes.test.toml:2: test modes: the cells of the side port read the source in AB3 and in BB2 mode"
+	${s}/ab3/modes.test.bas)
+# one mode per side: AB3 on the side oracle, BB2 on the side port
+file(WRITE ${s}/ab3/modes.test.toml "[matrix]\ncompiler = [\"port\", \"amiblitz3\"]\n")
+run(0 --prefix ab3_ --output ${WORK}/ab3.cmake ${env} --variants ${WORK}/variant.md --command run
+	${s}/ab3/modes.test.bas)
 file(REMOVE_RECURSE ${s}/ab3)
 
 # --order: the bug-orig tests of the old form (cmake/bug-orig-order.cmake)
