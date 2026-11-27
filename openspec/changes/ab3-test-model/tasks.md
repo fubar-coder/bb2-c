@@ -27,13 +27,15 @@ rounds/tree decisions, "2026-11-27 ab3-test-model Q1-Q5" (design.md D8, D10, D14
 - [x] 3.3 Bundles (D14): the session key of `compiler = "ab3"` with default settings may form bundles, never mixed with `port` keys; the `amiblitz3` cells never form bundles (Q4). Verify: `bundle-selftest` extended with two `ab3` sources in one bundle, a `port` source in another and an `amiblitz3` cell in none; host tests of the key.
 - [x] 3.4 Time limits: `timeout` and `hang-after` of `tests/ab3/model/tests.toml` from a measurement of five `amiblitz3` sessions (a silent compile under load). Verify: the measured values in the commit message.
 
+- [x] 3.5 Retry an AmiBlitz3 model cell once if its emulator session times out before the test program starts. Allow both attempts in the test timeout. Verify with the oracle preset.
+
 ## 4. Prev comparison
 
 - [x] 4.1 `cmake/basic-test-model.cmake`/prevcmp: the tests of `tests/ab3/model/` compared with the prev build (`ab3_ID_prev`, blitz2-ab3 of both commits, once per `runtime-errors` value of the `ab3` cells; `amiblitz3` not compared); entries `ab3_ID_prev:ID[-runerrs]` checked as stale like the others. Verify: `cmake --preset amiga -DBLITZ2_PREV=ON`, the comparison of the pilot test passes; with an entry for an unchanged test it fails as stale.
 
 ## 5. Pilot
 
-- [ ] 5.1 The conversion table for all cases of D10 (Q1): per case its target test file, the form (checks or `output`), each `[run]` line with its check name and expected literal, the AmiBlitz3 side (`REF` or excluded, `.ref.expect` lines as deviations with their `variant` row); written to `~/.local/share/bb2-c-work/ab3-test-model/conversion.md` and reviewed by the coordinator before group 6. Verify: every case of D10's "move" list has a row; no case of the "stays" list has one.
+- [x] 5.1 The conversion table for all cases of D10 (Q1): per case its target test file, the form (checks or `output`), each `[run]` line with its check name and expected literal, the AmiBlitz3 side (`REF` or excluded, `.ref.expect` lines as deviations with their `variant` row); written to `~/.local/share/bb2-c-work/ab3-test-model/conversion.md` and reviewed by the coordinator before group 6. Verify: every case of D10's "move" list has a row; no case of the "stays" list has one.
 - [x] 5.2 Pilot commit: `tests/ab3/model/tests.toml` and five cases moved (one plain check case, one with `@@` in its own statement (chr_at), one `output` case (esc_basic), one with an AmiBlitz3 deviation (quick_long_arith), one with AmiBlitz3's "no executable" (chr_nospace)); their `ab3_cli_case` lines, sources and expect files removed. Verify: D12 point 3 (a)-(d) for the five; `ctest -R '^ab3_'` on the new tests and `-R '^ab3_cli_[0-9]'`; `ctest --preset oracle -R '^ab3_'`; the prev comparison of 4.1.
 
 ## 6. The moves by topic
@@ -45,7 +47,7 @@ the new tests on both sides, the remaining `ab3_cli_N`/`ab3_cli_ref_N`,
 the prev comparison of the new tests.
 
 - [x] 6.1 `proc_*` and `funcstmt_*` (by `OPTIMIZE`/`SYNTAX` groups; `proc_fastname` and others whose names are the subject in files of their own).
-- [x] 6.2 `macthen_*`, `macend_*` (but `macend_inc`), `macro_ns`, `label_*`, `underscore`, `dotlabel`, `shared_global`, `const_novalue`.
+- [x] 6.2 `macthen_*`, `macend_*` (except `macend_inc`, `macend_then`, and `macend_colon`, which stay in the command-line suite), `macro_ns`, `label_*`, `underscore`, `dotlabel`, `shared_global`, `const_novalue`.
 - [x] 6.3 `esc_*` (but the include cases of D10), `str_expr`, `tilde_string`, `latin1_string`, `chr_*`.
 - [x] 6.4 `byte_*`, `quick_long_arith`, `intrinsic_*`, `pow`, `pow_negative_base`, `expr_depth`, `opt_*`, `libtoken_past_block`, `asm_short_s`.
 - [x] 6.5 The header cases (`runerrs`, `debugconst_*`, `cnifdef`, `ptr_accept`, `esc_ver`) and the `-r` cases; `join`, `join_op`, `join_funcpar`, `comment_code`, `plus`, `tokens`.
@@ -66,8 +68,8 @@ the prev comparison of the new tests.
 
 ## 9. Other changes (notes for the coordinator; no edit of their files here)
 
-- [ ] 9.1 `ab3-mode-g5` before it starts (recorded order): only g5's new run-output cases take the new form (Q5 of rounds/tree "2026-11-27 ab3-test-model Q1-Q5", "Nur Ausgabefälle neu (Recommended)"); its tasks 2.1, 2.2, 2.3, 2.4, 3.1, 3.3, 5.2, 5.3, 5.5 add run-output cases "in `ab3_cli_ref`/`ab3_cli`": they are written as cases of `tests/ab3/model/` (both cells; AmiBlitz3's value as a deviation with its `variant` row); 2.5, 4.3 (console line, rc 5, `-werr`), 5.1 (an include relative to the main source and the last path) and a compile-error probe stay `ab3_cli`/`ab3_cli_ref`; 1.2 calls the runner's `Blitz3:` staging of 3.1 instead of a copy; 1.4 "the existing `ab3_cli_ref` setup" reads "the `amiblitz3` cells or `ab3_cli_ref`"; 2.6 "the existing `ab3_cli`, `ab3_cli_ref` cases are unchanged" also names the tests of `tests/ab3/model/`; 6.2's `oracle` run covers both forms. Verify: the coordinator (or the planning agent with `openspec-update-change` on g5) applies the wording; `openspec validate ab3-mode-g5 --strict`.
-- [ ] 9.2 `blitz-coverage` task 3.2: the coverage switch also for the `ab3` cells of `corpusrun case`. `console-break-option` task 2.2: its cases have arguments other than `-r` and stay `ab3_cli`; only the case list of `tests/ab3/CMakeLists.txt` is shared. Verify: a note in the report to the coordinator.
+- [x] 9.1 `ab3-mode-g5` before it starts (recorded order): only g5's new run-output cases take the new form (Q5 of rounds/tree "2026-11-27 ab3-test-model Q1-Q5", "Nur Ausgabefälle neu (Recommended)"); its tasks 2.1, 2.2, 2.3, 2.4, 3.1, 3.3, 5.2, 5.3, 5.5 add run-output cases "in `ab3_cli_ref`/`ab3_cli`": they are written as cases of `tests/ab3/model/` (both cells; AmiBlitz3's value as a deviation with its `variant` row); 2.5, 4.3 (console line, rc 5, `-werr`), 5.1 (an include relative to the main source and the last path) and a compile-error probe stay `ab3_cli`/`ab3_cli_ref`; 1.2 calls the runner's `Blitz3:` staging of 3.1 instead of a copy; 1.4 "the existing `ab3_cli_ref` setup" reads "the `amiblitz3` cells or `ab3_cli_ref`"; 2.6 "the existing `ab3_cli`, `ab3_cli_ref` cases are unchanged" also names the tests of `tests/ab3/model/`; 6.2's `oracle` run covers both forms. Verify: the coordinator (or the planning agent with `openspec-update-change` on g5) applies the wording; `openspec validate ab3-mode-g5 --strict`.
+- [x] 9.2 `blitz-coverage` task 3.2: the coverage switch also for the `ab3` cells of `corpusrun case`. `console-break-option` task 2.2: its cases have arguments other than `-r` and stay `ab3_cli`; only the case list of `tests/ab3/CMakeLists.txt` is shared. Verify: a note in the report to the coordinator.
 
 ## Workflow follow-up
 

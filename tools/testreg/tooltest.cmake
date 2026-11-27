@@ -174,7 +174,7 @@ foreach(want
 		"add_test( ab3_both__a run --source ${s}/ab3/both.test.bas --case a --side port)"
 		"set_tests_properties( ab3_both__a PROPERTIES LABELS emulator TIMEOUT 60 SKIP_RETURN_CODE 77)"
 		"add_test( ab3_both__a_oracle run --source ${s}/ab3/both.test.bas --case a --side oracle)"
-		"set_tests_properties( ab3_both__a_oracle PROPERTIES LABELS oracle TIMEOUT 60 SKIP_RETURN_CODE 77)")
+		"set_tests_properties( ab3_both__a_oracle PROPERTIES LABELS oracle TIMEOUT 120 SKIP_RETURN_CODE 77)")
 	string(FIND "${inc}" "${want}" at)
 	if(at LESS 0)
 		message(FATAL_ERROR "AB3 mode: the include file lacks\n  ${want}\nin\n${inc}")

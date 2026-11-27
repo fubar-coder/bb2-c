@@ -348,7 +348,10 @@ static int add_test(struct treg_result *r, const char *source, const struct tc_c
         if (push(&t.cells, m->cells[c].name))
             goto oom;
         to = tc_cell_value(conf, m, c, tc_key("timeout"), buf);
-        t.timeout += *to ? strtoll(to, NULL, 10) : o->timeout_default;
+        long long limit = *to ? strtoll(to, NULL, 10) : o->timeout_default;
+        t.timeout += limit;
+        if (side == TREG_ORACLE)
+            t.timeout += limit; /* one retry of an AmiBlitz3 session */
     }
     if (!t.cells.n)
         return 0;               /* an empty side */

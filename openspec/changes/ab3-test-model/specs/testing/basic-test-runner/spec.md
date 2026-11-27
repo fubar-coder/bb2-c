@@ -82,6 +82,19 @@ refused naming file and line (AmiBlitz3 runs without its debugger).
 - **WHEN** a test declares `[deviations."compiler=amiblitz3"]` without `variant`
 - **THEN** the registration fails naming the file and the line of the table
 
+### Requirement: Retry an AmiBlitz3 session that times out before running
+The runner SHALL retry an AmiBlitz3 model cell once in a fresh session
+when the emulator times out before the program starts and the cell has
+not completed. The registered test timeout SHALL allow both attempts.
+
+#### Scenario: The emulator times out before the program starts
+- **WHEN** the AmiBlitz3 cell has not completed and its first session times out before starting the program
+- **THEN** the runner stages the cell again and makes one more attempt
+
+#### Scenario: The program has already started
+- **WHEN** the emulator times out after starting the compiled program
+- **THEN** the runner judges the timeout without retrying the cell
+
 ## MODIFIED Requirements
 
 ### Requirement: Registration at build time without the emulator

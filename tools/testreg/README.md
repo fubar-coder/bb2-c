@@ -42,7 +42,7 @@ every deviation is a difference of AmiBlitz3, declared with its
 `variant`), `emulator` for the others, then the
 configuration's `labels`, then `flaky` on both sides of a test with
 the key `flaky`), `TIMEOUT` (the sum of the cells' `timeout`,
-else `--timeout-default`, plus `--timeout-extra`), `SKIP_RETURN_CODE 77`,
+else `--timeout-default`, plus `--timeout-extra`, with a second session limit for each oracle cell), `SKIP_RETURN_CODE 77`,
 `COST` and `FIXTURES_REQUIRED` from `cost` and `fixtures` (a test of the
 label `bug-orig` without `cost`: the sum of its cells' session limits,
 the time it can take, as it fails on purpose and ctest never learns its

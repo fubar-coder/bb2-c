@@ -1301,6 +1301,7 @@ struct cell {
     struct corpus_pass p;
     char *key;                  /* tc_session_key */
     int done;                   /* observed */
+    int retried_timeout;
     enum amiga_emulation_status status;
     int inject;                 /* the program runs through inject (cr_cell_inject) */
     int wrap_inject;            /* the compiler runs through inject (cr_cell_wrap_inject) */
@@ -1833,6 +1834,23 @@ static int run_session(struct cell **cs, size_t n, const char *base, FILE *log, 
             cs[i]->done = 1;
             cs[i]->status = AMIGA_EMULATION_DONE;
             continue;
+        }
+        if (st == AMIGA_EMULATION_TIMEOUT && !bundle &&
+            cs[i]->p.cli == CORPUS_CLI_AMIBLITZ3 && !cs[i]->retried_timeout) {
+            char *run = str_printf("%s/out/" CR_PROGRAM ".run", dirs[i]);
+            struct stat sb;
+
+            if (!run)
+                goto out;
+            int before_run = stat(run, &sb) == -1 && errno == ENOENT;
+            free(run);
+            if (before_run) {
+                /* Leave the cell pending so set_sessions stages it again. */
+                cs[i]->retried_timeout = 1;
+                fprintf(log, "corpusrun case: %s timed out before the program started; retrying once\n",
+                        cs[i]->tag);
+                break;
+            }
         }
         cs[i]->done = 1;
         cs[i]->status = st == AMIGA_EMULATION_HALT ? st : AMIGA_EMULATION_TIMEOUT;

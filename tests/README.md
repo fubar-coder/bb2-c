@@ -1149,7 +1149,7 @@ The fixture must then be in place from the earlier run.
 The preset `oracle` (label `oracle`) holds the tests that run the original
 tool to validate our expectations, in both forms of `tests/ab3`: the
 `amiblitz3` cells of the tests of `tests/ab3/model/` (`ab3_ID__CASE_oracle`,
-one emulator session per case test, never bundled; AmiBlitz3's
+one emulator session per case test on the first attempt; AmiBlitz3's
 differences are their declared deviations), and `ab3_cli_ref_1` …
 `ab3_cli_ref_N`, which compile the command line cases of `tests/ab3`
 marked REF with AmiBlitz3 v3.14.0's own compiler and compare the program
@@ -1157,7 +1157,9 @@ output with the same expect files; `ab3_cli_ref_broken` and
 `ab3_cli_ref_broken_date` check it with a wrong expect file. Amiberry runs
 without the JIT there: the compiler crashes in its exit path under the
 JIT when the host is loaded (#976); now and then a session of AmiBlitz3
-still hangs silently until its time limit.
+still hangs silently until its time limit. The model runner stages and
+retries an AmiBlitz3 cell once if the session times out before the test
+program starts.
 
 The cases of `ab3_cli` and `ab3_cli_ref` run in blocks, one emulator
 session and one test each: `ab3_cli_1` … `ab3_cli_N`, `ab3_cli_ref_1` …

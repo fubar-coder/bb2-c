@@ -119,6 +119,14 @@ and `all` leave them out and `ctest --preset oracle` runs them, as for
 `ab3_cli_ref_N` today. A cell needs original material (side `originals`)
 only as before; `amiblitz3` is never on the side `port` or `originals`.
 
+An AmiBlitz3 model cell that times out before the program starts is
+staged again and retried once. A completed compile failure or a timeout
+after the program starts is judged on the first attempt. Registration
+includes an extra session limit for each AmiBlitz3 cell.
+In the verification run, `ab3_plain__comment_code_oracle` timed out after
+restoring a snapshot and passed on its second session. All 144 AB3
+oracle tests passed.
+
 `Point: a third side with the existing preset — L1 Unlikely / I2 Medium / E3 Proven (CMakePresets.json "oracle": label oracle) → Monitor`
 
 ### D6. A difference of AmiBlitz3 is a declared deviation with its variant.md row
