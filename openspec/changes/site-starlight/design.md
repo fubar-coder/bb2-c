@@ -608,6 +608,73 @@ scripts), against a Hugo build of the same tree.
   first, so every build renders every page (the tests' fresh copy never
   had the cache).
 
+### Group 6 (2026-11-27)
+
+The browser check, the markup comparison with Hugo, the screenshots and
+the one-off scripts are in
+`~/.local/share/bb2-c-work/site-starlight/group6/` (`browser-checks.txt`,
+`markup-hugo-vs-starlight.txt`, `6.1-*.png`, `check.mjs`, `cmp.py`).
+
+- **The component (6.1).** `src/components/FixOverview.astro` with the
+  parts `levels`, `breaking` and `table`, the rows and the Markdown of the
+  data from `src/lib/fix-overview.mjs`. The page is MDX: the converter
+  writes `<FixOverview part="..." />` for the shortcode (and its import),
+  not a directive, so `important-fixes` is the 29th `.mdx` page. Hugo's
+  `markdownify` is Astro's Markdown processor (`createMarkdownProcessor`
+  of `@astrojs/markdown-remark`, a dependency already; GFM and
+  smartypants like the pages) with the paragraph taken off. The script
+  `assets/js/fix-overview.js` is imported by the component (Astro inlines
+  it as a module on the page); the CSS is unchanged in the custom CSS.
+- **Markup.** The table (1023 rows), its head and caption, the levels list
+  and the warning box are Hugo's, attribute for attribute and link for
+  link (`markup-hugo-vs-starlight.txt`), but for the typographer on 5 rows:
+  `""` and `"/"` after a word, which Goldmark makes `“”` and smartypants
+  `""` and `”/”` (the difference group 5 found on the reference pages).
+  The warning box is Starlight's caution aside with its title "Caution",
+  as every converted warning callout; Hugo's callout has no title.
+- **Dark theme.** `assets/css/fix-overview.css` colours the level-1 and
+  level-2 badges in the dark theme by Hextra's `html.dark`;
+  `src/styles/fix-overview.css` repeats the two rules for Starlight's
+  `[data-theme="dark"]` and takes Starlight's margin off the second
+  filter (it stood lower than the first).
+- **Browser check (6.1):** headless Chromium in
+  `mcr.microsoft.com/playwright:v1.52.0-noble` (`--network=none`, request
+  interception, `playwright-core` 1.52.0 from a one-off install in the
+  worktree's `build/`), the same checks on the Starlight and the Hugo
+  build, all passed on both: 1023 rows in the initial order, five sort
+  buttons, `aria-sort` on the Level header first, Component twice (the
+  second time by keyboard) descending with `aria-sort="descending"`,
+  Issue and Fix ascending, level 1 (47 rows) with the count, level 1 and
+  Graphics (13), `?level=3,4` (101, the list showing "3 and 4"),
+  `?topic=Graphics` (237); with JavaScript off all 1023 rows in the
+  initial order, none hidden, no buttons and no filters.
+- **For the visual review (9.0):** at 1400 px the content column (752 px,
+  group 3) breaks the header "Component" inside the word (the column is
+  16 % wide and `overflow-wrap: anywhere`); Hugo's wide page is 832 px.
+- **The check (6.2)** is `checkFixOverview` in `src/lib/fix-overview.mjs`,
+  run by the site's integration in `astro:build:done` before the link
+  check (else a row's broken anchor fails as a broken link of the page,
+  without its row). The data checks, the anchors (heading ids of the
+  output HTML) and the raw-text scan of the converted pages of fixed bugs
+  are Hugo's, with Hugo's messages; the data file is named by its path
+  (`fixoverview (tests/fixoverview/data/no-short.yaml): row #421 has no
+  short`) where Hugo names its data key (`fixtests.no-short`). All
+  messages are listed (`fail` takes a limit, 100 for the other checks):
+  with a test file of one row, every issue of the pages is a message, and
+  the one the test looks for is not among the first 100.
+  `BB2_FIXOVERVIEW_DATA` changes only the overview: the badges of the
+  library fix pages and the command reference keep `data/fixoverview.yaml`,
+  as in Hugo.
+- **Tests (6.2).** `cmake/site-fixoverview-test.cmake` takes
+  `GENERATOR=starlight|hugo`; the Starlight side runs
+  `cmake/site-starlight-test.cmake` with `CASE real` and the variable,
+  whose `KIND error` now also takes `CASE real` (the site broken by `ENV`
+  alone). `site_fixoverview` and `site_fixoverview_*` are the Starlight
+  build (the real case with `BB2_FIXOVERVIEW_DATA=data/fixoverview.yaml`,
+  so that the variable's path is tested too); Hugo's are
+  `site_hugo_fixoverview` and `site_hugo_fixoverview_*`, the same cases and
+  messages, until 9.2 (`site/README.md` names them).
+
 ### Group 7 (2026-11-27)
 
 The browser check and the comparison with Hugo's redirect pages are in

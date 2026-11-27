@@ -220,8 +220,8 @@ as such pages). A table row or list entry under a `###` group heading uses that 
 where two headings of a page have the same text, the second gets an
 explicit id (`### Other fixes {#rwe-other-fixes}`).
 
-The ctest label `site` tests the check: `site_fixoverview` builds the site
-as it is, and `site_fixoverview_*` build it with the broken data files of
+The ctest label `site` tests the check: `site_hugo_fixoverview` builds the site
+as it is, and `site_hugo_fixoverview_*` build it with the broken data files of
 `tests/fixoverview/data/` (through `tests/fixoverview/config.yaml` and the
 site parameter `fixOverviewData`) and expect each to fail with its
 message. The tests need podman and the image above and are skipped

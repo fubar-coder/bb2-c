@@ -1,10 +1,15 @@
 # The check of the overview of fixed original bugs
-# (site/layouts/_partials/fix-overview/check.html), run by Hugo in podman
-# (cmake/site-fixoverview-test.cmake): the site as it is builds cleanly
-# (site_fixoverview), and every broken data file of fixoverview/data/ fails
-# with its message. Label site; skipped (77) without podman or the image.
-# One at a time: they share Hugo's module cache.
+# (cmake/site-fixoverview-test.cmake), in both generators until Hugo is
+# removed (site-starlight, task 9.2): the site as it is builds cleanly, and
+# every broken data file of fixoverview/data/ fails with its message. The
+# Starlight build (src/lib/fix-overview.mjs, the data file named by
+# BB2_FIXOVERVIEW_DATA; a failed build leaves no dist/): site_fixoverview and
+# site_fixoverview_*; Hugo's (layouts/_partials/fix-overview/check.html):
+# site_hugo_fixoverview and site_hugo_fixoverview_*, the same cases and
+# messages. Label site; skipped (77) without podman or the image. One at a
+# time per generator: they share npm's cache or Hugo's module cache.
 set(_site_cache ${CMAKE_BINARY_DIR}/site-hugo-cache)
+set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
 set(_cases
 	"real|"
 	"missing-anchor|row #421 names the anchor \"no-such-section\", which is no heading"
@@ -15,23 +20,36 @@ set(_cases
 	"bad-highlight|row #421 has the highlight \"yes\", not true or false"
 	"duplicate|issue #421 has more than one row"
 	"no-row|issue #999 is linked on [^ ]+ but has no row")
-foreach(c IN LISTS _cases)
-	string(REPLACE "|" ";" c "${c}")
-	list(GET c 0 case)
-	list(GET c 1 expect)
-	if(case STREQUAL "real")
-		set(name site_fixoverview)
+foreach(generator starlight hugo)
+	if(generator STREQUAL "starlight")
+		set(prefix site_fixoverview)
+		set(cache ${_starlight_cache})
+		set(lock site_npm_cache)
+		set(timeout 600)
 	else()
-		set(name site_fixoverview_${case})
-		string(REPLACE "-" "_" name ${name})
+		set(prefix site_hugo_fixoverview)
+		set(cache ${_site_cache})
+		set(lock site_hugo_cache)
+		set(timeout 300)
 	endif()
-	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
-		-DSITE=${PROJECT_SOURCE_DIR}/site -DCASE=${case} "-DEXPECT=${expect}"
-		-DCACHE=${_site_cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
-		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-fixoverview-test.cmake
-		-P ${WITH_WORKDIR})
-	set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
-		RESOURCE_LOCK site_hugo_cache TIMEOUT 300)
+	foreach(c IN LISTS _cases)
+		string(REPLACE "|" ";" c "${c}")
+		list(GET c 0 case)
+		list(GET c 1 expect)
+		if(case STREQUAL "real")
+			set(name ${prefix})
+		else()
+			set(name ${prefix}_${case})
+			string(REPLACE "-" "_" name ${name})
+		endif()
+		add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
+			-DSITE=${PROJECT_SOURCE_DIR}/site -DGENERATOR=${generator} -DCASE=${case}
+			"-DEXPECT=${expect}" -DCACHE=${cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
+			-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-fixoverview-test.cmake
+			-P ${WITH_WORKDIR})
+		set_tests_properties(${name} PROPERTIES LABELS site SKIP_RETURN_CODE 77
+			RESOURCE_LOCK ${lock} TIMEOUT ${timeout})
+	endforeach()
 endforeach()
 
 # The Starlight build (cmake/site-starlight-test.cmake), Node.js in its
@@ -48,7 +66,6 @@ endforeach()
 # the build does not write (site_urls_missing). Label site; skipped (77) without podman or
 # the image or when the dependencies cannot be downloaded. One at a time:
 # they share npm's cache.
-set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
 set(_starlight_cases
 	"site_starlight|real|||"
 	"site_starlight_warning|warning|warning|multiple entries with the same slug|"

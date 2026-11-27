@@ -1,21 +1,50 @@
-# site-fixoverview-test.cmake - builds the website with Hugo (podman, the
-# image of site/README.md) to test the check of the overview of fixed
-# original bugs (site/layouts/_partials/fix-overview/check.html):
+# site-fixoverview-test.cmake - builds the website to test the check of the
+# overview of fixed original bugs:
 #
-#   cmake -DSITE=<repo>/site -DCASE=real|<broken case> [-DEXPECT=regex]
-#         -DCACHE=<dir> -DWORK=<dir> -P site-fixoverview-test.cmake
+#   cmake -DSITE=<repo>/site -DGENERATOR=starlight|hugo -DCASE=real|<broken case>
+#         [-DEXPECT=regex] -DCACHE=<dir> -DWORK=<dir> -P site-fixoverview-test.cmake
 #
 # CASE real: the site as it is must build without errors or warnings.
 # Another CASE names a broken data file site/tests/fixoverview/data/CASE.yaml;
-# the build must fail with output matching EXPECT. CACHE keeps Hugo's
-# module cache between runs (the theme). Exits 77 (skipped) without podman,
-# without the image or when the theme cannot be downloaded.
-set(IMAGE docker.io/hugomods/hugo:go-git-0.165.0)
-foreach(v SITE CASE CACHE WORK)
+# the build must fail with output matching EXPECT.
+#
+# GENERATOR starlight: the Starlight build (cmake/site-starlight-test.cmake,
+# CACHE npm's cache), the check src/lib/fix-overview.mjs; the data file is
+# given by the environment variable BB2_FIXOVERVIEW_DATA (data/fixoverview.yaml
+# for CASE real), and a failed build must leave no dist/.
+# GENERATOR hugo: Hugo in podman (the image of site/README.md), the check
+# layouts/_partials/fix-overview/check.html; the data file is given by the
+# site parameter fixOverviewData (tests/fixoverview/config.yaml), CACHE keeps
+# Hugo's module cache between runs (the theme). Hugo's tests stay until Hugo
+# is removed (site-starlight, task 9.2).
+#
+# Exits 77 (skipped) without podman, without the image or when the theme or
+# the dependencies cannot be downloaded.
+foreach(v SITE GENERATOR CASE CACHE WORK)
 	if(NOT ${v})
 		message(FATAL_ERROR "site-fixoverview-test: ${v} is needed")
 	endif()
 endforeach()
+
+if(GENERATOR STREQUAL "starlight")
+	if(CASE STREQUAL "real")
+		set(ENV BB2_FIXOVERVIEW_DATA=data/fixoverview.yaml)
+		set(KIND "")
+	else()
+		if(NOT EXISTS ${SITE}/tests/fixoverview/data/${CASE}.yaml)
+			message(FATAL_ERROR "site-fixoverview-test: no data file ${SITE}/tests/fixoverview/data/${CASE}.yaml")
+		endif()
+		set(ENV BB2_FIXOVERVIEW_DATA=tests/fixoverview/data/${CASE}.yaml)
+		set(KIND error)
+	endif()
+	set(CASE real)
+	include(${CMAKE_CURRENT_LIST_DIR}/site-starlight-test.cmake)
+	return()
+elseif(NOT GENERATOR STREQUAL "hugo")
+	message(FATAL_ERROR "site-fixoverview-test: GENERATOR is starlight or hugo, not ${GENERATOR}")
+endif()
+
+set(IMAGE docker.io/hugomods/hugo:go-git-0.165.0)
 find_program(PODMAN podman)
 if(NOT PODMAN)
 	message(STATUS "skipped: no podman")

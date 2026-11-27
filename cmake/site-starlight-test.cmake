@@ -14,8 +14,9 @@
 # site/tests/starlight/CASE/, whose files are copied over the copy of the
 # site; the build must then fail: KIND warning (the default) on a warning
 # line matching EXPECT; KIND error (a check of the build) with a non-zero
-# exit status, an output matching EXPECT and no dist/ left behind. ENV: the
-# environment variables of the build (a list of VAR=value).
+# exit status, an output matching EXPECT and no dist/ left behind. KIND
+# error also takes CASE real: the site as it is, broken by ENV alone. ENV:
+# the environment variables of the build (a list of VAR=value).
 # Exits 77 (skipped) without podman, without the image or when the
 # dependencies cannot be downloaded.
 set(IMAGE docker.io/library/node:26.13.1-bookworm-slim)
@@ -74,20 +75,25 @@ endif()
 
 run(build npm run build)
 string(REGEX MATCH "${warning_line}" warning "${out}")
-if(CASE STREQUAL "real")
+if(KIND STREQUAL "error")
+	if(CASE STREQUAL "real")
+		set(what "the build with ${ENV}")
+	else()
+		set(what "the fixture ${CASE}")
+	endif()
+	if(rc EQUAL 0)
+		message(FATAL_ERROR "${what} built without an error:\n${out}")
+	elseif(NOT out MATCHES "${EXPECT}")
+		message(FATAL_ERROR "${what} failed without \"${EXPECT}\" (${rc}):\n${out}")
+	elseif(EXISTS ${WORK}/site/dist)
+		message(FATAL_ERROR "${what} failed, but left ${WORK}/site/dist:\n${out}")
+	endif()
+	string(REGEX MATCH "[^\n]*${EXPECT}[^\n]*" line "${out}")
+	message(STATUS "${what}: the build fails as expected: ${line}")
+elseif(CASE STREQUAL "real")
 	if(NOT rc EQUAL 0 OR warning)
 		message(FATAL_ERROR "the site does not build cleanly (${rc}):\n${out}")
 	endif()
-elseif(KIND STREQUAL "error")
-	if(rc EQUAL 0)
-		message(FATAL_ERROR "the fixture ${CASE} built without an error:\n${out}")
-	elseif(NOT out MATCHES "${EXPECT}")
-		message(FATAL_ERROR "the fixture ${CASE} failed without \"${EXPECT}\" (${rc}):\n${out}")
-	elseif(EXISTS ${WORK}/site/dist)
-		message(FATAL_ERROR "the fixture ${CASE} failed, but left ${WORK}/site/dist:\n${out}")
-	endif()
-	string(REGEX MATCH "[^\n]*${EXPECT}[^\n]*" line "${out}")
-	message(STATUS "${CASE}: the build fails as expected: ${line}")
 elseif(NOT warning)
 	message(FATAL_ERROR "the fixture ${CASE} built without a warning (${rc}):\n${out}")
 elseif(NOT warning MATCHES "${EXPECT}")

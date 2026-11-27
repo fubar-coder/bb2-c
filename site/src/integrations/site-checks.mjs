@@ -13,6 +13,10 @@
 //   cut-over (task 9.1) converts the data and turns it on for good. The
 //   pages are converted from Hugo's at every build until then, and the
 //   converter fails on a shortcode it leaves.
+// * The check of the overview of fixed bugs, after the build
+//   (src/lib/fix-overview.mjs; first, so that a row's broken anchor is
+//   named by its row, not as a broken link): its data against the pages of
+//   fixed bugs, every problem named with its row or issue.
 // * The link check, after the build, over the output (src/lib/links.mjs):
 //   a broken internal link of a page or of the data fails the build,
 //   naming the page or the data file and the link.
@@ -31,6 +35,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { segments, lineOf } from "../lib/markdown.mjs";
 import { checkLinks } from "../lib/links.mjs";
+import { checkFixOverview } from "../lib/fix-overview.mjs";
 import { writeRedirects, checkUrls } from "../lib/redirects.mjs";
 
 /** Every file below dir, as paths relative to dir with "/" */
@@ -65,10 +70,10 @@ export function hugoSyntax(site) {
   return found;
 }
 
-/** Removes the output and throws with the messages */
-function fail(outDir, what, messages, logger) {
+/** Removes the output and throws with the messages (the first limit of them shown) */
+function fail(outDir, what, messages, logger, limit = 100) {
   rmSync(outDir, { recursive: true, force: true });
-  const shown = messages.slice(0, 100);
+  const shown = messages.slice(0, limit);
   const more = messages.length > shown.length ? `\n... and ${messages.length - shown.length} more` : "";
   const text = `${what} (${messages.length}):\n${shown.join("\n")}${more}`;
   logger.error(text);
@@ -114,6 +119,8 @@ export function siteChecks() {
             },
             "astro:build:done"({ dir, logger }) {
               const dist = fileURLToPath(dir);
+              const overview = checkFixOverview(site, dist, base);
+              if (overview.length) fail(dist, "the overview of fixed bugs does not match its pages", overview, logger, Infinity);
               const { errors, links, awaited } = checkLinks(dist, base);
               if (errors.length) fail(dist, "broken internal links", errors, logger);
               const waiting = Object.entries(awaited).map(([task, n]) => `${n} to targets of task ${task}`);

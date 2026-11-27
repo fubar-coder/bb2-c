@@ -153,7 +153,7 @@ Work data (reports, counts, screenshots) goes to
   `assets/css/fix-overview.css` unchanged. Verify: sorting, the filters,
   `?level=3,4` and `?topic=Graphics` work (browser check); with
   JavaScript off the rows are in the initial order and none hidden.
-- [ ] 6.2 Port of `fix-overview/check.html` into the build (design D9),
+- [x] 6.2 Port of `fix-overview/check.html` into the build (design D9),
   same messages; `BB2_FIXOVERVIEW_DATA` selects a test data file; a
   failure removes `dist/`. `cmake/site-fixoverview-test.cmake` and
   `site/tests/CMakeLists.txt` run the Starlight build (Hugo's cases stay

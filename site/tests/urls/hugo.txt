@@ -1,7 +1,7 @@
 # Every URL of the Hugo build (site-starlight, design D10): its pages and
 # its redirect pages (aliases), as site paths without the base, one per
 # line, written once from the output of Hugo (cmake/site-fixoverview-test.cmake,
-# CASE real) on 2026-11-27. Left out: Hugo's taxonomy pages /tags/ and
+# GENERATOR hugo, CASE real) on 2026-11-27. Left out: Hugo's taxonomy pages /tags/ and
 # /categories/ (empty lists; the site has no tags or categories) and the
 # files that are no page (feeds, the sitemap, images, scripts). The
 # Starlight build fails for a URL of this list that is not in its output
