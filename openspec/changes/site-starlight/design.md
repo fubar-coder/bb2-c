@@ -806,7 +806,10 @@ The browser check and the comparison with Hugo's redirect pages are in
   the one-off `typography-compare.py`); the per-page counts of typographic
   characters that still differ come from the comparison (Expressive Code's
   `data-code` attribute, Starlight's `…` placeholder of an empty FileTree
-  folder, the overview of task 6.1 not ported yet).
+  folder, attribute text of the overview's rows). The overview of fixed
+  bugs (group 6, `markdownify` in `src/lib/fix-overview.mjs`) renders its
+  texts with its own processor, which had smartypants: 4 places of `""`
+  differed; it takes the same plugin now, and the page matches Hugo's.
 - **Warnings (8.2, D12).** The full build has no warning line, also with
   the API reference in place (Doxygen's 1015 files in `static/api`, the
   `publicDir` until 9.3); the largest chunk is mermaid's ELK layout,

@@ -105,13 +105,15 @@ export function overviewRows(data) {
 let processor;
 /**
  * Hugo's markdownify: the Markdown text as HTML, rendered by Astro's
- * Markdown processor (GFM and smartypants, as the pages are); a text of one
+ * Markdown processor (GFM, and Hugo's typography as on the pages:
+ * src/plugins/remark-typographer.mjs instead of smartypants); a text of one
  * paragraph without its <p>
  */
 export async function markdownify(md) {
   if (!processor) {
     const { createMarkdownProcessor } = await import("@astrojs/markdown-remark");
-    processor = createMarkdownProcessor({ syntaxHighlight: false });
+    const { remarkTypographer } = await import("../plugins/remark-typographer.mjs");
+    processor = createMarkdownProcessor({ syntaxHighlight: false, smartypants: false, remarkPlugins: [remarkTypographer] });
   }
   const html = (await (await processor).render(String(md ?? ""))).code.trim();
   const m = /^<p>([\s\S]*)<\/p>$/.exec(html);
