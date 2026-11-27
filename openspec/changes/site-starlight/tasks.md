@@ -37,8 +37,9 @@ Work data (reports, counts, screenshots) goes to
   build` exits 0 and prints no warning (the empty i18n collection solved,
   D12); Hugo's build in its image is unchanged (`site_fixoverview` passes).
 - [x] 1.4 The ctest `site_starlight` (label `site`): a CMake script that
-  runs the Starlight build in the pinned Node.js image via podman, in a
-  work directory of its own,
+  runs the Starlight build in the pinned Node.js image via podman (since
+  2026-11-27 also with the host's Node.js at the pinned version, `SITE_NODE`,
+  design D5), in a work directory of its own,
   and fails on a non-zero exit or any warning line; skipped (77) without
   podman or the image or when the dependencies cannot be installed.
   Verify: passes; a deliberately added warning (a test fixture) makes it
