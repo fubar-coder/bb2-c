@@ -54,7 +54,7 @@ coordinator.
 
 ## 6. Site fix and closing
 
-- [ ] 6.1 `site/content/docs/ab3-compared/not-supported.md`: remove `Null` from "Smaller additions" (it compiles as a library call, `ab3-mode-g4` proposal line 71) and update the list to what groups 2 to 5 left open. Verify: the site builds with hugo via podman and the page matches the compiler (a one-line `Null` case compiles).
+- [ ] 6.1 `site/src/content/docs/docs/ab3-compared/not-supported.md`: remove `Null` from "Smaller additions" (it compiles as a library call, `ab3-mode-g4` proposal line 71) and update the list to what groups 2 to 5 left open. Verify: the site builds (`ctest -L site`, site/README.md) and the page matches the compiler (a one-line `Null` case compiles).
 - [ ] 6.2 Final check: clean build without warnings; `ctest --preset all`, `ctest --preset bug-orig`, `ctest --preset oracle`; the `prev` comparison names only group 4's results as changed; `openspec validate ab3-mode-g5 --strict`. Verify: the report lists the results and the table's before/after counts (examples, templates, tests, includes).
 
 ## Workflow follow-up
