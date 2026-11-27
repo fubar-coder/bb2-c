@@ -19,17 +19,17 @@ oracle are tests of this form; the table of `ab3_examples` (change
 ab3-mode-g5) will be one. No move of them into case files is planned.
 
 Not yet moved, each for a technical reason:
-- `tests/ab3` (`ab3_cli`, `ab3_cli_ref`): a cell compiles a generated
-  driver through tedstub with blitz2 and the BB2 library sets and observes
-  the compile result only (`compiler` is `port`, `orig195` or `orig210`,
-  `libs` is `cd` or `clib`); a case of `tests/ab3` is compiled from the
-  command line by blitz2-ab3 in AB3 mode or by AmiBlitz3 v3.14.0 with
-  AmiBlitz3's libraries, and is judged on the compiler's console output and
-  return code, on byte-identical executables and on the hunk layout; the
-  differences of AmiBlitz3 (`NAME.ref.expect`) mostly have no issue. Missing:
-  a spike decides the route (whether the test library loads and runs under
-  AmiBlitz3 and under blitz2-ab3 in AB3 mode, and the time of bundled
-  cases); a move only after the change ab3-mode-g5.
+- the command line cases of `tests/ab3` (`ab3_cli`, `ab3_cli_ref`; its
+  run-output cases are tests of the model in `tests/ab3/model/`, change
+  ab3-test-model): AmiBlitz3's own test programs (fetched, a rewrite would
+  check in a derived copy), the compiler's input files (an include or
+  resident found by its name next to the main source), the source forms a
+  driver cannot have (a tokenised main source with its `.xtra`, a program
+  without `End` or one that ends inside a macro line), and the cases
+  judged on the compiler's console output and return code, on
+  byte-identical executables, on the hunk layout, with other arguments,
+  trees or fixed dates: the model has no query of the compiler's console
+  text and return code, no `SAME` or `HUNKS`.
 - the expect tests of `tests/blitz2` (`NAME.bas` with `NAME.expect`): no
   feature is missing, only the rewrite; the move comes after the change
   expr-tree-5.
