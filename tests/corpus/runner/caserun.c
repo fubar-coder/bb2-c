@@ -841,6 +841,65 @@ void cr_run_free(struct cr_run *r)
     memset(r, 0, sizeof *r);
 }
 
+/* the line l[0..n) without ANSI's ESC [ ... m (AmiBlitz3's bold) and a CR */
+static char *plain_line(const char *l, size_t n)
+{
+    char *r = malloc(n + 1), *o = r;
+
+    if (!r)
+        return NULL;
+    for (size_t i = 0; i < n; i++) {
+        if (l[i] == 0x1b && i + 1 < n && l[i + 1] == '[') {
+            for (i += 2; i < n && l[i] != 'm'; i++)
+                ;
+            continue;
+        }
+        if (l[i] != '\r')
+            *o++ = l[i];
+    }
+    *o = 0;
+    return r;
+}
+
+char *cr_cli_compile(const char *console, int exe, int amiblitz3)
+{
+    const char *p = console ? console : "";
+    char *first = NULL, *r = NULL;
+
+    if (exe)
+        return strdup("ok");
+    while (*p && !r) {
+        size_t n = strcspn(p, "\n");
+        char *l = plain_line(p, n);
+        unsigned long line = 0;
+        char *e, *msg = NULL;
+
+        if (!l)
+            break;
+        if (amiblitz3) {
+            /* "Line N: MESSAGE" behind its "Compiler Error #K in <FILE>:" */
+            if (!strncmp(l, "Line ", 5) && (line = strtoul(l + 5, &e, 10)) && !strncmp(e, ": ", 2))
+                msg = e + 2;
+        } else {
+            /* "FILE:LINE: MESSAGE" (FILE may hold a volume's colon); not a warning */
+            for (char *q = strchr(l, ':'); q && !msg; q = strchr(q + 1, ':'))
+                if (q[1] >= '0' && q[1] <= '9' && (line = strtoul(q + 1, &e, 10)) && !strncmp(e, ": ", 2)
+                    && strncmp(e + 2, "warning:", 8))
+                    msg = e + 2;
+        }
+        if (msg)
+            r = str_printf("error %lu %s", line, msg);
+        else if (!first && strstr(l, "rror") && strncmp(l, "rc=", 3))
+            first = strdup(l);
+        free(l);
+        p += n + (p[n] == '\n');
+    }
+    if (!r)
+        r = str_printf("error ? %s", first ? first : "no executable");
+    free(first);
+    return r;
+}
+
 char *cr_compile_mapped(const char *result, const struct tp_driver *d, const char *file, char **where)
 {
     unsigned long dl;
@@ -1530,7 +1589,32 @@ int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const s
     if (bugorig_observe(&bout, &ob->bo) || cr_parse_run(run, &ob->run))
         goto out;
     comp = bugorig_get(&ob->bo, "compile");
-    {
+    if (c->p->cli) {
+        /* a command-line compile (cli=): the executable and the compiler's
+           console output, the log its output without the rc line */
+        char *exe = str_printf("%s/" CR_PROGRAM, dir), *c1;
+        const char *b = ob->b2 ? ob->b2 : "";
+        size_t n = strlen(b);
+
+        if (!exe)
+            goto out;
+        /* a compile that did not end (no rc line): none */
+        c1 = strncmp(b, "rc=", 3) && !strstr(b, "\nrc=")
+                 ? strdup("none")
+                 : cr_cli_compile(b, access(exe, F_OK) == 0, c->p->cli == CORPUS_CLI_AMIBLITZ3);
+        free(exe);
+        if (!c1)
+            goto out;
+        ob->compile = cr_compile_mapped(c1, d, file, &ob->where);
+        free(c1);
+        /* the last line rc=N is the shell's */
+        if (n && b[n - 1] == '\n')
+            n--;
+        while (n && b[n - 1] != '\n')
+            n--;
+        if (!ob->compile || !(ob->compile_log = strndup(b, strncmp(b + n, "rc=", 3) ? strlen(b) : n)))
+            goto out;
+    } else {
         char *c1 = comp ? strndup(comp, strcspn(comp, "\n")) : strdup("none");
 
         if (!c1)
@@ -1540,7 +1624,7 @@ int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const s
         if (!ob->compile)
             goto out;
     }
-    {
+    if (!c->p->cli) {
         const char *b = bugorig_get(&ob->bo, "blitz2"), *l = bugorig_get(&ob->bo, "log");
 
         if (!(ob->compile_log = str_printf("%s%s", b ? b : "", l ? l : "")))

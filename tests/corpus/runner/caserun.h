@@ -518,6 +518,20 @@ void cr_obs_free(struct cr_obs *ob);
 char *cr_compile_mapped(const char *result, const struct tp_driver *d, const char *file, char **where);
 
 /**
+ * @brief The compile result of a command-line compile (cli=, change
+ *        ab3-test-model D4), in the driver's lines (cr_compile_mapped maps
+ *        them): "ok" if the compiler wrote the executable (exe != 0); else
+ *        blitz2-ab3's first "FILE:LINE: MESSAGE" of its console output that
+ *        is no warning, AmiBlitz3's (amiblitz3 != 0) first "Line LINE:
+ *        MESSAGE" (behind its "Compiler Error #K in <FILE>:"; it returns
+ *        0 after an error) as "error LINE MESSAGE"; without such a line
+ *        "error ? TEXT", TEXT the first line naming an error, else "no
+ *        executable".  ANSI's ESC [ ... m are left out.
+ * @return malloc'd, NULL = out of memory
+ */
+char *cr_cli_compile(const char *console, int exe, int amiblitz3);
+
+/**
  * @brief Print the effective configuration of a test: every key of the top
  *        table and every table key with its value and origin (file:line),
  *        the axes and the cells with their side.

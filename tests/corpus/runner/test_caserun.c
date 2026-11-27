@@ -322,6 +322,79 @@ static void test_cell_ab3(void)
     free(tree);
 }
 
+/* the compile result of a command-line compile (task 3.2): both forms, no
+   executable with rc 0, a warning that is no error, the line mapped */
+static void test_cli_compile(void)
+{
+    static const char ami[] = "file_Open: Unable to read \"Blitz3:System/token_mapping_libs.txt\" : object not found!\n"
+                              "=== Compiling \"CELL0:src/test.ab3\"...\nPass 1...\n"
+                              "\x1b[1mCompiler Error #1 in <CELL0:src/test.ab3>\x1b[0m: \n"
+                              "Line 74: Label not found\n  --> tc_one\n"
+                              "79 line(s) compiled, \x1b[1m1 error(s)!\x1b[0m\nA unknow error happend!\n"
+                              "=== Compiling finished.\nrc=0\n";
+    struct tp_source src;
+    struct tp_driver d;
+    struct tp_params par = { 0 };
+    struct tp_driver_params dp = { 0 };
+    const char *cases[] = { "c" };
+    char text[] = "!TestCase{c}\n  a=1\n  Gosub nowhere\n!EndTestCase\n", err[200], *r, *m, *where;
+
+    r = cr_cli_compile("rc=0\n", 1, 0);
+    CHECK(r && !strcmp(r, "ok"));
+    free(r);
+    r = cr_cli_compile("CORPUS:src/test.ab3:74: Label not Found\nrc=10\n", 0, 0);
+    CHECK(r && !strcmp(r, "error 74 Label not Found"));
+    free(r);
+    /* a warning before the error is no error; a warning alone with the
+       executable is ok */
+    r = cr_cli_compile("CORPUS:src/test.ab3:3: warning: Clash in Residents\nCORPUS:src/test.ab3:9: Syntax Error\n"
+                       "rc=10\n", 0, 0);
+    CHECK(r && !strcmp(r, "error 9 Syntax Error"));
+    free(r);
+    r = cr_cli_compile("test.ab3: warning: Clash in Residents: #c [resclash]\nrc=5\n", 1, 0);
+    CHECK(r && !strcmp(r, "ok"));
+    free(r);
+    /* AmiBlitz3: rc 0 and no executable */
+    r = cr_cli_compile(ami, 0, 1);
+    CHECK(r && !strcmp(r, "error 74 Label not found"));
+    free(r);
+    r = cr_cli_compile("=== Compiling \"x\"...\nA unknow error happend!\nrc=0\n", 0, 1);
+    CHECK(r && !strcmp(r, "error ? A unknow error happend!"));
+    free(r);
+    r = cr_cli_compile("rc=0\n", 0, 1);
+    CHECK(r && !strcmp(r, "error ? no executable"));
+    free(r);
+    r = cr_cli_compile(NULL, 0, 0);
+    CHECK(r && !strcmp(r, "error ? no executable"));
+    free(r);
+    /* mapped to the test source: line 3 of it is the driver's line of the
+       macro text, TLBegin and Goto plus 3 */
+    par.file = "x.test.bas";
+    par.test_id = "x";
+    par.ab3 = 1;
+    CHECK(tp_process(text, strlen(text), &par, &src) == 0);
+    dp.macros = "Macro TestCase\n.tc_`1\nEnd Macro\n";
+    dp.macros_len = strlen(dp.macros);
+    dp.result = CR_RESULT;
+    dp.cases = cases;
+    dp.ncases = 1;
+    CHECK(tp_driver_write(&src, &dp, &d, err, sizeof err) == 0);
+    {
+        char *line = str_printf("CORPUS:src/test.ab3:%u: Label not Found\nrc=10\n", d.first + 2);
+
+        r = line ? cr_cli_compile(line, 0, 0) : NULL;
+        free(line);
+    }
+    m = r ? cr_compile_mapped(r, &d, "x.test.bas", &where) : NULL;
+    CHECK(m && !strcmp(m, "error 3 Label not Found"));
+    CHECK(m && where && !strcmp(where, "x.test.bas:3: Label not Found"));
+    free(r);
+    free(m);
+    free(where);
+    tp_driver_free(&d);
+    tp_free(&src);
+}
+
 static void test_cell_settings(void)
 {
     struct t t;
@@ -1731,6 +1804,7 @@ int main(int argc, char **argv)
     test_cell_passes();
     test_cell_settings();
     test_cell_ab3();
+    test_cli_compile();
     test_cell_refused();
     test_sessions();
     test_parse_run();

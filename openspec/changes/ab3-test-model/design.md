@@ -418,3 +418,10 @@ file of the round.
   whose cells need both (e.g. `source-mode` as an axis of `ab3` cells) is
   refused at run time with exit status 2 (open point: the registration
   accepts it).
+- D4 (task 3.2): AmiBlitz3 names the line of an error ("Compiler Error #1
+  in <FILE>:" then "Line N: MESSAGE", in bold with ANSI escapes, return
+  code 0), so its `compile` is `error LINE MESSAGE` mapped to the test
+  source like blitz2-ab3's; `error ? TEXT` remains for an output without
+  such a line. `compile.log` is the console output without the shell's
+  `rc=` line. Measured: a `Gosub` to a missing label gives `error 3 Label
+  not Found` (blitz2-ab3) and `error 3 Label not found` (AmiBlitz3).
