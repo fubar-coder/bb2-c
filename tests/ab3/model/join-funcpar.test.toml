@@ -1,0 +1,8 @@
+# AmiBlitz3 refuses @@ inside a parenthesised parameter list and makes no
+# executable (docs/ab3/variant.md, row join_funcpar)
+[deviations."compiler=amiblitz3"]
+variant = "join_funcpar"
+compile = "contains \"a bracket ) is expected here\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

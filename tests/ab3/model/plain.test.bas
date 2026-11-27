@@ -318,3 +318,31 @@ l1:
 l2:
   !CheckEq{?l2 - ?l1,4,"l2"}
 !EndTestCase
+; tokens: AB3 mode's tokeniser (spec ab3-compat/tokenizer): a name that
+; contains a command name (show, sub1), a field after '\' and a command
+; name in a string stay as they are, Str$ is the string function
+NEWTYPE .box
+  Width.w
+End NEWTYPE
+Statement show{n.l}
+  SHARED zo$
+  zo$="show "+Str$(n)
+End Statement
+!TestCase{comment_code}
+  ; the text after a colon and an at sign in a comment is code (comments
+  ; are not tokenised: only code without keywords, as with AmiBlitz3)
+; note :@cb=1
+  !CheckEq{cb,1,"l1"}
+  ; indented :@cc=cb+1
+  !CheckEq{cc,2,"l2"}
+!EndTestCase
+!TestCase{tokens}
+  sub1.l = 3 : show{sub1}
+  !CheckStrEq{zo$,"show 3","l1"}
+  tb.box\Width = 7
+  !CheckEq{tb\Width,7,"l2"}
+  ; the command name as the actual value, the expected one in two parts
+  !CheckStrEq{"Print","Pr"+"int","l3"}
+  ta$ = Str$(5)
+  !CheckStrEq{ta$,"5","l4"}
+!EndTestCase

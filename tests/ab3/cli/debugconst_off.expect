@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-0
-release build
-5
-end
-rc=0

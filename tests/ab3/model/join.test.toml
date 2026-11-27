@@ -1,0 +1,3 @@
+# join.test.bas prints the joined statements: their output verbatim
+[asserts]
+output = "== \"abc\nx@@y\n3\nmn\n\""

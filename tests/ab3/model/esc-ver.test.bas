@@ -1,0 +1,12 @@
+; XTRA
+; Version         = 1.2.3
+; NumberOfBuilds  = 42
+; /XTRA
+; esc-ver - \\__VER_* (spec ab3-compat/strings): the Version and
+; NumberOfBuilds of the embedded header, the names in any case. The case
+; prints the strings (asserted in esc-ver.test.toml).
+OPTIMIZE 4
+!TestCase{esc_ver}
+  NPrint "> [\\__VER_MAJOR.\\__VER_MINOR.\\__VER_PATCH/\\__VER_BUILD]"
+  NPrint "> [\\__ver_major]"
+!EndTestCase

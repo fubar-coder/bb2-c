@@ -308,7 +308,6 @@ ab3_cli_case(inctext inctext.ab3 REF)
 ab3_cli_case(inctext_bbname inctext_bbname.ab3 REF)
 ab3_cli_case(inctext_bb2 inctext_bb2.bb)
 # AB3 mode's tokeniser (ab3-mode-g2 task 1.2)
-ab3_cli_case(tokens tokens.ab3 REF)
 # AmiBlitz3's include rules in AB3 mode (ab3-mode-g2 task 4.1): the
 # extension fallback, a refused name, a tokenised include by its name, a
 # repeated XINCLUDE
@@ -360,11 +359,9 @@ ab3_cli_case(wclash_off wclash.ab3 ARGS -w -resclash)
 ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
 ab3_cli_case(wclash_err wclash_err.ab3)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
-ab3_cli_case(opt_code opt_code.ab3 ARGS -r REF)
 ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
 ab3_cli_case(syntax2_none syntax2_none.ab3 ARGS -r REF)
 ab3_cli_case(syntax2 syntax2.ab3 ARGS -r REF SAME syntax2_none)
-ab3_cli_case(runerrs runerrs.ab3 REF REF_EXPECT runerrs.ref.expect)
 ab3_cli_case(runerrs_unpaired runerrs_unpaired.ab3 REF)
 ab3_cli_case(runerrs_overflow runerrs_overflow.ab3 REF)
 ab3_cli_case(sect_chip sect_chip.ab3 ARGS -r REF HUNKS code,data+chip)
@@ -382,34 +379,24 @@ ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
 ab3_cli_case(macro_off macro_off.ab3 REF)
 ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
-ab3_cli_case(comment_code comment_code.ab3 REF)
 # a '~' inside a string literal is an ordinary character (#966), as with
 # AmiBlitz3 (its constant maker has another marker)
-ab3_cli_case(join join.ab3 REF)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
 # in an include @@ joins every form inside a Macro definition (also on
 # its Macro line), as in AmiBlitz3
 ab3_cli_case(join_incmacro join_incmacro.ab3 REF)
-ab3_cli_case(join_op join_op.ab3 REF REF_EXPECT join_op.ref.expect)
 # @@ after a comma inside parentheses with a parameter still to come
-ab3_cli_case(join_funcpar join_funcpar.ab3 REF REF_EXPECT join_funcpar.ref.expect)
 # @@ on an End Macro line is an error (AmiBlitz3 ignores it there)
 ab3_cli_case(join_endmacro join_endmacro.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 ab3_cli_case(join_endmacro1 join_endmacro1.ab3 REF REF_EXPECT join_endmacro.ref.expect)
 # the constants of the include mechanism: #__include, #__debug, CNIF @
 ab3_cli_case(incguard incguard.ab3 REF)
-ab3_cli_case(cnifdef cnifdef.ab3 ARGS -r REF)
 # #__debug (change debug-constant): -1 with runtime error checking, 0
 # without; ab3_cli_ref passes no -r, so debugconst_r is ours only, and
 # AmiBlitz3 has no debugger in CLI mode (no Defaultdbug): 0 for
 # debugconst_on too (docs/ab3/variant.md)
-ab3_cli_case(debugconst_on debugconst_on.ab3 REF REF_EXPECT debugconst_on.ref.expect)
-ab3_cli_case(debugconst_off debugconst_off.ab3 REF)
-ab3_cli_case(debugconst_r debugconst_on.ab3 ARGS -r)
 # a resident with its own #__debug (all.res): the compile's value
-ab3_cli_case(debugconst_res debugconst_res.ab3 REF REF_EXPECT debugconst_res.ref.expect)
-ab3_cli_case(debugconst_res_r debugconst_res.ab3 ARGS -r)
 ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # AmiBlitz3's test programs G2 makes compile (ab3-mode-g2 task 5.1;
 # memoryleak_test above with its OPTIMIZE 13 line; exec_data above, an
@@ -445,7 +432,6 @@ ab3_cli_case(ptr_exprlast ptr_exprlast.ab3 REF)
 ab3_cli_case(ptr_exprconst ptr_exprconst.ab3 REF)
 ab3_cli_case(ptr_addr ptr_addr.ab3 REF)
 ab3_cli_case(ptr_paren ptr_paren.ab3 REF)
-ab3_cli_case(ptr_accept ptr_accept.ab3 REF)
 ab3_cli_case(ptr_bb2 ptr_bb2.bb)
 # a Function called as a statement (change ab3-function-statement, spec
 # ab3-compat/syntax-rules): numeric, string, without parameters, BB2 mode;
@@ -503,7 +489,6 @@ ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
 ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
 ab3_cli_case(esc_prefix_func esc_prefix_func.ab3 REF REF_EXPECT esc_prefix_func.ref.expect)
 ab3_cli_case(esc_prefix_ver esc_prefix_ver.ab3 REF REF_EXPECT esc_prefix_ver.ref.expect)
-ab3_cli_case(esc_ver esc_ver.ab3 REF)
 ab3_cli_case(esc_pointer esc_pointer.ab3 REF REF_EXPECT esc_pointer.ref.expect)
 # the date of the compile (DateStamp under inject)
 ab3_cli_case(esc_date esc_date.ab3 REF DATESTAMP 2026-10-25)

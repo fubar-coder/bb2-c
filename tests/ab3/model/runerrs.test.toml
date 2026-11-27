@@ -1,0 +1,14 @@
+# the last a(9) is checked: the requester ends the program, l5 is not
+# reached
+[asserts]
+requester = "contains \"Array Subscript out of Range\""
+"check.runerrs.l5" = "== not-run"
+"end.case" = "not exists"
+
+# AmiBlitz3 runs without its debugger: the last a(9) is not checked
+# (docs/ab3/variant.md, row runerrs)
+[deviations."compiler=amiblitz3"]
+variant = "runerrs"
+requester = "count == 0"
+"check.runerrs.l5" = "== ok"
+"end.case" = "exists"

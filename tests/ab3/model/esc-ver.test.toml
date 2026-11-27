@@ -1,0 +1,3 @@
+# esc-ver.test.bas prints the strings: their output verbatim
+[asserts]
+output = "== \"> [1.2.3/42]\n> [1]\n\""

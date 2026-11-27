@@ -1,0 +1,18 @@
+# the case with and without -r; AmiBlitz3 only without (as ab3_cli_ref)
+exclude = ["compiler=amiblitz3,runtime-errors=off"]
+
+[matrix]
+runtime-errors = ["on", "off"]
+
+# with -r: no runtime error checking, #__debug is 0 (the old case
+# debugconst_res_r)
+[asserts."runtime-errors=off"]
+"check.debugconst_res.l1" = "== fail"
+"check.debugconst_res.l1.actual" = "== 0"
+
+# AmiBlitz3's command line has no debugger: all.res's #__debug, 0
+# (docs/ab3/variant.md, row debugconst_res)
+[deviations."compiler=amiblitz3"]
+variant = "debugconst_res"
+"check.debugconst_res.l1" = "== fail"
+"check.debugconst_res.l1.actual" = "== 0"

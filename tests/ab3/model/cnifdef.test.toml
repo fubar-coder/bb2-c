@@ -1,0 +1,2 @@
+# compiled with -r (no runtime error checking), on both compilers
+runtime-errors = "off"
