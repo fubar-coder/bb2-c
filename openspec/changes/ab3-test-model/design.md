@@ -450,3 +450,26 @@ file of the round.
   (the deviation `compile = "contains ..."`). A one-off comparison
   (scratchpad, D12 point 3 (c)/(d)) reads the result files of a run kept
   by a failing assertion in a copy of the test's configuration.
+- The moves (group 6, measured): AmiBlitz3's `Restore` of a `.label`
+  above it reads nothing, so the Data of a test stands behind its case
+  (esc_data, tilde_string, byte_fraction_whole); AmiBlitz3 refuses a
+  character literal of a byte from $80 inside a macro argument
+  (latin1_string assigns it first); a check between two calls of a FAST
+  Statement overwrites its locals on both compilers (proc_fastkeep calls
+  it twice in one line); a statement behind a label needs a token
+  (`.zgo Let ...`); the runner reads no exit code behind NUL bytes of the
+  output (esc_repeat0 on AmiBlitz3: `rc = "not exists"`). The oracle
+  side's case tests run one AmiBlitz3 session each (a case test of a
+  file with several cases compiles the whole driver and runs its case):
+  the single file of the plain cases does not save sessions on the
+  oracle side, only the port side's bundles share them.
+- Expression matrix (task 7.1): `exprmatrix expect` writes
+  `tests/ab3/model/exprmatrix/ID.test.bas` with `em_case_text`, the
+  checks of the corpus tests, and `ID.test.toml` with
+  `runtime-errors = "off"` and AmiBlitz3's measured values as the
+  deviations of its cells; the variant row by the issue of the fixed
+  cells (`ab3_variant`: #1177, #1187, #234), a difference without a row
+  stops the generator. The old `cli/exprmatrix/` is no longer the
+  generator's (task 7.2 removes it). AmiBlitz3's measured values of the
+  #1187 cells hold in the new form too (the checks between the cells do
+  not change d1 at the `If`).

@@ -322,8 +322,8 @@ set_tests_properties(corpus_serial_expect_same_broken PROPERTIES WILL_FAIL TRUE)
 # measured values tests-exprmatrix/measured.tsv; the target
 # expr-matrix-update writes its tests (tests of the BASIC test model in
 # tests/bug-orig: exprmatrix/, compiler/compiler-expr-*,
-# regression/compiler-expr-refused-*; the AmiBlitz3 cases in
-# tests/ab3/cli/exprmatrix) and tests-exprmatrix/left-out.txt; the host
+# regression/compiler-expr-refused-*; the AmiBlitz3 tests in
+# tests/ab3/model/exprmatrix) and tests-exprmatrix/left-out.txt; the host
 # test exprmatrix_committed compares them with a fresh generation.
 set(exprmatrix_dir ${CMAKE_CURRENT_SOURCE_DIR}/tests-exprmatrix)
 add_custom_target(expr-matrix-update

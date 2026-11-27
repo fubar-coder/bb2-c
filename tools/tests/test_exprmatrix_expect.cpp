@@ -4,7 +4,7 @@
 // an open cell, one of two issues' values, a refused one, one refused
 // after a fix, an index cell unchecked and checked) gives the tests of the
 // BASIC test model with their names, cases, checks, settings and
-// deviations, and the AmiBlitz3 cases of the agreement and fixed sources;
+// deviations, and the AmiBlitz3 tests of the agreement and fixed sources;
 // the cells of an issue fixed after the matrix stay in their bug-orig
 // tests with fixed-orig (T1); a value the model does not know needs its
 // measured row; the generator's own files are recognised by their path.
@@ -94,7 +94,7 @@ static const char *const AB3REF = "dl-mod-l-cb-A\t-\t1\t1\t1\t1\t!noncompile:Ill
 
 static const std::string SRC = "tests/corpus/tests-exprmatrix/", COR = "tests/bug-orig/exprmatrix/",
                          BUG = "tests/bug-orig/compiler/", REG = "tests/bug-orig/regression/",
-                         AB3 = "tests/ab3/cli/exprmatrix/";
+                         AB3 = "tests/ab3/model/exprmatrix/";
 
 // the line of text in the file (1 = the first), 0: not there
 static int line_of(const std::string &file, const std::string &text)
@@ -206,7 +206,7 @@ TEST_CASE("exprmatrix expect: deviations and fixed-orig", "[exprmatrix]")
     CHECK(g.has(BUG + "compiler-expr-1178-1189-dl-b-01.test.bas", "!CheckEq{rl,-3,\"dl-pow-q-b-B\"}"));
     // no file of the old form
     for (const auto &[path, text] : g.files) {
-        CHECK(path.find(".expect") == std::string::npos || path.compare(0, AB3.size(), AB3) == 0);
+        CHECK(path.find(".expect") == std::string::npos);
         CHECK(path.find(".out") == std::string::npos);
         CHECK(text.find("@fixed-orig") == std::string::npos);
         CHECK(text.find("@pass") == std::string::npos);
@@ -241,45 +241,54 @@ TEST_CASE("exprmatrix expect: the refused cells as data sources", "[exprmatrix]"
                 "\n[deviations.\"compiler=orig195\"]\n\"data.and-C-I.bas\" = \"== ok\"\n"));
 }
 
-TEST_CASE("exprmatrix expect: the AmiBlitz3 cases", "[exprmatrix]")
+TEST_CASE("exprmatrix expect: the AmiBlitz3 tests", "[exprmatrix]")
 {
     gen g(std::string(HEAD) + POW + AB3REF);
 
     REQUIRE(g.rc == 0);
-    // an agreement source: the cells AmiBlitz3 compiles, the port's output,
-    // no file of AmiBlitz3's own where it gives the same
+    // an agreement source: a test of the model with the cells AmiBlitz3
+    // compiles, checked with the port's values, compiled with -r, no
+    // deviation where AmiBlitz3 gives the same
     {
-        std::string b = g.file(AB3 + "dl-A-agree-01.ab3");
-        CHECK(b.find("dl-add-w-l-A") != std::string::npos);
-        CHECK(b.find("\"dl-mod-l-cb-A") == std::string::npos);
+        std::string b = g.file(AB3 + "dl-a-agree-01.test.bas");
+        CHECK(b.find("!TestCase{cells}\n") != std::string::npos);
+        CHECK(b.find("  rl=vw + vl : !CheckEq{rl,101000,\"dl-add-w-l-A\"}\n") != std::string::npos);
+        CHECK(b.find("\"dl-mod-l-cb-A\"") == std::string::npos);
         // the header as one text (its lines are wrapped)
         for (size_t at; (at = b.find("\n; ")) != std::string::npos;)
             b.replace(at, 3, " ");
         CHECK(b.find("2 of its 3 cells, the 1 AmiBlitz3 refuses left out") != std::string::npos);
     }
-    CHECK(g.file(AB3 + "dl-A-agree-01.expect")
-          == "[compile]\nrc=0\n[run]\ndl-add-w-l-A 101000\ndl-mod-cl-cb-A 1\nrc=0\n");
-    CHECK(g.file(AB3 + "dl-A-agree-01.ref.expect") == "(no file)");
-    // a fixed source: AmiBlitz3 has the original's value (#1177)
-    CHECK(g.file(AB3 + "db-A-fix1177-01.expect") == "[compile]\nrc=0\n[run]\ndb-lt-q-l-A -1\nrc=0\n");
-    CHECK(g.file(AB3 + "db-A-fix1177-01.ref.expect") == "[compile]\nrc=0\n[run]\ndb-lt-q-l-A 0\nrc=0\n");
-    // no case of a baseline or a checked source
-    CHECK(g.file(AB3 + "dl-A-base-01.ab3") == "(no file)");
-    CHECK(g.file(AB3 + "i2-I-c-agree-01.ab3") == "(no file)");
-    // the case list for tests/ab3
-    {
-        std::string c = g.file(AB3 + "cases.cmake");
-        CHECK(c.find("ab3_cli_case(dl-A-agree-01 dl-A-agree-01.ab3 DIR exprmatrix ARGS -r REF)\n") != std::string::npos);
-        CHECK(c.find("ab3_cli_case(db-A-fix1177-01 db-A-fix1177-01.ab3 DIR exprmatrix ARGS -r REF REF_EXPECT "
-                     "db-A-fix1177-01.ref.expect)\n")
-              != std::string::npos);
-        CHECK(c.find("dl-A-base-01") == std::string::npos);
-    }
-    CHECK(g.report.find("AmiBlitz3 cases ") != std::string::npos);
+    CHECK(g.has(AB3 + "dl-a-agree-01.test.toml", "\nruntime-errors = \"off\"\n"));
+    CHECK(!g.has(AB3 + "dl-a-agree-01.test.toml", "deviations"));
+    // a fixed source: AmiBlitz3 has the original's value (#1177), the
+    // deviation of its cells with the variant.md row
+    CHECK(g.has(AB3 + "db-a-fix1177-01.test.bas", "!CheckEq{rb,-1,\"db-lt-q-l-A\"}"));
+    CHECK(g.has(AB3 + "db-a-fix1177-01.test.toml",
+                "\n[deviations.\"compiler=amiblitz3\"]\nvariant = \"compiler-quick-compare\"\n"
+                "\"check.cells.db-lt-q-l-A\" = \"== fail\"\n\"check.cells.db-lt-q-l-A.actual\" = \"== 0\"\n"));
+    // the Print cells by their output
+    CHECK(g.has(AB3 + "print-a-agree-01.test.toml", "\n[asserts]\noutput = \"== \\\"print-add-w-l-A 101000\\n"));
+    // no test of a baseline or a checked source, no file of the old form
+    CHECK(g.file(AB3 + "dl-a-base-01.test.bas") == "(no file)");
+    CHECK(g.file(AB3 + "i2-i-c-agree-01.test.bas") == "(no file)");
+    for (const auto &f : g.files)
+        CHECK(f.first.compare(0, 15, "tests/ab3/cli/") != 0);
+    CHECK(g.report.find("AmiBlitz3 tests ") != std::string::npos);
 }
 
-// T1 (quick-long-arithmetic, design decision 13): the cells of an issue
-// fixed after the matrix stay in their bug-orig tests, with fixed-orig
+TEST_CASE("exprmatrix expect: a difference of AmiBlitz3 without its variant row", "[exprmatrix]")
+{
+    // AmiBlitz3 differs in an agreement cell: no row of docs/ab3/variant.md
+    // records it, the generator stops
+    gen g(std::string(HEAD) + POW + "dl-add-w-l-A\t-\t101000\t101000\t101000\t101000\t7\t\t\t\t\n");
+
+    CHECK(g.rc == 1);
+    CHECK(g.errors.find("dl-A-agree-01: AmiBlitz3 differs in 1 cells of issue (none), which has no row of "
+                        "docs/ab3/variant.md")
+          != std::string::npos);
+}
+
 TEST_CASE("exprmatrix expect: an issue fixed after the matrix", "[exprmatrix]")
 {
     gen now(std::string(HEAD) + POW, EM_RULES_MATRIX);
@@ -354,8 +363,10 @@ TEST_CASE("exprmatrix expect: the files of its own", "[exprmatrix]")
     CHECK(em_expect_owns("tests/bug-orig/regression/compiler-expr-refused-and.test.bas"));
     CHECK(em_expect_owns("tests/bug-orig/regression/compiler-expr-refused-and.test/F-I.bas"));
     CHECK(!em_expect_owns("tests/bug-orig/regression/compiler-expr-depth-d7.test.bas"));
-    CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3"));
-    CHECK(em_expect_owns("tests/ab3/cli/exprmatrix/cases.cmake"));
+    CHECK(em_expect_owns("tests/ab3/model/exprmatrix/dl-a-agree-01.test.bas"));
+    CHECK(em_expect_owns("tests/ab3/model/exprmatrix/dl-a-agree-01.test.toml"));
+    CHECK(!em_expect_owns("tests/ab3/model/plain.test.bas"));
+    CHECK(!em_expect_owns("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3"));
     CHECK(!em_expect_owns("tests/ab3/cli/atoi.ab3"));
 }
 

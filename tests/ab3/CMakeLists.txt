@@ -69,6 +69,7 @@ equivalence_pass(ab3_bb2_equivalence_runerr on)
 
 # The run-output cases of AB3 mode as tests of the BASIC test model
 # (change ab3-test-model; cmake/basic-test-model.cmake): model/*.test.bas
+# and the expression matrix's model/exprmatrix/*.test.bas (exprmatrix expect)
 # with the cells compiler = "ab3" (blitz2-ab3, side port, label emulator)
 # and "amiblitz3" (AmiBlitz3's own compiler, side oracle, label oracle),
 # ctest ab3_ID__CASE and ab3_ID__CASE_oracle.  Their drivers are AB3
@@ -78,7 +79,7 @@ equivalence_pass(ab3_bb2_equivalence_runerr on)
 # With a prev build each test's driver is compiled by blitz2-ab3 of both
 # commits (ab3_ID_prev, once per runtime-errors of its ab3 cells; AmiBlitz3
 # is not compared).
-basic_test_register(ab3_ ${CMAKE_CURRENT_SOURCE_DIR}/model "*.test.bas"
+basic_test_register(ab3_ ${CMAKE_CURRENT_SOURCE_DIR}/model "*.test.bas" "exprmatrix/*.test.bas"
 	VARIANTS ${PROJECT_SOURCE_DIR}/docs/ab3/variant.md PREV "." AB3)
 
 # AB3 mode's token list (spec ab3-compat/libraries): blitz2-ab3's

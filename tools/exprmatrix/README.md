@@ -421,22 +421,31 @@ line (`"data.NAME.bas" = "== \"error N Illegal Operator for Type\""`);
 its case only makes the driver.
 
 The agreement and fixed sources of a destination, parameter, `If` or
-`Print` context and the unchecked index sources are also AmiBlitz3 cases
-(`tests/ab3`, design decision 9 of the change), named by the source name
-(`dl-A-agree-01`): a source that prints `KEY VALUE` per cell
-(`em_source_text`) as `.ab3`, without the cells AmiBlitz3 refuses (its measured `!noncompile`) and
-without the `If` cells AmiBlitz3 folds to a Float constant (arithmetic
-or a unary minus of constants, one with a fraction: AmiBlitz3 tests d1
-there, #1187, and a folded constant leaves d1 as the line before left
-it, so the value depends on the source). The case is compiled with `-r`
-(runtime error checking off, as the corpus test; AB3 mode's own default
-is on, which makes a later index a Long). Its expected output is that of
-blitz2-ab3 in AB3 mode, the port's compiler with AmiBlitz3's libraries:
-the port's value with the CD's libraries (AmiBlitz3's libraries have the
-CD's #199 and #234); AmiBlitz3's own expected output is its measured
-values where one differs. The baseline
-and checked sources have no case (AmiBlitz3's checked mode was not
-measured).
+`Print` context and the unchecked index sources are also AmiBlitz3 tests
+(`tests/ab3/model/exprmatrix/`, design decision 9 of the change; change
+`ab3-test-model`): tests of the BASIC test model of the directory's
+cells `compiler = "ab3"` (blitz2-ab3) and `compiler = "amiblitz3"`
+(AmiBlitz3's compiler, preset `oracle`), the id the source name in lower
+case (`dl-a-agree-01`), one case `cells` that checks each cell under its
+key as the corpus test does (`em_case_text`; the `Print` cells by their
+`output`), without the cells AmiBlitz3 refuses (its measured
+`!noncompile`) and without the `If` cells AmiBlitz3 folds to a Float
+constant (arithmetic or a unary minus of constants, one with a fraction:
+AmiBlitz3 tests d1 there, #1187, and a folded constant leaves d1 as the
+line before left it, so the value depends on the source). The test is
+compiled with `-r` (`runtime-errors = "off"`: runtime error checking off,
+as the corpus test; AB3 mode's own default is on, which makes a later
+index a Long). Its checks have the values of blitz2-ab3 in AB3 mode, the
+port's compiler with AmiBlitz3's libraries: the port's value with the
+CD's libraries (AmiBlitz3's libraries have the CD's #199 and #234);
+AmiBlitz3's measured values where one differs are the deviations of its
+cells (`"check.cells.KEY" = "== fail"`, `.actual`, or the `output`),
+with `variant` the row of `docs/ab3/variant.md` that records them by the
+issue of the fixed cells (`ab3_variant` in `expect.c`: #1177
+`compiler-quick-compare`, #1187 `compiler-float-condition`, #234
+`compiler-operand-order`); a difference without such a row stops the
+generator (exit status 1). The baseline and checked sources have no
+test (AmiBlitz3's checked mode was not measured).
 
 | File | What |
 |---|---|
@@ -447,8 +456,7 @@ measured).
 | `tests/bug-orig/regression/compiler-expr-refused-OP.test.bas`, `.test.toml`, `.test/L-R[-c].bas` | the cells of the operator `OP` the originals and the port refuse, one data source per operand classes |
 | `tests/corpus/tests-exprmatrix/left-out.txt` | the cells left out, with the reason (a question, a port that differs) |
 | `tests/corpus/tests-exprmatrix/named-cells.tsv` | the named cells of `expr-tree-5-operand-typing`: every cell whose model value under the decided rule (`EM_RULES_DECIDED`) differs from the port's, with both values; the only matrix cells its implementation may change |
-| `tests/ab3/cli/exprmatrix/NAME.ab3`, `NAME.expect`, `NAME.ref.expect` | the AmiBlitz3 case of a corpus test: its source, the port's output (`ab3_cli_N`) and, where AmiBlitz3 differs, AmiBlitz3's (`ab3_cli_ref_N`, `REF_EXPECT`) |
-| `tests/ab3/cli/exprmatrix/cases.cmake` | the `ab3_cli_case` lines of the cases, included by `tests/ab3/CMakeLists.txt` |
+| `tests/ab3/model/exprmatrix/ID.test.bas`, `.test.toml` | the AmiBlitz3 test of a corpus test: ctest `ab3_ID__cells` (blitz2-ab3, side port) and `ab3_ID__cells_oracle` (AmiBlitz3); AmiBlitz3's values where they differ as the deviations of its cells |
 
 The measured values (`measured.tsv`, written by `classify -m`): the rows
 of the measured table of task 1.3 where the model does not know a value
@@ -482,7 +490,7 @@ errors of a description or a table as `FILE:LINE: message`.
 The tests are host tests: registered only in `build/amiga/host` (in
 `build/amiga` they run together as the single test `host`). Run one with
 `ctest --test-dir build/amiga/host -R NAME`.
-* `tests/ab3/CMakeLists.txt` includes the generated `cases.cmake`.
+* `tests/ab3/CMakeLists.txt` registers the tests of `tests/ab3/model/exprmatrix/`.
 * Tasks 2.3 and 2.4 of the change: `classify` on the measurement of task
   1.3 (`-m` wrote `tests/corpus/tests-exprmatrix/measured.tsv`).
 
