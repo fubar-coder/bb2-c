@@ -508,6 +508,19 @@ enum { EM_CAND_FLOW, EM_CAND_C1, EM_CAND_C2, EM_CAND_C3, EM_CAND_C4, EM_CAND_C5,
    it) */
 #define EM_RULES_PORTFIX EM_RULES_DECIDED
 
+/*
+ * The rules of the OpenSpec change type-system-rework (model.c, "the rules
+ * of type-system-rework"; written from the change's spec delta
+ * compiler/expression-types): every operation typed by its operator and
+ * its operands, the destination only converting the finished value except
+ * for the named exceptions.  EM_R_TSR replaces the typing of every
+ * expression without a string; the other rules of EM_RULES_TSR are the
+ * port's (the C libraries) for the string cells it leaves to them.  The
+ * P+ sets above stay until task 8.0 of the change (Q11).
+ */
+#define EM_R_TSR (1ull << 38)
+#define EM_RULES_TSR (EM_R_TSR | EM_RULES_FIXED)
+
 /* the short name of candidate n ("flow", "C1", ...) and its title */
 const char *em_cand_name(int n);
 const char *em_cand_title(int n);

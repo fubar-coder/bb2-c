@@ -1531,7 +1531,7 @@ static int expression(struct ev *e, const struct em_set *s, const struct em_cell
 
     /* the candidates of expr-tree-5 type numbers only: a string cell keeps
        today's rules */
-    if ((e->rules & EM_R_CANDMASK) && c->left != EM_S && c->right != EM_S)
+    if ((e->rules & (EM_R_CANDMASK | EM_R_TSR)) && c->left != EM_S && c->right != EM_S)
         return cand_expression(e, s, c, asked, r);
     if (c->right < 0) {
         fetch(e, c->left, s->value[c->left], &T, r);
@@ -3963,6 +3963,835 @@ static int c7root(struct cev *c, const struct em_tnode *root, int asked, struct 
 
 /* ------------------------------------------------------- the evaluation */
 
+/* ============================================ the rules of type-system-rework */
+
+/*
+ * EM_R_TSR (exprmatrix.h, EM_RULES_TSR): the rules of the OpenSpec change
+ * type-system-rework, written from its spec delta
+ * (openspec/changes/type-system-rework/specs/compiler/expression-types/
+ * spec.md) and not from the compiler.  Each rule names its decision as
+ * the rule table of the change's design.md does, by the heading of the
+ * user's answer in ~/.local/share/bb2-c-work/decisions/rounds/tree/
+ * decisions.md; all of 2026-11-27, cited below by these short names:
+ *
+ *   direction  "Rework of the whole type system (direction)"
+ *   round 1    "Type system rework, round 1: width, constants, whole
+ *              division, conversion"
+ *   round 2    "Type system rework, round 2: bit operators, shifts,
+ *              overflow, no destination"
+ *   round 3    "Type system rework, round 3: comparisons, point constants,
+ *              the shift exception, AB3"
+ *   round 4/5  "Type system rework, round 4: the shift exception's reach;
+ *              planning", "..., round 5: LSR vs LSL in the shift exception"
+ *   Q9 Q6 Q8   "type-system-rework Q9, Q12, Q6, Q8"
+ *   Q1 Q2 Q4   "type-system-rework Q1, Q2, Q4, Q7"
+ *   Q5 Q13-Q17 "type-system-rework Q3, Q5, Q10, Q13-Q15, Q17"
+ *   widths     "type-system-rework: shift widths"
+ *   Q12 X      "type-system-rework Q12 classes", class X
+ *   N1 N2      "type-system-rework N1, N2"
+ *   I1-I9      "type-system-rework I1–I3", "... I4" ... "... I8",
+ *              "type-system-rework I9 and exception warnings"
+ *   item 29    "type-system-rework conflict item 29 (destination influence)"
+ *
+ * Every node gets its class from its operator and its operands
+ * (tsr_class): whole (a width of 8, 16 or 32 bits), 48.16 or Float; the
+ * destination only converts the finished value (tsr_convert), except for
+ * the named exceptions, which reach a node from the root (TSR_C1, TSR_E)
+ * or concern the root's operation (D, J) ("direction"; conflict item 29
+ * "Richtung + Ausnahmeliste": a closed list).  A value (struct tv) is
+ * exact in its class: a whole number in its width, a 48.16 number as
+ * value * 65536 in 64 bits (it wraps beyond 48 integer bits), a Float in
+ * Motorola FFP; a 48.16 or Float division by 0 is plus or minus infinity.
+ */
+
+enum { K_W = 1, K_Q = TQ, K_F = TF, K_P = 6 };      /* K_P: a constant with a point, its class not decided yet */
+
+/* how a node is reached from the root */
+enum {
+    TSR_ROOT = 1,               /* the whole expression */
+    TSR_C1 = 2,                 /* only through + - * / and the unary minus (the whole-division exception) */
+    TSR_E = 4                   /* only through + - (the shift exception) */
+};
+
+/* what a node's parent tells it about the other operand of its operator */
+enum {
+    SIB_NONE = 0,               /* no other operand (the root, a unary operator, a shift count) */
+    SIB_PROBE = 8,              /* the class of the node by itself, for the parent to decide */
+    SIB_SHIFTL = 9,             /* the left operand of a shift */
+    SIB_FTOP = 10               /* an operand of the top operation computed in Float (D) */
+    /* else K_W, K_Q, K_F: the decided class of the other operand */
+};
+
+struct tty {
+    int k, n;                   /* the class, the width of a whole number */
+    int refused;                /* "Illegal Operator for Type" (or a constant divisor 0, tsr_eval) */
+    int lsib, rsib, lreach, rreach;     /* what the operands are told */
+    int ftop;                   /* D: the top operation under a Float destination in Float */
+    int div;                    /* a whole / that keeps its fraction beside a Quick (C3) when told so */
+    int shiftx;                 /* E: a right shift with 16 fraction bits */
+    int jwrap;                  /* J: the top left shift converted to the Quick wrapped */
+};
+
+struct tv {
+    int k, n;
+    int64_t v;                  /* K_W: the value in its width; K_Q: value * 65536 */
+    uint32_t f;                 /* K_F */
+    int inf;                    /* K_Q, K_F: +1 / -1 infinity (a division by 0, Q4) */
+    int jwrap;
+};
+
+struct tsr {
+    struct ev *e;
+    int dest;                   /* TB..TF; 0: none (Print, If) */
+    double powscale;            /* ^: SPPow's result scaled (its last bits are not modelled) */
+    int powzero;                /* ^: a result below FFP's range 0 */
+    int haspow, powtiny, powunknown;
+};
+
+static int64_t wrapw(int64_t v, int n)
+{
+    return n == 8 ? (int8_t)v : n == 16 ? (int16_t)v : (int32_t)(uint32_t)v;
+}
+
+/* whole operations one step wider: Byte to Word, Word to Long, Long stays
+   ("round 1 (width)", "Q6 Bestätigen, beides": the unary minus too) */
+static int wider(int n)
+{
+    return n == 8 ? 16 : 32;
+}
+
+static int is_shift(enum em_op o)
+{
+    return o >= EM_LSL && o <= EM_ASR;
+}
+
+static int is_pointconst(const struct em_tnode *n)
+{
+    return n->kind == TN_CONST && strchr(n->text, '.') != NULL;
+}
+
+/* a constant with a point exact in 16.16 (a literal has no sign) */
+static int pc_exact(const char *text)
+{
+    struct rat a = rat_text(text);
+
+    return a.ok && (a.n * 65536) % a.d == 0 && a.n < 32768 * a.d;
+}
+
+/* a constant with a point read as a Quick fits the Quick range */
+static int pc_fits(const char *text)
+{
+    struct rat a = rat_text(text);
+
+    return a.ok && a.n < 32768 * a.d;
+}
+
+/* the width of a whole constant: its smallest type, DEFTYPE has no say
+   ("round 1: (c) kleinster Typ") */
+static int wc_width(const char *text)
+{
+    struct rat a = rat_text(text);
+    int64_t v = (int32_t)(uint32_t)(uint64_t)(a.ok ? (int64_t)a.n : 0);
+
+    return v >= -128 && v <= 127 ? 8 : v >= -32768 && v <= 32767 ? 16 : 32;
+}
+
+static int arith_op(enum em_op o)
+{
+    return o == EM_ADD || o == EM_SUB || o == EM_MUL || o == EM_DIV || o == EM_MOD;
+}
+
+/* the class of n reached by reach, told sib about the other operand */
+static void tsr_class(const struct tsr *t, const struct em_tnode *n, int reach, int sib, struct tty *o)
+{
+    struct tty a, b;
+
+    memset(o, 0, sizeof *o);
+    switch (n->kind) {
+    case TN_VAR:
+        if (n->t == TQ || n->t == TF)
+            o->k = n->t;
+        else {
+            o->k = K_W;
+            o->n = n->t == TB ? 8 : n->t == TW ? 16 : 32;
+        }
+        return;
+    case TN_CONST:
+        if (!strchr(n->text, '.')) {
+            o->k = K_W;
+            o->n = wc_width(n->text);
+        } else if (sib == SIB_FTOP)
+            o->k = K_F;         /* D: read as the Float of the written value ("Q12 D", I2 A) */
+        else if (sib == SIB_SHIFTL || pc_exact(n->text) || (sib == K_Q && pc_fits(n->text)))
+            /* a Quick when exact in 16.16 or beside a Quick ("Q8 Quick nur
+               wenn exakt", round 3); left of a shift a Quick of its value */
+            o->k = K_Q;
+        else
+            o->k = sib == SIB_PROBE ? K_P : K_F;
+        return;
+    case TN_NEG:
+        o->lreach = reach & TSR_C1;     /* C1 reaches through the unary minus (I4 B) */
+        tsr_class(t, n->l, o->lreach, SIB_NONE, &a);
+        o->refused = a.refused;
+        o->k = a.k;
+        if (a.k == K_W)
+            o->n = wider(a.n);
+        return;
+    case TN_NOT:
+        /* bit operators take whole operands, a Quick rounded down; a Float
+           refused ("round 2 (option 1)", "Q17 Weiter verweigern") */
+        tsr_class(t, n->l, 0, SIB_NONE, &a);
+        o->refused = a.refused || a.k == K_F;
+        o->k = K_W;
+        o->n = a.k == K_W ? a.n : 32;
+        return;
+    default:
+        break;
+    }
+    if (is_shift(n->op)) {
+        const struct em_tnode *c = n->r;
+
+        /* a shift keeps the type of its left operand; the count is whole, a
+           constant with a point refused ("round 2", "Q15 48.16", "Q14 Eigene
+           Breite", "Q12 A LSL immer Long") */
+        o->lsib = SIB_SHIFTL;
+        tsr_class(t, n->l, 0, SIB_SHIFTL, &a);
+        tsr_class(t, c, 0, SIB_NONE, &b);
+        while (c->kind == TN_NEG)
+            c = c->l;
+        o->refused = a.refused || b.refused || a.k == K_F || b.k == K_F || is_pointconst(c);
+        if (a.k == K_Q) {
+            o->k = K_Q;
+            /* J for a Quick left operand (I6 B) */
+            o->jwrap = (n->op == EM_LSL || n->op == EM_ASL) && t->dest == TQ && (reach & TSR_ROOT);
+        } else if ((n->op == EM_LSR || n->op == EM_ASR) && t->dest == TQ && (reach & TSR_E)) {
+            /* the shift exception: at the top or through + - under a Quick
+               destination ("round 3-5", Q13, "N1 16.16, außerhalb 48.16",
+               "Q12 E Shift durch + -", I9 A) */
+            o->k = K_Q;
+            o->shiftx = 1;
+        } else if (n->op == EM_LSL || n->op == EM_ASL) {
+            o->k = K_W;
+            o->n = 32;
+            /* J: the top left shift under a Quick destination wraps ("Q12 J
+               LSL unter Quick umbrechen", I5 A: only as the whole expression) */
+            o->jwrap = t->dest == TQ && (reach & TSR_ROOT);
+        } else {
+            o->k = K_W;
+            o->n = a.n;
+        }
+        return;
+    }
+    {
+        int r = 0, ka, kb;
+
+        if ((reach & TSR_C1) && (arith_op(n->op) && n->op != EM_MOD))
+            r |= TSR_C1;
+        if ((reach & TSR_E) && (n->op == EM_ADD || n->op == EM_SUB))
+            r |= TSR_E;
+        o->lreach = o->rreach = r;
+        tsr_class(t, n->l, r, SIB_PROBE, &a);
+        tsr_class(t, n->r, r, SIB_PROBE, &b);
+        o->refused = a.refused || b.refused;
+        ka = a.k;
+        kb = b.k;
+        /* a constant with a point beside a Quick-class operand is a Quick, else
+           a Float (Q8; I1 A: a Quick subexpression or a Quick constant is of
+           Quick class); two undecided ones are Floats */
+        if (ka == K_P)
+            ka = kb == K_Q && pc_fits(n->l->text) ? K_Q : K_F;
+        if (kb == K_P)
+            kb = ka == K_Q && pc_fits(n->r->text) ? K_Q : K_F;
+        /* a whole / beside a Quick-class operand keeps its fraction ("Q12
+           C3", I1 A); a Float does not */
+        if (a.div && kb == K_Q)
+            ka = K_Q;
+        if (b.div && ka == K_Q)
+            kb = K_Q;
+        o->lsib = kb;
+        o->rsib = ka;
+        /* D: under a Float destination the top operation with a Quick operand
+           in Float, a constant with a point there read as a Float ("Q12 D
+           Float reicht oben hinein", I2 A); not for the bit operators, whose
+           Float operand is refused */
+        if (t->dest == TF && (reach & TSR_ROOT) && (arith_op(n->op) || em_op_is_compare(n->op))
+            && (ka == K_Q || kb == K_Q)) {
+            o->ftop = 1;
+            if (is_pointconst(n->l))
+                o->lsib = SIB_FTOP;
+            if (is_pointconst(n->r))
+                o->rsib = SIB_FTOP;
+        }
+        if (n->op == EM_POW) {
+            o->k = K_F;         /* ^ always in Float ("direction (upcasting)") */
+            return;
+        }
+        if (em_op_is_compare(n->op)) {
+            o->k = K_W;         /* the boolean a Word ("Q5 Word, wie Original") */
+            o->n = 16;
+            return;
+        }
+        if (n->op == EM_AND || n->op == EM_OR || n->op == EM_EOR) {
+            o->refused |= ka == K_F || kb == K_F;
+            o->k = K_W;
+            o->n = wider(tmax(ka == K_W ? a.n : 32, kb == K_W ? b.n : 32));
+            return;
+        }
+        if (o->ftop || ka == K_F || kb == K_F)
+            o->k = K_F;         /* a Float operand: Float ("direction (upcasting)") */
+        else if (ka == K_Q || kb == K_Q)
+            o->k = K_Q;         /* a Quick operand: 48.16 ("round 1 (width)") */
+        else if (n->op == EM_DIV && (reach & TSR_C1) && (t->dest == TQ || t->dest == TF))
+            /* the whole-division exception: at the top or through + - * / and
+               the unary minus under a Quick or Float destination, a 48.16
+               quotient or one computed in Float (Q9, "Q12 C1 Ja, für alle",
+               I3 A, I4 B) */
+            o->k = t->dest;
+        else if (n->op == EM_DIV && sib == K_Q)
+            o->k = K_Q;         /* C3, told by the parent */
+        else {
+            o->k = K_W;
+            o->n = wider(tmax(a.n, b.n));
+            o->div = n->op == EM_DIV;
+        }
+    }
+}
+
+/* FFP of a double (truncated to 32 bits, rounded half up as ffp_pack) */
+static uint32_t ffp_dbl(double x)
+{
+    int e;
+    double m;
+
+    if (x == 0 || x != x)
+        return 0;
+    m = frexp(fabs(x), &e);
+    return ffp_pack((uint64_t)ldexp(m, 63), e - 63, x < 0, 0);
+}
+
+static const uint32_t FFP_MAX = 0xffffff7fu;
+
+/* the whole part (rounded down) of a whole or 48.16 value, the low 32 bits */
+static int64_t tv_whole(const struct tv *a)
+{
+    if (a->k == K_W)
+        return a->v;
+    if (a->inf)
+        return a->inf > 0 ? INT32_MAX : -INT32_MAX;
+    return (int32_t)(uint32_t)(uint64_t)(a->v >> 16);
+}
+
+/* as 48.16 (value * 65536) */
+static __int128 tv_q(const struct tv *a)
+{
+    if (a->inf)
+        return a->inf > 0 ? ((__int128)1 << 100) : -((__int128)1 << 100);
+    return a->k == K_W ? (__int128)a->v * 65536 : (__int128)a->v;
+}
+
+/* as a Float, a Quick or 48.16 with its fraction ("direction") */
+static uint32_t tv_f(const struct tv *a, int *inf)
+{
+    *inf = a->inf;
+    if (a->k == K_F)
+        return a->f;
+    if (a->k == K_W)
+        return ffp_flt((int32_t)a->v);
+    if (a->inf)
+        return 0;
+    if (a->v >= INT32_MIN && a->v <= INT32_MAX)
+        return lib_qtof((uint32_t)a->v);
+    return ffp_pack(a->v < 0 ? -(uint64_t)a->v : (uint64_t)a->v, -16, a->v < 0, 0);
+}
+
+static __int128 floordiv128(__int128 a, __int128 b)
+{
+    __int128 q = a / b;
+
+    if ((a % b) && ((a < 0) != (b < 0)))
+        q--;
+    return q;
+}
+
+/* the Float of a written constant with a point: fetchpoint2's whole +
+   digits / 10^n in FFP, more digits than a Long holds by the exact value */
+static uint32_t pc_float(const char *text)
+{
+    const char *p = strchr(text, '.');
+    int32_t whole = (int32_t)strtol(text, NULL, 10), digits = 0, div = 1;
+    uint32_t f;
+
+    if (strlen(p + 1) > 9 || strtod(text, NULL) > 2147483647.0)
+        return ffp_dbl(strtod(text, NULL));
+    for (p++; *p; p++) {
+        digits = digits * 10 + (*p - '0');
+        div *= 10;
+    }
+    f = ffp_flt(whole);
+    if (digits)
+        f = ffp_add(ffp_div(ffp_flt(digits), ffp_flt(div)), f, 0);
+    return f;
+}
+
+/* the FFP of an exact value (a variable's) */
+static uint32_t rat_ffp(struct rat a)
+{
+    if (a.ok && a.n <= INT32_MAX && a.n >= INT32_MIN && a.d <= INT32_MAX)
+        return ffp_of(a);
+    return ffp_dbl(a.x);
+}
+
+static int tsr_eval(struct tsr *t, const struct em_tnode *n, int reach, int sib, struct tv *o);
+
+static int tsr_shift(struct tsr *t, const struct em_tnode *n, const struct tty *ty, struct tv *o)
+{
+    struct tv a, b;
+    int cnt;
+
+    if (tsr_eval(t, n->l, 0, SIB_SHIFTL, &a) || tsr_eval(t, n->r, 0, SIB_NONE, &b))
+        return 1;
+    cnt = (int)(tv_whole(&b) & 63);     /* a Quick count rounded down; the 68000's count modulo 64 */
+    if (a.k == K_Q) {
+        /* a Quick: LSL, ASL, ASR in 48.16, LSR on the 16.16 bits (Q15) */
+        if (a.inf) {
+            o->inf = a.inf;
+            return 0;
+        }
+        if (n->op == EM_LSR)
+            o->v = (int32_t)(cnt >= 32 ? 0 : (uint32_t)a.v >> cnt);
+        else if (n->op == EM_ASR)
+            o->v = a.v >> cnt;
+        else
+            o->v = (int64_t)((uint64_t)a.v << cnt);
+        return 0;
+    }
+    if (ty->shiftx) {
+        /* the shift exception: the value with 16 fraction bits, on the 16.16
+           bits inside the Quick range, in 48.16 beyond it (N1) */
+        int64_t raw = a.v * 65536;
+
+        if (a.v >= -32768 && a.v <= 32767) {
+            if (n->op == EM_LSR)
+                o->v = (int32_t)(cnt >= 32 ? 0 : (uint32_t)raw >> cnt);
+            else
+                o->v = (int32_t)raw >> (cnt > 31 ? 31 : cnt);
+        } else if (n->op == EM_LSR)
+            o->v = (int64_t)((uint64_t)raw >> cnt);
+        else
+            o->v = raw >> cnt;
+        return 0;
+    }
+    if (n->op == EM_LSL || n->op == EM_ASL)
+        o->v = (int32_t)(cnt >= 32 ? 0 : (uint32_t)a.v << cnt);       /* as a Long (Q12 A) */
+    else if (n->op == EM_LSR) {
+        /* in its own width (Q14) */
+        uint32_t m = a.n == 8 ? 0xffu : a.n == 16 ? 0xffffu : 0xffffffffu;
+
+        o->v = wrapw(cnt >= a.n ? 0 : ((uint32_t)a.v & m) >> cnt, a.n);
+    } else
+        o->v = wrapw(a.v >> (cnt > 63 ? 63 : cnt), a.n);
+    return 0;
+}
+
+/* ^ in Float; SPPow (mathtrans) is not modelled: its result is known only
+   where every value near it gives the same result (tsr_value) */
+static void tsr_pow(struct tsr *t, const struct tv *a, const struct tv *b, struct tv *o)
+{
+    int ia, ib;
+    uint32_t fa = tv_f(a, &ia), fb = tv_f(b, &ib);
+    double x = ia ? ia * 1e300 : ffp_rat(fa).x, y = ib ? ib * 1e300 : ffp_rat(fb).x, r;
+
+    t->haspow = 1;
+    if (ia || ib || (x < 0 && y != floor(y)) || (x == 0 && y <= 0) || fabs(y) > 1e9) {
+        t->powunknown = 1;
+        o->f = 0;
+        return;
+    }
+    r = pow(fabs(x), y);
+    if (x < 0 && fmod(fabs(y), 2) == 1)
+        r = -r;                 /* a negative base and a whole exponent keep the sign (#1189) */
+    r *= t->powscale;
+    if (!isfinite(r) || fabs(r) > 9.2e18) {
+        t->powunknown = 1;
+        o->f = 0;
+        return;
+    }
+    if (r != 0 && fabs(r) < 5.5e-20) {
+        t->powtiny = 1;
+        if (t->powzero)
+            r = 0;
+    }
+    o->f = ffp_dbl(r);
+}
+
+static int tsr_eval(struct tsr *t, const struct em_tnode *n, int reach, int sib, struct tv *o)
+{
+    struct tty ty;
+    struct tv a, b;
+
+    tsr_class(t, n, reach, sib, &ty);
+    memset(o, 0, sizeof *o);
+    if (ty.refused)
+        return 1;
+    o->k = ty.k;
+    o->n = ty.n;
+    o->jwrap = ty.jwrap;
+    switch (n->kind) {
+    case TN_VAR: {
+        uint32_t bits = var_bits(n->t, n->text);
+
+        if (ty.k == K_W)
+            o->v = wrapw((int32_t)bits, ty.n);
+        else if (ty.k == K_Q)
+            o->v = (int32_t)bits;
+        else
+            o->f = rat_ffp(rat_text(n->text));
+        return 0;
+    }
+    case TN_CONST: {
+        struct rat x = rat_text(n->text);
+
+        if (ty.k == K_W)
+            o->v = (int32_t)(uint32_t)(uint64_t)(x.ok ? (int64_t)x.n : 0);
+        else if (ty.k == K_Q)
+            /* read down to 1/65536 (Q8) */
+            o->v = x.ok ? (int64_t)floordiv128(x.n * 65536, x.d) : (int64_t)floor(x.x * 65536);
+        else
+            o->f = pc_float(n->text);
+        return 0;
+    }
+    case TN_NEG:
+        if (tsr_eval(t, n->l, ty.lreach, SIB_NONE, &a))
+            return 1;
+        if (a.k == K_W)
+            o->v = wrapw(-a.v, ty.n);
+        else if (a.k == K_Q) {
+            o->v = (int64_t)(0 - (uint64_t)a.v);
+            o->inf = -a.inf;
+        } else {
+            o->f = ffp_neg(a.f);
+            o->inf = -a.inf;
+        }
+        return 0;
+    case TN_NOT:
+        if (tsr_eval(t, n->l, 0, SIB_NONE, &a))
+            return 1;
+        o->v = wrapw(~tv_whole(&a), ty.n);
+        return 0;
+    default:
+        break;
+    }
+    if (is_shift(n->op))
+        return tsr_shift(t, n, &ty, o);
+    if (tsr_eval(t, n->l, ty.lreach, ty.lsib, &a) || tsr_eval(t, n->r, ty.rreach, ty.rsib, &b))
+        return 1;
+    if ((n->op == EM_DIV || n->op == EM_MOD) && is_consttree(n->r) && !b.inf
+        && (b.k == K_F ? ffp_zero(b.f) : b.v == 0))
+        return 1;               /* a constant divisor 0: "Division by Zero" */
+    if (n->op == EM_POW) {
+        tsr_pow(t, &a, &b, o);
+        return 0;
+    }
+    if (em_op_is_compare(n->op)) {
+        /* comparisons on the full value, the wider of the two (round 3) */
+        int c;
+
+        if (ty.ftop || a.k == K_F || b.k == K_F) {
+            int ia, ib;
+            uint32_t x = tv_f(&a, &ia), y = tv_f(&b, &ib);
+
+            c = ia || ib ? (ia > ib) - (ia < ib) : ffp_cmp(x, y);
+        } else {
+            __int128 x = tv_q(&a), y = tv_q(&b);
+
+            c = (x > y) - (x < y);
+        }
+        switch (n->op) {
+        case EM_EQ: c = c == 0; break;
+        case EM_NE: c = c != 0; break;
+        case EM_LT: c = c < 0; break;
+        case EM_LE: c = c <= 0; break;
+        case EM_GT: c = c > 0; break;
+        default: c = c >= 0; break;
+        }
+        o->v = c ? -1 : 0;
+        return 0;
+    }
+    if (n->op == EM_AND || n->op == EM_OR || n->op == EM_EOR) {
+        uint32_t x = (uint32_t)tv_whole(&a), y = (uint32_t)tv_whole(&b);
+
+        o->v = wrapw(n->op == EM_AND ? x & y : n->op == EM_OR ? x | y : x ^ y, ty.n);
+        return 0;
+    }
+    if (ty.k == K_F) {
+        int ia, ib;
+        uint32_t x = tv_f(&a, &ia), y = tv_f(&b, &ib);
+
+        if (ia || ib) {
+            t->e->flags |= EM_F_OVF;
+            o->inf = ia ? ia : n->op == EM_SUB ? -ib : ib;
+            if (n->op == EM_MUL || n->op == EM_DIV)
+                o->inf = (ia ? ia : (x & 0x80) ? -1 : 1) * (ib ? ib : (y & 0x80) ? -1 : 1);
+            if (n->op == EM_DIV && ib && !ia)
+                o->inf = 0;
+            if (n->op == EM_MOD)
+                o->inf = ia;
+            return 0;
+        }
+        switch (n->op) {
+        case EM_ADD: o->f = ffp_add(x, y, 0); break;
+        case EM_SUB: o->f = ffp_add(x, y, 1); break;
+        case EM_MUL: o->f = ffp_mul(x, y); break;
+        case EM_DIV:
+            if (ffp_zero(y)) {
+                o->inf = x & 0x80 ? -1 : 1;     /* Q4: plus or minus infinity */
+                t->e->flags |= EM_F_OVF;
+            } else
+                o->f = ffp_div(x, y);
+            break;
+        default:
+            /* floor Mod ("Q2 Floor"); a Float divisor 0 gives the dividend */
+            if (ffp_zero(y))
+                o->f = x;
+            else {
+                struct rat rx = ffp_rat(x), ry = ffp_rat(y);
+
+                o->f = rat_ffp(rat_op(rx, rat_op(ry, rat_floor(rat_op(rx, ry, '/')), '*'), '-'));
+            }
+            break;
+        }
+        return 0;
+    }
+    if (ty.k == K_Q) {
+        /* 48.16, a product or quotient cut down to 1/65536 ("Q1 Immer
+           abrunden") */
+        __int128 x = tv_q(&a), y = tv_q(&b), r;
+
+        if (a.inf || b.inf) {
+            t->e->flags |= EM_F_OVF;
+            o->inf = a.inf ? a.inf : n->op == EM_SUB ? -b.inf : b.inf;
+            if (n->op == EM_MUL || n->op == EM_DIV)
+                o->inf = (x < 0 ? -1 : 1) * (y < 0 ? -1 : 1);
+            if (n->op == EM_DIV && b.inf && !a.inf)
+                o->inf = 0;
+            if (n->op == EM_MOD)
+                o->inf = a.inf;
+            return 0;
+        }
+        switch (n->op) {
+        case EM_ADD: r = x + y; break;
+        case EM_SUB: r = x - y; break;
+        case EM_MUL: r = floordiv128(x * y, 65536); break;
+        case EM_DIV:
+            if (!y) {
+                o->inf = x >= 0 ? 1 : -1;       /* Q4 */
+                t->e->flags |= EM_F_OVF;
+                return 0;
+            }
+            r = floordiv128(x * 65536, y);
+            break;
+        default:
+            if (!y) {
+                t->e->divtrap = 1;      /* a Quick Mod by 0 traps, as today */
+                return 0;
+            }
+            r = x - y * floordiv128(x, y);
+            break;
+        }
+        if (r > INT64_MAX || r < INT64_MIN)
+            t->e->flags |= EM_F_OVF;
+        o->v = (int64_t)(uint64_t)(unsigned __int128)r;
+        return 0;
+    }
+    {
+        int64_t x = a.v, y = b.v, r;
+        int narrow = tmax(a.n, b.n) <= 16;
+
+        switch (n->op) {
+        case EM_ADD: r = x + y; break;
+        case EM_SUB: r = x - y; break;
+        case EM_MUL: r = x * y; break;
+        case EM_DIV:
+            /* towards zero ("round 1: Auf null hin"); a divisor 0 as before:
+               the DIVS.W trap of a Byte or Word, the Long division's largest
+               number with the dividend's sign */
+            if (!y) {
+                if (narrow)
+                    t->e->divtrap = 1;
+                r = x >= 0 ? INT32_MAX : -INT32_MAX;
+                break;
+            }
+            r = x / y;
+            break;
+        default:
+            /* floor Mod ("Q2 Floor"); a divisor 0 as today: a Byte or Word Mod
+               traps, a Long Mod gives the dividend */
+            if (!y) {
+                if (narrow)
+                    t->e->divtrap = 1;
+                r = x;
+                break;
+            }
+            r = x % y;
+            if (r && ((r < 0) != (y < 0)))
+                r += y;
+            break;
+        }
+        if (wrapw(r, ty.n) != r)
+            t->e->flags |= EM_F_OVF;
+        o->v = wrapw(r, ty.n);
+    }
+    return 0;
+}
+
+/* saturated to a signed range of bits (an infinity: the largest number) */
+static int64_t sat(__int128 v, int bits)
+{
+    __int128 hi = ((__int128)1 << (bits - 1)) - 1;
+
+    return (int64_t)(v > hi ? hi : v < -hi - 1 ? -hi - 1 : v);
+}
+
+/* the conversion of the root's value to the destination (asked TB..TF, 0
+   none) into r: to a whole number a Quick rounded down, a Float towards
+   zero, the low bits kept; to a Quick rounded down, saturated; without a
+   destination a 48.16 value a Quick, a Long or a Float decided at run time
+   ("round 1", "Q12 B Float auf null hin", "round 2 Umbrechen", I7 A, I8 A;
+   "round 2 (counter-proposal)", "round 3 Ja, so") */
+static void tsr_convert(struct tsr *t, const struct tv *a, struct reg *r)
+{
+    int asked = t->dest, bits;
+
+    memset(r, 0, sizeof *r);
+    if (asked == TF) {
+        int inf;
+
+        r->t = TF;
+        r->v = tv_f(a, &inf);
+        if (inf)
+            r->v = FFP_MAX | (inf < 0 ? 0x80 : 0);
+        r->id = ffp_rat(r->v);
+        return;
+    }
+    if (asked == TQ) {
+        __int128 q;
+
+        r->t = TQ;
+        if (a->inf) {
+            r->v = a->inf > 0 ? 0x7fffffffu : 0x80000001u;      /* Q4: saturated */
+            return;
+        }
+        if (a->k == K_F) {
+            struct rat x = rat_floor(rat_op(ffp_rat(a->f), rat_int(65536), '*'));
+
+            q = x.ok ? x.n : (__int128)x.x;
+        } else
+            q = tv_q(a);
+        if (a->jwrap)
+            r->v = (uint32_t)(uint64_t)q;       /* J: wrapped */
+        else {
+            r->v = (uint32_t)sat(q, 32);
+            if ((int64_t)(int32_t)r->v != q)
+                t->e->flags |= EM_F_OVF;
+        }
+        r->id = rat_make((int32_t)r->v, 65536);
+        return;
+    }
+    if (asked == TB || asked == TW || asked == TL) {
+        __int128 w;
+
+        bits = asked == TB ? 8 : asked == TW ? 16 : 32;
+        r->t = asked;
+        if (a->inf)
+            w = a->inf > 0 ? (((__int128)1 << (bits - 1)) - 1) : -(((__int128)1 << (bits - 1)) - 1);
+        else if (a->k == K_W)
+            w = a->v;
+        else if (a->k == K_Q)
+            w = a->v >> 16;
+        else {
+            struct rat x = rat_trunc(ffp_rat(a->f));
+
+            w = x.ok ? x.n : (__int128)x.x;
+        }
+        r->v = (uint32_t)(uint64_t)wrapw((int64_t)(uint64_t)(unsigned __int128)w, bits);
+        if ((__int128)wrapw((int64_t)(uint64_t)(unsigned __int128)w, bits) != w)
+            t->e->flags |= EM_F_OVF;
+        r->id = rat_int(wrapw((int64_t)r->v, bits));
+        return;
+    }
+    /* no destination (Print, If, the "any" parameters) */
+    if (a->k == K_W) {
+        r->t = TL;
+        r->v = (uint32_t)a->v;
+    } else if (a->k == K_F) {
+        r->t = TF;
+        r->v = a->f;
+        if (a->inf) {
+            r->t = TL;
+            r->v = a->inf > 0 ? 0x7fffffffu : 0x80000001u;
+        }
+    } else if (a->inf) {
+        r->t = TL;
+        r->v = a->inf > 0 ? 0x7fffffffu : 0x80000001u;
+    } else if (a->v >= INT32_MIN && a->v <= INT32_MAX) {
+        r->t = TQ;
+        r->v = (uint32_t)a->v;
+    } else if (!(a->v & 0xffff) && (a->v >> 16) >= INT32_MIN && (a->v >> 16) <= INT32_MAX) {
+        r->t = TL;
+        r->v = (uint32_t)(a->v >> 16);
+    } else {
+        int inf;
+
+        r->t = TF;
+        r->v = tv_f(a, &inf);
+    }
+}
+
+/* one evaluation of the root: 0, 1 refused */
+static int tsr_run(struct tsr *t, const struct em_tnode *root, struct reg *r)
+{
+    struct tv a;
+
+    if (tsr_eval(t, root, TSR_ROOT | TSR_C1 | TSR_E, SIB_NONE, &a))
+        return 1;
+    tsr_convert(t, &a, r);
+    return 0;
+}
+
+/* the value of root under the destination asked by the rules of
+   type-system-rework: 0, 1 refused.  With a ^ the expression is evaluated
+   again with SPPow's result 1e-4 smaller and larger (and 0 where it is below
+   FFP's range): the value is known only where all of them agree, else
+   EM_F_POW ("?") */
+static int tsr_value(struct ev *e, const struct em_tnode *root, int asked, struct reg *r)
+{
+    struct tsr t = { .e = e, .dest = asked, .powscale = 1 };
+    static const double scale[] = { 1 - 1e-4, 1 + 1e-4 };
+    int trap;
+
+    if (tsr_run(&t, root, r))
+        return 1;
+    trap = e->divtrap;
+    if (!t.haspow)
+        return 0;
+    for (int z = 0; z <= t.powtiny && !t.powunknown; z++)
+        for (size_t i = 0; i < sizeof scale / sizeof scale[0] && !t.powunknown; i++) {
+            struct reg o;
+
+            t.powscale = scale[i];
+            t.powzero = z;
+            e->divtrap = 0;
+            if (tsr_run(&t, root, &o) || o.t != r->t || o.v != r->v || e->divtrap != trap)
+                t.powunknown = 1;
+        }
+    e->divtrap = trap;
+    if (t.powunknown) {
+        e->flags |= EM_F_POW;
+        e->powknown = 0;
+    }
+    return 0;
+}
+
 static int ctx_want(enum em_ctx x, uint64_t rules)
 {
     if (x == EM_IF || x == EM_PRINT)
@@ -3976,6 +4805,8 @@ static int tree_value(struct ev *e, const struct em_tnode *root, int asked, uint
 {
     int cn = (int)((rules & EM_R_CANDMASK) >> 9);
 
+    if (rules & EM_R_TSR)
+        return tsr_value(e, root, asked, r);
     if (cn) {
         struct cev c = { .e = e, .cand = cn, .scopeb = (rules & EM_R_SCOPEB) != 0, .tr = tr, .rootw = asked };
         int k;
@@ -4070,7 +4901,11 @@ static void value_text(struct ev *e, enum em_ctx ctx, uint64_t rules, int asked,
     }
     switch (ctx) {
     case EM_DB: print_long(out->text, (int8_t)r->v); break;
-    case EM_DW: case EM_PW: case EM_I2: print_long(out->text, (int16_t)r->v); break;
+    case EM_I2:
+        /* EM_R_TSR: every index a Long */
+        print_long(out->text, (rules & EM_R_TSR) ? (int32_t)r->v : (int16_t)r->v);
+        break;
+    case EM_DW: case EM_PW: print_long(out->text, (int16_t)r->v); break;
     case EM_DL: case EM_PL: case EM_I1: print_long(out->text, (int32_t)r->v); break;
     case EM_DQ: case EM_DF: case EM_PQ: case EM_PF:
         snprintf(out->text, EM_TEXT_MAX, "%08X", (unsigned)r->v);

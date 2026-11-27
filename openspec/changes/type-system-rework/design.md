@@ -558,6 +558,47 @@ I9 and exception warnings"; quoted there):
   at most 8 places per name and compile, then one `NAME: N more`; on the
   console every place (compiler/warnings delta).
 
+## Readings of the model (task 1.1)
+
+The model's rule set `EM_RULES_TSR` (`tools/lib/exprmatrix/model.c`) is
+written from the spec delta. Where the delta leaves a case open, the model
+takes the reading below; each is a question for the coordinator, not a
+decision (CLAUDE.md rule 2):
+
+1. A constant with a point under a unary minus (`q+-0.1`) has no other
+   operand at its operator: a Float unless exact (the minus is the
+   constant's operator, N2).
+2. D also computes a comparison at the top in Float (`x.f=(q=0.1)` false);
+   it leaves the bit operators and shifts alone (their Float operand would
+   be refused) and does not apply when the top is a unary minus.
+3. E (the shift exception through `+ -`) does not pass a unary minus; C1
+   does (I4 B).
+4. A whole `/` that both C1 under a Float destination and C3 reach
+   (`x.f=q+w/3`) is a Float quotient (I3), not a 48.16 quotient converted
+   (the planner's evaluator took the latter).
+5. A Mod of Quick class by 0 traps ("a Quick Mod raises the division
+   trap"), also with a Long operand (`l Mod q`, which gives the dividend in
+   P+'s 48.16 Mod).
+6. `NOT` keeps its operand's width (only two-operand operations and the
+   unary minus are named one step wider); a Quick's `NOT` is a Long.
+7. A constant with a point beside a Quick but beyond the Quick range is a
+   Float; read as a Quick it is the exact value rounded down to 1/65536,
+   not the FFP literal cut.
+8. A Quick or Float parameter takes the exceptions of a Quick or Float
+   destination (C1, D, E, J); an index is a Long destination.
+9. A Float left operand of a shift is refused, as a Float operand of a bit
+   operator.
+10. C3 applies at every binary operator but the shifts (a comparison, a
+    bit operator, `^`, `Mod`); a shift count does not make its left
+    operand fractional.
+11. A whole `/` by a variable 0 of Long operands gives the Long division's
+    largest number with the dividend's sign (as before); of Byte or Word
+    operands the division trap.
+12. A Float division by 0 under a Float destination keeps the saturated
+    infinity ($FFFFFF7F, $FFFFFFFF); the port and 1.95 give 0 there (the
+    delta lists the saturation of the Quick, Word, Byte and Long
+    conversions only). Task 1.3 counts 39 CD places.
+
 ## Risks / Trade-offs
 
 - [Many results change at once] -> one rule per commit where possible, the

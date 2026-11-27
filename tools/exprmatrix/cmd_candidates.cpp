@@ -75,6 +75,8 @@ std::vector<ruleset> rulesets()
     // the analysis's P (changes 1-6) and the decided rule P+ (changes 1-8)
     v.push_back({ "P", EM_RULES_P });
     v.push_back({ "P+", EM_RULES_DECIDED });
+    // the rules of the OpenSpec change type-system-rework
+    v.push_back({ "TSR", EM_RULES_TSR });
     return v;
 }
 
@@ -291,7 +293,8 @@ void cmd_candidates(CLI::App &app, int &status)
     sub->add_flag("--typing", o->typing, "with the typing and the table cell of each operation beside the values");
     sub->footer("The rule sets: flow (the port's rules) and each candidate C1 to C7 with the left operand "
                 "of a comparison by scope (a) and (b) (exprmatrix.h, EM_R_CAND), and the decided rule P+ "
-                "with P, its changes 1-6 (EM_RULES_DECIDED, EM_RULES_P). Prints the number of "
+                "with P, its changes 1-6 (EM_RULES_DECIDED, EM_RULES_P), and TSR, the rules of "
+                "type-system-rework (EM_RULES_TSR). Prints the number of "
                 "cells each one changes, per context, operator group and issue. With --exprs each line "
                 "(tab separated; # starts a comment) is evaluated under each rule set into --values. "
                 "Exit status 0, 1 a file cannot be read or written or is malformed (one message per "

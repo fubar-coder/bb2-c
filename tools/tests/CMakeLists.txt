@@ -21,6 +21,10 @@ foreach(t exprmatrix_model exprmatrix_classify exprmatrix_expect)
 	set_target_properties(test_${t} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
 	add_test(NAME ${t} COMMAND test_${t})
 endforeach()
+# the model's rules of type-system-rework with a deliberately wrong expectation
+# (the hidden case [tsr-broken]): must fail
+add_test(NAME exprmatrix_model_tsr_broken COMMAND test_exprmatrix_model "[tsr-broken]")
+set_tests_properties(exprmatrix_model_tsr_broken PROPERTIES WILL_FAIL TRUE)
 
 # the readable tables of the type rules of an expression (lib/exprtype_tables):
 # their cells against exprtype.tsv, the rows of exprtype.c's decisions

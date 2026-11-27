@@ -8,6 +8,7 @@
 // (#1177, #1178 variant C, #1179, #1186, #1187, #1188, #1189, the C libraries),
 // and the flags of the question classes (design decision 7 of the OpenSpec
 // change expression-type-matrix).
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -1292,13 +1293,321 @@ TEST_CASE("exprmatrix model: P+, the readings of the four rule points", "[exprma
     CHECK(expr("f MOD g", "f.f=7.5 g.f=2").value(EM_PRINT, DEC) == "1.5");
 }
 
+// ------------------------------------------- the rules of type-system-rework
+
+// EM_RULES_TSR (model.c, "the rules of type-system-rework"): the scenarios of
+// the spec delta compiler/expression-types of the OpenSpec change
+// type-system-rework with the spec's values, and the shapes of #1232
+static const uint64_t TSR = EM_RULES_TSR;
+
+static std::string tsr(const char *text, const char *vars, enum em_ctx ctx)
+{
+    return expr(text, vars).value(ctx, TSR);
+}
+
+// the value of an FFP Float as the model prints a Float destination (hex)
+static double ffp_hex(const std::string &hex)
+{
+    unsigned long f = std::strtoul(hex.c_str(), nullptr, 16);
+    double m = (double)(f >> 8) / 16777216.0;
+
+    if (!(f & 0xffffff00ul))
+        return 0;
+    m = std::ldexp(m, (int)(f & 0x7f) - 64);
+    return f & 0x80 ? -m : m;
+}
+
+static bool near_f(const std::string &hex, double want)
+{
+    return std::fabs(ffp_hex(hex) - want) <= 5e-7 * std::fabs(want) + 1e-30;
+}
+
+TEST_CASE("exprmatrix model: TSR, the destination does not change the computation", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("(7/2)*2", "", EM_DL) == "6");
+    CHECK(tsr("7/2", "", EM_DW) == "3");
+    CHECK(tsr("7/2*2", "", EM_PRINT) == "6");
+    CHECK(tsr("i*300", "i=300", EM_DL) == "90000");
+    CHECK(tsr("i*300", "i=300", EM_PRINT) == "90000");
+    // only the named exceptions depend on the destination
+    CHECK(tsr("w/9", "w.w=200", EM_DQ) == "001638E3");
+    CHECK(tsr("w/9", "w.w=200", EM_DL) == "22");
+}
+
+TEST_CASE("exprmatrix model: TSR, whole operations one step wider", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("b+c", "b.b=100 c.b=100", EM_PRINT) == "200");
+    CHECK(tsr("w+v", "w.w=20000 v.w=20000", EM_PRINT) == "40000");
+    CHECK(tsr("b+c", "b.b=100 c.b=100", EM_DB) == "-56");
+    CHECK(tsr("w+v", "w.w=20000 v.w=20000", EM_DW) == "-25536");
+    CHECK(tsr("-q", "q=-32768", EM_PRINT) == "32768");
+    CHECK(tsr("-q", "q=-32768", EM_DQ) == "7FFFFFFF");
+    CHECK(tsr("l*l", "l.l=100000", EM_DL) == "1410065408");
+    // optimizations keep the value
+    CHECK(tsr("b1+b2+b3", "b1.b=100 b2.b=100 b3.b=100", EM_DB) == "44");
+    CHECK(tsr("b1+b2+b3", "b1.b=100 b2.b=100 b3.b=100", EM_PRINT) == "300");
+}
+
+TEST_CASE("exprmatrix model: TSR, Quick in 48.16 and Float", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q+20000", "q=20000", EM_PRINT) == "40000");
+    CHECK(tsr("q*p*r", "q=300 p=300 r=0.25", EM_DQ) == "57E40000");
+    CHECK(tsr("r*q*p", "q=300 p=300 r=0.25", EM_DQ) == "57E40000");
+    CHECK(tsr("q*p", "q=-0.5 p=0.0000152587890625", EM_DL) == "-1");
+    CHECK(tsr("q+f", "q=1.5 f.f=0.5", EM_DL) == "2");
+    CHECK(near_f(tsr("q/100+f", "q=20.875 f.f=0", EM_DF), 13680.0 / 65536));
+}
+
+TEST_CASE("exprmatrix model: TSR, constants", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("100+100", "", EM_PRINT) == "200");
+    CHECK(tsr("20000+20000", "", EM_PRINT) == "40000");
+    CHECK(tsr("-8 LSR 1", "", EM_PRINT) == "32764");
+    CHECK(tsr("7/2", "", EM_DL) == "3");
+    // a constant with a point read by its operands
+    CHECK(tsr("3/2.0", "", EM_PRINT) == "1.5");
+    CHECK(tsr("7/2.0+0.5", "", EM_PRINT) == "4");
+    CHECK(tsr("q=0.1", "q=0.1", EM_IF) == "T");
+    CHECK(tsr("(0.1=0.1)", "", EM_DQ) == "FFFF0000");
+    CHECK(tsr("(1.3<1.3)", "", EM_DQ) == "00000000");
+    CHECK(tsr("l*0.5", "l.l=-3", EM_DL) == "-2");
+    CHECK(tsr("l2*0.1", "l2.l=100", EM_DL) == "10");
+    CHECK(tsr("l3*0.001", "l3.l=1000000", EM_PRINT) == "1000");
+    CHECK(tsr("q+0.1", "q=1", EM_DQ) == "00011999");
+}
+
+TEST_CASE("exprmatrix model: TSR, whole division and its exceptions", "[exprmatrix][tsr]")
+{
+    // towards zero
+    CHECK(tsr("-7/2", "", EM_DL) == "-3");
+    CHECK(tsr("i/2*2", "i.l=7", EM_DL) == "6");
+    CHECK(tsr("(7/2=3)", "", EM_DQ) == "FFFF0000");
+    CHECK(tsr("7/2", "", EM_PRINT) == "3");
+    CHECK(tsr("q/2*2", "q=7", EM_DL) == "7");
+    CHECK(tsr("7.0/2", "", EM_DQ) == "00038000");
+    // under a Quick or Float destination at the top
+    CHECK(tsr("1/16", "", EM_DQ) == "00001000");
+    CHECK(tsr("w/9", "w.w=200", EM_DQ) == "001638E3");
+    CHECK(tsr("7/2", "", EM_DF) == "E0000042");
+    // through + - *
+    CHECK(tsr("15-(w/16)", "w.w=117", EM_DQ) == "0007B000");
+    CHECK(tsr("1-(v/15)", "v.w=70", EM_DQ) == "FFFC5556");
+    CHECK(tsr("(7/2)*2", "", EM_DF) == "E0000043");
+    CHECK(tsr("2*(4/200)", "", EM_DQ) == "00000A3C");
+    // through a division and a unary minus (I4 B)
+    const char *v = "a.w=7 b.w=2 c.w=2 d.w=1";
+    CHECK(tsr("(a/b)/c", v, EM_DQ) == "0001C000");
+    CHECK(tsr("a/(d/b)", v, EM_DQ) == "000E0000");
+    CHECK(tsr("-(a/b)", v, EM_DQ) == "FFFC8000");
+    CHECK(tsr("(a/b)/c", v, EM_DF) == "E0000041");
+    CHECK(tsr("a/(d/b)", v, EM_DF) == "E0000044");
+    CHECK(tsr("-(a/b)", v, EM_DF) == "E00000C2");
+    CHECK(tsr("(a/b)/c", v, EM_DL) == "1");
+    // below another operator or another destination
+    CHECK(tsr("(7/2) AND 3", "", EM_DQ) == "00030000");
+    CHECK(tsr("(7/2)*2", "", EM_DL) == "6");
+    // a divisor 0 of a quotient that keeps its fraction
+    CHECK(tsr("a/z", "a.w=7 z.w=0", EM_DQ) == "7FFFFFFF");
+    // beside a Quick (C3, I1)
+    CHECK(tsr("q+w/2", "q=0.5 w.w=3", EM_PRINT) == "2");
+    CHECK(tsr("w/2+q", "q=0.5 w.w=3", EM_PRINT) == "2");
+    CHECK(tsr("(q2+(w2/2))-2", "q2=149.75 w2.w=135", EM_DW) == "215");
+    const char *n = "q=0.25 n.w=2 w.w=3 d.w=2 f.f=0.5";
+    CHECK(tsr("q+w/d", n, EM_PRINT) == "1.75");
+    CHECK(tsr("0.5+w/2", n, EM_PRINT) == "2");
+    CHECK(tsr("(q*n)+w/2", n, EM_PRINT) == "2");
+    CHECK(tsr("f+w/2", n, EM_PRINT) == "1.5");
+}
+
+TEST_CASE("exprmatrix model: TSR, the top operation under a Float destination", "[exprmatrix][tsr]")
+{
+    CHECK(near_f(tsr("q/100", "q=20.875", EM_DF), 0.20875));
+    CHECK(near_f(tsr("q2*0.002", "q2=92", EM_DF), 0.184));
+    CHECK(near_f(tsr("q3/q4", "q3=17.5 q4=113.5", EM_DF), 0.1541850));
+}
+
+TEST_CASE("exprmatrix model: TSR, conversions", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("-1.5", "", EM_DL) == "-2");
+    CHECK(tsr("-1.4", "", EM_DL) == "-1");
+    CHECK(tsr("f", "f.f=-2.5", EM_DL) == "-2");
+    CHECK(tsr("q", "q=-0.5", EM_DW) == "-1");
+    CHECK(tsr("v^n", "v.f=-2.5 n.w=3", EM_DL) == "-15");
+    CHECK(tsr("q/2", "q=-3", EM_DL) == "-2");
+    CHECK(tsr("q/2", "q=-3", EM_DW) == "-2");
+    CHECK(tsr("k/q2", "k.l=-10 q2=1.5", EM_DL) == "-7");
+    CHECK(tsr("l", "l.l=100000", EM_DW) == "-31072");
+    CHECK(tsr("f", "f.f=10000000000", EM_DL) == "1410065408");
+    // to a Quick: rounded down, saturated
+    CHECK(tsr("b+100000", "b.b=3", EM_DQ) == "7FFFFFFF");
+    CHECK(tsr("q*40000", "q=1.5", EM_DQ) == "7FFFFFFF");
+    CHECK(tsr("l", "l.l=100000", EM_DQ) == "7FFFFFFF");
+    CHECK(tsr("f/10", "f.f=-144", EM_DQ) == "FFF19999");
+    // without a destination: a Quick, a Long or a Float
+    CHECK(tsr("q+w", "q=1.5 w.w=3", EM_PRINT) == "4.5");
+    CHECK(tsr("q*l", "q=1.5 l.l=100000", EM_PRINT) == "150000");
+    CHECK(tsr("q+l", "q=1.5 l.l=100000", EM_PRINT) == "100001.5");
+}
+
+TEST_CASE("exprmatrix model: TSR, bit operators and shifts", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q AND 3", "q=7.5", EM_PRINT) == "3");
+    CHECK(tsr("NOT h", "h=-1", EM_DQ) == "00000000");
+    CHECK(tsr("l AND f", "l.l=1 f.f=1.5", EM_DL) == "!noncompile");
+    // a shift keeps the type of its left operand
+    CHECK(tsr("q LSL 2", "q=1.5", EM_DL) == "6");
+    CHECK(tsr("q LSR 1", "q=3", EM_PRINT) == "1.5");
+    CHECK(tsr("qa+3 LSR 3", "qa=1.25", EM_PRINT) == "1.25");
+    CHECK(tsr("qa+ba LSR bb", "qa=1.25 ba.b=3 bb.b=3", EM_PRINT) == "1.25");
+    CHECK(tsr("qa+3 LSR 3", "qa=1.25", EM_DL) == "1");
+    CHECK(tsr("x LSR h", "x.w=3 h=2.5", EM_PRINT) == "0");
+    CHECK(tsr("w LSR 3", "w.w=-3", EM_DW) == "8191");
+    CHECK(tsr("b LSR 1", "b.b=-8", EM_PRINT) == "124");
+    CHECK(tsr("w2 LSL 4", "w2.w=4096", EM_PRINT) == "65536");
+    CHECK(tsr("1 LSL 17", "", EM_DL) == "131072");
+    CHECK(tsr("q LSL 1", "q=20000", EM_PRINT) == "40000");
+    // the shift exception under a Quick destination
+    CHECK(tsr("1 LSR 7", "", EM_DQ) == "00000200");
+    CHECK(tsr("b LSR 3", "b.b=3", EM_DQ) == "00006000");
+    CHECK(tsr("1 LSR 4", "", EM_DQ) == "00001000");
+    CHECK(tsr("100000 LSR 2", "", EM_DQ) == "61A80000");
+    CHECK(tsr("vb LSR 3", "vb.b=-3", EM_DQ) == "1FFFA000");
+    CHECK(tsr("qa+3 LSR 3", "qa=1.25", EM_DQ) == "0001A000");
+    CHECK(tsr("(v LSR 3)+14", "v.b=63", EM_DQ) == "0015E000");
+    CHECK(tsr("qa*(3 LSR 3)", "qa=1.25", EM_DQ) == "00000000");
+    // a left shift at the top under a Quick destination wraps (J)
+    CHECK(tsr("1 LSL 4", "", EM_DQ) == "00100000");
+    CHECK(tsr("1 LSL 16", "", EM_DQ) == "00000000");
+    CHECK(tsr("q LSL 2", "q=10000", EM_DQ) == "9C400000");
+    CHECK(tsr("(v LSL 4)+p", "v.w=4096 p=0.5", EM_DQ) == "7FFFFFFF");
+    // shift counts
+    CHECK(tsr("b LSL 2.0", "b.b=1", EM_DB) == "!noncompile");
+    CHECK(tsr("q LSL 2.5", "q=1", EM_PRINT) == "!noncompile");
+    CHECK(tsr("x LSL 2.0", "x.w=1", EM_DW) == "!noncompile");
+    CHECK(tsr("1.5 LSL 2", "", EM_DB) == "6");
+    CHECK(tsr("1.5 LSL 2", "", EM_DL) == "6");
+    CHECK(tsr("1.5 LSR 1", "", EM_PRINT) == ".75");
+    CHECK(tsr("2.0 LSL 1", "", EM_PRINT) == "4");
+    CHECK(tsr("1.5 LSL qh", "qh=2.5", EM_PRINT) == "6");
+    for (const char *c : { "x LSL q2", "x LSL qh", "x LSL qn" })
+        CHECK(tsr(c, "x.w=3 q2=2.0 qh=2.5 qn=2.99", EM_PRINT) == "12");
+    CHECK(tsr("q LSL qh", "q=1.5 qh=2.5", EM_DL) == "6");
+}
+
+TEST_CASE("exprmatrix model: TSR, comparisons, folding and Mod", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q+q>40000", "q=20000.5", EM_IF) == "T");
+    CHECK(tsr("(l/3>3.2)", "l.l=10", EM_DL) == "0");
+    CHECK(tsr("(l/3.0>3.2)", "l.l=10", EM_DL) == "-1");
+    // a constant expression gives the value of its variable form
+    CHECK(tsr("1-1.25/3", "", EM_DL) == "0");
+    CHECK(tsr("1-q/3", "q=1.25", EM_DL) == "0");
+    CHECK(tsr("(7/-3) MOD 3", "", EM_DL) == "1");
+    CHECK(tsr("100 MOD (7/3)", "", EM_DL) == "0");
+    CHECK(tsr("(-8 ASR 40)+qh", "qh=0.5", EM_PRINT) == "-.5");
+    CHECK(tsr("(bn ASR b40)+qh", "qh=0.5 bn.b=-8 b40.b=40", EM_PRINT) == "-.5");
+    // Mod takes the sign of the divisor
+    CHECK(tsr("-7 MOD 3", "", EM_DL) == "2");
+    CHECK(tsr("7 MOD -3", "", EM_DL) == "-2");
+    CHECK(tsr("-7 MOD -3", "", EM_DL) == "-1");
+    CHECK(tsr("q MOD 2", "q=-7", EM_DL) == "1");
+    CHECK(tsr("q MOD 2", "q=7.5", EM_DQ) == "00018000");
+    CHECK(tsr("q MOD p", "q=7.5 p=0.5", EM_DQ) == "00000000");
+    CHECK(tsr("b MOD 1.5", "b.b=4", EM_DQ) == "00010000");
+    CHECK(tsr("5.25 MOD 2", "", EM_DQ) == "00014000");
+    CHECK(tsr("5.25 MOD 2", "", EM_DW) == "1");
+    CHECK(tsr("-5.25 MOD 2", "", EM_DQ) == "0000C000");
+    CHECK(tsr("-5.25 MOD -2", "", EM_DL) == "-2");
+    CHECK(tsr("l MOD z", "l.l=-7 z.l=0", EM_DL) == "-7");
+    CHECK(tsr("w MOD z", "w.w=7 z.w=0", EM_DW) == "!trap");
+}
+
+TEST_CASE("exprmatrix model: TSR, the order of the operands and Quicks as whole numbers", "[exprmatrix][tsr]")
+{
+    for (const char *e : { "base+q*4", "q*4+base" })
+        CHECK(tsr(e, "base.l=2097152 q=1.5", EM_DL) == "2097158");
+    for (const char *e : { "w+v+q*2", "q*2+w+v" })
+        CHECK(tsr(e, "q=1.5 w=3 v=4", EM_DW) == "10");
+    for (const char *e : { "l+q*2>12", "q*2+l>12" })
+        CHECK(tsr(e, "l=10 q=1.5", EM_IF) == "T");
+    for (const char *e : { "l+q+p", "q+p+l" })
+        CHECK(tsr(e, "l=10 q=1.5 p=2.75", EM_DL) == "14");
+    const char *v = "l=10 q=1.5 p=1.5";
+    CHECK(tsr("(l+q+p) AND 255", v, EM_DL) == "13");
+    CHECK(tsr("(q+p+l) AND 255", v, EM_DL) == "13");
+    CHECK(tsr("(l+q+p) LSL 1", v, EM_DL) == "26");
+    CHECK(tsr("(q+p+l) LSL 1", v, EM_DL) == "26");
+    CHECK(tsr("NOT (l+q+p)", v, EM_DL) == "-14");
+    CHECK(tsr("NOT (q+p+l)", v, EM_DL) == "-14");
+    for (const char *e : { "l+q+f", "f+q+l" })
+        CHECK(tsr(e, "l=10 q=1.5 f.f=0.5", EM_DL) == "12");
+    for (const char *e : { "w+v+q", "q+w+v" })
+        CHECK(tsr(e, "w=20000 v=20000 q=0.5", EM_PRINT) == "40000.5");
+    for (const char *e : { "q*q2*r", "r*q*q2" })
+        CHECK(tsr(e, "q=300 q2=300 r=0.25", EM_DQ) == "57E40000");
+    // a Quick used as a whole number keeps working
+    CHECK(tsr("(q AND 1)=1", "q=3", EM_IF) == "T");
+    CHECK(tsr("(q AND 1)=1", "q=1.5", EM_IF) == "T");
+    CHECK(tsr("(flag=-1)*5", "flag=-1", EM_DW) == "-5");
+    CHECK(tsr("x-(a>b)", "x=10 a=2 b=1", EM_DL) == "11");
+    CHECK(tsr("q MOD 2=1", "q=7", EM_IF) == "T");
+    CHECK(tsr("q ASL 4", "q=1.5", EM_DL) == "24");
+    CHECK(tsr("l*(a>b)", "l.l=100000 a=2 b=1", EM_PRINT) == "-100000");
+    CHECK(tsr("(a>b)*100000", "a=2 b=1", EM_PRINT) == "-100000");
+    CHECK(tsr("(q+40000) AND b", "q=1.5 b.b=3", EM_DL) == "1");
+    CHECK(tsr("(l+q) LSL 1", "l.l=100000 q=1.5", EM_DL) == "200003");
+    CHECK(tsr("q AND l", "l.l=65536 q=-1", EM_IF) == "T");
+    CHECK(tsr("l AND q", "l.l=65536 q=-1", EM_IF) == "T");
+}
+
+TEST_CASE("exprmatrix model: TSR, a 48.16 division by 0 and the indexes", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("l/q", "l.l=-100 q=0", EM_PRINT) == "-2147483647");
+    CHECK(tsr("l/q", "l.l=100 q=0", EM_DQ) == "7FFFFFFF");
+    CHECK(tsr("l/q", "l.l=100 q=0", EM_DW) == "32767");
+    CHECK(tsr("l/q", "l.l=100 q=0", EM_DB) == "127");
+    CHECK(tsr("q/p", "q=1 p=0", EM_DB) == "127");
+    // every index a Long
+    for (enum em_ctx c : { EM_I1, EM_I2 }) {
+        CHECK(tsr("y*200/2", "y=200", c) == "20000");
+        CHECK(tsr("q ASL 4", "q=1.5", c) == "24");
+        CHECK(tsr("q*10", "q=1.5", c) == "15");
+        CHECK(tsr("wv*2", "wv.w=20000", c) == "40000");
+    }
+}
+
+TEST_CASE("exprmatrix model: TSR, the shapes of #1232", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q+3 LSR 3", "q=1.25", EM_DQ) == "0001A000");
+    CHECK(tsr("qa+(-8 LSR 1)", "qa=0.5", EM_PRINT) == "32764.5");
+    CHECK(tsr("7/-3 AND 3", "", EM_DL) == "2");
+    CHECK(tsr("(7/-3) MOD 3", "", EM_PRINT) == "1");
+    CHECK(tsr("100 MOD (7/3)", "", EM_PRINT) == "0");
+    CHECK(tsr("(3=7) MOD 1.25", "", EM_DQ) == "00000000");
+    CHECK(tsr("(3=7) MOD 1.25", "", EM_PRINT) == "0");
+    CHECK(tsr("f+(-8 LSR 1)", "f.f=0.5", EM_PRINT) == "32764.5");
+    CHECK(tsr("3/7*f", "f.f=5.25", EM_PRINT) == "0");
+}
+
 // #1232: the model stopped with SIGFPE on (1.25/1000)^7 under a whole
-// destination (an exact rational whose denominator wrapped to 0)
+// destination (an exact rational whose denominator wrapped to 0); under
+// these rules the tiny Float is cut towards zero whatever SPPow's last bits
 TEST_CASE("exprmatrix model: no crash on a tiny power under a whole destination (#1232)", "[exprmatrix]")
 {
-    for (enum em_ctx c : { EM_DB, EM_DW, EM_DL })
+    for (enum em_ctx c : { EM_DB, EM_DW, EM_DL }) {
         for (uint64_t r : { (uint64_t)EM_RULES_ORIG, (uint64_t)EM_RULES_PORTFIX }) {
             CHECK(!expr("(1.25/1000)^7", "").value(c, r).empty());
             CHECK(!expr("(q/1000)^7", "q=1.25").value(c, r).empty());
         }
+        CHECK(tsr("(1.25/1000)^7", "", c) == "0");
+        CHECK(tsr("(q/1000)^7", "q=1.25", c) == "0");
+    }
+}
+
+// the broken variant (ctest exprmatrix_model_tsr_broken, WILL_FAIL): a wrong
+// expectation, the value a destination that changed the computation would
+// give, must fail
+TEST_CASE("exprmatrix model: TSR, a deliberately wrong expectation", "[.][tsr-broken]")
+{
+    CHECK(tsr("(7/2)*2", "", EM_DL) == "7");
 }
