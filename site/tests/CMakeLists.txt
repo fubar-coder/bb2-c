@@ -43,7 +43,9 @@ endforeach()
 # page linking a missing page (site_links_missing_page) or a missing heading
 # id (site_links_missing_anchor), a data file linking a missing page
 # (site_links_data), a data file with a relref while the leftover-syntax
-# check is on (site_hugo_syntax). Label site; skipped (77) without podman or
+# check is on (site_hugo_syntax), an anchorMoves naming a missing page
+# (site_alias_bad_move), a list of old URLs (site/tests/urls/) with a URL
+# the build does not write (site_urls_missing). Label site; skipped (77) without podman or
 # the image or when the dependencies cannot be downloaded. One at a time:
 # they share npm's cache.
 set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
@@ -53,7 +55,9 @@ set(_starlight_cases
 	"site_links_missing_page|links-missing-page|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/no-such-page/ leads to no page|"
 	"site_links_missing_anchor|links-missing-anchor|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/libraries/#no-such-heading names the id \"no-such-heading\"|"
 	"site_links_data|links-data|error|data/cmddesc/acidlibs/fixture-links.yaml \\(Fixture.notes\\): the link /docs/no-such-page/ leads to no page|"
-	"site_hugo_syntax|hugo-syntax|error|data/cmddesc/acidlibs/fixture-hugo-syntax.yaml:7: \\{\\{< relref|BB2_HUGO_SYNTAX_CHECK=1")
+	"site_hugo_syntax|hugo-syntax|error|data/cmddesc/acidlibs/fixture-hugo-syntax.yaml:7: \\{\\{< relref|BB2_HUGO_SYNTAX_CHECK=1"
+	"site_alias_bad_move|alias-bad-move|error|page /bb2-c/fixture-alias/: anchorMoves names the page \"no-such-page\"|"
+	"site_urls_missing|urls-missing|error|tests/urls/fixture.txt:4: the old URL /docs/no-such-old-page/ is not in the output|")
 foreach(c IN LISTS _starlight_cases)
 	string(REPLACE "|" ";" c "${c}")
 	list(GET c 0 name)

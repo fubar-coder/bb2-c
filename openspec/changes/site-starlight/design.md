@@ -540,6 +540,61 @@ The listings are in `~/.local/share/bb2-c-work/site-starlight/group4/`
   (variables of the build); the four fixtures are in
   `site/tests/starlight/`. Each case is a full build (10-15 s).
 
+### Group 7 (2026-11-27)
+
+The browser check and the comparison with Hugo's redirect pages are in
+`~/.local/share/bb2-c-work/site-starlight/group7/` (`browser-checks.txt`,
+`browser-check.mjs`, `redirects-hugo-vs-starlight.txt`).
+
+- **The redirect pages (7.1, D10)** are written by `src/lib/redirects.mjs`
+  (`writeRedirects`), called by the site's integration in
+  `astro:build:done` after the link check, so a page's link to an old URL
+  still fails the link check. It reads `aliases` and `anchorMoves` from the
+  front matter of the converted pages (`src/content/docs/`) and writes the
+  HTML of `layouts/alias.html` with the absolute URL as Hugo's
+  `.Permalink`. An `anchorMoves` value is a page below
+  `/docs/compared-with-original/`, as in Hugo (the comment of
+  `src/content.config.mjs` said "relative to this page's parent", which
+  agrees for the three pages that have one; corrected). It fails the build
+  for an `anchorMoves` naming a page that is not built, for an alias that
+  is a page of the site and for an alias of two pages. All 130 redirect
+  pages of the Hugo build are written, each with Hugo's target and the
+  same map of moved anchors (`redirects-hugo-vs-starlight.txt`).
+- **Browser check (7.1):** headless Chromium in
+  `mcr.microsoft.com/playwright:v1.52.0-noble` (`--network=none`, the
+  build served for `https://fubar-coder.github.io/bb2-c/` by request
+  interception; `playwright-core` 1.52.0, as the image carries none, from
+  a one-off install in the worktree's `build/`):
+  `fixed-bugs/compiler/#arrays-256` ends on `language/#arrays-256`, the
+  spec's `new-errors/names-and-types/#latin1-outside-string` on
+  `editor/#latin1-outside-string`, a move to a library page
+  (`fixed-bugs/libraries/#frac-string` to
+  `libraries/commands/vallib/#frac-string`) and one of `expressions` work
+  too; without JavaScript the meta refresh ends on `language/`, without
+  the anchor.
+- **The URL list (7.2)** `site/tests/urls/hugo.txt`: 497 URLs from the
+  output of `hugo` (`cmake/site-fixoverview-test.cmake`, CASE real), site
+  paths without the base: 365 pages, the home page, 130 redirect pages and
+  `/404.html`. Left out: Hugo's taxonomy pages `/tags/` and `/categories/`
+  (empty lists, in Hugo's sitemap; the site has no tags or categories and
+  links neither) and the files that are no page (feeds `index.xml`, the
+  sitemap, the 8 images of page bundles, scripts, styles). The check
+  (`checkUrls`) reads every `tests/urls/*.txt`, so the broken-input test
+  `site_urls_missing` adds a second list with one URL more instead of a
+  copy of the whole list. D10's Monitor point (a page removed on purpose
+  deletes its line) is in the list's head comment; site/README.md says so
+  with the documentation of 9.
+- **Targets of 5.2.** The 173 URLs of the command reference
+  (`/docs/libraries/{commands,userlibs,amigaos}/NAME/`) are not in the
+  output until 5.2: the declared list `AWAITED` in `src/lib/redirects.mjs`
+  counts them (the build prints "not yet built: 173 of task 5.2"). It is a
+  second entry next to the one of `src/lib/links.mjs`; the merge of 5.2
+  removes both.
+- **Tests.** `site_alias_bad_move` (a fixture page whose `anchorMoves`
+  names `no-such-page`; the message names the page `/bb2-c/fixture-alias/`
+  and the page it names) and `site_urls_missing`, both `KIND=error` in
+  `site/tests/starlight/`.
+
 ### Group 8 (2026-11-27)
 
 - **The keyword export (8.1, Q1).** `tools/toklist` (`toklist json`, the

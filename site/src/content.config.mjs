@@ -4,9 +4,9 @@
 //
 // The docs schema is Starlight's with the front matter the pages keep from
 // Hugo (scripts/convert-hugo.mjs): aliases (the old URLs of the page, for
-// the redirect pages), anchorMoves (heading id -> the page it moved to,
-// relative to this page's parent) and width ("wide": the page uses the
-// full width).
+// the redirect pages of src/lib/redirects.mjs), anchorMoves (heading id ->
+// the page it moved to, below /docs/compared-with-original/) and width
+// ("wide": the page uses the full width).
 //
 // Starlight reads the i18n collection on every page, and Astro warns for a
 // collection that has no entry (an undeclared one or an empty glob alike),

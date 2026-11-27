@@ -1,0 +1,4 @@
+# The fixture of site_urls_missing: a list of old URLs with one URL that
+# the build does not write fails the check (src/lib/redirects.mjs), naming
+# the list and the URL.
+/docs/no-such-old-page/

@@ -16,6 +16,10 @@
 // * The link check, after the build, over the output (src/lib/links.mjs):
 //   a broken internal link of a page or of the data fails the build,
 //   naming the page or the data file and the link.
+// * Then the old URLs (src/lib/redirects.mjs): the redirect pages of the
+//   pages' aliases, and the check that every URL of tests/urls/*.txt (the
+//   Hugo build's) is in the output; a broken anchorMoves or a missing URL
+//   fails the build, naming the page or the URL.
 //
 // A failed check removes the output directory, so that no site is left
 // behind, and throws: `astro build` exits non-zero with the messages.
@@ -27,6 +31,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { segments, lineOf } from "../lib/markdown.mjs";
 import { checkLinks } from "../lib/links.mjs";
+import { writeRedirects, checkUrls } from "../lib/redirects.mjs";
 
 /** Every file below dir, as paths relative to dir with "/" */
 function walk(dir) {
@@ -70,6 +75,16 @@ function fail(outDir, what, messages, logger) {
   throw new Error(`${what}; the output ${outDir} is removed`);
 }
 
+/** The redirect pages of the aliases and the check of the old URLs (src/lib/redirects.mjs) */
+function oldUrls(site, dist, origin, base, logger) {
+  const redirects = writeRedirects(join(site, "src", "content", "docs"), dist, origin, base);
+  if (redirects.errors.length) fail(dist, "broken aliases or anchorMoves", redirects.errors, logger);
+  const { errors, urls, awaited } = checkUrls(join(site, "tests", "urls"), dist);
+  if (errors.length) fail(dist, "old URLs missing from the output", errors, logger);
+  const waiting = Object.entries(awaited).map(([task, n]) => `${n} of task ${task}`);
+  logger.info(`${redirects.written} redirect pages written; ${urls} old URLs checked${waiting.length ? `; not yet built: ${waiting.join(", ")}` : ""}`);
+}
+
 export function siteChecks() {
   return {
     name: "bb2-site-checks",
@@ -79,6 +94,7 @@ export function siteChecks() {
         let site;
         let outDir;
         let base;
+        let origin;
         addIntegration({
           name: "bb2-site-checks",
           hooks: {
@@ -87,6 +103,7 @@ export function siteChecks() {
             },
             "astro:config:done"({ config }) {
               site = fileURLToPath(config.root);
+              origin = config.site.replace(/\/$/, "");
               outDir = fileURLToPath(config.outDir);
               base = config.base.replace(/\/?$/, "/");
             },
@@ -101,6 +118,7 @@ export function siteChecks() {
               if (errors.length) fail(dist, "broken internal links", errors, logger);
               const waiting = Object.entries(awaited).map(([task, n]) => `${n} to targets of task ${task}`);
               logger.info(`${links} internal links checked${waiting.length ? `; not yet built: ${waiting.join(", ")}` : ""}`);
+              oldUrls(site, dist, origin, base, logger);
             },
           },
         });

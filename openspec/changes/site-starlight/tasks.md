@@ -164,14 +164,14 @@ Work data (reports, counts, screenshots) goes to
 
 ## 7. Redirects and the old URLs
 
-- [ ] 7.1 Redirect pages from `aliases` in `astro:build:done` with the
+- [x] 7.1 Redirect pages from `aliases` in `astro:build:done` with the
   behaviour of `layouts/alias.html` (anchor kept, `anchorMoves`, meta
   refresh, `noindex`); an `anchorMoves` naming a missing page fails the
   build. Verify: `/bb2-c/docs/compared-with-original/fixed-bugs/compiler/#arrays-256`
   forwards to `language/#arrays-256` and the `anchorMoves` example of the
   spec to `editor` (browser check); broken-input test
   `site_alias_bad_move` fails naming the page.
-- [ ] 7.2 `site/tests/urls/hugo.txt`: every URL of the current Hugo build
+- [x] 7.2 `site/tests/urls/hugo.txt`: every URL of the current Hugo build
   (pages and aliases), written once from the Hugo output; the build checks
   each against `dist/`. Verify: the build passes; broken-input test
   `site_urls_missing` (a list with one URL more) fails naming it.
