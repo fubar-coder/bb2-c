@@ -403,3 +403,18 @@ file of the round.
   cells with their deviations, the others plain; never REPRODUCED). The
   registration of `tests/ab3/model/` is in place; it registers nothing
   until the pilot adds sources.
+- D6 (task 2.3): a `variant` value is valid if it is a name in backticks
+  in the first cell of any table row of `docs/ab3/variant.md` (so the
+  case names of "Differences to AmiBlitz3's compiler" and the names in
+  the descriptive rows, e.g. `quick_long_arith`, `compiler-quick-long-arith`).
+- D3 (task 3.1): the command-line compile is the corpus pass key `cli=`
+  (a cell only). The tree is staged per cell in its volume
+  (`CORPUS:Blitz3`, about 1.4 MB copied; `cr_blitz3_pass` gives the pass
+  lines, for other passes too). The compile runs with the current
+  directory `CORPUS:src`: AmiBlitz3 writes into the current directory,
+  and from the system volume it stops at a "write protected" requester.
+  blitz2-ab3 runs as `blitz2:blitz2` with `blitz2:ab3cli` beside it
+  (PROGDIR:ab3cli). The runner reads a side's source in one mode; a side
+  whose cells need both (e.g. `source-mode` as an axis of `ab3` cells) is
+  refused at run time with exit status 2 (open point: the registration
+  accepts it).

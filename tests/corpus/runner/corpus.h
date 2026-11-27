@@ -268,6 +268,21 @@
  *                     hang check arms on NAME.con, which tedstub opens
  *                     when the program starts.  Not with runwrap=,
  *                     runargs=, launcherargs= (the shell start)
+ *   cli=ab3|amiblitz3
+ *                     with cell=on (not with editrun=, wrap=, build=,
+ *                     build_job=, jobline=): the source is a text driver
+ *                     (NAME.ab3, or NAME.bb for blitz2-ab3's BB2 mode; change
+ *                     ab3-test-model), staged as CORPUS:src/NAME.ab3 (.bb),
+ *                     and compiled from the command line instead of
+ *                     tedstub's job list, after `Assign Blitz3:
+ *                     CORPUS:Blitz3` (the tree the pass stages with its
+ *                     file= and dir= lines): ab3 runs the configuration's
+ *                     compiler, blitz2-ab3 (blitz2:blitz2), amiblitz3
+ *                     AmiBlitz3's (Blitz3:Amiblitz3), each as COMPILER
+ *                     >CORPUS:out/blitz2.out -s CORPUS:src/NAME.EXT -e
+ *                     CORPUS:out/NAME, with -r when runtime_errors=off;
+ *                     rc=N behind the output.  The program runs as any
+ *                     cell's
  *   build=DIR|BLITZ2|DEFLIBS|ACIDLIBS|on|off
  *                     with cell=on: a compile part of the cell's own (the
  *                     data of a test that another build configuration
@@ -303,6 +318,8 @@
 #define CORPUS_FLOPPY_CHANGES (2 * CORPUS_FLOPPIES + 1)
 
 enum corpus_expect { CORPUS_REF, CORPUS_EXE, CORPUS_EXEINFO, CORPUS_OUTPUT };
+/* cli=: the command-line compile of a cell */
+enum corpus_cli { CORPUS_CLI_NONE, CORPUS_CLI_AB3, CORPUS_CLI_AMIBLITZ3 };
 enum corpus_record { CORPUS_RECORD_NONE, CORPUS_RECORD_CHECK, CORPUS_RECORD_WRITE };
 enum { CORPUS_LAYOUT_STACK = 16384 };     /* layout=stack: bytes more of Stack */
 /* corpus_update: the outputs from the configuration */
@@ -350,6 +367,7 @@ struct corpus_pass {
     int must_compile;                   /* must_compile=on (run=off): a source that does not compile fails */
     int cell;                           /* cell=on: a cell of the BASIC test model (caserun.h) */
     int editrun;                        /* editrun=on (cell=on): the program runs from the editor */
+    int cli;                            /* cli= (cell=on): enum corpus_cli */
     unsigned timeout, parallel, stack, hang_after;   /* hang_after: 0 = not given */
     int hang_from_run;                  /* hang_from=run: the silence counts from the first run */
     unsigned long long min_free;        /* min_free=: MiB, 0 = no check */

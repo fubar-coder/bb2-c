@@ -4,6 +4,7 @@
 #define _XOPEN_SOURCE 700       /* strdup, strndup */
 #include "caserun.h"
 
+#include <dirent.h>
 #include <errno.h>
 #include <spawn.h>
 #include <stdarg.h>
@@ -83,6 +84,29 @@ static const char *side_name(const struct caserun_opts *o)
 static const char *side_suffix(const struct caserun_opts *o)
 {
     return o->oracle ? "_oracle" : o->originals ? "_originals" : "";
+}
+
+/* the source mode of the cells of o's side (testconf.h tc_cell_ab3; all
+   cells if the side has none): 1 AB3, 0 BB2, -1 both */
+static int side_mode(const struct tc_config *conf, const struct tc_matrix *m, const struct caserun_opts *o)
+{
+    int modes = 0, any = 0;
+
+    for (size_t i = 0; i < m->ncells; i++)
+        any |= on_side(&m->cells[i], o);
+    for (size_t i = 0; i < m->ncells; i++)
+        if (!any || on_side(&m->cells[i], o))
+            modes |= tc_cell_ab3(conf, m, i) ? 2 : 1;
+    return modes == 3 ? -1 : modes == 2;
+}
+
+/* whether a cell compiles from the command line (cli=, corpus.h) */
+static int cell_cli(const struct tc_config *conf, const struct tc_matrix *m, size_t cell)
+{
+    char buf[24];
+    const char *c = tc_cell_value(conf, m, cell, tc_key("compiler"), buf);
+
+    return !strcmp(c, "ab3") || !strcmp(c, "amiblitz3");
 }
 
 /* ------------------------------------------------------- the pass of a cell */
@@ -284,6 +308,62 @@ out:
 }
 
 
+static int by_name(const void *a, const void *b)
+{
+    return strcmp(*(char *const *)a, *(char *const *)b);
+}
+
+char *cr_blitz3_pass(const char *ab3, const char *testlib, int amiblitz3, const char *dest)
+{
+    static const char *const biglibs[] = { "baseLibs", "utilLibs", "OsLibs", "csLibs" };
+    struct text t = { 0 };
+    char *inc = str_printf("%s/Sourcecodes/Includes", ab3), **names = NULL;
+    size_t n = 0;
+    DIR *d;
+
+    for (size_t i = 0; i < sizeof biglibs / sizeof biglibs[0]; i++)
+        text_add(&t, "file=%s/BlitzLibs/%s|%s/BlitzLibs/%s\n", dest, biglibs[i], ab3, biglibs[i]);
+    text_add(&t, "file=%s/BlitzLibs/Residents/all.res|%s/BlitzLibs/Residents/all.res\n", dest, ab3);
+    text_add(&t, "file=%s/BlitzLibs/UserLibs/testlib.obj|%s\n", dest, testlib);
+    text_add(&t, "dir=%s/Libs\ndir=%s/Sourcecodes/Includes\n", dest, dest);
+    if (amiblitz3)
+        text_add(&t, "file=%s/Amiblitz3|%s/Amiblitz3\nfile=%s/Libs/ab3pft.library|%s/Libs/ab3pft.library\n", dest, ab3,
+                 dest, ab3);
+    /* AmiBlitz3's includes, in the order of their names */
+    if (inc && (d = opendir(inc))) {
+        struct dirent *e;
+
+        while ((e = readdir(d))) {
+            size_t l = strlen(e->d_name);
+            char **v;
+
+            if (l < 5 || strcmp(e->d_name + l - 4, ".ab3"))
+                continue;
+            if (!(v = realloc(names, (n + 1) * sizeof *v)) || !(v[n] = strdup(e->d_name))) {
+                names = v ? v : names;
+                t.bad = 1;
+                break;
+            }
+            names = v;
+            n++;
+        }
+        closedir(d);
+    }
+    if (n)
+        qsort(names, n, sizeof *names, by_name);
+    for (size_t i = 0; i < n; i++)
+        text_add(&t, "file=%s/Sourcecodes/Includes/%s|%s/%s\n", dest, names[i], inc, names[i]);
+    for (size_t i = 0; i < n; i++)
+        free(names[i]);
+    free(names);
+    free(inc);
+    if (!inc || t.bad) {
+        free(t.p);
+        return NULL;
+    }
+    return t.p;
+}
+
 int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell, const struct tc_env *env,
                  const char *tag, const char *work, const char *source, char **text, char *err, size_t errlen)
 {
@@ -352,6 +432,29 @@ int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t
         text_add(&t, "file=blitz2/userlibs/testlib/testlib.obj|%s\n", testlib);
         if (!strcmp(compiler, "orig195"))
             text_add(&t, "file=blitz2/testlib/testlib.obj|%s\n", testlib);
+        /* AB3 mode from the command line: the compiler, the Blitz3: tree,
+           AmiBlitz3 without the JIT (#976) */
+        if (!strcmp(compiler, "ab3") || !strcmp(compiler, "amiblitz3")) {
+            int ami = !strcmp(compiler, "amiblitz3");
+            const char *tree = need(env, "ab3-tree", err, errlen), *ab3cli = NULL;
+            char *tr;
+
+            if (!tree || (!ami && !(ab3cli = need(env, "ab3cli", err, errlen)))) {
+                free(t.p);
+                return -1;
+            }
+            text_add(&t, "cli=%s\n", compiler);
+            if (ab3cli)
+                text_add(&t, "file=blitz2/ab3cli|%s\n", ab3cli);
+            if (ami)
+                text_add(&t, "uae=cachesize=0\n");
+            if (!(tr = cr_blitz3_pass(tree, testlib, ami, "Blitz3"))) {
+                free(t.p);
+                return -2;
+            }
+            text_add(&t, "%s", tr);
+            free(tr);
+        }
     }
     /* the debugger module: the setting's, else the CD's for the cells with
        original material */
@@ -2183,6 +2286,7 @@ struct ctx {
     const char *base;           /* the work base (the @stat lines) */
     size_t nsessions;
     int ran;                    /* a session has started */
+    int ab3;                    /* the source mode of the side: AB3 (side_mode) */
 };
 
 /* a run of the driver of a set of cases in cells of the side */
@@ -2242,22 +2346,28 @@ static int make_driver(struct ctx *x, const char *const *cases, size_t n, struct
    = error, 77 = skipped (a file of a cell is missing, no emulator) */
 static int set_prepare(struct ctx *x, struct set *s)
 {
-    char err[800], *drvpath = NULL, *bb2 = NULL;
-    const char *tedsrc;
-    int rc = 2;
+    char err[800], *drvpath = NULL, *bb2 = NULL, *txt = NULL;
+    const char *tedsrc = NULL;
+    int rc = 2, tok = 0, cli = 0;
 
     if (make_driver(x, s->cases, s->ncases, &s->drv))
         return 2;
+    for (size_t k = 0; k < s->ncells; k++)
+        *(cell_cli(&x->conf, &x->m, s->idx[k]) ? &cli : &tok) = 1;
     if (mkdir_p(s->dir) || !(drvpath = str_printf("%s/driver.bas", s->dir))
-        || !(bb2 = str_printf("%s/" CR_PROGRAM ".bb2", s->dir)) || write_file(drvpath, s->drv.text, s->drv.len)) {
+        || !(bb2 = str_printf("%s/" CR_PROGRAM ".bb2", s->dir))
+        || !(txt = str_printf("%s/" CR_PROGRAM ".%s", s->dir, x->ab3 ? "ab3" : "bb"))
+        || write_file(drvpath, s->drv.text, s->drv.len) || (cli && write_file(txt, s->drv.text, s->drv.len))) {
         fprintf(x->log, "corpusrun case: cannot write the driver\n");
         goto out;
     }
-    if (!(tedsrc = need(&x->env, "tedsrc", err, sizeof err))) {
+    /* the cells of tedstub get the tokenised driver, those of the command
+       line its text (cli=) */
+    if (tok && !(tedsrc = need(&x->env, "tedsrc", err, sizeof err))) {
         fprintf(x->log, "corpusrun case: %s\n", err);
         goto out;
     }
-    {
+    if (tok) {
         char *argv[] = { (char *)tedsrc, (char *)"tok", x->tokens, drvpath, bb2, NULL };
 
         if (spawn(argv, x->log)) {
@@ -2279,7 +2389,8 @@ static int set_prepare(struct ctx *x, struct set *s)
         c->inject = cr_cell_inject(&x->conf, &x->m, c->idx, &x->env);
         c->wrap_inject = cr_cell_wrap_inject(&x->conf, &x->m, c->idx, &x->env);
         snprintf(c->tag, sizeof c->tag, "c%zu", k);
-        if ((r = cr_cell_pass(&x->conf, &x->m, c->idx, &x->env, c->tag, s->dir, bb2, &pt, err, sizeof err))) {
+        if ((r = cr_cell_pass(&x->conf, &x->m, c->idx, &x->env, c->tag, s->dir,
+                                cell_cli(&x->conf, &x->m, c->idx) ? txt : bb2, &pt, err, sizeof err))) {
             fprintf(x->log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
             goto out;
         }
@@ -2319,6 +2430,7 @@ static int set_prepare(struct ctx *x, struct set *s)
 out:
     free(drvpath);
     free(bb2);
+    free(txt);
     return rc;
 }
 
@@ -2787,6 +2899,13 @@ int caserun(const struct caserun_opts *o, FILE *log)
         par.test_id = x.conf.id;
         par.testdata = CR_TESTDATA;
         par.testdir = x.testdir;
+        /* the source mode of the side's cells (AB3 for blitz2-ab3 and
+           AmiBlitz3 without source-mode = "bb2"): one per side */
+        if ((x.ab3 = par.ab3 = side_mode(&x.conf, &x.m, o)) < 0) {
+            fprintf(log, "corpusrun case: %s: the cells of the side %s read the source in AB3 and in BB2 mode; "
+                    "a side has one source mode\n", x.conf.id, side_name(o));
+            goto out;
+        }
         if ((n = tp_process(text, len, &par, &x.src)) != 0) {
             for (size_t i = 0; i < x.src.errors.n; i++)
                 fprintf(log, "%s\n", x.src.errors.v[i]);
@@ -3067,6 +3186,9 @@ static int member_prepare(struct member *mb, const struct cr_bundle *b, size_t i
         par.test_id = x->conf.id;
         par.testdata = CR_TESTDATA;
         par.testdir = x->testdir;
+        /* the side port's source mode (a member has one cell there) */
+        if ((x->ab3 = par.ab3 = side_mode(&x->conf, &x->m, &mb->o)) < 0)
+            NOT_PREPARED(mb, "its cells of the side port read the source in AB3 and in BB2 mode");
         if ((r = tp_process(mb->text, len, &par, &x->src)) != 0) {
             if (r < 0)
                 return 2;

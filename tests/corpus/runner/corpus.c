@@ -599,9 +599,21 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
             free(val);
             continue;
         }
+        if (!strcmp(key, "cli")) {
+            /* a command-line compile of a cell (change ab3-test-model) */
+            if (strcmp(val, "ab3") && strcmp(val, "amiblitz3")) {
+                free(val);
+                return fail(p, err, errlen, "line %u: cli=ab3 or cli=amiblitz3", no);
+            }
+            p->cli = !strcmp(val, "ab3") ? CORPUS_CLI_AB3 : CORPUS_CLI_AMIBLITZ3;
+            free(val);
+            continue;
+        }
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
+    if (p->cli && (!p->cell || p->editrun || p->wrap || p->nbuilds || p->nbjobs || p->njoblines))
+        return fail(p, err, errlen, "cli= needs cell=on and no editrun=, wrap=, build=, build_job=, jobline=");
     if (!p->work || !p->report || !p->ted || (p->run && !p->launcher))
         return fail(p, err, errlen, "work, report, ted and launcher are needed");
     if (p->hang_from_run && (!p->hang_after || !p->run))
@@ -1106,18 +1118,43 @@ char *corpus_name(const char *source)
     return strndup(b, n);
 }
 
+/* the extension of the text source of cli= (".ab3", ".bb"), or "" */
+static const char *cli_ext(const char *source)
+{
+    const char *b = strrchr(source, '/') ? strrchr(source, '/') + 1 : source;
+    size_t n = strlen(b);
+
+    if (n > 4 && !strcasecmp(b + n - 4, ".ab3"))
+        return b + n - 4;
+    if (n > 3 && !strcasecmp(b + n - 3, ".bb"))
+        return b + n - 3;
+    return "";
+}
+
+/* the name of a source of p: with cli= its text driver's name without
+   .ab3 or .bb */
+static char *name_of(const struct corpus_pass *p, const char *source)
+{
+    if (p->cli && *cli_ext(source)) {
+        const char *b = strrchr(source, '/') ? strrchr(source, '/') + 1 : source;
+
+        return strndup(b, strlen(b) - strlen(cli_ext(source)));
+    }
+    return corpus_name(source);
+}
+
 char *corpus_source_name(const struct corpus_pass *p, size_t i)
 {
     if (p->source_names && p->source_names[i])
         return strdup(p->source_names[i]);
-    return corpus_name(p->sources[i]);
+    return name_of(p, p->sources[i]);
 }
 
 char *corpus_source_file(const struct corpus_pass *p, size_t i)
 {
     if (p->source_names && p->source_names[i])
         return str_printf("n%03zu", i);
-    return corpus_name(p->sources[i]);
+    return name_of(p, p->sources[i]);
 }
 
 void corpus_mask_traps(uint8_t *data, size_t len)
@@ -1390,7 +1427,9 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
     if (!p->runtime_errors)
         text_add(&jobs, "runerr=off\n");
     for (i = 0; i < p->nsources; i++) {
-        char *name = corpus_source_file(p, i), *to = str_printf("%s/src/%s.bb2", vol, name);
+        /* cli=: the text driver keeps its extension, no job of tedstub */
+        const char *ext = p->cli ? cli_ext(p->sources[i]) : "";
+        char *name = corpus_source_file(p, i), *to = str_printf("%s/src/%s%s", vol, name, *ext ? ext : ".bb2");
 
         if (!name || !to || copy_file(p->sources[i], to)) {
             fprintf(log, "corpus: cannot copy %s\n", p->sources[i]);
@@ -1398,7 +1437,8 @@ int corpus_stage(const struct corpus_pass *p, size_t c, FILE *log)
             free(to);
             goto out;
         }
-        text_add(&jobs, "job=j%03zu|" VOLUME ":src/%s.bb2|" VOLUME ":out/%s\n", i, name, name);
+        if (!p->cli)
+            text_add(&jobs, "job=j%03zu|" VOLUME ":src/%s.bb2|" VOLUME ":out/%s\n", i, name, name);
         free(name);
         free(to);
     }
@@ -1486,6 +1526,25 @@ static void build_parts(const struct corpus_pass *p, struct text *s)
 /* the compile: the job list through blitz2 (and wrap=), rc=N behind its output */
 static void compile_part(const struct corpus_pass *p, struct text *s)
 {
+    if (p->cli) {
+        /* the command-line compile (cli=): Blitz3: again before every compile
+           (AmiBlitz3 removes it when it ends); the current directory the
+           source's (AmiBlitz3 writes there, the system volume is read-only) */
+        char *n = corpus_source_file(p, 0);
+
+        text_add(s, "Assign blitz2: " VOLUME ":blitz2\n"
+                "Assign Blitz3: " VOLUME ":Blitz3\n"
+                "Stack %u\n"
+                "Cd " VOLUME ":src\n"
+                "%s >" VOLUME ":out/blitz2.out -s " VOLUME ":src/%s%s -e " VOLUME ":out/%s%s\n"
+                "Echo \"rc=$RC\" >>" VOLUME ":out/blitz2.out\n"
+                "Cd SYS:\n"
+                "Assign blitz2:\n", p->stack,
+                p->cli == CORPUS_CLI_AB3 ? "blitz2:blitz2" : "Blitz3:Amiblitz3", n ? n : "",
+                p->nsources ? cli_ext(p->sources[0]) : "", n ? n : "", p->runtime_errors ? "" : " -r");
+        free(n);
+        return;
+    }
     build_parts(p, s);
     if (kick1x(p)) {
         compile13(p, s);

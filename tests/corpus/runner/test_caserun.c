@@ -204,6 +204,124 @@ static void test_cell_passes(void)
     unload(&t);
 }
 
+/* the cells of AB3 mode (change ab3-test-model, task 3.1): the pass of a
+   command-line compile, the Blitz3: tree, the session script of both
+   compilers */
+static void test_cell_ab3(void)
+{
+    struct t t;
+    char err[600], *p, *tree = str_printf("%s/ab3tree", work), *line, *s;
+    struct corpus_pass cp;
+
+    put("ab3tree/Sourcecodes/Includes/b.ab3", "x\n");
+    put("ab3tree/Sourcecodes/Includes/a.ab3", "x\n");
+    put("ab3tree/Sourcecodes/Includes/notes.txt", "x\n");
+    put("ab3/tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n"
+        "runtime-errors = [\"on\", \"off\"]\n");
+    put("ab3/q.test.bas", "!TestCase{c}\n!EndTestCase\n");
+    {
+        char *env = str_printf("%sab3 = \"/b/blitz2-ab3\"\nab3cli = \"/b/ab3cli\"\namiblitz3 = \"%s/Amiblitz3\"\n"
+                               "ab3-tree = \"%s\"\n", ENV_RUNNER, tree, tree);
+
+        load(&t, "ab3/q.test.bas", env);
+        free(env);
+    }
+    CHECK(t.m.ncells == 4);
+    /* the tree: the BigLibs, the residents, the test library, Libs/, the
+       includes by name; with AmiBlitz3 its compiler and ab3pft.library */
+    s = cr_blitz3_pass(tree, "/b/testlib.obj", 0, "Blitz3");
+    line = str_printf("file=Blitz3/BlitzLibs/baseLibs|%s/BlitzLibs/baseLibs\n"
+                      "file=Blitz3/BlitzLibs/utilLibs|%s/BlitzLibs/utilLibs\n"
+                      "file=Blitz3/BlitzLibs/OsLibs|%s/BlitzLibs/OsLibs\n"
+                      "file=Blitz3/BlitzLibs/csLibs|%s/BlitzLibs/csLibs\n"
+                      "file=Blitz3/BlitzLibs/Residents/all.res|%s/BlitzLibs/Residents/all.res\n"
+                      "file=Blitz3/BlitzLibs/UserLibs/testlib.obj|/b/testlib.obj\n"
+                      "dir=Blitz3/Libs\ndir=Blitz3/Sourcecodes/Includes\n"
+                      "file=Blitz3/Sourcecodes/Includes/a.ab3|%s/Sourcecodes/Includes/a.ab3\n"
+                      "file=Blitz3/Sourcecodes/Includes/b.ab3|%s/Sourcecodes/Includes/b.ab3\n",
+                      tree, tree, tree, tree, tree, tree, tree);
+    CHECK(s && line && !strcmp(s, line));
+    if (s && line && strcmp(s, line))
+        fprintf(stderr, "the tree:\n%s", s);
+    free(s);
+    free(line);
+    s = cr_blitz3_pass(tree, "/b/testlib.obj", 1, "Blitz3");
+    line = str_printf("file=Blitz3/Amiblitz3|%s/Amiblitz3\nfile=Blitz3/Libs/ab3pft.library|%s/Libs/ab3pft.library\n",
+                      tree, tree);
+    CHECK(s && line && strstr(s, line));
+    free(s);
+    free(line);
+
+    /* blitz2-ab3: blitz2:blitz2 with ab3cli beside it, the tree, its text
+       driver; -r only without runtime error checking */
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "ab3,off"), &t.env, "c0", "/w/run", "/w/run/test.ab3", &p, err,
+                       sizeof err) == 0);
+    CHECK(p && has(p, "config=c0|ref|/b/blitz2-ab3|/b/deflibs|/b/acidlibs"));
+    CHECK(p && has(p, "cli=ab3"));
+    CHECK(p && has(p, "file=blitz2/ab3cli|/b/ab3cli"));
+    CHECK(p && has(p, "file=Blitz3/BlitzLibs/UserLibs/testlib.obj|/b/testlib.obj"));
+    CHECK(p && has(p, "source=/w/run/test.ab3"));
+    CHECK(p && !strstr(p, "uae=cachesize=0"));
+    CHECK(p && !strstr(p, "file=Blitz3/Amiblitz3"));
+    CHECK(p && corpus_parse(p, &cp, err, sizeof err) == 0);
+    s = p ? corpus_script_compile(&cp) : NULL;
+    CHECK(s && !strcmp(s, "Assign blitz2: CORPUS:blitz2\nAssign Blitz3: CORPUS:Blitz3\nStack 40000\nCd CORPUS:src\n"
+                          "blitz2:blitz2 >CORPUS:out/blitz2.out -s CORPUS:src/test.ab3 -e CORPUS:out/test -r\n"
+                          "Echo \"rc=$RC\" >>CORPUS:out/blitz2.out\nCd SYS:\nAssign blitz2:\n"));
+    free(s);
+    /* the run as any cell's */
+    s = p ? corpus_script_run(&cp) : NULL;
+    CHECK(s && strstr(s, "If EXISTS CORPUS:out/test\n  CORPUS:run CORPUS:out/test >CORPUS:out/test.run\n"));
+    free(s);
+    if (p)
+        corpus_free(&cp);
+    free(p);
+    /* AmiBlitz3: its compiler of the tree, without the JIT; no -r with
+       runtime error checking; a BB2-mode driver keeps its extension */
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "amiblitz3,on"), &t.env, "c0", "/w/run", "/w/run/test.ab3", &p, err,
+                       sizeof err) == 0);
+    CHECK(p && has(p, "cli=amiblitz3"));
+    CHECK(p && has(p, "uae=cachesize=0"));
+    CHECK(p && !strstr(p, "ab3cli"));
+    line = str_printf("file=Blitz3/Amiblitz3|%s/Amiblitz3", tree);
+    CHECK(p && line && has(p, line));
+    free(line);
+    CHECK(p && corpus_parse(p, &cp, err, sizeof err) == 0);
+    s = p ? corpus_script_compile(&cp) : NULL;
+    CHECK(s && !strcmp(s, "Assign blitz2: CORPUS:blitz2\nAssign Blitz3: CORPUS:Blitz3\nStack 40000\nCd CORPUS:src\n"
+                          "Blitz3:Amiblitz3 >CORPUS:out/blitz2.out -s CORPUS:src/test.ab3 -e CORPUS:out/test\n"
+                          "Echo \"rc=$RC\" >>CORPUS:out/blitz2.out\nCd SYS:\nAssign blitz2:\n"));
+    free(s);
+    if (p)
+        corpus_free(&cp);
+    free(p);
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "ab3,on"), &t.env, "c0", "/w/run", "/w/run/test.bb", &p, err,
+                       sizeof err) == 0);
+    CHECK(p && corpus_parse(p, &cp, err, sizeof err) == 0);
+    s = p ? corpus_script_compile(&cp) : NULL;
+    CHECK(s && strstr(s, "blitz2:blitz2 >CORPUS:out/blitz2.out -s CORPUS:src/test.bb -e CORPUS:out/test\n"));
+    free(s);
+    if (p)
+        corpus_free(&cp);
+    /* cli= only for a cell, not with a job line */
+    {
+        char *bad = p ? str_printf("%sjobline=job=j001|CORPUS:src/x.bb2|CORPUS:out/x\n", p) : NULL;
+
+        CHECK(bad && corpus_parse(bad, &cp, err, sizeof err) == -1);
+        CHECK(strstr(err, "cli= needs cell=on and no editrun=, wrap=, build=, build_job=, jobline=") != NULL);
+        free(bad);
+    }
+    free(p);
+    /* without the runner's values: refused, naming them */
+    unload(&t);
+    load(&t, "ab3/q.test.bas", ENV_RUNNER "ab3 = \"/b/blitz2-ab3\"\n");
+    CHECK(cr_cell_pass(&t.conf, &t.m, cell(&t, "ab3,on"), &t.env, "c0", "/w/run", "/w/run/test.ab3", &p, err,
+                       sizeof err) == -1);
+    CHECK(strstr(err, "has no runner value ab3-tree") != NULL);
+    unload(&t);
+    free(tree);
+}
+
 static void test_cell_settings(void)
 {
     struct t t;
@@ -1612,6 +1730,7 @@ int main(int argc, char **argv)
     }
     test_cell_passes();
     test_cell_settings();
+    test_cell_ab3();
     test_cell_refused();
     test_sessions();
     test_parse_run();

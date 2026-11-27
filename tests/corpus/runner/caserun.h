@@ -353,9 +353,18 @@ int cr_plan_worst(const struct cr_plan *p);
  *        the cell's volume, CORPUS:src/NAME.bb2 (NAME the base name of
  *        source without .bb2), and @DATA:FILE@ (TC_DATA_PH) by the staged
  *        source of the data source FILE (cr_data_staged).
+ *        A cell of compiler = "ab3" or "amiblitz3" (change ab3-test-model)
+ *        compiles from the command line (cli=, corpus.h): the source is
+ *        its text driver (NAME.ab3, NAME.bb with source-mode = "bb2"); ab3
+ *        with the runner's `ab3` (blitz2-ab3) as blitz2:blitz2 and its
+ *        `ab3cli` as blitz2:ab3cli, amiblitz3 with AmiBlitz3's compiler of
+ *        the tree and the emulator without the JIT (uae=cachesize=0,
+ *        #976); both with the default Blitz3: tree (cr_blitz3_pass of the
+ *        runner's `ab3-tree`) in the cell's volume.
  * @param tag     the configuration's tag ("c0")
  * @param work    the run directory
- * @param source  the tokenised driver (its name without .bb2 is the program)
+ * @param source  the tokenised driver (its name without .bb2 is the
+ *                program), the text driver of a cell of ab3 or amiblitz3
  * @param text    the result (malloc'd)
  * @return 0 = ok, -1 = refused (err: a runner value the environment lacks,
  *         pad with runwrap, an RWE library it does not know, a file whose
@@ -364,6 +373,22 @@ int cr_plan_worst(const struct cr_plan *p);
 int cr_cell_pass(const struct tc_config *conf, const struct tc_matrix *m, size_t cell,
                  const struct tc_env *env, const char *tag, const char *work, const char *source,
                  char **text, char *err, size_t errlen);
+
+/**
+ * @brief The pass lines (corpus.h file= and dir=) that stage AmiBlitz3's
+ *        default Blitz3: tree in DEST of a volume (change ab3-test-model
+ *        D3; the tree Blitz3 of tests/ab3/cli.cmake): from the fetched
+ *        AmiBlitz3 directory ab3 the BigLibs BlitzLibs/{baseLibs, utilLibs,
+ *        OsLibs, csLibs} and BlitzLibs/Residents/all.res, the test library
+ *        testlib as BlitzLibs/UserLibs/testlib.obj, an empty Libs/ (AmiBlitz3
+ *        adds Blitz3:Libs to LIBS: without checking it), the includes
+ *        Sourcecodes/Includes/ *.ab3; with amiblitz3 also the compiler
+ *        Amiblitz3 and Libs/ab3pft.library.  Every pass that needs the tree
+ *        takes its lines from here.  A file that is missing stays in the
+ *        lines (the pass is skipped when it is staged).
+ * @return the lines (malloc'd), NULL = out of memory
+ */
+char *cr_blitz3_pass(const char *ab3, const char *testlib, int amiblitz3, const char *dest);
 
 /**
  * @brief The pass lines of the test-local data of a cell (change

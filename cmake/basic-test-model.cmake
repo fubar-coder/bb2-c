@@ -58,6 +58,10 @@ function(basic_test_model_env)
 	set(cd ${PROJECT_SOURCE_DIR}/archive/cd/ultimate-blitz-basic-2.1)
 	set(bo ${CMAKE_BINARY_DIR}/tests/bug-orig)
 	set(userlib ${bo}/amiga/bugorig_userlib.obj)
+	# AmiBlitz3 v3.14.0, fetched (cmake/fetch-originals.cmake): the compiler
+	# and the Blitz3: tree of the cells of ab3 and amiblitz3 (change
+	# ab3-test-model)
+	set(ab3 ${PROJECT_SOURCE_DIR}/archive/amiblitz3/github-58a11658)
 	set(rwe "")
 	get_property(names GLOBAL PROPERTY RWE_LIB_NAMES)
 	foreach(n IN LISTS names)
@@ -83,6 +87,10 @@ CD = \"${cd}\"
 CD_BLITZ2 = \"${cd}/BLITZ2\"
 [runner]
 blitz2 = \"$<TARGET_FILE:blitz2>\"
+ab3 = \"$<TARGET_FILE:blitz2-ab3>\"
+ab3cli = \"$<TARGET_FILE:ab3cli>\"
+amiblitz3 = \"${ab3}/Amiblitz3\"
+ab3-tree = \"${ab3}\"
 orig195 = \"${CMAKE_BINARY_DIR}/programs/blitz2/ref/blitz2\"
 orig210 = \"${cd}/BLITZ2/BLITZ2\"
 cd-deflibs = \"${cd}/BLITZ2/DEFLIBS\"
