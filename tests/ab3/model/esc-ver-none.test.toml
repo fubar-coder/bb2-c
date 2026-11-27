@@ -1,0 +1,3 @@
+# esc-ver-none.test.bas prints the string: its output verbatim
+[asserts]
+output = "== \"> [0.0.0/0]\n\""

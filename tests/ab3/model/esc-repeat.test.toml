@@ -1,0 +1,9 @@
+# esc-repeat.test.bas prints the strings: their output verbatim
+[asserts]
+output = "== \"> [*****]\n> [aaab]\n> [------------]\n> [*]\n\""
+
+# AmiBlitz3 repeats the character once more and in upper case
+# (docs/ab3/variant.md, row esc_repeat)
+[deviations."compiler=amiblitz3"]
+variant = "esc_repeat"
+output = "== \"> [******]\n> [AAAab]\n> [-------------]\n> [**]\n\""

@@ -1,0 +1,12 @@
+# esc-repeat0.test.bas prints the strings: their output verbatim
+[asserts]
+output = "== \"> []\nend\n\""
+
+# AmiBlitz3 runs over with \\R00 (docs/ab3/variant.md, row esc_repeat0):
+# its line holds NUL bytes, so a line of the output is matched; behind the
+# NUL bytes the runner reads no exit code (the program's rc=0 stands in its
+# output file)
+[deviations."compiler=amiblitz3"]
+variant = "esc_repeat0"
+output = "matches \"> [*\""
+rc = "not exists"

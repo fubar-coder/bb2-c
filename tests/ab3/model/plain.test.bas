@@ -191,3 +191,20 @@ End Macro
   !CheckStrEq{zs$,"after","l1"}
   !CheckStrEq{"done","done","l2"}
 !EndTestCase
+; tilde_string: a '~' inside a string literal is an ordinary character
+; (#966): in Dc.b, in string literals (also one that holds a valid ~expr~),
+; in a Data$ string; nothing is computed inside strings. The literal with
+; '~' is the actual value, the expected one is built with Chr$(126). The data
+; stands behind the case: AmiBlitz3's Restore of a label above it reads nothing.
+!TestCase{tilde_string}
+  !CheckStrEq{Peek$(?tsa1),"J"+Chr$(126),"l1"}
+  !CheckStrEq{"x~y","x"+Chr$(126)+"y","l2"}
+  !CheckStrEq{"a~1+2~b","a"+Chr$(126)+"1+2"+Chr$(126)+"b","l3"}
+  Restore tsd1 : Read s$
+  !CheckStrEq{s$,"d"+Chr$(126)+"1","l4"}
+!EndTestCase
+.tsa1
+Dc.b "J~",0
+Even
+.tsd1
+Data$ "d~1"

@@ -1,0 +1,9 @@
+# chr-float.test.bas prints the Float: its output verbatim
+[asserts]
+output = "== \"16706\n65\n\""
+
+# AmiBlitz3 writes the long of the characters into the Float unconverted
+# (docs/ab3/variant.md, row chr_float)
+[deviations."compiler=amiblitz3"]
+variant = "chr_float"
+output = "== \"0.000015\n0\n\""

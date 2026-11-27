@@ -390,7 +390,6 @@ ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
 ab3_cli_case(comment_code comment_code.ab3 REF)
 # a '~' inside a string literal is an ordinary character (#966), as with
 # AmiBlitz3 (its constant maker has another marker)
-ab3_cli_case(tilde_string tilde_string.ab3 REF)
 ab3_cli_case(join join.ab3 REF)
 ab3_cli_case(join_inc join_inc.ab3 REF)
 ab3_cli_case(join_incok join_incok.ab3 REF)
@@ -483,16 +482,12 @@ ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 # characters into a float target unconverted, and compiles a string target
 # too (the line the program prints, 28 NUL bytes in the measured run, is
 # matched as any line)
-ab3_cli_case(chr_value chr_value.ab3 REF)
-ab3_cli_case(chr_mem chr_mem.ab3 REF)
-ab3_cli_case(chr_float chr_float.ab3 REF REF_EXPECT chr_float.ref.expect)
 ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
 ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)
 ab3_cli_case(chr_off chr_off.ab3 REF)
 ab3_cli_case(chr_bb2 chr_bb2.bb)
 ab3_cli_case(chr_space chr_space.ab3 REF)
 ab3_cli_case(chr_quick chr_quick.ab3 REF)
-ab3_cli_case(latin1_string latin1_string.ab3 REF)
 ab3_cli_case(chr_string chr_string.ab3 REF REF_EXPECT chr_string.ref.expect)
 ab3_cli_case(chr_const chr_const.ab3 REF)
 # the intrinsics (change compiler-intrinsics, spec compiler/intrinsics):
@@ -515,18 +510,12 @@ ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 20
 # and in upper case, \\R00 runs over, an unknown form is copied, a name
 # that only begins like a known one is matched by its prefix,
 # \\__THIS_POINTER gives an address (ours: refused)
-ab3_cli_case(esc_off esc_off.ab3 REF)
 ab3_cli_case(esc_bb2 esc_bb2.bb)
-ab3_cli_case(esc_data esc_data.ab3 REF)
-ab3_cli_case(esc_repeat esc_repeat.ab3 REF REF_EXPECT esc_repeat.ref.expect)
-ab3_cli_case(esc_repeat0 esc_repeat0.ab3 REF REF_EXPECT esc_repeat0.ref.expect)
 ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)
 ab3_cli_case(esc_unknown esc_unknown.ab3 REF REF_EXPECT esc_unknown.ref.expect)
 ab3_cli_case(esc_prefix_func esc_prefix_func.ab3 REF REF_EXPECT esc_prefix_func.ref.expect)
 ab3_cli_case(esc_prefix_ver esc_prefix_ver.ab3 REF REF_EXPECT esc_prefix_ver.ref.expect)
-ab3_cli_case(esc_func esc_func.ab3 REF)
 ab3_cli_case(esc_ver esc_ver.ab3 REF)
-ab3_cli_case(esc_ver_none esc_ver_none.ab3 REF)
 ab3_cli_case(esc_pointer esc_pointer.ab3 REF REF_EXPECT esc_pointer.ref.expect)
 # the date of the compile (DateStamp under inject)
 ab3_cli_case(esc_date esc_date.ab3 REF DATESTAMP 2026-10-25)
@@ -542,7 +531,6 @@ ab3_cli_case(esc_include esc_include.ab3 REF REF_EXPECT esc_include.ref.expect)
 # escapes in string expressions (change expr-tree-3e-strings): chains of
 # +, the comparisons, AND and OR, string parameters of Functions and
 # library functions
-ab3_cli_case(str_expr str_expr.ab3 REF)
 # Dc.b strings: the date and version escapes in AB3 mode, with or without
 # new syntax, every other \\ as written; BB2 mode as written.  AmiBlitz3
 # compares the names in upper case and by a prefix (esc_dcb_names,

@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-J~
-x~y
-a~1+2~b
-d~1
-rc=0

@@ -1,0 +1,3 @@
+# esc-func.test.bas prints the names: their output verbatim
+[asserts]
+output = "== \"> [GLOBAL]\n> [GLOBALXY]\n> macro [GLOBAL]\n> [st]\n> macro [st]\n> [MyFunc]\n\""
