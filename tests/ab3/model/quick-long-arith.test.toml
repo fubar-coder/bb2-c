@@ -1,0 +1,20 @@
+# AmiBlitz3 v3.14.0 cuts the Quick to a whole number before the operator
+# (docs/ab3/variant.md, row quick_long_arith)
+[deviations."compiler=amiblitz3"]
+variant = "quick_long_arith"
+"check.quick_long_arith.l1" = "== fail"
+"check.quick_long_arith.l1.actual" = "== 2"
+"check.quick_long_arith.l2" = "== fail"
+"check.quick_long_arith.l2.actual" = "== 9"
+"check.quick_long_arith.l3" = "== fail"
+"check.quick_long_arith.l3.actual" = "== 10"
+"check.quick_long_arith.l4" = "== fail"
+"check.quick_long_arith.l4.actual" = "== -5"
+"check.quick_long_arith.l5" = "== fail"
+"check.quick_long_arith.l5.actual" = "== 3"
+"check.quick_long_arith.l6" = "== fail"
+"check.quick_long_arith.l6.actual" = "== 2"
+"check.quick_long_arith.l7" = "== fail"
+"check.quick_long_arith.l7.actual" = "== -1"
+"check.quick_long_arith.l8" = "== fail"
+"check.quick_long_arith.l8.actual" = "== -1294967296"

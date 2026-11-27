@@ -34,7 +34,7 @@ rounds/tree decisions, "2026-11-27 ab3-test-model Q1-Q5" (design.md D8, D10, D14
 ## 5. Pilot
 
 - [ ] 5.1 The conversion table for all cases of D10 (Q1): per case its target test file, the form (checks or `output`), each `[run]` line with its check name and expected literal, the AmiBlitz3 side (`REF` or excluded, `.ref.expect` lines as deviations with their `variant` row); written to `~/.local/share/bb2-c-work/ab3-test-model/conversion.md` and reviewed by the coordinator before group 6. Verify: every case of D10's "move" list has a row; no case of the "stays" list has one.
-- [ ] 5.2 Pilot commit: `tests/ab3/model/tests.toml` and five cases moved (one plain check case, one with `@@` in its own statement (chr_at), one `output` case (esc_basic), one with an AmiBlitz3 deviation (quick_long_arith), one with AmiBlitz3's "no executable" (chr_nospace)); their `ab3_cli_case` lines, sources and expect files removed. Verify: D12 point 3 (a)-(d) for the five; `ctest -R '^ab3_'` on the new tests and `-R '^ab3_cli_[0-9]'`; `ctest --preset oracle -R '^ab3_'`; the prev comparison of 4.1.
+- [x] 5.2 Pilot commit: `tests/ab3/model/tests.toml` and five cases moved (one plain check case, one with `@@` in its own statement (chr_at), one `output` case (esc_basic), one with an AmiBlitz3 deviation (quick_long_arith), one with AmiBlitz3's "no executable" (chr_nospace)); their `ab3_cli_case` lines, sources and expect files removed. Verify: D12 point 3 (a)-(d) for the five; `ctest -R '^ab3_'` on the new tests and `-R '^ab3_cli_[0-9]'`; `ctest --preset oracle -R '^ab3_'`; the prev comparison of 4.1.
 
 ## 6. The moves by topic
 

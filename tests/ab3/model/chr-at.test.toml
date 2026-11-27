@@ -1,0 +1,4 @@
+# chr-at.test.bas prints the values: their output verbatim (the joined
+# NPrint's line is the case's subject)
+[asserts]
+output = "== \"00004F4B\n65 66\n40404142\n00000040\n\""

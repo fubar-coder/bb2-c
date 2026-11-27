@@ -1,5 +1,9 @@
 # The run-output cases of AB3 mode as tests of the BASIC test model
-# (change ab3-test-model; tests/ab3/CMakeLists.txt registers them as ab3_*).
+# (change ab3-test-model; tests/ab3/CMakeLists.txt registers them as ab3_*):
+# each case on blitz2-ab3 (side port) and on AmiBlitz3's CLI compiler (side
+# oracle), compiled from the command line without -r; a test that needs -r
+# sets runtime-errors = "off". A difference of AmiBlitz3 is a deviation of
+# the cells of amiblitz3 with the row of docs/ab3/variant.md that records it.
 #
 # The time limits (task 3.4, measured 2026-11-27): fifteen AmiBlitz3
 # sessions of a driver of 20 cases at the same time took 3.5 to 7.9 s each
@@ -11,3 +15,7 @@
 # environment's run-hang-after counts from the first program run, so a
 # silent compile is no hang, and a test that sets it is never bundled.
 timeout = 60
+runtime-errors = "on"
+
+[matrix]
+compiler = ["ab3", "amiblitz3"]

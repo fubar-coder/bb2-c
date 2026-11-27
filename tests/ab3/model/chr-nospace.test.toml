@@ -1,0 +1,8 @@
+# AmiBlitz3 refuses a character literal right after the = and makes no
+# executable (docs/ab3/variant.md, row chr_nospace)
+[deviations."compiler=amiblitz3"]
+variant = "chr_nospace"
+compile = "contains \"Can't convert types\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"

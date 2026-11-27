@@ -437,3 +437,14 @@ file of the round.
   `ab3_ID_prev` with the previous build's `blitz2-ab3` (and its `ab3cli`,
   a `prev`-tagged file); `cli=` is allowed in a pass with `run=off`, whose
   compile result is the executable's size or the console's first line.
+- Pilot (task 5.2, measured): AmiBlitz3 joins with `@@` in NPrint's
+  list but not in the braces of a Statement call (`ca_pair{@"A", @@` /
+  `@"B"}`: "Not enough parameters"), so `chr_at` takes the `output` form
+  in a file of its own (`chr-at.test.bas`), and `join` keeps it as the
+  table has it. The plain cases without a compiler state of their own
+  stand in one file, `plain.test.bas` (the user's answer on the AmiBlitz3
+  session count, rounds/tree decisions); `plus` is its first case.
+  `chr_nospace`'s AmiBlitz3 compile result holds "Can't convert types"
+  (the deviation `compile = "contains ..."`). A one-off comparison
+  (scratchpad, D12 point 3 (c)/(d)) reads the result files of a run kept
+  by a failing assertion in a copy of the test's configuration.

@@ -393,7 +393,6 @@ ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
 ab3_cli_case(shared_global shared_global.ab3 REF)
 ab3_cli_case(underscore underscore.ab3 REF)
 ab3_cli_case(dotlabel dotlabel.ab3 REF)
-ab3_cli_case(plus plus.ab3 REF)
 ab3_cli_case(comment_code comment_code.ab3 REF)
 # a '~' inside a string literal is an ordinary character (#966), as with
 # AmiBlitz3 (its constant maker has another marker)
@@ -470,9 +469,6 @@ ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
 # a constant without a value is 0 (#972; the same in AmiBlitz3)
 ab3_cli_case(const_novalue const_novalue.ab3 REF)
-# a Quick under a Long type so far (#1178): the port's rule in AB3 mode,
-# AmiBlitz3 keeps the cut (docs/ab3/variant.md)
-ab3_cli_case(quick_long_arith quick_long_arith.ab3 REF REF_EXPECT quick_long_arith.ref.expect)
 # a constant with a fraction under a Byte type so far (#1188): it keeps
 # its fraction, as in AmiBlitz3; with a bit operator refused in both; a
 # whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
@@ -491,8 +487,8 @@ ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 # ab3-compat/strings): byte, word and long targets, in memory and in a
 # file; the errors (too many characters, without new syntax, in BB2 mode,
 # a space behind the @, quick and string targets, a constant expression);
-# among AB3 mode's other forms with @ (chr_at).  AmiBlitz3's text of an
-# error is its own; its bugs are implemented as intended, its output
+# among AB3 mode's other forms with @ (chr_at, in tests/ab3/model).
+# AmiBlitz3's text of an error is its own; its bugs are implemented as intended, its output
 # recorded with REF_EXPECT (docs/ab3/variant.md): it writes the long of the
 # characters into a float target unconverted, and compiles a string target
 # too (the line the program prints, 28 NUL bytes in the measured run, is
@@ -500,9 +496,6 @@ ab3_cli_case(pow_negative_base pow_negative_base.ab3 REF)
 ab3_cli_case(chr_value chr_value.ab3 REF)
 ab3_cli_case(chr_mem chr_mem.ab3 REF)
 ab3_cli_case(chr_float chr_float.ab3 REF REF_EXPECT chr_float.ref.expect)
-# without a space after = the assignment shortcut of AmiBlitz3 refuses non-Long targets
-ab3_cli_case(chr_nospace chr_nospace.ab3 REF REF_EXPECT chr_nospace.ref.expect)
-ab3_cli_case(chr_at chr_at.ab3 REF)
 ab3_cli_case(chr_toolong chr_toolong.ab3 REF)
 ab3_cli_case(chr_toolong_l chr_toolong_l.ab3 REF)
 ab3_cli_case(chr_off chr_off.ab3 REF)
@@ -535,7 +528,6 @@ ab3_cli_case(date_stamp date_stamp.ab3 REF DATESTAMP 2026-10-25 RUN_DATESTAMP 20
 ab3_cli_case(esc_off esc_off.ab3 REF)
 ab3_cli_case(esc_bb2 esc_bb2.bb)
 ab3_cli_case(esc_data esc_data.ab3 REF)
-ab3_cli_case(esc_basic esc_basic.ab3 REF)
 ab3_cli_case(esc_repeat esc_repeat.ab3 REF REF_EXPECT esc_repeat.ref.expect)
 ab3_cli_case(esc_repeat0 esc_repeat0.ab3 REF REF_EXPECT esc_repeat0.ref.expect)
 ab3_cli_case(esc_repeat_quote esc_repeat_quote.ab3)

@@ -1,0 +1,3 @@
+# esc-basic.test.bas prints the strings: their output verbatim
+[asserts]
+output = "== \"> [\\\\41]\n> [A]\n> [\\\\\\\\]\n> [\\\\\\\\41]\n> [NNJ]\na\nb\n> [\n4]\n> [\\\"]\n4 xABy\n255\n\""
