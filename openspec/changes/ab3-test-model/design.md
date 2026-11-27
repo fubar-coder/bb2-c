@@ -362,3 +362,15 @@ D9 (the AB3 header in the driver is the compiler's input under test, not
 a run setting the runner takes from the source) is kept. The planning
 agent's Plan and Monitor choices are recorded in the coordinator-decisions
 file of the round.
+
+## Implementation notes
+
+- D9, `@@` (task 1.1): testpp joins at the first `@@` outside strings and
+  comments anywhere in the line, the rest of the line ignored, as
+  `findjoin`/`ext_nextline` do (not only at the line's end). A joined line
+  that holds a check macro is written whole on its first line, so other
+  statements of that joined line lose their `@@` too (the compiler sees
+  the same joined text). A `@@` in the last line is refused for any line,
+  not only for a check (the compiler's "No line to join with @@"; in the
+  driver the line would join `.tc__skip`). The form check
+  (`tp_check_form`) reads the joined lines as one line as well.

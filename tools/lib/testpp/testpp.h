@@ -44,6 +44,20 @@
  * The preprocessed text has the lines of the source, so a compile error
  * of the driver keeps its line.
  *
+ * The source mode (tp_params.ab3, given by the caller: the run setting
+ * source-mode of a cell of blitz2-ab3 or AmiBlitz3, change ab3-test-model
+ * D9).  In AB3 mode a line holding "@@" outside strings and comments is
+ * joined with the next one for the parsing, as blitz2-ab3 joins it
+ * (programs/blitz2/src/ab3syn.c findjoin, ext_nextline: the part before
+ * the "@@", the rest of the line ignored, then the next line, which may
+ * hold "@@" again).  A joined line that holds a check macro is written as
+ * one line (the check numbered, its name removed) followed by an empty
+ * line for each line joined to it, so the driver keeps the source's line
+ * numbers and the check its first line; a joined line without a check
+ * macro reaches the driver as written, its "@@" included (the compiler
+ * joins it).  A "@@" in the last line, with no line to join, is refused.
+ * In BB2 mode "@@" is not special.
+ *
  * The source is text: a byte >= $80 is one Latin-1 character.  findit's
  * rule that such a byte takes the next one with it is a rule of the
  * tokenised source (a token is two bytes; TED stores a Latin-1 character
@@ -139,6 +153,7 @@ struct tp_params {
     const char *const *tokens;  /* the names of the tokens of every library
                                    set (the form check, tp_check_form) */
     size_t ntokens;
+    int ab3;                    /* the source mode: 0 BB2, 1 AB3 (above) */
 };
 
 /**

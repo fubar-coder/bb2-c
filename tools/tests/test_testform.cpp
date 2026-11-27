@@ -14,7 +14,7 @@ extern "C" {
 static const char *const tokens[] = { "Free", "NPrint", "End", "Shape" };
 
 // the messages of preprocessing and checking the form, one per line
-static std::string form(const std::string &text)
+static std::string form(const std::string &text, int ab3 = 0)
 {
     tp_params p = {};
     tp_source s = {};
@@ -25,6 +25,7 @@ static std::string form(const std::string &text)
     p.testdata = "TEST:";
     p.tokens = tokens;
     p.ntokens = sizeof tokens / sizeof tokens[0];
+    p.ab3 = ab3;
     REQUIRE(tp_process(text.data(), text.size(), &p, &s) >= 0);
     REQUIRE(tp_check_form(text.data(), text.size(), &p, &s) >= 0);
     for (size_t i = 0; i < s.errors.n; i++)
@@ -209,4 +210,20 @@ TEST_CASE("testform: case names", "[testform]")
     // names that are fine: a token as a part of the name, digits, _
     CHECK(form("!TestCase{free_list}\n!EndTestCase\n!TestCase{shape2}\n!EndTestCase\n!TestCase{init}\n!EndTestCase\n")
           == "");
+}
+
+// AB3 mode (change ab3-test-model D9): the lines joined at "@@" are one
+// line of the form, numbered by their first line
+TEST_CASE("testform: AB3 mode, lines joined at @@", "[testform]")
+{
+    std::string decl = "Statement add{a.l, @@\n  b.l}\n  SHARED r.l\n  r=a+b\nEnd Statement\n";
+    CHECK(form(decl + ok_case, 1) == "");
+    CHECK(form(decl + ok_case, 0) == "");
+    // BB2 mode: the second line is code outside the blocks
+    CHECK(form("#c=1+ @@\n2\n" + ok_case, 1) == "");
+    CHECK(form("#c=1+ @@\n2\n" + ok_case, 0) == "x.test.bas:2: executable code outside the blocks: 2\n");
+    // the block macro on a joined line: its number is the first line's
+    CHECK(form("a=1\n!TestCase{a} ; @@\n!EndTestCase\n", 1) == "x.test.bas:1: executable code outside the blocks: a=1\n");
+    CHECK(form("!TestCase{a}\n  a=( @@\n1):!EndTestCase\n", 1)
+          == "x.test.bas:2: !EndTestCase must stand on a line of its own; only a comment may follow it\n");
 }

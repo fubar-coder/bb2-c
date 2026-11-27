@@ -19,7 +19,7 @@ struct pp {
     int rc;
 
     pp(const std::string &text, const char *testdata = "TEST:data", const char *testdir = "CORPUS:x.test",
-       int data = 0, const char *file = "x.test.bas")
+       int data = 0, const char *file = "x.test.bas", int ab3 = 0)
     {
         tp_params p = {};
 
@@ -28,6 +28,7 @@ struct pp {
         p.testdata = testdata;
         p.testdir = testdir;
         p.data = data;
+        p.ab3 = ab3;
         rc = tp_process(text.data(), text.size(), &p, &s);
     }
     ~pp() { tp_free(&s); }
@@ -509,4 +510,115 @@ TEST_CASE("testpp: !RunProgram", "[testpp]")
             "x.test.bas:1: !RunProgram outside the blocks and procedures");
     refused("!TestCase{a}\n  !RunProgram{\"a\",\"x\"}\n  !CheckEq{1,1,\"x\"}\n!EndTestCase\n",
             "x.test.bas:3: the check name \"x\" is used twice in a (line 2)");
+}
+
+// AB3 mode (change ab3-test-model D9): a source of blitz2-ab3 and AmiBlitz3
+#define AB3(text) text, "TEST:data", "CORPUS:x.test", 0, "x.test.bas", 1
+
+TEST_CASE("testpp: AB3 mode, a check continued with @@", "[testpp]")
+{
+    // once: the check on its first line, an empty line for the joined one
+    pp a(AB3("!TestCase{j}\n"
+             "  a$=\"ab\"\n"
+             "  !CheckStrEq{a$, @@\n"
+             "    \"ab\",\"join\"}\n"
+             "  !CheckEq{1,1}\n"
+             "!EndTestCase\n"));
+    REQUIRE(a.rc == 0);
+    CHECK(a.text()
+          == "!TestCase{j}\n"
+             "  a$=\"ab\"\n"
+             "  !CheckStrEq{0,a$,     \"ab\"}\n"
+             "\n"
+             "  !CheckEq{1,1,1}\n"
+             "!EndTestCase\n");
+    CHECK(a.s.nlines == 6);
+    REQUIRE(a.s.nchecks == 2);
+    CHECK(a.s.checks[0].line == 3);
+    CHECK(!strcmp(a.s.checks[0].name, "join"));
+    CHECK(!strcmp(a.s.checks[0].expr, "a$"));
+    CHECK(!strcmp(a.s.checks[0].expected, "\"ab\""));
+    CHECK(a.s.checks[1].line == 5);
+    // twice, the rest of a line behind "@@" ignored, as the compiler does;
+    // a CR before the LF stays at the end of the joined line
+    pp b(AB3("!TestCase{j}\n"
+             "  !CheckEq{a+ @@ the rest\n"
+             "b, @@\n"
+             "3,\"sum\"}\r\n"
+             "  !Check{a}\n"
+             "!EndTestCase"));
+    REQUIRE(b.rc == 0);
+    CHECK(b.text() == "!TestCase{j}\n  !CheckEq{0,a+ b, 3}\r\n\n\n  !Check{1,a}\n!EndTestCase");
+    REQUIRE(b.s.nchecks == 2);
+    CHECK(b.s.checks[0].line == 2);
+    CHECK(!strcmp(b.s.checks[0].expr, "a+ b"));
+    CHECK(b.s.checks[1].line == 5);
+    CHECK(b.s.nlines == 6);
+    // a check behind other statements of the joined line: all on one line
+    pp c(AB3("!TestCase{j}\n  a=(1+ @@\n2):!CheckEq{a,3}\n!EndTestCase\n"));
+    REQUIRE(c.rc == 0);
+    CHECK(c.text() == "!TestCase{j}\n  a=(1+ 2):!CheckEq{0,a,3}\n\n!EndTestCase\n");
+}
+
+TEST_CASE("testpp: AB3 mode, @@ that joins no check", "[testpp]")
+{
+    // inside a string and behind ';': no join, the check is on one line
+    pp a(AB3("!TestCase{j}\n"
+             "  !CheckStrEq{\"x@@y\",\"x@@y\"} ; @@\n"
+             "  a=1 ; @@\n"
+             "  !Check{a}\n"
+             "!EndTestCase\n"));
+    REQUIRE(a.rc == 0);
+    CHECK(a.text()
+          == "!TestCase{j}\n"
+             "  !CheckStrEq{0,\"x@@y\",\"x@@y\"} ; @@\n"
+             "  a=1 ; @@\n"
+             "  !Check{1,a}\n"
+             "!EndTestCase\n");
+    CHECK(a.s.checks[1].line == 4);
+    // a joined line without a check reaches the driver as written
+    pp b(AB3("!TestCase{j}\n"
+             "  a$=Str$(@@\n"
+             "12)\n"
+             "  NPrint \"a\", @@\n"
+             "  \"b\"\n"
+             "  !CheckStrEq{a$,\"12\"}\n"
+             "!EndTestCase\n"));
+    REQUIRE(b.rc == 0);
+    CHECK(b.text()
+          == "!TestCase{j}\n"
+             "  a$=Str$(@@\n"
+             "12)\n"
+             "  NPrint \"a\", @@\n"
+             "  \"b\"\n"
+             "  !CheckStrEq{0,a$,\"12\"}\n"
+             "!EndTestCase\n");
+    CHECK(b.s.checks[0].line == 6);
+}
+
+TEST_CASE("testpp: AB3 mode, @@ in the last line is refused", "[testpp]")
+{
+    pp a(AB3("!TestCase{j}\n!EndTestCase\n  !CheckEq{a, @@\n"));
+    CHECK(a.rc == 1);
+    CHECK(a.errors() == "x.test.bas:3: the line ends with @@ and no line follows to join it with\n");
+    pp b(AB3("!TestCase{j}\n  !CheckEq{a, @@\n  1, @@"));
+    CHECK(b.rc == 1);
+    CHECK(b.errors() == "x.test.bas:3: the line ends with @@ and no line follows to join it with\n");
+    pp c(AB3("!TestCase{j}\n!EndTestCase\na=1 @@\n"));
+    CHECK(c.rc == 1);
+    CHECK(c.errors() == "x.test.bas:3: the line ends with @@ and no line follows to join it with\n");
+}
+
+TEST_CASE("testpp: BB2 mode, @@ is not special", "[testpp]")
+{
+    // the driver of a BB2 source holding "@@" stays as it is, byte for byte
+    pp a("!TestCase{j}\n"
+         "  a$=\"x@@\" : b=1 @@\n"
+         "  !Check{b}\n"
+         "!EndTestCase\n");
+    REQUIRE(a.rc == 0);
+    CHECK(a.text() == "!TestCase{j}\n  a$=\"x@@\" : b=1 @@\n  !Check{0,b}\n!EndTestCase\n");
+    // a check continued with @@ is no check of BB2
+    refused("!TestCase{j}\n  !CheckEq{a, @@\n  1}\n!EndTestCase\n",
+            "x.test.bas:2: !CheckEq: the line ends before the closing }");
 }

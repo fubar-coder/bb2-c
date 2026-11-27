@@ -61,4 +61,19 @@ int tp_error(struct tp_errors *e, const char *file, unsigned line, const char *f
 
 char *tp_strndup(const char *s, size_t n);
 
+/* the offset of the "@@" of the line l[0..len) outside strings and
+   comments (AB3 mode, ab3syn.c findjoin), or len if there is none */
+size_t tp_findjoin(const char *l, size_t len);
+
+/*
+ * AB3 mode: the line at p (its end end or the LF at *nl, nl NULL: the
+ * last line) joined at "@@" with the lines after it: *text (malloc'd) the
+ * part before each "@@" and the whole last line, *extra the number of lines
+ * joined to the first, *next where the line after the last joined one
+ * starts (end if none).  Returns 0 = no "@@" in the line (nothing set), 1 =
+ * joined, 2 = a "@@" in the last line of the text (nothing set, *extra the
+ * lines before it), -1 = out of memory.
+ */
+int tp_join(const char *p, const char *end, char **text, size_t *len, unsigned *extra, const char **next);
+
 #endif

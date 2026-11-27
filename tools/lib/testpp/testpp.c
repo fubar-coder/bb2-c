@@ -155,6 +155,67 @@ int tp_args(const char *l, size_t len, size_t open, struct tp_stmt *args, int ma
     }
 }
 
+size_t tp_findjoin(const char *l, size_t len)
+{
+    int quote = 0;
+
+    for (size_t p = 0; p < len; p++) {
+        if (l[p] == '"')
+            quote = !quote;
+        else if (!quote && l[p] == ';')
+            break;
+        else if (!quote && l[p] == '@' && p + 1 < len && l[p + 1] == '@')
+            return p;
+    }
+    return len;
+}
+
+int tp_join(const char *p, const char *end, char **text, size_t *len, unsigned *extra, const char **next)
+{
+    const char *nl = memchr(p, '\n', (size_t)(end - p));
+    size_t n = nl ? (size_t)(nl - p) : (size_t)(end - p), at = tp_findjoin(p, n), tn = 0;
+    unsigned k = 0;
+    char *t = NULL;
+
+    if (at == n)
+        return 0;
+    for (;;) {
+        char *v;
+
+        if (at == n) {
+            /* the last line of the join: all of it */
+            if (!(v = realloc(t, tn + n + 1)))
+                break;
+            t = v;
+            memcpy(t + tn, p, n);
+            tn += n;
+            t[tn] = 0;
+            *text = t;
+            *len = tn;
+            *extra = k;
+            *next = nl ? nl + 1 : end;
+            return 1;
+        }
+        if (!nl || nl + 1 == end) {
+            free(t);
+            *extra = k;
+            return 2;
+        }
+        if (!(v = realloc(t, tn + at + 1)))
+            break;
+        t = v;
+        memcpy(t + tn, p, at);
+        tn += at;
+        p = nl + 1;
+        k++;
+        nl = memchr(p, '\n', (size_t)(end - p));
+        n = nl ? (size_t)(nl - p) : (size_t)(end - p);
+        at = tp_findjoin(p, n);
+    }
+    free(t);
+    return -1;
+}
+
 int tp_block_macro(const char *l, size_t s, size_t e, size_t len, const char **name, size_t *nlen)
 {
     static const struct {
@@ -724,6 +785,29 @@ const struct tp_check *tp_by_k(const struct tp_source *src, unsigned k)
     return NULL;
 }
 
+/* whether the line l[0..len) holds a check macro outside strings and the
+   comment */
+static int has_check(const char *l, size_t len)
+{
+    int quote = 0;
+
+    for (size_t p = 0; p < len; p++) {
+        if (l[p] == '"')
+            quote = !quote;
+        else if (!quote && l[p] == ';')
+            return 0;
+        else if (!quote && l[p] == '!') {
+            size_t q = p + 1;
+
+            while (q < len && is_ident((unsigned char)l[q]))
+                q++;
+            if (check_kind(l, p + 1, q) >= 0)
+                return 1;
+        }
+    }
+    return 0;
+}
+
 int tp_process(const char *text, size_t len, const struct tp_params *par, struct tp_source *src)
 {
     struct ctx c;
@@ -746,11 +830,48 @@ int tp_process(const char *text, size_t len, const struct tp_params *par, struct
         size_t n = nl ? (size_t)(nl - p) : (size_t)(end - p);
 
         c.line++;
+        if (par->ab3) {
+            char *j;
+            size_t jn;
+            unsigned extra;
+            const char *next;
+            int r = tp_join(p, end, &j, &jn, &extra, &next);
+
+            if (r < 0) {
+                c.oom = 1;
+                break;
+            }
+            if (r == 2) {
+                /* the compiler: "No line to join with @@" */
+                c.line += extra;
+                err(&c, "the line ends with @@ and no line follows to join it with");
+                break;
+            }
+            if (r == 1 && has_check(j, jn)) {
+                /* the check on one line, an empty line for each line joined */
+                one_line(&c, j, jn, &out);
+                free(j);
+                for (unsigned i = 0; i < extra; i++)
+                    if (put(&out, "\n", 1))
+                        c.oom = 1;
+                c.line += extra;
+                if (next > text && next[-1] == '\n' && put(&out, "\n", 1))
+                    c.oom = 1;
+                p = next;
+                continue;
+            }
+            if (r == 1)
+                free(j);
+        }
         one_line(&c, p, n, &out);
         if (nl && put(&out, "\n", 1))
             c.oom = 1;
         p = nl ? nl + 1 : end;
     }
+    /* behind a refused "@@" in the last line: the rest as it is (c.line
+       counts its lines already) */
+    if (p < end && put(&out, p, (size_t)(end - p)))
+        c.oom = 1;
     src->nlines = c.line;
     /* a procedure with checks named like another namespace */
     for (size_t i = 0; i < src->nchecks; i++) {

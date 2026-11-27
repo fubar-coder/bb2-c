@@ -479,12 +479,36 @@ int tp_check_form(const char *text, size_t len, const struct tp_params *par, str
         struct tp_stmt st[64];
         size_t comment, nst;
 
+        char *j = NULL;
+        unsigned extra = 0;
+        const char *next = nl ? nl + 1 : end, *l = p;
+        size_t jn;
+
         f.line++;
-        nst = tp_statements(p, n, st, 64, &comment);
-        block_macros_alone(&f, p, n, comment);
+        /* AB3 mode: the lines joined at "@@" are one line, its number the
+           first one's (a "@@" in the last line: tp_process says so) */
+        if (par->ab3) {
+            int r = tp_join(p, end, &j, &jn, &extra, &next);
+
+            if (r < 0) {
+                f.oom = 1;
+                break;
+            }
+            if (r == 2)
+                break;
+            if (r == 1) {
+                l = j;
+                n = jn;
+            } else
+                next = nl ? nl + 1 : end;
+        }
+        nst = tp_statements(l, n, st, 64, &comment);
+        block_macros_alone(&f, l, n, comment);
         for (size_t i = 0; i < nst; i++)
-            statement(&f, p, n, st[i].start, st[i].end);
-        p = nl ? nl + 1 : end;
+            statement(&f, l, n, st[i].start, st[i].end);
+        free(j);
+        f.line += extra;
+        p = next;
     }
     if (f.block != TP_B_NONE) {
         char what[200];
