@@ -1,0 +1,9 @@
+# AmiBlitz3 closes only the inner one-line If at the macro line's end: the
+# outer If covers the rest of the expanded line (docs/ab3/variant.md, row
+# macthen_two)
+[deviations."compiler=amiblitz3"]
+variant = "macthen_two"
+"check.macthen_two.l1" = "== fail"
+"check.macthen_two.l1.actual" = "== \"0 5 0\""
+"check.macthen_two.l3" = "== fail"
+"check.macthen_two.l3.actual" = "== \"0 5 0\""

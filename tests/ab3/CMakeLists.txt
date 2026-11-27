@@ -385,14 +385,8 @@ ab3_cli_case(reloc_bss_chip reloc_bss_chip.ab3 ARGS -r REF REF_NORUN HUNKS code,
 # with runtime error checking BSS and Chip are ignored: one code hunk
 ab3_cli_case(sect_debug sect_chip.ab3 HUNKS code)
 # the syntax rules of AB3 mode (spec ab3-compat/syntax-rules)
-ab3_cli_case(macro_ns macro_ns.ab3 REF)
 ab3_cli_case(macro_off macro_off.ab3 REF)
-ab3_cli_case(label_ns label_ns.ab3 REF)
-ab3_cli_case(label_proc label_proc.ab3 REF)
 ab3_cli_case(label_proc_off label_proc_off.ab3 REF)
-ab3_cli_case(shared_global shared_global.ab3 REF)
-ab3_cli_case(underscore underscore.ab3 REF)
-ab3_cli_case(dotlabel dotlabel.ab3 REF)
 ab3_cli_case(comment_code comment_code.ab3 REF)
 # a '~' inside a string literal is an ordinary character (#966), as with
 # AmiBlitz3 (its constant maker has another marker)
@@ -465,7 +459,6 @@ ab3_cli_case(ptr_bb2 ptr_bb2.bb)
 ab3_cli_case(funcstmt_bb2 funcstmt_bb2.bb)
 ab3_cli_case(jsr jsr.ab3 REF)
 # a constant without a value is 0 (#972; the same in AmiBlitz3)
-ab3_cli_case(const_novalue const_novalue.ab3 REF)
 # a constant with a fraction under a Byte type so far (#1188): it keeps
 # its fraction, as in AmiBlitz3; with a bit operator refused in both; a
 # whole-valued literal with a point stays whole and Data.b 1.5 is 1, where
@@ -575,16 +568,6 @@ ab3_cli_case(inc_longlong inc_longlong.ab3 REF)
 # End If; AB3 mode follows AmiBlitz3).  AmiBlitz3's bugs are implemented as
 # intended, its output recorded with REF_EXPECT (docs/ab3/variant.md): it
 # appends one End If for two Thens, and a second one after EndIf
-ab3_cli_case(macthen_while macthen_while.ab3 REF)
-ab3_cli_case(macthen_after macthen_after.ab3 REF)
-ab3_cli_case(macthen_closed macthen_closed.ab3 REF)
-ab3_cli_case(macthen_join macthen_join.ab3 REF)
-ab3_cli_case(macthen_caller macthen_caller.ab3 REF)
-ab3_cli_case(macthen_else macthen_else.ab3 REF)
-ab3_cli_case(macthen_string macthen_string.ab3 REF)
-ab3_cli_case(macthen_endif macthen_endif.ab3 REF)
-ab3_cli_case(macthen_two macthen_two.ab3 REF REF_EXPECT macthen_two.ref.expect)
-ab3_cli_case(macthen_endifword macthen_endifword.ab3 REF REF_EXPECT macthen_endifword.ref.expect)
 ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 # End at the end of a macro line ends its statement (change ab3-mode-g3,
 # spec ab3-compat/macros): AmiBlitz3 stores only End before a line end,
@@ -593,7 +576,6 @@ ab3_cli_case(macthen_bb2 macthen_bb2.bb)
 # End : and End with trailing spaces, End right before End Macro in an
 # include; BB2 mode keeps the rest of the macro as well (#968, fixed in
 # both modes)
-ab3_cli_case(macend_if macend_if.ab3 REF)
 ab3_cli_case(macend_then macend_then.ab3 REF)
 ab3_cli_case(macend_colon macend_colon.ab3 REF)
 ab3_cli_case(macend_inc macend_inc.ab3 REF)

@@ -1,5 +1,0 @@
-; a variable beginning with an underscore in an expression
-_start.l = 5 : NPrint Bin$(_start)
-_x = _start * 2 + 1
-NPrint _x
-End

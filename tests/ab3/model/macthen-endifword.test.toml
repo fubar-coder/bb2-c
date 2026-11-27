@@ -1,0 +1,8 @@
+# AmiBlitz3 appends a second End If behind EndIf and makes no executable
+# (docs/ab3/variant.md, row macthen_endifword)
+[deviations."compiler=amiblitz3"]
+variant = "macthen_endifword"
+compile = "contains \"'End' condition without condition\""
+"end.case" = "not exists"
+"end.run" = "not exists"
+rc = "not exists"
