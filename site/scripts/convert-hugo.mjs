@@ -36,6 +36,7 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, copyFileSy
 import { join, dirname, posix, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { segments, outsideCode, lineOf } from "../src/lib/markdown.mjs";
 
 const SITE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT = join(SITE, "content");
@@ -52,8 +53,12 @@ function walk(dir, base = dir) {
 /** The page key of a content file: "docs/a/b" for docs/a/b.md, docs/a/b/_index.md, docs/a/b/index.md */
 const pageKey = (file) => file.replace(/\.md$/, "").replace(/\/?_?index$/, "");
 
-/** The site path of a ref ("/docs/a/b#c" or relative to the page): "/docs/a/b/#c" */
-function refPath(target, file) {
+/**
+ * The site path of a ref ("/docs/a/b#c" or relative to the page): "/docs/a/b/#c".
+ * Also used for the relrefs of the data files until the cut-over
+ * (src/lib/data.mjs).
+ */
+export function refPath(target, file) {
   let [path, anchor] = target.split("#");
   if (path === "") path = pageKey(file);
   else if (!path.startsWith("/")) path = posix.join(dirname(file), path);
@@ -70,38 +75,6 @@ function cardPath(link, file) {
 }
 
 const attrs = (s) => Object.fromEntries([...s.matchAll(/(\w+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
-
-/**
- * Splits a Markdown text into code blocks and the text between them
- * (fences of ``` or ~~~, at any indentation, closed by the same character at
- * least as often). Returns [{code, text}].
- */
-function segments(src) {
-  const out = [];
-  let cur = [];
-  let fence = null;
-  for (const line of src.split(/(?<=\n)/)) {
-    const m = /^[ \t]*(`{3,}|~{3,})/.exec(line);
-    if (!fence && m) {
-      if (cur.length) out.push({ code: false, text: cur.join("") });
-      cur = [line];
-      fence = m[1];
-    } else if (fence && m && m[1][0] === fence[0] && m[1].length >= fence.length && /^[ \t]*[`~]+[ \t]*\r?\n?$/.test(line)) {
-      cur.push(line);
-      out.push({ code: true, text: cur.join("") });
-      cur = [];
-      fence = null;
-    } else cur.push(line);
-  }
-  if (cur.length) out.push({ code: !!fence, text: cur.join("") });
-  return out;
-}
-
-/** fn applied to the text outside code blocks */
-const outsideCode = (src, fn) => segments(src).map((s) => (s.code ? s.text : fn(s.text))).join("");
-
-/** The line number of offset i in src */
-const lineOf = (src, i) => src.slice(0, i).split("\n").length;
 
 /** Indents every line that is not empty */
 const indent = (text, n) => text.replace(/^(?=[^\n])/gm, " ".repeat(n));

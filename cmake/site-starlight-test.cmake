@@ -3,6 +3,7 @@
 # copy of site/ in the work directory:
 #
 #   cmake -DSITE=<repo>/site -DCASE=real|<fixture> [-DEXPECT=regex]
+#         [-DKIND=warning|error] [-DENV=VAR=value...]
 #         -DCACHE=<dir> -DWORK=<dir> -P site-starlight-test.cmake
 #
 # The copy leaves out what the builds write (node_modules/, dist/, .astro/,
@@ -11,7 +12,10 @@
 # between runs. CASE real: the site as it is must install and build with
 # exit status 0 and without a warning line. Another CASE names a fixture
 # site/tests/starlight/CASE/, whose files are copied over the copy of the
-# site; the build must then fail on a warning line matching EXPECT.
+# site; the build must then fail: KIND warning (the default) on a warning
+# line matching EXPECT; KIND error (a check of the build) with a non-zero
+# exit status, an output matching EXPECT and no dist/ left behind. ENV: the
+# environment variables of the build (a list of VAR=value).
 # Exits 77 (skipped) without podman, without the image or when the
 # dependencies cannot be downloaded.
 set(IMAGE docker.io/library/node:26.13.1-bookworm-slim)
@@ -43,10 +47,17 @@ endif()
 
 # a warning line of npm, Astro, Vite/Rollup or Node.js
 set(warning_line "(^|\n)[^\n]*(npm warn|\\[WARN\\]|\\(!\\)|[Ww]arning)[^\n]*")
+if(NOT KIND)
+	set(KIND warning)
+endif()
+set(env_args)
+foreach(e IN LISTS ENV)
+	list(APPEND env_args -e ${e})
+endforeach()
 function(run what)
 	execute_process(COMMAND ${PODMAN} run --rm
 			-v ${WORK}/site:/site -v ${CACHE}:/npm-cache -e npm_config_cache=/npm-cache
-			-w /site ${IMAGE} ${ARGN}
+			${env_args} -w /site ${IMAGE} ${ARGN}
 		RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
 	set(rc ${rc} PARENT_SCOPE)
 	set(out "${out}" PARENT_SCOPE)
@@ -67,6 +78,16 @@ if(CASE STREQUAL "real")
 	if(NOT rc EQUAL 0 OR warning)
 		message(FATAL_ERROR "the site does not build cleanly (${rc}):\n${out}")
 	endif()
+elseif(KIND STREQUAL "error")
+	if(rc EQUAL 0)
+		message(FATAL_ERROR "the fixture ${CASE} built without an error:\n${out}")
+	elseif(NOT out MATCHES "${EXPECT}")
+		message(FATAL_ERROR "the fixture ${CASE} failed without \"${EXPECT}\" (${rc}):\n${out}")
+	elseif(EXISTS ${WORK}/site/dist)
+		message(FATAL_ERROR "the fixture ${CASE} failed, but left ${WORK}/site/dist:\n${out}")
+	endif()
+	string(REGEX MATCH "[^\n]*${EXPECT}[^\n]*" line "${out}")
+	message(STATUS "${CASE}: the build fails as expected: ${line}")
 elseif(NOT warning)
 	message(FATAL_ERROR "the fixture ${CASE} built without a warning (${rc}):\n${out}")
 elseif(NOT warning MATCHES "${EXPECT}")

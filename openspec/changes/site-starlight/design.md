@@ -476,6 +476,70 @@ served by request interception.
   template has no sidebar); Hugo's navbar had a Documentation link. The
   hero's button and the cards lead into the docs.
 
+### Group 4 (2026-11-27)
+
+The listings are in `~/.local/share/bb2-c-work/site-starlight/group4/`
+(`data-links.txt`, `check-without-base.txt`, `broken-input-tests.txt`,
+`links-missing-page-output.txt`).
+
+- **The link check (4.1, D7)** is the site's own, not
+  `starlight-links-validator`: `src/lib/links.mjs`, run in
+  `astro:build:done` over the output HTML (D9) by the site's Starlight
+  plugin `src/integrations/site-checks.mjs`. It checks every `<a href>`
+  without scheme and host of every built page (Markdown links, cards,
+  pager, hero, Starlight's sidebar and table of contents: 41340 links)
+  and the Markdown links of the data. A link must lead below the base to
+  a built page (or file) and an id of it, so a site path whose base was
+  not added fails too: with the base step switched off, 644 links fail
+  (`check-without-base.txt`). No new dependency; the validator plugin
+  would not see the data before 5.2. A failure lists the page (or data
+  file) and the link, removes `dist/` and throws.
+- **The base.** The remark plugin takes `{base}` and adds it to `link`
+  and `definition` nodes and to the `href` of `LinkCard`/`LinkButton` in
+  MDX (the MDX JSX nodes reach the plugin, so the cards need no step
+  outside remark). The links of the front matter (`prev`/`next`, the
+  hero's actions) get it from a Starlight route middleware
+  (`src/lib/route-base.mjs`, added by the plugin with
+  `addRouteMiddleware`). `astro.config.mjs` changes by a `base` constant,
+  the plugin option and `plugins: [siteChecks()]`.
+- **Targets of later tasks.** The links to the command reference (5.2:
+  158 of the pages, 7 of the data) are counted, not failed, while their
+  page is missing: the declared list `AWAITED` in `src/lib/links.mjs`,
+  whose one entry accepts only
+  `/docs/libraries/{commands,userlibs,amigaos}/NAME/` for a library NAME
+  of `site/data` (an AmigaOS one with `opens`) and, as the anchor, one of
+  its command ids (`entryIds`) or a section id of the page. The build
+  prints the count ("not yet built: 165 to targets of task 5.2"). Task
+  5.2 removes the entry when it builds the pages. The `#all-fixes` anchor
+  of `important-fixes` needs no entry: it is the page's heading "All
+  fixes"; group 2's listing counted the link as a missing page because of
+  its query string (`?level=3,4`).
+- **The data layer (4.2).** `src/lib/data.mjs` reads `site/data` with the
+  spike's readers (fixoverview, libraries, libintros, cmddesc, levels,
+  rows by issue, `anchorize`, `entryIds`), every text of libintros and
+  cmddesc with its relrefs resolved by the converter's `refPath` (both go
+  at 9.1), and lists the data's texts and links for the check. The site
+  directory: `__BB2_SITE__`, defined by the plugin as Astro's root for the
+  bundled page code, else the module's own path (Node.js). The spike's
+  functions of the Hugo partials (badges, reference links, the
+  `fixed-bugs-library` parts, the overview rows) are ported with their
+  users in 5.1 and 6.1. The 46 internal data links resolve to site paths
+  (no relref left); with the base added, 39 pass the link check and 7
+  wait for 5.2 (`data-links.txt`). The data are in the output only from
+  5.2 on, which renders libintros and cmddesc, so 4.2's "with the base in
+  the output" can only be verified with 5.2; 4.2 stays open until then.
+- **The leftover-syntax check (4.3)** runs in `astro:build:start` over the
+  converted pages (`src/content/docs/`) and `data/` (`.yaml`, `.json`),
+  outside code blocks, when `BB2_HUGO_SYNTAX_CHECK=1` (9.1 removes the
+  condition). With it on, the 46 relrefs of the real data are reported
+  too, next to the fixture's file; `site_hugo_syntax` matches the
+  fixture's file and line. The code-block splitting moved from the
+  converter to `src/lib/markdown.mjs`, which the check keeps after 9.2.
+- **Tests.** `cmake/site-starlight-test.cmake` takes `KIND=error` (the
+  build must exit non-zero, print EXPECT and leave no `dist/`) and `ENV`
+  (variables of the build); the four fixtures are in
+  `site/tests/starlight/`. Each case is a full build (10-15 s).
+
 ### Group 8 (2026-11-27)
 
 - **The keyword export (8.1, Q1).** `tools/toklist` (`toklist json`, the

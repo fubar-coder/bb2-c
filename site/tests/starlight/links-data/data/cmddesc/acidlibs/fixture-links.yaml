@@ -1,0 +1,7 @@
+# The fixture of site_links_data: a link of the library data to a page
+# that does not exist fails the link check (src/lib/links.mjs), naming
+# this file and the link.
+"Fixture":
+  text: Does nothing.
+  notes: |
+    See [no page](/docs/no-such-page/).

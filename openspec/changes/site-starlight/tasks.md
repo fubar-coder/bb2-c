@@ -104,7 +104,7 @@ Work data (reports, counts, screenshots) goes to
 
 ## 4. Links and the data layer
 
-- [ ] 4.1 The link check (design D7): every internal link of the pages and
+- [x] 4.1 The link check (design D7): every internal link of the pages and
   of the data, with its anchor, checked in the build; the base added by the
   site's remark plugin, and outside remark for the links that are no
   Markdown link nodes: the `href` of the `LinkCard`s, `prev`/`next` and
@@ -116,7 +116,7 @@ Work data (reports, counts, screenshots) goes to
   `BB2_SITE`), relrefs in `libintros`/`cmddesc` resolved until the
   cut-over. Verify: the 46 data links are site paths with the base in the
   output and pass the link check.
-- [ ] 4.3 The leftover-syntax check (`{{<`, `{{%` outside code blocks in
+- [x] 4.3 The leftover-syntax check (`{{<`, `{{%` outside code blocks in
   pages and data) fails the build, enabled by a setting that the cut-over
   (9.1) switches on for good. Verify: broken-input test
   `site_hugo_syntax` (a data file with a relref) fails naming the file.

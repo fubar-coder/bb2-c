@@ -36,22 +36,34 @@ endforeach()
 
 # The Starlight build (cmake/site-starlight-test.cmake), Node.js in its
 # pinned image via podman, in a copy of site/: the site as it is installs and
-# builds without a warning (site_starlight), and the fixture
-# starlight/warning/ (two pages with one slug) makes a warning that fails the
-# check (site_starlight_warning). Label site; skipped (77) without podman or
+# builds without a warning (site_starlight); the fixture starlight/warning/
+# (two pages with one slug) makes a warning that fails the check
+# (site_starlight_warning); the fixtures of the build's checks
+# (src/integrations/site-checks.mjs) fail the build with their message: a
+# page linking a missing page (site_links_missing_page) or a missing heading
+# id (site_links_missing_anchor), a data file linking a missing page
+# (site_links_data), a data file with a relref while the leftover-syntax
+# check is on (site_hugo_syntax). Label site; skipped (77) without podman or
 # the image or when the dependencies cannot be downloaded. One at a time:
 # they share npm's cache.
 set(_starlight_cache ${CMAKE_BINARY_DIR}/site-npm-cache)
-foreach(case real warning)
-	if(case STREQUAL "real")
-		set(name site_starlight)
-		set(expect "")
-	else()
-		set(name site_starlight_${case})
-		set(expect "multiple entries with the same slug")
-	endif()
+set(_starlight_cases
+	"site_starlight|real|||"
+	"site_starlight_warning|warning|warning|multiple entries with the same slug|"
+	"site_links_missing_page|links-missing-page|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/no-such-page/ leads to no page|"
+	"site_links_missing_anchor|links-missing-anchor|error|page /bb2-c/fixture-links/: the link /bb2-c/docs/libraries/#no-such-heading names the id \"no-such-heading\"|"
+	"site_links_data|links-data|error|data/cmddesc/acidlibs/fixture-links.yaml \\(Fixture.notes\\): the link /docs/no-such-page/ leads to no page|"
+	"site_hugo_syntax|hugo-syntax|error|data/cmddesc/acidlibs/fixture-hugo-syntax.yaml:7: \\{\\{< relref|BB2_HUGO_SYNTAX_CHECK=1")
+foreach(c IN LISTS _starlight_cases)
+	string(REPLACE "|" ";" c "${c}")
+	list(GET c 0 name)
+	list(GET c 1 case)
+	list(GET c 2 kind)
+	list(GET c 3 expect)
+	list(GET c 4 env)
 	add_test(NAME ${name} COMMAND ${CMAKE_COMMAND}
 		-DSITE=${PROJECT_SOURCE_DIR}/site -DCASE=${case} "-DEXPECT=${expect}"
+		-DKIND=${kind} -DENV=${env}
 		-DCACHE=${_starlight_cache} -DWORK=${CMAKE_BINARY_DIR}/${name}
 		-DTEST_SCRIPT=${PROJECT_SOURCE_DIR}/cmake/site-starlight-test.cmake
 		-P ${WITH_WORKDIR})

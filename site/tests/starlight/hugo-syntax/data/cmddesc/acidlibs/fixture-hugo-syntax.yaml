@@ -1,0 +1,7 @@
+# The fixture of site_hugo_syntax: with the leftover-syntax check on
+# (BB2_HUGO_SYNTAX_CHECK=1), a relref of Hugo outside a code block fails
+# the build, naming this file.
+"Fixture":
+  text: Does nothing.
+  notes: |
+    See [the libraries]({{< relref "/docs/libraries" >}}).

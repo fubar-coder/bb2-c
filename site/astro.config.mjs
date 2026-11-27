@@ -17,10 +17,13 @@ import { unified } from "@astrojs/markdown-remark";
 import { remarkBb2 } from "./src/plugins/remark-bb2.mjs";
 import { sidebar } from "./src/lib/sidebar.mjs";
 import { blitzbasicGrammar } from "./src/lib/grammar.mjs";
+import { siteChecks } from "./src/integrations/site-checks.mjs";
+
+const base = "/bb2-c";
 
 export default defineConfig({
   site: "https://fubar-coder.github.io",
-  base: "/bb2-c",
+  base,
   trailingSlash: "always",
   // Hugo writes its output into public/, so Astro's static files come from
   // Hugo's static/ until the cut-over
@@ -28,7 +31,7 @@ export default defineConfig({
   // remark/rehype, so that the site's remark plugins and astro-mermaid run;
   // Astro's default processor (Sätteri) has a plugin API of its own
   markdown: {
-    processor: unified({ remarkPlugins: [remarkBb2] }),
+    processor: unified({ remarkPlugins: [[remarkBb2, { base }]] }),
   },
   vite: {
     build: {
@@ -46,6 +49,8 @@ export default defineConfig({
     mermaid({ theme: "default", autoTheme: true, enableLog: false }),
     starlight({
       title: "BB2 C port",
+      // the base on the links of the front matter; the checks of the build
+      plugins: [siteChecks()],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/fubar-coder/bb2-c" }],
       customCss: ["./assets/css/fix-overview.css", "./assets/css/fixed-bugs.css"],
       components: { Head: "./src/components/Head.astro" },
