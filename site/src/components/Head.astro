@@ -1,0 +1,13 @@
+---
+// Starlight's <head> with the page's width (site-starlight, design D6): a
+// page with "width: wide" in its front matter (the schema in
+// src/content.config.mjs; Hugo's page width of Hextra) gets a wider
+// content column. Starlight sets --sl-content-width on :root in a cascade
+// layer, so the unlayered rule here takes precedence.
+import Default from "@astrojs/starlight/components/Head.astro";
+
+const wide = Astro.locals.starlightRoute.entry.data.width === "wide";
+---
+
+<Default />
+{wide && <style is:inline>:root { --sl-content-width: 64rem; }</style>}

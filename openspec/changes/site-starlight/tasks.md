@@ -80,25 +80,25 @@ Work data (reports, counts, screenshots) goes to
 
 ## 3. Hextra to Starlight
 
-- [ ] 3.1 Asides and details: the four callout types and the details
+- [x] 3.1 Asides and details: the four callout types and the details
   blocks render as Starlight asides and `<details>`. Verify: the pages
   with callouts (22) and details (5) in the built site show them; a
   screenshot of two of them, light and dark.
-- [ ] 3.2 Cards, steps, filetree on the 28 pages: `CardGrid`/`LinkCard`,
+- [x] 3.2 Cards, steps, filetree on the 28 pages: `CardGrid`/`LinkCard`,
   `Steps`, `FileTree`; every card keeps its link target. Verify: the build
   passes; every card link resolves (link check of 4.1); screenshots of the
   chapter index pages.
-- [ ] 3.3 The home page: Starlight's splash template with the `hero`
+- [x] 3.3 The home page: Starlight's splash template with the `hero`
   (headline, subtitle, button) and the feature cards. Verify:
   screenshots at 1400 and 420 px width.
-- [ ] 3.4 Sidebar: one group per chapter in the order of the chapters'
+- [x] 3.4 Sidebar: one group per chapter in the order of the chapters'
   weights, labelled with the chapter index titles; pages by
   `sidebar.order`; the reference groups collapsed; `prev`/`next` of the 25
   pages as today; the one `width: wide` page wide (schema field + CSS).
   Verify: the sidebar order of the built site equals Hugo's (a listing of
   both in the work directory); the pager of `expressions/` and
   `libraries/` names the neighbours of today.
-- [ ] 3.5 Mermaid on the 8 pages through astro-mermaid, loaded only on
+- [x] 3.5 Mermaid on the 8 pages through astro-mermaid, loaded only on
   pages with a diagram. Verify: the diagrams render light and dark; a page
   without a diagram loads no mermaid chunk (the built HTML).
 
