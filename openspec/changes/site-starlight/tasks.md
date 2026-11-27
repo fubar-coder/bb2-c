@@ -63,12 +63,15 @@ Work data (reports, counts, screenshots) goes to
   fix (converter rule, Hugo-neutral source edit, per-file patch: D2).
   Verify: the report `converter-run.md` in the work directory with the
   counts per class and the revised hours per remaining group.
-- [ ] 2.3 Heading ids: compare, per page, the ids of the Hugo build with
+- [x] 2.3 Heading ids: compare, per page, the ids of the Hugo build with
   those of the Starlight build (a one-off comparison, its output in the
   work directory); a difference gets an explicit `{#id}` in the Hugo page
   (Hugo-neutral) or a converter rule. Verify: the comparison shows no id
-  of the Hugo build missing on its Starlight page.
-- [ ] 2.4 Gate (design D3): the coordinator reads `converter-run.md`; if
+  of the Hugo build missing on its Starlight page, except the ids that the
+  shortcodes of 5.1 generate (the 31 `#fixes-described-with-other-libraries`
+  headings of the library fix pages; their comparison is part of 5.1's
+  verification).
+- [x] 2.4 Gate (design D3): the coordinator reads `converter-run.md`; if
   the counts or a class change the plan, the plan is revised with
   `openspec-update-change` before group 3; if the estimate exceeds 50 h,
   the coordinator asks the user before going on. Verify: the revised
@@ -103,7 +106,9 @@ Work data (reports, counts, screenshots) goes to
 
 - [ ] 4.1 The link check (design D7): every internal link of the pages and
   of the data, with its anchor, checked in the build; the base added by the
-  site's remark plugin. Verify: the build passes; broken-input tests
+  site's remark plugin, and outside remark for the links that are no
+  Markdown link nodes: the `href` of the `LinkCard`s, `prev`/`next` and
+  the hero's actions (the pages keep site paths without the base). Verify: the build passes; broken-input tests
   `site_links_missing_page`, `site_links_missing_anchor`,
   `site_links_data` (a link in a `cmddesc` file) fail with the page and the
   link named (label `site`).
@@ -125,7 +130,9 @@ Work data (reports, counts, screenshots) goes to
   `{#id}`. Verify: the 120 library fix pages and the 4 + 3 index pages
   built; for windowslib, shapeslib, amigaos and one userlib the counts and
   links equal Hugo's (a comparison of the extracted lists in the work
-  directory).
+  directory); the heading-id comparison of 2.3 over the library fix pages
+  shows no id of the Hugo build missing (the 31
+  `#fixes-described-with-other-libraries` headings).
 - [ ] 5.2 The command reference loader (port of `_content.gotmpl` and
   `cmdref/*`): one page per command library, AmigaOS library and userlib,
   with `libintros` and `cmddesc`, the per-command fix rows and "Fixed
@@ -175,7 +182,10 @@ Work data (reports, counts, screenshots) goes to
   and an AmigaOS call is highlighted (screenshot); the check fails with a
   changed token name in a test fixture; the export holds the `TK` names
   and none of the `TA` mnemonics; `ctest --preset host` and the tool test
-  with `-DHOST_SANITIZE=ON` pass; no result changes (prev comparison).
+  with `-DHOST_SANITIZE=ON` pass; no result changes (prev comparison). The
+  14 `basic` fences (Blitz test-program fragments on 2 pages, outside the
+  manifest, aliased to `plaintext` until then) get the grammar too or stay
+  plain text: the decision is recorded in design.md.
 - [ ] 8.2 No warnings in the full build (chunk size, D12); the
   modified-time meta tag only with `BB2_SITE_GITINFO=1` (D13); Pagefind
   excludes `public/api/`. Verify: `site_starlight` passes with the API
@@ -198,8 +208,9 @@ Work data (reports, counts, screenshots) goes to
 - [ ] 9.1 The converted tree committed: the final converter run over the
   pages as they are then (with the site edits of other changes merged
   by then: no freeze, Q5), the
-  data files converted to site paths, the leftover-syntax check on, the
-  ignore rule of the converted tree removed. Verify: `site_starlight` and
+  data files converted to site paths, the leftover-syntax check on, both
+  ignore rules of the converted output removed (`src/content/docs/docs/`
+  and `src/content/docs/index.mdx`). Verify: `site_starlight` and
   all `site_*` tests pass; `git grep -n '{{[<%]' site/src site/data` finds
   nothing outside code blocks.
 - [ ] 9.2 Hugo removed: `hugo.yaml`, `go.mod`, `go.sum`, `layouts/`,
@@ -209,7 +220,7 @@ Work data (reports, counts, screenshots) goes to
   `tests/site-examples/examples.txt` paths rewritten (names unchanged);
   the glob of `tests/site-examples/CMakeLists.txt`. Verify:
   `siteexamples check site tests/site-examples/examples.txt` passes with
-  124 entries; `ctest --preset host`; the site example passes
+  125 entries; `ctest --preset host`; the site example passes
   (`site_examples_run`, `site_examples_compile` and the rwe groups) with
   unchanged expected files; `-DHOST_SANITIZE=ON` for the tool test.
 - [ ] 9.3 `pages.yml` switched (8.3); Astro's `publicDir` back to the

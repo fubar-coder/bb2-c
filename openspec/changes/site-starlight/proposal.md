@@ -47,7 +47,7 @@ TypeScript/JavaScript.
 - `.github/workflows/pages.yml`: Doxygen into `site/public/api/`, the
   Astro build, upload of `site/dist/`.
 - `tools/siteexamples` and `tests/site-examples/examples.txt`: the new
-  content directory and file names (124 entries by path and block number;
+  content directory and file names (125 entries by path and block number;
   the example names and their expected outputs stay).
 - Docs: `site/README.md`, `docs/development.md`, `docs/structure.md`, the
   site page "Building the documentation"

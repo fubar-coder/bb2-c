@@ -22,7 +22,7 @@ See proposal.md, "Why". Today:
   `fixed-bugs-library`; 125 pages with `aliases`, 3 with `anchorMoves`;
   25 with `prev`/`next`; 1 with `width: wide`; 8 with Mermaid.
 - `tools/siteexamples` scans `site/{content,data,layouts,assets}`; the
-  manifest names 124 blocks by path and number.
+  manifest names 125 blocks by path and number.
 - The spike (branch `worktree-agent-a60685d3b7056fa15`, d454d3d90,
   `spike/site-generator/`) has working prototypes of the data layer
   (`common/data.mjs`, `cmdref.mjs`), the converter (`convert-hugo.mjs`),
@@ -98,7 +98,12 @@ report and a gate: the plan is revised with `openspec-update-change`
 before group 3 if the count of manual fixes or a class of problems
 changes it, and the coordinator takes it to the user if the estimate
 grows beyond 40 h by more than a quarter (the user decided on the spike's
-30-40 h). Alternative: a series (scaffold + data layer; content; checks
+30-40 h). Gate result (2026-11-27, `converter-run.md`): 8 manual fixes,
+all converter rules or configuration; estimate 47 h (42-54 h), 41 h for
+groups 3-9; the user decided to revise and continue ("Revise and
+continue"). The revision: the base outside remark in 4.1, the generated
+heading ids in 5.1's verification, the `basic` fences in 8.1, both ignore
+rules in 9.1, 125 manifest entries. Alternative: a series (scaffold + data layer; content; checks
 and redirects; cut-over). Rejected: a series sets an order between
 changes (I4) for work that is ordered anyway, and the cut-over needs all
 parts at once.
