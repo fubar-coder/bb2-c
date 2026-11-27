@@ -112,10 +112,11 @@ Work data (reports, counts, screenshots) goes to
   `site_links_missing_page`, `site_links_missing_anchor`,
   `site_links_data` (a link in a `cmddesc` file) fail with the page and the
   link named (label `site`).
-- [ ] 4.2 `site/src/lib/data.mjs`: `site/data` read as today (no
+- [x] 4.2 `site/src/lib/data.mjs`: `site/data` read as today (no
   `BB2_SITE`), relrefs in `libintros`/`cmddesc` resolved until the
-  cut-over. Verify: the 46 data links are site paths with the base in the
-  output and pass the link check.
+  cut-over. Verify: the 46 data links are site paths and pass the link
+  check (39 now, 7 awaited from 5.2); that they appear in the output with
+  the base is part of 5.2's verification, since only 5.2 renders the data.
 - [x] 4.3 The leftover-syntax check (`{{<`, `{{%` outside code blocks in
   pages and data) fails the build, enabled by a setting that the cut-over
   (9.1) switches on for good. Verify: broken-input test
@@ -140,7 +141,10 @@ Work data (reports, counts, screenshots) goes to
   each comma (port of `render-table.html`); command heading ids as Hugo's.
   Verify: the page count equals Hugo's (136 + 37); the heading ids of the
   reference pages equal Hugo's (the comparison of 2.3 over these pages);
-  the widest AmigaOS table fits the content column (screenshot).
+  the widest AmigaOS table fits the content column (screenshot); the
+  `AWAITED` entry for 5.2 is removed from `src/lib/links.mjs` and the link
+  check passes without it; the 46 data links appear in the output with
+  the base (4.2).
 
 ## 6. The overview of fixed bugs and its check
 
