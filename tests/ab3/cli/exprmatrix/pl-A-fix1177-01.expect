@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-pl-eq-q-cf-A -1
-pl-ne-q-cf-A 0
-pl-lt-q-cf-A 0
-pl-ge-q-cf-A -1
-rc=0

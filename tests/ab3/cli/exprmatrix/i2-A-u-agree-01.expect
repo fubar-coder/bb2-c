@@ -1,7 +1,0 @@
-[compile]
-rc=0
-[run]
-i2-ne-s-s-A 1
-i2-lt-s-s-A 1
-i2-gt-s-s-A 1
-rc=0

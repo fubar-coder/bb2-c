@@ -55,7 +55,7 @@ the prev comparison of the new tests.
 ## 7. The expression matrix (Q2)
 
 - [x] 7.1 `tools/lib/exprmatrix`: `exprmatrix expect` writes the AB3 cases as tests of `tests/ab3/model/exprmatrix/` (one case per generated source, checks named by the cell's key, the `Print` cells by `output`, AmiBlitz3's values as deviations with their `variant` row, `runtime-errors = "off"` for `-r`) instead of `cli/exprmatrix/*.ab3`, `.expect`, `.ref.expect`, `cases.cmake`. Verify: its host tests; the generator's check of the generated files; D12 point 3 for every source by the one-off comparison.
-- [ ] 7.2 The old `cli/exprmatrix/` removed with the include in `tests/ab3/CMakeLists.txt`. Verify: the new tests on both sides; the time of the expression matrix's AB3 part before and after (spec "The matrix's tests are not slower than the old form", targeted `-R` runs on both commits).
+- [x] 7.2 The old `cli/exprmatrix/` removed with the include in `tests/ab3/CMakeLists.txt`. Verify: the new tests on both sides; the time of the expression matrix's AB3 part before and after (spec "The matrix's tests are not slower than the old form", targeted `-R` runs on both commits).
 
 ## 8. Docs and measurement
 

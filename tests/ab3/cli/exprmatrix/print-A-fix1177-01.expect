@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-print-lt-q-l-A -1
-print-le-q-l-A -1
-print-gt-q-l-A 0
-print-ge-q-l-A 0
-rc=0

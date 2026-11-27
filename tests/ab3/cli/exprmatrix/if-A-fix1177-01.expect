@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-if-lt-q-l-A T
-if-le-q-l-A T
-if-gt-q-l-A F
-if-ge-q-l-A F
-rc=0

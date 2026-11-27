@@ -1,8 +1,0 @@
-[compile]
-rc=0
-[run]
-pw-lt-q-l-B 0
-pw-le-q-l-B 0
-pw-gt-q-l-B -1
-pw-ge-q-l-B -1
-rc=0

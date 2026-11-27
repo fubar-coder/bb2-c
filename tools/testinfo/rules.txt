@@ -111,15 +111,15 @@ tests/bug-orig/**/*.orig        label:bug-orig name:bug_orig_* name:inject_* nam
 # file of it (exprmatrix_committed compares them with a fresh generation),
 # the generated tests of the BASIC test model by their tests (the rule
 # model above), their data sources by their tests and the equivalence
-# passes; the AmiBlitz3 cases (tests/ab3/cli/exprmatrix) by the
-# blocks ab3_cli_N and ab3_cli_ref_N
-tests/corpus/tests-exprmatrix/matrix.txt    name:host/exprmatrix_committed* name:host/blitz2_exprtype name:corpus_exprmatrix_* name:bug_orig_compiler_expr_* name:bug_orig_bundle_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_cli*
-tests/corpus/tests-exprmatrix/measured.tsv  name:host/exprmatrix_committed* name:corpus_exprmatrix_* name:bug_orig_compiler_expr_* name:bug_orig_bundle_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_cli*
+# passes; the AmiBlitz3 tests (tests/ab3/model/exprmatrix) by the
+# description too
+tests/corpus/tests-exprmatrix/matrix.txt    name:host/exprmatrix_committed* name:host/blitz2_exprtype name:corpus_exprmatrix_* name:bug_orig_compiler_expr_* name:bug_orig_bundle_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_*__cells* name:ab3_bundle_*
+tests/corpus/tests-exprmatrix/measured.tsv  name:host/exprmatrix_committed* name:corpus_exprmatrix_* name:bug_orig_compiler_expr_* name:bug_orig_bundle_* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence* name:ab3_*__cells* name:ab3_bundle_*
 tests/corpus/tests-exprmatrix/**            name:host/exprmatrix_committed*
 tests/bug-orig/compiler/compiler-expr-*/**  name:host/exprmatrix_committed* name:bug_orig_compiler_expr_* name:ab3_bb2_equivalence*
 tests/bug-orig/regression/compiler-expr-refused-*/**  name:host/exprmatrix_committed* name:regression_compiler_expr_refused_* name:ab3_bb2_equivalence*
 tests/corpus/expect/**          name:corpus* name:ab3_bb2_equivalence*
-tests/ab3/cli/exprmatrix/**     name:host/exprmatrix_committed* name:ab3_cli*
+tests/ab3/model/exprmatrix/**   name:host/exprmatrix_committed*
 tests/ab3/**                    name:ab3_*
 tests/blitz2/**                 name:blitz2_*
 tests/bug-orig/**               label:bug-orig name:bug_orig_* name:inject_* name:regression_* name:ab3_bb2_equivalence*

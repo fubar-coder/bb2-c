@@ -53,6 +53,8 @@ static const char *const traces[][2] = {
     { "corpus_exprmatrix_dl_a_agree_01__cells", "TN:corpus_exprmatrix_dl_a_agree_01__cells\n" EVAL("1", "0") },
     { "bug_orig_compiler_expr_1178_dl_a_01__cells", "TN:bug_orig_compiler_expr_1178_dl_a_01__cells\n" EVAL("1", "0") },
     { "regression_compiler_expr_refused_and__cells", "TN:regression_compiler_expr_refused_and__cells\n" EVAL("1", "0") },
+    { "ab3_dl_a_agree_01__cells", "TN:ab3_dl_a_agree_01__cells\n" EVAL("1", "0") },
+    { "ab3_dl_a_agree_01__cells_oracle", "TN:ab3_dl_a_agree_01__cells_oracle\n" EVAL("1", "0") },
     /* the type decisions of an expression (covsel: the type decisions of an
        expression) */
     { "compiler_prev", "TN:compiler_prev\n" EVAL("1", "0") },
@@ -560,6 +562,8 @@ static const char matrix_tests[] =
     TEST("bug_orig_compiler_expr_1178_dl_a_01__cells", "\"emulator\", \"bug-orig\"") ","
     TEST("bug_orig_x", "\"emulator\", \"bug-orig\"") ","
     TEST("regression_compiler_expr_refused_and__cells", "\"emulator\"") ","
+    MTEST("ab3_dl_a_agree_01__cells", "tests/ab3/model/exprmatrix/dl-a-agree-01.test.bas") ","
+    MTEST("ab3_dl_a_agree_01__cells_oracle", "tests/ab3/model/exprmatrix/dl-a-agree-01.test.bas") ","
     TEST("ab3_cli", "\"emulator\"") ","
     TEST("ab3_cli_ref", "\"oracle\"") ","
     TEST("host", "") ","
@@ -578,13 +582,14 @@ TEST_CASE("covsel: the expression matrix", "[covsel]")
     cur_host_tests = matrix_host_tests;
     r = select_for(real_rules, diff1("tests/corpus/tests-exprmatrix/matrix.txt", "@@ -3 +3 @@", "-a\n+b\n"), NULL,
                    0);
-    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref bug_orig_compiler_expr_1178_dl_a_01__cells "
+    CHECK(std::string(r) == std::string("ab3_dl_a_agree_01__cells ab3_dl_a_agree_01__cells_oracle "
+                                        "bug_orig_compiler_expr_1178_dl_a_01__cells "
                                         "corpus_exprmatrix_dl_a_agree_01__cells host newtest "
                                         "regression_compiler_expr_refused_and__cells"));
-    // an AmiBlitz3 case of the matrix: the blocks and the check
-    r = select_for(real_rules, diff1("tests/ab3/cli/exprmatrix/dl-A-agree-01.ab3", "@@ -3 +3 @@", "-a\n+b\n"),
-                   NULL, 0);
-    CHECK(std::string(r) == std::string("ab3_cli ab3_cli_ref host newtest"));
+    // an AmiBlitz3 test of the matrix: its tests (the rule model) and the check
+    r = select_for(real_rules, diff1("tests/ab3/model/exprmatrix/dl-a-agree-01.test.bas", "@@ -3 +3 @@",
+                                     "-a\n+b\n"), NULL, 0);
+    CHECK(std::string(r) == std::string("ab3_dl_a_agree_01__cells ab3_dl_a_agree_01__cells_oracle host newtest"));
     r = select_for(real_rules, diff1("tests/bug-orig/regression/compiler-expr-refused-and.test/F-I.bas", "@@ -3 +3 @@",
                                      "-a\n+b\n"), NULL, 0);
     CHECK(std::string(r) == std::string("host newtest regression_compiler_expr_refused_and__cells"));

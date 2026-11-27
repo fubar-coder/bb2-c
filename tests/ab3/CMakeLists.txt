@@ -132,10 +132,10 @@ set(cli_dir ${CMAKE_CURRENT_SOURCE_DIR}/cli)
 set(cli_gen ${CMAKE_CURRENT_BINARY_DIR}/cli-src)
 set(AB3_CLI_TIMEOUT 600 CACHE STRING
 	"ab3 command line tests: time limit of the emulator session (seconds)")
-# the sources of git (also the expression matrix's, cli/exprmatrix/), and
-# those made in the build: the tokenised includes and main sources (tedsrc
-# tok, BB2's token list) and the .xtra of some of them
-file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb ${cli_dir}/exprmatrix/*.ab3)
+# the sources of git, and those made in the build: the tokenised includes
+# and main sources (tedsrc tok, BB2's token list) and the .xtra of some of
+# them
+file(GLOB cli_sources CONFIGURE_DEPENDS ${cli_dir}/*.ab3 ${cli_dir}/*.bb)
 set(ted_tokens ${PROJECT_SOURCE_DIR}/tests/data/ted-tokens.txt)
 set(cli_made)
 foreach(pair incerr_tok_inc|incerr_tok_inc incother|incother_bb2tok incother|incother_ab3tok
@@ -566,17 +566,6 @@ if(ab3_dev_sources)
 else()
 	message(STATUS "ab3 tests: no optimizer_regression.ab3 - case left out (fetch-originals)")
 endif()
-
-# The expression matrix (OpenSpec change expression-type-matrix, task 3.5;
-# tools/exprmatrix/README.md): its agreement and fixed sources without
-# runtime error checking (tests/corpus/tests-exprmatrix) as .ab3 sources
-# without the cells AmiBlitz3 refuses, generated into cli/exprmatrix/ with
-# their expect files by the target expr-matrix-update; compiled with -r (no
-# runtime error checking, as the corpus sources).  NAME.expect is the output
-# of blitz2-ab3 in AB3 mode (the port's compiler with AmiBlitz3's
-# libraries), NAME.ref.expect AmiBlitz3's measured output where it differs
-# (docs/ab3/variant.md, "Differences to AmiBlitz3's compiler").
-include(${cli_dir}/exprmatrix/cases.cmake)
 
 # ab3_cli(NAME CONFIG CASES [SAME LIST] [HUNKS |NAME=LAYOUT...]): the ctest
 function(ab3_cli name config cases)
