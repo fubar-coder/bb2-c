@@ -15,7 +15,7 @@
 #   library sets, the test library and the bug-orig user library); once, by
 #   the top CMakeLists.txt after the directories that define the programs
 # basic_test_register(PREFIX DIR GLOB... [EXCLUDE REGEX] [REQUIRE_DEVIATION]
-#                     [PREV REGEX [PREV_EXCLUDE ID...]] [ORDER FILE])
+#                     [PREV REGEX [PREV_EXCLUDE ID...]] [ORDER FILE] [VARIANTS FILE])
 #   the tests of the sources DIR/GLOB (e.g. "*/*.test.bas"; those whose path
 #   below DIR matches REGEX left out): ctest
 #   PREFIX + ID + "__" + CASE (and "_originals" for the side with original
@@ -27,7 +27,10 @@
 #   (basic_test_driver, cmake/prev.cmake prev_compile_model_test): ctest
 #   PREFIX + ID + "_prev".  ORDER: the order file of bug_orig_declare_tests
 #   (cmake/bug-orig-order.cmake): its tests are declared with the tests of
-#   the label bug-orig in one list, the largest COST first.  The tests get
+#   the label bug-orig in one list, the largest COST first.  VARIANTS: the
+#   file whose table rows the variant of a deviation of AmiBlitz3 must name
+#   (docs/ab3/variant.md; testreg --variants: a value that names no row
+#   fails the build naming the test and the value).  The tests get
 #   the environment of the tests CMake declares (emulation_test_environment,
 #   cmake/emulation-queue.cmake: the snapshot owner, the coverage
 #   directory): testreg --test-env, the script PREFIX-model-env.cmake that
@@ -124,7 +127,7 @@ function(basic_test_driver src out)
 endfunction()
 
 function(basic_test_register prefix dir)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV;ORDER" "PREV_EXCLUDE")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV;ORDER;VARIANTS" "PREV_EXCLUDE")
 	set(srcs "")
 	set(confs "")
 	foreach(g IN LISTS arg_UNPARSED_ARGUMENTS)
@@ -178,6 +181,10 @@ function(basic_test_register prefix dir)
 	if(arg_ORDER)
 		list(APPEND order --order ${arg_ORDER})
 	endif()
+	# the rows the variant of a deviation of AmiBlitz3 names (testreg --variants)
+	if(arg_VARIANTS)
+		list(APPEND order --variants ${arg_VARIANTS})
+	endif()
 	# the bundle tests: none when switched off, and none in a coverage build
 	# (a served case would have no tracefile of its own, the bundle's would
 	# hold the functions of all its members)
@@ -191,7 +198,7 @@ function(basic_test_register prefix dir)
 			--cell-fixture "compiler=orig210|rwe_refbuild" --test-env ${tenv} ${order}
 			${cmd} ${srcs}
 		DEPENDS ${srcs} ${confs} ${BASIC_TEST_ENV} ${BASIC_TEST_TOKENS} basic_test_tokens ${TESTREG} host_tools
-			${arg_ORDER} ${costs}
+			${arg_ORDER} ${arg_VARIANTS} ${costs}
 		DEPFILE ${inc}.d
 		COMMENT "Registering the tests of the BASIC test model in ${dir} (${prefix}*)"
 		VERBATIM)

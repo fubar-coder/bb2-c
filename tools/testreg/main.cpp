@@ -5,7 +5,7 @@
  *   testreg --prefix P --output FILE [--env FILE] [--depfile FILE]
  *           [--tokens FILE]... [--cell-fixture SELECTOR|FIXTURE]...
  *           [--timeout-default SEC] [--timeout-extra SEC] [--order FILE] [--costs FILE]
- *           [--test-env FILE] [--no-bundle] --command WORD [--command WORD]... SOURCE...
+ *           [--test-env FILE] [--variants FILE] [--no-bundle] --command WORD [--command WORD]... SOURCE...
  *
  * Reads every source and its configuration, checks them, and writes the
  * ctest include file (only when nothing failed) and the depfile; the case
@@ -28,13 +28,13 @@ namespace fs = std::filesystem;
 
 static int run(const std::string &prefix, const std::string &output, const std::string &envfile,
                const std::string &depfile, const std::string &orderfile, const std::string &costfile,
-               const std::string &testenv, const std::vector<std::string> &tokfiles,
+               const std::string &testenv, const std::string &variantfile, const std::vector<std::string> &tokfiles,
                long long tdef, long long textra, bool bundle,
                const std::vector<std::string> &command, const std::vector<std::string> &cellfix,
                const std::vector<std::string> &sources)
 {
     tc_env env = {};
-    treg_strs tokens = {};
+    treg_strs tokens = {}, variants = {};
     treg_result r = {};
     treg_opts o = {};
     treg_entries order = {};
@@ -53,6 +53,14 @@ static int run(const std::string &prefix, const std::string &output, const std::
             fprintf(stderr, "testreg: %s\n", err);
             rc = 1;
         }
+    if (!variantfile.empty()) {
+        if (treg_variants_load(variantfile.c_str(), &variants, err, sizeof err)) {
+            fprintf(stderr, "testreg: %s\n", err);
+            rc = 1;
+        }
+        o.variants = &variants;
+        o.variants_file = variantfile.c_str();
+    }
     o.prefix = prefix.c_str();
     o.env = envfile.empty() ? nullptr : &env;
     o.tokens = tokens.v;
@@ -114,6 +122,8 @@ static int run(const std::string &prefix, const std::string &output, const std::
         deps.push_back(orderfile);
     if (!costfile.empty())
         deps.push_back(costfile);
+    if (!variantfile.empty())
+        deps.push_back(variantfile);
     for (const std::string &d : deps) {
         char **v = (char **)realloc(r.deps.v, (r.deps.n + 1) * sizeof *v);
 
@@ -162,6 +172,7 @@ static int run(const std::string &prefix, const std::string &output, const std::
     treg_entries_free(&order);
     tcosts_free(&costs);
     treg_strs_free(&tokens);
+    treg_strs_free(&variants);
     tc_env_free(&env);
     return rc;
 }
@@ -171,7 +182,7 @@ int main(int argc, char **argv)
     CLI::App app{"The ctest tests of the Blitz test sources of the model (ID.test.bas), one per case and side, "
                  "from the sources and their run configurations.",
                  "testreg"};
-    std::string prefix, output, envfile, depfile, orderfile, costfile, testenv;
+    std::string prefix, output, envfile, depfile, orderfile, costfile, testenv, variantfile;
     std::vector<std::string> tokfiles, command, cellfix, sources;
     long long tdef = 90, textra = 0;
     bool nobundle = false;
@@ -224,6 +235,11 @@ int main(int argc, char **argv)
                    "a ctest script that defines basic_test_environment(NAME LABELS), the environment of a test "
                    "(cmake/basic-test-model.cmake): included by the include file, called for each test")
         ->type_name("FILE");
+    app.add_option("--variants", variantfile,
+                   "the table of AmiBlitz3's differences (docs/ab3/variant.md): the variant of a deviation of "
+                   "AmiBlitz3 must name a row of it (a name in backticks in the first column); without it every "
+                   "variant is refused")
+        ->type_name("FILE");
     app.add_flag("--no-bundle", nobundle,
                  "no bundle tests: every case test runs alone (without it, the case tests that may share an "
                  "emulator session with other sources are put into bundle tests PREFIXbundle_N of 16 at most, "
@@ -232,8 +248,8 @@ int main(int argc, char **argv)
                "the depfile is written in any case. Exit status 0 ok, 1 a check failed or a file cannot be read "
                "or written, 2 usage error.");
     app.callback([&] {
-        status = run(prefix, output, envfile, depfile, orderfile, costfile, testenv, tokfiles, tdef, textra, !nobundle,
-                     command, cellfix, sources);
+        status = run(prefix, output, envfile, depfile, orderfile, costfile, testenv, variantfile, tokfiles, tdef,
+                     textra, !nobundle, command, cellfix, sources);
     });
     return cli::run(app, argc, argv, status);
 }

@@ -73,8 +73,10 @@ equivalence_pass(ab3_bb2_equivalence_runerr on)
 # and "amiblitz3" (AmiBlitz3's own compiler, side oracle, label oracle),
 # ctest ab3_ID__CASE and ab3_ID__CASE_oracle.  Their drivers are AB3
 # sources, not BB2 ones: the equivalence passes above do not compile them
-# (BASIC_TEST_DRIVERS is read before this registration).
-basic_test_register(ab3_ ${CMAKE_CURRENT_SOURCE_DIR}/model "*.test.bas")
+# (BASIC_TEST_DRIVERS is read before this registration).  The variant of a
+# deviation of AmiBlitz3 names a row of docs/ab3/variant.md (VARIANTS).
+basic_test_register(ab3_ ${CMAKE_CURRENT_SOURCE_DIR}/model "*.test.bas"
+	VARIANTS ${PROJECT_SOURCE_DIR}/docs/ab3/variant.md)
 
 # AB3 mode's token list (spec ab3-compat/libraries): blitz2-ab3's
 # AmiBlitz3 list (the one ending with $80DB, programs/blitz2/src/toklist.h)

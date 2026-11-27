@@ -20,7 +20,9 @@ result file") at build time, without the emulator. For every source it
   file of the directory `ID.test/` beside the source is declared in the
   table `data` of `ID.test.toml`, and every declared one is there;
 - refuses an `!ExpectError` in a test with a cell of `amiblitz3`, which
-  runs without its debugger;
+  runs without its debugger, and a `variant` of a deviation of AmiBlitz3
+  that names no row of the table of `--variants` (a name in backticks in
+  the first cell of a table row of `docs/ab3/variant.md`);
 - registers one ctest test per case and side: `PREFIX_ID__CASE` for the
   cells without original material, `PREFIX_ID__CASE_originals` for those
   with it (the compilers `orig195` and `orig210`, or the CD's libraries),
@@ -137,6 +139,10 @@ OPTIONS:
           --test-env FILE     a ctest script that defines basic_test_environment(NAME LABELS),
                               the environment of a test (cmake/basic-test-model.cmake):
                               included by the include file, called for each test
+          --variants FILE     the table of AmiBlitz3's differences (docs/ab3/variant.md): the
+                              variant of a deviation of AmiBlitz3 must name a row of it (a name
+                              in backticks in the first column); without it every variant is
+                              refused
           --no-bundle         no bundle tests: every case test runs alone (without it, the case
                               tests that may share an emulator session with other sources are
                               put into bundle tests PREFIXbundle_N of 16 at most, each served

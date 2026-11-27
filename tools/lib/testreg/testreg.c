@@ -94,6 +94,47 @@ static char *slurp(const char *file, size_t *len)
     return buf;
 }
 
+int treg_variants_load(const char *file, struct treg_strs *names, char *err, size_t errlen)
+{
+    size_t len;
+    char *text = slurp(file, &len), *p;
+
+    if (!text) {
+        snprintf(err, errlen, "%s: cannot read: %s", file, strerror(errno));
+        return -1;
+    }
+    for (p = text; *p;) {
+        char *nl = strchr(p, '\n'), *cell, *end;
+
+        if (nl)
+            *nl = 0;
+        /* a table row: its first cell up to the next "|" */
+        if (p[0] == '|' && (end = strchr(p + 1, '|'))) {
+            *end = 0;
+            for (cell = p + 1; (cell = strchr(cell, '`'));) {
+                char *close = strchr(cell + 1, '`');
+                size_t n;
+
+                if (!close)
+                    break;
+                *close = 0;
+                n = strspn(cell + 1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-./");
+                if (n && !cell[1 + n] && !has(names, cell + 1) && push(names, cell + 1)) {
+                    free(text);
+                    snprintf(err, errlen, "out of memory");
+                    return -1;
+                }
+                cell = close + 1;
+            }
+        }
+        if (!nl)
+            break;
+        p = nl + 1;
+    }
+    free(text);
+    return 0;
+}
+
 int treg_tokens_load(const char *file, struct treg_strs *names, char *err, size_t errlen)
 {
     size_t len;
@@ -656,6 +697,19 @@ int treg_add_source(const char *source, const struct treg_opts *o, struct treg_r
     if (tj_editor_run_refused(source, &src, &conf, &m, err, sizeof err)) {
         rc = pushf(&r->errors, "%s", err) ? -1 : 1;
         goto out;
+    }
+    /* the variant of a deviation of AmiBlitz3 names a row of
+       docs/ab3/variant.md (the first column) */
+    for (size_t i = 0; i < conf.nvariants; i++) {
+        const struct tc_tabkey *v = &conf.variants[i];
+
+        if (!o->variants && pushf(&r->errors, "%s:%u: test %s: variant \"%s\": no table of variants to check it "
+                                  "against (testreg --variants)", v->at.file, v->at.line, conf.id, v->value.str))
+            goto out;
+        if (o->variants && !has(o->variants, v->value.str)
+            && pushf(&r->errors, "%s:%u: test %s: variant \"%s\" names no row of %s (a name in the first column "
+                     "of a table)", v->at.file, v->at.line, conf.id, v->value.str, o->variants_file))
+            goto out;
     }
     /* AmiBlitz3 runs without its debugger: no !ExpectError beside its cells */
     for (size_t i = 0; i < src.nchecks; i++)

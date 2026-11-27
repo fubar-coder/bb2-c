@@ -113,7 +113,20 @@ struct treg_opts {
     size_t ncell_fixtures;
     int bundle;                 /* 1: note the session key of the case tests
                                    that may be bundled (treg_make_bundles) */
+    const struct treg_strs *variants;   /* the rows of docs/ab3/variant.md
+                                           (treg_variants_load), NULL: none,
+                                           every variant is refused */
+    const char *variants_file;  /* their file, for the messages */
 };
+
+/**
+ * @brief Add the names of the rows of a Markdown file (docs/ab3/variant.md,
+ *        change ab3-test-model D6): every name in backticks (letters,
+ *        digits, "_", "-", ".", "/") in the first cell of a table row.  The
+ *        key `variant` of a deviation of AmiBlitz3 must be one of them.
+ * @return 0, -1 = error (err)
+ */
+int treg_variants_load(const char *file, struct treg_strs *names, char *err, size_t errlen);
 
 /** @brief Whether spec is SELECTOR|FIXTURE with a valid cell selector (err: why not). */
 int treg_cell_fixture_ok(const char *spec, char *err, size_t errlen);

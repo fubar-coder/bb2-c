@@ -157,7 +157,16 @@ file(WRITE ${s}/ab3/tests.toml "libs = \"clib\"\n[matrix]\ncompiler = [\"ab3\", 
 file(WRITE ${s}/ab3/both.test.bas "!TestCase{a}\n  !CheckStrEq{\"x\", @@\n    \"x\",\"same\"}\n!EndTestCase\n")
 file(WRITE ${s}/ab3/both.test.toml
 	"[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\nvariant = \"chr_nospace\"\n")
-run(0 --prefix ab3_ --output ${WORK}/ab3.cmake ${env} --command run ${s}/ab3/both.test.bas)
+file(WRITE ${WORK}/variant.md "# AmiBlitz3\n\n| Case | AmiBlitz3 | blitz2-ab3 |\n|---|---|---|\n"
+	"| `exec_data` | rc 0 | 10 |\n| `chr_float`, `chr_nospace` (G3) | refused | 65 |\n"
+	"| a row without a name | `not_a_row` in another column | `y` |\n")
+run(0 --prefix ab3_ --output ${WORK}/ab3.cmake ${env} --variants ${WORK}/variant.md --command run
+	--depfile ${WORK}/ab3.d ${s}/ab3/both.test.bas)
+file(READ ${WORK}/ab3.d dep)
+string(FIND "${dep}" "${WORK}/variant.md" at)
+if(at LESS 0)
+	message(FATAL_ERROR "--variants: the depfile lacks the file:\n${dep}")
+endif()
 file(READ ${WORK}/ab3.cmake inc)
 string(REPLACE "]==]" "" inc "${inc}")
 string(REPLACE "[==[" "" inc "${inc}")
@@ -174,6 +183,17 @@ endforeach()
 if(inc MATCHES "_originals|bug-orig")
 	message(FATAL_ERROR "AB3 mode: a side originals or the label bug-orig:\n${inc}")
 endif()
+# the build check of the variant (deliberately broken input): a value that
+# names no row of the table's first column, and a variant without --variants
+file(WRITE ${s}/ab3/both.test.toml
+	"[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\nvariant = \"not_a_row\"\n")
+refused("ab3/both.test.toml:3: test both: variant \"not_a_row\" names no row of [^ ]*/variant.md"
+	--variants ${WORK}/variant.md ${s}/ab3/both.test.bas)
+file(WRITE ${s}/ab3/both.test.toml
+	"[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\nvariant = \"chr_float\"\n")
+refused("ab3/both.test.toml:3: test both: variant \"chr_float\": no table of variants to check it against"
+	${s}/ab3/both.test.bas)
+refused("no-such\\.md: cannot read" --variants ${WORK}/no-such.md ${s}/ab3/both.test.bas)
 file(WRITE ${s}/ab3/both.test.toml "[deviations.\"compiler=amiblitz3\"]\n\"check.a.same\" = \"== fail\"\n")
 refused("ab3/both.test.toml:2: \\[deviations.\"compiler=amiblitz3\"\\] of the cells of amiblitz3 has no variant"
 	${s}/ab3/both.test.bas)
