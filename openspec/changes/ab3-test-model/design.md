@@ -425,3 +425,15 @@ file of the round.
   such a line. `compile.log` is the console output without the shell's
   `rc=` line. Measured: a `Gosub` to a missing label gives `error 3 Label
   not Found` (blitz2-ab3) and `error 3 Label not found` (AmiBlitz3).
+- D14/3.4: `tests/ab3/model/tests.toml` sets `timeout = 60` and no
+  `hang-after`: a `hang-after` of the directory would keep every case
+  out of the bundles (`tj_bundle_case`), and the environment's
+  `run-hang-after` counts from the first run only. The bundle key of an
+  `ab3` cell is its session key with `compiler=ab3` before it
+  (`tj_bundle_key`).
+- D13 (task 4.1): `basic_test_register(... PREV "." AB3)` writes the text
+  driver `model-drivers/ID.ab3` (also for a test in `source-mode =
+  "bb2"`; the comparison stages it as `ID.bb` then) and registers
+  `ab3_ID_prev` with the previous build's `blitz2-ab3` (and its `ab3cli`,
+  a `prev`-tagged file); `cli=` is allowed in a pass with `run=off`, whose
+  compile result is the executable's size or the console's first line.

@@ -29,7 +29,7 @@ rounds/tree decisions, "2026-11-27 ab3-test-model Q1-Q5" (design.md D8, D10, D14
 
 ## 4. Prev comparison
 
-- [ ] 4.1 `cmake/basic-test-model.cmake`/prevcmp: the tests of `tests/ab3/model/` compared with the prev build (`ab3_ID_prev`, blitz2-ab3 of both commits, once per `runtime-errors` value of the `ab3` cells; `amiblitz3` not compared); entries `ab3_ID_prev:ID[-runerrs]` checked as stale like the others. Verify: `cmake --preset amiga -DBLITZ2_PREV=ON`, the comparison of the pilot test passes; with an entry for an unchanged test it fails as stale.
+- [x] 4.1 `cmake/basic-test-model.cmake`/prevcmp: the tests of `tests/ab3/model/` compared with the prev build (`ab3_ID_prev`, blitz2-ab3 of both commits, once per `runtime-errors` value of the `ab3` cells; `amiblitz3` not compared); entries `ab3_ID_prev:ID[-runerrs]` checked as stale like the others. Verify: `cmake --preset amiga -DBLITZ2_PREV=ON`, the comparison of the pilot test passes; with an entry for an unchanged test it fails as stale.
 
 ## 5. Pilot
 

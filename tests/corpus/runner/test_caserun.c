@@ -308,7 +308,8 @@ static void test_cell_ab3(void)
         char *bad = p ? str_printf("%sjobline=job=j001|CORPUS:src/x.bb2|CORPUS:out/x\n", p) : NULL;
 
         CHECK(bad && corpus_parse(bad, &cp, err, sizeof err) == -1);
-        CHECK(strstr(err, "cli= needs cell=on and no editrun=, wrap=, build=, build_job=, jobline=") != NULL);
+        CHECK(strstr(err, "cli= needs cell=on or run=off, and no editrun=, wrap=, build=, build_job=, "
+                          "jobline=") != NULL);
         free(bad);
     }
     free(p);

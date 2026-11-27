@@ -15,7 +15,7 @@
 #   library sets, the test library and the bug-orig user library); once, by
 #   the top CMakeLists.txt after the directories that define the programs
 # basic_test_register(PREFIX DIR GLOB... [EXCLUDE REGEX] [REQUIRE_DEVIATION]
-#                     [PREV REGEX [PREV_EXCLUDE ID...]] [ORDER FILE] [VARIANTS FILE])
+#                     [PREV REGEX [PREV_EXCLUDE ID...]] [ORDER FILE] [VARIANTS FILE] [AB3])
 #   the tests of the sources DIR/GLOB (e.g. "*/*.test.bas"; those whose path
 #   below DIR matches REGEX left out): ctest
 #   PREFIX + ID + "__" + CASE (and "_originals" for the side with original
@@ -135,7 +135,7 @@ function(basic_test_driver src out)
 endfunction()
 
 function(basic_test_register prefix dir)
-	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION" "EXCLUDE;PREV;ORDER;VARIANTS" "PREV_EXCLUDE")
+	cmake_parse_arguments(PARSE_ARGV 2 arg "REQUIRE_DEVIATION;AB3" "EXCLUDE;PREV;ORDER;VARIANTS" "PREV_EXCLUDE")
 	set(srcs "")
 	set(confs "")
 	foreach(g IN LISTS arg_UNPARSED_ARGUMENTS)
@@ -221,13 +221,23 @@ function(basic_test_register prefix dir)
 			if(NOT rel MATCHES "${arg_PREV}" OR id IN_LIST arg_PREV_EXCLUDE)
 				continue()
 			endif()
+			string(REPLACE "-" "_" name "${prefix}${id}_prev")
+			if(arg_AB3)
+				# AB3 mode: the text driver (ID.ab3, also of a test in
+				# source-mode bb2), compiled by blitz2-ab3 of both builds; no
+				# BB2 source of the equivalence passes
+				set(drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/${id}.ab3)
+				basic_test_driver(${s} ${drv} ${confs})
+				list(APPEND drivers ${drv})
+				prev_compile_model_test(${name} ${s} ${drv} ${PREV_BLITZ2_DIR}/blitz2-ab3)
+				continue()
+			endif()
 			set(drv ${CMAKE_CURRENT_BINARY_DIR}/model-drivers/${id}.bb2)
 			basic_test_driver(${s} ${drv} ${confs})
 			list(APPEND drivers ${drv})
 			# the drivers are compiled by the equivalence passes of blitz2-ab3 too
 			# (tests/ab3/CMakeLists.txt), named STEM/ID
 			set_property(GLOBAL APPEND PROPERTY BASIC_TEST_DRIVERS "${drv}|${stem}/${id}")
-			string(REPLACE "-" "_" name "${prefix}${id}_prev")
 			prev_compile_model_test(${name} ${s} ${drv})
 		endforeach()
 	endif()

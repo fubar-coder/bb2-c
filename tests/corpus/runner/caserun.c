@@ -2205,7 +2205,10 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
                 drvname = names[nnames++];
         }
         if (r == 0 && cell < m->ncells
-            && (!(src = str_printf("%s/%s.bb2", dir, drvname ? drvname : conf->id))
+            && (!(src = str_printf("%s/%s%s", dir, drvname ? drvname : conf->id,
+                                   !cell_cli(conf, m, cell)       ? ".bb2"
+                                   : tc_cell_ab3(conf, m, cell) ? ".ab3"
+                                                                : ".bb"))
                 || !(wdir = str_printf("%s/%s%s", dir, drvname ? drvname : conf->id, drvname ? "" : "-data"))))
             r = -2;
         if (r == -2) {
@@ -2224,7 +2227,15 @@ static int prev_run(const struct caserun_opts *o, const struct tc_env *env, cons
             fprintf(log, "corpusrun case: %s\n", r == -2 ? "out of memory" : err);
             r = 2;
         } else {
-            char *all = str_printf("%s%s", pt, dt), *re;
+            /* blitz2-ab3 of the prev build with its own ab3cli (PROGDIR:ab3cli) */
+            const char *ps = strrchr(o->prev_blitz2, '/');
+            char *pcli = cell_cli(conf, m, cell) && ps
+                             ? str_printf("file=blitz2/ab3cli|%.*s/ab3cli|prev\n", (int)(ps - o->prev_blitz2),
+                                          o->prev_blitz2)
+                             : strdup("");
+            char *all = pcli ? str_printf("%s%s%s", pt, dt, pcli) : NULL, *re;
+
+            free(pcli);
 
             /* a pass of the data alone takes this setting of runtime error checking */
             if (all && !drvname && (re = strstr(all, "\nruntime_errors=")) && !strncmp(re + 16, values[!v],
@@ -2304,6 +2315,17 @@ static int write_driver(const struct caserun_opts *o, const struct tc_env *env, 
     const char *tedsrc = need(env, "tedsrc", err, sizeof err);
     int rc = 2;
 
+    /* the text driver of the cells of ab3 (NAME.ab3, NAME.bb): as it is, no
+       tokenising (change ab3-test-model D13) */
+    if ((n > 4 && !strcmp(out + n - 4, ".ab3")) || (n > 3 && !strcmp(out + n - 3, ".bb"))) {
+        char *d = slash ? strndup(out, (size_t)(slash - out)) : strdup(".");
+
+        rc = !d || mkdir_p(d) || write_file(out, drv->text, drv->len) ? 2 : 0;
+        if (rc)
+            fprintf(log, "corpusrun case: cannot write %s\n", out);
+        free(d);
+        return rc;
+    }
     if (n > 4 && !strcmp(out + n - 4, ".bb2"))
         bas = str_printf("%.*s.bas", (int)(n - 4), out);
     else

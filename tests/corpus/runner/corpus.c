@@ -612,8 +612,8 @@ int corpus_parse(const char *text, struct corpus_pass *p, char *err, size_t errl
         free(val);
         return fail(p, err, errlen, "line %u: unknown key %s", no, key);
     }
-    if (p->cli && (!p->cell || p->editrun || p->wrap || p->nbuilds || p->nbjobs || p->njoblines))
-        return fail(p, err, errlen, "cli= needs cell=on and no editrun=, wrap=, build=, build_job=, jobline=");
+    if (p->cli && ((!p->cell && p->run) || p->editrun || p->wrap || p->nbuilds || p->nbjobs || p->njoblines))
+        return fail(p, err, errlen, "cli= needs cell=on or run=off, and no editrun=, wrap=, build=, build_job=, jobline=");
     if (!p->work || !p->report || !p->ted || (p->run && !p->launcher))
         return fail(p, err, errlen, "work, report, ted and launcher are needed");
     if (p->hang_from_run && (!p->hang_after || !p->run))
@@ -1824,7 +1824,21 @@ static void load_outcome(const struct corpus_pass *p, size_t c, size_t i, const 
         o->serial = read_file(serial, &o->seriallen);
     if (o->exe && (p->runtime_errors || p->mask_traps))
         corpus_mask_traps(o->exe, o->exelen);
-    o->result = result_of(log, i);
+    if (p->cli) {
+        /* a command-line compile (cli=): no tedstub; the executable, else the
+           compiler's console output (its first lines) */
+        char *con = str_printf("%s/%s/vol/out/blitz2.out", p->work, p->configs[c].tag);
+        size_t cl = 0;
+        char *t = con ? (char *)read_file(con, &cl) : NULL;
+
+        if (o->exe)
+            o->result = str_printf("ok %zu", o->exelen);
+        else
+            o->result = str_printf("error %.*s", (int)(t ? strcspn(t, "\n") : 0), t ? t : "");
+        free(t);
+        free(con);
+    } else
+        o->result = result_of(log, i);
     free(n);
     free(exe);
     free(run);

@@ -269,7 +269,8 @@
  *                     when the program starts.  Not with runwrap=,
  *                     runargs=, launcherargs= (the shell start)
  *   cli=ab3|amiblitz3
- *                     with cell=on (not with editrun=, wrap=, build=,
+ *                     with cell=on, or with run=off (the comparison of
+ *                     the cell with the prev build); not with editrun=, wrap=, build=,
  *                     build_job=, jobline=): the source is a text driver
  *                     (NAME.ab3, or NAME.bb for blitz2-ab3's BB2 mode; change
  *                     ab3-test-model), staged as CORPUS:src/NAME.ab3 (.bb),

@@ -260,8 +260,9 @@ endfunction()
 # clib and prev (exe:clib).  The compiles are named ID and ID-runerrs, the entries of PREV_INTENDED
 # NAME:ID and NAME:ID-runerrs; an entry of NAME that names no compile of the test is stale.
 #
-# prev_compile_model_test(NAME SOURCE DRIVER):  NAME the ctest name (PREFIX_ID_prev), SOURCE
-#   ID.test.bas, DRIVER its driver (basic_test_driver).  Without a prev build nothing is configured.
+# prev_compile_model_test(NAME SOURCE DRIVER [PREV_COMPILER]):  NAME the ctest name (PREFIX_ID_prev), SOURCE
+#   ID.test.bas, DRIVER its driver (basic_test_driver), PREV_COMPILER the previous commit's compiler
+#   (default its blitz2; blitz2-ab3 for an AB3 driver).  Without a prev build nothing is configured.
 # prev_model_test_command(VAR NAME SOURCE DRIVER PREV_BLITZ2 PREV_LIBS): the command (also for the
 #   self tests with another prev compiler, tests/blitz2/CMakeLists.txt), with the PREV_INTENDED
 #   entries
@@ -284,7 +285,12 @@ function(prev_compile_model_test name src driver)
 		return()
 	endif()
 	prev_register(${name})
-	prev_model_test_command(cmd ${name} ${src} ${driver} ${PREV_BLITZ2_DIR}/blitz2 ${PREV_BLITZ2_DIR})
+	# the previous compiler: blitz2, or the one given (blitz2-ab3 for tests/ab3/model)
+	set(prev_compiler ${PREV_BLITZ2_DIR}/blitz2)
+	if(ARGN)
+		list(GET ARGN 0 prev_compiler)
+	endif()
+	prev_model_test_command(cmd ${name} ${src} ${driver} ${prev_compiler} ${PREV_BLITZ2_DIR})
 	add_test(NAME ${name} COMMAND ${cmd})
 	# two compiles (runtime error checking off and on), each two sessions, maybe one after the
 	# other, each maybe waiting for a slot
