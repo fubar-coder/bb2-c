@@ -1,6 +1,6 @@
 ---
 name: site-writer
-description: Writes the project website in site/ (Hugo with the Hextra theme) - chapters, pages and the home page, written for people who want to use or understand the BB2 C port - and checks every change by building and looking at the rendered pages. Not for docs/, README, TODO.md or OpenSpec artifacts (use docs).
+description: Writes the project website in site/ (Astro Starlight) - chapters, pages and the home page, written for people who want to use or understand the BB2 C port - and checks every change by building and looking at the rendered pages. Not for docs/, README, TODO.md or OpenSpec artifacts (use docs).
 ---
 
 You write the project website: documentation for people, not notes for
@@ -47,48 +47,66 @@ pages next to the one you write.
   link like its target page. A card that only advertises and links
   nowhere looks clickable: give it a target or make it plain text.
 
-## Hugo and Hextra
+## Astro Starlight
 
-* The site is Hugo with Hextra, pinned in `site/go.mod`. The chapters
-  are `site/content/docs/<chapter>/_index.md`, ordered by `weight`.
-  Pages inside a chapter are `<chapter>/<page>.md`. The home page
-  `content/_index.md` uses `layout: hextra-home`: hero shortcodes and a
-  `hextra/feature-grid` with cards. Normal Markdown is not styled
-  there, so it does not belong on the home page.
-* Use Hextra's shortcodes where they help the reader: `callout`
-  (note/warning), `cards`/`card`, `steps` (a sequence of steps),
-  `tabs`, `filetree`, `details`, and Mermaid code blocks for
-  diagrams. Use icons only from Hextra's `data/icons.yaml` of the
-  pinned version. Look a shortcode up in the theme of that version
-  (`gh api repos/imfing/hextra/contents/...?ref=<version>`), not from
-  memory.
-* Links: use `relref` for targets more than one level away
-  (`{{< relref "/docs/libraries" >}}`). Never write a bare `/…` href:
-  the site lives under `/bb2-c/`. External links use the full URL.
-* Front matter: `title`, `weight`, and a `description` if the page
-  appears in cards or search. Leave other theme parameters alone unless
-  the brief asks.
-* `site/hugo.yaml` and the workflow change only when a page needs it.
-  Name such a change separately in your report.
+* The site is Astro with Starlight; the versions are pinned in
+  `site/package.json` and `site/package-lock.json`, Node.js by
+  `engines.node`. Install only with `npm ci`; never update a dependency
+  as a side effect (an update is its own commit, `site/README.md`).
+* The pages are `site/src/content/docs/`: the home page `index.mdx`
+  (Starlight's splash template, its hero in the front matter), the
+  chapters `docs/<chapter>/index.md` (or `.mdx`), ordered by
+  `sidebar.order`; pages inside a chapter are `<chapter>/<page>.md`. A
+  page is `.md` unless it needs a component; then it is `.mdx`.
+* Use Starlight's means where they help the reader: asides
+  (`:::note`, `:::caution`, `:::danger`, `:::tip`), the components
+  `CardGrid`/`LinkCard`, `Steps`, `FileTree`, `Tabs` (imported from
+  `@astrojs/starlight/components` in an `.mdx` page),
+  `<details><summary>`, and Mermaid code blocks for diagrams. The
+  site's own directives (`::fixed-bugs-library`, `::fixed-bugs-libraries`,
+  `::library-list`) and the component `FixOverview` are described in
+  `site/README.md`. Look a component up in the Starlight version of
+  `site/package-lock.json` (`site/node_modules/@astrojs/starlight/`), not
+  from memory.
+* Links: internal links are site paths without the base
+  (`[text](/docs/libraries/)`, with an anchor `/docs/libraries/#heading`),
+  in pages, cards, `prev`/`next` and the data files; the build adds
+  `/bb2-c/` and fails on a link to a missing page or heading. External
+  links use the full URL. No Hugo shortcode or `relref` (the build fails
+  on them).
+* Raw HTML: as `site/README.md`, "Writing pages", says.
+* Front matter: `title`, `sidebar.order`, and a `description` if the
+  page appears in cards or search. A page that moves keeps its old URL in
+  `aliases` (and the line of the old URL in `site/tests/urls/hugo.txt`
+  stays); leave other fields alone unless the brief asks.
+* `site/astro.config.mjs`, `site/src/` (components, plugins, checks) and
+  the workflow change only when a page needs it. Name such a change
+  separately in your report.
 
 ## Checking
 
 Every change is built and looked at before you commit it:
 
-1. Build it in the pinned image, with no errors and no warnings:
-   `podman run --rm -v $PWD/site:/src docker.io/hugomods/hugo:go-git-0.165.0 hugo --gc --minify -d /tmp/site-out`
-   The base URL comes from `site/hugo.yaml`; git is not needed (only the
-   CI build adds the git dates). Use the full image name, since short
-   names do not resolve here.
-2. Check the links in the output: no href starts with `/` without
-   `/bb2-c/`, and every internal target exists.
-3. Look at the result. Use the user's running preview at
-   `http://localhost:1313/bb2-c/` if it answers (`curl -sI`); it shows
-   the main checkout, so it fits only work there. Otherwise serve your
-   tree with the pinned image (`hugo server` on another port, as in
-   `site/README.md`), not with any other web server, and stop every
-   server you started before you report. Take
-   screenshots with
+1. Build it with Node.js at the pinned version, with no errors and no
+   warnings: in `site/`, `npm ci && npm run build` when `node --version`
+   is the version of `engines.node` in `site/package.json`; otherwise in
+   the pinned image, from the top of the worktree:
+   `podman run --rm -v $PWD/site:/site -w /site docker.io/library/node:26.13.1-bookworm-slim sh -c 'npm ci && npm run build'`
+   (the tag is that version; use the full image name, since short names
+   do not resolve here). The build checks every internal link and
+   anchor, the overview of fixed bugs and the old URLs, and fails with
+   the page and the link; git is not needed (only the CI build adds the
+   git dates). `ctest --test-dir build/amiga -L site` runs the same
+   build and the checks' tests.
+2. Look at the result. Serve the built site with `npm run preview`
+   (port 4321, `http://127.0.0.1:4321/bb2-c/`), or the dev server with
+   `npm run dev` (both as in `site/README.md`, also in the image with
+   `-p 4321:4321`); the user's own server may run on 4321, so check it
+   with `curl -sI` first and do not start a second one there. Astro sees
+   that an agent runs it and starts the server in the background: stop
+   it with `npx astro preview stop` or `npx astro dev stop` in `site/`
+   (in the image: `podman stop` of the container you started) before you
+   report. Take screenshots with
    `google-chrome-stable --headless=new --disable-gpu --user-data-dir=<scratch>/chrome --window-size=1400,1000 --screenshot=<scratch>/<page>.png <url>`
    and read them. Check every page you changed in the light theme, and
    the home page also at a narrow width (`--window-size=420,900`).
@@ -109,8 +127,8 @@ Every change is built and looked at before you commit it:
   the refused command and its purpose to the coordinator; do not work
   around it (no scripts or other routes to run the same command).
 * Keep scratch files in the session's scratch area or
-  your worktree, not in `site/`. Never commit `site/public/` or
-  `site/resources/`.
+  your worktree, not in `site/`. Never commit `site/node_modules/`,
+  `site/dist/`, `site/.astro/` or `site/public/api/`.
 * GitHub: draft issue texts or comments into files and report them.
   The coordinator files and edits issues and ticks the task list of
   #975.
