@@ -31,8 +31,9 @@ export default defineConfig({
   site: "https://fubar-coder.github.io",
   base,
   trailingSlash: "always",
-  // the static files are in public/ (Astro's default): the API reference
-  // public/api/, which Doxygen writes there (site/README.md); not committed
+  // the static files are in public/ (Astro's default): the site's icon
+  // favicon.svg, and the API reference public/api/, which Doxygen writes
+  // there (site/README.md); the API reference is not committed
   // remark/rehype, so that the site's remark plugins and astro-mermaid run;
   // Astro's default processor (Sätteri) has a plugin API of its own. The
   // typography is Hugo's (src/plugins/remark-typographer.mjs), not Astro's
@@ -56,6 +57,8 @@ export default defineConfig({
     mermaid({ theme: "default", autoTheme: true, enableLog: false }),
     starlight({
       title: "BB2 C port",
+      // public/favicon.svg, served below the base
+      favicon: "/favicon.svg",
       // the base on the links of the front matter; the checks of the build
       plugins: [siteChecks()],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/fubar-coder/bb2-c" }],

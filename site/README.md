@@ -30,6 +30,8 @@ source of facts, but is not included here; the pages are new texts.
 * `assets/`: the script and the styles of the overview of fixed bugs and
   of the level badges.
 * `tests/`: the inputs of the site's tests (below).
+* `public/`: static files served as they are, below the base: the site's
+  icon `favicon.svg`.
 * Written by the build and not committed: `node_modules/`, `.astro/`,
   `dist/` (the built site) and `public/api/` (the API reference).
 

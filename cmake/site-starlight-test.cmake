@@ -8,7 +8,7 @@
 #         -DCACHE=<dir> -DWORK=<dir> -P site-starlight-test.cmake
 #
 # The copy leaves out what the builds write (node_modules/, dist/, .astro/)
-# and public/ (the API reference, not committed); the dependencies are
+# and public/api/ (the API reference, not committed); the dependencies are
 # installed into it
 # with `npm ci` from the lock file, CACHE keeping npm's download cache
 # between runs. CASE real: the site as it is must install and build with
@@ -86,7 +86,7 @@ endif()
 
 file(MAKE_DIRECTORY ${WORK} ${CACHE})
 file(COPY ${SITE}/ DESTINATION ${WORK}/site
-	REGEX "^${SITE}/(node_modules|dist|\\.astro|public)$" EXCLUDE)
+	REGEX "^${SITE}/(node_modules|dist|\\.astro|public/api)$" EXCLUDE)
 if(NOT CASE STREQUAL "real")
 	if(NOT IS_DIRECTORY ${SITE}/tests/starlight/${CASE})
 		message(FATAL_ERROR "site-starlight-test: no fixture ${SITE}/tests/starlight/${CASE}")
