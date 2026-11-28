@@ -1,4 +1,4 @@
-# modlib-word-min-mod.test.bas: an open original bug (issue to be filed);
+# modlib-word-min-mod.test.bas: an open original bug (#1237);
 # every cell shows it: the CD's modlib -2, the port's (floor Mod, #1197) -1
 [deviations."libs=cd"]
 "check.word_min.remainder" = "== fail"

@@ -1105,7 +1105,7 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
   trap would stop the program).
 - **An original bug found.** domodword's DIVS.W overflows on -32768 Mod
   -1 and leaves the dividend: the original gives -2, the floor rule -1,
-  the true value is 0 (`BUG(orig)` in modlib.c, test
+  the true value is 0 (#1237; `BUG(orig)` in modlib.c, test
   `modlib-word-min-mod`; domodquick for the whole parts -32768 and -1).
 - **Tests.** The host tests of exprarith, exprtyping and exprfold compare
   with the model's rule sets P+ and today's, which keep today's sign rule
