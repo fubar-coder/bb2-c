@@ -25,11 +25,15 @@ Not yet moved, each for a technical reason:
   check in a derived copy), the compiler's input files (an include or
   resident found by its name next to the main source), the source forms a
   driver cannot have (a tokenised main source with its `.xtra`, a program
-  without `End` or one that ends inside a macro line), and the cases
-  judged on the compiler's console output and return code, on
-  byte-identical executables, on the hunk layout, with other arguments,
-  trees or fixed dates: the model has no query of the compiler's console
-  text and return code, no `SAME` or `HUNKS`.
+  without `End` or one that ends inside a macro line), the compile-error
+  cases judged on the compiler's console output, and the cases judged
+  on byte-identical executables, on the hunk layout, with other arguments
+  (`-w`, `-werr`, a fixed set of warnings), trees or fixed dates: the model
+  has no query of the console text of an error, no run setting of the
+  warning sets, no `SAME` or `HUNKS`. The warnings of a compile without
+  other arguments and its return code are queries of the model
+  (`compile.warnings`, `compile.rc`, change test-model-warnings): the
+  `datafrac` cases are tests in `tests/ab3/model/`.
 - the expect tests of `tests/blitz2` (`NAME.bas` with `NAME.expect`): no
   feature is missing, only the rewrite; the move comes after the change
   expr-tree-5.
