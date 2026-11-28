@@ -103,7 +103,7 @@ struct bugorig_step {
 };
 
 /* the block of the step s->job in a tedstub log (change named-compile-jobs,
-   design D2): a line KEYWORD<TAB>ID... (JOB, XTRA, XTRAERR, RESULT, MENU,
+   design D2): a line KEYWORD<TAB>ID... (JOB, XTRA, XTRAERR, WARNING, RESULT, MENU,
    POINTER, OPENIO, PANIC, CLOSEIO, CONSOLE, OUTPUT, REQUESTERS, PROGRESS,
    STRIPE, GUARD) belongs to the step ID; a line without an ID to the step of
    the next ID line, but before a JOB line (a job begins with it; a menu

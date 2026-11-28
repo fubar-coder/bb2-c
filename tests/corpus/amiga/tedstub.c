@@ -73,6 +73,8 @@
  *   JOB ID SOURCE
  *   XTRA ID own|defaults|resdefaults|none
  *   XTRAERR ID MESSAGE                error outside the compile (residents)
+ *   WARNING ID MESSAGE                a warning of the compile ("Warning: ...":
+ *                                     the compile goes on)
  *   RESULT ID ok SIZE
  *   RESULT ID error LINE MESSAGE TEXT  the compiler's error, TEXT = the line
  *   RESULT ID failed REASON
@@ -151,10 +153,30 @@ static UWORD numlines;
 static char errmsg[256];
 static int errpending;
 
+/* m starts with "Warning: " (parse.c warn, typewarn) */
+static int iswarning(const char *m)
+{
+    const char *p = "Warning: ";
+
+    while (*p && *m == *p)
+        m++, p++;
+    return !*p;
+}
+
 static void error_hook(const char *m)
 {
     LOG_BEGIN;
 
+    /* a warning of the compile (blitz2 typewarn: "Warning: line N: ..."
+       and "Warning: NAME: K more"): the compile goes on, no error */
+    if (in_menu && iswarning(m)) {
+        sbs(&L, "WARNING\t");
+        sbs(&L, cur_id);
+        sbc(&L, '\t');
+        sbs(&L, m);
+        LOG_END;
+        return;
+    }
     if (in_menu) {
         if (!errpending) {
             edstub_strcpy(errmsg, m, sizeof errmsg);

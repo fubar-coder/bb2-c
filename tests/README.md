@@ -607,8 +607,9 @@ any characters, `#` a decimal number, `\c` the character `c`).
 log), `compile.log.JOB` the block of one job in it, so that a test that
 judges several jobs (`compiler-racing-stripe-wide`: j000 and j001) has
 one assertion per block. tedstub's log is cut into steps: a line
-`KEYWORD<TAB>ID...` (`JOB`, `XTRA`, `XTRAERR`, `RESULT`, `MENU`,
-`POINTER`, `OPENIO`, `PANIC`, `CLOSEIO`, `CONSOLE`, `OUTPUT`,
+`KEYWORD<TAB>ID...` (`JOB`, `XTRA`, `XTRAERR`, `WARNING` (a warning of
+the compile, the editor's requester `Warning: ...`; the compile goes
+on), `RESULT`, `MENU`, `POINTER`, `OPENIO`, `PANIC`, `CLOSEIO`, `CONSOLE`, `OUTPUT`,
 `REQUESTERS`, `PROGRESS`, `STRIPE`, `GUARD`) belongs to the job `ID`; a
 requester line without an ID to the job of the next ID line, but before
 a `JOB` line to that of the previous one (a job begins with its `JOB`

@@ -122,6 +122,7 @@ int main(void)
             "GUARD\tj000\tok\n"
             "JOB\tj001\tCORPUS:src/t.bb2\n"
             "ezfreq \"Name of Executable to create\" -> CORPUS:out/stripe-j001\n"
+            "WARNING\tj001\tWarning: line 3: Fraction of a Data.b value discarded [datafrac]\n"
             "RESULT\tj001\tok\t1300\n"
             "PROGRESS\tj001\tbar 0\t222\n"
             "STRIPE\tj001\trow 0\t###\n"
@@ -144,12 +145,14 @@ int main(void)
                               "ezfreq \"Name of Executable to create\" -> CORPUS:out/t\nRESULT\tj000\tok\n"
                               "PROGRESS\tj000\tnone\nSTRIPE\tj000\tnone\nGUARD\tj000\tok\n"));
         free(blk);
-        /* a job with bitmap= lines; the requester behind its last line goes
-           with the menu item that follows */
+        /* a job with bitmap= lines and a warning of the compile; the
+           requester behind its last line goes with the menu item that
+           follows */
         s.job = "j001";
         blk = bugorig_block(log, &s);
         CHECK(blk && !strcmp(blk, "JOB\tj001\tCORPUS:src/t.bb2\n"
                               "ezfreq \"Name of Executable to create\" -> CORPUS:out/stripe-j001\n"
+                              "WARNING\tj001\tWarning: line 3: Fraction of a Data.b value discarded [datafrac]\n"
                               "RESULT\tj001\tok\nPROGRESS\tj001\tbar 0\t222\nSTRIPE\tj001\trow 0\t###\n"
                               "GUARD\tj001\tbefore 95 after 0\n"));
         free(blk);

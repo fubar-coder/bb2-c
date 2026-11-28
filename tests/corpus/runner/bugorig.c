@@ -281,7 +281,7 @@ static void log_of(const char *log, struct text *t)
    0: a line without an ID (a requester line of the frame) */
 static int step_id(const char *p, size_t m, const char **id, size_t *idlen)
 {
-    static const char *const keys[] = { "JOB", "XTRA", "XTRAERR", "RESULT", "MENU", "POINTER", "OPENIO", "PANIC",
+    static const char *const keys[] = { "JOB", "XTRA", "XTRAERR", "WARNING", "RESULT", "MENU", "POINTER", "OPENIO", "PANIC",
                                          "CLOSEIO", "CONSOLE", "OUTPUT", "REQUESTERS", "PROGRESS", "STRIPE",
                                          "GUARD" };
 
