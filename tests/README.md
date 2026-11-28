@@ -45,9 +45,12 @@ mode](#tests-of-ab3-mode)). Not yet moved, each for a technical reason:
 the command line cases of `tests/ab3` (`ab3_cli`: AmiBlitz3's own test
 programs, fetched and not rewritten; the compiler's input files, an
 include or resident found by its name next to the main source; the
-source forms a driver cannot have; compile errors and warnings judged on
-the compiler's console output; other arguments, `Blitz3:` trees, fixed
-dates, `SAME`, `HUNKS`); TED A/B (the editor driven by scripts, the runs
+source forms a driver cannot have; compile errors judged on the
+compiler's console output and the warning cases that need other
+arguments (`-w`, `-werr`) or `SAME`; other arguments, `Blitz3:` trees,
+fixed dates, `SAME`, `HUNKS`; the warnings of a compile without other
+arguments and its return code are tests of the model: the queries
+`compile.warnings` and `compile.rc`); TED A/B (the editor driven by scripts, the runs
 compared with each other at test time).
 Outside the model: host tests, perf budgets, the comparisons of build
 results and data, the tools' self tests and the `lsclear` checker of
@@ -1824,6 +1827,17 @@ runs without its debugger (no `Defaultdbug`), so a test with a cell of
 by the query `requester`, AmiBlitz3's "not checked" is its deviation.
 `compile` of such a cell is `ok` if the executable exists, else
 `error LINE MESSAGE` from the compiler's error line.
+
+**Warnings and the return code.** The warnings blitz2-ab3 prints for a
+compile, and the return code with them (5 after a warning), are judged
+with the queries `compile.warnings`, `compile.warnings.K` and
+`compile.rc` ([Assertions](#assertions)): a test of `tests/ab3/model/`
+(`warn-datafrac`: the line of the test source, the name, the text, `count`
+and `rc == 5`, the values of the run as checks) with
+`exclude = ["compiler=amiblitz3"]`, as AmiBlitz3's warnings have another
+form. The cases that need `-w` or `-werr` (`datafrac_off`,
+`datafrac_werr`), `-r` with `SAME` (`datafrac_r`) or the compile errors
+stay in `ab3_cli`: the model has no run setting for the warning sets.
 
 **AmiBlitz3's differences.** Where AmiBlitz3 gives another value, the test
 declares it in `[deviations."compiler=amiblitz3"]` with the key `variant`:
