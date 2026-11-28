@@ -1096,6 +1096,53 @@ TEST_CASE("exprtyping: every Quick operation in 48.16 (task 4.2)", "[exprtyping]
     }
 }
 
+TEST_CASE("exprtyping: the shifts by the classes (task 4.4)", "[exprtyping][tsr]")
+{
+    // the spec delta's "A shift keeps the type of its left operand", "A
+    // shift at the top under a Quick destination", "A left shift at the top
+    // under a Quick destination wraps", "Bit operators take whole
+    // operands" (a 48.16 operand rounded down): "s" the pass's own shift
+    // (48.16, or a whole LSR in its own width), a letter the build's shift
+    // in that type
+    struct {
+        const char *text, *vars;
+        unsigned want;
+        const char *code;
+    } cases[] = {
+        { "q LSL 2", "q=1", ET_LONG, "lsl:s =f" },                  // 48.16, rounded down
+        { "q LSL 2", "q=1", ET_NONE, "lsl:s =z" },
+        { "q LSL 2", "q=1", ET_QUICK, "lsl:Q =q" },                 // J: the low 32 bits
+        { "q LSL 2", "q=1", ET_WORD, "lsl:Q =f" },                  // the low 32 bits reach a Word
+        { "q LSR 1", "q=1", ET_LONG, "lsr:Q =f" },                  // on the 16.16 bits
+        { "q ASR 1", "q=1", ET_LONG, "asr:Q =f" },                  // a 16.16 operand: exact
+        { "(q+p) ASR 1", "q=1 p=1", ET_LONG, "add:3 asr:s =f" },     // a 48.16 operand
+        { "(q+p) LSR 1", "q=1 p=1", ET_QUICK, "add:3 lsr:Q =q" },    // its low 32 bits
+        { "w LSR 3", "w.w=1", ET_WORD, "lsr:s =t" },                // in its own width
+        { "b LSR 1", "b.b=1", ET_NONE, "lsr:s =t" },
+        { "w ASR 3", "w.w=1", ET_WORD, "asr:W =t" },                // the Long's low bits
+        { "w LSL 4", "w.w=1", ET_NONE, "lsl:W =t" },                // as a Long
+        { "l LSR 3", "l.l=1", ET_LONG, "lsr:L =t" },
+        { "x LSR h", "x.w=1 h=1", ET_NONE, "lsr:s =q" },            // a Quick count rounded down
+        { "x LSL h", "x.w=1 h=1", ET_NONE, "lsl:W =z" },
+        { "x LSL (q+p)", "x.w=1 q=1 p=1", ET_NONE, "add:3 lsl:W =z" },  // a 48.16 count's whole part
+        { "l LSR 3", "l.l=1", ET_QUICK, "lsr:s =s" },               // E of a Long: 48.16
+        { "b LSR 3", "b.b=1", ET_QUICK, "lsr:Q =q" },               // E of a Byte: 16.16
+        { "(v LSL 4)+p", "v.w=1 p=1", ET_QUICK, "lsl:W add:3 =s" },  // a Long in the sum
+        { "-(b LSR 1)", "b.b=1", ET_QUICK, "lsr:s neg:W =t" },       // no E through a unary minus
+        { "(q+p) AND 1", "q=1 p=1", ET_QUICK, "add:3 and:L =q" },    // the 48.16 operand rounded down
+        { "(q+p) AND 1", "q=1 p=1", ET_NONE, "add:3 and:L =z" },
+        { "q LSL 2", "q=1", ET_FLOAT, "!" },                        // refused, as before
+    };
+
+    for (const auto &c : cases) {
+        tree t(c.text, c.vars);
+
+        INFO(c.text, " ", c.want);
+        REQUIRE(t.root);
+        CHECK(mine_q48(t.root, c.want) == c.code);
+    }
+}
+
 TEST_CASE("exprtyping: the pass ends on every cell of the matrix under the classes", "[exprtyping][tsr]")
 {
     std::string text = readfile(EXPRMATRIX_TXT);

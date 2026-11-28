@@ -331,6 +331,7 @@ struct ctx {
     int bittaker;               /* the operand typed is taken by a bit operator, shift or NOT */
     int modtree;                /* const_flow of a const_quick expression (#1224) */
     int tsr;                    /* the tree is classed (exprtyping_classify): the whole-width rule */
+    const struct exprtyping_node *top;  /* the root (the classes: a shift at the top, frac_shift) */
     unsigned wrap;              /* the next node typed is reached from a destination that wraps at
                                    wrap bits (8, 16, 32) through operators that keep the low bits
                                    only (wb_modular); 0 none.  typed() takes it at its entry */
@@ -657,6 +658,7 @@ static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned 
 
 static int is_floaty(struct ctx *c, const struct exprtyping_node *n, unsigned want);
 static int q48_class(const struct exprtyping_node *n);
+static int q_shift(const struct exprtyping_node *n);
 
 /* is_floaty of an operand: a comparison's result is a whole number, also
    when it compares in Float ("expr-tree-5 group 3: three readings of the
@@ -746,6 +748,8 @@ static int has_long(struct ctx *c, struct exprtyping_node *n, unsigned want)
         /* the classes: an operation of Quick class by its operands, as one
            with a Quick in it (its typing is the fractional world's) */
         return has_long(c, n->l, want) || (n->kind == ETN_BIN && has_long(c, n->r, want));
+    if (c->tsr && q_shift(n))
+        return has_long(c, n->l, want);     /* a shift of Quick class: its left operand */
     if (!has_quick(n)) {
         if (n->kind == ETN_VAR)
             return n->type == ET_LONG;
@@ -778,6 +782,13 @@ static int has_long(struct ctx *c, struct exprtyping_node *n, unsigned want)
 static int q48_class(const struct exprtyping_node *n)
 {
     return n->cls == ET_QUICK && !folded(n) && (n->kind == ETN_NEG || (n->kind == ETN_BIN && is_arith(n->op)));
+}
+
+/* a shift of Quick class (task 4.4): a Quick left operand, or the shift
+   exception (E) of a whole one; typed by frac_shift */
+static int q_shift(const struct exprtyping_node *n)
+{
+    return n->cls == ET_QUICK && n->kind == ETN_BIN && is_shift(n->op) && !folded(n);
 }
 
 /* the format of a fractional value (ETF_*) as the bits of the model's
@@ -832,6 +843,76 @@ static unsigned frac_side(struct ctx *c, struct exprtyping_node *n, unsigned wan
     return FW_WHOLE;
 }
 
+/* a whole type a shift count is taken in: a Quick rounded down (quicktoword),
+   a fractional value as frac_operand gives it; an address a Long */
+static unsigned shift_count(unsigned t)
+{
+    return t == ET_QUICK ? ET_WORD : t >= ET_BYTE && t <= ET_LONG ? t : ET_LONG;
+}
+
+/* A shift of Quick class under the classes (task 4.4 of type-system-rework;
+   spec delta compiler/expression-types, "A shift keeps the type of its left
+   operand", "A shift at the top under a Quick destination", "A left shift
+   at the top under a Quick destination wraps"): a Quick left operand's LSR
+   on its 16.16 bits (the low 32 bits of a 48.16 one), its ASR on the 16.16
+   bits when it is held in them (exact) and in 48.16 when it is a 48.16
+   pair, its LSL and ASL in 48.16; the shift exception (E) of a whole left
+   operand with 16 fraction bits: of a Byte or Word class on the 16.16 bits
+   (in the Quick range), of a Long class in 48.16 (on the 16.16 bits inside
+   the Quick range, in 48.16 beyond it: the code decides at run time).  A
+   left shift of a Quick at the top under a Quick destination (J) or under
+   a Byte or Word one is the 16.16 shift: only the low 32 bits of the
+   48.16 value reach the result.  The 16.16 shifts are the build's code
+   (ETY_PLAIN in Quick, the count converted to a Quick and rounded down by
+   the handler); the 48.16 ones the pass's (ETY_SHIFT).  The count is
+   whole: a Quick rounded down, a 48.16 value as frac_operand takes it under
+   a shift (its whole part). */
+static unsigned frac_shift(struct ctx *c, struct exprtyping_node *n, unsigned want)
+{
+    unsigned op = n->op, lt, rt, lf = ET_QUICK, fl = FW_WHOLE;
+    int lc = isconst(n->l), rc = isconst(n->r), wide;
+
+    if (n->l->cls == ET_QUICK) {
+        fl = frac_side(c, n->l, want, 0, 0, &lf);
+        lt = ET_QUICK;
+    } else {
+        /* the shift exception (E): the whole left operand as rule P+ types it */
+        c->bittaker = 1;
+        c->wrap = 0;
+        lt = typed(c, n->l, want, 0, lc ? BIT_SHIFTED : BIT_NONE);
+        lf = lt;
+    }
+    if (c->refused)
+        return FW_WHOLE;
+    c->bittaker = 1;
+    c->wrap = 0;
+    rt = typed(c, n->r, want, rc ? lt : 0, rc ? BIT_COUNT : BIT_NONE);
+    if (c->refused)
+        return FW_WHOLE;
+    if (lt == ET_STRING || rt == ET_STRING || rt == ET_FLOAT) {
+        refuse(c);
+        return FW_WHOLE;
+    }
+    if (n->l->cls != ET_QUICK)
+        wide = n->l->cls == ET_LONG;
+    else if (op == ETO_LSR)
+        wide = 0;
+    else if (op == ETO_ASR)
+        wide = fl == FW_48;
+    else
+        wide = !((want == ET_QUICK && (n->exc & ETX_SHIFTWRAP))
+                 || (n == c->top && (want == ET_BYTE || want == ET_WORD)));
+    if (!wide) {
+        record(c, n, ETY_PLAIN, lc ? ETY_CONST : lf, ET_QUICK, 0, rc ? ETY_CONST : rt, ET_QUICK, 0, ET_QUICK);
+        mark(c, n, ET_QUICK, ETF_TYPE);
+        return FW_16;
+    }
+    record(c, n, ETY_SHIFT, lc ? ETY_CONST : lf, n->l->cls == ET_QUICK ? ET_QUICK : ET_LONG, fl == FW_48,
+           rc ? ETY_CONST : rt, shift_count(rt), 0, ET_LONG);
+    mark(c, n, ET_LONG, ETF_Q48);
+    return FW_48;
+}
+
 /* n in the fractional world under want; force: every operation 48.16;
    whole: a whole-number arithmetic subtree in the fractional format */
 static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned want, int force, int whole,
@@ -858,6 +939,8 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
     case ETN_NOT: return frac_other(c, n, want);
     default: break;
     }
+    if (c->tsr && q_shift(n))
+        return frac_shift(c, n, want);
     if (!exprtype_iscompare(n->op) && !is_arith(n->op))
         return frac_other(c, n, want);
     if (exprtype_iscompare(n->op)) {
@@ -911,24 +994,18 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
    fractional world under want, then taken by the operation ("expr-tree-5
    group 3 findings: four rule points of P+", 1): a 16.16 value as the
    Quick it is; a 48.16 value by a bit operator, shift or NOT as its whole
-   part, a Long (rounded down), anywhere else straight as a Float; a
-   comparison as its Word */
+   part, a Long (rounded down; the classes: also where rule P+ took its low
+   32 bits, task 4.4), anywhere else straight as a Float; a comparison as
+   its Word */
 static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned want, int whole)
 {
     unsigned from, f, t;
-    int force = !want && !is_cmp(n) ? has_long(c, n, 0) : 0, bit = c->bittaker, plong = 0;
+    int force = !want && !is_cmp(n) && !(c->tsr && q_shift(n)) ? has_long(c, n, 0) : 0, bit = c->bittaker;
 
-    if (c->tsr && bit && !is_cmp(n))
-        /* the classes: a bit operator, shift or NOT takes the 48.16 value
-           as rule P+ takes its operand there: the Long rounded down where
-           P+ computes it in 48.16, else the Quick of its low 32 bits (the
-           16.16 value of P+; the bit operators', shifts' and Mod's tasks
-           4.4, 4.7) */
-        plong = want == ET_LONG || ((!want || (want >= ET_BYTE && want <= ET_QUICK)) && has_long(c, n, want));
     f = frac_value(c, n, want, force, whole || (want != ET_LONG && !is_cmp(n)), &from);
     if (is_cmp(n))
         return ET_WORD;
-    t = f != FW_48 ? ET_QUICK : bit ? (c->tsr && !plong ? ET_QUICK : ET_LONG) : ET_FLOAT;
+    t = f != FW_48 ? ET_QUICK : bit ? ET_LONG : ET_FLOAT;
     if (!c->dry) {
         n->t = (unsigned char)t;
         n->fmt = f == FW_48 ? ETF_Q48 : ETF_Q16;
@@ -1132,6 +1209,8 @@ static unsigned wb_need(const struct exprtyping_node *n)
     }
     if (exprtype_iscompare(n->op) || n->op == ETO_BITTST)
         return 1;           /* -1 or 0 */
+    if (is_shift(n->op) && (n->cls == ET_BYTE || n->cls == ET_WORD))
+        return n->cls == ET_BYTE ? 8 : 16;  /* LSR, ASR in the left operand's width (task 4.4) */
     if (n->cls == ET_FLOAT || is_shift(n->op) || n->op == ETO_POW || n->op > ETO_BITTST)
         return 32;
     l = wb_bits(n->l);
@@ -1240,6 +1319,50 @@ static unsigned wb_type(const struct ctx *c, const struct exprtyping_node *n, un
     return t;
 }
 
+/* a whole type of the build's (a Quick or Float as the Long of its whole
+   part; 0 none) */
+static unsigned whole_of(unsigned t)
+{
+    return (t >= ET_BYTE && t <= ET_LONG) || t == ET_ADDR ? t : t ? ET_LONG : 0;
+}
+
+/* A shift of whole class under the classes (task 4.4; spec delta "A shift
+   keeps the type of its left operand"), its operands typed (lt, rt): LSR of
+   a Byte or Word class in its own width (ETY_SHIFT, the pass's lsr.b or
+   lsr.w), every other one as a Long (the build's handler shifts a Long:
+   LSR of a Long class, ASR, whose low bits are those of the shift in the
+   operand's width, LSL and ASL); the type of the build's code (the wanted
+   one among them when it is whole), a Quick count rounded down by its
+   conversion to that type.  The left shift that is the whole expression
+   under a Quick destination (J) is the build's 16.16 shift: its low 32
+   bits are those of the Long shifted and wrapped to a Quick. */
+static unsigned whole_shift(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned lt, unsigned rt)
+{
+    unsigned op = n->op, T, lw = n->l->cls;
+    int lc = isconst(n->l), rc = isconst(n->r);
+
+    if (want == ET_FLOAT || lt == ET_FLOAT || rt == ET_FLOAT || lt == ET_STRING || rt == ET_STRING)
+        return refuse(c);
+    if (op == ETO_LSR && (lw == ET_BYTE || lw == ET_WORD)) {
+        record(c, n, ETY_SHIFT, lc ? ETY_CONST : lt, lw, 0, rc ? ETY_CONST : rt, shift_count(rt), 0, lw);
+        mark(c, n, lw, ETF_TYPE);
+        return lw;
+    }
+    if (want == ET_QUICK && (n->exc & ETX_SHIFTWRAP))
+        T = ET_QUICK;
+    else {
+        /* the build's type: the wanted whole one and the left operand's (not
+           the count's); a Quick count at least a Word (quicktoword: its
+           whole part without the overflow check of a Byte) */
+        T = tmax(want >= ET_BYTE && want <= ET_LONG ? want : 0, whole_of(lt));
+        if (rt == ET_QUICK && T < ET_WORD)
+            T = ET_WORD;
+    }
+    record(c, n, ETY_PLAIN, lc ? ETY_CONST : lt, T, 0, rc ? ETY_CONST : rt, T, 0, handler_result(op, T));
+    mark(c, n, handler_result(op, T), ETF_TYPE);
+    return handler_result(op, T);
+}
+
 /* n by the operand typing under want, beside an operand of type beside (a
    constant subtree only); role: the constant's BIT_* */
 static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned beside, int role)
@@ -1276,6 +1399,14 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         if (!c->dry)
             n->t = ET_FLOAT;
         return ET_FLOAT;
+    }
+    if (c->tsr && q_shift(n)) {
+        /* the classes (task 4.4): a shift of Quick class by frac_shift,
+           taken as frac_operand says; under a wanted Float refused, as
+           rule P+ (a Float format reached is typed without it, above) */
+        if (want == ET_FLOAT)
+            return refuse(c);
+        return frac_operand(c, n, want, 0);
     }
     if (c->tsr && q48_class(n)) {
         /* the classes (task 4.2): an operation of Quick class in 48.16
@@ -1339,6 +1470,8 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         return refuse(c);
     lc = isconst(n->l);
     rc = isconst(n->r);
+    if (c->tsr && is_shift(op))
+        return whole_shift(c, n, want, lt, rt);
     /* a constant too large for a Quick under a wanted Quick is a Long, as
        today, and the operation one under a Long */
     if (want == ET_QUICK
@@ -1475,10 +1608,13 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
     res->conv = 0;
     c.quickhere = has_quick(root);
     c.tsr = root->cls != 0;
-    if (c.tsr && want != ET_STRING && q48_class(root) && !is_floaty(&c, root, want)) {
+    c.top = root;
+    if (c.tsr && want != ET_STRING
+        && ((q48_class(root) && !is_floaty(&c, root, want)) || (q_shift(root) && want != ET_FLOAT))) {
         /* the classes (task 4.2): an operation of Quick class at the top,
            computed in 48.16 (Mod as rule P+ decides, task 4.7), its value
-           taken by the destination */
+           taken by the destination; a shift of Quick class (task 4.4) in
+           16.16 or 48.16 as frac_shift decides */
         unsigned from, f = frac_value(&c, root, want == ET_FLOAT ? 0 : want, 0, 0, &from);
 
         res->fmt = f == FW_48 ? ETF_Q48 : ETF_Q16;

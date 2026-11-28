@@ -7,11 +7,13 @@
 ; second and every further one) is evaluated as a Word, the first index
 ; and the checked build evaluate it as a Long: with y=200 g(1,y*200/2)
 ; computes y*200 in the Quick range (40000 overflows) and reads element
-; 52768, b(1,q ASL 4) with q=1.5 shifts the Quick and reads element 24.
+; 52768.
 ; Correct: every index is evaluated as a Long, with and without runtime
-; error checking (spec compiler/expression-types): g(1,20000), b(1,16),
-; the same element as the checked build. An index beyond 65535 still uses
-; its low word without the checking.
+; error checking (spec compiler/expression-types): g(1,20000), the same
+; element as the checked build. An index beyond 65535 still uses its low
+; word without the checking. A shift of a Quick keeps its fraction
+; (type-system-rework 4.4): b(1,q ASL 4) with q=1.5 reads element 24, as
+; the original (before: 16, the Quick rounded down first).
 ; Each line prints the index of the element the access uses, taken from
 ; its address (g and h: Dim .b(1,60000) and .b(60000,1)), or the value
 ; stored in it (c(1,j,k) holds j*100+k, n(1,j) and v(1,j) hold j).
@@ -44,7 +46,7 @@ End NEWTYPE
   !CheckEq{r,20000,"i03"}   ; h(y*200/2,1)
   o=&g(1,q ASL 4)-g0
   r=(o-1)/2
-  !CheckEq{r,16,"i04"}   ; g(1,q ASL 4)
+  !CheckEq{r,24,"i04"}   ; g(1,q ASL 4) (before type-system-rework 4.4: 16)
   o=&g(1,q*2+w+wb)-g0
   r=(o-1)/2
   !CheckEq{r,10,"i05"}   ; g(1,q*2+w+wb)

@@ -91,8 +91,12 @@ enum {
                                    with a Quick, or the two sides of a fractional comparison) */
     ETY_Q16 = '1',              /* a 16.16 operation (qmul, qdivide, an exact Mod) */
     ETY_Q48 = '3',              /* a 48.16 operation */
-    ETY_MIXED = 'm'             /* a Quick and a whole number under a Long by the routines of #1178
+    ETY_MIXED = 'm',            /* a Quick and a whole number under a Long by the routines of #1178
                                    (mixmult, lqdiv, longdiv): lwide, rwide mark the Quick operand */
+    ETY_SHIFT = 's'             /* a shift by the classes' own code (task 4.4 of type-system-rework):
+                                   of Quick class in 48.16 (the left operand in las, a 48.16 pair
+                                   when lwide; result ET_LONG, ETF_Q48), else a whole LSR in the
+                                   left operand's own width las (result las); the count in ras */
 };
 
 /** @brief An operand that is a constant (exprtyping_op.lfrom, rfrom):
@@ -190,15 +194,21 @@ struct exprtyping_result {
  * destination that wraps through + - *, the unary minus, NOT and the bit
  * operators; or within a range bound), else in the narrowest whole type
  * that does (the operands extended, the Long code; a minus sign wide, a
- * Long / of two Word-range values o.fast).  Mod and the shifts keep their
- * types (tasks 4.7, 4.4).  Every operation of Quick class (+ - * / and the
+ * Long / of two Word-range values o.fast).  Mod keeps its type (task
+ * 4.7).  The shifts (task 4.4) follow their classes: a whole LSR of a Byte
+ * or Word class in its own width (ETY_SHIFT), the other whole shifts as a
+ * Long, a shift of Quick class (a Quick left operand, the shift exception)
+ * in 16.16 where only its low 32 bits reach the value (LSR, ASR of a
+ * 16.16 operand, a left shift at the top under a Quick, Byte or Word
+ * destination), else in 48.16 (ETY_SHIFT, ETF_Q48); a Quick count rounded
+ * down.  Every operation of Quick class (+ - * / and the
  * unary minus; task 4.2) is computed in 48.16 (ETY_Q48, ETF_Q48) wherever
  * it is, its operands typed by their classes (a whole operand as a whole
  * number, not in a fractional format); the value is taken at the root by
  * the destination: a Quick saturated (ETC_SAT), a whole number rounded
  * down (ETC_FLOOR), a Float (ETC_TOFLOAT), none as ETC_FIT; inside the
- * operation with a Float as a Float, by a bit operator, shift or NOT as
- * the Quick or Long rule P+ takes there (tasks 4.4, 4.7).  Where rule P+
+ * operation with a Float as a Float, by a bit operator, shift count or
+ * NOT as its whole part, a Long rounded down.  Where rule P+
  * reads a constant with a point in such an operation as a Float (part 2),
  * the operation stays rule P+'s Float one until the reading of constants
  * switches (task 3.3).  Without the classes (the host test of rule P+)

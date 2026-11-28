@@ -7346,6 +7346,80 @@ static void p5qdivt(struct p5node *p, UWORD r, UWORD q)
 /* the operator p in D(r) (its left operand, a pair when that is 48.16)
    and D(r+1+lwide) (its right operand), its result in D(r) (a pair for
    48.16); in prep mode the libraries its code calls are used */
+/* No asm counterpart (type-system-rework task 4.4; exprtyping.c's
+   frac_shift and whole_shift): the shift p of the pass's own code, its
+   left operand in D(r) (a pair D(r)/D(r+1) when it is 48.16), its count in
+   D(q).  Of whole class: LSR in the left operand's own width (lsr.b and
+   ext.w, the Byte a sign-extended Word in the register; lsr.w), the
+   68000's count modulo 64.  Of Quick class: the 48.16 pair shifted one bit
+   per step (a 64-bit shift: lsl/roxl, asr/roxr, lsr/roxr) by the count
+   modulo 64 in D(r+2), the left operand widened first (a Quick, or the
+   Long of the shift exception as l << 16); the LSR of a Long (the shift
+   exception) on the 16.16 bits when the Long is in the Quick range (its
+   result extended to the pair), else in 48.16 (N1). */
+static void p5shiftop(const struct p5node *p, UWORD r, UWORD q)
+{
+    const struct exprtyping_op *o = &p->t.o;
+    struct p5node *L = P5(p->t.l), *R = P5(p->t.r);
+    unsigned op = p->t.op;
+    BOOL lw = L->df == ETF_Q48;
+    UWORD n = r + 2, step;
+    ULONG wide = 0, done = 0;
+
+    if (p->t.cls != ET_QUICK) {
+        p5operands(L, R, r, q, o->las, o->ras);
+        if (o->las == T_BYTE) {
+            p5w(0xe028 | ((r + 1) << 9) | r);           /* lsr.b D(r+1),D(r) */
+            p5w(0x4880 | r);                            /* ext.w D(r) */
+        } else
+            p5w(0xe068 | ((r + 1) << 9) | r);           /* lsr.w D(r+1),D(r) */
+        return;
+    }
+    p5reg(n);
+    regat = q;
+    p5conv(R->dt, R->df, o->ras, FALSE);
+    regat = r;
+    if (!lw)
+        p5conv(L->dt, L->df, o->las, TRUE);
+    if (p5prep)
+        return;
+    if (!lw)
+        p5w(0x2000 | (n << 9) | q);                     /* move.l D(q),D(r+2): the count */
+    p5w(0x0240 | n);                                    /* andi.w #63,D(r+2) */
+    p5w(63);
+    if (!lw && op == ETO_LSR) {
+        /* the shift exception of a Long: in the Quick range on the 16.16
+           bits */
+        p5w(0x3000 | ((r + 1) << 9) | r);               /* move.w D(r),D(r+1) */
+        p5w(0x48c0 | (r + 1));                          /* ext.l D(r+1) */
+        p5w(0xb080 | ((r + 1) << 9) | r);               /* cmp.l D(r),D(r+1) */
+        wide = p5bra(0x6600);                           /* bne.s .wide */
+        p5w(0x4840 | r);                                /* swap D(r) */
+        p5w(0x4240 | r);                                /* clr.w D(r): l << 16 */
+        p5w(0xe0a8 | (n << 9) | r);                     /* lsr.l D(r+2),D(r) */
+        p5w(0x2000 | ((r + 1) << 9) | r);               /* move.l D(r),D(r+1) */
+        p5w(0xd080 | ((r + 1) << 9) | (r + 1));         /* add.l D(r+1),D(r+1) */
+        p5w(0x9180 | ((r + 1) << 9) | (r + 1));         /* subx.l D(r+1),D(r+1): the sign */
+        done = p5bra(0x6000);                           /* bra.s .done */
+        p5patch(wide);                                  /* .wide: */
+    }
+    if (!lw)
+        p5widen(r, o->las);
+    p5w(0x6004);                                        /* bra.s .test */
+    if (op == ETO_LSL || op == ETO_ASL) {
+        p5w(0xe388 | r);                                /* .step: lsl.l #1,D(r) */
+        step = 0xe390 | (r + 1);                        /* roxl.l #1,D(r+1) */
+    } else {
+        p5w((op == ETO_ASR ? 0xe280 : 0xe288) | (r + 1));   /* .step: asr.l / lsr.l #1,D(r+1) */
+        step = 0xe290 | r;                              /* roxr.l #1,D(r) */
+    }
+    p5w(step);
+    p5w(0x51c8 | n);                                    /* .test: dbra D(r+2),.step */
+    p5w(0xfffa);
+    if (done)
+        p5patch(done);                                  /* .done: */
+}
+
 static void p5bin(struct p5node *p, UWORD r)
 {
     const struct exprtyping_op *o = &p->t.o;
@@ -7539,6 +7613,9 @@ static void p5bin(struct p5node *p, UWORD r)
             p5w(0x4240 | r);                            /* clr.w D(r) */
         }
         p5w((op == ETO_ADD ? 0xd080 : 0x9080) | (r << 9) | (r + 1));   /* add.l / sub.l D(r+1),D(r) */
+        break;
+    case ETY_SHIFT:
+        p5shiftop(p, r, q);
         break;
     case ETY_MIXED: {
         struct exprtype_bin d;
@@ -7854,6 +7931,11 @@ static void p5binapply(struct p5node *p, UWORD want)
     case ETY_EXACT:
     case ETY_COMPARE: p->dt = T_WORD; break;
     case ETY_MIXED: p->dt = T_LONG; break;
+    case ETY_SHIFT:
+        p->dt = o->result;
+        if (p->t.cls == ET_QUICK)
+            p->df = ETF_Q48;        /* a 48.16 shift (p5shiftop) */
+        break;
     case P5Y_LOW: p->dt = T_QUICK; break;
     default: p->dt = o->result; break;
     }
@@ -8333,6 +8415,8 @@ static void p5check(const struct expract *a)
             need = r + 1 + (L->df == ETF_Q48) + (R->df == ETF_Q48);
             if (p->df == ETF_Q48 && need < r + 1)
                 need = r + 1;
+            if (p->t.o.path == ETY_SHIFT && p->df == ETF_Q48 && need < r + 2)
+                need = r + 2;       /* p5shiftop: the count in D(r+2) */
         } else if (a->fn == p5negact || a->fn == p5notact) {
             const struct p5node *p = a->fn == p5negact ? P5(a->x) : P5(a->p);
 

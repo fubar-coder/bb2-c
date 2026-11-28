@@ -7,8 +7,8 @@
 ; 3, r.l=l-q 8, r.l=q/h 3.  A Long constant that makes the type Long
 ; itself takes the fraction under * and / (35, 36).  Without a wanted
 ; type (NPrint) each operand keeps its own type since the fix of #1216
-; (rule P+): 1+1+1+q gives 4.5, w+v+q 8.5 (20-22); shifts round the Quick
-; down (09).
+; (rule P+): 1+1+1+q gives 4.5, w+v+q 8.5 (20-22); a shift keeps the
+; Quick's fraction (09: 24 in 48.16, type-system-rework 4.4; before: 16).
 ; blitz2 1.95 cut the Quick at fetch (r.l=q*2 gave 2).
 ; Arithmetic only: comparisons are #1177, array indexes are left out.
 ; The case prints one line per form (asserted in

@@ -1,5 +1,5 @@
 # compiler-array-later-index.test.bas: the original evaluates a later index
-# as a Word (the Quick range overflows, the Quick shifts)
+# as a Word (the Quick range overflows)
 fixed-orig = 1179
 
 [deviations."compiler=orig195"]
@@ -7,7 +7,5 @@ fixed-orig = 1179
 "check.later_index.i01.actual" = "== 52768"
 "check.later_index.i02" = "== fail"
 "check.later_index.i02.actual" = "== 62768"
-"check.later_index.i04" = "== fail"
-"check.later_index.i04.actual" = "== 24"
 "check.later_index.i20" = "== fail"
 "check.later_index.i20.actual" = "== 49152"

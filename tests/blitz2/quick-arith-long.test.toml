@@ -10,7 +10,9 @@ compiler = ["port", "orig195"]
 libs = ["cd", "clib"]
 
 [asserts]
-output = "== \"01 r.l=q*2 3\n02 r.l=q+p 4\n03 r.l=l-q 8\n04 r.l=l+q 11\n05 r.l=n*2 -3\n06 r.l=n+0 -2\n07 r.l=q/h 3\n08 r.l=l*q 15\n09 r.l=q ASL 4 16\n10 r.l=fq{1.5}*2 3\n11 r.l=2.0*q 3\n12 r.l=Int(q*2) 3\n13 t.q=q*2:r.l=t 3\n17 Mid$ c\n18 sl{q*2} 3\n19 1+1+q 3.5\n20 1+1+1+q 4.5\n21 w+v+q 8.5\n22 w*v+q 13.5\n23 w-v+q .5\n24 x.w=w+v+q*2 10\n25 x.w=q*2+w+v 10\n26 t.q=w+v+q 8.5\n31 r.l=10:r+q 11\n32 r.l=10:r*q 15\n33 r.l=10:r-q 8\n35 r.l=q*100000 150000\n36 t.q=q*40000 32768\n37 r.l=h+h 1\n38 r.l=w+q*2 6\n\""
+# 09: the Quick shifted in 48.16 (type-system-rework 4.4; before: 16, the
+# Quick rounded down first)
+output = "== \"01 r.l=q*2 3\n02 r.l=q+p 4\n03 r.l=l-q 8\n04 r.l=l+q 11\n05 r.l=n*2 -3\n06 r.l=n+0 -2\n07 r.l=q/h 3\n08 r.l=l*q 15\n09 r.l=q ASL 4 24\n10 r.l=fq{1.5}*2 3\n11 r.l=2.0*q 3\n12 r.l=Int(q*2) 3\n13 t.q=q*2:r.l=t 3\n17 Mid$ c\n18 sl{q*2} 3\n19 1+1+q 3.5\n20 1+1+1+q 4.5\n21 w+v+q 8.5\n22 w*v+q 13.5\n23 w-v+q .5\n24 x.w=w+v+q*2 10\n25 x.w=q*2+w+v 10\n26 t.q=w+v+q 8.5\n31 r.l=10:r+q 11\n32 r.l=10:r*q 15\n33 r.l=10:r-q 8\n35 r.l=q*100000 150000\n36 t.q=q*40000 32768\n37 r.l=h+h 1\n38 r.l=w+q*2 6\n\""
 
 [deviations."compiler=orig195"]
 output = "== \"01 r.l=q*2 2\n02 r.l=q+p 3\n03 r.l=l-q 9\n04 r.l=l+q 11\n05 r.l=n*2 -4\n06 r.l=n+0 -2\n07 r.l=q/h 2147483647\n08 r.l=l*q 10\n09 r.l=q ASL 4 16\n10 r.l=fq{1.5}*2 2\n11 r.l=2.0*q 3\n12 r.l=Int(q*2) 3\n13 t.q=q*2:r.l=t 3\n17 Mid$ b\n18 sl{q*2} 2\n19 1+1+q 3.5\n20 1+1+1+q 4\n21 w+v+q 8\n22 w*v+q 13\n23 w-v+q .5\n24 x.w=w+v+q*2 9\n25 x.w=q*2+w+v 10\n26 t.q=w+v+q 8.5\n31 r.l=10:r+q 11\n32 r.l=10:r*q 10\n33 r.l=10:r-q 9\n35 r.l=q*100000 100000\n36 t.q=q*40000 -25536\n37 r.l=h+h 0\n38 r.l=w+q*2 5\n\""
