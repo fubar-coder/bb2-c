@@ -78,7 +78,7 @@ A constant written without a point SHALL be a Byte from -128 to 127, a Word from
 
 #### Scenario: A negated constant
 - **WHEN** a program executes `NPrint -8 LSR 1`
-- **THEN** it prints 32764, as the original
+- **THEN** it prints 32764 (the original: 2147483644)
 
 #### Scenario: DEFTYPE has no influence
 - **WHEN** a program with `DEFTYPE .f` evaluates `x.l=7/2`
@@ -89,7 +89,7 @@ A constant with a point or an exponent SHALL never be whole. It SHALL be a Quick
 
 #### Scenario: A point and no fraction
 - **WHEN** a program executes `NPrint 3/2.0` and `NPrint 7/2.0+0.5`
-- **THEN** it prints 1.5 and 4 (before and in the original: 1 and 3.5; #1231)
+- **THEN** it prints 1.5 and 4 (before: 1 and 3.5; the original: 1 and 3; #1231)
 
 #### Scenario: Beside a Quick
 - **WHEN** a program evaluates `If q=0.1` with `q=0.1` and `x.q=(0.1=0.1)`, `y.q=(1.3<1.3)`
@@ -437,7 +437,7 @@ The compiler SHALL evaluate every index of an array (the first and every later o
 
 #### Scenario: Shift of a Quick in a later index
 - **WHEN** a program reads `b(1,q ASL 4)` with `q=1.5`, compiled without runtime error checking
-- **THEN** it reads `b(1,24)` (before: 16), as the checked build does
+- **THEN** it reads `b(1,24)` (before: 16; the original: 24 without and 16 with runtime error checking)
 
 #### Scenario: Quick with a fraction keeps its value
 - **WHEN** a program reads `b(1,q*10)`, `c(1,5,q*10)` and assigns `v(1,q*10)=99` with `q=1.5`, compiled without and with runtime error checking
