@@ -1,0 +1,9 @@
+# modlib-word-min-mod.test.bas: an open original bug (issue to be filed);
+# every cell shows it: the CD's modlib -2, the port's (floor Mod, #1197) -1
+[deviations."libs=cd"]
+"check.word_min.remainder" = "== fail"
+"check.word_min.remainder.actual" = "== -2"
+
+[deviations."libs=clib"]
+"check.word_min.remainder" = "== fail"
+"check.word_min.remainder.actual" = "== -1"

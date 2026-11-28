@@ -81,6 +81,13 @@ static inline __attribute__((always_inline)) ULONG mod_w(ULONG acc, ULONG diviso
  * Errors: b = 0 raises the 68000 divide-by-zero exception (vector 5) like
  * the original; on a DIVS overflow d0 stays unchanged.
  *
+ * BUG(orig) (issue to be filed): the one DIVS overflow of two Words,
+ * -32768 MOD -1 (quotient 32768), leaves d0 as the dividend extended
+ * ($FFFF8000), so the low word after the SWAP is -1 instead of the
+ * remainder 0: the original gives -2 (the divisor added), the floor rule
+ * -1 (test `modlib-word-min-mod`).  domodquick has it for the whole parts
+ * -32768 and -1.
+ *
  * @param a d0: the left operand.
  * @param b d1: the right operand.
  * @return d0: the remainder in the low word, the quotient in the high
