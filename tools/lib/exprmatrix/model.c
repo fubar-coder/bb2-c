@@ -4149,9 +4149,11 @@ static void tsr_class(const struct tsr *t, const struct em_tnode *n, int reach, 
             o->n = wc_width(n->text);
         } else if (sib == SIB_FTOP)
             o->k = K_F;         /* D: read as the Float of the written value ("Q12 D", I2 A) */
-        else if (sib == SIB_SHIFTL || pc_exact(n->text) || (sib == K_Q && pc_fits(n->text)))
+        else if (pc_exact(n->text) || (sib == K_Q && pc_fits(n->text)))
             /* a Quick when exact in 16.16 or beside a Quick ("Q8 Quick nur
-               wenn exakt", round 3); left of a shift a Quick of its value */
+               wenn exakt", round 3); left of a shift with no Quick beside it
+               (-0.1 LSL 2) not exact it is a Float, which the shift refuses
+               (spec "A constant with a point is read by its operands") */
             o->k = K_Q;
         else
             o->k = sib == SIB_PROBE ? K_P : K_F;
@@ -4159,12 +4161,15 @@ static void tsr_class(const struct tsr *t, const struct em_tnode *n, int reach, 
     case TN_NEG:
         /* C1 reaches through the unary minus (I4 B), D and E do not (D2); a
            constant with a point under it is read as without it, beside a
-           Quick a Quick (D3) */
+           Quick a Quick (D3); a whole / under it keeps its fraction beside a
+           Quick as without it (decision "2026-11-28 type-system-rework C3
+           through a unary minus": NPrint q+-(w/2) -1) */
         o->lreach = reach & TSR_C1;
-        o->lsib = pc_node(n->l) ? sib : SIB_NONE;
+        o->lsib = pc_node(n->l) || sib == K_Q ? sib : SIB_NONE;
         tsr_class(t, n->l, o->lreach, o->lsib, &a);
         o->refused = a.refused;
         o->k = a.k;
+        o->div = a.div;
         if (a.k == K_W)
             o->n = wider(a.n);
         return;

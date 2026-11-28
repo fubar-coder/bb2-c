@@ -1526,6 +1526,14 @@ TEST_CASE("exprmatrix model: TSR, bit operators and shifts", "[exprmatrix][tsr]"
     CHECK(tsr("1.5 LSR 1", "", EM_PRINT) == ".75");
     CHECK(tsr("2.0 LSL 1", "", EM_PRINT) == "4");
     CHECK(tsr("1.5 LSL qh", "qh=2.5", EM_PRINT) == "6");
+    // a constant with a point not exact in 16.16 is a Float left of a shift: refused
+    CHECK(tsr("-0.1 LSL 2", "", EM_PRINT) == "!noncompile");
+    CHECK(tsr("0.1 LSL 2", "", EM_DL) == "!noncompile");
+    // C3 through a unary minus ("2026-11-28 type-system-rework C3 through a unary minus")
+    CHECK(tsr("q+-(w/2)", "q=0.5 w.w=3", EM_PRINT) == "-1");
+    CHECK(tsr("-(w/2)+q", "q=0.5 w.w=3", EM_PRINT) == "-1");
+    CHECK(tsr("q+-(w/2)", "q=0.5 w.w=3", EM_DQ) == "FFFF0000");
+    CHECK(tsr("q+-(-(w/2))", "q=0.5 w.w=3", EM_PRINT) == "2");
     for (const char *c : { "x LSL q2", "x LSL qh", "x LSL qn" })
         CHECK(tsr(c, "x.w=3 q2=2.0 qh=2.5 qn=2.99", EM_PRINT) == "12");
     CHECK(tsr("q LSL qh", "q=1.5 qh=2.5", EM_DL) == "6");
