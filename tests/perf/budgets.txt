@@ -407,6 +407,13 @@
 # minus load's (q48div 1.5/2.5: 1741, the JSR and RTS included; libgcc's
 # __divdi3 3566 and the prototype's 5912 for the same division, the call
 # excluded). No target: the original has no such routines.
+# The conversions of compilerlib ($D612-$D614, type-system-rework task
+# 4.3, 2026-11-28; no compiled code calls them yet), from two runs on main
+# 5458f96a6 + the routines: q48sat 86.7/86.7, q48satx 88.7/88.7, f2l
+# 182.7/182.7, f2lx 134.7/134.7, f2q 186.2/186.2, f2qx 130.7/130.7 (one
+# MOVE and the JSR included). For comparison, the budgets of today's
+# conversions with their loads and stores: bmath.f2l (c=f1 through
+# mathffp's SPFix) 230, bmath.f2q (q3=f1 through fltoqu) 1784.
 # bq48 (new, expr-tree-5-operand-typing task 4.3, 2026-11-26) measures no
 # library loop but the code blitz2 writes for the expressions rule P+
 # computes in 48.16 (a Long beside a Quick; If, Select, Mod with a
@@ -536,6 +543,12 @@ bcompilerlib.l2q48             75          -  100000 as 48.16: SysJsr $D60B
 bcompilerlib.q2q48             73          -  -1.5 as 48.16: SysJsr $D60C
 bcompilerlib.q48floor          67          -  100000.5 rounded down: SysJsr $D60D
 bcompilerlib.q48trunc         100          -  -1.5 towards zero: SysJsr $D60E
+bcompilerlib.q48sat            91          -  1.5 as a Quick: SysJsr $D612 (in the Quick range)
+bcompilerlib.q48satx           93          -  100000.5 as a Quick: q48sat, saturated ($7FFFFFFF)
+bcompilerlib.f2l              188          -  the Float -2.5 towards zero: SysJsr $D613 (a word shift)
+bcompilerlib.f2lx             140          -  the Float 1e10 towards zero, wrapped: f2l (1410065408)
+bcompilerlib.f2q              192          -  the Float -14.4 rounded down to a Quick: SysJsr $D614
+bcompilerlib.f2qx             136          -  the Float 32768 as a Quick: f2q, saturated ($7FFFFFFF)
 bcmp.emptylong                  3          -  the empty loop again, 150000 iterations (the subtraction)
 bcmp.ltq                      113      107.0  If cnt<x Then c=1 (Long < Quick)
 bcmp.qgtl                     116      105.0  If x>cnt Then c=1 (Quick > Long)

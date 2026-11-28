@@ -1,8 +1,9 @@
 /*
  * libtest_q48 - the 48.16 routines of compilerlib ($D603-$D60E, OpenSpec
- * change expr-tree-5-operand-typing, design decision 9) and the routines
+ * change expr-tree-5-operand-typing, design decision 9), the routines
  * of its speed review (from $D60F: q16mod, q48mull, q48mulf; q48divw and q48divb cut
- * down, #1221) against
+ * down, #1221) and the conversions of change type-system-rework (task
+ * 4.3: q48sat, f2l, f2q from $D612) against
  * programs/blitz2/src/exprarith.c, compiled here for the m68k: every
  * result bit for bit as exprarith_q48 and the casts give it, and the
  * registers the contract keeps (libs/compilerlib/compilerlib.c, "Registers
@@ -14,7 +15,11 @@
  * reach the rare steps of its digit loop), then pseudo random pairs
  * (fixed seed) of mixed magnitudes.  A difference is a failed check with
  * the routine, the inputs, the result and exprarith's value; the first
- * QMAXFAIL are reported.
+ * QMAXFAIL are reported.  The conversions of a Float (f2l, f2q): every
+ * exponent with a list of mantissas and both signs, 0 and -0, then pseudo
+ * random Floats; f2l in the Long range also against mathffp's SPFix (the
+ * ROM's), whose value it keeps there for every Float in mathffp's form
+ * (floats()).
  */
 #include <proto/exec.h>
 #include <stdio.h>
@@ -31,14 +36,17 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n);
 #define QMAXFAIL 20
 #define QROUNDS 2500
 
-enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_Q48MULL, Q_Q48MULF, Q_N };
+enum { Q_ADD, Q_SUB, Q_MUL, Q_DIV, Q_DIVQ, Q_DIVW, Q_DIVB, Q_MOD, Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q16MOD, Q_Q48MULL, Q_Q48MULF,
+       Q_Q48SAT, Q_F2L, Q_F2Q, Q_N };
 static const char *const qname[Q_N] = {
     "q48add", "q48sub", "q48mul", "q48div", "q48divq", "q48divw", "q48divb", "q48mod",
-    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod", "q48mull", "q48mulf"
+    "l2q48", "q2q48", "q48floor", "q48trunc", "q16mod", "q48mull", "q48mulf",
+    "q48sat", "f2l", "f2q"
 };
 
 static APTR qcode[Q_N];
 static long fails;
+static struct Library *ffpbase;             /* mathffp, for SPFix */
 
 /* 64-bit edges: whole numbers and 16.16 values (narrow pairs), wide
    pairs, the limits of q48div's paths (a divisor below $10000, below
@@ -169,17 +177,17 @@ static void pair(int64_t a, int64_t b)
 /* a cast: v the value, d1 for the ones from a Long or Quick the mark */
 static void casts(int64_t v)
 {
-    static const int cq[] = { Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC };
+    static const int cq[] = { Q_L2Q, Q_Q2Q, Q_FLOOR, Q_TRUNC, Q_Q48SAT };
     int i;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 5; i++) {
         int q = cq[i];
         struct regs r = mark(), in;
         unsigned f = 0;
         uint64_t got, want;
 
         r.d[0] = (ULONG)v;
-        if (q >= Q_FLOOR)
+        if (q == Q_FLOOR || q == Q_TRUNC || q == Q_Q48SAT)
             r.d[1] = (ULONG)((uint64_t)v >> 32);
         in = r;
         callregs(qcode[q], &r, 0, 0);
@@ -193,6 +201,12 @@ static void casts(int64_t v)
             want = (uint64_t)exprarith_q16_q48((int32_t)(ULONG)v);
             got = (uint64_t)r.d[1] << 32 | r.d[0];
             break;
+        case Q_Q48SAT:
+            if (r.d[1] != in.d[1])
+                fail(q, v, 0, r.d[1], in.d[1], "d1 changed");
+            got = (ULONG)r.d[0];
+            want = (ULONG)exprarith_q48_quick(v, &f);
+            break;
         default:
             if (r.d[1] != in.d[1])
                 fail(q, v, 0, r.d[1], in.d[1], "d1 changed");
@@ -203,7 +217,7 @@ static void casts(int64_t v)
         }
         if (got != want)
             fail(q, v, 0, got, want, "value");
-        if (q >= Q_FLOOR) {
+        if (q == Q_FLOOR || q == Q_TRUNC) {
             /* a Word or a Byte: the low word of the Long, ext.l */
             int32_t w = (int16_t)(uint16_t)r.d[0];
             int32_t ww = q == Q_FLOOR ? exprarith_q48_floor(v, ET_WORD, &f) : exprarith_q48_trunc(v, ET_WORD, &f);
@@ -249,6 +263,70 @@ static void two(int64_t a, int64_t b)
         fail(Q_Q16MOD, x, y, got, want, "value");
 }
 
+/* a Float conversion: f2l (against exprarith and, in the Long range,
+   SPFix; a Word and a Byte as the low word, ext.l) and f2q */
+static void floats(ULONG v)
+{
+    struct regs r = mark(), in;
+    unsigned f = 0;
+    ULONG got, want;
+
+    r.d[0] = v;
+    in = r;
+    callregs(qcode[Q_F2L], &r, 0, 0);
+    kept(Q_F2L, v, 0, &in, &r);
+    got = r.d[0];
+    want = (ULONG)exprarith_ffp_whole(v, ET_LONG, &f);
+    if (got != want)
+        fail(Q_F2L, v, 0, got, want, "value");
+    /* SPFix in the Long range, for a Float in mathffp's form (bit 31 of
+       the mantissa and the exponent byte not 0, or the value 0): the ROM
+       takes a low byte 0 as the value 0 and returns d0 as it is (a
+       mantissa with exponent 0, below 2^-64: f2l gives 0), and saturates
+       a mantissa 0 with a large exponent */
+    if (!(f & EXA_OVF) && ffpbase && (!v || ((v & 0x80000000UL) && (v & 0x7f)))) {
+        struct regs s = mark();
+
+        s.d[0] = v;
+        s.a[6] = (ULONG)ffpbase;
+        callregs((APTR)((UBYTE *)ffpbase - 30), &s, 0, 0);
+        if (s.d[0] != got)
+            fail(Q_F2L, v, 0, got, s.d[0], "value in the Long range, not SPFix's (shown as exprarith)");
+    }
+    {
+        int32_t w = (int16_t)(uint16_t)got;
+        int32_t ww = exprarith_ffp_whole(v, ET_WORD, &f), wb = exprarith_ffp_whole(v, ET_BYTE, &f);
+
+        if (w != ww || w != wb)
+            fail(Q_F2L, v, 0, (uint32_t)w, (uint32_t)ww, "Word/Byte as ext.l of the Long");
+    }
+    r = mark();
+    r.d[0] = v;
+    in = r;
+    callregs(qcode[Q_F2Q], &r, 0, 0);
+    kept(Q_F2Q, v, 0, &in, &r);
+    got = r.d[0];
+    want = (ULONG)exprarith_ffp_quick(v, &f);
+    if (got != want)
+        fail(Q_F2Q, v, 0, got, want, "value");
+}
+
+/* mantissas (bits 31-8, bit 31 set) for every exponent */
+static const ULONG mants[] = {
+    0x80000000, 0x80000100, 0x80008000, 0xc0000000, 0xaaaaaa00, 0xffffff00, 0xfffffe00, 0x80ffff00,
+    0xe6666600, 0x95029000, 0xffff0000, 0x80010000,
+};
+#define NMANTS (sizeof mants / sizeof mants[0])
+
+/* Floats: 1e10, -14.4 (-144/10), 32767.75, 2^31 - 128 (the largest
+   below 2^31), 2^31, -2^31, 0.5, 1/65536; a mantissa 0 with exponents
+   and signs */
+static const ULONG fedges[] = {
+    0x9502f962, 0xe66666c4, 0xffff804f, 0xffffff5f, 0x80000060, 0x800000e0, 0x80000040, 0x80000031,
+    0, 0x80, 0x7f, 0xff, 0x40, 0xc0,
+};
+#define NFEDGES (sizeof fedges / sizeof fedges[0])
+
 int libtest_q48(APTR const *code, const UWORD *tok, int n)
 {
     long tests = 0;
@@ -285,6 +363,23 @@ int libtest_q48(APTR const *code, const UWORD *tok, int n)
         two(a, b);
         casts(a);
     }
+    ffpbase = OpenLibrary((STRPTR)"mathffp.library", 0);
+    if (!ffpbase) {
+        printf("FAIL no mathffp.library\n");
+        bl_test_check("compilerlib: mathffp.library for SPFix", 0);
+        fails++;
+    }
+    for (x = 0; x < 128; x++)
+        for (y = 0; y < NMANTS; y++, tests += 2) {
+            floats(mants[y] | x);
+            floats(mants[y] | x | 0x80);
+        }
+    for (x = 0; x < NFEDGES; x++, tests++)
+        floats(fedges[x]);
+    for (x = 0; x < QROUNDS * 4; x++, tests++)
+        floats(((rnd32() | 0x80000000UL) & 0xffffff00UL) | (rnd32() & 0xff));
+    if (ffpbase)
+        CloseLibrary(ffpbase);
     printf("%-12s %ld pairs, %ld differences\n", "48.16", tests, fails);
     if (!fails)
         bl_test_check("compilerlib 48.16 routines as exprarith", 1);

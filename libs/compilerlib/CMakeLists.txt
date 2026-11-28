@@ -1,5 +1,5 @@
 # compilerlib - the port's library of the routines of generated code that
-# no library set has (#1178), system library 64030 ($D600-$D602).  Not a
+# no library set has (#1178), system library 64030 ($D600-$D614).  Not a
 # file of blitz2:acidlibs: a BigLib of its own (COMPILERLIB_DIR/
 # compilerlib.big) that programs/blitz2 embeds and links first in its
 # library list (asmlibs.c, loadlibs), in both modes.  `blitzlib numbers`

@@ -371,6 +371,79 @@ int32_t exprarith_q48_fit(int64_t v, int *quick, unsigned *flags)
     return keep(floor16(v), ET_LONG, flags);
 }
 
+/* ------------------------------------------- the conversions (task 4.3) */
+
+int32_t exprarith_q48_quick(int64_t v, unsigned *flags)
+{
+    if (v > INT32_MAX) {
+        *flags |= EXA_OVF;
+        return INT32_MAX;
+    }
+    if (v < INT32_MIN) {
+        *flags |= EXA_OVF;
+        return INT32_MIN;
+    }
+    return (int32_t)v;
+}
+
+/* an FFP value: its 32-bit mantissa (bits 31-8, the low byte 0), the
+   binary exponent e (the value is m / 2^32 * 2^e) and the sign */
+static uint64_t ffp_parts(uint32_t f, int *e, int *neg)
+{
+    *e = (int)(f & 0x7f) - 64;
+    *neg = (f & 0x80) != 0;
+    return f & 0xffffff00u;
+}
+
+int32_t exprarith_ffp_whole(uint32_t f, unsigned t, unsigned *flags)
+{
+    int e, neg;
+    uint64_t m = ffp_parts(f, &e, &neg), w;
+
+    if (e <= 0)
+        w = 0;
+    else if (e <= 32)
+        w = m >> (32 - e);
+    else
+        w = m << (e - 32);                  /* below 2^63: e - 32 <= 31 */
+    return keep(neg ? -(int64_t)w : (int64_t)w, t, flags);
+}
+
+int32_t exprarith_ffp_quick(uint32_t f, unsigned *flags)
+{
+    int e, neg;
+    uint64_t m = ffp_parts(f, &e, &neg), q;
+    int s = 16 - e;                         /* the value * 65536 is m / 2^s */
+    int frac = 0;                           /* bits below 1/65536 */
+
+    if (!m)
+        return 0;
+    if (s <= -32)
+        q = UINT64_MAX;                     /* at least 2^32: beyond */
+    else if (s <= 0)
+        q = m << -s;
+    else if (s >= 64) {
+        q = 0;
+        frac = 1;
+    } else {
+        q = m >> s;
+        frac = (m & (((uint64_t)1 << s) - 1)) != 0;
+    }
+    if (neg) {
+        q += (uint64_t)frac;                /* rounded down: the magnitude up */
+        if (q > (uint64_t)1 << 31) {
+            *flags |= EXA_OVF;
+            return INT32_MIN;
+        }
+        return (int32_t)(uint32_t)((uint64_t)0 - q);
+    }
+    if (q > INT32_MAX) {
+        *flags |= EXA_OVF;
+        return INT32_MAX;
+    }
+    return (int32_t)q;
+}
+
 /* ------------------------------------------------- the #1178 routines */
 
 int32_t exprarith_mixed(unsigned op, int32_t a, int aq, int32_t b, int bq, unsigned *flags)

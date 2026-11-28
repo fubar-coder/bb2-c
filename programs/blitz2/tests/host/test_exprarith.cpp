@@ -8,6 +8,7 @@
 // the whole-number operations, for random operands and the edge values
 // (a divisor 0, the largest numbers); and the casts and the fast-path test
 // on their own.
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -1471,4 +1472,150 @@ TEST_CASE("exprarith: a 16.16 division at the top towards zero (#1222)", "[expra
     // a planted error is seen: the quotient rounded down
     CHECK(qdivt(-10 << 16, 3 << 16, true) == -4);
     CHECK((int16_t)qdivt(-10 << 16, 3 << 16, true) != qdivt_want(-10 << 16, 3 << 16));
+}
+
+// ------------------------------------- the conversions (type-system-rework 4.3)
+// exprarith_q48_quick, exprarith_ffp_whole and exprarith_ffp_quick (the
+// values of compilerlib's q48sat, f2l and f2q, libs/tests/libtest_q48.c)
+// against the exact value of the Float as a double (a 24-bit mantissa
+// times a power of 2 is exact in a double), for every exponent, mantissas
+// with bit 31 set or not, both signs.
+
+namespace {
+
+double ffpvalue(uint32_t f)
+{
+    double v = std::ldexp((double)(f >> 8), (int)(f & 0x7f) - 64 - 24);
+
+    return f & 0x80 ? -v : v;
+}
+
+// cut towards zero, the low 32 bits
+int32_t ffp_whole_want(uint32_t f, bool *ovf)
+{
+    double t = std::trunc(ffpvalue(f));     // |t| < 2^63
+
+    *ovf = t > 2147483647.0 || t < -2147483648.0;
+    return (int32_t)(uint32_t)(uint64_t)(int64_t)t;
+}
+
+// rounded down to 1/65536, saturated
+int32_t ffp_quick_want(uint32_t f, bool *ovf)
+{
+    double q = std::floor(ffpvalue(f) * 65536.0);
+
+    *ovf = q > 2147483647.0 || q < -2147483648.0;
+    return q > 2147483647.0 ? INT32_MAX : q < -2147483648.0 ? INT32_MIN : (int32_t)q;
+}
+
+}  // namespace
+
+TEST_CASE("exprarith: 48.16 to a Quick saturates (P2)", "[exprarith]")
+{
+    const struct { int64_t v; int32_t want; bool ovf; } c[] = {
+        {0, 0, false},
+        {1, 1, false},
+        {-1, -1, false},
+        {0x7fffffff, 0x7fffffff, false},
+        {0x80000000ll, 0x7fffffff, true},
+        {-0x80000000ll, INT32_MIN, false},
+        {-0x80000001ll, INT32_MIN, true},
+        {0x100000000ll, 0x7fffffff, true},
+        {-0x100000000ll, INT32_MIN, true},
+        {INT64_MAX, 0x7fffffff, true},
+        {INT64_MIN, INT32_MIN, true},
+        {exprarith_whole_q48(100000), 0x7fffffff, true},   // z.q=l, l.l=100000
+        {exprarith_whole_q48(-32768), INT32_MIN, false},
+        {exprarith_whole_q48(32767) + 0xffff, 0x7fffffff, false},
+        {-0x18000, -0x18000, false},
+    };
+
+    for (const auto &k : c) {
+        unsigned f = 0;
+
+        CAPTURE((long long)k.v);
+        CHECK(exprarith_q48_quick(k.v, &f) == k.want);
+        CHECK(f == (k.ovf ? (unsigned)EXA_OVF : 0u));
+    }
+    {
+        unsigned f = 0;
+        // y.q=q*40000 with q=1.5: 60000 beyond the Quick range
+        int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(0x18000), exprarith_whole_q48(40000), 0, &f);
+
+        CHECK(exprarith_q48_quick(p, &f) == 0x7fffffff);
+    }
+}
+
+TEST_CASE("exprarith: a Float to a whole number and a Quick", "[exprarith]")
+{
+    std::vector<uint32_t> mant = {0x80000000, 0x80000100, 0x80008000, 0xc0000000, 0xaaaaaa00, 0xffffff00,
+                                  0xfffffe00, 0x80ffff00, 0xe6666600, 0x95029000, 0xffff0000, 0x80010000,
+                                  0x00000100, 0x7fffff00, 0x00800000, 0};
+    uint32_t seed = 0x4f2a1d3b;
+
+    for (int k = 0; k < 200; k++) {
+        seed = seed * 1103515245u + 12345u;
+        mant.push_back((seed ^ (seed << 7)) & 0xffffff00u);
+    }
+    for (uint32_t e = 0; e < 128; e++)
+        for (uint32_t m : mant)
+            for (uint32_t sg = 0; sg < 2; sg++) {
+                uint32_t v = m | e | (sg ? 0x80u : 0u);
+                bool ovf;
+                unsigned f = 0;
+                int32_t want = ffp_whole_want(v, &ovf);
+
+                CAPTURE(hex((int32_t)v));
+                CHECK(exprarith_ffp_whole(v, ET_LONG, &f) == want);
+                CHECK(f == (ovf ? (unsigned)EXA_OVF : 0u));
+                f = 0;
+                CHECK(exprarith_ffp_whole(v, ET_WORD, &f) == (int16_t)(uint16_t)(uint32_t)want);
+                CHECK(exprarith_ffp_whole(v, ET_BYTE, &f) == (int16_t)(uint16_t)(uint32_t)want);
+                f = 0;
+                want = ffp_quick_want(v, &ovf);
+                CHECK(exprarith_ffp_quick(v, &f) == want);
+                CHECK(f == (ovf ? (unsigned)EXA_OVF : 0u));
+            }
+}
+
+TEST_CASE("exprarith: the Float conversions of the spec's scenarios", "[exprarith]")
+{
+    unsigned f = 0;
+
+    // r.l=f with f.f=1e10: cut towards zero, wrapped (I8 A+C)
+    CHECK(exprarith_ffp_whole(0x9502f962, ET_LONG, &f) == 1410065408);
+    CHECK(f == EXA_OVF);
+    f = 0;
+    // r1.l=-1.4 (a Float) -1, r2.l=f with f=-2.5 -2, -1.5 as a Float -1
+    CHECK(exprarith_ffp_whole(0xb33333c1, ET_LONG, &f) == -1);
+    CHECK(exprarith_ffp_whole(0xa00000c2, ET_LONG, &f) == -2);
+    CHECK(exprarith_ffp_whole(0xc00000c1, ET_BYTE, &f) == -1);
+    // r3.l=v^n with v=-2.5, n=3: -15.625 -15
+    CHECK(exprarith_ffp_whole(0xfa0000c4, ET_LONG, &f) == -15);
+    CHECK(f == 0);
+    // 2^31 wraps, -2^31 fits; SPFix gives $7FFFFFFF for the first
+    CHECK(exprarith_ffp_whole(0x80000060, ET_LONG, &f) == INT32_MIN);
+    CHECK(f == EXA_OVF);
+    f = 0;
+    CHECK(exprarith_ffp_whole(0x800000e0, ET_LONG, &f) == INT32_MIN);
+    CHECK(f == 0);
+    // x.q=f/10 with f=-144: -14.4 rounded down $FFF19999 (towards zero $FFF1999A)
+    CHECK(exprarith_ffp_quick(0xe66666c4, &f) == (int32_t)0xfff19999);
+    CHECK(exprarith_ffp_quick(0xe6666644, &f) == 0x000e6666);
+    CHECK(f == 0);
+    // saturation: 32768 and -32768.5, -32768 fits
+    CHECK(exprarith_ffp_quick(0x80000050, &f) == 0x7fffffff);
+    CHECK(f == EXA_OVF);
+    f = 0;
+    CHECK(exprarith_ffp_quick(0x800080d0, &f) == INT32_MIN);
+    CHECK(f == EXA_OVF);
+    f = 0;
+    CHECK(exprarith_ffp_quick(0x800000d0, &f) == INT32_MIN);
+    CHECK(f == 0);
+    // below 1/65536: 0 and -1/65536; -0 is 0
+    CHECK(exprarith_ffp_quick(0x80000030, &f) == 0);
+    CHECK(exprarith_ffp_quick(0x800000b0, &f) == -1);
+    CHECK(exprarith_ffp_quick(0x80, &f) == 0);
+    CHECK(exprarith_ffp_whole(0x80, ET_LONG, &f) == 0);
+    CHECK(f == 0);
 }

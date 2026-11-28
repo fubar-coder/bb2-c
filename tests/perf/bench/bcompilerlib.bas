@@ -1,7 +1,8 @@
 ; bcompilerlib - perf benchmark: the 48.16 routines of compilerlib ($D603-$D60E, expr-tree-5-operand-typing,
-; design decision 9), called from inline assembler with SysJsr as the compiler will call them: a in d0/d1
-; (low, high), b in d2/d3; load: the register loads alone (to subtract for the routine alone)
-Dim t.l(17)
+; design decision 9) and its conversions ($D612-$D614: q48sat, f2l, f2q; type-system-rework task 4.3),
+; called from inline assembler with SysJsr as the compiler will call them: a in d0/d1 (low, high), b in
+; d2/d3, a Float in d0; load: the register loads alone (to subtract for the routine alone)
+Dim t.l(23)
 t0.l=0 : tt.l=0 : th.l=0 : tl.l=0 : t2.l=0 : i.l=0
 VWait 5
 BLITZ
@@ -98,6 +99,36 @@ For i=1 To 2000
 MOVE.l #$FFFE8000,d0 : MOVEQ #-1,d1 : SysJsr $D60E
 Next
 Gosub tod : t(17)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$18000,d0 : MOVEQ #0,d1 : SysJsr $D612
+Next
+Gosub tod : t(18)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$86A08000,d0 : MOVEQ #1,d1 : SysJsr $D612
+Next
+Gosub tod : t(19)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$A00000C2,d0 : SysJsr $D613
+Next
+Gosub tod : t(20)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$9502F962,d0 : SysJsr $D613
+Next
+Gosub tod : t(21)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$E66666C4,d0 : SysJsr $D614
+Next
+Gosub tod : t(22)=(tt-t0)&65535
+Gosub tod : t0=tt
+For i=1 To 2000
+MOVE.l #$80000050,d0 : SysJsr $D614
+Next
+Gosub tod : t(23)=(tt-t0)&65535
 VWait 2
 AMIGA
 NPrint "empty ",t(0)," 20000 1"
@@ -118,6 +149,12 @@ NPrint "l2q48 ",t(14)," 2000 1"
 NPrint "q2q48 ",t(15)," 2000 1"
 NPrint "q48floor ",t(16)," 2000 1"
 NPrint "q48trunc ",t(17)," 2000 1"
+NPrint "q48sat ",t(18)," 2000 1"
+NPrint "q48satx ",t(19)," 2000 1"
+NPrint "f2l ",t(20)," 2000 1"
+NPrint "f2lx ",t(21)," 2000 1"
+NPrint "f2q ",t(22)," 2000 1"
+NPrint "f2qx ",t(23)," 2000 1"
 End
 tod:
 th=Peek.b($bfd700)&255

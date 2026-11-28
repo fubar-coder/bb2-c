@@ -113,6 +113,34 @@ int32_t exprarith_whole_q16(int32_t v, unsigned *flags);
  *         down as a Long (*quick 0). */
 int32_t exprarith_q48_fit(int64_t v, int *quick, unsigned *flags);
 
+/** @brief The conversions of OpenSpec change type-system-rework (task 4.3,
+ *         compilerlib's q48sat, f2l and f2q).
+ *
+ * exprarith_q48_quick: a 48.16 value as a Quick, saturated: $7FFFFFFF
+ * above the Quick range, $80000000 below it (design.md P2); the value is
+ * already in 1/65536.
+ *
+ * The Float is Motorola FFP as mathffp keeps it: the mantissa in bits
+ * 31-8 (bit 31 set unless the value is 0), the sign in bit 7, the
+ * exponent in bits 6-0 (excess 64); the value is mantissa / 2^24 *
+ * 2^(exponent - 64), 0 when the mantissa is 0.
+ *
+ * exprarith_ffp_whole: cut towards zero (as mathffp's SPFix in the Long
+ * range), the bits of the type t kept (as keep: a Byte and a Word as the
+ * low word, sign-extended); beyond the Long range the value cut towards
+ * zero wraps to its low 32 bits (I8 A+C), where SPFix saturates.
+ *
+ * exprarith_ffp_quick: rounded down to 1/65536, saturated as
+ * exprarith_q48_quick.  A mantissa with bit 31 clear (not mathffp's
+ * form) gives the exact value here as well; compilerlib's f2q saturates
+ * such a value when its exponent is 16 or more (excess 64: 80), where a
+ * mantissa with bit 31 set is at least 32768.
+ *
+ * EXA_OVF where the value does not fit (it saturated or wrapped). */
+int32_t exprarith_q48_quick(int64_t v, unsigned *flags);
+int32_t exprarith_ffp_whole(uint32_t f, unsigned t, unsigned *flags);
+int32_t exprarith_ffp_quick(uint32_t f, unsigned *flags);
+
 /** @brief The routines of a Quick under a Long type so far (#1178,
  *         libs/compilerlib and ldivlib): a and b Longs or Quicks (aq, bq:
  *         the operand is a Quick), the result a Long: + - * rounded down

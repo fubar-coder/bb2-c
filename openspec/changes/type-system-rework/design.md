@@ -736,6 +736,33 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
     refused (`-0.1 LSL 2`; the model's 1.5 reading made it a Quick).
 12. A Float division by 0 raises the trap (D1/D7).
 
+## Findings of task 4.3 (the conversions in compilerlib)
+
+- The routines: `q48sat` ($D612, 48.16 -> Quick saturated; d0/d1 in, d0
+  out, d1 kept), `f2l` ($D613, Float -> Long towards zero, wrapped beyond
+  the Long range; a Word or Byte the low word, ext.l) and `f2q` ($D614,
+  Float -> Quick rounded down, saturated); `f2l` and `f2q` change d1
+  (qtof2's contract of a conversion). Oracle: `exprarith_q48_quick`,
+  `exprarith_ffp_whole`, `exprarith_ffp_quick` (exprarith.c), checked
+  against compilerlib in `libtest_q48.c` (emulator, `libs_emulator`
+  filter `libtest compilerlib`) and against the exact double value in
+  `test_exprarith`.
+- `f2l` computes the value from the FFP bits itself instead of calling
+  mathffp's `SPFix`: the libtest compares it with the ROM's `SPFix` for
+  every Float in mathffp's form in the Long range, no difference. Outside
+  that form the ROM differs: a Float whose low byte is 0 (exponent 0,
+  a mantissa not 0: below 2^-64) comes back from `SPFix` unchanged (the
+  ROM takes a low byte 0 as the value 0), and a mantissa 0 with a large
+  exponent saturates; `f2l` gives 0 for both.
+- Speed (bcompilerlib, the call and one load included): `f2l` 183 cycles
+  for -2.5, 135 for 1e10; `f2q` 186 for -14.4, 131 saturated; `q48sat` 87
+  and 89. Today's `c=f1` through SPFix has the budget 230, `q3=f1` through
+  `fltoqu` 1784 (bmath, with the loads and stores).
+- A Float -> Quick for a mantissa with bit 31 clear and exponent 16 or
+  more (not mathffp's form) saturates in `f2q`; `exprarith_ffp_quick`
+  gives the exact value. mathffp never gives such a Float (a program
+  can only poke it).
+
 ## Risks / Trade-offs
 
 - [Many results change at once] -> one rule per commit where possible, the

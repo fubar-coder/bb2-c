@@ -1,5 +1,5 @@
 /*
- * compilerlib - system library 64030 ($D600-$D602), the port's, not in
+ * compilerlib - system library 64030 ($D600-$D614), the port's, not in
  * the original: the routines of the code the compiler generates that no
  * library set has.  The compiler embeds it (programs/blitz2, asmlibs.c
  * loadlibs) and links it first in its library list in both modes,
@@ -79,6 +79,20 @@
  *
  *   $D611 q48mulf   a * b                 cut down to 1/65536 (q48mul's
  *                                         contract)
+ *
+ * The conversions of OpenSpec change type-system-rework (task 4.3; D-027;
+ * the values of exprarith.c's exprarith_q48_quick, exprarith_ffp_whole and
+ * exprarith_ffp_quick):
+ *
+ *   $D612 q48sat    48.16 to a Quick      saturated: $7FFFFFFF above,
+ *                                         $80000000 below the Quick range;
+ *                                         d0/d1 in, d0 out, d1 kept
+ *   $D613 f2l       a Float to a Long     towards zero, beyond the Long
+ *                                         range wrapped (I8); d0 in and
+ *                                         out, d1 changed
+ *   $D614 f2q       a Float to a Quick    rounded down to 1/65536,
+ *                                         saturated as q48sat; d0 in and
+ *                                         out, d1 changed
  */
 #include "blitzlib.h"
 
@@ -87,10 +101,11 @@ void q48add(void), q48sub(void), q48mul(void);
 void q48div(void), q48divq(void), q48divw(void), q48divb(void), q48mod(void);
 void l2q48(void), q2q48(void), q48floor(void), q48trunc(void);
 void q16mod(void), q48mull(void), q48mulf(void);
+void q48sat(void), f2l(void), f2q(void);
 void lqdivchk(void), q48divchk(void);
 
-/* !syslibheader{64030,$d600,$d612,0,0,0,errors,$4000} */
-BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd612, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
+/* !syslibheader{64030,$d600,$d615,0,0,0,errors,$4000} */
+BLITZ_SYSLIBHEADER(64030, 0xd600, 0xd615, 0, 0, 0, BLITZ_ERROR_AREA, 0x4000);
 BLITZ_NULLSUB(mixmult, 0, 0);           /* $D600 mixmult */
 BLITZ_NULLSUB(qqmult, 0, 0);            /* $D601 qqmult */
 BLITZ_NULLSUB(lqdivide, lqdivchk, 0);   /* $D602 lqdiv */
@@ -109,6 +124,9 @@ BLITZ_NULLSUB(q48trunc, 0, 0);          /* $D60E q48trunc */
 BLITZ_NULLSUB(q16mod, 0, 0);            /* $D60F q16mod */
 BLITZ_NULLSUB(q48mull, 0, 0);           /* $D610 q48mull */
 BLITZ_NULLSUB(q48mulf, 0, 0);           /* $D611 q48mulf */
+BLITZ_NULLSUB(q48sat, 0, 0);            /* $D612 q48sat */
+BLITZ_NULLSUB(f2l, 0, 0);               /* $D613 f2l */
+BLITZ_NULLSUB(f2q, 0, 0);               /* $D614 f2q */
 BLITZ_LIBFIN();
 
 /**
@@ -1107,6 +1125,132 @@ BLITZ_ASM_BLOCK(q48mull,
         "   addx.l  d3,d1\n"
         "   move.l  (sp)+,d5\n"
         "   bra.s   .Llsign");
+
+/**
+ * @brief The conversions of type-system-rework (task 4.3; D-027), with the
+ * values of exprarith.c (exprarith_q48_quick, exprarith_ffp_whole,
+ * exprarith_ffp_quick):
+ *
+ * q48sat ($D612) d0 = the 48.16 value d1:d0 as a Quick: the low 32 bits
+ * when the high 32 bits are their sign extension, else $7FFFFFFF above
+ * and $80000000 below the Quick range (design.md P2).
+ *
+ * f2l ($D613) d0 = the Float d0 cut towards zero, the low 32 bits: in the
+ * Long range SPFix's value, beyond it the value wraps (I8 A+C) where
+ * SPFix saturates; a Word or a Byte is the low word of the Long, ext.l.
+ * FFP (exprarith.h): the mantissa M (bits 31-8, the low byte cleared) /
+ * 2^32 * 2^e with e = the exponent (bits 6-0) - 64, the sign in bit 7.
+ * The magnitude is M >> (32 - e) for 1 <= e <= 32 (below 16 as (M >>
+ * 16) >> (16 - e) by SWAP and a word shift: fewer cycles for the common
+ * small values) and M << (e - 32) modulo 2^32 above (e - 32 is at most
+ * 31), 0 for e <= 0 (and for M 0).
+ *
+ * f2q ($D614) d0 = the Float d0 as a Quick, rounded down to 1/65536 and
+ * saturated as q48sat: the value * 65536 is M / 2^s with s = 16 - e.
+ * e >= 16 (s <= 0) is at least 32768 (bit 31 of M set): saturated (M 0
+ * gives 0).  Else the magnitude M >> s (s above 32 counts as 32: 0), and
+ * for a negative value -(floor((M - 1) / 2^s) + 1) = ~((M - 1) >> s),
+ * the magnitude rounded up (M 0, the Float -0, gives 0).
+ *
+ * The sign is kept in bit 31 of d1 (the byte of sign and exponent,
+ * extended), the count in its low byte.
+ *
+ * @arg d0 (q48sat: d0/d1) the value
+ * @par Result
+ * d0; q48sat keeps d1, f2l and f2q change it (qtof2's contract of a
+ * conversion: d1 free); every other register kept
+ */
+BLITZ_ASM_BLOCK(convs,
+        "   .globl  _q48sat\n"
+        "_q48sat:\n"
+        "   tst.l   d1\n"
+        "   bmi.s   .Lqsneg\n"
+        "   bne.s   .Lqsmax\n"              /* the high 32 bits above 0 */
+        "   tst.l   d0\n"
+        "   bmi.s   .Lqsmax\n"              /* high 0, low 2^31 or more */
+        "   rts\n"
+        ".Lqsmax:\n"
+        "   move.l  #0x7fffffff,d0\n"
+        "   rts\n"
+        ".Lqsneg:\n"
+        "   not.l   d1\n"
+        "   beq.s   1f\n"                   /* high -1 */
+        "   not.l   d1\n"
+        "   bra.s   .Lqsmin\n"
+        "1: not.l   d1\n"
+        "   tst.l   d0\n"
+        "   bmi.s   2f\n"                   /* high -1, low negative: fits */
+        ".Lqsmin:\n"
+        "   move.l  #0x80000000,d0\n"
+        "2: rts\n"
+        "   .globl  _f2l\n"
+        "_f2l:\n"
+        "   move.b  d0,d1\n"
+        "   ext.w   d1\n"
+        "   ext.l   d1\n"                   /* bit 31: the sign */
+        "   andi.b  #0x7f,d1\n"
+        "   subi.b  #64+16,d1\n"            /* e - 16 */
+        "   bmi.s   .Lflsmall\n"
+        "   subi.b  #16,d1\n"               /* e - 32 */
+        "   bpl.s   .Lflwide\n"
+        "   neg.b   d1\n"                   /* 32 - e, 1..16 */
+        "   clr.b   d0\n"
+        "   lsr.l   d1,d0\n"
+        "   bra.s   .Lflsign\n"
+        ".Lflsmall:\n"
+        "   cmpi.b  #-16,d1\n"
+        "   ble.s   .Lflzero\n"             /* e <= 0 */
+        "   neg.b   d1\n"                   /* 16 - e, 1..15 */
+        "   clr.w   d0\n"
+        "   swap    d0\n"                   /* M >> 16 */
+        "   lsr.w   d1,d0\n"
+        "   bra.s   .Lflsign\n"
+        ".Lflwide:\n"
+        "   clr.b   d0\n"
+        "   lsl.l   d1,d0\n"                /* e - 32, 0..31: wraps */
+        ".Lflsign:\n"
+        "   tst.l   d1\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d0\n"
+        "1: rts\n"
+        ".Lflzero:\n"
+        "   moveq   #0,d0\n"
+        "   rts\n"
+        "   .globl  _f2q\n"
+        "_f2q:\n"
+        "   move.b  d0,d1\n"
+        "   ext.w   d1\n"
+        "   ext.l   d1\n"                   /* bit 31: the sign */
+        "   andi.b  #0x7f,d1\n"
+        "   subi.b  #64+16,d1\n"            /* e - 16 */
+        "   bpl.s   .Lfqsat\n"
+        "   neg.b   d1\n"                   /* s = 16 - e, 1..80 */
+        "   cmpi.b  #32,d1\n"
+        "   bls.s   1f\n"
+        "   move.b  #32,d1\n"               /* below 2^-16: as 32 */
+        "1: clr.b   d0\n"
+        "   tst.l   d1\n"
+        "   bmi.s   .Lfqneg\n"
+        "   lsr.l   d1,d0\n"
+        "   rts\n"
+        ".Lfqneg:\n"
+        "   subq.l  #1,d0\n"
+        "   bcs.s   .Lfqzero\n"             /* M 0: -0 */
+        "   lsr.l   d1,d0\n"
+        "   not.l   d0\n"
+        "   rts\n"
+        ".Lfqsat:\n"
+        "   clr.b   d0\n"
+        "   tst.l   d0\n"
+        "   beq.s   .Lfqzero\n"             /* M 0 */
+        "   move.l  #0x7fffffff,d0\n"
+        "   tst.l   d1\n"
+        "   bpl.s   1f\n"
+        "   not.l   d0\n"                   /* $80000000 */
+        "1: rts\n"
+        ".Lfqzero:\n"
+        "   moveq   #0,d0\n"
+        "   rts");
 
 /* ------------------------------------------- error checks (debugger only) */
 

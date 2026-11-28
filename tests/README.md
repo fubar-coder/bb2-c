@@ -2419,6 +2419,7 @@ cycle values do not depend on the host's load or on what else runs
   condition; #1177): its targets are the values of the original's code,
   measured with the prev build (`budgets.txt`), not by `perf-original`.
   `bcompilerlib` times compilerlib's 48.16 routines (`$D603`-`$D60E`)
+  and its conversions (`$D612`-`$D614`: `q48sat`, `f2l`, `f2q`)
   alone: inline assembler loads the operands
   into d0-d3 and calls each with `SysJsr`; its `load` loop is the loads
   alone, so a routine's own cycles are its value minus that one. No
