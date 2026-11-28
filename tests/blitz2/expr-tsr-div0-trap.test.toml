@@ -1,0 +1,103 @@
+# expr-tsr-div0-trap.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells.  Without runtime error checking: the division
+# trap stops the program in the system's requester "Software Failure".
+extension = 1235
+runtime-errors = "off"
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"
+"check.byte.after" = "== not-run"
+"check.word.after" = "== not-run"
+"check.long.after" = "== not-run"
+"check.quick.after" = "== not-run"
+"check.float.after" = "== not-run"
+"check.wide.after" = "== not-run"
+"check.whole_quotient_quick.after" = "== not-run"
+"check.whole_quotient_float.after" = "== not-run"
+"check.nested_left.after" = "== not-run"
+"check.nested_right.after" = "== not-run"
+"check.mod_byte.after" = "== not-run"
+"check.mod_word.after" = "== not-run"
+"check.mod_long.after" = "== not-run"
+"check.mod_quick.after" = "== not-run"
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+
+[deviations."compiler=orig195,case=byte"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.byte.after" = "== fail"
+
+[deviations."compiler=orig195,case=word"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.word.after" = "== fail"
+
+[deviations."compiler=orig195,case=long"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.long.after" = "== fail"
+
+[deviations."compiler=orig195,case=quick"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.quick.after" = "== fail"
+
+[deviations."compiler=orig195,case=wide"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.wide.after" = "== fail"
+
+[deviations."compiler=orig195,case=whole_quotient_quick"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.whole_quotient_quick.after" = "== fail"
+
+[deviations."compiler=orig195,case=nested_left"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.nested_left.after" = "== fail"
+
+[deviations."compiler=orig195,case=nested_right"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.nested_right.after" = "== fail"
+
+[deviations."compiler=orig195,case=mod_byte"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.mod_byte.after" = "== fail"
+
+[deviations."compiler=orig195,case=mod_long"]
+requester = "count == 0"
+rc = "== 0"
+"end.case" = "exists"
+"end.run" = "exists"
+"check.mod_long.after" = "== fail"

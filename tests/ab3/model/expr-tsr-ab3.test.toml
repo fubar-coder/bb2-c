@@ -1,0 +1,4 @@
+# expr-tsr-ab3.test.bas: the rules of the operand-only type system in AB3
+# mode (#1235); the cell of AmiBlitz3 is left out until its differences are
+# rows of docs/ab3/variant.md (task 4.8)
+exclude = ["compiler=amiblitz3"]

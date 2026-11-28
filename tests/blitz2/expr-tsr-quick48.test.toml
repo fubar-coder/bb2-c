@@ -1,0 +1,22 @@
+# expr-tsr-quick48.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_sum_beyond_the_range"]
+output = "== \"40000\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.products_beyond_the_range.x_product" = "== fail"
+"check.products_beyond_the_range.x_product.actual" = "== $17E40000"
+"check.cut_under_long.r_long" = "== fail"
+"check.cut_under_long.r_long.actual" = "== 0"
+
+[deviations."compiler=orig195,case=print_sum_beyond_the_range"]
+output = "== \"-25536\n\""

@@ -1,0 +1,69 @@
+# expr-tsr-div0-checked.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells.  With runtime error checking: "Division by
+# Zero" at the division.
+extension = 1235
+runtime-errors = "on"
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+"check.byte.after" = "== not-run"
+"check.word.after" = "== not-run"
+"check.long.after" = "== not-run"
+"check.quick.after" = "== not-run"
+"check.float.after" = "== not-run"
+"check.wide.after" = "== not-run"
+"check.whole_quotient_quick.after" = "== not-run"
+"check.whole_quotient_float.after" = "== not-run"
+"check.nested_left.after" = "== not-run"
+"check.nested_right.after" = "== not-run"
+"check.mod_byte.after" = "== not-run"
+"check.mod_word.after" = "== not-run"
+"check.mod_long.after" = "== not-run"
+"check.mod_quick.after" = "== not-run"
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+
+[deviations."compiler=orig195,case=byte"]
+"check.byte.trap" = "== fail"
+"check.byte.after" = "== fail"
+
+[deviations."compiler=orig195,case=word"]
+"check.word.trap" = "== fail"
+"check.word.after" = "== fail"
+
+[deviations."compiler=orig195,case=long"]
+"check.long.trap" = "== fail"
+"check.long.after" = "== fail"
+
+[deviations."compiler=orig195,case=quick"]
+"check.quick.trap" = "== fail"
+"check.quick.after" = "== fail"
+
+[deviations."compiler=orig195,case=wide"]
+"check.wide.trap" = "== fail"
+"check.wide.after" = "== fail"
+
+[deviations."compiler=orig195,case=whole_quotient_quick"]
+"check.whole_quotient_quick.trap" = "== fail"
+"check.whole_quotient_quick.after" = "== fail"
+
+[deviations."compiler=orig195,case=nested_left"]
+"check.nested_left.trap" = "== fail"
+"check.nested_left.after" = "== fail"
+
+[deviations."compiler=orig195,case=nested_right"]
+"check.nested_right.trap" = "== fail"
+"check.nested_right.after" = "== fail"
+
+[deviations."compiler=orig195,case=mod_byte"]
+"check.mod_byte.trap" = "== fail"
+"check.mod_byte.after" = "== fail"
+
+[deviations."compiler=orig195,case=mod_long"]
+"check.mod_long.trap" = "== fail"
+"check.mod_long.after" = "== fail"

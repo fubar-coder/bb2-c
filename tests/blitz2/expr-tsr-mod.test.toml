@@ -1,0 +1,30 @@
+# expr-tsr-mod.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.signs.r2_negative_divisor" = "== fail"
+"check.signs.r2_negative_divisor.actual" = "== 1"
+"check.signs.r3_both_negative" = "== fail"
+"check.signs.r3_both_negative.actual" = "== -4"
+"check.fractions.x_quick_whole" = "== fail"
+"check.fractions.x_quick_whole.actual" = "== $00010000"
+"check.two_constants.x_quick" = "== fail"
+"check.two_constants.x_quick.actual" = "== $00010000"
+"check.two_constants.z_negative_dividend" = "== fail"
+"check.two_constants.z_negative_dividend.actual" = "== $00000000"
+"check.two_constants.r_negative_both" = "== fail"
+"check.two_constants.r_negative_both.actual" = "== -3"
+
+[deviations."compiler=orig195,case=fractions"]
+requester = "contains \"Software Failure\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

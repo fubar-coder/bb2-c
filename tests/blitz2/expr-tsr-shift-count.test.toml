@@ -1,0 +1,35 @@
+# expr-tsr-shift-count.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[data]
+"byte.bas" = "basic-compile"
+"quick.bas" = "basic-compile"
+"word.bas" = "basic-compile"
+
+[asserts]
+"data.byte.bas" = "== \"error 3 Illegal Operator for Type\""
+"data.quick.bas" = "== \"error 3 Illegal Operator for Type\""
+"data.word.bas" = "== \"error 3 Illegal Operator for Type\""
+
+[asserts."case=print_quick_variables_as_count"]
+output = "== \"12\n12\n12\n\""
+
+[asserts."case=print_a_quick_count_beside_a_whole_operand"]
+output = "== \"0\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"data.byte.bas" = "== ok"
+"data.quick.bas" = "== ok"
+"check.a_quick_count_beside_a_quick_operand.rl_long" = "== fail"
+"check.a_quick_count_beside_a_quick_operand.rl_long.actual" = "== 4"
+
+[deviations."compiler=orig195,case=print_a_quick_count_beside_a_whole_operand"]
+output = "== \".75\n\""

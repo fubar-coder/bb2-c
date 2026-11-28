@@ -1,0 +1,26 @@
+# expr-tsr-const-whole.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_constants_in_a_sum"]
+output = "== \"200\n40000\n\""
+
+[asserts."case=print_negated_constant"]
+output = "== \"32764\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.sums_under_destinations.r_negated_word" = "== fail"
+"check.sums_under_destinations.r_negated_word.actual" = "== -4"
+
+[deviations."compiler=orig195,case=print_constants_in_a_sum"]
+output = "== \"200\n-25536\n\""
+
+[deviations."compiler=orig195,case=print_negated_constant"]
+output = "== \"2147483644\n\""

@@ -1,0 +1,28 @@
+# expr-tsr-quick-whole.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_a_boolean_times_a_long"]
+output = "== \"-100000\n-100000\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.flags_and_masks.h_not" = "== fail"
+"check.flags_and_masks.h_not.actual" = "== $0000FFFF"
+"check.shifts_of_a_quick_under_a_long.r_lsl" = "== fail"
+"check.shifts_of_a_quick_under_a_long.r_lsl.actual" = "== 4"
+"check.shifts_of_a_quick_under_a_long.r2_asl" = "== fail"
+"check.shifts_of_a_quick_under_a_long.r2_asl.actual" = "== 16"
+"check.a_48_16_operand_of_a_bit_operator_or_shift.r2_lsl" = "== fail"
+"check.a_48_16_operand_of_a_bit_operator_or_shift.r2_lsl.actual" = "== 200002"
+"check.a_long_and_a_quick_under_and.quick_first" = "== fail"
+"check.a_long_and_a_quick_under_and.quick_first.actual" = "== 0"
+
+[deviations."compiler=orig195,case=print_a_boolean_times_a_long"]
+output = "== \"31072\n-100000\n\""

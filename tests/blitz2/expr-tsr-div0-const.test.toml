@@ -1,0 +1,22 @@
+# expr-tsr-div0-const.test.bas: the data sources divide by a constant 0;
+# each compile is refused at the statement's line.  Only the port is judged:
+# blitz2 1.95 compiles the Long and the Quick source and does not return
+# from the compile of the Float source (a session that ends by its time
+# limit), so it has no cell here.
+exclude = ["compiler=orig195,libs=cd", "compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[data]
+"long.bas" = "basic-compile"
+"quick.bas" = "basic-compile"
+"float.bas" = "basic-compile"
+"mod.bas" = "basic-compile"
+
+[asserts]
+"data.long.bas" = "== \"error 2 Division by Zero\""
+"data.quick.bas" = "== \"error 2 Division by Zero\""
+"data.float.bas" = "== \"error 2 Division by Zero\""
+"data.mod.bas" = "== \"error 2 Division by Zero\""

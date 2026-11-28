@@ -1,0 +1,25 @@
+# expr-tsr-array-index.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells.  Without and with runtime error checking.
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+runtime-errors = ["off", "on"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195,runtime-errors=off"]
+"check.a_quick_calculation_beyond_the_range.g_later_index" = "== fail"
+"check.a_quick_calculation_beyond_the_range.g_later_index.actual" = "== 0"
+
+[deviations."compiler=orig195,runtime-errors=on"]
+"check.a_shift_of_a_quick_in_a_later_index.b_asl" = "== fail"
+"check.a_shift_of_a_quick_in_a_later_index.b_asl.actual" = "== 6"
+"check.a_quick_with_a_fraction_keeps_its_value.b_later_index" = "== fail"
+"check.a_quick_with_a_fraction_keeps_its_value.b_later_index.actual" = "== 0"
+"check.a_quick_with_a_fraction_keeps_its_value.c_third_index" = "== fail"
+"check.a_quick_with_a_fraction_keeps_its_value.c_third_index.actual" = "== 0"
+"check.a_quick_with_a_fraction_keeps_its_value.v_assigned" = "== fail"
+"check.a_quick_with_a_fraction_keeps_its_value.v_assigned.actual" = "== 0"

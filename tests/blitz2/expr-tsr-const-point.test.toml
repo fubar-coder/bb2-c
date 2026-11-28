@@ -1,0 +1,26 @@
+# expr-tsr-const-point.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_point_and_no_fraction"]
+output = "== \"1.5\n4\n\""
+
+[asserts."case=print_under_a_unary_minus"]
+output = "== \"-47.0981\n\""
+
+[asserts."case=print_beside_whole_numbers"]
+output = "== \"1000\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.beside_whole_numbers.r_exact_half" = "== fail"
+"check.beside_whole_numbers.r_exact_half.actual" = "== -1"
+
+[deviations."compiler=orig195,case=print_point_and_no_fraction"]
+output = "== \"1\n3\n\""

@@ -1,0 +1,35 @@
+# expr-tsr-whole-width.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_sums"]
+output = "== \"200\n40000\n\""
+
+[asserts."case=print_unary_minus"]
+output = "== \"32768\n\""
+
+[asserts."case=print_not"]
+output = "== \"32767\n2147483647\n\""
+
+[asserts."case=print_byte_sum"]
+output = "== \"300\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.unary_minus.x_quick" = "== fail"
+"check.unary_minus.x_quick.actual" = "== -2147483648"
+
+[deviations."compiler=orig195,case=print_sums"]
+output = "== \"200\n-25536\n\""
+
+[deviations."compiler=orig195,case=print_unary_minus"]
+output = "== \"-32768\n\""
+
+[deviations."compiler=orig195,case=print_not"]
+output = "== \"2147483647\n2147483647\n\""

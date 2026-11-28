@@ -1,0 +1,20 @@
+# expr-tsr-print.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_the_three_forms"]
+output = "== \"4.5\n150000\n100001.5\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.str_of_a_float_form.str_float" = "== fail"
+"check.str_of_a_float_form.str_float.actual" = "== \"-31070.5\""
+
+[deviations."compiler=orig195,case=print_the_three_forms"]
+output = "== \"4.5\n18928\n-31070.5\n\""

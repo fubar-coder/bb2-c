@@ -1,0 +1,43 @@
+# expr-tsr-shift.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_a_quick_right"]
+output = "== \"1.5\n\""
+
+[asserts."case=print_whole_beside_a_quick"]
+output = "== \"1.25\n1.25\n\""
+
+[asserts."case=print_a_quick_count"]
+output = "== \"0\n\""
+
+[asserts."case=print_whole_widths"]
+output = "== \"124\n65536\n\""
+
+[asserts."case=print_quick_in_48_16"]
+output = "== \"40000\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.a_quick_under_a_long.r_long" = "== fail"
+"check.a_quick_under_a_long.r_long.actual" = "== 4"
+"check.whole_widths.x_word_lsr" = "== fail"
+"check.whole_widths.x_word_lsr.actual" = "== -1"
+
+[deviations."compiler=orig195,case=print_whole_beside_a_quick"]
+output = "== \"1.625\n1.625\n\""
+
+[deviations."compiler=orig195,case=print_a_quick_count"]
+output = "== \".75\n\""
+
+[deviations."compiler=orig195,case=print_whole_widths"]
+output = "== \"2147483644\n65536\n\""
+
+[deviations."compiler=orig195,case=print_quick_in_48_16"]
+output = "== \"-25536\n\""

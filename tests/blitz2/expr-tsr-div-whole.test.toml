@@ -1,0 +1,19 @@
+# expr-tsr-div-whole.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_negative_and_positive"]
+output = "== \"3\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.negative_and_positive.x_compare" = "== fail"
+"check.negative_and_positive.x_compare.actual" = "== $00000000"
+"check.quick_operand.r_quick_quotient" = "== fail"
+"check.quick_operand.r_quick_quotient.actual" = "== 6"

@@ -1,0 +1,16 @@
+# expr-tsr-float-top.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.comparison_and_unary_minus.x_comparison" = "== fail"
+"check.comparison_and_unary_minus.x_comparison.actual" = "== $00000000"
+"check.comparison_and_unary_minus.y_unary_minus" = "== fail"
+"check.comparison_and_unary_minus.y_unary_minus.actual" = "== $D5C28FBE"

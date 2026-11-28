@@ -1,0 +1,20 @@
+# expr-tsr-compare.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.a_quick_sum_beyond_the_range.if_true" = "== fail"
+"check.a_quick_sum_beyond_the_range.if_true.actual" = "== 0"
+"check.a_quick_sum_beyond_the_range.value_true" = "== fail"
+"check.a_quick_sum_beyond_the_range.value_true.actual" = "== 0"
+"check.while_until_select.while_true" = "== fail"
+"check.while_until_select.while_true.actual" = "== 0"
+"check.while_until_select.until_true" = "== fail"
+"check.while_until_select.until_true.actual" = "== 2"

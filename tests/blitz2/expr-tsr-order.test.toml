@@ -1,0 +1,46 @@
+# expr-tsr-order.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_word_sums_in_both_orders"]
+output = "== \"40000.5\n40000.5\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.base_plus_scaled_quick.adr_base_first" = "== fail"
+"check.base_plus_scaled_quick.adr_base_first.actual" = "== 2097156"
+"check.base_plus_scaled_quick.adr2_quick_first" = "== fail"
+"check.base_plus_scaled_quick.adr2_quick_first.actual" = "== 2097156"
+"check.words_and_a_quick_under_a_word.x_words_first" = "== fail"
+"check.words_and_a_quick_under_a_word.x_words_first.actual" = "== 9"
+"check.comparison_of_a_chain.if_long_first" = "== fail"
+"check.comparison_of_a_chain.if_long_first.actual" = "== 0"
+"check.long_and_quicks.r_long_first" = "== fail"
+"check.long_and_quicks.r_long_first.actual" = "== 13"
+"check.long_and_quicks.r2_long_last" = "== fail"
+"check.long_and_quicks.r2_long_last.actual" = "== 13"
+"check.bit_operator_shift_and_not.and_long_first" = "== fail"
+"check.bit_operator_shift_and_not.and_long_first.actual" = "== 12"
+"check.bit_operator_shift_and_not.and_long_last" = "== fail"
+"check.bit_operator_shift_and_not.and_long_last.actual" = "== 12"
+"check.bit_operator_shift_and_not.lsl_long_first" = "== fail"
+"check.bit_operator_shift_and_not.lsl_long_first.actual" = "== 24"
+"check.bit_operator_shift_and_not.lsl_long_last" = "== fail"
+"check.bit_operator_shift_and_not.lsl_long_last.actual" = "== 24"
+"check.bit_operator_shift_and_not.not_long_first" = "== fail"
+"check.bit_operator_shift_and_not.not_long_first.actual" = "== -13"
+"check.bit_operator_shift_and_not.not_long_last" = "== fail"
+"check.bit_operator_shift_and_not.not_long_last.actual" = "== -13"
+"check.a_float_in_the_chain.r_long_first" = "== fail"
+"check.a_float_in_the_chain.r_long_first.actual" = "== 11"
+"check.an_intermediate_leaves_its_format.x_product_first" = "== fail"
+"check.an_intermediate_leaves_its_format.x_product_first.actual" = "== $17E40000"
+
+[deviations."compiler=orig195,case=print_word_sums_in_both_orders"]
+output = "== \"-25536\n-25535.5\n\""

@@ -1,0 +1,29 @@
+# expr-tsr-div-beside-quick.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts."case=print_beside_a_quick"]
+output = "== \"2\n2\n\""
+
+[asserts."case=print_other_neighbours"]
+output = "== \"1.75\n2\n2\n1.5\n\""
+
+[asserts."case=print_comparison"]
+output = "== \"-1\n\""
+
+[asserts."case=print_through_a_unary_minus"]
+output = "== \"-1\n\""
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+
+[deviations."compiler=orig195,case=print_beside_a_quick"]
+output = "== \"2\n1.5\n\""
+
+[deviations."compiler=orig195,case=print_other_neighbours"]
+output = "== \"1.75\n2\n2\n2\n\""

@@ -1,0 +1,20 @@
+# expr-tsr-conv-quick.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original's values are the declared
+# deviations of its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+"check.saturation.x_whole_sum" = "== fail"
+"check.saturation.x_whole_sum.actual" = "== -2036137984"
+"check.saturation.y_product" = "== fail"
+"check.saturation.y_product.actual" = "== -1673527296"
+"check.saturation.z_long" = "== fail"
+"check.saturation.z_long.actual" = "== -2036334592"
+"check.a_float_rounded_down.x_float_quotient" = "== fail"
+"check.a_float_rounded_down.x_float_quotient.actual" = "== -943718"
