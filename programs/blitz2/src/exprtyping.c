@@ -1379,18 +1379,23 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         return const_type(c, n, want, beside, role);
     if (want == ET_FLOAT
         && (n->kind == ETN_NOT
-            || (n->kind == ETN_BIN && (is_bit(n->op) || (c->fmtfloat && is_shift(n->op)))))) {
+            || (n->kind == ETN_BIN && (is_bit(n->op) || ((c->fmtfloat || c->tsr) && is_shift(n->op)))))) {
         /* parts 5-8: a Float format reached from a comparison or an
            expression with a Float is no wanted Float for a bit operator,
            shift or NOT: typed by its own operands, its result taken as a
            Float.  A bit operator or NOT under a wanted Float (rf.f=b AND
            1) is typed so too: its whole result converts at the end (a
-           Float operand is refused) */
-        int save = c->fmtfloat;
+           Float operand is refused); under the classes a shift too (task
+           4.4, "A shift under a Float destination"), its left operand whole
+           or a Quick, a 48.16 result taken as a Float */
+        int save = c->fmtfloat, sh = n->kind == ETN_BIN && is_shift(n->op);
 
-        /* a constant with a point as an operand stays refused here */
+        /* a constant with a point as an operand stays refused here (also
+           the shifted one, as under the bit operators) */
         if (!save && (has_point(n->l) || (n->kind == ETN_BIN && has_point(n->r))))
             return refuse(c);
+        if (sh)
+            c->bittaker = 0;    /* a 48.16 shift taken as a Float (frac_operand) */
         c->fmtfloat = 0;
         T = typed(c, n, 0, beside, role);
         c->fmtfloat = save;
@@ -1404,8 +1409,8 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
     }
     if (c->tsr && q_shift(n)) {
         /* the classes (task 4.4): a shift of Quick class by frac_shift,
-           taken as frac_operand says; under a wanted Float refused, as
-           rule P+ (a Float format reached is typed without it, above) */
+           taken as frac_operand says (a wanted Float does not reach it:
+           the shift is typed without it, above) */
         if (want == ET_FLOAT)
             return refuse(c);
         return frac_operand(c, n, want, 0);
@@ -1612,7 +1617,8 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
     c.tsr = root->cls != 0;
     c.top = root;
     if (c.tsr && want != ET_STRING
-        && ((q48_class(root) && !is_floaty(&c, root, want)) || (q_shift(root) && want != ET_FLOAT))) {
+        && ((q48_class(root) && !is_floaty(&c, root, want))
+            || (q_shift(root) && !(want == ET_FLOAT && has_point(root))))) {
         /* the classes (task 4.2): an operation of Quick class at the top,
            computed in 48.16 (Mod as rule P+ decides, task 4.7), its value
            taken by the destination; a shift of Quick class (task 4.4) in

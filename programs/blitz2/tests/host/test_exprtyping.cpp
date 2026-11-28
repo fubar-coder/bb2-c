@@ -1131,7 +1131,12 @@ TEST_CASE("exprtyping: the shifts by the classes (task 4.4)", "[exprtyping][tsr]
         { "-(b LSR 1)", "b.b=1", ET_QUICK, "lsr:s neg:W =t" },       // no E through a unary minus
         { "(q+p) AND 1", "q=1 p=1", ET_QUICK, "add:3 and:L =q" },    // the 48.16 operand rounded down
         { "(q+p) AND 1", "q=1 p=1", ET_NONE, "add:3 and:L =z" },
-        { "q LSL 2", "q=1", ET_FLOAT, "!" },                        // refused, as before
+        { "q ASL 1", "q=1", ET_FLOAT, "asl:s =F" },                 // under a Float: 48.16, its Float
+        { "q LSR 1", "q=1", ET_FLOAT, "lsr:Q =t" },                 // the 16.16 shift, converted
+        { "b LSR 1", "b.b=1", ET_FLOAT, "lsr:s =t" },               // the whole result converted
+        { "(q LSL 1)+f", "q=1 f.f=1", ET_FLOAT, "lsl:s add:F =t" },  // the 48.16 shift as a Float
+        { "f LSR 1", "f.f=1", ET_FLOAT, "!" },                      // a Float left operand refused
+        { "1.5 LSL b", "b.b=1", ET_FLOAT, "!" },                    // a constant with a point, as AND
     };
 
     for (const auto &c : cases) {

@@ -1052,10 +1052,19 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
   of 4.2 is gone.
 - **Not this task.** A constant shift is folded as before (3.4: `y.q=-(1
   LSR 7)` stays -1/128, `x.q=qa+3 LSR 3` keeps the build's fold, the CD
-  idiom `hsp=1 LSR 7` 1/128 as the build folds it). A shift under a Float
-  destination (`rf.f=b LSR 1`) stays refused as before, although the
-  classes accept it: the decision of 4.1 ("Compilieren") names bit
-  operators and NOT only (open question to the coordinator).
+  idiom `hsp=1 LSR 7` 1/128 as the build folds it).
+- **Resolved (2026-11-28, "Compilieren wie Bit-Ops").** A shift with a
+  whole or Quick left operand compiles under a Float destination, as the
+  bit operators: typed by its own operands (`typed()`'s Float block under
+  the classes; a Quick-class shift at the top by the root's fractional
+  branch, a 48.16 one by `ETC_TOFLOAT`), its result converted to Float at
+  the end; a Float left operand and, as under the bit operators, a
+  constant with a point stay refused. The build's early refusal of a
+  shift is left to the pass (`exprtype_bypass`). Test:
+  expr-tsr-shift-float (`rf.f=b LSR 1` 1.0, `rf.f=q ASL 1` 2.5, `f LSR 1`
+  refused; 1.95 refuses the operator). The refused matrix cells I-I, I-Q,
+  Q-I, Q-Q of `compiler-expr-refused-lsl/asl/lsr/asr` compile now; task
+  6.1 regenerates them, as the AND/OR/EOR/NOT ones of 4.1.
 - **Cost.** No loop of the benchmark has a shift other than the timer's
   `th LSL 8` (Long, the build's code unchanged), so the perf loops do not
   change. A 48.16 shift costs about 30 cycles per bit (`lsl.l #1`,

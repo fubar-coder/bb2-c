@@ -230,12 +230,13 @@ int exprtype_bypass(unsigned op, unsigned left, unsigned right, int lpoint, int 
               || (op >= ETO_BITTST && op <= ETO_BITCHG);
     int shift = op >= ETO_LSL && op <= ETO_ASR;
 
-    /* a bit operator the build refuses is the pass's whatever its operands:
-       whole operands under a Float destination compile (task 4.1), a Float
-       operand the pass refuses */
+    /* a bit operator or shift the build refuses is the pass's whatever its
+       operands: whole operands (a shift's also Quick ones) under a Float
+       destination compile (tasks 4.1, 4.4), a Float operand the pass
+       refuses */
     (void)lpoint;
     (void)rpoint;
-    if (!(bit || (shift && lpoint)))
+    if (!(bit || shift))
         return 0;
     d = exprtype_binop(op, left, right, &f);
     return !d.result || d.handler == ET_FLOAT || !exprtype_optype(op, d.handler);
