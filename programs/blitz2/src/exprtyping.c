@@ -15,6 +15,7 @@
 #include "exprtyping.h"
 
 #include <stddef.h>
+#include <string.h>
 
 /* ------------------------------------------------------------ rationals */
 
@@ -1238,4 +1239,287 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
     if (!c.refused)
         fastpaths(root);
     return c.refused;
+}
+
+/* ===================================== the operand-only classes (TSR) */
+
+/* The classes of the rules of the OpenSpec change type-system-rework (spec
+   delta compiler/expression-types, design.md "Decisions" 1 and 2; tasks
+   3.1, 3.2): every node typed from its operator and its operands only, a
+   whole number one step wider than its operands (the unary minus and NOT
+   too, NOT of a Quick a Long), an operation with a Quick 48.16, with a
+   Float Float; the destination only at the root and for the named
+   exceptions, which reach a node from the root: the whole-division
+   exception (C1: at the top or through + - * / and the unary minus under
+   a Quick or Float destination), a whole / beside a Quick-class operand
+   (C3: at the arithmetic operators, Mod, ^ and the comparisons, also
+   through a unary minus; not at the bit operators and shifts, not beside a
+   Float), the top operation under a Float destination (D: an arithmetic
+   one with a Quick operand, a constant with a point there read as a
+   Float), the shift exception (E: a right shift of a whole operand at the
+   top or through + - under a Quick destination, with 16 fraction bits) and
+   the left-shift wrap (J).  A whole constant is its smallest type (no
+   DEFTYPE; a minus before it the unary minus); a constant with a point a
+   Quick when it is exact in 16.16 or a Quick is the other operand of its
+   operator (also under a unary minus), else a Float.  The oracle is the
+   matrix model's rule set EM_RULES_TSR (tools/lib/exprmatrix/model.c,
+   tsr_class; programs/blitz2/tests/host/test_exprtyping.cpp compares
+   every node). */
+
+enum { CK_W = 1, CK_Q = ET_QUICK, CK_F = ET_FLOAT, CK_P = 6 };   /* CK_P: a constant with a point, not decided */
+
+/* how a node is reached from the root */
+enum { CR_ROOT = 1, CR_C1 = 2, CR_E = 4 };
+
+/* what a node is told about the other operand of its operator (else CK_W,
+   CK_Q, CK_F: the other operand's class) */
+enum { CS_NONE = 0, CS_PROBE = 8, CS_SHIFTL = 9, CS_FTOP = 10 };
+
+struct cls {
+    unsigned char k, n;         /* the class; a whole number's width in bits */
+    unsigned char refused;
+    unsigned char lsib, rsib, lreach, rreach;   /* what the operands are told */
+    unsigned char ftop;         /* D applies */
+    unsigned char div;          /* a whole / that keeps its fraction beside a Quick when told so */
+    unsigned char exc;          /* ETX_*: the exception that gives another type here */
+};
+
+static int cls_arith(unsigned op)
+{
+    return op == ETO_ADD || op == ETO_SUB || op == ETO_MUL || op == ETO_DIV || op == ETO_MOD;
+}
+
+static unsigned cls_wider(unsigned n)
+{
+    return n == 8 ? 16 : 32;
+}
+
+/* a constant with a point, also under unary minuses; else NULL */
+static const struct exprtyping_node *cls_pc(const struct exprtyping_node *n)
+{
+    while (n->kind == ETN_NEG)
+        n = n->l;
+    return n->kind == ETN_CONST && n->point ? n : NULL;
+}
+
+/* the literal's value (no sign) is below 32768: it fits a Quick */
+static int cls_pcfits(const struct exprtyping_node *n)
+{
+    int64_t lim;
+
+    return n->num >= 0 && n->den > 0 && !__builtin_mul_overflow(n->den, (int64_t)32768, &lim) && n->num < lim;
+}
+
+/* exact in 16.16 and in the Quick range */
+static int cls_pcexact(const struct exprtyping_node *n)
+{
+    int64_t s;
+
+    return cls_pcfits(n) && !__builtin_mul_overflow(n->num, (int64_t)65536, &s) && !(s % n->den);
+}
+
+/* the width of a whole constant: the smallest type of its 32 bits */
+static unsigned cls_width(const struct exprtyping_node *n)
+{
+    int64_t v = (int32_t)(uint32_t)(uint64_t)(n->den > 1 ? n->num / n->den : n->num);
+
+    return v >= -128 && v <= 127 ? 8 : v >= -32768 && v <= 32767 ? 16 : 32;
+}
+
+static void cls_of(unsigned dest, const struct exprtyping_node *n, unsigned reach, unsigned sib, struct cls *o)
+{
+    struct cls a, b;
+    unsigned op;
+
+    memset(o, 0, sizeof *o);
+    switch (n->kind) {
+    case ETN_VAR:
+        if (n->type == ET_QUICK || n->type == ET_FLOAT)
+            o->k = n->type;
+        else if (n->type == ET_BYTE || n->type == ET_WORD || n->type == ET_LONG) {
+            o->k = CK_W;
+            o->n = n->type == ET_BYTE ? 8 : n->type == ET_WORD ? 16 : 32;
+        } else
+            o->refused = 1;
+        return;
+    case ETN_CONST:
+        if (!n->point) {
+            o->k = CK_W;
+            o->n = (unsigned char)cls_width(n);
+        } else if (sib == CS_FTOP)
+            o->k = CK_F;        /* D: the Float of the written value */
+        else if (cls_pcexact(n) || (sib == CK_Q && cls_pcfits(n)))
+            o->k = CK_Q;
+        else
+            o->k = sib == CS_PROBE ? CK_P : CK_F;
+        return;
+    case ETN_NEG:
+        /* C1 reaches through it, D and E do not; a constant with a point
+           and a whole / under it are read as without it (C3 too) */
+        o->lreach = (unsigned char)(reach & CR_C1);
+        o->lsib = (unsigned char)(cls_pc(n->l) || sib == CK_Q ? sib : CS_NONE);
+        cls_of(dest, n->l, o->lreach, o->lsib, &a);
+        o->refused = a.refused;
+        o->k = a.k;
+        o->div = a.div;
+        if (a.k == CK_W)
+            o->n = (unsigned char)cls_wider(a.n);
+        return;
+    case ETN_NOT:
+        /* a whole operand, a Quick rounded down; a Float refused; one step
+           wider, of a Quick a Long */
+        cls_of(dest, n->l, 0, CS_NONE, &a);
+        o->refused = a.refused || a.k == CK_F;
+        o->k = CK_W;
+        o->n = (unsigned char)(a.k == CK_W ? cls_wider(a.n) : 32);
+        return;
+    default: break;
+    }
+    op = n->op;
+    if (is_shift(op)) {
+        const struct exprtyping_node *c = n->r;
+        int left = op == ETO_LSL || op == ETO_ASL;
+
+        /* the type of its left operand; the count whole, a constant with a
+           point refused */
+        o->lsib = CS_SHIFTL;
+        cls_of(dest, n->l, 0, CS_SHIFTL, &a);
+        cls_of(dest, c, 0, CS_NONE, &b);
+        while (c->kind == ETN_NEG)
+            c = c->l;
+        o->refused = a.refused || b.refused || a.k == CK_F || b.k == CK_F || (c->kind == ETN_CONST && c->point);
+        if (a.k == CK_Q) {
+            o->k = CK_Q;
+            if (left && dest == ET_QUICK && (reach & CR_ROOT))
+                o->exc = ETX_SHIFTWRAP;         /* J of a Quick (I6 B) */
+        } else if (!left && dest == ET_QUICK && (reach & CR_E)) {
+            o->k = CK_Q;                        /* the shift exception (E) */
+            o->exc = ETX_SHIFTFRAC;
+        } else if (left) {
+            o->k = CK_W;
+            o->n = 32;
+            if (dest == ET_QUICK && (reach & CR_ROOT))
+                o->exc = ETX_SHIFTWRAP;         /* J (I5 A) */
+        } else {
+            o->k = CK_W;
+            o->n = a.n;
+        }
+        return;
+    }
+    {
+        unsigned r = 0, ka, kb;
+        int bit = is_bit(op);
+
+        if ((reach & CR_C1) && cls_arith(op) && op != ETO_MOD)
+            r |= CR_C1;
+        if ((reach & CR_E) && (op == ETO_ADD || op == ETO_SUB))
+            r |= CR_E;
+        o->lreach = o->rreach = (unsigned char)r;
+        cls_of(dest, n->l, r, CS_PROBE, &a);
+        cls_of(dest, n->r, r, CS_PROBE, &b);
+        o->refused = a.refused || b.refused;
+        ka = a.k;
+        kb = b.k;
+        /* a constant with a point beside a Quick-class operand a Quick */
+        if (ka == CK_P)
+            ka = kb == CK_Q && cls_pcfits(cls_pc(n->l)) ? CK_Q : CK_F;
+        if (kb == CK_P)
+            kb = ka == CK_Q && cls_pcfits(cls_pc(n->r)) ? CK_Q : CK_F;
+        /* C3: a whole / beside a Quick-class operand, not at a bit operator */
+        if (!bit) {
+            if (a.div && kb == CK_Q)
+                ka = CK_Q;
+            if (b.div && ka == CK_Q)
+                kb = CK_Q;
+        }
+        o->lsib = (unsigned char)kb;
+        o->rsib = (unsigned char)ka;
+        if (a.div && ka == CK_W)
+            o->lsib = CS_NONE;
+        if (b.div && kb == CK_W)
+            o->rsib = CS_NONE;
+        /* D: the arithmetic top operation with a Quick under a Float */
+        if (dest == ET_FLOAT && (reach & CR_ROOT) && (cls_arith(op) || op == ETO_POW) && (ka == CK_Q || kb == CK_Q)) {
+            o->ftop = 1;
+            if (op == ETO_POW ? (cls_pc(n->l) && ka == CK_Q) || (cls_pc(n->r) && kb == CK_Q)
+                              : ka != CK_F && kb != CK_F)
+                o->exc = ETX_FLOATTOP;
+            if (cls_pc(n->l))
+                o->lsib = CS_FTOP;
+            if (cls_pc(n->r))
+                o->rsib = CS_FTOP;
+        }
+        if (op == ETO_POW) {
+            o->k = CK_F;
+            return;
+        }
+        if (exprtype_iscompare(op)) {
+            o->k = CK_W;        /* the boolean a Word */
+            o->n = 16;
+            return;
+        }
+        if (bit) {
+            o->refused |= ka == CK_F || kb == CK_F;
+            o->k = CK_W;
+            o->n = (unsigned char)cls_wider(tmax(ka == CK_W ? a.n : 32, kb == CK_W ? b.n : 32));
+            return;
+        }
+        if (o->ftop || ka == CK_F || kb == CK_F)
+            o->k = CK_F;
+        else if (ka == CK_Q || kb == CK_Q)
+            o->k = CK_Q;
+        else if (op == ETO_DIV && (reach & CR_C1) && (dest == ET_QUICK || dest == ET_FLOAT)) {
+            o->k = (unsigned char)dest; /* the whole-division exception (C1) */
+            o->exc = ETX_DIVFRAC;
+        } else if (op == ETO_DIV && sib == CK_Q) {
+            o->k = CK_Q;                /* C3, told by the parent */
+            o->exc = ETX_DIVQUICK;
+        } else {
+            o->k = CK_W;
+            o->n = (unsigned char)cls_wider(tmax(a.n, b.n));
+            o->div = op == ETO_DIV;
+        }
+    }
+}
+
+/* the class of every node of n into n->cls, n->exc; *warn the exceptions */
+static int cls_mark(unsigned dest, struct exprtyping_node *n, unsigned reach, unsigned sib, unsigned *warn)
+{
+    struct cls c;
+
+    cls_of(dest, n, reach, sib, &c);
+    if (c.refused)
+        return 1;
+    switch (n->kind) {
+    case ETN_NEG:
+        if (cls_mark(dest, n->l, c.lreach, c.lsib, warn))
+            return 1;
+        break;
+    case ETN_NOT:
+        if (cls_mark(dest, n->l, 0, CS_NONE, warn))
+            return 1;
+        break;
+    case ETN_BIN:
+        if (is_shift(n->op)) {
+            if (cls_mark(dest, n->l, 0, CS_SHIFTL, warn) || cls_mark(dest, n->r, 0, CS_NONE, warn))
+                return 1;
+        } else if (cls_mark(dest, n->l, c.lreach, c.lsib, warn) || cls_mark(dest, n->r, c.rreach, c.rsib, warn))
+            return 1;
+        break;
+    default: break;
+    }
+    n->cls = (unsigned char)(c.k == CK_W ? (c.n == 8 ? ET_BYTE : c.n == 16 ? ET_WORD : ET_LONG) : c.k);
+    n->exc = c.exc;
+    *warn |= c.exc;
+    return 0;
+}
+
+int exprtyping_classify(struct exprtyping_node *root, unsigned want, unsigned *warn)
+{
+    *warn = 0;
+    if (cls_mark(want, root, CR_ROOT | CR_C1 | CR_E, CS_NONE, warn)) {
+        *warn = 0;
+        return 1;
+    }
+    return 0;
 }

@@ -14,7 +14,11 @@
 // pairs of conflicts 12-15, the idioms of 1-4 and the other conflicts),
 // the spec's scenarios and the decided cases of the model's tests, each in
 // every context.  The fast path of a 48.16 operation is checked with
-// exprarith.c's test of a narrow value.
+// exprarith.c's test of a narrow value.  The classes of the rules of
+// type-system-rework (exprtyping_classify, tasks 3.1, 3.2) are compared
+// with the model's EM_RULES_TSR node by node (the model's sig under
+// EM_R_TSR) for every cell, the chains, every chain of two operators, the
+// spec's scenarios and, with EXPRTYPING_CD_CASES set, the CD's expressions.
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -642,7 +646,286 @@ const chain CHAINS[] = {
     { "(q*2+l)+f", "q=1.5 f.f=2 l.l=3" },
 };
 
+// ------------------------------------- the operand-only classes (TSR)
+
+const uint64_t TSR = EM_RULES_TSR;
+
+// the classes of every node in post order, as the model's sig under
+// EM_R_TSR (model.c, tsr_sig): B W L a whole number of 8, 16, 32 bits, Q
+// 48.16, F Float, then the exception places d c t s j; "!" refused
+void render_cls(const exprtyping_node *n, std::string &out)
+{
+    if (n->kind == ETN_NEG || n->kind == ETN_NOT)
+        render_cls(n->l, out);
+    else if (n->kind == ETN_BIN) {
+        render_cls(n->l, out);
+        render_cls(n->r, out);
+    }
+    if (!out.empty())
+        out += ' ';
+    out += "-BWLQF"[n->cls <= ET_FLOAT ? n->cls : 0];
+    if (n->exc & ETX_DIVFRAC)
+        out += 'd';
+    if (n->exc & ETX_DIVQUICK)
+        out += 'c';
+    if (n->exc & ETX_FLOATTOP)
+        out += 't';
+    if (n->exc & ETX_SHIFTFRAC)
+        out += 's';
+    if (n->exc & ETX_SHIFTWRAP)
+        out += 'j';
+}
+
+std::string mine_cls(exprtyping_node *root, unsigned want, unsigned *warn = nullptr)
+{
+    unsigned w;
+    std::string out;
+
+    if (exprtyping_classify(root, want, &w))
+        return "!";
+    render_cls(root, out);
+    if (warn)
+        *warn = w;
+    return out;
+}
+
+std::string theirs_cls(const struct em_expr *x, enum em_ctx ctx)
+{
+    em_exprval v;
+
+    em_expr_eval(x, ctx, TSR, &v);
+    return v.sig;
+}
+
+const enum em_ctx TSR_CONTEXTS[] = { EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PL, EM_PW,
+                                     EM_PQ, EM_PF, EM_IF, EM_PRINT, EM_I1, EM_I2 };
+
+// the differences of the classes of one expression in every context
+std::vector<std::string> compare_cls(const std::string &text, const std::string &vars,
+                                     const std::vector<enum em_ctx> &ctxs = { std::begin(TSR_CONTEXTS),
+                                                                             std::end(TSR_CONTEXTS) })
+{
+    std::vector<std::string> d;
+    tree t(text, vars);
+    struct em_expr *x = nullptr;
+    char *err = nullptr;
+
+    if (em_expr_parse(text.c_str(), vars.c_str(), &x, &err) || !t.root) {
+        d.push_back(text + ": not parsed (" + (err ? err : "") + t.err + ")");
+        std::free(err);
+        return d;
+    }
+    for (enum em_ctx ctx : ctxs) {
+        std::string a = mine_cls(t.root, want_of(ctx)), b = theirs_cls(x, ctx);
+
+        if (a != b)
+            d.push_back(text + " (" + vars + ") " + em_ctx_name(ctx) + ": the pass [" + a + "], the model [" + b
+                        + "]");
+    }
+    em_expr_free(x);
+    return d;
+}
+
 } // namespace
+
+TEST_CASE("exprtyping: every cell of the matrix as the model classes it (TSR)", "[exprtyping][tsr]")
+{
+    std::string text = readfile(EXPRMATRIX_TXT);
+    em_matrix m{};
+    char *errors = nullptr;
+    size_t compared = 0, refused = 0, wide = 0, exc = 0;
+    std::vector<std::string> d;
+
+    REQUIRE(!text.empty());
+    REQUIRE(em_parse(text.data(), text.size(), EXPRMATRIX_TXT, &m, &errors) == 0);
+    for (size_t i = 0; i < m.ncells; i++) {
+        const em_cell &c = m.cells[i];
+        struct em_expr *x = nullptr;
+
+        if (em_cell_expr(&m, &c, &x))
+            continue;
+        tree t(cell_text(m, c), CELLVARS);
+        if (!t.root) {
+            d.push_back(std::string(c.key) + ": not parsed: " + t.err);
+            em_expr_free(x);
+            continue;
+        }
+        std::string a = mine_cls(t.root, want_of(c.ctx)), b = theirs_cls(x, c.ctx);
+        em_expr_free(x);
+        compared++;
+        refused += b == "!";
+        wide += b.find('Q') != std::string::npos;
+        exc += b.find_first_of("dctsj") != std::string::npos;
+        if (a != b)
+            d.push_back(std::string(c.key) + " " + cell_text(m, c) + ": the pass [" + a + "], the model [" + b + "]");
+    }
+    for (size_t i = 0; i < d.size() && i < 25; i++)
+        FAIL_CHECK(d[i]);
+    CHECK(d.empty());
+    CHECK(compared > 30000);
+    CHECK(refused > 1000);
+    CHECK(wide > 1000);
+    CHECK(exc > 100);
+    em_free(&m);
+}
+
+TEST_CASE("exprtyping: the chains of the analysis as the model classes them (TSR)", "[exprtyping][tsr]")
+{
+    std::vector<std::string> d;
+
+    for (const auto &c : CHAINS)
+        for (const auto &s : compare_cls(c.text, c.vars))
+            d.push_back(s);
+    for (const auto &p : PAIRS)
+        for (const auto &c : p)
+            for (const auto &s : compare_cls(c.text, c.vars))
+                d.push_back(s);
+    for (size_t i = 0; i < d.size() && i < 25; i++)
+        FAIL_CHECK(d[i]);
+    CHECK(d.empty());
+}
+
+TEST_CASE("exprtyping: every chain of two operators as the model classes it (TSR)", "[exprtyping][tsr]")
+{
+    // a OP1 b OP2 c, a OP1 (b OP2 c) and a OP1 -(b OP2 c), the operand kinds
+    // and constants of every reading (a point constant exact, not exact,
+    // beyond the Quick range; a whole division), under a whole, a Quick and
+    // a Float destination and none (the classes differ only there)
+    static const char *const ops[] = { "+", "-", "*", "/", " MOD ", " AND ", " LSL ", " LSR ",
+                                       "=", "<", "^" };
+    static const char *const kinds[] = { "b", "w", "l", "q", "f", "-q", "3", "-8", "40000",
+                                         "1.5", "0.1", "-0.1", "30000.3", "(w/d)" };
+    const char *vars = "b.b=3 w.w=30000 l.l=100000 q=1.5 f.f=2.5 d.w=2";
+    const std::vector<enum em_ctx> few = { EM_DL, EM_DQ, EM_DF, EM_PRINT };
+    std::vector<std::string> d;
+    size_t n = 0;
+
+    for (const char *o1 : ops)
+        for (const char *o2 : ops)
+            for (const char *a : kinds)
+                for (const char *b : kinds)
+                    for (const char *c : kinds)
+                        for (int br = 0; br < 3; br++) {
+                            std::string t = br == 1   ? std::string(a) + o1 + "(" + b + o2 + c + ")"
+                                            : br == 2 ? std::string(a) + o1 + "-(" + b + o2 + c + ")"
+                                                      : std::string(a) + o1 + b + o2 + c;
+                            for (const auto &s : compare_cls(t, vars, few))
+                                d.push_back(s);
+                            n++;
+                        }
+    for (size_t i = 0; i < d.size() && i < 40; i++)
+        FAIL_CHECK(d[i]);
+    INFO(d.size(), " of ", n * few.size());
+    CHECK(d.empty());
+}
+
+TEST_CASE("exprtyping: the classes and exception places of the spec", "[exprtyping][tsr]")
+{
+    // the spec delta's scenarios (compiler/expression-types, compiler/
+    // warnings): the class of every node and the exceptions that warn
+    struct {
+        const char *text, *vars;
+        unsigned want;
+        const char *cls;
+        unsigned warn;
+    } cases[] = {
+        { "w/9", "w.w=200", ET_QUICK, "W B Qd", ETX_DIVFRAC },
+        { "4/2", "", ET_QUICK, "B B Qd", ETX_DIVFRAC },        // also with an equal value
+        { "w/9", "w.w=200", ET_LONG, "W B L", 0 },
+        { "w+v", "w.w=1 v.w=1", ET_NONE, "W W L", 0 },
+        { "b+c", "b.b=100 c.b=100", ET_NONE, "B B W", 0 },
+        { "-q", "q=1", ET_QUICK, "Q Q", 0 },
+        { "1 LSR 7", "", ET_QUICK, "B B Qs", ETX_SHIFTFRAC },
+        { "qa+3 LSR 3", "qa=1", ET_QUICK, "Q B B Qs Q", ETX_SHIFTFRAC },
+        { "-(1 LSR 7)", "", ET_QUICK, "B B B W", 0 },          // E not through a unary minus
+        { "1 LSL 16", "", ET_QUICK, "B B Lj", ETX_SHIFTWRAP },
+        { "q LSL 2", "q=1", ET_QUICK, "Q B Qj", ETX_SHIFTWRAP },
+        { "(v LSL 4)+p", "v.w=1 p=1", ET_QUICK, "W B L Q Q", 0 },
+        { "q/100", "q=1", ET_FLOAT, "Q B Ft", ETX_FLOATTOP },
+        { "q*0.002", "q=1", ET_FLOAT, "Q F Ft", ETX_FLOATTOP },
+        { "q=0.1", "q=1", ET_FLOAT, "Q Q W", 0 },              // D not at a comparison (D2)
+        { "-(q/100)", "q=1", ET_FLOAT, "Q B Q Q", 0 },         // D not through a unary minus
+        { "q+w/2", "q=1 w.w=1", ET_NONE, "Q W B Qc Q", ETX_DIVQUICK },
+        { "q+-(w/2)", "q=1 w.w=1", ET_NONE, "Q W B Qc Q Q", ETX_DIVQUICK },
+        { "f+w/2", "f.f=1 w.w=1", ET_NONE, "F W B L F", 0 },
+        { "q AND w/2", "q=1 w.w=1", ET_LONG, "Q W B L L", 0 },
+        { "q+w/3", "q=1 w.w=1", ET_FLOAT, "Q W B Fd F", ETX_DIVFRAC },
+        { "(a/b)/c", "a.w=1 b.w=1 c.w=1", ET_QUICK, "W W Qd W Q", ETX_DIVFRAC },
+        { "(7/2=3)", "", ET_QUICK, "B B W B W", 0 },
+        { "-8 LSR 1", "", ET_NONE, "B W B W", 0 },
+        { "NOT q", "q=1", ET_NONE, "Q L", 0 },
+        { "0.1", "", ET_QUICK, "F", 0 },
+        { "q+0.1", "q=1", ET_QUICK, "Q Q Q", 0 },
+        { "l*0.1", "l.l=1", ET_LONG, "L F F", 0 },
+        { "l*0.5", "l.l=1", ET_LONG, "L Q Q", 0 },
+        { "q+(-0.1)", "q=1", ET_QUICK, "Q Q Q Q", 0 },
+        { "q2+30000.3", "q2=1", ET_QUICK, "Q Q Q", 0 },
+        { "l AND f", "l.l=1 f.f=1", ET_LONG, "!", 0 },
+        { "x LSL 2.0", "x.w=1", ET_WORD, "!", 0 },
+        { "-0.1 LSL 2", "", ET_LONG, "!", 0 },
+        { "1.5 LSL 2", "", ET_BYTE, "Q B Q", 0 },
+    };
+
+    for (const auto &c : cases) {
+        tree t(c.text, c.vars);
+        unsigned warn = 0;
+
+        INFO(c.text, " ", c.want);
+        REQUIRE(t.root);
+        CHECK(mine_cls(t.root, c.want, &warn) == c.cls);
+        CHECK(warn == c.warn);
+        for (const auto &s : compare_cls(c.text, c.vars))
+            FAIL_CHECK(s);
+    }
+}
+
+// the expressions of the CD (task 1.3's dump cd.cases, one per line: "ID
+// CONTEXT EXPRESSION VARIABLES" separated by tabs; derived from the CD's
+// sources and so not in the repository): every one in every context, when
+// the environment names the file (EXPRTYPING_CD_CASES)
+TEST_CASE("exprtyping: the expressions of the CD as the model classes them (TSR)", "[exprtyping][tsr][cd]")
+{
+    const char *path = std::getenv("EXPRTYPING_CD_CASES");
+    std::set<std::string> seen;
+    std::vector<std::string> d;
+    size_t n = 0;
+
+    if (!path || !*path)
+        return;
+    std::ifstream f(path);
+    REQUIRE(f.good());
+    std::string line;
+    while (std::getline(f, line)) {
+        std::vector<std::string> col;
+        std::istringstream ls(line);
+        std::string c;
+
+        while (std::getline(ls, c, '\t'))
+            col.push_back(c);
+        if (col.size() < 3)
+            continue;
+        std::string vars = col.size() > 3 ? col[3] : "";
+        if (!seen.insert(col[2] + "|" + vars).second)
+            continue;
+        tree t(col[2], vars);
+        struct em_expr *x = nullptr;
+        char *err = nullptr;
+        if (!t.root || em_expr_parse(col[2].c_str(), vars.c_str(), &x, &err)) {
+            std::free(err);
+            em_expr_free(x);
+            continue; // a form the trees of this test do not read
+        }
+        em_expr_free(x);
+        n++;
+        for (const auto &s : compare_cls(col[2], vars))
+            d.push_back(s);
+    }
+    for (size_t i = 0; i < d.size() && i < 40; i++)
+        FAIL_CHECK(d[i]);
+    INFO(d.size(), " differences in ", n, " expressions");
+    CHECK(d.empty());
+    CHECK(n > 1000);
+}
 
 TEST_CASE("exprtyping: every cell of the matrix as the model types it (P+)", "[exprtyping]")
 {

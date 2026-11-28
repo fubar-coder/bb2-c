@@ -42,10 +42,11 @@
  * The pass reads the tree (struct exprtyping_node: the operands, the
  * operators, the variables' types and the constants' values) and writes
  * its decisions into the nodes (the out part) and the result.  It has no
- * state of its own, allocates nothing and calls nothing but itself, so
- * blitz2 and the host test (programs/blitz2/tests/host/test_exprtyping.cpp,
- * which checks every decision against the matrix model's EM_RULES_DECIDED)
- * compile the same file.  The recursion is as deep as the tree; blitz2's
+ * state of its own, allocates nothing and calls nothing but itself and
+ * memset, so blitz2 and the host test
+ * (programs/blitz2/tests/host/test_exprtyping.cpp, which checks every
+ * decision against the matrix model's EM_RULES_DECIDED and every class of
+ * exprtyping_classify against its EM_RULES_TSR) compile the same file.  The recursion is as deep as the tree; blitz2's
  * trees are bounded by the precedence stack (exprtree.h, EXPRTREE_PENDING)
  * along a nesting, and along a chain of one precedence the left operand is
  * the deeper one (the tree of l+a+b+... is a chain of left operands).
@@ -149,6 +150,10 @@ struct exprtyping_node {
     unsigned char typed;
     unsigned char t, fmt, own;
     struct exprtyping_op o;
+    /* out of exprtyping_classify */
+    unsigned char cls;          /* ET_BYTE, ET_WORD, ET_LONG a whole number of that width,
+                                   ET_QUICK 48.16, ET_FLOAT */
+    unsigned char exc;          /* ETX_*: the exception that gives this node another type */
 };
 
 /** @brief The result of the pass. */
@@ -170,6 +175,43 @@ struct exprtyping_result {
  * or 1 when the expression is refused (res->refused).
  */
 int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtyping_result *res);
+
+/** @brief The exceptions of the rules of type-system-rework that give a
+ *         node another type or conversion than the standard rules
+ *         (exprtyping_node.exc; each one's warning, spec compiler/warnings
+ *         "The type exceptions warn", parse.h W_*). */
+enum {
+    ETX_DIVFRAC = 1,            /* the whole-division exception (C1): a whole / with its fraction
+                                   under a Quick or Float destination */
+    ETX_DIVQUICK = 2,           /* a whole / beside a Quick-class operand with its fraction (C3) */
+    ETX_FLOATTOP = 4,           /* the top operation under a Float destination in Float (D) */
+    ETX_SHIFTFRAC = 8,          /* the shift exception (E): a whole right shift with 16 fraction bits */
+    ETX_SHIFTWRAP = 16          /* the left-shift wrap (J): the top left shift to a Quick wrapped */
+};
+
+/**
+ * @brief The classes of the rules of the OpenSpec change
+ *        type-system-rework under the destination want (ET_NONE: no
+ *        destination, If and Print; else ET_BYTE .. ET_FLOAT, a typed
+ *        parameter as its type, an array index ET_LONG).
+ *
+ * Every node is typed from its operator and its operands only (tasks 3.1,
+ * 3.2): an operation on whole numbers one step wider than the wider
+ * operand (Byte to Word, Word to Long, Long stays), the unary minus and NOT
+ * of a whole operand one step wider than it, NOT of a Quick a Long; an
+ * operation with a Quick and no Float 48.16; with a Float Float; ^ Float; a
+ * comparison a Word; a bit operator whole; a shift the type of its left
+ * operand (a whole LSL, ASL a Long).  A whole constant is its smallest
+ * type; a constant with a point a Quick when it is exact in 16.16 or a
+ * Quick is the other operand of its operator, else a Float.  The
+ * destination reaches into the expression only by the named exceptions
+ * (ETX_*).  Writes cls and exc of every node and the set of the
+ * exceptions that apply in *warn; returns 0, or 1 when an operator is
+ * refused ("Illegal Operator for Type"; *warn 0).  The code still follows
+ * exprtyping_type's decisions (rule P+) until the code generation of
+ * type-system-rework (its section 4) takes these classes.
+ */
+int exprtyping_classify(struct exprtyping_node *root, unsigned want, unsigned *warn);
 
 /** @brief The node is a constant subtree, folded into one constant (no
  *         operation of its own). */
