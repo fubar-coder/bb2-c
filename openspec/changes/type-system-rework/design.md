@@ -394,6 +394,37 @@ or a value that becomes the trap):
   a crash on every side. No cause differs from its expectation by more
   than 1 %.
 
+**Nesting depth under the new rule (task 1.4).** The method of
+expr-tree-5 task 3.7 (`~/.local/share/bb2-c-work/expr-tree-5-3.7/`: the
+port's dump of the CD with the register of every operator, 171,426 E lines,
+`depth.py`), with the typing of the model's `TSR` set (`exprmatrix
+candidates --typing`, its rule set recording the class of each operation;
+a scratch build) in place of P+'s, and every operation of Quick class (a
+48.16 value: a Quick operand, C1, C3, the shift exception) a register pair;
+whole and Float operations and comparisons with a Float one register.
+27,898 E lines typed (1 not matched, 1,322 strings and other elements taken
+as today, as in 3.7). 6,518 E lines have an operation of Quick class (P+:
+545), at 2,318 places in 203 files, 10,192 such operations.
+
+| | today | pairs, leaves in one register (A) | every operand of a pair operation widened in place (B, bound) |
+|---|---|---|---|
+| most registers one E line uses | 6 (2 E lines) | 6 (9 E lines) | 8 (37 E lines) |
+| E lines that reach D7 (D6 saved) | 22 | 22 (the same) | 140 |
+| E lines beyond D7 ("Expression too Complex") | 0 | 0 | 13, at 7 places |
+
+A raises the highest register of 1,527 E lines (1,510 by one, 17 by two);
+the 22 E lines at D7 are today's (operators in a 7th or later argument,
+none of Quick class). Nested expressions (an element inside a pending pair
+operation, the E lines of one source line and pass with a higher base
+moved up by the largest leaf move at their base, recursively): A still
+reaches D7 with the same 22 E lines and none beyond; B 159 at D7, the
+same 13 beyond. So no CD source reaches "Expression too Complex" when the
+emitter keeps a leaf in one register until its operation (A, the
+compile-time fast path of 3.7). With every operand widened in place (B),
+STARTREK.BB2:884, HYPERHELP2.BB2:103, AGADUAL_PF.BB2:92, BEZIER1.BB2:47
+and :69, TEXTVIEW.BB2:40 and INTUITOOLS.BB:274 would need registers
+beyond D7 (expressions with a Quick operation that start at D3 to D6).
+
 **Hand-written tests.** 593 checks of `tests/blitz2`, `tests/bug-orig/
 compiler` and `tests/bug-port` evaluated by the scan (Print-output tests
 and checks inside loops not evaluated); 163 change in 12 files (with the

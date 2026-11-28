@@ -21,7 +21,7 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 - [x] 1.2 The model does not crash on `(1.25/1000)^7` under Byte, Word, Long (#1232). Verify: a host test case.
 - [x] 1.3 Re-measure with the model: `exprmatrix candidates` with the new column over the matrix and the CD dump (`cd.cases`); compare with design.md "Measurements" (cells and places per cause). Verify: the numbers written into design.md; a difference above 1 % of a cause is reported to the coordinator before 3.x starts.
 - [ ] 1.5 The model follows the answers D1-D7 (rounds/tree "2026-11-28 type-system-rework D2, D3, D4", "... D1/D7 ..., D5", "... D6") and the planner's P1 (a point constant read as a Quick through FFP); its P+ and orig columns fixed by the emulator values of section1-decisions.md (#1232: a Float division by 0 traps, a Long division by 0 gives +2147483647 for every sign, the Quick literal through FFP); 1.3 recounted with "crash -> value" apart from "away from 1.95". Verify: a host case per answer and per fixed column value; the numbers in design.md "Measurements"; a cause that still differs by more than 1 % is reported before 3.x starts.
-- [ ] 1.4 The nesting depth of the CD's expressions under the new rule (every Quick operation a register pair; method of expr-tree-5 3.7). Verify: no CD source reaches "Expression too Complex"; the count in design.md.
+- [x] 1.4 The nesting depth of the CD's expressions under the new rule (every Quick operation a register pair; method of expr-tree-5 3.7). Verify: no CD source reaches "Expression too Complex"; the count in design.md.
 
 ## 2. Tests of the new rules (they fail until section 3/4)
 
