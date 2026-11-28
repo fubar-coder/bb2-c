@@ -630,12 +630,15 @@ set_tests_properties(corpus_cd_prev_check PROPERTIES LABELS emulator SKIP_RETURN
 # expected directory made here, in the build directory, from the committed
 # expected output of t01_int (right: the port's, t01_int.fixed-1216.out;
 # orig: the original's, t01_int.orig.out) and selftest/wrong/t01_int.out
-# (one line wrong).  The malformed ones need no emulator: the directory is
+# (one line wrong); portcd: the port's output with the CD's libraries
+# (their modlib's Mod by a negative divisor, #1197: 100000 Mod -7 is 5).
+# The malformed ones need no emulator: the directory is
 # read before any session (exit status 2 and the file names).
 #   corpus_expect_fixed_regressed  clib gives the [orig] value: the
 #       [fixed #1] file fails (label emulator: no CD needed)
 #   corpus_originals_orig_changed  ref differs from the [orig] file, port
-#       matches the [fixed #1] one (label originals)
+#       (with the CD's libraries) matches the [fixed #1] one (portcd; label
+#       originals)
 #   corpus_originals_exe_differs  port's executable (here with the C
 #       libraries) differs from ref's, the output is as expected (ref the
 #       [orig] file, port the [fixed #1] one): passes, the difference
@@ -654,9 +657,11 @@ set(selftest_expect ${CMAKE_CURRENT_BINARY_DIR}/selftest-expect)
 file(READ ${CORPUS_EXPECT}/corpus/t01_int.fixed-1216.out t01_right)
 file(READ ${CORPUS_EXPECT}/corpus/t01_int.orig.out t01_orig)
 file(READ ${selftest}/wrong/t01_int.out t01_wrong)
+string(REPLACE "-700000 -14285 -2 2" "-700000 -14285 5 2" t01_portcd "${t01_right}")
 file(REMOVE_RECURSE ${selftest_expect})
 # corpus_selftest_dir(NAME FILE|CONTENT...): the directory NAME, CONTENT
-# right (the port's output), orig (the original's), wrong or a text
+# right (the port's output), orig (the original's), portcd (the port's with
+# the CD's libraries), wrong or a text
 function(corpus_selftest_dir name)
 	file(MAKE_DIRECTORY ${selftest_expect}/${name})
 	foreach(f IN LISTS ARGN)
@@ -667,6 +672,8 @@ function(corpus_selftest_dir name)
 			set(what "${t01_right}")
 		elseif(what STREQUAL "orig")
 			set(what "${t01_orig}")
+		elseif(what STREQUAL "portcd")
+			set(what "${t01_portcd}")
 		elseif(what STREQUAL "wrong")
 			set(what "${t01_wrong}")
 		endif()
@@ -687,7 +694,7 @@ corpus_selftest_dir(exe-pair t01_int.out|right
 	"t01_int.fixed-1.exe|1111111111111111111111111111111111111111111111111111111111111111\n")
 corpus_selftest_dir(wrong-out t01_int.out|wrong)
 corpus_selftest_dir(regressed t01_int.orig.out|right t01_int.fixed-1.out|wrong)
-corpus_selftest_dir(orig-changed t01_int.orig.out|wrong t01_int.fixed-1.out|right)
+corpus_selftest_dir(orig-changed t01_int.orig.out|wrong t01_int.fixed-1.out|portcd)
 corpus_selftest_dir(unlisted t01_int.orig.out|orig t01_int.fixed-1.out|right)
 corpus_selftest_dir(right t01_int.out|right)
 
