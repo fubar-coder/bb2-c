@@ -1060,3 +1060,71 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
   `th LSL 8` (Long, the build's code unchanged), so the perf loops do not
   change. A 48.16 shift costs about 30 cycles per bit (`lsl.l #1`,
   `roxl.l #1`, `dbra`) plus about 50 for the widening and the count.
+
+## Findings of task 4.7 (division and Mod by a run-time 0, floor Mod)
+
+- **Where the trap comes from.** A divisor 0 raises the CPU's division
+  trap (DIVU.W by it) in every division and Mod routine the compiled code
+  calls that is the port's own: compilerlib's q48div, q48divq, q48divw,
+  q48divb and q48mod (q48divq is now q48div's code and q48divb q48divw's:
+  their only difference was the value of a division by 0). ldivlib's
+  longdiv and quickdiv keep their defined value (the largest number with
+  the dividend's sign, #200: other libraries rely on it, riseriallib's
+  rate 0, shapetrixlib's ratio), and so do compilerlib's lqdiv and
+  modlib's domodlong and domodfloat (the dividend; the library tests'
+  scenarios call them with 0): the compiler tests the divisor before the
+  call (`divtrap`: tst.l / bne.s / divu.w, 6 bytes) in dodivl, dodivq,
+  domodl, domodf, mixedop and p5qdivt, left out where the pass writes the
+  divisor as a constant whose register is not 0 (`p5nonzero`: `l/2`,
+  `l Mod 360` keep their code). Byte, Word and Quick DIVS.W and
+  mathffp's SPDiv trap by themselves; the exact Float Mod (p5fmod) no
+  longer tests b for 0 (SPDiv traps). With runtime error checking the
+  checks run as before (ldivlib's divchk, compilerlib's q48divchk); they
+  raise the same trap, so the "Division by Zero" error stays.
+- **What of P+ goes.** The value of a division by 0 per wanted type
+  (exprarith_div0 and the div0 argument of exprarith_q48, 4.2's inline
+  test of the divisor before q48divq / q48div, the ftok/tok pair of
+  p5wholediv): one routine divides by every divisor. Mod keeps the
+  format the operand typing gives it (16.16, 48.16 with a Long, modlib
+  for whole operands): every format's code now computes the floor Mod,
+  whose value does not depend on the format, so no cut by format is
+  left for Mod.
+- **Floor Mod.** modlib (#1197), compilerlib's q16mod and q48mod, the
+  inline paths p5qmod (a constant divisor: the old code for one above 0,
+  the sign known at compile time for one below), p5wholemod and p5fmod,
+  and the folds (p5qval, const_value, exprarith's modword) add the
+  divisor when the remainder is not 0 and its sign is not the divisor's.
+  With a positive divisor every value stays (#1198 closes with the
+  decision: Mod follows the floor division). The issue text of #1197
+  asked for the remainder towards zero with a negative divisor (7 Mod -3
+  is 1); Q2 "Floor" gives -2, the spec's scenario.
+- **A constant divisor 0 beside a variable.** `c/0` with a variable `c`
+  compiled before (#1044 refuses only two constants) and gave ldivlib's
+  value; it now traps at run time, as a divisor 0 that is known only
+  then. corpus t01_int divided so (`c/0`): its line is left out (the
+  trap would stop the program).
+- **Tests.** The host tests of exprarith, exprtyping and exprfold compare
+  with the model's rule sets P+ and today's, which keep today's sign rule
+  and a value for a division by 0: those comparisons leave out a Mod by
+  a negative divisor and a divisor 0, and new cases check the floor Mod
+  and the trap flag. libtest_q48 leaves out a divisor 0 of the 48.16
+  division and Mod. The matrix's Mod cells with a negative divisor (the
+  `mod-*-B` cells of #1197) keep today's values until task 6.1
+  regenerates the matrix.
+- **Cost.** One run each of bmath, bq48, bcompilerlib and bmod (cycles
+  per call, the budget in brackets; the loops already over after 4.2 not
+  repeated): over by this task `bmath.ldiv` 532.5 (528), `bmath.lmod` 581
+  (532), `bmath.ldivw` 1266 (1254+4), `bmath.wmod` 288.5 (253, modlib's
+  floor test), `bmath.qmod` 668.5 (648), `bcompilerlib.q48mod` 1488.7
+  (1451), `bq48.xqmodc` 592.6 (572), `xqmodqw` 310.6 (303), `xqmodh`
+  624.6 (604), `xqmodch` 592.6 (569); of the 4.2 loops `xlmodqw` 360.6
+  (346 after 4.2) and `xlxmodqw` 490.1 (474) grew, `xldivq` 1947.7 (1956)
+  and `lndivq` 2003 (2013) got faster (no inline test of the divisor). No
+  budget raised (task 5.1).
+- **Changed results.** Every executable with a Mod (modlib's code,
+  compilerlib's q16mod and q48mod, the inline Mod code) or with a Long,
+  Quick or 48.16 division by a divisor that is not a constant; of the
+  CD's 724 sources 200 differ from the prev build (198 already by
+  4.1/4.2; DISK_HEM.BB2 and GMOD.BB2 by this task only), the corpus
+  output t01_int (100000 Mod -7 is -2) and the library files modlib.obj
+  with its variants and compilerlib.obj.

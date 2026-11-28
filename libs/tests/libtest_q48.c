@@ -147,7 +147,6 @@ static uint64_t call2(int q, int64_t a, int64_t b)
     return (uint64_t)r.d[1] << 32 | r.d[0];
 }
 
-static const unsigned want_of[] = { ET_LONG, ET_QUICK, ET_WORD, ET_BYTE };
 static const unsigned ops[] = { ETO_ADD, ETO_SUB, ETO_MUL, ETO_DIV, ETO_DIV, ETO_DIV, ETO_DIV, ETO_MOD };
 
 static void pair(int64_t a, int64_t b)
@@ -156,9 +155,11 @@ static void pair(int64_t a, int64_t b)
 
     for (q = Q_ADD; q <= Q_MOD; q++) {
         unsigned f = 0;
-        int64_t div0 = q >= Q_DIV && q <= Q_DIVB ? exprarith_div0(want_of[q - Q_DIV]) : 0;
+
+        if (!b && q >= Q_DIV)
+            continue;           /* a / or Mod by 0: the division trap (type-system-rework D1/D7) */
         /* q48divw and q48divb cut down (#1221) */
-        uint64_t want = (uint64_t)(q == Q_DIVW || q == Q_DIVB ? exprarith_q48_down : exprarith_q48)(ops[q], a, b, div0, &f);
+        uint64_t want = (uint64_t)(q == Q_DIVW || q == Q_DIVB ? exprarith_q48_down : exprarith_q48)(ops[q], a, b, &f);
         uint64_t got = call2(q, a, b);
 
         if (got != want)
@@ -166,7 +167,7 @@ static void pair(int64_t a, int64_t b)
     }
     {
         unsigned f = 0;
-        uint64_t want = (uint64_t)exprarith_q48_down(ETO_MUL, a, b, 0, &f);
+        uint64_t want = (uint64_t)exprarith_q48_down(ETO_MUL, a, b, &f);
         uint64_t got = call2(Q_Q48MULF, a, b);
 
         if (got != want)
@@ -246,7 +247,7 @@ static void two(int64_t a, int64_t b)
     callregs(qcode[Q_Q48MULL], &r, 0, 0);
     kept(Q_Q48MULL, x, y, &in, &r);
     got = (uint64_t)r.d[1] << 32 | r.d[0];
-    want = (uint64_t)exprarith_q48(ETO_MUL, exprarith_whole_q48(x), exprarith_q16_q48(y), 0, &f);
+    want = (uint64_t)exprarith_q48(ETO_MUL, exprarith_whole_q48(x), exprarith_q16_q48(y), &f);
     if (got != want)
         fail(Q_Q48MULL, x, y, got, want, "value");
     r = mark();

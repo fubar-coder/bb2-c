@@ -33,16 +33,13 @@
  *   $D605 q48mul    a * b                 cut towards zero to 1/65536
  *   $D606 q48div    a / b                 cut towards zero to 1/65536
  *                                         (q48divw, q48divb: down, #1221);
- *   $D607 q48divq   a / b                 a divisor 0 gives the largest
- *   $D608 q48divw   a / b                 value of the wanted type with
- *   $D609 q48divb   a / b                 the dividend's sign: a Long or
- *                                         none (q48div) +-$7FFFFFFF, a
- *                                         Quick (q48divq) +-$7FFFFFFF as
- *                                         16.16 bits, a Word (q48divw)
- *                                         +-32767, a Byte (q48divb) +-127
+ *   $D607 q48divq   a / b                 as q48div; a divisor 0 raises
+ *   $D608 q48divw   a / b                 the division trap in every one
+ *   $D609 q48divb   a / b                 of them (type-system-rework
+ *                                         D1/D7)
  *   $D60A q48mod    a Mod b               the exact floor Mod a -
  *                                         b*floor(a/b) (#1197); a divisor
- *                                         0 gives a
+ *                                         0 raises the division trap
  *   $D60B l2q48     a Long as 48.16       exact
  *   $D60C q2q48     a Quick as 48.16      exact
  *   $D60D q48floor  48.16 to a Long       rounded down, modulo 2^32
@@ -317,7 +314,9 @@ BLITZ_ASM_BLOCK(mixmult,
  * else 32 restoring steps; a larger dividend 48 steps (the remainder in d3
  * with its 33rd bit in the carry, the quotient in d4).  A divisor 0 gives
  * the largest number with the dividend's sign, as longdiv (#200); with
- * runtime error checking lqdivchk reports it first.
+ * runtime error checking lqdivchk reports it first.  The compiled code
+ * tests the divisor before the call (type-system-rework D1/D7: the
+ * division trap).
  *
  * @arg d0 the dividend (a Long)
  * @arg d1 the divisor (a Quick)
@@ -575,17 +574,15 @@ BLITZ_ASM_BLOCK(q48mul,
  * @brief q48div ($D606), q48divq ($D607), q48divw ($D608), q48divb
  * ($D609): d1:d0 = a / b, (|a| << 16) / |b| cut towards zero (q48divw and
  * q48divb, only under a wanted Word or Byte: down, exprarith_q48_down,
- * #1221), the sign applied, modulo 2^64 (exprarith_q48 ETO_DIV); and
+ * #1221), the sign applied, modulo 2^64 (exprarith_q48 ETO_DIV); q48divq
+ * is q48div, q48divb is q48divw (the entries of the token table); and
  * q48mod ($D60A): d1:d0 = a Mod b (ETO_MOD), the floor Mod: |a| modulo
  * |b| with a's sign, plus b when that is not 0 and of the other sign
  * (#1197).
  *
- * A divisor 0: the division gives the largest value of the wanted type
- * with the dividend's sign (exprarith_div0: q48div a Long or none
- * +-$7FFFFFFF, q48divq a Quick +-$7FFFFFFF as 16.16 bits, q48divw a Word
- * +-32767, q48divb a Byte +-127; design decision 9), with runtime error
- * checking q48divchk reports it first; Mod gives the dividend, as
- * domodlong.
+ * A divisor 0 raises the division trap, the division and Mod alike
+ * (type-system-rework D1/D7: DIVU.W by d2, which is 0; with runtime error
+ * checking q48divchk does the same first for the division).
  *
  * The dividend N as 16 bit digits on the stack (|a| and, for the
  * division, a 0 digit for the << 16), the divisor D = |b|.  The division
@@ -609,44 +606,24 @@ BLITZ_ASM_BLOCK(q48mul,
 BLITZ_ASM_BLOCK(q48div,
         "   .globl  _q48divb\n"
         "_q48divb:\n"
-        "   tst.l   d2\n"
-        "   bne.s   .Ldivf\n"
-        "   tst.l   d3\n"
-        "   bne.s   .Ldivf\n"
-        "   move.l  #0x007f0000,d2\n"       /* 127.0 */
-        "   bra.s   .Ldiv0\n"
         "   .globl  _q48divw\n"
         "_q48divw:\n"
         "   tst.l   d2\n"
         "   bne.s   .Ldivf\n"
         "   tst.l   d3\n"
         "   bne.s   .Ldivf\n"
-        "   move.l  #0x7fff0000,d2\n"       /* 32767.0 */
         "   bra.s   .Ldiv0\n"
         "   .globl  _q48divq\n"
         "_q48divq:\n"
-        "   tst.l   d2\n"
-        "   bne.s   .Ldiv\n"
-        "   tst.l   d3\n"
-        "   bne.s   .Ldiv\n"
-        "   move.l  #0x7fffffff,d2\n"       /* the largest Quick */
-        "   bra.s   .Ldiv0\n"
         "   .globl  _q48div\n"
         "_q48div:\n"
         "   tst.l   d2\n"
         "   bne.s   .Ldiv\n"
         "   tst.l   d3\n"
         "   bne.s   .Ldiv\n"
-        "   move.l  #0xffff0000,d2\n"       /* $7FFFFFFF.0 */
-        "   move.w  #0x7fff,d3\n"
-        /* d3:d2 the largest value, the dividend's sign */
+        /* a divisor 0: the division trap (DIVU.W by d2, which is 0) */
         ".Ldiv0:\n"
-        "   tst.l   d1\n"
-        "   bpl.s   1f\n"
-        "   neg.l   d2\n"
-        "   negx.l  d3\n"
-        "1: move.l  d2,d0\n"
-        "   move.l  d3,d1\n"
+        "   divu.w  d2,d0\n"
         "   rts\n"
         ".Ldivf:\n"
         "   movem.l d4-d7/a0-a1,-(sp)\n"
@@ -706,8 +683,7 @@ BLITZ_ASM_BLOCK(q48div,
         "   tst.l   d2\n"
         "   bne.s   1f\n"
         "   tst.l   d3\n"
-        "   bne.s   1f\n"
-        "   rts\n"                          /* Mod 0: the dividend */
+        "   beq.w   .Ldiv0\n"               /* Mod 0: the division trap */
         "1: movem.l d4-d7/a0-a1,-(sp)\n"
         "   move.l  d3,-(sp)\n"
         "   move.l  d2,-(sp)\n"             /* b */

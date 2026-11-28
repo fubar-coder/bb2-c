@@ -193,16 +193,25 @@ int32_t exprarith_whole(unsigned op, unsigned t, int32_t a, int32_t b, unsigned 
     case ETO_DIV:
         if (t == ET_BYTE || t == ET_WORD)
             return (int16_t)(uint16_t)divs((uint32_t)(int32_t)(int16_t)x, (int16_t)y, flags);
+        if (!y)
+            *flags |= EXA_TRAP;         /* the compiled code's test before ldivide */
         return (int32_t)divide(x, y, 32, flags);
     case ETO_MOD:
         if (t == ET_BYTE || t == ET_WORD)
             return modword(a, (int16_t)y, flags);
         {
             /* domodlong: q = ldivide(a, b), a - q * b, + b if not 0 and
-               of the other sign (#1197); b 0: the dividend */
+               of the other sign (#1197); b 0: the compiled
+               code's test before domodlong traps */
             unsigned f = 0;
-            uint32_t q = divide(x, y, 32, &f), r = x - (uint32_t)((uint64_t)q * y);
+            uint32_t q, r;
 
+            if (!y) {
+                *flags |= EXA_TRAP;
+                return a;
+            }
+            q = divide(x, y, 32, &f);
+            r = x - (uint32_t)((uint64_t)q * y);
             if (r && (int32_t)(r ^ y) < 0)
                 r += y;
             return (int32_t)r;
@@ -225,7 +234,10 @@ int32_t exprarith_q16(unsigned op, int32_t a, int32_t b, unsigned *flags)
 
         return (int32_t)(neg ? 0u - m : m);
     }
-    case ETO_DIV: return (int32_t)divide(x, y, 48, flags);
+    case ETO_DIV:
+        if (!y)
+            *flags |= EXA_TRAP;         /* the compiled code's test before qdivide */
+        return (int32_t)divide(x, y, 48, flags);
     case ETO_MOD: {
         int32_t r;
 
@@ -250,7 +262,7 @@ int32_t exprarith_qmod_today(int32_t a, int32_t b, unsigned *flags)
 
 /* ------------------------------------------------------------- 48.16 */
 
-int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags)
+int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, unsigned *flags)
 {
     switch (op) {
     case ETO_ADD:
@@ -267,8 +279,8 @@ int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned 
         struct u128 n;
 
         if (!b) {
-            *flags |= EXA_DIV0;
-            return a < 0 ? -div0 : div0;
+            *flags |= EXA_TRAP;     /* type-system-rework D1/D7 */
+            return a;
         }
         n.hi = mag(a) >> 48;
         n.lo = mag(a) << 16;
@@ -277,8 +289,10 @@ int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned 
     case ETO_MOD: {
         int64_t r;
 
-        if (!b)
-            return a;           /* as domodlong: the dividend */
+        if (!b) {
+            *flags |= EXA_TRAP;     /* type-system-rework D1/D7 */
+            return a;
+        }
         r = b == -1 ? 0 : a % b;
         if (r && (r ^ b) < 0)
             r = (int64_t)((uint64_t)r + (uint64_t)b);   /* the floor Mod (#1197) */
@@ -288,9 +302,9 @@ int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned 
     }
 }
 
-int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags)
+int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, unsigned *flags)
 {
-    int64_t v = exprarith_q48(op, a, b, div0, flags);
+    int64_t v = exprarith_q48(op, a, b, flags);
     int neg = (a < 0) != (b < 0);
 
     if (op == ETO_MUL && neg && (mul64(mag(a), mag(b)).lo & 0xffff))
@@ -307,16 +321,6 @@ int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, int64_t div0, unsi
             v = (int64_t)((uint64_t)v - 1);
     }
     return v;
-}
-
-int64_t exprarith_div0(unsigned want)
-{
-    switch (want) {
-    case ET_QUICK: return 0x7fffffff;
-    case ET_WORD: return (int64_t)32767 * 65536;
-    case ET_BYTE: return (int64_t)127 * 65536;
-    default: return (int64_t)0x7fffffff * 65536;
-    }
 }
 
 int exprarith_narrow(int64_t v)

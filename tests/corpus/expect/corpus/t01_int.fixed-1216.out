@@ -3,7 +3,6 @@
 byte wrap -106
 word wrap -32768
 long wrap -2147483648
-div0 long 2147483647
 neg div -3 -3 1
 and/or/eor 61440 65535 3855
 not -6

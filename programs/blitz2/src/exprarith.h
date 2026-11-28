@@ -36,9 +36,11 @@ extern "C" {
 
 /** @brief What happened besides the value (the flags argument, ORed in). */
 enum {
-    EXA_TRAP = 1,               /* the CPU's division trap: DIVS.W by 0 (a Byte or Word /, a Byte,
-                                   Word or Quick Mod); the value is then the dividend */
-    EXA_DIV0 = 2,               /* a division by 0 with a defined value (the largest one) */
+    EXA_TRAP = 1,               /* the CPU's division trap: a / or Mod by 0 (type-system-rework
+                                   D1/D7); the value is then the dividend */
+    EXA_DIV0 = 2,               /* ldivlib's division by 0, whose value is the largest number
+                                   with the dividend's sign (#200); the compiled code tests the
+                                   divisor before the call (EXA_TRAP with it) */
     EXA_OVF = 4                 /* the result does not fit its format: it wrapped */
 };
 
@@ -51,18 +53,18 @@ enum {
  * -25536) and muls.w, / as DIVS.W (an overflow leaves the dividend) and
  * Long's ldivide, Mod as domodword and domodlong (the floor Mod: the
  * divisor added to a remainder that is not 0 and of the other sign,
- * #1197), * of Longs modulo 2^32.  A Long division by 0 is
- * the largest number with the dividend's sign (#200), a Long Mod by 0 the
- * dividend. */
+ * #1197), * of Longs modulo 2^32.  A division or Mod by 0 traps
+ * (EXA_TRAP; a Long division by 0 also EXA_DIV0 with ldivide's value, the
+ * largest number with the dividend's sign, #200). */
 int32_t exprarith_whole(unsigned op, unsigned t, int32_t a, int32_t b, unsigned *flags);
 
 /** @brief A 16.16 operation where P+ computes in 16.16, today's routines:
  *         + and - modulo 2^32, * as qmul (the product of the magnitudes,
  *         its low 16 bits cut, the sign applied), / as qdivide (48 steps:
- *         its last bit; a divisor 0 the largest number with the
- *         dividend's sign, #200), Mod the exact floor Mod (the divisor
- *         added to a remainder that is not 0 and of the other sign, #1197;
- *         a divisor 0 traps as domodquick's DIVS.W). */
+ *         its last bit; a divisor 0 traps, EXA_TRAP and EXA_DIV0 with
+ *         qdivide's value), Mod the exact floor Mod (the divisor added to
+ *         a remainder that is not 0 and of the other sign, #1197; a
+ *         divisor 0 traps). */
 int32_t exprarith_q16(unsigned op, int32_t a, int32_t b, unsigned *flags);
 
 /** @brief Today's Quick Mod (domodquick): the whole parts by DIVS.W, the
@@ -71,23 +73,16 @@ int32_t exprarith_qmod_today(int32_t a, int32_t b, unsigned *flags);
 
 /** @brief A 48.16 operation: + and - modulo 2^64; * the exact product cut
  *         towards zero to 1/65536; / the exact quotient cut towards zero
- *         to 1/65536 (a divisor 0: div0, the largest value of the wanted
- *         type's format as a 48.16 value, with the dividend's sign,
- *         exprarith_div0); Mod the exact floor Mod (#1197; a divisor 0:
- *         the dividend, as domodlong). */
-int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags);
+ *         to 1/65536; Mod the exact floor Mod (#1197); a / or Mod by 0
+ *         traps (EXA_TRAP, the dividend returned; type-system-rework
+ *         D1/D7). */
+int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, unsigned *flags);
 
 /** @brief exprarith_q48 with * and / cut down to 1/65536 instead of
  *         towards zero: a 48.16 product or quotient under a wanted Byte,
  *         Word or Long (the consumer ETC_FLOOR), whose value is rounded
  *         down once (#1221); the other operations as exprarith_q48. */
-int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags);
-
-/** @brief The value of a 48.16 division by 0 under the wanted type want
- *         (design decision 6: a Quick $7FFFFFFF as qdivide, a Word 32767,
- *         a Byte 127, a Long or none the largest Long), as a 48.16 value
- *         of positive sign. */
-int64_t exprarith_div0(unsigned want);
+int64_t exprarith_q48_down(unsigned op, int64_t a, int64_t b, unsigned *flags);
 
 /** @brief The fast path of a 48.16 operation: v is narrow, its high 32
  *         bits the sign extension of its low 32 bits (a 16.16 value). */

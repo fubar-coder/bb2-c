@@ -1,13 +1,18 @@
-# ldivlib-div0.test.bas: the original returns $7FFFFFFF for a negative dividend
+# ldivlib-div0.test.bas: the original returns $7FFFFFFF for a negative dividend.
+# Only the original compiler reaches ldivlib's division by 0 from a Blitz
+# program: since type-system-rework (#1235, task 4.7; the user's decision
+# D1/D7 "Trap für alle Typen") the port's compiler tests the divisor before
+# longdiv and quickdiv and raises the division trap (expr-tsr-div0-trap),
+# and its Quick division is compilerlib's.  So the cells are the original
+# compiler's: with the C libraries it shows the fix, with the CD's the
+# original's value.  ldivlib's value for a divisor 0 is also checked by the
+# library tests (libtest_ldivlib, its [fixed #200] cases) and is what other
+# libraries rely on (riseriallib's rate 0)
 fixed-orig = 200
+exclude = ["compiler=port"]
 
 [deviations."libs=cd"]
 "check.long_div0.negative" = "== fail"
 "check.long_div0.negative.actual" = "== 2147483647"
-
-# the Quick division reaches ldivlib only with the original compiler since
-# type-system-rework (#1235, task 4.2): the port's 48.16 division is
-# compilerlib's
-[deviations."compiler=orig195,libs=cd"]
 "check.quick_div0.negative" = "== fail"
 "check.quick_div0.negative.actual" = "== $7FFFFFFF"

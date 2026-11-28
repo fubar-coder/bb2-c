@@ -368,6 +368,7 @@ static BOOL intrinsic_quick(UWORD type);
 static UWORD eval2(UWORD *type, UWORD *c, unsigned *op);
 static UWORD doop(struct opentry *op, UWORD type, BOOL words);
 static void mixedop(struct opentry *op, const struct exprtype_bin *d, BOOL zeroonly);
+static void divtrap(UWORD d);
 static void doplus2(UWORD opcode);
 /* the operator operate emits has two constants (BNF_FOLD) */
 static BOOL foldnow = FALSE;
@@ -2421,9 +2422,11 @@ void mixedop(struct opentry *op, const struct exprtype_bin *d, BOOL zeroonly)
         return;
     case '/':
         if (rq && !lq) {
+            divtrap(r + 1);                     /* the division trap (D1/D7) */
             domylib(lqdiv);                     /* trunc((l<<16)/q) */
             return;
         }
+        divtrap(r + 1);         /* the division trap (D1/D7) */
         domylib(longdiv);       /* q/h: trunc(qraw/hraw); q/l: qraw/l */
         if (!rq) {
             /* q/l: the raw quotient (towards zero) to a whole number
@@ -2856,9 +2859,12 @@ UWORD domodb(UWORD t) { domylib(modbyte); return t; }
 /* blitz2.s:9452 domodw */
 UWORD domodw(UWORD t) { domylib(modword); return t; }
 
-/* blitz2.s:9455 domodl - modlib uses an alibjsr here! */
+/* blitz2.s:9455 domodl - modlib uses an alibjsr here!  The division trap
+   before the call (type-system-rework D1/D7): domodlong gives the
+   dividend for a divisor 0 */
 UWORD domodl(UWORD t)
 {
+    divtrap(regat + 1);
     domylib(modlong);
     return t;
 }
@@ -2875,12 +2881,36 @@ UWORD domodq(UWORD t)
 UWORD domodf(UWORD t)
 {
     (void)t;
-    /* result type long ("now a long"): modlib returns a long - no bug */
+    /* result type long ("now a long"): modlib returns a long - no bug.
+       The division trap for a divisor 0 before the call (D1/D7; an FFP 0
+       is the long 0) */
+    divtrap(regat + 1);
     domylib(modfloat);
     return T_LONG;
 }
 
 /* --------------------------------------------------------------- DIVIDE */
+
+/* type-system-rework D1/D7 ("Trap für alle Typen"), no asm counterpart: a
+   divisor 0 in Dd raises the CPU's division trap before a call of a
+   routine whose value for it is defined: ldivlib's longdiv and quickdiv
+   (the largest number with the dividend's sign, #200; other libraries
+   rely on it), compilerlib's lqdiv (the same) and modlib's domodlong and
+   domodfloat (the dividend): tst.l Dd / bne.s +2 / divu.w Dd,Dd (an FFP 0
+   is the long 0).  With runtime error checking the routine's check runs
+   behind it (ldivlib's divchk, lqdivchk) and traps the same way.  divnz:
+   the pass writes the divisor as a constant whose register is not 0
+   (p5bin, p5nonzero): no test */
+static BOOL divnz;
+
+static void divtrap(UWORD d)
+{
+    if (divnz)
+        return;
+    pokewd(0x4a80 | d);             /* tst.l Dd */
+    pokewd(0x6602);                 /* bne.s +2 */
+    pokewd(0x80c0 | (d << 9) | d);  /* divu.w Dd,Dd */
+}
 
 /* blitz2.s:9472 dodivb - ext.l both; falls through into dodivw */
 UWORD dodivb(UWORD t)
@@ -2917,11 +2947,17 @@ UWORD dodivl(UWORD t)
         pokewd(0x48c0 | regat);
         return t;
     }
+    divtrap(regat + 1);             /* the division trap (D1/D7) */
     domylib(longdiv);
     return t;
 }
-/* blitz2.s:9485 dodivq */
-UWORD dodivq(UWORD t) { domylib(quickdiv); return t; }
+/* blitz2.s:9485 dodivq; the division trap before quickdiv (D1/D7) */
+UWORD dodivq(UWORD t)
+{
+    divtrap(regat + 1);
+    domylib(quickdiv);
+    return t;
+}
 /* blitz2.s:9487 dodivf */
 UWORD dodivf(UWORD t) { doflib(-84); return t; }
 
@@ -6558,14 +6594,14 @@ static void p5doop(unsigned op, UWORD t, BOOL words)
 }
 
 /* a Mod in Float, exact: the floor Mod (#1197), a - b * trunc(a / b),
-   plus b when that is not 0 and of the other sign; b 0: a (D(r) a,
-   D(r+1) b, the result in D(r)) */
+   plus b when that is not 0 and of the other sign; b 0: SPDiv's division
+   trap (D1/D7) (D(r) a, D(r+1) b, the result in D(r)) */
 static ULONG p5bra(UWORD op);
 static void p5patch(ULONG at);
 
 static void p5fmod(UWORD r)
 {
-    ULONG push, pull, rz, same, z0, done;
+    ULONG push, pull, rz, same;
     UWORD s = regat;
 
     if (p5prep) {
@@ -6581,9 +6617,8 @@ static void p5fmod(UWORD r)
     p5w(0x2f00 | r);                        /* move.l D(r),-(a7): a */
     p5w(0x222f);                            /* move.l 4(a7),d1 */
     p5w(4);
-    z0 = p5bra(0x6700);                     /* beq.s .zero */
     p5w(0x2017);                            /* move.l (a7),d0 */
-    p5ffp(P5_SPDIV);
+    p5ffp(P5_SPDIV);                        /* b 0: the division trap */
     p5ffp(P5_SPFIX);
     p5ffp(P5_SPFLT);
     p5w(0x222f);                            /* move.l 4(a7),d1 */
@@ -6601,12 +6636,8 @@ static void p5fmod(UWORD r)
     p5w(0x222f);                            /* move.l 4(a7),d1 */
     p5w(4);
     p5ffp(P5_SPADD);
-    done = p5bra(0x6000);                   /* bra.s .done */
-    p5patch(z0);
-    p5w(0x2017);                            /* .zero: move.l (a7),d0 */
     p5patch(rz);
     p5patch(same);
-    p5patch(done);
     p5w(0x508f);                            /* .done: addq.l #8,a7 */
     if (r)
         p5w(0x2000 | (r << 9));             /* move.l d0,D(r) */
@@ -6919,8 +6950,8 @@ static void p5truncd0(void)
    (|m| <= 32768), one DIVU per 16-bit digit of |a| (each digit's
    quotient fits a word: the remainder above it is below |m|), a leading
    zero digit skipped (its quotient and remainder are 0), the sign of a
-   eor b applied; a fraction or 0 calls the routine tok (its division by
-   0, its error check) on the operands widened to 48.16.  longa: a is a
+   eor b applied; a fraction or 0 calls the routine tok (its division
+   trap for 0, its error check) on the operands widened to 48.16.  longa: a is a
    whole number of type at in d0 and b in d2, neither widened (p5callin's
    p5nowide; a Byte or Word extended to a Long first): |a| << 16 has the
    digits hi(|a|), lo(|a|) and 0; else a is a 48.16 value in d0/d1 (four
@@ -6928,15 +6959,13 @@ static void p5truncd0(void)
    under a wanted Byte, Word or Long (P5F_LDIV): its value is the quotient
    towards zero (part 3, #1222) modulo 2^32 as a Long in d0, the fraction
    digit not computed (after tok: p5truncd0); a divisor with a fraction
-   calls ftok instead of tok (at the top under a wanted Word or Byte the
-   cut towards zero of q48div, tok's q48divw or q48divb only for the
-   division by 0), and with raw (a dividend a of at most 16.16 bits: a
-   Word, Byte or Quick, not a Long) longdiv on the 16.16 bits of a and b,
-   whose quotient towards zero is that of a / b (p5qdivt).  down: under a
-   wanted Word or Byte the cut rounds down (#1221, p5divsign; tok is then
-   q48divw or q48divb, which cut down too).  The host test
-   test_exprarith.cpp ("a whole divisor at run time") runs the same steps
-   against exprarith_q48 and exprarith_q48_down. */
+   with raw (a dividend a of at most 16.16 bits: a Word, Byte or Quick,
+   not a Long) calls longdiv on the 16.16 bits of a and b, whose quotient
+   towards zero is that of a / b (p5qdivt).  down: under a wanted Word or
+   Byte the cut rounds down (#1221, p5divsign; tok is then q48divw or
+   q48divb, which cut down too).  The host test test_exprarith.cpp ("a
+   whole divisor at run time") runs the same steps against exprarith_q48
+   and exprarith_q48_down. */
 /* the sign of a 48.16 quotient d1:d0 (its magnitude) applied when the
    long at (a7)+ (stack) or in d2 is negative; down (#1221): a remainder
    in d3's high word not 0 makes it one 1/65536 lower */
@@ -6960,7 +6989,7 @@ static void p5divsign(BOOL stack, BOOL down)
     p5w(0x4081);                                /* negx.l d1 */
 }
 
-static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, BOOL raw, BOOL down)
+static void p5wholediv(UWORD tok, UWORD at, BOOL longa, BOOL ldiv, BOOL raw, BOOL down)
 {
     ULONG frac, nul, done, done2 = 0, high;
 
@@ -7058,15 +7087,6 @@ static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, B
         p5w(0x2202);                            /* move.l d2,d1 */
         tokejsr(longdiv);
         done2 = p5bra(0x6000);                  /* bra.s .done */
-    } else if (ftok != tok) {
-        if (longa) {
-            p5widen(0, T_LONG);                 /* the operands as 48.16 */
-            p5widen(2, T_QUICK);
-        }
-        tokejsr(ftok);
-        if (ldiv)
-            p5truncd0();
-        done2 = p5bra(0x6000);                  /* bra.s .done */
     }
     p5patch(nul);
     if (longa) {
@@ -7091,7 +7111,7 @@ static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, B
    divisor b (d2) in p5callin's frame, b tested at run time: one DIVU per
    16-bit digit of the whole part (each digit's quotient fits a word), a
    leading zero digit skipped; a fraction or 0 calls the routine tok (its
-   Mod by 0: the dividend) on the operands
+   Mod by 0: the division trap, D1/D7) on the operands
    widened to 48.16.  longa: a is a whole number of type at in d0 and b in
    d2, neither widened (p5nowide; a Byte or Word extended to a Long
    first): the whole part's digits hi(|a|), lo(|a|), no fraction; a's
@@ -7325,6 +7345,23 @@ static BOOL p5modfrac(const struct p5node *R)
     return p5folded(&R->t) && !p5modconst(R, &m);
 }
 
+/* the operand R is a constant the pass writes whose register is not 0 in
+   the type t it is taken in: its own type (the value written, not 0) or
+   a Byte or Word widened (its low byte or word not 0); the test of a
+   divisor for 0 is left out (divtrap) */
+static BOOL p5nonzero(const struct p5node *R, UWORD t)
+{
+    if (!p5folded(&R->t) || R->df == ETF_Q48)
+        return FALSE;
+    if (p5norm(R->dt) == p5norm(t))
+        return R->enc != 0;
+    if (p5norm(R->dt) == T_WORD)
+        return (UWORD)R->enc != 0;
+    if (p5norm(R->dt) == T_BYTE)
+        return (UBYTE)R->enc != 0;
+    return FALSE;
+}
+
 /* a whole number in one register (p5bin's type of an operand) */
 static BOOL p5whole1(UWORD t)
 {
@@ -7379,7 +7416,10 @@ static void p5qdivt(struct p5node *p, UWORD r, UWORD q)
     tokejsr(longdiv);
     done = p5bra(0x6000);                       /* bra.s .done */
     p5patch(whole);
-    tokejsr(quickdiv);                          /* .whole */
+    p5w(0x4a81);                                /* .whole: tst.l d1 */
+    p5w(0x6602);                                /* bne.s +2 */
+    p5w(0x82c1);                                /* divu.w d1,d1: the division trap (D1/D7) */
+    tokejsr(quickdiv);
     p5w(0x4a80);                                /* tst.l d0 */
     p5w(0x6a06);                                /* bpl.s */
     p5w(0x0680);                                /* addi.l #$FFFF,d0: towards zero */
@@ -7479,7 +7519,7 @@ static void p5bin(struct p5node *p, UWORD r)
 
     switch (o->path) {
     case ETY_Q48: {
-        UWORD tok, ftok;
+        UWORD tok;
         BOOL ldiv = (p->flags & P5F_LDIV) != 0;
         BOOL wdiv = ldiv && (p->want == T_WORD || p->want == T_BYTE);
 
@@ -7497,13 +7537,14 @@ static void p5bin(struct p5node *p, UWORD r)
             break;
         }
         /* #1222: at the top under a wanted Word or Byte towards zero, as
-           q48div cuts (q48divw, q48divb for their division by 0).  The
-           classes (task 4.2): the quotient cut down (q48divw's cut; tok
-           only for the value of a division by 0, which stays the wanted
-           type's largest until task 4.7) */
-        ftok = wdiv ? q48div : tok;
-        if (op == ETO_DIV && p->t.cls && tok != q48divw && tok != q48divb)
-            ftok = q48divw;
+           q48div cuts; the classes (task 4.2): the quotient cut down
+           (q48divw's cut).  Task 4.7 (D1/D7, "Trap für alle Typen"): a
+           divisor 0 raises the division trap in each of the division
+           routines, so one routine divides by every divisor, without a
+           test of it in the code (the wanted type's largest value of a
+           division by 0 is gone) */
+        if (op == ETO_DIV)
+            tok = wdiv ? q48div : p->t.cls && tok != q48divw && tok != q48divb ? q48divw : tok;
         if ((op == ETO_DIV || (op == ETO_MOD && !p5modfrac(R))) && !rw && rt == T_QUICK) {
             /* a 16.16 divisor: whole at run time, the division or Mod
                inline (not a Mod by a constant with a fraction); a whole
@@ -7515,14 +7556,12 @@ static void p5bin(struct p5node *p, UWORD r)
                 p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
                 if (op == ETO_DIV && raw)
                     tokuse(longdiv);
-                else if (op == ETO_DIV && ftok != tok)
-                    tokuse(ftok);
                 break;
             }
             p5nowide = longa;
             p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
             if (op == ETO_DIV)
-                p5wholediv(tok, ftok, lt, longa, ldiv, raw, p5down(p));
+                p5wholediv(tok, lt, longa, ldiv, raw, p5down(p));
             else
                 p5wholemod(tok, lt, longa);
         } else if (op == ETO_MUL && !lw && !rw && ((p5whole1(lt) && rt == T_QUICK) || (lt == T_QUICK && p5whole1(rt)))) {
@@ -7537,33 +7576,8 @@ static void p5bin(struct p5node *p, UWORD r)
                 p5w(0x48c2);                /* ext.l d2 */
             if (!p5prep)
                 tokejsr(q48mull);
-        } else if (op == ETO_DIV && ftok != tok && !p5folded(&R->t)) {
-            /* #1222: towards zero (q48div), a divisor 0 by tok for its
-               value (the classes: ftok cuts down, q48divw) */
-            ULONG z, z2, done;
-
-            p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
-            if (p5prep) {
-                tokuse(tok);
-                tokuse(ftok);
-                break;
-            }
-            p5w(0x4a82);                    /* tst.l d2 */
-            z = p5bra(0x6600);              /* bne.s .div */
-            p5w(0x4a83);                    /* tst.l d3 */
-            z2 = p5bra(0x6600);             /* bne.s .div */
-            tokejsr(tok);
-            done = p5bra(0x6000);           /* bra.s .done */
-            p5patch(z);
-            p5patch(z2);
-            tokejsr(ftok);                  /* .div */
-            p5patch(done);
-            if (ldiv)
-                p5truncd0();
         } else {
-            /* a constant divisor at the top under a wanted Word or Byte:
-               q48div (#1222), tok when it is 0 (the classes: ftok) */
-            p5callin(ftok != tok && p5qval(&R->t).ok && p5qval(&R->t).n ? ftok : tok, r, lt, lw, rt, rw, FALSE, FALSE);
+            p5callin(tok, r, lt, lw, rt, rw, FALSE, FALSE);
             if (ldiv && !p5prep)
                 p5truncd0();
         }
@@ -7723,7 +7737,9 @@ static void p5bin(struct p5node *p, UWORD r)
             break;
         }
         p5operands(L, R, r, q, T, o->path == ETY_Q16 ? T_QUICK : o->ras);
+        divnz = (op == ETO_DIV || op == ETO_MOD) && p5nonzero(R, o->path == ETY_Q16 ? T_QUICK : o->ras);
         p5doop(op, T, o->path == ETY_PLAIN && o->fast);
+        divnz = FALSE;
         break;
     }
     regat = s;

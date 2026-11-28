@@ -144,10 +144,12 @@ TEST_CASE("exprarith: 16.16 as today's routines (qmul, qdivide, + -)", "[exprari
     // qdivide's last bit: 1/3.25 is $00004EC5 (exact $00004EC4)
     unsigned f = 0;
     CHECK(exprarith_q16(ETO_DIV, 0x10000, 0x34000, &f) == 0x4ec5);
-    // a divisor 0: the largest number with the dividend's sign (#200)
+    // a divisor 0: the compiled code's division trap before qdivide
+    // (type-system-rework D1/D7); qdivide's own value is the largest
+    // number with the dividend's sign (#200)
     CHECK(exprarith_q16(ETO_DIV, 0x10000, 0, &f) == 0x7fffffff);
     CHECK(exprarith_q16(ETO_DIV, -0x10000, 0, &f) == (int32_t)0x80000001);
-    CHECK((f & EXA_DIV0) != 0);
+    CHECK(f == (EXA_TRAP | EXA_DIV0));
 }
 
 TEST_CASE("exprarith: the Quick Mod, exact (P+) and today's (domodquick)", "[exprarith]")
@@ -217,10 +219,11 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
 
                 if (order)
                     std::swap(x, y);
-                // the model's rules keep today's sign rule of Mod (the
-                // divisor added to a negative remainder): the floor Mod
-                // (#1197) is checked below
-                if (op == ETO_MOD && y < 0)
+                // the model's rules give a division or Mod by 0 a value and
+                // keep today's sign rule of Mod (the divisor added to a
+                // negative remainder): the division trap and the floor Mod
+                // (#1197) are checked below
+                if ((op == ETO_DIV || op == ETO_MOD) && (!y || (op == ETO_MOD && y < 0)))
                     continue;
                 for (enum em_ctx ctx : { EM_DL, EM_DQ, EM_DW, EM_DB }) {
                     unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DQ ? ET_QUICK : ctx == EM_DW ? ET_WORD : ET_BYTE;
@@ -228,7 +231,7 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
                     // #1221: * cuts down under a wanted whole number; a / at
                     // the top under one is whole towards zero (#1222)
                     bool down = want != ET_QUICK && op == ETO_MUL;
-                    int64_t v = (down ? exprarith_q48_down : exprarith_q48)(op, x, y, exprarith_div0(want), &f);
+                    int64_t v = (down ? exprarith_q48_down : exprarith_q48)(op, x, y, &f);
                     int32_t r;
 
                     if (want == ET_QUICK)
@@ -248,23 +251,23 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
     }
     CHECK(differ == 0);
     CHECK(compared > 35000);
-    // a division by 0 in the wanted type's format with the dividend's sign
+    // a division or Mod by 0: the division trap (type-system-rework D1/D7)
     unsigned f = 0;
-    CHECK(exprarith_q48(ETO_DIV, -100 * 65536, 0, exprarith_div0(ET_WORD), &f) == -(int64_t)32767 * 65536);
-    CHECK(exprarith_q48(ETO_DIV, 100 * 65536, 0, exprarith_div0(ET_QUICK), &f) == 0x7fffffff);
-    CHECK((f & EXA_DIV0) != 0);
-    // a Mod by 0: the dividend
-    CHECK(exprarith_q48(ETO_MOD, 100000LL * 65536, 0, 0, &f) == 100000LL * 65536);
+    exprarith_q48(ETO_DIV, -100 * 65536, 0, &f);
+    CHECK(f == EXA_TRAP);
+    f = 0;
+    exprarith_q48(ETO_MOD, 100000LL * 65536, 0, &f);
+    CHECK(f == EXA_TRAP);
     // the floor Mod (#1197): 100000 Mod -3 is -2, -100000 Mod -3 is -1
     f = 0;
-    CHECK(exprarith_q48(ETO_MOD, 100000LL * 65536, -3 * 65536, 0, &f) == -2 * 65536);
-    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, -3 * 65536, 0, &f) == -65536);
-    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, 3 * 65536, 0, &f) == 2 * 65536);
+    CHECK(exprarith_q48(ETO_MOD, 100000LL * 65536, -3 * 65536, &f) == -2 * 65536);
+    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, -3 * 65536, &f) == -65536);
+    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, 3 * 65536, &f) == 2 * 65536);
     CHECK(f == 0);
     // the product keeps its 48 bits (q*q2*l: 300*300*2 = 180000)
     f = 0;
-    int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(300 << 16), exprarith_q16_q48(300 << 16), 0, &f);
-    p = exprarith_q48(ETO_MUL, p, exprarith_whole_q48(2), 0, &f);
+    int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(300 << 16), exprarith_q16_q48(300 << 16), &f);
+    p = exprarith_q48(ETO_MUL, p, exprarith_whole_q48(2), &f);
     CHECK(exprarith_q48_floor(p, ET_LONG, &f) == 180000);
     CHECK(f == 0);
 }
@@ -284,22 +287,26 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
 
         if (i % 47 == 0)
             l2 = 0;
+        // a division by 0 traps now (type-system-rework D1/D7), the model's
+        // rules give it a value
+        if (!l2 || !q)
+            continue;
         std::string vars = "l.l=" + dec(l) + " l2.l=" + dec(l2) + " q=" + q16text(q) + " p=" + q16text(p);
         for (enum em_ctx ctx : { EM_DL, EM_DW, EM_DQ }) {
             unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DW ? ET_WORD : ET_QUICK;
             int64_t L = exprarith_whole_q48(l), L2 = exprarith_whole_q48(l2), Q = exprarith_q16_q48(q),
-                    P = exprarith_q16_q48(p), d0 = exprarith_div0(want);
+                    P = exprarith_q16_q48(p);
             unsigned f = 0;
             // a / under a wanted Long: a whole number at once; * and / under
             // a wanted whole number cut down (#1221)
             // a / at the top under a wanted Word towards zero (#1222), a
             // deeper one cut down (#1221)
             auto div = [&](int64_t a, int64_t b, bool top) {
-                int64_t v = (want == ET_WORD && !top ? exprarith_q48_down : exprarith_q48)(ETO_DIV, a, b, d0, &f);
+                int64_t v = (want == ET_WORD && !top ? exprarith_q48_down : exprarith_q48)(ETO_DIV, a, b, &f);
                 return want == ET_LONG ? exprarith_whole_q48(exprarith_q48_trunc(v, ET_LONG, &f)) : v;
             };
             auto mul = [&](int64_t a, int64_t b) {
-                return (want == ET_QUICK ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, a, b, 0, &f);
+                return (want == ET_QUICK ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, a, b, &f);
             };
             auto take = [&](int64_t v, bool topdiv) {
                 if (want == ET_QUICK)
@@ -313,11 +320,11 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
             } forms[] = {
                 { "l*q/l2", take(div(mul(L, Q), L2, true), true) },
                 { "l*q*p", take(mul(mul(L, Q), P), false) },
-                { "l*q-l2*p", take(exprarith_q48(ETO_SUB, mul(L, Q), mul(L2, P), 0, &f), false) },
-                { "(l+q)*p", take(mul(exprarith_q48(ETO_ADD, L, Q, 0, &f), P), false) },
-                { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q, false), L2, 0, &f), false) },
-                { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, mul(L, Q), L2, 0, &f), false) },
-                { "q*p+l", take(exprarith_q48(ETO_ADD, mul(Q, P), L, 0, &f), false) },
+                { "l*q-l2*p", take(exprarith_q48(ETO_SUB, mul(L, Q), mul(L2, P), &f), false) },
+                { "(l+q)*p", take(mul(exprarith_q48(ETO_ADD, L, Q, &f), P), false) },
+                { "l/q+l2", take(exprarith_q48(ETO_ADD, div(L, Q, false), L2, &f), false) },
+                { "(l*q) MOD l2", take(exprarith_q48(ETO_MOD, mul(L, Q), L2, &f), false) },
+                { "q*p+l", take(exprarith_q48(ETO_ADD, mul(Q, P), L, &f), false) },
             };
 
             for (const auto &fm : forms) {
@@ -350,10 +357,10 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
     CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DW, DEC) == "0");
     CHECK(model("q/l", "q=-1.5 l.l=100000", EM_DL, DEC) == "0");
     unsigned f = 0;
-    CHECK(exprarith_q48_down(ETO_MUL, -0x8000, 1, 0, &f) == -1);
-    CHECK(exprarith_q48(ETO_MUL, -0x8000, 1, 0, &f) == 0);
-    CHECK(exprarith_q48_down(ETO_DIV, -3 * 65536, exprarith_whole_q48(2), 0, &f) == -0x18000);
-    CHECK(exprarith_q48_down(ETO_DIV, -1, exprarith_whole_q48(3), 0, &f) == -1);
+    CHECK(exprarith_q48_down(ETO_MUL, -0x8000, 1, &f) == -1);
+    CHECK(exprarith_q48(ETO_MUL, -0x8000, 1, &f) == 0);
+    CHECK(exprarith_q48_down(ETO_DIV, -3 * 65536, exprarith_whole_q48(2), &f) == -0x18000);
+    CHECK(exprarith_q48_down(ETO_DIV, -1, exprarith_whole_q48(3), &f) == -1);
 }
 
 TEST_CASE("exprarith: no wanted type takes a Quick when it fits, else the whole part", "[exprarith]")
@@ -364,7 +371,7 @@ TEST_CASE("exprarith: no wanted type takes a Quick when it fits, else the whole 
     CHECK(exprarith_q48_fit(exprarith_whole_q48(180000), &quick, &f) == 180000);
     CHECK(quick == 0);
     CHECK(model("l*q", "l.l=120000 q=1.5", EM_PRINT, DEC) == "180000");
-    CHECK(exprarith_q48_fit(exprarith_q48(ETO_MUL, exprarith_whole_q48(-3), 0x8000, 0, &f), &quick, &f)
+    CHECK(exprarith_q48_fit(exprarith_q48(ETO_MUL, exprarith_whole_q48(-3), 0x8000, &f), &quick, &f)
           == (int32_t)0xfffe8000);
     CHECK(quick == 1);
     // rounded down: -100000.5 is -100001
@@ -437,8 +444,11 @@ TEST_CASE("exprarith: whole numbers as today's code", "[exprarith]")
                 std::string text = std::string(k.a) + opname(op) + k.b;
                 unsigned f = 0;
 
-                // the model's rules keep today's sign rule of Mod: the
-                // floor Mod (#1197) is checked below
+                // the model's rules keep a Long division or Mod by 0 as a
+                // value and today's sign rule of Mod: the division trap
+                // (D1/D7) and the floor Mod (#1197) are checked below
+                if ((op == ETO_DIV || op == ETO_MOD) && !b && k.t == ET_LONG)
+                    continue;
                 if (op == ETO_MOD && b < 0)
                     continue;
                 int32_t r = exprarith_whole(op, k.t, a, b, &f);
@@ -462,15 +472,21 @@ TEST_CASE("exprarith: whole numbers as today's code", "[exprarith]")
     unsigned f = 0;
     // add.w then ext.l: the Word sum wraps
     CHECK(exprarith_whole(ETO_ADD, ET_WORD, 20000, 20000, &f) == -25536);
-    // a Long division by 0: the largest number with the dividend's sign
+    // a Long division by 0: the trap before ldivide (D1/D7), ldivide's own
+    // value the largest number with the dividend's sign (#200); a Long Mod
+    // by 0 traps (domodlong)
+    f = 0;
     CHECK(exprarith_whole(ETO_DIV, ET_LONG, -5, 0, &f) == -2147483647);
-    CHECK(exprarith_whole(ETO_MOD, ET_LONG, -7, 0, &f) == -7);
-    CHECK(exprarith_whole(ETO_MOD, ET_LONG, -7, 2, &f) == 1);
+    CHECK(f == (EXA_TRAP | EXA_DIV0));
+    f = 0;
+    exprarith_whole(ETO_MOD, ET_LONG, -7, 0, &f);
+    CHECK(f == EXA_TRAP);
     f = 0;
     exprarith_whole(ETO_DIV, ET_WORD, 7, 0, &f);
     CHECK(f == EXA_TRAP);
     // the floor Mod (#1197) in every type (today's rule: 1, -4, -400000)
     f = 0;
+    CHECK(exprarith_whole(ETO_MOD, ET_LONG, -7, 2, &f) == 1);
     CHECK(exprarith_whole(ETO_MOD, ET_BYTE, 7, -3, &f) == -2);
     CHECK(exprarith_whole(ETO_MOD, ET_WORD, -7, -3, &f) == -1);
     CHECK(exprarith_whole(ETO_MOD, ET_LONG, -700000, -300000, &f) == -100000);
@@ -581,7 +597,7 @@ int64_t q48(unsigned op, int64_t a, int64_t b)
 {
     unsigned f = 0;
 
-    return exprarith_q48(op, a, b, exprarith_div0(ET_QUICK), &f);
+    return exprarith_q48(op, a, b, &f);
 }
 
 // the same cut down (#1221)
@@ -589,7 +605,7 @@ int64_t q48d(unsigned op, int64_t a, int64_t b)
 {
     unsigned f = 0;
 
-    return exprarith_q48_down(op, a, b, exprarith_div0(ET_WORD), &f);
+    return exprarith_q48_down(op, a, b, &f);
 }
 
 // the 48.16 code's cut towards zero of a quotient (part 3)
@@ -1345,12 +1361,12 @@ namespace {
 bool qqmult_ok(int32_t a, int32_t b, int32_t l, bool plant = false)
 {
     unsigned f = 0;
-    int64_t x = (plant ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(b), 0, &f);
+    int64_t x = (plant ? exprarith_q48 : exprarith_q48_down)(ETO_MUL, exprarith_q16_q48(a), exprarith_q16_q48(b), &f);
     int32_t m = exprarith_mixed(ETO_MUL, a, 1, b, 1, &f);
 
     return m == exprarith_q48_floor(x, ET_LONG, &f)
            && (int32_t)((uint32_t)m + (uint32_t)l)
-                  == exprarith_q48_floor(exprarith_q48(ETO_ADD, x, exprarith_whole_q48(l), 0, &f), ET_LONG, &f);
+                  == exprarith_q48_floor(exprarith_q48(ETO_ADD, x, exprarith_whole_q48(l), &f), ET_LONG, &f);
 }
 
 } // namespace
@@ -1447,7 +1463,7 @@ bool qdivt_ok(int32_t a, int32_t b)
         return false;
     if (b & 0xffff) {
         // the 48.16 path's raw step: longdiv's Long is q48div's towards zero
-        int64_t v = exprarith_q48(ETO_DIV, exprarith_q16_q48(a), exprarith_q16_q48(b), exprarith_div0(ET_LONG), &f);
+        int64_t v = exprarith_q48(ETO_DIV, exprarith_q16_q48(a), exprarith_q16_q48(b), &f);
         if (got != exprarith_q48_trunc(v, ET_LONG, &f))
             return false;
     }
@@ -1591,7 +1607,7 @@ TEST_CASE("exprarith: 48.16 to a Quick saturates (P2)", "[exprarith]")
     {
         unsigned f = 0;
         // y.q=q*40000 with q=1.5: 60000 beyond the Quick range
-        int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(0x18000), exprarith_whole_q48(40000), 0, &f);
+        int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(0x18000), exprarith_whole_q48(40000), &f);
 
         CHECK(exprarith_q48_quick(p, &f) == 0x7fffffff);
     }

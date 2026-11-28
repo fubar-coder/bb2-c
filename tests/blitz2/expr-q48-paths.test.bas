@@ -23,8 +23,9 @@
 ; wanted Long rounds down instead of towards zero, and a whole Long
 ; operation wraps (lb+lb is -2); each check whose value changed names the
 ; one before in its comment.  Since task 4.7 Mod is the floor Mod (#1197:
-; the remainder has the divisor's sign): the Mod checks with a negative
-; divisor at their floor values.
+; the remainder has the divisor's sign) and a divisor 0 raises the
+; division trap (expr-tsr-div0-trap): those checks left, the Mod checks
+; with a negative divisor at their floor values.
 Function.l pl1{a.l,b.l,c.l,d.l,e.l,f.l}
   Function Return a
 End Function
@@ -521,10 +522,8 @@ End Function
   !CheckEq{r,-715827884,"wdiv_r_lbpq_div_qnw"}
   r=l/q
   !CheckEq{r,40,"wdiv_r_l_div_q"}
-  r=l/qz
-  !CheckEq{r,2147483647,"wdiv_r_l_div_qz"}
-  r=ln/qz
-  !CheckEq{r,-2147483647,"wdiv_r_ln_div_qz"}
+  ; a divisor 0 (r=l/qz, before: 2147483647 and -2147483647 for ln) raises
+  ; the division trap since task 4.7: expr-tsr-div0-trap
   r=q/qw+l
   !CheckEq{r,100,"wdiv_r_q_div_qw_add_l"}
   r=l/qw+q
@@ -537,10 +536,7 @@ End Function
   !CheckEq{Peek.l(&x),38229,"wdiv_x_qn_div_qnw"}
   x=qm/qm
   !CheckEq{Peek.l(&x),65536,"wdiv_x_qm_div_qm"}
-  x=l/qz
-  !CheckEq{Peek.l(&x),2147483647,"wdiv_x_l_div_qz"}
-  x=ln/qz
-  !CheckEq{Peek.l(&x),-2147483647,"wdiv_x_ln_div_qz"}
+  ; x=l/qz (before: $7FFFFFFF, -$7FFFFFFF for ln): the division trap
   x=l/q
   !CheckEq{Peek.l(&x),2621440,"wdiv_x_l_div_q"}
   x=lx/qnw
@@ -666,8 +662,7 @@ End Function
   x=(lb*qbig) Mod qm
   ; before task 4.7: 65536
   !CheckEq{Peek.l(&x),-2147418112,"wmod_x_lbmulqbig_mod_qm"}
-  x=l Mod qz
-  !CheckEq{Peek.l(&x),6553600,"wmod_x_l_mod_qz"}
+  ; x=l Mod qz (before: 6553600, the dividend): the division trap
   x=l Mod q
   !CheckEq{Peek.l(&x),0,"wmod_x_l_mod_q"}
   x=lx Mod qone

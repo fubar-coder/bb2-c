@@ -9,9 +9,10 @@
  * its sign is not the divisor's.  Fixed (#1197, #1198; type-system-rework
  * Q2 "Floor"): the original added the divisor to every negative remainder
  * (-7 MOD -3 was -4, 7 MOD -3 was 1); with a positive divisor both rules
- * give 0..b-1.  A divisor 0 as in the original: the 68000 division trap
- * for Byte, Word and Quick (DIVS), the dividend for Long and Float
- * (ldivide's 'infinity times 0).
+ * give 0..b-1.  A divisor 0: the 68000 division trap for Byte, Word and
+ * Quick (DIVS), the dividend for Long and Float (ldivide's 'infinity
+ * times 0), as in the original; the compiler tests the divisor of a Long
+ * and a Float Mod before the call (type-system-rework D1/D7).
  *
  *   byte/word: EXT.l d0:DIVS d1,d0:SWAP d0, the remainder fixed up in the
  *              low word.  The high word of d0 is the quotient.  d1 is kept.
