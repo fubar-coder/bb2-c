@@ -1538,6 +1538,102 @@ static void test_observe(void)
     tp_free(&src);
 }
 
+/* the warnings and the return code in the observation of a cell (change
+   test-model-warnings): the editor path from the block of j000, a
+   command-line compile from the console; not captured without a block or
+   an rc line; a line that cannot be read is kept for the judge */
+static void test_observe_warnings(void)
+{
+    static const char src_text[] = "!TestCase{c}\n  !CheckEq{1,1,\"one\"}\n!EndTestCase\n";
+    struct tp_source src = { 0 };
+    struct tp_params par = { 0 };
+    struct tp_driver drv = { 0 };
+    struct corpus_pass p;
+    struct cr_obs ob;
+    struct t t;
+    char err[400];
+
+    par.file = "w.test.bas";
+    par.test_id = "w";
+    CHECK(tp_process(src_text, strlen(src_text), &par, &src) == 0);
+    put("ow/tests.toml", "root = true\n");
+    put("ow/w.test.bas", src_text);
+    load(&t, "ow/w.test.bas", ENV_RUNNER);
+    /* the editor path: the entries of j000's block only (a WARNING of another job is not its) */
+    put("ow/ed/out/session.log", "BATCH\tstart\nJOB\tj000\tCORPUS:src/w.bb2\n"
+        "WARNING\tj000\tWarning: Clash in Residents: #c\nWARNING\tj000\tWarning: datafrac: 2 more\n"
+        "RESULT\tj000\tok\t1\nJOB\tj001\tCORPUS:src/v.bb2\nWARNING\tj001\tWarning: Clash in Residents: #d\n"
+        "BATCH\tend\n");
+    put("ow/ed/out/blitz2.out", "rc=0\n");
+    put("ow/ed/out/test.run", "rc=0\n");
+    CHECK(corpus_parse("cell=on\nwork=/w\nreport=/w/r.txt\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                       "source=/s/w.bb2\n", &p, err, sizeof err) == 0);
+    {
+        char *vol = str_printf("%s/ow/ed", work);
+        struct cr_cellrun c = { vol, "done", &p, 0, 0 };
+
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(ob.o.warnings && !strcmp(ob.o.warnings, "- - Clash in Residents: #c\n- datafrac 2 more\n"));
+        CHECK(!ob.o.warnings_error && !ob.o.has_compile_rc);
+        cr_obs_free(&ob);
+        /* an unreadable line: the judge reports it */
+        put("ow/ed/out/session.log", "BATCH\tstart\nJOB\tj000\tCORPUS:src/w.bb2\n"
+            "WARNING\tj000\tWarning: line 3: x [nosuch]\nBATCH\tend\n");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(!ob.o.warnings && ob.o.warnings_error && strstr(ob.o.warnings_error, "[nosuch]"));
+        cr_obs_free(&ob);
+        /* the job did not run: no block, not captured */
+        put("ow/ed/out/session.log", "");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(!ob.o.warnings && !ob.o.warnings_error);
+        cr_obs_free(&ob);
+        /* a job that ran without a warning: the empty list */
+        put("ow/ed/out/session.log", "BATCH\tstart\nJOB\tj000\tCORPUS:src/w.bb2\nRESULT\tj000\tok\t1\nBATCH\tend\n");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(ob.o.warnings && !*ob.o.warnings);
+        cr_obs_free(&ob);
+        free(vol);
+    }
+    corpus_free(&p);
+    /* the command line: the entries, the rc of the console */
+    put("ow/cl/out/session.log", "BATCH\tstart\nBATCH\tend\n");
+    put("ow/cl/out/blitz2.out", "CORPUS:src/w.ab3:3: warning: Fraction of a Data.b value discarded [datafrac]\n"
+        "TEST:src/inc.ab3:2: warning: Fraction of a Data.b value discarded [datafrac]\nrc=5\n");
+    put("ow/cl/out/test", "x");
+    put("ow/cl/out/test.run", "rc=0\n");
+    CHECK(corpus_parse("cell=on\ncli=ab3\nwork=/w\nreport=/w/r.txt\nted=/t\nlauncher=/l\nconfig=c0|ref|/b|/d|/a\n"
+                       "source=/s/w.ab3\n", &p, err, sizeof err) == 0);
+    {
+        char *vol = str_printf("%s/ow/cl", work);
+        struct cr_cellrun c = { vol, "done", &p, 0, 0 };
+
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(ob.o.has_compile_rc && ob.o.compile_rc == 5);
+        CHECK(ob.o.warnings && strstr(ob.o.warnings, "driver:3 datafrac Fraction of a Data.b value discarded\n"
+                                                      "TEST:src/inc.ab3:2 datafrac Fraction"));
+        cr_obs_free(&ob);
+        /* no rc line: the compile did not end, neither is captured */
+        put("ow/cl/out/blitz2.out", "CORPUS:src/w.ab3:3: warning: x [datafrac]\n");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(!ob.o.warnings && !ob.o.has_compile_rc && !ob.o.warnings_error);
+        cr_obs_free(&ob);
+        /* an rc line that is no number, a warning line without its name */
+        put("ow/cl/out/blitz2.out", "rc=x\n");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(!ob.o.has_compile_rc && ob.o.warnings_error && strstr(ob.o.warnings_error, "rc=x"));
+        cr_obs_free(&ob);
+        put("ow/cl/out/blitz2.out", "CORPUS:src/w.ab3:3: warning: Something\nrc=5\n");
+        CHECK(cr_observe(&c, &t.conf, &src, &drv, "w.test.bas", &ob) == 0);
+        CHECK(!ob.o.warnings && ob.o.warnings_error && strstr(ob.o.warnings_error, "warning: Something"));
+        CHECK(ob.o.has_compile_rc && ob.o.compile_rc == 5);
+        cr_obs_free(&ob);
+        free(vol);
+    }
+    corpus_free(&p);
+    unload(&t);
+    tp_free(&src);
+}
+
 /* the named compile jobs (change named-compile-jobs): @DATA:FILE@ in the
    cell pass from the count of cr_data_pass, the blocks and results of the
    jobs in the observation of a recorded cell directory (j000, jobline
@@ -1790,6 +1886,148 @@ static void test_bundle(void)
     CHECK(cr_bundle_status(1, 0) == 2);
 }
 
+/* the warnings and the return code of a compile (change test-model-warnings):
+   both forms, the place mapped to the source, the editor's "more" entry, an
+   entry of another file, a driver line outside the source, and broken input
+   (a line that cannot be read, an unknown name) */
+/* the list and the bad line by address: the arguments of the call that sets them
+   are evaluated in no fixed order */
+static void check_list(int rc, char *const *plist, const char *want)
+{
+    const char *list = *plist;
+
+    CHECK(rc == 0);
+    CHECK(list && !strcmp(list, want));
+    if (list && strcmp(list, want))
+        fprintf(stderr, "list: %s\nwant: %s\n", list, want);
+}
+
+static void check_bad(int rc, char *const *pbad, const char *part)
+{
+    const char *bad = *pbad;
+
+    CHECK(rc == 1);
+    CHECK(bad && strstr(bad, part) != NULL);
+    if (!bad || !strstr(bad, part))
+        fprintf(stderr, "bad line: %s (want %s)\n", bad ? bad : "(none)", part);
+}
+
+static void test_warnings(void)
+{
+    struct tp_source src = { 0 };
+    struct tp_params par = { 0 };
+    struct tp_driver d = { 0 };
+    struct tp_driver_params dp = { 0 };
+    const char *cases[] = { "a" };
+    const char *text = "!TestCase{a}\n  x=1\n  y=2\n!EndTestCase\n";
+    char err[200], *list, *bad, *in;
+    unsigned f;
+    long long rc;
+    static const char *const msg = "Fraction of a Data.b value discarded";
+
+    par.file = "x.test.bas";
+    par.test_id = "x";
+    CHECK(tp_process(text, strlen(text), &par, &src) == 0);
+    dp.macros = "M1\nM2\n";
+    dp.macros_len = 6;
+    dp.result = CR_RESULT;
+    dp.cases = cases;
+    dp.ncases = 1;
+    CHECK(tp_driver_write(&src, &dp, &d, err, sizeof err) == 0);
+    f = d.first;                /* the driver's line of source line 1 */
+
+    /* the editor path: the block of j000 */
+    in = str_printf("JOB\tj000\tCORPUS:src/x.bb2\nXTRA\tj000\tdefaults\n"
+                    "WARNING\tj000\tWarning: line %u: %s [datafrac]\n"
+                    "WARNING\tj000\tWarning: line %u: %s [datafrac]\n"
+                    "WARNING\tj000\tWarning: datafrac: 2 more\n"
+                    "RESULT\tj000\tok\n", f + 1, msg, f + 2, msg);
+    CHECK(in != NULL);
+    check_list(cr_warnings_editor(in, &d, &list, &bad), &list,
+               "2 datafrac Fraction of a Data.b value discarded\n3 datafrac Fraction of a Data.b value discarded\n"
+               "- datafrac 2 more\n");
+    free(list);
+    free(in);
+    /* a line of the driver outside the source, a resclash form without a line and name */
+    in = str_printf("WARNING\tj000\tWarning: line 1: %s [divfrac]\n"
+                    "WARNING\tj000\tWarning: Clash in Residents: #c\n", msg);
+    CHECK(in != NULL);
+    check_list(cr_warnings_editor(in, &d, &list, &bad), &list,
+               "driver:1 divfrac Fraction of a Data.b value discarded\n- - Clash in Residents: #c\n");
+    free(list);
+    free(in);
+    /* no WARNING line: the empty list; other lines are not warnings */
+    check_list(cr_warnings_editor("JOB\tj000\tx\nRESULT\tj000\tok\n", &d, &list, &bad), &list, "");
+    free(list);
+    check_list(cr_warnings_editor("", &d, &list, &bad), &list, "");
+    free(list);
+    /* broken: a line that is no "Warning: ", a line without a number, an unknown name, a name missing */
+    check_bad(cr_warnings_editor("WARNING\tj000\tNote: line 3: x [datafrac]\n", &d, &list, &bad), &bad, "Note: line 3");
+    free(bad);
+    check_bad(cr_warnings_editor("WARNING\tj000\n", &d, &list, &bad), &bad, "WARNING");
+    free(bad);
+    check_bad(cr_warnings_editor("WARNING\tj000\tWarning: line x: y [datafrac]\n", &d, &list, &bad), &bad, "line x");
+    free(bad);
+    check_bad(cr_warnings_editor("WARNING\tj000\tWarning: line 0: y [datafrac]\n", &d, &list, &bad), &bad, "line 0");
+    free(bad);
+    check_bad(cr_warnings_editor("WARNING\tj000\tWarning: line 3: y [nosuch]\n", &d, &list, &bad), &bad, "[nosuch]");
+    free(bad);
+    check_bad(cr_warnings_editor("WARNING\tj000\tWarning: line 3: y\n", &d, &list, &bad), &bad, "line 3: y");
+    free(bad);
+
+    /* the command line: the driver's path with and without a line, another file, ANSI and CR left out */
+    in = str_printf("CORPUS:src/x.ab3:%u: warning: %s [datafrac]\r\n"
+                    "\x1b[1mCORPUS:src/x.ab3:%u\x1b[0m: warning: %s [datafrac]\n"
+                    "CORPUS:src/x.ab3: warning: Clash in Residents: #c [resclash]\n"
+                    "TEST:src/inc.ab3:3: warning: %s [datafrac]\n"
+                    "CELL12:src/inc2.ab3:4: warning: x [divfrac]\n"
+                    "CORPUS:src/x.ab3:%u: Syntax Error\n"
+                    "rc=5\n", f + 2, msg, f + 1, msg, msg, f);
+    CHECK(in != NULL);
+    check_list(cr_warnings_cli(in, &d, "CORPUS:src/x", &list, &bad), &list,
+               "3 datafrac Fraction of a Data.b value discarded\n2 datafrac Fraction of a Data.b value discarded\n"
+               "- resclash Clash in Residents: #c\n"
+               "TEST:src/inc.ab3:3 datafrac Fraction of a Data.b value discarded\n"
+               "CORPUS:src/inc2.ab3:4 divfrac x\n");
+    free(list);
+    /* the error line beside a warning is no entry, the rc of the last rc= line */
+    CHECK(cr_cli_rc(in, &rc, &bad) == 1 && rc == 5);
+    free(in);
+    /* a driver line outside the source, the BB2 mode's extension */
+    check_list(cr_warnings_cli("CORPUS:src/x.bb:1: warning: x [divfrac]\nrc=5\n", &d, "CORPUS:src/x", &list, &bad),
+               &list, "driver:1 divfrac x\n");
+    free(list);
+    /* a name that is not the driver's, though it starts with it */
+    check_list(cr_warnings_cli("CORPUS:src/x2.ab3:1: warning: x [divfrac]\n", &d, "CORPUS:src/x", &list, &bad), &list,
+               "CORPUS:src/x2.ab3:1 divfrac x\n");
+    free(list);
+    /* no warning: the empty list; no console: the empty list too (the caller decides on rc=) */
+    check_list(cr_warnings_cli("rc=0\n", &d, "CORPUS:src/x", &list, &bad), &list, "");
+    free(list);
+    /* broken: no [NAME], an unknown name */
+    check_bad(cr_warnings_cli("CORPUS:src/x.ab3:3: warning: Something\nrc=5\n", &d, "CORPUS:src/x", &list, &bad), &bad,
+              "warning: Something");
+    free(bad);
+    check_bad(cr_warnings_cli("x.ab3:3: warning: Something [nosuch]\n", &d, "CORPUS:src/x", &list, &bad), &bad,
+              "[nosuch]");
+    free(bad);
+
+    /* the return code */
+    CHECK(cr_cli_rc("rc=0\n", &rc, &bad) == 1 && rc == 0);
+    CHECK(cr_cli_rc("out\nrc=10\n", &rc, &bad) == 1 && rc == 10);
+    CHECK(cr_cli_rc("rc=3\nrc=5\n", &rc, &bad) == 1 && rc == 5);
+    CHECK(cr_cli_rc("some output\n", &rc, &bad) == 0);
+    CHECK(cr_cli_rc(NULL, &rc, &bad) == 0);
+    CHECK(cr_cli_rc("rc=\n", &rc, &bad) == -2 && bad && !strcmp(bad, "rc="));
+    free(bad);
+    CHECK(cr_cli_rc("rc=x\n", &rc, &bad) == -2 && bad && !strcmp(bad, "rc=x"));
+    free(bad);
+    CHECK(cr_cli_rc("rc=5x\n", &rc, &bad) == -2);
+    free(bad);
+    tp_driver_free(&d);
+    tp_free(&src);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -1811,6 +2049,7 @@ int main(int argc, char **argv)
     test_parse_run();
     test_inject();
     test_compile_mapped();
+    test_warnings();
     test_print_config();
     test_print_config_ab3();
     test_prev_pass();
@@ -1824,6 +2063,7 @@ int main(int argc, char **argv)
     test_data_pass();
     test_editor_run_pass();
     test_observe();
+    test_observe_warnings();
     test_named_jobs();
     test_bundle();
     if (!failures)

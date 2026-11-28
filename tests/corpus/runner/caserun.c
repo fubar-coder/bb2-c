@@ -26,6 +26,7 @@
 #include "statline_emulation.h"
 #include "testpp.h"
 #include "util.h"
+#include "warnlist.h"
 #include "verdicts.h"
 
 extern char **environ;
@@ -900,6 +901,267 @@ char *cr_cli_compile(const char *console, int exe, int amiblitz3)
     return r;
 }
 
+/* ------------------------------------------------- the warnings of a compile */
+
+/* the names of the warnings (warnlist.h), the one list of the compiler */
+static const char *const warn_names[] = {
+#define X(ID, NAME) NAME,
+    WARNLIST(X)
+#undef X
+};
+
+static int warn_name(const char *s, size_t n)
+{
+    for (size_t i = 0; i < sizeof warn_names / sizeof warn_names[0]; i++)
+        if (strlen(warn_names[i]) == n && !memcmp(warn_names[i], s, n))
+            return 1;
+    return 0;
+}
+
+/* the place of line dl of the driver: the line of the test source, or
+   driver:N for a line outside it */
+static char *warn_place(const struct tp_driver *d, unsigned long dl)
+{
+    unsigned sl = 0;
+    const char *name = NULL;
+
+    if (d && dl && dl <= 0xffffffu && tp_driver_where(d, (unsigned)dl, &sl, &name) == TP_IN_SOURCE)
+        return str_printf("%u", sl);
+    return str_printf("driver:%lu", dl);
+}
+
+/* a decimal number from 1 at s, up to the end e (NULL: up to a non-digit) */
+static int warn_number(const char *s, const char **e, unsigned long *v)
+{
+    char *end;
+
+    if (*s < '0' || *s > '9')
+        return 0;
+    *v = strtoul(s, &end, 10);
+    *e = end;
+    return *v != 0 && *v <= 0xffffffu;
+}
+
+/* MESSAGE "TEXT [NAME]": the text (*tn bytes) and the name (*nn bytes); 0 if
+   it has none or the name is not a warning's */
+static int warn_split_name(const char *m, size_t *tn, const char **name, size_t *nn)
+{
+    size_t n = strlen(m);
+    const char *b;
+
+    if (n < 4 || m[n - 1] != ']')
+        return 0;
+    for (b = m + n - 1; b > m && *b != '['; b--)
+        ;
+    if (*b != '[' || b == m || b[-1] != ' ' || !warn_name(b + 1, (size_t)(m + n - 1 - (b + 1))))
+        return 0;
+    *tn = (size_t)(b - 1 - m);
+    *name = b + 1;
+    *nn = (size_t)(m + n - 1 - (b + 1));
+    return 1;
+}
+
+static void warn_entry(struct text *t, const char *place, const char *name, size_t nn, const char *text, size_t tn)
+{
+    text_add(t, "%s %.*s %.*s\n", place, (int)(nn ? nn : 1), nn ? name : "-", (int)tn, text);
+}
+
+/* an editor message "Warning: ..." (the part behind "Warning: "); 0 = read,
+   1 = unreadable, -1 = out of memory */
+static int warn_editor_message(struct text *t, const struct tp_driver *d, const char *m)
+{
+    if (!strncmp(m, "line ", 5)) {
+        const char *e, *name;
+        unsigned long dl;
+        size_t tn, nn;
+        char *place;
+
+        if (!warn_number(m + 5, &e, &dl) || strncmp(e, ": ", 2) || !warn_split_name(e + 2, &tn, &name, &nn))
+            return 1;
+        if (!(place = warn_place(d, dl)))
+            return -1;
+        warn_entry(t, place, name, nn, e + 2, tn);
+        free(place);
+        return t->bad ? -1 : 0;
+    }
+    {
+        /* "NAME: K more" */
+        const char *c = strchr(m, ':'), *e;
+        unsigned long k;
+
+        if (c && warn_name(m, (size_t)(c - m)) && c[1] == ' ' && warn_number(c + 2, &e, &k) && !strcmp(e, " more")) {
+            text_add(t, "- %.*s %lu more\n", (int)(c - m), m, k);
+            return t->bad ? -1 : 0;
+        }
+    }
+    /* any other message ("Clash in Residents: #NAME"): no place, no name */
+    text_add(t, "- - %s\n", m);
+    return t->bad ? -1 : 0;
+}
+
+int cr_warnings_editor(const char *block, const struct tp_driver *d, char **list, char **bad)
+{
+    struct text t = { 0 };
+    const char *p = block;
+    int r = 0;
+
+    *list = *bad = NULL;
+    while (p && *p && !r) {
+        size_t n = strcspn(p, "\n");
+        char *l = strndup(p, n);
+
+        if (!l) {
+            r = -1;
+            break;
+        }
+        if (!strncmp(l, "WARNING\t", 8)) {
+            char *m = strchr(l + 8, '\t');
+
+            /* WARNING<TAB>ID<TAB>Warning: ... */
+            if (!m || strncmp(m + 1, "Warning: ", 9))
+                r = 1;
+            else
+                r = warn_editor_message(&t, d, m + 10);
+            if (r == 1 && !(*bad = str_printf("%s", l)))
+                r = -1;
+        }
+        free(l);
+        p += n + (p[n] == '\n');
+    }
+    if (r || t.bad) {
+        free(t.p);
+        return r ? r : -1;
+    }
+    *list = t.p ? t.p : strdup("");
+    return *list ? 0 : -1;
+}
+
+/* whether the source of a console line is the driver (path without its
+   extension), with an extension of the command line's sources or none */
+static int warn_is_driver(const char *src, size_t n, const char *driver)
+{
+    size_t dn = driver ? strlen(driver) : 0;
+    static const char *const ext[] = { "", ".ab3", ".bb", ".bb2" };
+
+    if (!dn || n < dn || strncasecmp(src, driver, dn))
+        return 0;
+    for (size_t i = 0; i < sizeof ext / sizeof ext[0]; i++)
+        if (n - dn == strlen(ext[i]) && !strncasecmp(src + dn, ext[i], n - dn))
+            return 1;
+    return 0;
+}
+
+int cr_warnings_cli(const char *console, const struct tp_driver *d, const char *driver, char **list, char **bad)
+{
+    struct text t = { 0 };
+    const char *p = console ? console : "";
+    int r = 0;
+
+    *list = *bad = NULL;
+    while (*p && !r) {
+        size_t n = strcspn(p, "\n");
+        char *l = plain_line(p, n);
+        char *w;
+
+        if (!l) {
+            r = -1;
+            break;
+        }
+        if ((w = strstr(l, ": warning: "))) {
+            const char *m = w + 11, *name;
+            size_t tn, nn, sn = (size_t)(w - l);
+            const char *colon = NULL;
+            unsigned long line = 0;
+            char *place = NULL;
+
+            for (size_t i = sn; i > 0; i--)
+                if (l[i - 1] == ':') {
+                    colon = l + i - 1;
+                    break;
+                }
+            if (colon && colon + 1 < w) {
+                const char *q = colon + 1;
+
+                while (q < w && *q >= '0' && *q <= '9')
+                    q++;
+                if (q == w && (line = strtoul(colon + 1, NULL, 10)) > 0)
+                    sn = (size_t)(colon - l);
+                else
+                    line = 0;
+            }
+            if (!warn_split_name(m, &tn, &name, &nn))
+                r = 1;
+            else if (warn_is_driver(l, sn, driver))
+                place = line ? warn_place(d, line) : strdup("-");
+            else {
+                /* another file as the compiler prints it; the session's volume CELLk: of the cell is the
+                   test's CORPUS: */
+                const char *f = l, *vol = "";
+                size_t k = 4;
+
+                if (!strncmp(l, "CELL", 4)) {
+                    while (k < sn && l[k] >= '0' && l[k] <= '9')
+                        k++;
+                    if (k > 4 && k < sn && l[k] == ':') {
+                        f = l + k + 1;
+                        vol = "CORPUS:";
+                    }
+                }
+                place = line ? str_printf("%s%.*s:%lu", vol, (int)(sn - (size_t)(f - l)), f, line)
+                             : str_printf("%s%.*s", vol, (int)(sn - (size_t)(f - l)), f);
+            }
+            if (!r && !place)
+                r = -1;
+            if (!r) {
+                warn_entry(&t, place, name, nn, m, tn);
+                if (t.bad)
+                    r = -1;
+            }
+            free(place);
+            if (r == 1 && !(*bad = str_printf("%s", l)))
+                r = -1;
+        }
+        free(l);
+        p += n + (p[n] == '\n');
+    }
+    if (r || t.bad) {
+        free(t.p);
+        return r ? r : -1;
+    }
+    *list = t.p ? t.p : strdup("");
+    return *list ? 0 : -1;
+}
+
+int cr_cli_rc(const char *console, long long *rc, char **bad)
+{
+    const char *p = console ? console : "";
+    int found = 0;
+
+    *bad = NULL;
+    while (*p) {
+        size_t n = strcspn(p, "\n");
+        char *l = plain_line(p, n);
+
+        if (!l)
+            return -1;
+        if (!strncmp(l, "rc=", 3)) {
+            char *e;
+            long long v = strtoll(l + 3, &e, 10);
+
+            if (e == l + 3 || *e) {
+                *bad = str_printf("%s", l);
+                free(l);
+                return *bad ? -2 : -1;
+            }
+            *rc = v;
+            found = 1;
+        }
+        free(l);
+        p += n + (p[n] == '\n');
+    }
+    return found;
+}
+
 char *cr_compile_mapped(const char *result, const struct tp_driver *d, const char *file, char **where)
 {
     unsigned long dl;
@@ -1350,6 +1612,8 @@ void cr_obs_free(struct cr_obs *ob)
     free(ob->serial);
     free(ob->compile);
     free(ob->compile_log);
+    free(ob->warnings);
+    free(ob->warnings_error);
     free(ob->where);
     free(ob->inject);
     free(ob->con);
@@ -1551,6 +1815,67 @@ static int observe_jobs(const struct cr_cellrun *c, const struct tc_config *conf
     return 0;
 }
 
+/* the warnings and the return code of the driver's compile (queries
+   compile.warnings, compile.rc): the WARNING lines of j000's block (the
+   editor path) or the console's lines (a command-line compile of blitz2-ab3;
+   AmiBlitz3's are not read), the shell's rc= line; what cannot be read
+   becomes warnings_error.  0, -1 = out of memory */
+static int observe_warnings(const struct cr_cellrun *c, const struct tp_driver *d, struct cr_obs *ob)
+{
+    char *bad = NULL, *what = NULL;
+    int r;
+
+    if (c->p->cli) {
+        const char *b = ob->b2 ? ob->b2 : "";
+        long long rc = 0;
+        char *name = corpus_source_file(c->p, 0), *driver = name ? str_printf("CORPUS:src/%s", name) : NULL;
+
+        free(name);
+        if (!driver)
+            return -1;
+        r = cr_cli_rc(b, &rc, &bad);
+        if (r == -2) {
+            what = str_printf("the line \"%s\" of the compiler's console cannot be read as a return code", bad);
+            r = 1;
+        } else if (r == 0) {
+            free(driver);
+            return 0;           /* the compile did not end: not captured */
+        } else if (r < 0) {
+            free(driver);
+            return -1;
+        } else {
+            ob->o.has_compile_rc = 1;
+            ob->o.compile_rc = rc;
+            if (c->p->cli == CORPUS_CLI_AB3) {
+                r = cr_warnings_cli(b, d, driver, &ob->warnings, &bad);
+                if (r == 1)
+                    what = str_printf("the warning line \"%s\" of the compiler's console cannot be read (PLACE: "
+                                      "warning: MESSAGE [NAME], NAME a warning of warnlist.h)", bad);
+                else if (r)
+                    r = -1;
+            }
+        }
+        free(driver);
+    } else {
+        const char *block = ob->njobs && ob->jobs[0].name ? ob->jobs[0].block : NULL;
+
+        if (block && *block) {
+            r = cr_warnings_editor(block, d, &ob->warnings, &bad);
+            if (r == 1)
+                what = str_printf("the warning line \"%s\" of tedstub's log cannot be read (WARNING, ID, Warning: "
+                                  "line N: TEXT [NAME], NAME a warning of warnlist.h)", bad);
+        } else
+            r = 0;
+    }
+    free(bad);
+    if (r < 0 || (r == 1 && !what))
+        return -1;
+    ob->warnings_error = what;
+    ob->o.warnings = ob->warnings;
+    ob->o.warnings_error = ob->warnings_error;
+    return 0;
+}
+
 int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const struct tp_source *src,
                const struct tp_driver *d, const char *file, struct cr_obs *ob)
 {
@@ -1666,6 +1991,8 @@ int cr_observe(const struct cr_cellrun *c, const struct tc_config *conf, const s
         ob->o.nreq = 0;
     }
     if (observe_data(c, conf, ob) || observe_runs(c, src, ob) || observe_jobs(c, conf, ob))
+        goto out;
+    if (observe_warnings(c, d, ob))
         goto out;
     r = 0;
 out:

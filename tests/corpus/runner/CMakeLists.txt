@@ -36,6 +36,8 @@ add_test(NAME corpusrun_verdicts COMMAND test_verdicts ${CMAKE_CURRENT_BINARY_DI
 # several sources and the served case (verdicts.h)
 add_library(lib_caserun STATIC caserun.c)
 target_include_directories(lib_caserun PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# the warnings' names (shared/ab3job/warnlist.h, macros only)
+target_include_directories(lib_caserun PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../shared/ab3job)
 target_link_libraries(lib_caserun PUBLIC lib_corpus lib_testjudge lib_verdicts)
 target_compile_options(lib_caserun PRIVATE -Wall -Wextra)
 own_warnings(lib_caserun)

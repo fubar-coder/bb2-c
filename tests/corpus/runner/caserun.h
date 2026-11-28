@@ -475,6 +475,7 @@ struct cr_obs {
     struct cr_run run;
     struct tj_requester *req;
     char *log, *b2, *result, *serial, *compile, *compile_log, *where, *inject, *con, *cinject;
+    char *warnings, *warnings_error;   /* compile.warnings, why it cannot be judged */
     struct bugorig_obs bo;
     struct tj_data *data;       /* the compiles of the data sources */
     char **dres;
@@ -516,6 +517,41 @@ void cr_obs_free(struct cr_obs *ob);
  * @return the mapped result (malloc'd), NULL = out of memory
  */
 char *cr_compile_mapped(const char *result, const struct tp_driver *d, const char *file, char **where);
+
+/**
+ * @brief The warnings of the editor path (queries compile.warnings): the
+ *        WARNING lines of the block of the job j000 in tedstub's log, read
+ *        as "WARNING<TAB>ID<TAB>Warning: line N: TEXT [NAME]" (the entry
+ *        "PLACE NAME TEXT", PLACE the line of the test source or
+ *        driver:N), "Warning: NAME: K more" ("- NAME K more") and any
+ *        other "Warning: TEXT" ("- - TEXT").  NAME is one of
+ *        shared/ab3job/warnlist.h.
+ * @param list  the entries, each ended by a newline ("" none)
+ * @param bad   a line that cannot be read (malloc'd)
+ * @return 0, 1 = a line cannot be read (bad), -1 = out of memory
+ */
+int cr_warnings_editor(const char *block, const struct tp_driver *d, char **list, char **bad);
+
+/**
+ * @brief The warnings of the console of blitz2-ab3 (a command-line compile):
+ *        the lines "SOURCE: warning: MESSAGE [NAME]" and "SOURCE:LINE:
+ *        warning: MESSAGE [NAME]" as the entries of cr_warnings_editor;
+ *        SOURCE the driver (the string driver, with or without the
+ *        extension of the source) gives PLACE as the editor path (`-`
+ *        without a line), another file "SOURCE:LINE" as printed, the session's
+ *        volume of the cell (CELLk:) written as the test's CORPUS:.  ANSI's
+ *        ESC [ ... m and CR are left out.
+ * @return as cr_warnings_editor
+ */
+int cr_warnings_cli(const char *console, const struct tp_driver *d, const char *driver, char **list, char **bad);
+
+/**
+ * @brief The return code of a command-line compile: the last line "rc=N"
+ *        of the console.
+ * @return 1 = found (*rc), 0 = no rc line, -2 = a line "rc=" that is no
+ *         number (bad, malloc'd), -1 = out of memory
+ */
+int cr_cli_rc(const char *console, long long *rc, char **bad);
 
 /**
  * @brief The compile result of a command-line compile (cli=, change
