@@ -13,6 +13,11 @@ menu 4 2
 wait freq "Name of Executable to create"
 timeout 30
 freq ok "t02_float" "TEDRUN:work"  ; @ignore compilewindow
+; the type warnings of the compile (divfrac): one OKAY requester each
+wait req "OKAY"
+gad 1
+wait req "OKAY"
+gad 1
 timeout 10
 wait screen
 menu 0 9

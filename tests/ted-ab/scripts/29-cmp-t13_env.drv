@@ -13,6 +13,9 @@ menu 4 2
 wait freq "Name of Executable to create"
 timeout 30
 freq ok "t13_env" "TEDRUN:work"  ; @ignore compilewindow
+; the type warning of the compile: one OKAY requester
+wait req "OKAY"
+gad 1
 timeout 10
 wait screen
 menu 0 9
