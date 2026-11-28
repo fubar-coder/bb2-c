@@ -312,33 +312,25 @@ with the comparison tolerances of `cdrun3.py`:
   FFP's range -155 (the evaluator wrapped `2^71`, the model does not know
   `SPPow`'s overflow), and two the evaluator's tolerances hid: a Float
   division by 0 under a Float destination +118 pairs at 39 places (value
-  sets with a divisor 0: the model gives the saturated infinity
-  $FFFFFF7F/$FFFFFFFF, the port and 1.95 give 0; the evaluator's
-  comparison took infinity as equal to 0) and a 48.16 quotient printed one
+  sets with a divisor 0: the model gave the saturated infinity
+  $FFFFFF7F/$FFFFFFFF and 0 for the port and 1.95, which both raise the
+  division trap there; see task 1.5 below) and a 48.16 quotient printed one
   step lower +62 pairs (class G, -2.8323 for 1.95's -2.8322, within the
   evaluator's print tolerance). Places changed against the port: 501
   (above: 468), 240 at values that do not overflow (205), 84 at
   non-negative values (83); without the 39 places of the Float division by
   0: 465 and 204.
-  The emulator (planner, 2026-11-28, section1-decisions.md) shows that
-  the model's port and 1.95 columns are wrong for a Float division by 0
-  (both compilers raise the division trap, the model gave 0), for a Long
-  division by 0 of a negative dividend (both give +2147483647) and for a
-  Quick reading of a point constant (both read it through FFP: `x.q=q+
-  30000.3` $75314D00). The 39 places are crashes that become values under
-  the model's TSR set, not values that move away; with D1/D7 they stay the
-  trap. Task 1.5 fixes the model and recounts, with "crash -> value" apart
-  from "away from 1.95"; class G is then 139 places, 4 of them under Print.
 * *Places that move away from 1.95 where the port agrees today:* 226 (78
   at non-negative values, 50 files; above: 188, 74, 45). By class, 184 of
   them are the evaluator's places with the same class: G 80, part G 55, F
   17, part C1+C2 11, H 7, other 5, K 2, part B 2, part B+G 2, part B+C2 1,
   part C1+C2+C3 1, I 1. The class J (4) comes back to 1.95 (I6 B). 42 are
   new: the 38 places of a Float division by 0 under a Float destination
-  (see above; the spec delta names the saturation of every conversion but
-  not the value a Float destination keeps) and 4 places of class G under
-  Print (ABALL2.BB2:137, BSPREAD.BB2:27, :434, :536). 102 places differ
-  from 1.95 today and still do (102).
+  (crashes in both compilers, see task 1.5 below) and 4 places of class G
+  under Print (ABALL2.BB2:137, BSPREAD.BB2:27, :434, :536). Places that
+  differ from 1.95 today and still do: 109 by the model (no place moves
+  away, a non-overflowing pair differs from 1.95 under both the port and
+  the rules); the evaluator counted 102.
 * *Matrix* (`tests/corpus/tests-exprmatrix/matrix.txt`, every cell without
   a string; the model's `P+` against `TSR`): by operator `Mod` 536, `+`
   196, `LSR` 192 (8 of them newly refused), `-` 180, `*` 160, `/` 116, `LSL`
@@ -351,6 +343,56 @@ with the comparison tolerances of `cdrun3.py`:
   Float-destination cells of the bit operators and shifts that P+ refuses
   and the rules compile (1,696 cells: a whole operation converted to
   Float), and 156 more index cells (`LSR`, `Mod`, `^`, the later index).
+
+**Recounted after the answers D1-D7 and P1 (task 1.5).** The model's `TSR`
+set follows the answers (section "Answers to the readings of the model
+(task 1.1)"); its `P+` and `orig` columns give the emulator's values of
+section1-decisions.md (#1232): a Float division by 0 raises the division
+trap in both compilers (the model gave 0), and a point constant read as a
+Quick is the FFP value of its text cut down in both (`x.q=q+30000.3`
+$75314D00; P+ gave $75314CCC). A Long division by 0 of a negative dividend
+stays as it was: +2147483647 by the CD's library (`orig`; the model gives
+the same for the port with the CD's libraries, the planner's probes ran
+mostly as port/cd), -2147483647 by the port's C library (`P+`; #200, as
+`exprarith` and its host test `blitz2_exprarith`, which fails if P+ gives
++2147483647). The committed matrix tests do not change. Same input, tolerances and place counts as task 1.3; a pair
+where one side raises the division trap and the other has a value is
+counted apart from "away from 1.95" (D1/D7: a crash that becomes a value,
+or a value that becomes the trap):
+
+| Measure | Task 1.3 | Task 1.5 |
+|---|---|---|
+| Pairs evaluated (5,080 `^` not known to the model) | 1,668,858 (2 traps left out) | 1,668,860 |
+| ... the rules raise the division trap | 2 | 272 (149 where 1.95 and the port trap too, 123 where both have a value) |
+| Pairs changed against the port | 20,558 | 20,512 (123 a value that becomes the trap) |
+| Pairs differing from 1.95 | 25,554 | 25,472 (123 a value that becomes the trap, none a crash that becomes a value) |
+| Places changed against the port | 501 | 459 (9 only by a value that becomes the trap) |
+| ... at values that do not overflow | 240 | 204 |
+| ... at non-negative values | 84 | 77 |
+| Places moving away from 1.95 | 226 / 78 / 50 files | 186 / 68 / 44 files |
+| ... a 1.95 value that becomes the trap, at a value that does not overflow | (not counted) | 1 (GORNY3DLIB.BB2:1670, a Long `/` by 0) |
+| Places differing from 1.95 today and still | 109 | 109 |
+
+* *By cause.* The 149 pairs at 54 places with a Float division by 0
+  (under a Float destination the 118 pairs at 39 places of task 1.3, the
+  rest under other destinations and Print) are a crash in 1.95, the port
+  and the rules: they leave every count. The 123 pairs at 65 places that
+  become the trap are divisions by 0 of whole, Quick and 48.16 values (64
+  places) and BIO.BB2:43, D7's Quick-class Mod; all but one pair
+  (GORNY3DLIB.BB2:1670) are overflowing pairs (the largest value of a
+  division by 0), which the place counts at values that do not overflow
+  leave out.
+  D2, D3, D4, D6 and P1 change no pair of the CD's value sets
+  (ANDREWSDEMOS/SCRATCH.BB:26 is D3's one place, `v1>-(0.1)`, and gives the
+  same truth value), nor any cell of the matrix.
+* *Away from 1.95, by class:* G 80, part G 55, F 17, part C1+C2 11, H 7,
+  other 5, G under Print 4 (the four places above), K 2, part B+G 2, part
+  B 1, part C1+C2+C3 1, I 1: class G 139 places, 4 of them under Print, as
+  Monitored. Against the evaluator's 188: J 4 back (I6 B), G under Print 4
+  more, and 2 of the evaluator's places (FILEREQUESTER.BB2:11 "part
+  B+C2", 3DLIB.BB2:1653 "part B") differ only at a Float division by 0,
+  a crash on every side. No cause differs from its expectation by more
+  than 1 %.
 
 **Hand-written tests.** 593 checks of `tests/blitz2`, `tests/bug-orig/
 compiler` and `tests/bug-port` evaluated by the scan (Print-output tests
