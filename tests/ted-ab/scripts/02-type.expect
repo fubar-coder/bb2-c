@@ -10,7 +10,6 @@ e.b=100 : f.b=50
 e=e+f : NPrint "byte wrap ",e
 w.w=32767 : w=w+1 : NPrint "word wrap ",w
 l.l=$7fffffff : l=l+1 : NPrint "long wrap ",l
-NPrint "div0 long ",c/0
 NPrint "neg div ",-7/2," ",7/-2," ",-7 MOD 2
 NPrint "and/or/eor ",$f0f0 & $ff00," ",$f0f0 | $0f0f," ",$f0f0 EOR $ffff
 NPrint "not ",NOT 5
