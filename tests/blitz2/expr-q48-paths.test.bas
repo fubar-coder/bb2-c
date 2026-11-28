@@ -22,7 +22,9 @@
 ; ($7FFFFFFF, $80000000) instead of keeping its low 32 bits, a / under a
 ; wanted Long rounds down instead of towards zero, and a whole Long
 ; operation wraps (lb+lb is -2); each check whose value changed names the
-; one before in its comment.
+; one before in its comment.  Since task 4.7 Mod is the floor Mod (#1197:
+; the remainder has the divisor's sign): the Mod checks with a negative
+; divisor at their floor values.
 Function.l pl1{a.l,b.l,c.l,d.l,e.l,f.l}
   Function Return a
 End Function
@@ -569,19 +571,24 @@ End Function
   x=qn Mod qw
   !CheckEq{Peek.l(&x),147456,"wmod_x_qn_mod_qw"}
   x=q Mod qnw
-  !CheckEq{Peek.l(&x),163840,"wmod_x_q_mod_qnw"}
+  ; before task 4.7: 163840
+  !CheckEq{Peek.l(&x),-32768,"wmod_x_q_mod_qnw"}
   x=qn Mod qnw
-  !CheckEq{Peek.l(&x),-311296,"wmod_x_qn_mod_qnw"}
+  ; before task 4.7: -311296
+  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_qnw"}
   x=qm Mod qw
   !CheckEq{Peek.l(&x),0,"wmod_x_qm_mod_qw"}
   x=qm Mod qnw
-  !CheckEq{Peek.l(&x),-327680,"wmod_x_qm_mod_qnw"}
+  ; before task 4.7: -327680
+  !CheckEq{Peek.l(&x),-131072,"wmod_x_qm_mod_qnw"}
   x=qm Mod qm
   !CheckEq{Peek.l(&x),0,"wmod_x_qm_mod_qm"}
   x=qbig Mod qm
-  !CheckEq{Peek.l(&x),2147418112,"wmod_x_qbig_mod_qm"}
+  ; before task 4.7: 2147418112
+  !CheckEq{Peek.l(&x),-65536,"wmod_x_qbig_mod_qm"}
   x=qn Mod qm
-  !CheckEq{Peek.l(&x),2147368960,"wmod_x_qn_mod_qm"}
+  ; before task 4.7: 2147368960
+  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_qm"}
   x=qx Mod qbig
   !CheckEq{Peek.l(&x),65535,"wmod_x_qx_mod_qbig"}
   x=qx Mod qone
@@ -597,56 +604,68 @@ End Function
   r=qn Mod qw
   !CheckEq{r,2,"wmod_r_qn_mod_qw"}
   r=qn Mod qnw
-  !CheckEq{r,-5,"wmod_r_qn_mod_qnw"}
+  ; before task 4.7: -5
+  !CheckEq{r,-2,"wmod_r_qn_mod_qnw"}
   x=q Mod 3
   !CheckEq{Peek.l(&x),163840,"wmod_x_q_mod_c3"}
   x=qn Mod 3
   !CheckEq{Peek.l(&x),81920,"wmod_x_qn_mod_c3"}
   x=qn Mod -3
-  !CheckEq{Peek.l(&x),-311296,"wmod_x_qn_mod_cn3"}
+  ; before task 4.7: -311296
+  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_cn3"}
   x=qm Mod 10
   !CheckEq{Peek.l(&x),131072,"wmod_x_qm_mod_c10"}
   x=qm Mod -32768
   !CheckEq{Peek.l(&x),0,"wmod_x_qm_mod_cm"}
   x=qn Mod -32768
-  !CheckEq{Peek.l(&x),2147368960,"wmod_x_qn_mod_cm"}
+  ; before task 4.7: 2147368960
+  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_cm"}
   x=qx Mod 32767
   !CheckEq{Peek.l(&x),65535,"wmod_x_qx_mod_cbig"}
   x=qn Mod 1
   !CheckEq{Peek.l(&x),16384,"wmod_x_qn_mod_c1"}
   x=qn Mod -1
-  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_cn1"}
+  ; before task 4.7: -114688
+  !CheckEq{Peek.l(&x),-49152,"wmod_x_qn_mod_cn1"}
   x=q Mod 2.0
   !CheckEq{Peek.l(&x),32768,"wmod_x_q_mod_c2q"}
   x=qn Mod w
   !CheckEq{Peek.l(&x),81920,"wmod_x_qn_mod_w"}
   x=qn Mod wn
-  !CheckEq{Peek.l(&x),-573440,"wmod_x_qn_mod_wn"}
+  ; before task 4.7: -573440
+  !CheckEq{Peek.l(&x),-114688,"wmod_x_qn_mod_wn"}
   r=qn Mod 3
   !CheckEq{r,1,"wmod_r_qn_mod_c3"}
   x=l Mod qw
   !CheckEq{Peek.l(&x),0,"wmod_x_l_mod_qw"}
   x=lx Mod qnw
-  !CheckEq{Peek.l(&x),65536,"wmod_x_lx_mod_qnw"}
+  ; before task 4.7: 65536
+  !CheckEq{Peek.l(&x),-131072,"wmod_x_lx_mod_qnw"}
   x=ln Mod qw
   !CheckEq{Peek.l(&x),0,"wmod_x_ln_mod_qw"}
   x=ln Mod qnw
-  !CheckEq{Peek.l(&x),-262144,"wmod_x_ln_mod_qnw"}
+  ; before task 4.7: -262144
+  !CheckEq{Peek.l(&x),-65536,"wmod_x_ln_mod_qnw"}
   x=lb Mod qbig
   !CheckEq{Peek.l(&x),65536,"wmod_x_lb_mod_qbig"}
   x=lb Mod qm
-  !CheckEq{Peek.l(&x),2147418112,"wmod_x_lb_mod_qm"}
+  ; before task 4.7: 2147418112
+  !CheckEq{Peek.l(&x),-65536,"wmod_x_lb_mod_qm"}
   x=(l+q) Mod qnw
-  !CheckEq{Peek.l(&x),32768,"wmod_x_lpq_mod_qnw"}
+  ; before task 4.7: 32768
+  !CheckEq{Peek.l(&x),-163840,"wmod_x_lpq_mod_qnw"}
   x=(ln-q) Mod qw
   !CheckEq{Peek.l(&x),98304,"wmod_x_lnmq_mod_qw"}
   x=(ln-q) Mod qnw
-  !CheckEq{Peek.l(&x),-229376,"wmod_x_lnmq_mod_qnw"}
+  ; before task 4.7: -229376
+  !CheckEq{Peek.l(&x),-32768,"wmod_x_lnmq_mod_qnw"}
   x=(lb+lb+q) Mod qnw
   ; before: 98304
-  !CheckEq{Peek.l(&x),32768,"wmod_x_lblbq_mod_qnw"}
+  ; before task 4.7: 32768
+  !CheckEq{Peek.l(&x),-163840,"wmod_x_lblbq_mod_qnw"}
   x=(lb*qbig) Mod qm
-  !CheckEq{Peek.l(&x),65536,"wmod_x_lbmulqbig_mod_qm"}
+  ; before task 4.7: 65536
+  !CheckEq{Peek.l(&x),-2147418112,"wmod_x_lbmulqbig_mod_qm"}
   x=l Mod qz
   !CheckEq{Peek.l(&x),6553600,"wmod_x_l_mod_qz"}
   x=l Mod q
@@ -654,7 +673,8 @@ End Function
   x=lx Mod qone
   !CheckEq{Peek.l(&x),0,"wmod_x_lx_mod_qone"}
   r=ln Mod qnw
-  !CheckEq{r,-4,"wmod_r_ln_mod_qnw"}
+  ; before task 4.7: -4
+  !CheckEq{r,-1,"wmod_r_ln_mod_qnw"}
   r=(ln-q) Mod qw
   !CheckEq{r,1,"wmod_r_lnmq_mod_qw"}
   r=(l+q) Mod 3
@@ -662,15 +682,18 @@ End Function
   r=pq3{q,p,qn Mod qw,ln Mod qnw,qn Mod 3,l}
   !CheckEq{r,147456,"wmod_pq3"}
   r=pq4{q,p,qn Mod qw,ln Mod qnw,qn Mod 3,l}
-  !CheckEq{r,-262144,"wmod_pq4"}
+  ; before task 4.7: -262144
+  !CheckEq{r,-65536,"wmod_pq4"}
   r=pq5{q,p,qn Mod qw,ln Mod qnw,qn Mod 3,l}
   !CheckEq{r,81920,"wmod_pq5"}
   r=pq6{q,p,qn Mod qw,ln Mod qnw,qn Mod 3,qm Mod qnw}
-  !CheckEq{r,-327680,"wmod_pq6"}
+  ; before task 4.7: -327680
+  !CheckEq{r,-131072,"wmod_pq6"}
   r=0 : If qn Mod qw=2.25 Then r=1
   !CheckEq{r,1,"wmod_if_eq"}
   r=0 : If ln Mod qnw<-3 Then r=1
-  !CheckEq{r,1,"wmod_if_lt"}
+  ; before task 4.7: 1
+  !CheckEq{r,0,"wmod_if_lt"}
   ; a whole divisor at run time: a whole dividend not widened, a leading
   ; zero digit skipped, a / at the top under a wanted Long as a Long
   lmn.l=-2147483647 : lmn=lmn-1
@@ -734,17 +757,22 @@ End Function
   !CheckEq{r,-2147483648,"wd2_pq4"}
   x=ln Mod qm
   ; before: 2036334592
-  !CheckEq{Peek.l(&x),-2147483648,"wm2_x_ln_mod_qm"}
+  ; before task 4.7: -2147483648
+  !CheckEq{Peek.l(&x),-111149056,"wm2_x_ln_mod_qm"}
   r=ln Mod qm
-  !CheckEq{r,-34464,"wm2_r_ln_mod_qm"}
+  ; before task 4.7: -34464
+  !CheckEq{r,-1696,"wm2_r_ln_mod_qm"}
   x=wn Mod qnw
-  !CheckEq{Peek.l(&x),-262144,"wm2_x_wn_mod_qnw"}
+  ; before task 4.7: -262144
+  !CheckEq{Peek.l(&x),-65536,"wm2_x_wn_mod_qnw"}
   r=b Mod qw
   !CheckEq{r,1,"wm2_r_b_mod_qw"}
   x=lmn Mod qnw
-  !CheckEq{Peek.l(&x),-327680,"wm2_x_lmn_mod_qnw"}
+  ; before task 4.7: -327680
+  !CheckEq{Peek.l(&x),-131072,"wm2_x_lmn_mod_qnw"}
   x=lb Mod qnw
-  !CheckEq{Peek.l(&x),65536,"wm2_x_lb_mod_qnw"}
+  ; before task 4.7: 65536
+  !CheckEq{Peek.l(&x),-131072,"wm2_x_lb_mod_qnw"}
   r=lmn Mod qm
   !CheckEq{r,0,"wm2_r_lmn_mod_qm"}
   x=lx Mod qbig
@@ -753,12 +781,15 @@ End Function
   ; before: 294912
   !CheckEq{Peek.l(&x),32768,"wm2_x_lblbq_mod_qbig"}
   x=(lx*qbig) Mod qnw
-  !CheckEq{Peek.l(&x),65536,"wm2_x_lxqbig_mod_qnw"}
+  ; before task 4.7: 65536
+  !CheckEq{Peek.l(&x),-131072,"wm2_x_lxqbig_mod_qnw"}
   r=pq5{q,p,q,p,ln Mod qm,q}
   ; before: 2036334592
-  !CheckEq{r,-2147483648,"wm2_pq5"}
+  ; before task 4.7: -2147483648
+  !CheckEq{r,-111149056,"wm2_pq5"}
   r=pl4{l,l,l,lx Mod qnw,l,l}
-  !CheckEq{r,1,"wm2_pl4"}
+  ; before task 4.7: 1
+  !CheckEq{r,-2,"wm2_pl4"}
   ; Mod with a fraction: the exact 16.16 Mod without q48mod
   q1.q=12.5 : q2.q=3.25 : h75.q=0.75 : hn75.q=-0.75 : qmx.q=0 : hn.q=-0.5 : qt.q=1 : qt=qt/65536
   Poke.l &qmx,$7FFFFFFF : qbh.q=0 : Poke.l &qbh,$40004000 : qmn.q=0 : Poke.l &qmn,$80000001
@@ -767,11 +798,13 @@ End Function
   x=q Mod p
   !CheckEq{Peek.l(&x),0,"qm_x_q_mod_p"}
   x=qn Mod hn
-  !CheckEq{Peek.l(&x),-49152,"qm_x_qn_mod_hn"}
+  ; before task 4.7: -49152
+  !CheckEq{Peek.l(&x),-16384,"qm_x_qn_mod_hn"}
   x=qn Mod h75
   !CheckEq{Peek.l(&x),32768,"qm_x_qn_mod_h75"}
   x=qn Mod hn75
-  !CheckEq{Peek.l(&x),-65536,"qm_x_qn_mod_hn75"}
+  ; before task 4.7: -65536
+  !CheckEq{Peek.l(&x),-16384,"qm_x_qn_mod_hn75"}
   x=qm Mod p
   !CheckEq{Peek.l(&x),49152,"qm_x_qm_mod_p"}
   x=qm Mod qt
@@ -791,13 +824,15 @@ End Function
   x=qmn Mod qmx
   !CheckEq{Peek.l(&x),0,"qm_x_qmn_mod_qmx"}
   x=qbh Mod qn
-  !CheckEq{Peek.l(&x),49152,"qm_x_qbh_mod_qn"}
+  ; before task 4.7: 49152
+  !CheckEq{Peek.l(&x),-65536,"qm_x_qbh_mod_qn"}
   x=q Mod 0.75
   !CheckEq{Peek.l(&x),16384,"qm_x_q_mod_c075"}
   x=qn Mod 0.75
   !CheckEq{Peek.l(&x),32768,"qm_x_qn_mod_c075"}
   x=qn Mod -0.75
-  !CheckEq{Peek.l(&x),-65536,"qm_x_qn_mod_cn075"}
+  ; before task 4.7: -65536
+  !CheckEq{Peek.l(&x),-16384,"qm_x_qn_mod_cn075"}
   x=q Mod 1.5
   !CheckEq{Peek.l(&x),65536,"qm_x_q_mod_c15"}
   x=qn Mod 1.5
@@ -809,7 +844,8 @@ End Function
   x=qmx Mod 16384.25
   !CheckEq{Peek.l(&x),1073725439,"qm_x_qmx_mod_c16384"}
   x=qm Mod -1.5
-  !CheckEq{Peek.l(&x),-131072,"qm_x_qm_mod_cn15"}
+  ; before task 4.7: -131072
+  !CheckEq{Peek.l(&x),-32768,"qm_x_qm_mod_cn15"}
   r=qn Mod p
   !CheckEq{r,0,"qm_r_qn_mod_p"}
   r=q1 Mod q2

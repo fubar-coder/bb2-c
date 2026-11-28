@@ -232,6 +232,11 @@ matrixcheck checkmatrix(uint32_t (*plant)(unsigned op, unsigned t, uint32_t v) =
         d = exprtype_binop(op, left, rt, &f);
         if (!d.result || !exprfold_binop(op, &d, left, &l, &r) || !exprfold_value(&l, d.result, &v))
             continue;
+        // a Mod by a negative divisor: modlib's floor Mod (#1197, task 4.7
+        // of type-system-rework) where the model's rules keep today's sign
+        // rule; its own case "Mod is the floor Mod"
+        if (op == ETO_MOD && rtext[0] == '-')
+            continue;
         res.folded++;
         if (plant)
             v = plant(op, d.result, v);
@@ -378,6 +383,22 @@ TEST_CASE("exprfold: what is not folded here", "[exprfold]")
     // a division by 0: "Division by Zero" before the fold
     fold(ETO_DIV, ET_WORD, W(5), ET_WORD, W(0), &ok);
     CHECK(!ok);
+}
+
+TEST_CASE("exprfold: Mod is the floor Mod", "[exprfold]")
+{
+    int ok;
+
+    // #1197: the divisor added to a remainder that is not 0 and of the
+    // other sign, as modlib's domodword (today's rule: 1, -4, -4, 2)
+    CHECK((int16_t)fold(ETO_MOD, ET_WORD, W(7), ET_WORD, W(0xfffd), &ok) == -2);
+    CHECK(ok);
+    CHECK((int16_t)fold(ETO_MOD, ET_WORD, W(0xfff9), ET_WORD, W(0xfffd), &ok) == -1);
+    CHECK(ok);
+    CHECK((int16_t)fold(ETO_MOD, ET_BYTE, W(0xfff9), ET_BYTE, W(0xfffd), &ok) == -1);
+    CHECK(ok);
+    CHECK((int16_t)fold(ETO_MOD, ET_WORD, W(0xfff9), ET_WORD, W(3), &ok) == 2);
+    CHECK(ok);
 }
 
 TEST_CASE("exprfold: a Quick Mod by a divisor below 1", "[exprfold]")

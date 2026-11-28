@@ -1,0 +1,19 @@
+# modlib-mod-negative-divisor.test.bas: the original's values (the CD's
+# modlib: the divisor added to a negative remainder) are the declared
+# deviations; the port's compiler computes these Mods of whole variables
+# with modlib too, so its cell with the CD's libraries shows them as well
+fixed-orig = 1197
+
+[deviations."libs=cd"]
+"check.negative_divisor.byte_both_negative" = "== fail"
+"check.negative_divisor.byte_both_negative.actual" = "== -4"
+"check.negative_divisor.word_positive_dividend" = "== fail"
+"check.negative_divisor.word_positive_dividend.actual" = "== 1"
+"check.negative_divisor.word_both_negative" = "== fail"
+"check.negative_divisor.word_both_negative.actual" = "== -4"
+"check.negative_divisor.long_positive_dividend" = "== fail"
+"check.negative_divisor.long_positive_dividend.actual" = "== 1"
+"check.negative_divisor.long_both_negative" = "== fail"
+"check.negative_divisor.long_both_negative.actual" = "== -400000"
+"check.negative_divisor.long_wide_divisor" = "== fail"
+"check.negative_divisor.long_wide_divisor.actual" = "== 100000"

@@ -1391,6 +1391,12 @@ TEST_CASE("exprtyping: every chain of two operators as the model types it", "[ex
                         for (int br = 0; br < 2; br++) {
                             std::string t = br ? std::string(a) + o1 + "(" + b + o2 + c + ")"
                                                : std::string(a) + o1 + b + o2 + c;
+                            // a Mod by the negative constant: the floor Mod
+                            // (#1197; task 4.7) where the model's rule P+
+                            // keeps today's sign rule (1000 Mod -1.5 is -0.5,
+                            // P+ 1), its own cases in "Mod is the floor Mod"
+                            if (t.find("MOD -1.5") != std::string::npos)
+                                continue;
                             for (const auto &s : compare(t, vars))
                                 d.push_back(s);
                             n++;
@@ -1399,6 +1405,31 @@ TEST_CASE("exprtyping: every chain of two operators as the model types it", "[ex
         FAIL_CHECK(d[i]);
     INFO(d.size(), " of ", n * (sizeof CONTEXTS / sizeof CONTEXTS[0]));
     CHECK(d.empty());
+}
+
+TEST_CASE("exprtyping: Mod is the floor Mod", "[exprtyping]")
+{
+    // #1197 (task 4.7 of type-system-rework, "Q2 Floor"): a - b*floor(a/b),
+    // the remainder with the divisor's sign, whole and with fractions
+    // (today's rule: 1, -4, -4, 1, -2)
+    struct {
+        const char *text;
+        int64_t num, den;
+    } cases[] = {
+        { "7 MOD -3", -2, 1 }, { "-7 MOD -3", -1, 1 }, { "-7 MOD 3", 2, 1 }, { "-6 MOD -3", 0, 1 },
+        { "-5.25 MOD -2", -5, 4 }, { "5.25 MOD -2", -3, 4 }, { "-5.25 MOD 2", 3, 4 }, { "1000 MOD -1.5", -1, 2 },
+    };
+
+    for (const auto &c : cases) {
+        tree t(c.text, "");
+        int64_t num = 0, den = 0;
+
+        INFO(c.text);
+        REQUIRE(t.root);
+        CHECK(!exprtyping_constvalue(t.root, &num, &den));
+        CHECK(num == c.num);
+        CHECK(den == c.den);
+    }
 }
 
 TEST_CASE("exprtyping: constant subtrees fold as the model folds them", "[exprtyping]")

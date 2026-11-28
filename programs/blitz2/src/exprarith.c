@@ -158,14 +158,15 @@ static uint32_t divs(uint32_t d0, int16_t d1, unsigned *flags)
     return ((uint32_t)(uint16_t)r << 16) | (uint16_t)q;
 }
 
-/* domodword (domodbyte): EXT.L d0, DIVS d1,d0, SWAP d0, a negative
-   remainder plus the divisor (in words) */
+/* domodword (domodbyte): EXT.L d0, DIVS d1,d0, SWAP d0, the remainder
+   plus the divisor (in words) when it is not 0 and of the other sign: the
+   floor Mod (#1197) */
 static int32_t modword(int32_t a, int16_t b, unsigned *flags)
 {
     uint32_t d0 = divs((uint32_t)(int32_t)(int16_t)a, b, flags);
 
     d0 = (d0 << 16) | (d0 >> 16);
-    if ((int16_t)d0 < 0)
+    if ((int16_t)d0 && ((int16_t)d0 ^ b) < 0)
         d0 = (d0 & 0xffff0000u) | (uint16_t)((uint16_t)d0 + (uint16_t)b);
     return (int16_t)(uint16_t)d0;
 }
@@ -197,11 +198,12 @@ int32_t exprarith_whole(unsigned op, unsigned t, int32_t a, int32_t b, unsigned 
         if (t == ET_BYTE || t == ET_WORD)
             return modword(a, (int16_t)y, flags);
         {
-            /* domodlong: q = ldivide(a, b), a - q * b, + b if negative */
+            /* domodlong: q = ldivide(a, b), a - q * b, + b if not 0 and
+               of the other sign (#1197); b 0: the dividend */
             unsigned f = 0;
             uint32_t q = divide(x, y, 32, &f), r = x - (uint32_t)((uint64_t)q * y);
 
-            if ((int32_t)r < 0)
+            if (r && (int32_t)(r ^ y) < 0)
                 r += y;
             return (int32_t)r;
         }
@@ -232,8 +234,8 @@ int32_t exprarith_q16(unsigned op, int32_t a, int32_t b, unsigned *flags)
             return a;
         }
         r = b == -1 ? 0 : a % b;
-        if (r < 0)
-            r = (int32_t)((uint32_t)r + y);
+        if (r && (r ^ b) < 0)
+            r = (int32_t)((uint32_t)r + y);     /* the floor Mod (#1197) */
         return r;
     }
     default: return a;
@@ -278,8 +280,8 @@ int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned 
         if (!b)
             return a;           /* as domodlong: the dividend */
         r = b == -1 ? 0 : a % b;
-        if (r < 0)
-            r = (int64_t)((uint64_t)r + (uint64_t)b);
+        if (r && (r ^ b) < 0)
+            r = (int64_t)((uint64_t)r + (uint64_t)b);   /* the floor Mod (#1197) */
         return r;
     }
     default: return a;

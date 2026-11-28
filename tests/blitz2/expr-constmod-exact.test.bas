@@ -5,12 +5,13 @@
 ; only a divisor between 0 and 1 exact.  Correct (the user's decision of
 ; 2026-11-26, "Yes, all exact (Recommended)"): a Mod with a fraction in an
 ; operand gives the value of the same Mod with variables, under every
-; destination, today's sign rule (a negative remainder plus the divisor);
-; a divisor 0 stays "Division by Zero" (#1044), a Mod of whole numbers is
-; unchanged (7 Mod 3).  Under a whole destination the Mod is a Quick rounded
-; down as the variable form (x.l=-5.25 Mod -2 is -4), an exception to the
-; Float of a constant with a point (#1222; the user's decision of 2026-11-26,
-; "B: like the variable form").
+; destination, the floor Mod since type-system-rework task 4.7 (#1197: the
+; remainder has the divisor's sign; before, a negative remainder plus the
+; divisor); a divisor 0 stays "Division by Zero" (#1044), a Mod of whole
+; numbers is unchanged (7 Mod 3).  Under a whole destination the Mod is a
+; Quick rounded down as the variable form (x.l=-5.25 Mod -2 is -2, before
+; task 4.7 -4), an exception to the Float of a constant with a point
+; (#1222; the user's decision of 2026-11-26, "B: like the variable form").
 !TestCase{quick}
   rq.q=0
   rq=5.25 Mod 2
@@ -23,13 +24,15 @@
   !CheckQEq{rq,2,"q_6.0_mod_4"}
   rq=7 Mod 3
   !CheckQEq{rq,1,"q_7_mod_3"}
-  ; the sign rule of the variable's Mod: a negative remainder plus the divisor
+  ; the sign rule of the variable's Mod: the floor Mod (#1197)
   rq=-5.25 Mod 2
   !CheckQEq{rq,0.75,"q_n5.25_mod_2"}
   rq=5.25 Mod -2
-  !CheckQEq{rq,1.25,"q_5.25_mod_n2"}
+  ; before task 4.7: 1.25
+  !CheckQEq{rq,-0.75,"q_5.25_mod_n2"}
   rq=-5.25 Mod -2
-  !CheckQEq{rq,-3.25,"q_n5.25_mod_n2"}
+  ; before task 4.7: -3.25
+  !CheckQEq{rq,-1.25,"q_n5.25_mod_n2"}
   rq=5 Mod -0.5
   !CheckQEq{rq,0,"q_5_mod_n0.5"}
 !EndTestCase
@@ -47,8 +50,10 @@
   rf=-5.25 Mod 2 : vf=b Mod d : !CheckFltNear{rf,vf,0.0001,"f_b"}
   rq=-5.25 Mod -2 : vq=b Mod g : !CheckQEq{rq,vq,"q_bg"}
   ; a negative result under a whole destination is rounded down as the variable
-  ; form (-3.25 gives -4), not cut towards zero as a constant with a point (#1222)
-  rl=-5.25 Mod -2 : vl=b Mod g : !CheckEq{rl,vl,"l_bg"} : !CheckEq{rl,-4,"l_bg_value"}
+  ; form (-1.25 gives -2; -3.25 and -4 before task 4.7), not cut towards zero
+  ; as a constant with a point (#1222)
+  ; before task 4.7: -4
+  rl=-5.25 Mod -2 : vl=b Mod g : !CheckEq{rl,vl,"l_bg"} : !CheckEq{rl,-2,"l_bg_value"}
   rw=-5.25 Mod -2 : vw=b Mod g : !CheckEq{rw,vw,"w_bg"}
   rb=-1000 Mod -1.5 : vb=m Mod g1 : !CheckEq{rb,vb,"b_cf"}
   rl=6.0 Mod 4 : vl=c Mod 4 : !CheckEq{rl,vl,"l_c"}

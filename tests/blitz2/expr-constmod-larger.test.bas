@@ -2,7 +2,8 @@
 ; constant expression gives what the same expression with variables gives.
 ; #1223 made a Mod of two constants with a fraction (or a point) in an
 ; operand the exact Mod, a Quick rounded down under a whole destination as
-; the variable form (x.l=-5.25 Mod -2 is -4), but a larger constant
+; the variable form (x.l=-5.25 Mod -2 is -2, the floor Mod of #1197 since
+; type-system-rework task 4.7; -4 before), but a larger constant
 ; expression with such a Mod still followed the Float of a constant with a
 ; point (#1222): x.l=-1-5.25 Mod 2 was -2 (-2.25 towards zero), where
 ; x.l=-1-q Mod 2 with q=5.25 is -3 (rounded down).  Correct (the user's
@@ -16,7 +17,8 @@
   rl=-1-5.25 Mod 2 : vl=-1-a Mod d : !CheckEq{rl,vl,"l_sub"} : !CheckEq{rl,-3,"l_sub_value"}
   rw=-1-5.25 Mod 2 : vw=-1-a Mod d : !CheckEq{rw,vw,"w_sub"} : !CheckEq{rw,-3,"w_sub_value"}
   rb=-1-5.25 Mod 2 : vb=-1-a Mod d : !CheckEq{rb,vb,"b_sub"} : !CheckEq{rb,-3,"b_sub_value"}
-  rl=-5.25 Mod -2+1 : vl=b Mod g+1 : !CheckEq{rl,vl,"l_add"} : !CheckEq{rl,-3,"l_add_value"}
+  ; before task 4.7: -3
+  rl=-5.25 Mod -2+1 : vl=b Mod g+1 : !CheckEq{rl,vl,"l_add"} : !CheckEq{rl,-1,"l_add_value"}
   rw=-5.25 Mod -2+1 : vw=b Mod g+1 : !CheckEq{rw,vw,"w_add"}
   rl=-5.25 Mod 2-1 : vl=b Mod d-1 : !CheckEq{rl,vl,"l_sub1"} : !CheckEq{rl,-1,"l_sub1_value"}
   rl=0-5 Mod 1.5 : vl=0-5 Mod p : !CheckEq{rl,vl,"l_divfrac"} : !CheckEq{rl,-1,"l_divfrac_value"}

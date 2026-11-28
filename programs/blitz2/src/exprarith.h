@@ -49,8 +49,9 @@ enum {
  * Word, a Word + or * a Long, else t): + and * of Bytes and Words as
  * add.w (a Word sum taken as a Long after ext.l, so 20000+20000 is
  * -25536) and muls.w, / as DIVS.W (an overflow leaves the dividend) and
- * Long's ldivide, Mod as domodword and domodlong (the divisor added to a
- * negative remainder), * of Longs modulo 2^32.  A Long division by 0 is
+ * Long's ldivide, Mod as domodword and domodlong (the floor Mod: the
+ * divisor added to a remainder that is not 0 and of the other sign,
+ * #1197), * of Longs modulo 2^32.  A Long division by 0 is
  * the largest number with the dividend's sign (#200), a Long Mod by 0 the
  * dividend. */
 int32_t exprarith_whole(unsigned op, unsigned t, int32_t a, int32_t b, unsigned *flags);
@@ -59,9 +60,9 @@ int32_t exprarith_whole(unsigned op, unsigned t, int32_t a, int32_t b, unsigned 
  *         + and - modulo 2^32, * as qmul (the product of the magnitudes,
  *         its low 16 bits cut, the sign applied), / as qdivide (48 steps:
  *         its last bit; a divisor 0 the largest number with the
- *         dividend's sign, #200), Mod exact with today's sign rule
- *         (domodlong: the divisor added to a negative remainder; a divisor
- *         0 traps as domodquick's DIVS.W). */
+ *         dividend's sign, #200), Mod the exact floor Mod (the divisor
+ *         added to a remainder that is not 0 and of the other sign, #1197;
+ *         a divisor 0 traps as domodquick's DIVS.W). */
 int32_t exprarith_q16(unsigned op, int32_t a, int32_t b, unsigned *flags);
 
 /** @brief Today's Quick Mod (domodquick): the whole parts by DIVS.W, the
@@ -72,8 +73,8 @@ int32_t exprarith_qmod_today(int32_t a, int32_t b, unsigned *flags);
  *         towards zero to 1/65536; / the exact quotient cut towards zero
  *         to 1/65536 (a divisor 0: div0, the largest value of the wanted
  *         type's format as a 48.16 value, with the dividend's sign,
- *         exprarith_div0); Mod the exact remainder with today's sign rule
- *         (a divisor 0: the dividend, as domodlong). */
+ *         exprarith_div0); Mod the exact floor Mod (#1197; a divisor 0:
+ *         the dividend, as domodlong). */
 int64_t exprarith_q48(unsigned op, int64_t a, int64_t b, int64_t div0, unsigned *flags);
 
 /** @brief exprarith_q48 with * and / cut down to 1/65536 instead of

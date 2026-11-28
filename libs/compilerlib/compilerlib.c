@@ -40,9 +40,9 @@
  *                                         Quick (q48divq) +-$7FFFFFFF as
  *                                         16.16 bits, a Word (q48divw)
  *                                         +-32767, a Byte (q48divb) +-127
- *   $D60A q48mod    a Mod b               the exact remainder, a negative
- *                                         one plus b (domodlong's rule); a
- *                                         divisor 0 gives a
+ *   $D60A q48mod    a Mod b               the exact floor Mod a -
+ *                                         b*floor(a/b) (#1197); a divisor
+ *                                         0 gives a
  *   $D60B l2q48     a Long as 48.16       exact
  *   $D60C q2q48     a Quick as 48.16      exact
  *   $D60D q48floor  48.16 to a Long       rounded down, modulo 2^32
@@ -62,9 +62,10 @@
  * 2026-11-26, "Speed review of P+: the candidates and the rest"; D-027),
  * with the values of exprarith.c as the 48.16 routines:
  *
- *   $D60F q16mod    a Mod b of two Quicks the exact 16.16 Mod
+ *   $D60F q16mod    a Mod b of two Quicks the exact 16.16 floor Mod
  *                                         (exprarith_q16: a % b, plus b
- *                                         when negative); b not 0; d0/d1
+ *                                         when not 0 and of the other
+ *                                         sign); b not 0; d0/d1
  *                                         in, d0 out (longdiv's contract)
  *   $D610 q48mull   a * b of a Long and   exact (q48mul's value); a in
  *                   a Quick (either       d0, b in d2, the product in
@@ -574,9 +575,10 @@ BLITZ_ASM_BLOCK(q48mul,
  * @brief q48div ($D606), q48divq ($D607), q48divw ($D608), q48divb
  * ($D609): d1:d0 = a / b, (|a| << 16) / |b| cut towards zero (q48divw and
  * q48divb, only under a wanted Word or Byte: down, exprarith_q48_down,
- * #1221), the sign applied, modulo 2^64 (exprarith_q48 ETO_DIV); and q48mod ($D60A): d1:d0
- * = a Mod b (ETO_MOD), |a| modulo |b| with a's sign, a negative remainder
- * plus b (domodlong's rule).
+ * #1221), the sign applied, modulo 2^64 (exprarith_q48 ETO_DIV); and
+ * q48mod ($D60A): d1:d0 = a Mod b (ETO_MOD), the floor Mod: |a| modulo
+ * |b| with a's sign, plus b when that is not 0 and of the other sign
+ * (#1197).
  *
  * A divisor 0: the division gives the largest value of the wanted type
  * with the dividend's sign (exprarith_div0: q48div a Long or none
@@ -718,16 +720,18 @@ BLITZ_ASM_BLOCK(q48div,
         "   lea     12(sp),sp\n"
         "   move.l  d2,d0\n"
         "   move.l  d3,d1\n"
-        "   tst.l   (sp)+\n"
-        "   bpl.s   2f\n"                   /* a >= 0: the remainder */
+        "   move.l  (sp)+,d4\n"             /* bit 31: a's sign */
         "   or.l    d3,d2\n"
         "   beq.s   2f\n"                   /* 0 */
-        "   move.l  (sp),d2\n"
-        "   move.l  4(sp),d3\n"
-        "   sub.l   d0,d2\n"                /* b - remainder */
-        "   subx.l  d1,d3\n"
-        "   move.l  d2,d0\n"
-        "   move.l  d3,d1\n"
+        "   tst.l   d4\n"
+        "   bpl.s   1f\n"
+        "   neg.l   d0\n"                   /* a's sign: the remainder towards zero */
+        "   negx.l  d1\n"
+        "1: move.l  4(sp),d3\n"
+        "   eor.l   d3,d4\n"
+        "   bpl.s   2f\n"                   /* b's sign */
+        "   add.l   (sp),d0\n"              /* the other sign: plus b */
+        "   addx.l  d3,d1\n"
         "2: addq.l  #8,sp\n"
         "   movem.l (sp)+,d4-d7/a0-a1\n"
         "   rts\n"
@@ -971,8 +975,9 @@ BLITZ_ASM_BLOCK(q48casts,
 
 /**
  * @brief q16mod ($D60F): d0.l = d0 Mod d1, two Quicks (16.16), the exact
- * Mod of rule P+ (exprarith_q16 ETO_MOD, also q48mod's low 32 bits): r =
- * |a| Mod |b| with a's sign, plus b when that is negative (modulo 2^32).
+ * floor Mod (exprarith_q16 ETO_MOD, also q48mod's low 32 bits): r = |a|
+ * Mod |b| with a's sign, plus b when that is not 0 and of the other sign
+ * (#1197; modulo 2^32).
  * The caller has checked b against 0 (the trap of a Mod by 0 is its
  * code's).
  *
@@ -1038,11 +1043,14 @@ BLITZ_ASM_BLOCK(q16mod,
         "5: add.l   d4,d3\n"
         "   bcc.s   5b\n"                   /* until it carries */
         ".Lqmsign:\n"
+        "   tst.l   d3\n"
+        "   beq.s   6f\n"                   /* 0 */
         "   tst.l   d0\n"
-        "   bpl.s   6f\n"
-        "   neg.l   d3\n"
-        "   bpl.s   6f\n"                   /* 0 */
-        "   add.l   d1,d3\n"                /* negative: plus b */
+        "   bpl.s   7f\n"
+        "   neg.l   d3\n"                   /* a's sign: the remainder towards zero */
+        "7: eor.l   d1,d0\n"
+        "   bpl.s   6f\n"                   /* b's sign */
+        "   add.l   d1,d3\n"                /* the other sign: plus b */
         "6: move.l  d3,d0\n"
         "   movem.l (sp)+,d2-d5\n"
         "   rts");

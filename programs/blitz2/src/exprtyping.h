@@ -259,7 +259,7 @@ int exprtyping_isconst(const struct exprtyping_node *n);
 
 /** @brief The exact value of a constant subtree as the rule folds it
  *         (the whole parts under AND, OR, EOR, Mod and the shifts, a whole
- *         Mod by the code's sign rule: -6 Mod 4 is 2; a
+ *         Mod the floor Mod: -6 Mod 4 is 2, 7 Mod -3 is -2; a
  *         comparison -1 or 0, a division by 0 0) in *num / *den (den > 0).
  *
  * The exact value: where the rule keeps today's types (no fraction under a

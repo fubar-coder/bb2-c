@@ -1035,9 +1035,6 @@ Known limits of the compiler that a test meets (open issues):
   `!Check{q*2>2.4}` (the Long condition) and in `r.l=(q*2>2.4)` alike.
   Assign the compound operand to a Quick variable first
   (`t.q=q*2 : !Check{t>2.4}`), or check the value (`!CheckQEq{q*2,2.5}`).
-* **#1197**: `MOD` with a negative dividend and a negative divisor gives
-  a remainder outside the divisor's range (`-7 MOD -3` is -4); with a
-  positive divisor the remainder is 0..b-1 (`-7 MOD 3` is 2).
 
 ### An example
 

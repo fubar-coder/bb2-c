@@ -3,13 +3,18 @@
  * numeric type (tokens modbyte..modfloat, blitz2.s equates 140-144;
  * called from the expression evaluator, blitz2.s domodb..domodf).
  *
- * C translation of bblibsrc/modlib (binary checked: same as the source).
- * In: d0 = left, d1 = right; out: d0.  The result takes the sign of the
- * divisor's side the way the original does it: a negative remainder gets
- * the divisor added (once).
+ * C translation of bblibsrc/modlib.  In: d0 = left, d1 = right; out: d0.
+ * The result is the floor Mod a - b*floor(a/b): the remainder of the
+ * division towards zero gets the divisor added (once) when it is not 0 and
+ * its sign is not the divisor's.  Fixed (#1197, #1198; type-system-rework
+ * Q2 "Floor"): the original added the divisor to every negative remainder
+ * (-7 MOD -3 was -4, 7 MOD -3 was 1); with a positive divisor both rules
+ * give 0..b-1.  A divisor 0 as in the original: the 68000 division trap
+ * for Byte, Word and Quick (DIVS), the dividend for Long and Float
+ * (ldivide's 'infinity times 0).
  *
- *   byte/word: EXT.l d0:DIVS d1,d0:SWAP d0, remainder fixed up in the low
- *              word.  The high word of d0 is the quotient.  d1 is kept.
+ *   byte/word: EXT.l d0:DIVS d1,d0:SWAP d0, the remainder fixed up in the
+ *              low word.  The high word of d0 is the quotient.  d1 is kept.
  *   quick:     SWAP d0:SWAP d1 first, then the word code on the integer
  *              parts.  The result is quotient<<16 | remainder, but the
  *              compiler types it as a Word (blitz2.s:9459 domodq "now a
@@ -17,7 +22,7 @@
  *              (the fractions of the inputs are ignored).  Kept bit for
  *              bit.
  *   long:      a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib
- *              lmultiply ($CA01), plus b if negative; for a divisor
+ *              lmultiply ($CA01), the floor fix-up; for a divisor
  *              below $10000 in magnitude the same remainder from DIVU.
  *   float:     SPFix both (mathffp, a6 = ffplib base), then the long code;
  *              The result is a Long, not an FFP number - the compiler
@@ -47,17 +52,18 @@ BLITZ_NULLSUB(domodquick, 0, 0);                        /* $D403 modquick */
 BLITZ_NULLSUB(domodfloat, 0, 0, LIB_ffplib, BL_LA6);    /* $D404 modfloat */
 BLITZ_LIBFIN();
 
-/* domodword - EXT.l d0:DIVS d1,d0:SWAP d0:TST d0:BPL 'skip:ADD d1,d0
-   DIVS as an instruction (bl_divs_w): C has nothing with the same
-   behaviour - on overflow (quotient outside -32768..32767) d0 stays
-   UNCHANGED, and a divisor of 0 raises the 68000 divide-by-zero exception
-   (vector 5) like the original. */
+/* domodword - EXT.l d0:DIVS d1,d0:SWAP d0, the floor fix-up (Fixed
+   (#1197): the original's TST d0:BPL 'skip:ADD d1,d0 added the divisor to
+   every negative remainder).  DIVS as an instruction (bl_divs_w): C has
+   nothing with the same behaviour - on overflow (quotient outside
+   -32768..32767) d0 stays UNCHANGED, and a divisor of 0 raises the 68000
+   divide-by-zero exception (vector 5) like the original. */
 static inline __attribute__((always_inline)) ULONG mod_w(ULONG acc, ULONG divisor)
 {
     acc = BL_EXTL(acc);                             /* EXT.l d0 */
     acc = bl_divs_w(acc, divisor);
     acc = BL_SWAP(acc);                             /* SWAP d0 */
-    if ((WORD)acc < 0)                              /* TST d0:BPL 'skip */
+    if ((WORD)acc && ((WORD)acc ^ (WORD)divisor) < 0)  /* not 0, not the divisor's sign */
         BL_SETW(acc, (UWORD)acc + (UWORD)divisor);  /* ADD d1,d0 */
     return acc;
 }
@@ -65,8 +71,9 @@ static inline __attribute__((always_inline)) ULONG mod_w(ULONG acc, ULONG diviso
 /**
  * @brief a MOD b for Word and Byte (tokens modword $D401, modbyte $D400).
  *
- * EXT.l d0:DIVS d1,d0:SWAP d0, a negative remainder gets the divisor
- * added (once).  domodbyte is the same code (the byte is sign extended by
+ * EXT.l d0:DIVS d1,d0:SWAP d0; a remainder that is not 0 and whose sign
+ * is not the divisor's gets the divisor added (once), the floor Mod
+ * (#1197).  domodbyte is the same code (the byte is sign extended by
  * the compiler; only EXT.l on the word).  Keeps d2-d7/a2-a6 (the
  * contract of an operator); d1, a0 and a1 are free.
  *
@@ -114,16 +121,18 @@ BLITZ_ALIAS(domodquick, domodquick_c);
  * @brief a MOD b for Long (token modlong $D402).
  *
  * a - (a/b)*b with ldivlib ldivide ($CB01) and lmullib lmultiply ($CA01),
- * plus b if negative (the original's code).  Keeps d2-d7 and a0-a6; d1
- * is changed (the original leaves (a/b)*b in d1).
+ * the remainder towards zero, then the floor fix-up: plus b when it is not
+ * 0 and its sign is not b's (Fixed (#1197): the original added b to every
+ * negative remainder).  Keeps d2-d7 and a0-a6; d1 is changed (the
+ * original leaves (a/b)*b in d1).
  *
  * In assembler for speed (a hot path, every Mod on Long).  For a divisor
  * of 1 to $FFFF in magnitude the remainder comes from two DIVU instead
  * of the two calls, with the same result: ldivide's quotient is the
  * exact one of the magnitudes with the sign applied, lmultiply's product
  * is the one modulo 2^32, so a - (a/b)*b is the remainder of the
- * magnitudes with the dividend's sign.  A divisor 0 (ldivide's
- * 'infinity; the result is a) or one from $10000 on takes the calls.
+ * magnitudes with the dividend's sign.  A divisor from $10000 on takes
+ * the calls, also a divisor 0 (ldivide's 'infinity; the result is a).
  *
  * @arg d0 a, the left operand.
  * @arg d1 b, the right operand.
@@ -153,10 +162,17 @@ BLITZ_ASM_ROUTINE(domodlong,
         "   move.l  d2,d0\n"
         "   move.l  (sp)+,d2\n"
         "   tst.l   (sp)+\n"
-        "   bpl.s   3f\n"
+        "   bpl.s   .Lfloor\n"
         "   neg.l   d0\n"                   /* the dividend's sign */
+        /* the remainder towards zero in d0, b at (sp): plus b when it is
+           not 0 and has the other sign */
+        ".Lfloor:\n"
+        "   tst.l   d0\n"
+        "   beq.s   3f\n"
+        "   move.l  (sp),d1\n"
+        "   eor.l   d0,d1\n"
         "   bpl.s   3f\n"
-        "   add.l   (sp),d0\n"              /* negative: + b */
+        "   add.l   (sp),d0\n"
         "3: addq.l  #4,sp\n"
         "   rts\n"
         ".Lcalls:\n"
@@ -167,12 +183,10 @@ BLITZ_ASM_ROUTINE(domodlong,
         "   jsr     _blitz_tok+0x80000000+" BL_STR(TOK_lmultiply) "\n"
         "   move.l  d0,d1\n"
         "   move.l  (sp),d0\n"
-        "   sub.l   d1,d0\n"
-        "   bpl.s   4f\n"
-        "   add.l   12(sp),d0\n"
-        "4: movem.l 4(sp),a0-a1\n"          /* the CCR stays */
-        "   lea     16(sp),sp\n"
-        "   rts");
+        "   sub.l   d1,d0\n"                /* the remainder towards zero */
+        "   movem.l 4(sp),a0-a1\n"
+        "   lea     12(sp),sp\n"
+        "   bra.s   .Lfloor");
 
 /**
  * @brief a MOD b for Float (token modfloat $D404).

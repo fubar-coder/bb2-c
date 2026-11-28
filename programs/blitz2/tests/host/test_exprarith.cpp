@@ -158,6 +158,12 @@ TEST_CASE("exprarith: the Quick Mod, exact (P+) and today's (domodquick)", "[exp
     for (int i = 0; i < 1500; i++) {
         int32_t a = g.quick(i + 1), b = g.quick(i);
         std::string vars = "q=" + q16text(a) + " p=" + q16text(b);
+
+        // the model's rules keep today's sign rule (the divisor added to a
+        // negative remainder); with a positive divisor it is the floor Mod
+        // (#1197), checked below for a negative one
+        if (b < 0)
+            continue;
         unsigned f = 0, ft = 0;
         int32_t exact = exprarith_q16(ETO_MOD, a, b, &f);
         int32_t today = exprarith_qmod_today(a, b, &ft);
@@ -177,9 +183,16 @@ TEST_CASE("exprarith: the Quick Mod, exact (P+) and today's (domodquick)", "[exp
     CHECK(f == 0);
     exprarith_qmod_today(0x78000, 0x8000, &f);
     CHECK(f == EXA_TRAP);
-    // today's sign rule: -7 Mod 2 is 1
+    // the floor Mod (#1197): -7 Mod 2 is 1, 7 Mod -3 is -2, -7 Mod -3 is
+    // -1, -7.5 Mod -2 is -1.5 (today's rule: 1, 1, -4, -3.5)
     f = 0;
     CHECK(exprarith_q16(ETO_MOD, -7 * 65536, 2 * 65536, &f) == 65536);
+    CHECK(exprarith_q16(ETO_MOD, 7 * 65536, -3 * 65536, &f) == -2 * 65536);
+    CHECK(exprarith_q16(ETO_MOD, -7 * 65536, -3 * 65536, &f) == -65536);
+    CHECK(exprarith_q16(ETO_MOD, -0x78000, -2 * 65536, &f) == -0x18000);
+    CHECK(exprarith_qmod_today(7 * 65536, -3 * 65536, &f) == -2);
+    CHECK(exprarith_qmod_today(-7 * 65536, -3 * 65536, &f) == -1);
+    CHECK(f == 0);
 }
 
 TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
@@ -204,6 +217,11 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
 
                 if (order)
                     std::swap(x, y);
+                // the model's rules keep today's sign rule of Mod (the
+                // divisor added to a negative remainder): the floor Mod
+                // (#1197) is checked below
+                if (op == ETO_MOD && y < 0)
+                    continue;
                 for (enum em_ctx ctx : { EM_DL, EM_DQ, EM_DW, EM_DB }) {
                     unsigned want = ctx == EM_DL ? ET_LONG : ctx == EM_DQ ? ET_QUICK : ctx == EM_DW ? ET_WORD : ET_BYTE;
                     unsigned f = 0;
@@ -229,7 +247,7 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
             }
     }
     CHECK(differ == 0);
-    CHECK(compared > 40000);
+    CHECK(compared > 35000);
     // a division by 0 in the wanted type's format with the dividend's sign
     unsigned f = 0;
     CHECK(exprarith_q48(ETO_DIV, -100 * 65536, 0, exprarith_div0(ET_WORD), &f) == -(int64_t)32767 * 65536);
@@ -237,6 +255,12 @@ TEST_CASE("exprarith: 48.16 with the consumer's rounding (P+)", "[exprarith]")
     CHECK((f & EXA_DIV0) != 0);
     // a Mod by 0: the dividend
     CHECK(exprarith_q48(ETO_MOD, 100000LL * 65536, 0, 0, &f) == 100000LL * 65536);
+    // the floor Mod (#1197): 100000 Mod -3 is -2, -100000 Mod -3 is -1
+    f = 0;
+    CHECK(exprarith_q48(ETO_MOD, 100000LL * 65536, -3 * 65536, 0, &f) == -2 * 65536);
+    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, -3 * 65536, 0, &f) == -65536);
+    CHECK(exprarith_q48(ETO_MOD, -100000LL * 65536, 3 * 65536, 0, &f) == 2 * 65536);
+    CHECK(f == 0);
     // the product keeps its 48 bits (q*q2*l: 300*300*2 = 180000)
     f = 0;
     int64_t p = exprarith_q48(ETO_MUL, exprarith_q16_q48(300 << 16), exprarith_q16_q48(300 << 16), 0, &f);
@@ -297,6 +321,10 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
             };
 
             for (const auto &fm : forms) {
+                // the model's Mod keeps today's sign rule; with a positive
+                // divisor it is the floor Mod (#1197)
+                if (l2 < 0 && std::strstr(fm.text, "MOD"))
+                    continue;
                 std::string m = model(fm.text, vars, ctx, DEC), mine = dest(ctx, fm.r, 0);
 
                 compared++;
@@ -307,7 +335,7 @@ TEST_CASE("exprarith: 48.16 chains keep a 48-bit whole part (P+)", "[exprarith]"
         }
     }
     CHECK(differ == 0);
-    CHECK(compared > 25000);
+    CHECK(compared > 22000);
     CHECK(model("l*q/l2", "l.l=2000000000 q=2 l2.l=4", EM_DL, DEC) == "1000000000");
     // #1221: the cut of a product or quotient under a wanted whole number
     // rounds down, the value is the exact one rounded down once (without
@@ -408,6 +436,11 @@ TEST_CASE("exprarith: whole numbers as today's code", "[exprarith]")
             for (unsigned op : { ETO_ADD, ETO_SUB, ETO_MUL, ETO_DIV, ETO_MOD }) {
                 std::string text = std::string(k.a) + opname(op) + k.b;
                 unsigned f = 0;
+
+                // the model's rules keep today's sign rule of Mod: the
+                // floor Mod (#1197) is checked below
+                if (op == ETO_MOD && b < 0)
+                    continue;
                 int32_t r = exprarith_whole(op, k.t, a, b, &f);
                 // Print shows a Byte result (- / Mod of Bytes) by its low byte
                 bool byte = k.t == ET_BYTE && op != ETO_ADD && op != ETO_MUL;
@@ -436,6 +469,14 @@ TEST_CASE("exprarith: whole numbers as today's code", "[exprarith]")
     f = 0;
     exprarith_whole(ETO_DIV, ET_WORD, 7, 0, &f);
     CHECK(f == EXA_TRAP);
+    // the floor Mod (#1197) in every type (today's rule: 1, -4, -400000)
+    f = 0;
+    CHECK(exprarith_whole(ETO_MOD, ET_BYTE, 7, -3, &f) == -2);
+    CHECK(exprarith_whole(ETO_MOD, ET_WORD, -7, -3, &f) == -1);
+    CHECK(exprarith_whole(ETO_MOD, ET_LONG, -700000, -300000, &f) == -100000);
+    CHECK(exprarith_whole(ETO_MOD, ET_LONG, 700000, -300000, &f) == -200000);
+    CHECK(exprarith_whole(ETO_MOD, ET_LONG, -6, -3, &f) == 0);
+    CHECK(f == 0);
 }
 
 TEST_CASE("exprarith: the casts and the fast-path test", "[exprarith]")
@@ -875,8 +916,9 @@ TEST_CASE("exprarith: a whole divisor at run time equals q48div", "[exprarith]")
 // a divisor tested at run time) and p5wholemod (a 48.16 dividend in
 // p5callin's frame) step by step: the whole part of |a| by |m| <= 32768
 // with DIVU (a word quotient per step: an overflow fails), the remainder
-// above |a|'s fraction, a's sign, b added when negative; against
-// exprarith_q48's Mod (q48mod) and, for 16.16, exprarith_q16's.
+// above |a|'s fraction, a's sign, b added when that is not 0 and b's sign
+// is not a's (the floor Mod, #1197); against exprarith_q48's Mod (q48mod)
+// and, for 16.16, exprarith_q16's.
 
 namespace {
 
@@ -896,9 +938,10 @@ bool fast_qmod(int32_t a, int32_t b, int32_t *out, bool plant = false)
     t = (t & 0xffff0000u) | (u & 0xffff);       // move.w Du,Dt
     if (a < 0) {
         t = 0u - t;                             // neg.l Dt
-        if ((int32_t)t < 0 && !plant)
-            t += (uint32_t)b;                   // add.l Db,Dt
-    }
+        if ((int32_t)t < 0 && b >= 0 && !plant)
+            t += (uint32_t)b;                   // tst.l Db, bmi.s; add.l Db,Dt
+    } else if (b < 0 && t && !plant)
+        t += (uint32_t)b;                       // .apos: tst.l Db, tst.l Dt; add.l Db,Dt
     *out = (int32_t)t;
     return true;
 }
@@ -906,7 +949,8 @@ bool fast_qmod(int32_t a, int32_t b, int32_t *out, bool plant = false)
 // p5wholemod: d1:d0 = |a|, d3 = |m|, the high digits skipped when d1 is 0
 // (tst.l d1) and the first one when it is 0 (beq.s), one DIVU per digit of
 // the whole part (w2, w1, w0; the remainder above each in d2), d0 =
-// r:fraction, a's sign in 64 bits, b sign-extended added when negative
+// r:fraction, a's sign in 64 bits, b sign-extended added when the
+// remainder is not 0 and of the other sign
 bool fast_wmod(int64_t n, int32_t b, int64_t *out, bool plant = false)
 {
     uint64_t u = n < 0 ? 0 - (uint64_t)n : (uint64_t)n;
@@ -927,10 +971,11 @@ bool fast_wmod(int64_t n, int32_t b, int64_t *out, bool plant = false)
         return false;
     uint64_t v = (d2 & 0xffff0000u) | (uint32_t)(u & 0xffff);
     if (n < 0) {
-        v = 0 - v;                              // neg.l d0, negx.l d1
-        if ((int64_t)v < 0 && !plant)
-            v += (uint64_t)(int64_t)b;          // add.l d2,d0, addx.l d3,d1
-    }
+        v = 0 - v;                              // neg.l d0, moveq #-1,d1
+        if ((int64_t)v < 0 && b >= 0 && !plant)
+            v += (uint64_t)(int64_t)b;          // tst.l d2, bmi.s; add.l d2,d0, addx.l d3,d1
+    } else if (b < 0 && v && !plant)
+        v += (uint64_t)(int64_t)b;              // .apos: tst.l d2, tst.l d0; the add
     *out = (int64_t)v;
     return true;
 }
@@ -957,10 +1002,14 @@ bool fast_wmodl(int32_t l, int32_t b, int64_t *out)
         d0 = 0u - d0;                           // neg.l d0
         if ((int32_t)d0 < 0) {
             uint64_t v = ((uint64_t)0xffffffffu << 32) | d0;     // moveq #-1,d1
-            v += (uint64_t)(int64_t)b;          // add.l d2,d0, addx.l d3,d1
+            if (b >= 0)                         // tst.l d2, bmi.s .done
+                v += (uint64_t)(int64_t)b;      // add.l d2,d0, addx.l d3,d1
             *out = (int64_t)v;
             return true;
         }
+    } else if (b < 0 && d0) {                   // .apos: tst.l d2, tst.l d0
+        *out = (int64_t)((uint64_t)d0 + (uint64_t)(int64_t)b);
+        return true;
     }
     *out = (int64_t)(((uint64_t)hi << 32) | d0);
     return true;
@@ -1064,8 +1113,8 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
             ok = qmod_ok(a, m) && wmod_ok(n, m) && wmodl_ok(l, m);
     }
     CHECK(ok);
-    // a planted error is seen: the divisor not added to a negative
-    // remainder (both signs of the divisor)
+    // a planted error is seen: the divisor not added to a remainder of the
+    // other sign (both signs of the divisor)
     bool qseen = false, wseen = false;
     for (int32_t a : qs)
         qseen |= !qmod_ok(a, 3, true) || !qmod_ok(a, -3, true);
@@ -1080,7 +1129,8 @@ TEST_CASE("exprarith: Mod by a whole divisor equals q48mod", "[exprarith]")
 // and |b| shifted right until b' fits a word, one DIVU for the estimate q
 // (a word quotient: an overflow fails), q * |b| by two MULU modulo 2^32,
 // the borrow of |a| - q |b| and the adds of |b| until the sum carries
-// (counted: more than two fail), a's sign, b added when negative; against
+// (counted: more than two fail), a's sign, b added when the remainder is
+// not 0 and a's sign is not b's (the floor Mod, #1197); against
 // exprarith_q16's Mod and q48mod's low 32 bits.
 
 namespace {
@@ -1125,10 +1175,11 @@ bool fast_q16mod(int32_t a, int32_t b, int32_t *out, bool plant = false)
                 return false;
         }
     }
-    if (a < 0) {
-        d3 = 0u - d3;
-        if ((int32_t)d3 < 0)
-            d3 += (uint32_t)b;
+    if (d3) {                                   // tst.l d3, beq.s
+        if (a < 0)
+            d3 = 0u - d3;                       // neg.l d3
+        if ((int32_t)((uint32_t)a ^ (uint32_t)b) < 0)
+            d3 += (uint32_t)b;                  // eor.l d1,d0, bpl.s; add.l d1,d3
     }
     *out = (int32_t)d3;
     return true;

@@ -235,9 +235,9 @@ static int folded(const struct exprtyping_node *n)
 }
 
 /* the exact value of a constant subtree (a whole-number operator on the
-   whole parts; a division by 0: 0); a Mod by today's sign rule, the
-   value the code computes (the divisor added to a negative remainder:
-   -6 Mod 4 is 2) */
+   whole parts; a division by 0: 0); a Mod the floor Mod, the value the
+   code computes (#1197: the divisor added to a remainder that is not 0
+   and of the other sign: -6 Mod 4 is 2, 7 Mod -3 is -2) */
 static struct rq const_value(const struct exprtyping_node *n)
 {
     struct rq a, b;
@@ -288,20 +288,21 @@ static struct rq const_value(const struct exprtyping_node *n)
     case ETO_MOD:
         if (b.n && (!rq_isint(a) || !rq_isint(b))) {
             /* Fixed (#1219, #1223): a Mod with a fraction in an operand is exact
-               (as the pass's code does, today's sign rule): a - trunc(a/b)*b,
-               plus b when negative */
+               (as the pass's code does, the floor Mod of #1197): a -
+               trunc(a/b)*b, plus b when that is not 0 and of the other
+               sign */
             struct rq t;
 
             t = rq_op(a, b, '/');
             if (!t.ok)
                 return t;
             t = rq_op(a, rq_op(b, rq_int(t.n / t.d), '*'), '-');
-            return t.ok && t.n < 0 ? rq_op(t, b, '+') : t;
+            return t.ok && t.n && (t.n < 0) != (b.n < 0) ? rq_op(t, b, '+') : t;
         }
         if (!y)
             return rq_int(0);
-        /* #1228: today's sign rule (domodword, domodlong), not C's % */
-        return rq_int(x % y < 0 ? x % y + y : x % y);
+        /* #1228, #1197: the floor Mod (domodword, domodlong), not C's % */
+        return rq_int(x % y && (x % y < 0) != (y < 0) ? x % y + y : x % y);
     case ETO_LSL:
     case ETO_ASL: return rq_int(y >= 0 && y < 32 ? (int64_t)((uint64_t)x << y) : 0);
     case ETO_LSR:
@@ -1156,8 +1157,9 @@ static unsigned typed_compare(struct ctx *c, struct exprtyping_node *n)
    operation is computed in the narrowest whole type whose code holds the
    value: the operands extended (ext) and the Long code, a / of two values
    in the Word range by #1179's inline DIVS.W with the fall-back for
-   -32768 / -1 (o.fast).  Mod keeps its type (task 4.7: its sign rule and
-   width), its operands get their exact values. */
+   -32768 / -1 (o.fast).  Mod keeps the type the operand typing gives it
+   (task 4.7: every type's code gives the floor Mod, #1197), its operands
+   get their exact values. */
 
 /* the signed width of v: the least k with -2^(k-1) <= v < 2^(k-1) */
 static unsigned wb_vbits(int64_t v)
@@ -1227,7 +1229,7 @@ static unsigned wb_need(const struct exprtyping_node *n)
                 return l;   /* a divisor of at least 2: no wider than the dividend */
         }
         return l + 1;       /* -32768 / -1 */
-    case ETO_MOD: return tmax(l, r) + 1;    /* today's sign rule adds the divisor once */
+    case ETO_MOD: return tmax(l, r) + 1;    /* the floor fix-up adds the divisor once */
     default: return tmax(l, r);             /* AND, OR, EOR */
     }
 }

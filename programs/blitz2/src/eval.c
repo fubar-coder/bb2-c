@@ -6121,8 +6121,8 @@ static struct p5q p5qop(struct p5q a, struct p5q b, unsigned op)
 }
 
 /* the value of the constant subtree n as the pass folds it: + - * / exact,
-   Mod by today's sign rule (domodlong: the divisor added to a negative
-   remainder), the bit operators and shifts on the whole parts (rounded
+   Mod the floor Mod (#1197: the divisor added to a remainder that is not
+   0 and of the other sign), the bit operators and shifts on the whole parts (rounded
    down), a comparison -1 or 0 */
 static struct p5q p5qval(const struct exprtyping_node *n)
 {
@@ -6169,7 +6169,7 @@ static struct p5q p5qval(const struct exprtyping_node *n)
         if (!t.ok)
             return t;
         t = p5qop(a, p5qop(b, p5qint(t.n / t.d), ETO_MUL), ETO_SUB);
-        if (t.ok && t.n < 0)
+        if (t.ok && t.n && (t.n < 0) != (b.n < 0))
             t = p5qop(t, b, ETO_ADD);
         return t;
     default: break;
@@ -6557,11 +6557,15 @@ static void p5doop(unsigned op, UWORD t, BOOL words)
         doop(&operators[op], t, words);
 }
 
-/* a Mod in Float, exact: a - b * trunc(a / b), plus b when negative; b
-   0: a (D(r) a, D(r+1) b, the result in D(r)) */
+/* a Mod in Float, exact: the floor Mod (#1197), a - b * trunc(a / b),
+   plus b when that is not 0 and of the other sign; b 0: a (D(r) a,
+   D(r+1) b, the result in D(r)) */
+static ULONG p5bra(UWORD op);
+static void p5patch(ULONG at);
+
 static void p5fmod(UWORD r)
 {
-    ULONG push, pull;
+    ULONG push, pull, rz, same, z0, done;
     UWORD s = regat;
 
     if (p5prep) {
@@ -6577,7 +6581,7 @@ static void p5fmod(UWORD r)
     p5w(0x2f00 | r);                        /* move.l D(r),-(a7): a */
     p5w(0x222f);                            /* move.l 4(a7),d1 */
     p5w(4);
-    p5w(0x672c);                            /* beq.s .zero */
+    z0 = p5bra(0x6700);                     /* beq.s .zero */
     p5w(0x2017);                            /* move.l (a7),d0 */
     p5ffp(P5_SPDIV);
     p5ffp(P5_SPFIX);
@@ -6588,13 +6592,21 @@ static void p5fmod(UWORD r)
     p5w(0x2200);                            /* move.l d0,d1 */
     p5w(0x2017);                            /* move.l (a7),d0 */
     p5ffp(P5_SPSUB);
-    p5w(0x4a00);                            /* tst.b d0: the sign */
-    p5w(0x6a0c);                            /* bpl.s .done */
+    p5w(0x4a80);                            /* tst.l d0 */
+    rz = p5bra(0x6700);                     /* beq.s .done: 0 */
+    p5w(0x122f);                            /* move.b 7(a7),d1: b's sign */
+    p5w(7);
+    p5w(0xb101);                            /* eor.b d0,d1 */
+    same = p5bra(0x6a00);                   /* bpl.s .done: the same sign */
     p5w(0x222f);                            /* move.l 4(a7),d1 */
     p5w(4);
     p5ffp(P5_SPADD);
-    p5w(0x6002);                            /* bra.s .done */
+    done = p5bra(0x6000);                   /* bra.s .done */
+    p5patch(z0);
     p5w(0x2017);                            /* .zero: move.l (a7),d0 */
+    p5patch(rz);
+    p5patch(same);
+    p5patch(done);
     p5w(0x508f);                            /* .done: addq.l #8,a7 */
     if (r)
         p5w(0x2000 | (r << 9));             /* move.l d0,D(r) */
@@ -7071,14 +7083,15 @@ static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, B
 
 /* the follow-up of task 4.3 (decision "expr-tree-5 4.3 follow-up: a whole
    Quick divisor for Mod"; the speed review, 2026-11-26): q48mod's exact
-   Mod of a and b, a - trunc(a / b) * b plus b when negative
-   (exprarith_q48's rule), for a whole b = m << 16 (m not 0, |m| <= 32768)
-   is the remainder of |a|'s whole part by |m| with |a|'s fraction below
-   it, a's sign applied, b added when that is negative.  p5wholemod: a
-   dividend a by a 16.16 divisor b (d2) in p5callin's frame, b tested at
-   run time: one DIVU per 16-bit digit of the whole part (each digit's
-   quotient fits a word), a leading zero digit skipped; a fraction or 0
-   calls the routine tok (its Mod by 0: the dividend) on the operands
+   floor Mod of a and b, a - trunc(a / b) * b plus b when that is not 0
+   and of the other sign (exprarith_q48's rule, #1197), for a whole b = m
+   << 16 (m not 0, |m| <= 32768) is the remainder of |a|'s whole part by
+   |m| with |a|'s fraction below it, a's sign applied, b added when that
+   is not 0 and b's sign is not a's.  p5wholemod: a dividend a by a 16.16
+   divisor b (d2) in p5callin's frame, b tested at run time: one DIVU per
+   16-bit digit of the whole part (each digit's quotient fits a word), a
+   leading zero digit skipped; a fraction or 0 calls the routine tok (its
+   Mod by 0: the dividend) on the operands
    widened to 48.16.  longa: a is a whole number of type at in d0 and b in
    d2, neither widened (p5nowide; a Byte or Word extended to a Long
    first): the whole part's digits hi(|a|), lo(|a|), no fraction; a's
@@ -7088,7 +7101,7 @@ static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, B
    by a whole divisor") runs the same steps against exprarith_q48. */
 static void p5wholemod(UWORD tok, UWORD at, BOOL longa)
 {
-    ULONG frac, nul, pos, rzero, done, high = 0;
+    ULONG frac, nul, apos, rzero, rzero2, bneg, bpos, add, done, high = 0;
     static const UWORD lng[] = {
         0x2602,                 /* move.l d2,d3 */
         0x6a02,                 /* bpl.s */
@@ -7140,10 +7153,6 @@ static void p5wholemod(UWORD tok, UWORD at, BOOL longa)
     if (longa) {
         for (i = 0; i < sizeof lng / sizeof lng[0]; i++)
             p5w(lng[i]);
-        pos = p5bra(0x6a00);                    /* bpl.s .done */
-        p5w(0x4480);                            /* neg.l d0 */
-        rzero = p5bra(0x6a00);                  /* bpl.s .done: 0 */
-        p5w(0x72ff);                            /* moveq #-1,d1 */
     } else {
         p5w(0x2f01);                            /* move.l d1,-(a7): the sign of a */
         p5w(0x6a04);                            /* bpl.s */
@@ -7162,12 +7171,24 @@ static void p5wholemod(UWORD tok, UWORD at, BOOL longa)
         p5patch(high);
         for (i = 0; i < sizeof low / sizeof low[0]; i++)
             p5w(low[i]);
-        pos = p5bra(0x6a00);                    /* bpl.s .done */
-        p5w(0x4480);                            /* neg.l d0 */
-        p5w(0x4081);                            /* negx.l d1 */
-        rzero = p5bra(0x6a00);                  /* bpl.s .done: 0 */
     }
-    p5w(0x7600);                                /* moveq #0,d3 */
+    /* |a| Mod |b| in d0 (below 2^31), d1 0, b in d2, the CCR a's sign:
+       the floor Mod (#1197), a's sign applied, b added when the remainder
+       is not 0 and the signs differ */
+    apos = p5bra(0x6a00);                       /* bpl.s .apos */
+    p5w(0x4480);                                /* neg.l d0 */
+    rzero = p5bra(0x6a00);                      /* bpl.s .done: 0 */
+    p5w(0x72ff);                                /* moveq #-1,d1 */
+    p5w(0x4a82);                                /* tst.l d2 */
+    bneg = p5bra(0x6b00);                       /* bmi.s .done: b negative too */
+    add = p5bra(0x6000);                        /* bra.s .add */
+    p5patch(apos);
+    p5w(0x4a82);                                /* .apos: tst.l d2 */
+    bpos = p5bra(0x6a00);                       /* bpl.s .done: b positive too */
+    p5w(0x4a80);                                /* tst.l d0 */
+    rzero2 = p5bra(0x6700);                     /* beq.s .done: 0 */
+    p5patch(add);
+    p5w(0x7600);                                /* .add: moveq #0,d3 */
     p5w(0x4a82);                                /* tst.l d2 */
     p5w(0x6a02);                                /* bpl.s */
     p5w(0x76ff);                                /* moveq #-1,d3 */
@@ -7181,21 +7202,25 @@ static void p5wholemod(UWORD tok, UWORD at, BOOL longa)
         p5widen(2, T_QUICK);
     }
     tokejsr(tok);                               /* .call */
-    p5patch(pos);
     p5patch(rzero);
+    p5patch(bneg);
+    p5patch(bpos);
+    p5patch(rzero2);
     p5patch(done);
 }
 
-/* the Mod of two 16.16 values a in D(r) and b in D(r+1) (the exact Mod,
-   p5bin) for a whole b as p5wholemod: one DIVU of |a|'s whole part (at
-   most 32768) by |m|, the result in D(r).  cst: b is the constant m << 16
-   (m not 0), no test; else b is tested at run time: a fraction calls
-   compilerlib's q16mod (the exact 16.16 Mod, the speed review), 0 its trap
-   (divs.w by it, before the call) */
+/* the Mod of two 16.16 values a in D(r) and b in D(r+1) (the exact floor
+   Mod, p5bin; #1197) for a whole b as p5wholemod: one DIVU of |a|'s whole
+   part (at most 32768) by |m|, a's sign applied, b added when the
+   remainder is not 0 and b's sign is not a's; the result in D(r).  cst: b
+   is the constant m << 16 (m not 0), no test, its sign known; else b is
+   tested at run time: a fraction calls compilerlib's q16mod (the exact
+   16.16 Mod, the speed review), 0 its trap (divs.w by it, before the
+   call) */
 static void p5qmod(UWORD r, BOOL cst, LONG m)
 {
     UWORD a = r, b = r + 1, t, u;
-    ULONG frac = 0, nul = 0, pos, rzero, done;
+    ULONG frac = 0, nul = 0, apos, rzero, bneg = 0, add = 0, bpos = 0, rzero2 = 0, done;
 
     if (!cst) {
         p5w(0x4a40 | b);                        /* tst.w Db: a fraction */
@@ -7228,16 +7253,39 @@ static void p5qmod(UWORD r, BOOL cst, LONG m)
     }
     p5w(0x3000 | (t << 9) | u);                 /* move.w Du,Dt: the remainder, the fraction */
     p5w(0x4a80 | a);                            /* tst.l Da */
-    pos = p5bra(0x6a00);                        /* bpl.s .pos */
+    apos = p5bra(0x6a00);                       /* bpl.s .apos (b > 0: .pos) */
     p5w(0x4480 | t);                            /* neg.l Dt */
-    rzero = p5bra(0x6a00);                       /* bpl.s .pos: 0 */
+    rzero = p5bra(0x6a00);                      /* bpl.s .pos: 0 */
+    if (cst && m < 0) {
+        bneg = p5bra(0x6000);                   /* bra.s .pos: b negative too */
+        p5patch(apos);
+        p5w(0x4a80 | t);                        /* .apos: tst.l Dt */
+        rzero2 = p5bra(0x6700);                 /* beq.s .pos: 0 */
+    } else if (!cst) {
+        p5w(0x4a80 | b);                        /* tst.l Db */
+        bneg = p5bra(0x6b00);                   /* bmi.s .pos: b negative too */
+        add = p5bra(0x6000);                    /* bra.s .add */
+        p5patch(apos);
+        p5w(0x4a80 | b);                        /* .apos: tst.l Db */
+        bpos = p5bra(0x6a00);                   /* bpl.s .pos: b positive too */
+        p5w(0x4a80 | t);                        /* tst.l Dt */
+        rzero2 = p5bra(0x6700);                 /* beq.s .pos: 0 */
+        p5patch(add);
+    }
     if (cst) {
-        p5w(0x0680 | t);                        /* addi.l #b,Dt */
+        p5w(0x0680 | t);                        /* .add: addi.l #b,Dt */
         p5l((ULONG)m << 16);
     } else
-        p5w(0xd080 | (t << 9) | b);             /* add.l Db,Dt */
-    p5patch(pos);
+        p5w(0xd080 | (t << 9) | b);             /* .add: add.l Db,Dt */
+    if (cst && m > 0)
+        p5patch(apos);
     p5patch(rzero);
+    if (bneg)
+        p5patch(bneg);
+    if (bpos)
+        p5patch(bpos);
+    if (rzero2)
+        p5patch(rzero2);
     p5w(0x2000 | (a << 9) | t);                 /* .pos: move.l Dt,Da */
     p5scratchend(r);
     if (cst)
