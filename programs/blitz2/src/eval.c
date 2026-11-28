@@ -7927,6 +7927,27 @@ static void p5lowmark(struct p5node *root, struct exprtyping_result *res)
 /* the evaluation is built (asked: the type asked for, unk: none): the
    pass of rule P+; TRUE: its code is the pass's, *type the type it gets
    (e: the evaluation's node) */
+/* the type warnings of the expression n under the wanted type want (spec
+   compiler/warnings, "The type exceptions warn"; change
+   type-system-rework, task 3.5): each exception of its rules that gives a
+   node another type or conversion than the standard rules
+   (exprtyping_classify) is one warning of its name for the expression,
+   also where the value is the same.  The code is still rule P+'s
+   (exprtyping_type) until the rework's code generation (its section 4);
+   the exceptions are the original's behaviour, which P+ keeps in these
+   places.  names[i] is the warning of ETX bit i. */
+static void p5typewarn(struct exprtyping_node *n, UWORD want)
+{
+    static const UWORD names[] = { W_DIVFRAC, W_DIVQUICK, W_FLOATTOP, W_SHIFTFRAC, W_SHIFTWRAP };
+    unsigned warn, i;
+
+    if (exprtyping_classify(n, want, &warn))
+        return;
+    for (i = 0; i < sizeof names / sizeof names[0]; i++)
+        if (warn & (1u << i))
+            typewarn(names[i]);
+}
+
 static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD push, BOOL cond, BOOL wide)
 {
     struct p5node *root = NULL;
@@ -7952,6 +7973,7 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
         return FALSE;
     }
     want = unk ? 0 : asked;
+    p5typewarn(&root->t, want);
     if (exprtyping_type(&root->t, want, &res))
         illoperr();                 /* refused by rule P+ */
     p5today(root);

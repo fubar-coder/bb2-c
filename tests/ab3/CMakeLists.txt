@@ -423,10 +423,12 @@ ab3_cli_case(cnifat_err cnifat_err.ab3 REF)
 # both).  Recorded
 # differences (docs/ab3/variant.md): int_tests' Stop (-r: refused, with
 # runtime error checking it waits for the debugger; AmiBlitz3 ignores it
-# without its debugger) - the rest of it as int_tests_nostop
+# without its debugger) - the rest of it as int_tests_nostop; int_problem's
+# factor.q=guns/6*100 the warning divfrac (type-system-rework: the
+# whole-division exception through *), which AmiBlitz3 does not give
 ab3_cli_case(hex_error hex_error.ab3 REF)
 ab3_cli_case(hexdigits hexdigits.ab3 REF)
-ab3_cli_case(int_problem int_problem.ab3 REF)
+ab3_cli_case(int_problem int_problem.ab3 REF REF_EXPECT int_problem.ref.expect)
 ab3_cli_case(int_tests int_tests.ab3 ARGS -r REF REF_EXPECT int_tests.ref.expect)
 ab3_cli_case(int_tests_nostop int_tests_nostop.ab3 REF)
 ab3_cli_case(macro_test macro_test.ab3 REF)

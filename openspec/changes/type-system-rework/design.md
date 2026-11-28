@@ -827,3 +827,45 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
   its lines, observed: they differ between two compiles), so two compiles of
   one source in one session differ; the byte comparison with the warning
   disabled is made with `-r` (`ab3_cli` `datafrac_r`/`datafrac_off`).
+
+## Findings of tasks 3.1, 3.2 (the classes) and the warning sites of 3.5
+
+- **The classes are their own function.** `exprtyping_classify`
+  (`exprtyping.c`, "the operand-only classes") gives every node its class
+  by the rules of the spec delta (`cls`: a whole width, 48.16, Float) and
+  the exception that changes it (`exc`, `ETX_*`), and the set of
+  exceptions of the expression. It agrees with the model's
+  `EM_RULES_TSR` node by node (the model's `sig` under `EM_R_TSR`, its
+  `tsr_sig`): every matrix cell in every context including the indexes,
+  the chains of the analysis, every chain of two operators with unary
+  minuses under a whole, Quick and Float destination and none, the spec's
+  scenarios, and the CD's expressions (`cd.cases`, with
+  `EXPRTYPING_CD_CASES`; not in the repository).
+- **The cut.** The code still follows `exprtyping_type` (rule P+): its
+  decisions (path, operand types, 16.16 or 48.16, the consumer) are what
+  eval.c's emitter writes. The new classes cannot be handed to the emitter
+  without the code of section 4: a whole operation one step wider is
+  4.1's `ext` + Long code, every Quick operation in 48.16 is 4.2 (today
+  16.16 with qmul, qdivide where P+ chose it), the saturating conversion
+  to a Quick, the shift widths (4.4), the run-time form without a
+  destination (4.5) and the comparison of the full value (4.6). So
+  `const_flow`, the wanted-type cases of `typed()`, `has_long`,
+  `frac_side`, A1 and the cut by direction stay until the emitter takes the
+  classes; tasks 3.1 and 3.2 stay open (their removal and the constant
+  typing in the code go with section 4).
+- **The warning sites.** `p5end` (eval.c) raises `typewarn` once per name
+  and expression for each exception of `exprtyping_classify` under the
+  expression's wanted type (a typed parameter its type), in both modes;
+  the executables do not change. The exceptions keep the original's
+  behaviour, which P+ keeps at these places, so today's code does what the
+  warning says at the scenarios of the warnings spec (emulator:
+  `x.q=w/9` 22.2222, `y.q=4/2` 2, `a.q=1 LSR 7` .0078, `b.q=1 LSL 16` 0,
+  `f1.f=q/100` .20875, `pq{1/16}` .0625, `NPrint q+w/2` 120.875 with
+  q=20.875 and w=200). `divquick` warns wherever C3 applies, also without
+  a destination (`NPrint q+w/2`): the decision "I9 and exception warnings"
+  asks for every place an exception applies, C3 does not depend on the
+  destination ("conflict item 29"); the warnings spec says "at a
+  destination or a typed parameter". Where C1 and C3 reach the same `/`,
+  the warning is `divfrac` (C1 decides its type). A run of minus signs is
+  one node of the compiler's tree (`p5neg`) and is classed as one unary
+  minus.

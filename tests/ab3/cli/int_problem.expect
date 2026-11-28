@@ -1,5 +1,6 @@
 [compile]
-rc=0
+int_problem.ab3:86: warning: Whole division keeps its fraction [divfrac]
+rc=5
 [run]
 FPU: 2
 CPU: 2
