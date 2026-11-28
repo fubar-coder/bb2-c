@@ -43,8 +43,8 @@ tasks/decisions.md, "2026-11-28 Compiler warnings in the test model".
 
 ## 7. The other changes
 
-- [ ] 7.1 A note in `openspec/changes/type-system-rework/tasks.md`, task 3.5 (the coordinator, through `openspec-update-change`): its warning tests are written with the queries `compile.warnings`, `compile.warnings.K` and `compile.rc` of this change — the editor path in `tests/blitz2` (cells `port` and `orig195`, `extension = 1235`), the console in `tests/ab3/model` (cell `ab3`) —, and its check "the executables unchanged with the warnings disabled" stays an `ab3_cli` case with `SAME` (as `datafrac_off`). Verify: `openspec validate type-system-rework --strict`.
-- [ ] 7.2 ab3-mode-g5 task 4.3 as the user answered Q1 (design.md, Answered Questions: the procend case in the model, this change before ab3-mode-g5 group 4) (the coordinator, through `openspec-update-change`). Verify: `openspec validate ab3-mode-g5 --strict`.
+- [x] 7.1 A note in `openspec/changes/type-system-rework/tasks.md`, task 3.5 (the coordinator, through `openspec-update-change`): its warning tests are written with the queries `compile.warnings`, `compile.warnings.K` and `compile.rc` of this change — the editor path in `tests/blitz2` (cells `port` and `orig195`, `extension = 1235`), the console in `tests/ab3/model` (cell `ab3`) —, and its check "the executables unchanged with the warnings disabled" stays an `ab3_cli` case with `SAME` (as `datafrac_off`). Verify: `openspec validate type-system-rework --strict`.
+- [x] 7.2 ab3-mode-g5 task 4.3 as the user answered Q1 (design.md, Answered Questions: the procend case in the model, this change before ab3-mode-g5 group 4) (the coordinator, through `openspec-update-change`). Verify: `openspec validate ab3-mode-g5 --strict`.
 
 ## 8. Checks
 
