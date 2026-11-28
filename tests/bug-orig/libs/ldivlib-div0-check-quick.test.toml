@@ -1,13 +1,16 @@
 # ldivlib-div0-check-quick.test.bas: only with runtime error checking; the
 # check behind the error must not run.  The original's quickdiv has no error
-# check: no requester, the case goes on
+# check: no requester, the case goes on.  Since type-system-rework (#1235,
+# task 4.2) the port's Quick division is compilerlib's 48.16 one, whose
+# check reports the division by 0 with the CD's libraries too: only the
+# original compiler reaches ldivlib's quickdiv
 fixed-orig = 200
 runtime-errors = "on"
 
 [asserts]
 "check.divisor_zero.after" = "== not-run"
 
-[deviations."libs=cd"]
+[deviations."compiler=orig195,libs=cd"]
 "check.divisor_zero.refused" = "== fail"
 "check.divisor_zero.after" = "== fail"
 requester = "count == 0"

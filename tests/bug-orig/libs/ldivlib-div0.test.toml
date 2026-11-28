@@ -4,5 +4,10 @@ fixed-orig = 200
 [deviations."libs=cd"]
 "check.long_div0.negative" = "== fail"
 "check.long_div0.negative.actual" = "== 2147483647"
+
+# the Quick division reaches ldivlib only with the original compiler since
+# type-system-rework (#1235, task 4.2): the port's 48.16 division is
+# compilerlib's
+[deviations."compiler=orig195,libs=cd"]
 "check.quick_div0.negative" = "== fail"
 "check.quick_div0.negative.actual" = "== $7FFFFFFF"

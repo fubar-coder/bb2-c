@@ -7,3 +7,11 @@ fixed-orig = 199
 "check.long_product.positive.actual" = "== 1603272705"
 "check.long_product.negative" = "== fail"
 "check.long_product.negative.actual" = "== -1603272705"
+
+# the Quick product reaches lmullib only with the original compiler since
+# type-system-rework (#1235, task 4.2): the port computes it in 48.16
+[deviations."compiler=orig195,libs=cd"]
+"check.quick_product.positive" = "== fail"
+"check.quick_product.positive.actual" = "== $5F900001"
+"check.quick_product.negative" = "== fail"
+"check.quick_product.negative.actual" = "== $A06FFFFF"
