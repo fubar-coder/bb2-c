@@ -26,7 +26,7 @@ docs tasks ("type-system-rework Q11, Q16, Q18, Q19, Q20", Q18).
 ## 2. Tests of the new rules (they fail until section 3/4)
 
 - [x] 2.1 `tests/blitz2/expr-tsr-*.test.bas`/`.toml`, one per spec requirement of the delta, with the spec's values (including the I1, I4, I8 and D1-D7 scenarios, a real divisor 0 of every type and of a quotient reached by C1 under a Quick and under a Float (the trap), and each I4 form with variables and with constants); `extension = 1235` (Q19), the deviations 1.95's values. Verify: they come out as the expected failures on main (listed in the commit), compile on both sides.
-- [ ] 2.2 #1231 before its fix: a bug-orig test `tests/bug-orig/compiler/compiler-point-whole-div` (`NPrint 3/2.0` 1.5, `NPrint 7/2.0+0.5` 4) with its `.orig` from `bug-orig-record`; the comment `BUG(orig) (#1231)` at `const_fetch`. Verify: `ctest --preset bug-orig -R point-whole-div` REPRODUCED.
+- [x] 2.2 #1231 before its fix: a bug-orig test `tests/bug-orig/compiler/compiler-point-whole-div` (`NPrint 3/2.0` 1.5, `NPrint 7/2.0+0.5` 4) with its `.orig` from `bug-orig-record`; the comment `BUG(orig) (#1231)` at `const_fetch`. Verify: `ctest --preset bug-orig -R point-whole-div` REPRODUCED.
 
 ## 3. Typing pass and folding
 

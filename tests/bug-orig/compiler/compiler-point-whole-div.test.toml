@@ -1,0 +1,12 @@
+# compiler-point-whole-div.test.bas: the original's output and the port's
+# (the port keeps the bug: 7/2.0 is the whole 3, the sum 3.5) are the
+# declared deviations; #1231 is open (fixed by the type-system rework,
+# change type-system-rework task 3.3)
+[asserts]
+output = "== \"1.5\n4\n\""
+
+[deviations."compiler=orig195"]
+output = "== \"1\n3\n\""
+
+[deviations."compiler=port"]
+output = "== \"1\n3.5\n\""

@@ -371,7 +371,10 @@ static unsigned refuse(struct ctx *c)
 /* --------------------------------------------------- the constants */
 
 /* the type today's constant fetch (consttype2) gives a literal of value a
-   (point: written with a point) under the type so far t */
+   (point: written with a point) under the type so far t.
+   BUG(orig) (#1231): a constant with a point and no fraction (2.0) stays
+   a whole number here, so 3/2.0 is the whole division 1 and 7/2.0+0.5 is
+   3, as in the original; a constant with a point is never whole. */
 static unsigned const_fetch(int point, struct rq a, unsigned t)
 {
     int64_t iv;
