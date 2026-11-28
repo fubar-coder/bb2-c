@@ -103,7 +103,13 @@ if(NOT KIND)
 endif()
 function(run what)
 	if(SITE_NODE STREQUAL "host")
-		execute_process(COMMAND ${CMAKE_COMMAND} -E env npm_config_cache=${CACHE} ${ENV}
+		# NODE_DISABLE_COMPILE_CACHE: npm and the tools of the site build
+		# enable Node's compile cache, which keys its entries by file path
+		# (the packages under WORK/site/node_modules); every run's WORK is a
+		# new directory, so each run would add entries to
+		# $TMPDIR/node-compile-cache that are never read again.
+		execute_process(COMMAND ${CMAKE_COMMAND} -E env npm_config_cache=${CACHE}
+				NODE_DISABLE_COMPILE_CACHE=1 ${ENV}
 				${NPM} ${ARGN}
 			WORKING_DIRECTORY ${WORK}/site
 			RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out)
