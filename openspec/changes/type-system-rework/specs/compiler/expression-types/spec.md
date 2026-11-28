@@ -14,14 +14,18 @@ The compiler SHALL type and compute every operation from its operator and its op
 - **THEN** r is 90000 and it prints 90000 (before: 90000 and 24464)
 
 ### Requirement: Only the named exceptions depend on the destination
-The exceptions named in the requirement "The destination does not change the computation" SHALL be the only ways in which a destination changes the computation inside an expression. Each place where one of them gives another type or conversion than the other rules SHALL give its warning (compiler/warnings).
+The exceptions named in the requirement "The destination does not change the computation" SHALL be the only ways in which a destination changes the computation inside an expression. A Quick or Float parameter SHALL take them like a destination of its type. Each place where one of them gives another type or conversion than the other rules SHALL give its warning (compiler/warnings).
 
 #### Scenario: An exception and no exception
 - **WHEN** a program evaluates `x.q=w/9` and `r.l=w/9` with `w.w=200`
 - **THEN** x is 22.2222 with the warning `divfrac`, and r is 22 without a warning
 
+#### Scenario: Typed parameters
+- **WHEN** a program with `Statement pq{x.q}` and `Statement pf{x.f}` calls `pq{1/16}`, `pq{1 LSL 16}` and `pf{q/100}` with `q=20.875`
+- **THEN** pq gets 0.0625 and 0, and pf gets 0.20875, as the original
+
 ### Requirement: A whole-number operation is one step wider than its operands
-An operation on two whole operands SHALL be computed one step wider than the wider of them: Byte to Word, Word to Long, Long stays Long. Its value SHALL therefore be the exact value for `+`, `-` and `*` up to a Word operand, and the exact value modulo 2^32 for a Long.
+An operation on two whole operands SHALL be computed one step wider than the wider of them: Byte to Word, Word to Long, Long stays Long; the unary minus and `NOT` of a whole operand SHALL be one step wider than the operand, and `NOT` of a Quick a Long. Its value SHALL therefore be the exact value for `+`, `-` and `*` up to a Word operand, and the exact value modulo 2^32 for a Long.
 
 #### Scenario: Byte and Word sums without a narrow destination
 - **WHEN** a program executes `NPrint b+c` with `b.b=100`, `c.b=100` and `NPrint w+v` with `w.w=20000`, `v.w=20000`
@@ -34,6 +38,10 @@ An operation on two whole operands SHALL be computed one step wider than the wid
 #### Scenario: Unary minus is one step wider
 - **WHEN** a program executes `NPrint -q` and evaluates `x.q=-q` with `q=-32768`
 - **THEN** it prints 32768 and x is $7FFFFFFF (before: -32768 and -32768)
+
+#### Scenario: NOT is one step wider
+- **WHEN** a program executes `NPrint (Not b) LSR 1` with `b.b=0`, `NPrint (Not w) LSR 1` with `w.w=0` and evaluates `x.w=(Not w) LSR 1`
+- **THEN** it prints 32767 (before: 2147483647) and 2147483647, and x is -1
 
 #### Scenario: A Long result wraps
 - **WHEN** a program evaluates `r.l=l*l` with `l.l=100000`
@@ -77,7 +85,7 @@ A constant written without a point SHALL be a Byte from -128 to 127, a Word from
 - **THEN** x is 3
 
 ### Requirement: A constant with a point is read by its operands
-A constant with a point or an exponent SHALL never be whole. It SHALL be a Quick when its value is exact in 16.16 or when a Quick is the other operand of the same operator (read down to 1/65536, as a Quick literal); else the Float of the written value.
+A constant with a point or an exponent SHALL never be whole. It SHALL be a Quick when its value is exact in 16.16 or when a Quick is the other operand of the same operator, also with a unary minus before the constant; else the Float of the written value. Read as a Quick, it SHALL be the FFP value of its text cut down to 1/65536, as a Quick literal.
 
 #### Scenario: A point and no fraction
 - **WHEN** a program executes `NPrint 3/2.0` and `NPrint 7/2.0+0.5`
@@ -86,6 +94,10 @@ A constant with a point or an exponent SHALL never be whole. It SHALL be a Quick
 #### Scenario: Beside a Quick
 - **WHEN** a program evaluates `If q=0.1` with `q=0.1` and `x.q=(0.1=0.1)`, `y.q=(1.3<1.3)`
 - **THEN** the condition is true, x is -1 and y is 0 (#1230)
+
+#### Scenario: Under a unary minus and beyond the exact value
+- **WHEN** a program evaluates `x.q=q+(-0.1)` with `q=3`, `y.q=q2+30000.3` with `q2=1` and executes `NPrint q3*(-0.3)` with `q3=157`
+- **THEN** x is $0002E667, y is $75314D00 and it prints -47.0981, as the original
 
 #### Scenario: Beside whole numbers
 - **WHEN** a program evaluates `r.l=l*0.5` with `l.l=-3`, `r2.l=l2*0.1` with `l2.l=100` and executes `NPrint l3*0.001` with `l3.l=1000000`
@@ -125,15 +137,8 @@ Under a Quick or Float destination, a `/` of two whole operands that is the whol
 - **WHEN** a program evaluates `x.q=(7/2=3)`, `y.q=(7/2) AND 3` and `z.l=(7/2)*2`
 - **THEN** x is -1, y is 3 and z is 6
 
-### Requirement: A divisor 0 of a quotient that keeps its fraction
-A whole `/` whose fraction is kept by the whole-division exception or beside a Quick SHALL divide by 0 as a 48.16 division (under a Quick) or a Float division (under a Float), not with the whole-number division trap.
-
-#### Scenario: Under a Quick destination
-- **WHEN** a program evaluates `x.q=a/z` with `a.w=7`, `z.w=0`
-- **THEN** x is $7FFFFFFF and no division trap is raised
-
 ### Requirement: A whole division beside a Quick keeps its fraction
-A `/` of two whole operands (constants or variables) whose other operand at its operator is of Quick class SHALL keep its fraction (a 48.16 quotient), under every destination. An operand of Quick class is a Quick variable, a subexpression whose result is a Quick, or a constant with a point that is a Quick; a Float operand SHALL NOT make the quotient fractional.
+A `/` of two whole operands whose other operand at an arithmetic operator (`+ - * /`, `Mod`, `^`) or a comparison is of Quick class (a Quick variable, a subexpression with a Quick result, a constant with a point that is a Quick; not a Float) SHALL keep its fraction as a 48.16 quotient, under every destination; at a bit operator or a shift it SHALL stay whole.
 
 #### Scenario: Beside a Quick
 - **WHEN** a program executes `NPrint q+w/2` and `NPrint w/2+q` with `q=0.5`, `w.w=3`, and evaluates `x.w=(q2+(w2/2))-2` with `q2=149.75`, `w2.w=135`
@@ -143,12 +148,27 @@ A `/` of two whole operands (constants or variables) whose other operand at its 
 - **WHEN** a program with `q=0.25`, `n.w=2`, `w.w=3`, `d.w=2`, `f.f=0.5` executes `NPrint q+w/d`, `NPrint 0.5+w/2`, `NPrint (q*n)+w/2` and `NPrint f+w/2`
 - **THEN** it prints 1.75, 2, 2 and 1.5
 
+#### Scenario: Other operators
+- **WHEN** a program evaluates `x.l=q AND w/2` with `q=5`, `w.w=-3` and executes `NPrint q2<w2/2` with `q2=1`, `w2.w=3`
+- **THEN** x is 5 and it prints -1, as the original
+
+### Requirement: A whole division reached by two exceptions under a Float destination
+Where the whole-division exception and a Quick-class neighbour both reach a whole `/` under a Float destination, its quotient SHALL be the Float quotient of the whole-division exception.
+
+#### Scenario: Both exceptions
+- **WHEN** a program evaluates `y.f=q+w/3` with `q=0.5`, `w.w=1`
+- **THEN** y is 0.8333334, as the original
+
 ### Requirement: The top operation under a Float destination runs in Float
-Under a Float destination the operation that is the whole expression SHALL be computed in Float when one of its operands is a Quick; its operands are converted to Float first, and a constant with a point there is read directly as the Float of its written value, not first as a Quick.
+Under a Float destination the arithmetic operation (`+ - * /`, `Mod`, `^`) that is the whole expression SHALL be computed in Float when one of its operands is a Quick; its operands are converted to Float first, and a constant with a point there is read directly as the Float of its written value, not first as a Quick.
 
 #### Scenario: Quick operands at the top
 - **WHEN** a program evaluates `x.f=q/100` with `q=20.875`, `y.f=q2*0.002` with `q2=92` and `z.f=q3/q4` with `q3=17.5`, `q4=113.5`
 - **THEN** x is 0.20875, y is 0.184 and z is 0.1541850, as the original
+
+#### Scenario: A comparison or a unary minus at the top
+- **WHEN** a program evaluates `x.f=(q=0.1)` with `q=0.1` and `y.f=-(q2/100)` with `q2=20.875`
+- **THEN** x is -1 (1.95: 0) and y is -0.2087402 (1.95: -0.20875)
 
 ### Requirement: The conversion to a whole destination rounds down and wraps
 The conversion of a Quick or 48.16 value to a Byte, Word or Long (an assignment, a parameter, an index) SHALL round down, and of a Float SHALL cut towards zero (as the original's `SPFix`); the result SHALL keep the low 8, 16 or 32 bits. A Float beyond the Long range SHALL be cut towards zero and wrap to its low 32 bits, not saturate as `SPFix`. A `Data.b` value with a point SHALL be cut towards zero as a Float.
@@ -215,7 +235,7 @@ A Quick left operand SHALL keep its fraction bits: `LSL`, `ASL`, `ASR` in 48.16,
 - **THEN** it prints 40000
 
 ### Requirement: A shift at the top under a Quick destination
-Under a Quick destination, a shift of a whole left operand that is the whole expression or is reached from it through `+`, `-` only SHALL be the shift exception: a right shift (`LSR`, `ASR`) shifts the value with 16 fraction bits (on the 16.16 bits inside the Quick range, in 48.16 beyond it); a left shift (`LSL`, `ASL`) shifts it as a Long.
+Under a Quick destination, a shift of a whole left operand that is the whole expression or is reached from it through binary `+`, `-` only (not through a unary minus) SHALL be the shift exception: a right shift (`LSR`, `ASR`) shifts the value with 16 fraction bits (on the 16.16 bits inside the Quick range, in 48.16 beyond it); a left shift (`LSL`, `ASL`) shifts it as a Long.
 
 #### Scenario: Right shifts
 - **WHEN** a program evaluates `x.q=1 LSR 7`, `y.q=b LSR 3` with `b.b=3` and `z.q=1 LSR 4`
@@ -230,8 +250,8 @@ Under a Quick destination, a shift of a whole left operand that is the whole exp
 - **THEN** x is 1.625 and y is 21.875, as the original
 
 #### Scenario: Below another operator
-- **WHEN** a program evaluates `x.q=qa*(3 LSR 3)` with `qa=1.25`
-- **THEN** x is 0
+- **WHEN** a program evaluates `x.q=qa*(3 LSR 3)` with `qa=1.25` and `y.q=-(1 LSR 7)`
+- **THEN** x and y are 0 (1.95: y is -1/128)
 
 ### Requirement: A left shift at the top under a Quick destination wraps
 Under a Quick destination, a left shift (`LSL`, `ASL`) that is the whole expression, of a whole or of a Quick left operand, SHALL convert to the Quick wrapped (the low 32 bits of its 16.16 form), not saturated. A left shift reached through `+`, `-` SHALL be a Long, and the sum SHALL convert saturated as any other value.
@@ -278,7 +298,7 @@ Folding SHALL give for every operator, operand order and destination the value o
 - **THEN** both print -.5
 
 ### Requirement: Mod takes the sign of the divisor
-`Mod` SHALL give `a-b*floor(a/b)`: the remainder has the divisor's sign, computed exactly with the fractions of its operands, also for two constants. A divisor 0 SHALL behave as today per type: a Byte, Word or Quick `Mod` raises the CPU's division trap, a Long or Float `Mod` gives the dividend; a constant 0 stays the compile error.
+`Mod` SHALL give `a-b*floor(a/b)`: the remainder has the divisor's sign, computed exactly with the fractions of its operands, also for two constants. A divisor 0 SHALL raise the division trap (requirement "A division or Mod by a run-time 0 raises the division trap").
 
 #### Scenario: Signs
 - **WHEN** a program evaluates `r1.l=-7 Mod 3`, `r2.l=7 Mod -3`, `r3.l=-7 Mod -3` and `r4.l=q Mod 2` with `q=-7`
@@ -294,7 +314,18 @@ Folding SHALL give for every operator, operand order and destination the value o
 
 #### Scenario: Divisor 0
 - **WHEN** a program evaluates `r.l=l Mod z` with `l.l=-7`, `z.l=0`, and `x.w=w Mod z` with `w.w=7`, `z.w=0`
-- **THEN** r is -7, and the second raises the division trap, as today
+- **THEN** both raise the division trap (before: r is -7)
+
+### Requirement: A division or Mod by a run-time 0 raises the division trap
+A `/` or `Mod` whose divisor is 0 at run time SHALL raise the CPU's division trap for every type (Byte, Word, Long, Quick, 48.16 and Float), under every destination, also for a quotient whose fraction an exception keeps; with the runtime error checking on, the checks' "Division by Zero" error SHALL stay where it is given today. A constant divisor 0 SHALL stay the compile error "Division by Zero".
+
+#### Scenario: Every type
+- **WHEN** a program evaluates `x.l=w/z` with `w.w=7`, `z.w=0`, `y.q=l/q` with `l.l=100`, `q=0`, `r.f=f/fz` with `f.f=1`, `fz.f=0` or `u.q=a/z` with `a.w=7`
+- **THEN** each raises the division trap (before: 2147483647, $7FFFFFFF, the trap, $7FFFFFFF)
+
+#### Scenario: A constant divisor 0
+- **WHEN** a program contains `x.l=7/0`
+- **THEN** compiling it gives "Division by Zero", as before
 
 ### Requirement: Optimizations keep the value
 The compiler SHALL use narrower code or another order of operations only where the result is the value of these rules for every operand value.
@@ -393,21 +424,6 @@ The count of `LSL`, `ASL`, `LSR` and `ASR` SHALL be a constant without a point o
 - **WHEN** a program executes `NPrint x LSR qh` with `x.w=3`, `qh=2.5` and evaluates `rl.l=q LSL qh` with `q=1.5`
 - **THEN** it prints 0 (before: .75) and rl is 6 (before: 4)
 
-### Requirement: A 48.16 division by 0 gives the largest value of the wanted type
-A division by 0 of a Quick, 48.16 or Float value SHALL be plus or minus infinity by the dividend's sign, which every conversion saturates: a Quick $7FFFFFFF ($80000001), a Word 32767, a Byte 127, a Long or no destination $7FFFFFFF. A whole division by a variable 0 SHALL behave as before; a constant 0 divisor SHALL stay the compile error "Division by Zero".
-
-#### Scenario: 48.16 division by zero without a wanted Long
-- **WHEN** a program executes `NPrint l/q` with `l.l=-100`, `q=0`
-- **THEN** it prints -2147483647
-
-#### Scenario: 48.16 division by zero under a Quick, Word or Byte destination
-- **WHEN** a program evaluates `x.q=l/q`, `x.w=l/q` and `x.b=l/q` with `l.l=100`, `q=0`
-- **THEN** x is $7FFFFFFF, 32767 and 127
-
-#### Scenario: The limit under a Byte destination
-- **WHEN** a program evaluates `rb.b=q/p` with `q=1`, `p=0` and `x.b=l/q` with `l.l=100`, `q=0`
-- **THEN** rb and x are both 127 (before: rb -1, the 16.16 division); the limit is gone
-
 ### Requirement: Every array index is evaluated as a Long
 The compiler SHALL evaluate every index of an array (the first and every later one) by the rules of this capability and convert it to a Long as a Long destination does (rounded down). An index SHALL address the same element with and without runtime error checking whenever the checked build does not report it.
 
@@ -428,6 +444,10 @@ The compiler SHALL evaluate every index of an array (the first and every later o
 - **THEN** both builds read `g(1,40000)`, as before
 
 ## REMOVED Requirements
+
+### Requirement: A 48.16 division by 0 gives the largest value of the wanted type
+**Reason**: A division or Mod by a run-time 0 raises the division trap for every type, "type-system-rework D1/D7 (division and Mod by a run-time 0), D5" of 2026-11-28.
+**Migration**: Requirement "A division or Mod by a run-time 0 raises the division trap".
 
 ### Requirement: Mod keeps today's sign rule, exact with fractions
 **Reason**: Mod is floor Mod (the divisor's sign), "type-system-rework Q1, Q2, Q4, Q7" of 2026-11-27.

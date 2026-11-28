@@ -76,7 +76,12 @@ types, the expression limits, the runtime error checks of indexes.
 | under a Float destination the top operation with a Quick runs in Float; a point constant there read as a Float | Q12 D "Float reicht oben hinein"; I2 A | "The top operation under a Float destination runs in Float" |
 | 48.16 `*`, `/` cut down | Q1 "Immer abrunden" | "An operation with a Quick is computed in 48.16" |
 | floor Mod | Q2 "Floor" | "Mod takes the sign of the divisor" |
-| /0: ±infinity, saturated | Q4 | "A 48.16 division by 0 ..." |
+| `/` and `Mod` by a run-time 0: the division trap for every type; a constant 0 the compile error | D1/D7 "Trap für alle Typen" (replaces Q4's run-time values) | "A division or Mod by a run-time 0 raises the division trap" |
+| D only at an arithmetic top operation; D and E not through a unary minus | D2 | "The top operation under a Float destination runs in Float", "A shift at the top under a Quick destination" |
+| a unary minus does not change a point constant's reading; a Quick reading is the FFP value cut down | D3; planner's P1 (section1-decisions.md) | "A constant with a point is read by its operands" |
+| C3 at arithmetic operators, Mod, `^`, comparisons, not at bit operators and shifts; with C1 under a Float the Float quotient | D4; I3 | "A whole division beside a Quick keeps its fraction", "A whole division reached by two exceptions under a Float destination" |
+| Quick and Float parameters take the exceptions like a destination | D5 | "Only the named exceptions depend on the destination" |
+| `NOT` one step wider, of a Quick a Long | D6 | "A whole-number operation is one step wider than its operands" |
 | conversion: a Quick rounds down, a Float towards zero (SPFix); B/W/L wrap, a Float beyond the Long range too; Quick saturates; `Data.b` with a point as a Float | round 1, Q12 B "Float auf null hin", round 2 "Umbrechen", direction, I7 A, I8 A+C | the two conversion requirements |
 | bit operators whole; Float refused | round 2 (option 1), Q17 "Weiter verweigern" | "Bit operators take whole operands" |
 | Quick: LSL/ASL/ASR in 48.16, LSR on 16.16; whole: LSR/ASR own width, LSL/ASL a Long; count whole | round 2, Q15 "48.16", Q14 and F "Eigene Breite", Q12 A "LSL immer Long" | "A shift keeps the type of its left operand" |
@@ -315,6 +320,15 @@ with the comparison tolerances of `cdrun3.py`:
   (above: 468), 240 at values that do not overflow (205), 84 at
   non-negative values (83); without the 39 places of the Float division by
   0: 465 and 204.
+  The emulator (planner, 2026-11-28, section1-decisions.md) shows that
+  the model's port and 1.95 columns are wrong for a Float division by 0
+  (both compilers raise the division trap, the model gave 0), for a Long
+  division by 0 of a negative dividend (both give +2147483647) and for a
+  Quick reading of a point constant (both read it through FFP: `x.q=q+
+  30000.3` $75314D00). The 39 places are crashes that become values under
+  the model's TSR set, not values that move away; with D1/D7 they stay the
+  trap. Task 1.5 fixes the model and recounts, with "crash -> value" apart
+  from "away from 1.95"; class G is then 139 places, 4 of them under Print.
 * *Places that move away from 1.95 where the port agrees today:* 226 (78
   at non-negative values, 50 files; above: 188, 74, 45). By class, 184 of
   them are the evaluator's places with the same class: G 80, part G 55, F
@@ -421,7 +435,8 @@ replace or contradict, with the quote:
 12. "2026-11-25 expr-tree-5: division by 0 per format ..." — "Nur 48.16,
     16.16 wie heute (Recommended)" and "Größter Wert des Ziels
     (Recommended)": there is no 16.16 division any more; the largest value
-    of the destination is a conversion rule now (Q4 "±unendlich, gesättigt (Recommended)").
+    of the destination is a conversion rule now (Q4 "±unendlich, gesättigt (Recommended)"); the
+    run-time values of Q4 are replaced in turn by D1/D7 (item 30).
 13. "2026-11-26 #1222 overflow on the longdiv path; constant Mod exact" —
     "Accept (Recommended)" (the low bits of an overflowing quotient):
     replaced by saturation under a Quick, exact otherwise.
@@ -478,6 +493,14 @@ replace or contradict, with the quote:
     (Recommended)": the direction stays the rule; C1, D, E and J are the
     closed list of exceptions to it, each warns where it changes the type;
     a further destination-dependent exception needs a decision of its own.
+30. Q4 "±unendlich, gesättigt (Recommended)" (shown as "= bisherige Werte",
+    which a Float division did not have: both compilers trap) and
+    "2026-11-25 ... division by 0 per format ..." "Wie heute je Typ
+    (Recommended)" (Long `/` $7FFFFFFF, Long/Float Mod the dividend; "a
+    change would be its own issue"): replaced for this change by "2026-11-28
+    type-system-rework D1/D7" "Trap für alle Typen (Recommended)", the
+    user's counter-question "Ist der Absturz ein TRAP? ... Und vielleicht
+    auch Quick entsprechend umstellen?" answered first.
 
 Spec requirements of `compiler/expression-types` replaced or changed: the
 twelve REMOVED and six MODIFIED requirements of the delta, each with its
@@ -583,9 +606,8 @@ I9 and exception warnings"; quoted there):
   directly in Float (`z.f=(7/2)*2` 7).
 - **I4 B:** C1 reaches through a unary minus and through an enclosing `/`,
   at any depth (`(a/b)/c` 1.75, `a/(b/c)` 14); measured in "With I4 B"
-  above. Runtime cost not measured yet (task 5.1). Derived, not decided on
-  its own: a divisor 0 of such a quotient follows the 48.16 or Float
-  division by 0 (Q4), not the whole-number trap.
+  above. Runtime cost not measured yet (task 5.1). A divisor 0 of such a
+  quotient raises the division trap, as every division by 0 (D1/D7).
 - **I5 A:** J applies only when the left shift is the whole expression; a
   left shift reached through `+ -` is a Long (A) and the sum saturates at
   the conversion (`x.q=(v LSL 4)+p`).
@@ -609,46 +631,33 @@ I9 and exception warnings"; quoted there):
   at most 8 places per name and compile, then one `NAME: N more`; on the
   console every place (compiler/warnings delta).
 
-## Readings of the model (task 1.1)
+## Answers to the readings of the model (task 1.1)
 
-The model's rule set `EM_RULES_TSR` (`tools/lib/exprmatrix/model.c`) is
-written from the spec delta. Where the delta leaves a case open, the model
-takes the reading below; each is a question for the coordinator, not a
-decision (CLAUDE.md rule 2):
+Task 1.1 named twelve readings the delta left open; the planner took them
+through D-011 with emulator probes (section1-decisions.md); answered in
+rounds/tree/decisions.md "2026-11-28 type-system-rework D2, D3, D4", "...
+D1/D7 ..., D5" and "... D6", the precedents and Plan choices in
+coordinator-decisions.md "2026-11-28 ... task 1.3":
 
-1. A constant with a point under a unary minus (`q+-0.1`) has no other
-   operand at its operator: a Float unless exact (the minus is the
-   constant's operator, N2).
-2. D also computes a comparison at the top in Float (`x.f=(q=0.1)` false);
-   it leaves the bit operators and shifts alone (their Float operand would
-   be refused) and does not apply when the top is a unary minus.
-3. E (the shift exception through `+ -`) does not pass a unary minus; C1
-   does (I4 B).
-4. A whole `/` that both C1 under a Float destination and C3 reach
-   (`x.f=q+w/3`) is a Float quotient (I3), not a 48.16 quotient converted
-   (the planner's evaluator took the latter).
-5. A Mod of Quick class by 0 traps ("a Quick Mod raises the division
-   trap"), also with a Long operand (`l Mod q`, which gives the dividend in
-   P+'s 48.16 Mod).
-6. `NOT` keeps its operand's width (only two-operand operations and the
-   unary minus are named one step wider); a Quick's `NOT` is a Long.
-7. A constant with a point beside a Quick but beyond the Quick range is a
-   Float; read as a Quick it is the exact value rounded down to 1/65536,
-   not the FFP literal cut.
-8. A Quick or Float parameter takes the exceptions of a Quick or Float
-   destination (C1, D, E, J); an index is a Long destination.
-9. A Float left operand of a shift is refused, as a Float operand of a bit
-   operator.
-10. C3 applies at every binary operator but the shifts (a comparison, a
-    bit operator, `^`, `Mod`); a shift count does not make its left
-    operand fractional.
-11. A whole `/` by a variable 0 of Long operands gives the Long division's
-    largest number with the dividend's sign (as before); of Byte or Word
-    operands the division trap.
-12. A Float division by 0 under a Float destination keeps the saturated
-    infinity ($FFFFFF7F, $FFFFFFFF); the port and 1.95 give 0 there (the
-    delta lists the saturation of the Quick, Word, Byte and Long
-    conversions only). Task 1.3 counts 39 CD places.
+1. A point constant under a unary minus beside a Quick is a Quick (D3):
+   `x.q=q+(-0.1)` $0002E667.
+2. D applies only to an arithmetic top operation, not to a comparison
+   (D2): `x.f=(q=0.1)` -1.
+3. D and E do not reach through a unary minus; C1 does (D2, I4 B).
+4. A quotient reached by C1 under a Float and by C3 is the Float quotient
+   (I3, precedent; emulator .8333334).
+5. and 11. Every `/` and `Mod` by a run-time 0 raises the division trap
+   (D1/D7).
+6. `NOT` is one step wider; of a Quick a Long (D6).
+7. A point constant beyond the Quick range is a Float (round 3,
+   precedent); read as a Quick it is the FFP value of its text cut down
+   (planner's P1).
+8. Quick and Float parameters take the exceptions (D5); an index is a Long
+   destination (spec).
+9. A Float left operand of a shift is refused (round 2, Q17, precedent).
+10. C3 applies at arithmetic operators, Mod, `^` and comparisons, not at bit
+    operators and shifts (D4).
+12. A Float division by 0 raises the trap (D1/D7).
 
 ## Risks / Trade-offs
 

@@ -41,6 +41,10 @@ changes a type gives a compiler warning ("type-system-rework conflict item
 - Whole constants take their smallest type (no DEFTYPE influence); a constant
   with a point is a Quick when it is exact in 16.16 or beside a Quick, else a
   Float, never whole (fixes #1231: `NPrint 3/2.0` prints 1.5).
+- **BREAKING:** a division or `Mod` by a run-time 0 raises the division
+  trap for every type (before: a Long or Quick `/` gave $7FFFFFFF, a Long
+  `Mod` the dividend); a constant 0 stays the compile error. Quick and
+  Float parameters take the exceptions like a destination of their type.
 - `Mod` is floor Mod (the remainder has the divisor's sign), exact with
   fractions (closes #1197 and #1198).
 - Bit operators take whole operands (a Quick rounded down), the result is

@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: The type exceptions warn
-Each place where a type exception of `compiler/expression-types` gives another type or conversion than the standard rules SHALL give that exception's warning, also where the value is the same, in blitz2 and in AB3 mode: `divfrac` (the whole-division exception), `divquick` (a whole division beside a Quick), `floattop` (the top operation under a Float destination), `shiftfrac` (the shift exception), `shiftwrap` (the left-shift wrap). The standard rules themselves SHALL NOT warn.
+Each place, at a destination or a typed parameter, where a type exception of `compiler/expression-types` gives another type or conversion than the standard rules SHALL give that exception's warning, also where the value is the same, in both modes: `divfrac` (the whole-division exception), `divquick` (a whole division beside a Quick), `floattop` (the top operation under a Float destination), `shiftfrac` (the shift exception), `shiftwrap` (the left-shift wrap). The standard rules SHALL NOT warn.
 
 #### Scenario: A whole division under a Quick destination
 - **WHEN** a source evaluates `x.q=w/9` with `w.w=200` and `y.q=4/2`
