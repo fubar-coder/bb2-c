@@ -358,6 +358,26 @@ struct outcome {
     int consumer;
 };
 
+// a bit operator or NOT in the tree
+bool has_bitnot(const exprtyping_node *n)
+{
+    if (!n)
+        return false;
+    if (n->kind == ETN_NOT
+        || (n->kind == ETN_BIN
+            && (n->op == ETO_AND || n->op == ETO_OR || n->op == ETO_EOR || n->op == ETO_AMP || n->op == ETO_BAR)))
+        return true;
+    return has_bitnot(n->l) || has_bitnot(n->r);
+}
+
+// the intended difference of task 4.1: a bit operator or NOT with whole or
+// Quick operands compiles under a Float destination, which the model of P+
+// refuses (a constant with a point stays refused in both)
+bool float_bitop(const outcome &a, const outcome &b, unsigned want, const exprtyping_node *root)
+{
+    return want == ET_FLOAT && b.refused && !a.refused && has_bitnot(root);
+}
+
 outcome mine(exprtyping_node *root, unsigned want, exprtyping_result *res = nullptr)
 {
     exprtyping_result r;
@@ -415,8 +435,9 @@ std::vector<std::string> compare(const std::string &text, const std::string &var
     for (enum em_ctx ctx : CONTEXTS) {
         outcome a = mine(t.root, want_of(ctx)), b = theirs(x, ctx);
 
-        if (a.refused != b.refused || a.sig != b.sig || a.consumer != b.consumer)
-            d.push_back(text + " (" + vars + ") " + em_ctx_name(ctx) + ": the pass " + show(a) + ", the model "
+        if ((a.refused != b.refused || a.sig != b.sig || a.consumer != b.consumer)
+            && !float_bitop(a, b, want_of(ctx), t.root))
+            d.push_back(text +" (" + vars + ") " + em_ctx_name(ctx) + ": the pass " + show(a) + ", the model "
                         + show(b));
     }
     em_expr_free(x);
@@ -1045,7 +1066,8 @@ TEST_CASE("exprtyping: every cell of the matrix as the model types it (P+)", "[e
         compared++;
         refused += b.refused;
         wide += b.sig.find(" 3 ") != std::string::npos;
-        if (a.refused != b.refused || a.sig != b.sig || a.consumer != b.consumer)
+        if ((a.refused != b.refused || a.sig != b.sig || a.consumer != b.consumer)
+            && !float_bitop(a, b, want_of(c.ctx), t.root))
             d.push_back(std::string(c.key) + " " + cell_text(m, c) + ": the pass " + show(a) + ", the model " + show(b));
     }
     for (size_t i = 0; i < d.size() && i < 25; i++)

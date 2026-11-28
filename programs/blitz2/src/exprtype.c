@@ -226,10 +226,16 @@ int exprtype_bypass(unsigned op, unsigned left, unsigned right, int lpoint, int 
 {
     struct exprtype_binfacts f = { 0 };
     struct exprtype_bin d;
-    int bit = op == ETO_AND || op == ETO_OR || op == ETO_EOR || op == ETO_AMP || op == ETO_BAR;
+    int bit = op == ETO_AND || op == ETO_OR || op == ETO_EOR || op == ETO_AMP || op == ETO_BAR
+              || (op >= ETO_BITTST && op <= ETO_BITCHG);
     int shift = op >= ETO_LSL && op <= ETO_ASR;
 
-    if (!((bit && (lpoint || rpoint)) || (shift && lpoint)))
+    /* a bit operator the build refuses is the pass's whatever its operands:
+       whole operands under a Float destination compile (task 4.1), a Float
+       operand the pass refuses */
+    (void)lpoint;
+    (void)rpoint;
+    if (!(bit || (shift && lpoint)))
         return 0;
     d = exprtype_binop(op, left, right, &f);
     return !d.result || d.handler == ET_FLOAT || !exprtype_optype(op, d.handler);
@@ -237,7 +243,8 @@ int exprtype_bypass(unsigned op, unsigned left, unsigned right, int lpoint, int 
 
 int exprtype_bypassnot(unsigned t, int point)
 {
-    return point && t == ET_FLOAT;
+    (void)point;                /* Not of whole operands under a Float destination too (task 4.1) */
+    return t == ET_FLOAT;
 }
 
 /* no asm counterpart; replaces the type decisions of blitz2.s:10479

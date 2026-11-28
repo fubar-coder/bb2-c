@@ -1196,19 +1196,27 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         return 0;
     if (folded(n))
         return const_type(c, n, want, beside, role);
-    if (want == ET_FLOAT && c->fmtfloat
-        && (n->kind == ETN_NOT || (n->kind == ETN_BIN && (is_bit(n->op) || is_shift(n->op))))) {
+    if (want == ET_FLOAT
+        && (n->kind == ETN_NOT
+            || (n->kind == ETN_BIN && (is_bit(n->op) || (c->fmtfloat && is_shift(n->op)))))) {
         /* parts 5-8: a Float format reached from a comparison or an
            expression with a Float is no wanted Float for a bit operator,
            shift or NOT: typed by its own operands, its result taken as a
-           Float (a wanted Float, rf.f=b AND 1, stays refused) */
+           Float.  A bit operator or NOT under a wanted Float (rf.f=b AND
+           1) is typed so too: its whole result converts at the end (a
+           Float operand is refused) */
         int save = c->fmtfloat;
 
+        /* a constant with a point as an operand stays refused here */
+        if (!save && (has_point(n->l) || (n->kind == ETN_BIN && has_point(n->r))))
+            return refuse(c);
         c->fmtfloat = 0;
         T = typed(c, n, 0, beside, role);
         c->fmtfloat = save;
         if (c->refused || T == ET_STRING)
             return refuse(c);
+        if (!save)
+            return T;           /* a wanted Float: the whole value, converted by its consumer */
         if (!c->dry)
             n->t = ET_FLOAT;
         return ET_FLOAT;

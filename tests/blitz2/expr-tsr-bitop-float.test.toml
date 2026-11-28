@@ -1,0 +1,16 @@
+# expr-tsr-bitop-float.test.bas: an extension of the port (#1235, the
+# operand-only type system); the original refuses a bit operator or NOT
+# under a Float destination, so nothing runs in its cells
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+# the original's values (blitz2 1.95 with the CD's libraries), as measured:
+[deviations."compiler=orig195"]
+compile = "== \"error 13 Illegal Operator for Type\""
+rc = "not exists"
+"end.case" = "not exists"
+"end.run" = "not exists"

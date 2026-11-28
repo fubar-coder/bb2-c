@@ -205,7 +205,7 @@ The conversion of a whole, 48.16 or Float value to a Quick SHALL round down to 1
 - **THEN** x is $FFF19999 (before: $FFF1999A, towards zero)
 
 ### Requirement: Bit operators take whole operands
-`AND`, `OR`, `EOR`, `NOT`, `&`, `|` and the bit test operators SHALL round a Quick or 48.16 operand down to a whole number and give a whole result. A Float operand SHALL stay refused with "Illegal Operator for Type".
+`AND`, `OR`, `EOR`, `NOT`, `&`, `|` and the bit test operators SHALL round a Quick or 48.16 operand down to a whole number and give a whole result. A Float operand SHALL stay refused with "Illegal Operator for Type". Under a Float destination, whole operands SHALL compile: the whole result converts to Float at the end.
 
 #### Scenario: Quick operands
 - **WHEN** a program executes `NPrint q AND 3` with `q=7.5` and evaluates `h=Not h` with a default-typed `h=-1`
@@ -214,6 +214,10 @@ The conversion of a whole, 48.16 or Float value to a Quick SHALL round down to 1
 #### Scenario: A Float operand
 - **WHEN** a program contains `r.l=l AND f` with `f.f=1.5`
 - **THEN** compiling it gives "Illegal Operator for Type"
+
+#### Scenario: Whole operands under a Float destination
+- **WHEN** a program evaluates `rf.f=b AND 1` with `b.b=3`, `rf.f=Not w` with `w.w=5` and `rf.f=l AND f` with `l.l=5`, `f.f=1.5`
+- **THEN** rf is 1.0 and -6.0 (before and in the original: "Illegal Operator for Type"), and the third gives "Illegal Operator for Type"
 
 ### Requirement: A shift keeps the type of its left operand
 A Quick left operand SHALL keep its fraction bits: `LSL`, `ASL`, `ASR` in 48.16, `LSR` on the 16.16 bits. A whole left operand SHALL be shifted as a whole number: `LSR`, `ASR` in its own width, `LSL`, `ASL` as a Long. The count SHALL be whole (a Quick rounded down, a constant with a point refused) and SHALL NOT make the left operand fractional.

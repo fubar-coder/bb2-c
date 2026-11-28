@@ -10,9 +10,11 @@ libs = ["cd", "clib"]
 
 [data]
 "float.bas" = "basic-compile"
+"float_dest.bas" = "basic-compile"
 
 [asserts]
 "data.float.bas" = "== \"error 4 Illegal Operator for Type\""
+"data.float_dest.bas" = "== \"error 5 Illegal Operator for Type\""
 
 [asserts."case=print_quick_operand"]
 output = "== \"3\n\""
