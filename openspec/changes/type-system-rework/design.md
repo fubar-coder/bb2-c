@@ -869,3 +869,50 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
   the warning is `divfrac` (C1 decides its type). A run of minus signs is
   one node of the compiler's tree (`p5neg`) and is classed as one unary
   minus.
+
+## Findings of task 4.1 (the whole-number operations)
+
+- **Where the rule sits.** `exprtyping_type` takes the classes of
+  `exprtyping_classify` (blitz2 runs it first, `p5end`; without them, as
+  in the host test of rule P+, the pass is P+ alone). For a node of whole
+  class without an exception (not Mod, not a shift, not a bit test) the
+  type the operand typing chose stays where its code gives the class value
+  for every operand value, else the node is computed in the narrowest
+  whole type whose code does (`wb_type`; the bounds of `wb_need`: Byte 8,
+  Word 16, Long 32 bits, + - one bit more, * the sum, / one more unless the
+  divisor is a constant of at least 2). The kept code is the design's
+  "Optimizations": under a destination that wraps at n bits through + - *,
+  the unary minus, NOT and the bit operators (a / of two Byte or Word
+  operands in its Byte or Word too: DIVS.W keeps the dividend on -32768 /
+  -1, whose low 16 bits are the quotient's), and range bounds (a Word add
+  of values of 15 bits, MULS.W of two Words, a 16.16 operation within 16
+  bits, a Float one within the 24 bits of the mantissa). Elsewhere: the
+  operands extended and the Long code; a minus sign wider than its operand
+  (`wide`: the operand converted first); a Long / of two values in the
+  Word range by #1179's inline DIVS.W (`o.fast`), not ldivlib.
+- **What changes.** `NPrint w+v` (Long add), `x.w=(w+v)/2` (the sum
+  Long), a whole operation under a Quick destination (`x=a+1` with a Word
+  `a` and the default type Quick: Long code, then today's conversion; the
+  value changes only with the saturating conversion of 4.2), a Long product
+  under a Float destination (`f.f=l*l` wraps: 1410065408, the matrix cells
+  df/pf `l*l`, `l*cl`, `cl*l`), a whole / below another operator under a
+  Quick or Float destination without the exception. Of the CD's 27,898
+  typed expressions 507 decisions change in 74 sources; 51 executables
+  change (each of them has a changed decision; the other sources' changed
+  decisions give the build's code already).
+- **What of P+ stays.** The wanted-type cases of `typed()` stay as the
+  candidate the rule keeps where it holds the value (that is the narrow
+  code under a wrapping destination and the range bounds); `cmplong`
+  (whole operations in a comparison at least Long) stays for the same
+  reason. Not this task's: the fractional world (`frac_value`,
+  `frac_side`'s whole arithmetic subtree in 16.16 or 48.16, part 7:
+  `has_long`, the 16.16 operands; 4.2), Mod's type and sign rule (4.7),
+  the shifts (4.4), the comparisons (4.6), folding (3.4) and the reading
+  of constants (3.3). A whole-class operand that P+ computes in 16.16
+  counts as 16 bits (its value as computed), so the parent changes only
+  when 4.2 makes it 48.16.
+- **Open.** A bit operator or NOT with whole operands under a Float
+  destination (`rf.f=b AND 1`) stays refused ("Illegal Operator for
+  Type", P+), although its class is a whole number (the spec refuses only
+  a Float operand); allowing it changes which programs compile and the
+  refused cells of the matrix (task 6.1).

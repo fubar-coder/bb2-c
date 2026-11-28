@@ -5921,7 +5921,12 @@ static BOOL p5eq(struct p5node *p, UWORD las)
         if (p->flags & P5F_RAW)
             return las == T_QUICK || las == T_LONG || las == T_FLOAT;
         return p->tt == las || p5lossless(p->t.type, p->tt);
-    case ETN_NEG: return p5eq(P5(p->t.l), las);
+    case ETN_NEG:
+        /* the whole-width rule: the build's minus no narrower than the
+           pass's whole type */
+        if (p->t.wide && !(p->tt >= p->t.t && p->tt <= T_LONG))
+            return FALSE;
+        return p5eq(P5(p->t.l), las);
     case ETN_NOT:
         if (p->flags & P5F_RELAX)
             return FALSE;
@@ -6416,12 +6421,14 @@ static void p5operands(struct p5node *L, struct p5node *R, UWORD r, UWORD q, UWO
     regat = r;
 }
 
-static void p5doop(unsigned op, UWORD t)
+/* the operator op in type t by its handler; words: two values in the Word
+   range (the whole-width rule: a Long / by #1179's inline DIVS.W) */
+static void p5doop(unsigned op, UWORD t, BOOL words)
 {
     if (p5prep)
-        opprep(op, t, FALSE);
+        opprep(op, t, words);
     else
-        doop(&operators[op], t, FALSE);
+        doop(&operators[op], t, words);
 }
 
 /* a Mod in Float, exact: a - b * trunc(a / b), plus b when negative; b
@@ -7350,7 +7357,7 @@ static void p5bin(struct p5node *p, UWORD r)
         }
         T = lt == T_QUICK || rt == T_QUICK ? T_QUICK : p5max(lt, rt);
         p5operands(L, R, r, q, T, T);
-        p5doop(op, T);
+        p5doop(op, T, FALSE);
         break;
     case P5Y_LOW:
         /* the low 32 bits of the 48.16 value: a whole operand as l << 16
@@ -7440,7 +7447,7 @@ static void p5bin(struct p5node *p, UWORD r)
             break;
         }
         p5operands(L, R, r, q, T, o->path == ETY_Q16 ? T_QUICK : o->ras);
-        p5doop(op, T);
+        p5doop(op, T, o->path == ETY_PLAIN && o->fast);
         break;
     }
     regat = s;
@@ -7481,20 +7488,25 @@ static void p5constact(struct expract *a)
 static void p5neg(const struct p5node *p)
 {
     const struct p5node *c = P5(p->t.l);
-    UWORD k;
+    UWORD k, t = c->dt;
 
+    if (p->t.wide) {
+        /* the whole-width rule: one step wider than its operand */
+        p5conv(c->dt, c->df, p->dt, FALSE);
+        t = p->dt;
+    }
     for (k = p->x->op; k; k--) {
-        if (c->df == ETF_Q48) {
+        if (c->df == ETF_Q48 && !p->t.wide) {
             p5reg(regat + 1);
             p5w(0x4480 | regat);                /* neg.l D(r) */
             p5w(0x4080 | (regat + 1));          /* negx.l D(r+1) */
-        } else if (c->dt >= T_FLOAT) {
+        } else if (t >= T_FLOAT) {
             if (p5prep)
                 tokuse(getffpbase);
             else
                 fdo2(P5_SPNEG);
         } else
-            p5w((c->dt >= T_LONG ? 0x4480 : 0x4440) | regat);  /* neg.l / neg.w */
+            p5w((t >= T_LONG ? 0x4480 : 0x4440) | regat);    /* neg.l / neg.w */
     }
 }
 
@@ -7719,8 +7731,8 @@ static void p5apply(struct p5node *p, UWORD take, BOOL bit, UWORD want)
     case ETN_NEG:
         c = P5(p->t.l);
         p5apply(c, take, FALSE, want);
-        p->dt = c->dt;
-        p->df = c->df;
+        p->dt = p->t.wide ? p->t.t : c->dt;
+        p->df = p->t.wide ? ETF_TYPE : c->df;
         p->act->fn = p5negact;
         p->act->x = (ULONG)p;
         p5prep = TRUE;

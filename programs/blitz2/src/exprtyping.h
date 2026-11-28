@@ -126,7 +126,9 @@ struct exprtyping_op {
     unsigned char rfrom, ras, rwide;
     unsigned char result;
     unsigned char fast;         /* ETY_Q48: both operands narrow (their high part the sign
-                                   extension of the low part; the fast path decided now) */
+                                   extension of the low part; the fast path decided now);
+                                   ETY_PLAIN: a Long / of two values in the Word range by the
+                                   inline DIVS.W of #1179 (the whole-width rule) */
 };
 
 /** @brief A node of the tree.
@@ -149,6 +151,8 @@ struct exprtyping_node {
     /* out */
     unsigned char typed;
     unsigned char t, fmt, own;
+    unsigned char wide;         /* a NEG computed in t, wider than its operand (the whole-width
+                                   rule: the operand converted to t first) */
     struct exprtyping_op o;
     /* out of exprtyping_classify */
     unsigned char cls;          /* ET_BYTE, ET_WORD, ET_LONG a whole number of that width,
@@ -173,6 +177,18 @@ struct exprtyping_result {
  * Writes the out part of every node it types (the nodes of a folded
  * constant subtree are not typed: their constant is) and *res.  Returns 0,
  * or 1 when the expression is refused (res->refused).
+ *
+ * When exprtyping_classify has classed the tree (the root's cls set, as
+ * blitz2 does before, p5end), the whole-number operations follow the
+ * whole-width rule of type-system-rework (task 4.1): a node of whole class
+ * without an exception is computed in the operand typing's type only where
+ * that code gives its class value for every operand value (under a
+ * destination that wraps through + - *, the unary minus, NOT and the bit
+ * operators; or within a range bound), else in the narrowest whole type
+ * that does (the operands extended, the Long code; a minus sign wide, a
+ * Long / of two Word-range values o.fast).  Mod and the shifts keep their
+ * types (tasks 4.7, 4.4); the fractional world is rule P+ (task 4.2).
+ * Without the classes (the host test of rule P+) the pass is P+ alone.
  */
 int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtyping_result *res);
 
@@ -207,9 +223,9 @@ enum {
  * destination reaches into the expression only by the named exceptions
  * (ETX_*).  Writes cls and exc of every node and the set of the
  * exceptions that apply in *warn; returns 0, or 1 when an operator is
- * refused ("Illegal Operator for Type"; *warn 0).  The code still follows
- * exprtyping_type's decisions (rule P+) until the code generation of
- * type-system-rework (its section 4) takes these classes.
+ * refused ("Illegal Operator for Type"; *warn 0).  exprtyping_type takes
+ * these classes for the whole-number operations (task 4.1); the code of
+ * the other families still follows rule P+ (section 4 of the change).
  */
 int exprtyping_classify(struct exprtyping_node *root, unsigned want, unsigned *warn);
 

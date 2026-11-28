@@ -879,6 +879,97 @@ TEST_CASE("exprtyping: the classes and exception places of the spec", "[exprtypi
     }
 }
 
+// the types the whole-number operations are computed in after the classes
+// (exprtyping_classify, then exprtyping_type: the whole-width rule of task
+// 4.1), in post order: "OP:T" for an operation (T its las; "f" the inline
+// DIVS.W of two values in the Word range), "neg:T" for a minus sign ("w":
+// wider than its operand)
+void render_whole(const exprtyping_node *n, std::string &out)
+{
+    if (exprtyping_isconst(n))
+        return;
+    if (n->kind == ETN_NEG || n->kind == ETN_NOT)
+        render_whole(n->l, out);
+    if (n->kind == ETN_BIN) {
+        render_whole(n->l, out);
+        render_whole(n->r, out);
+    }
+    if (n->kind != ETN_BIN && n->kind != ETN_NEG)
+        return;
+    if (!out.empty())
+        out += ' ';
+    if (n->kind == ETN_NEG) {
+        out += std::string("neg:") + tlet(n->t, 0) + (n->wide ? "w" : "");
+        return;
+    }
+    out += std::string(opkey(n->op)) + ":" + tlet(n->o.las, 0) + (n->o.path == ETY_PLAIN && n->o.fast ? "f" : "");
+}
+
+std::string mine_whole(exprtyping_node *root, unsigned want)
+{
+    unsigned w;
+    exprtyping_result r;
+    std::string out;
+
+    if (exprtyping_classify(root, want, &w) || exprtyping_type(root, want, &r))
+        return "!";
+    render_whole(root, out);
+    return out;
+}
+
+TEST_CASE("exprtyping: whole-number operations one step wider (task 4.1)", "[exprtyping][tsr]")
+{
+    // the spec delta's "A whole-number operation is one step wider than
+    // its operands" and "Optimizations keep the value": the Long code
+    // where the operand typing's code does not hold the value, the narrow
+    // code under a destination that wraps and within a range bound
+    struct {
+        const char *text, *vars;
+        unsigned want;
+        const char *code;
+    } cases[] = {
+        { "w+v", "w.w=1 v.w=1", ET_NONE, "add:L" },              // NPrint w+v: 40000
+        { "w+v", "w.w=1 v.w=1", ET_WORD, "add:W" },              // y.w=w+v wraps
+        { "w+v", "w.w=1 v.w=1", ET_LONG, "add:L" },
+        { "w+v", "w.w=1 v.w=1", ET_QUICK, "add:L" },             // not in 16.16
+        { "w+v", "w.w=1 v.w=1", ET_FLOAT, "add:F" },             // exact in Float
+        { "b+c", "b.b=1 c.b=1", ET_NONE, "add:B" },              // add.w: now a Word
+        { "b+c", "b.b=1 c.b=1", ET_BYTE, "add:B" },
+        { "b-c", "b.b=1 c.b=1", ET_NONE, "sub:W" },
+        { "b1+b2+b3", "b1.b=1 b2.b=1 b3.b=1", ET_NONE, "add:B add:W" },   // at most 381
+        { "b1+b2+b3", "b1.b=1 b2.b=1 b3.b=1", ET_BYTE, "add:B add:W" },
+        { "(w+v)/2", "w.w=1 v.w=1", ET_WORD, "add:L div:L" },    // no wrap below a /
+        { "(w+v) LSR 1", "w.w=1 v.w=1", ET_WORD, "add:L lsr:L" },
+        { "(w+v) LSL 1", "w.w=1 v.w=1", ET_WORD, "add:W lsl:L" },   // the shift as before (4.4)
+        { "w/v", "w.w=1 v.w=1", ET_NONE, "div:Lf" },             // -32768 / -1
+        { "w/4", "w.w=1", ET_NONE, "div:W" },                    // a divisor of at least 2
+        { "(q+1) AND 1", "q=1", ET_QUICK, "add:Q and:Q" },       // a 16.16 operand (P+ until 4.2)
+        { "w/v", "w.w=1 v.w=1", ET_WORD, "div:W" },
+        { "b/c", "b.b=1 c.b=1", ET_NONE, "div:W" },
+        { "w*v", "w.w=1 v.w=1", ET_NONE, "mul:W" },              // muls.w: the Long
+        { "w*v", "w.w=1 v.w=1", ET_FLOAT, "mul:W" },
+        { "l*l", "l.l=1", ET_FLOAT, "mul:L" },                   // wraps, not in Float
+        { "-w", "w.w=1", ET_NONE, "neg:Lw" },
+        { "-w", "w.w=1", ET_WORD, "neg:W" },
+        { "-w", "w.w=1", ET_LONG, "neg:Lw" },
+        { "-b", "b.b=1", ET_NONE, "neg:Ww" },
+        { "-l", "l.l=1", ET_NONE, "neg:L" },
+        { "w Mod v", "w.w=1 v.w=1", ET_NONE, "mod:W" },          // Mod keeps its type (4.7)
+        { "(w+v) Mod 7", "w.w=1 v.w=1", ET_WORD, "add:L mod:L" },
+        { "w+v>0", "w.w=1 v.w=1", ET_NONE, "add:L gt:L" },
+        { "(w+v) AND u", "w.w=1 v.w=1 u.w=1", ET_QUICK, "add:L and:L" },
+        { "w/9", "w.w=200", ET_QUICK, "div:Q" },                 // the exception (C1) as before
+    };
+
+    for (const auto &c : cases) {
+        tree t(c.text, c.vars);
+
+        INFO(c.text, " ", c.want);
+        REQUIRE(t.root);
+        CHECK(mine_whole(t.root, c.want) == c.code);
+    }
+}
+
 // the expressions of the CD (task 1.3's dump cd.cases, one per line: "ID
 // CONTEXT EXPRESSION VARIABLES" separated by tabs; derived from the CD's
 // sources and so not in the repository): every one in every context, when

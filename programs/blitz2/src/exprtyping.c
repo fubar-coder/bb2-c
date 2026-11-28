@@ -330,6 +330,10 @@ struct ctx {
     int fmtfloat;               /* the Float typed under is a reached format, no wanted type */
     int bittaker;               /* the operand typed is taken by a bit operator, shift or NOT */
     int modtree;                /* const_flow of a const_quick expression (#1224) */
+    int tsr;                    /* the tree is classed (exprtyping_classify): the whole-width rule */
+    unsigned wrap;              /* the next node typed is reached from a destination that wraps at
+                                   wrap bits (8, 16, 32) through operators that keep the low bits
+                                   only (wb_modular); 0 none.  typed() takes it at its entry */
 };
 
 static unsigned tmax(unsigned a, unsigned b)
@@ -893,26 +897,37 @@ static unsigned handler_result(unsigned op, unsigned t)
     }
 }
 
+static int wb_modular(unsigned kind, unsigned op);
+
 /* the operands of the binary n (no comparison): a constant after the
-   other operand, which it is typed beside */
-static int operands(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned *lt, unsigned *rt)
+   other operand, which it is typed beside; wrap: ctx.wrap at n (passed on
+   to the operands of + - * and the bit operators and to the left one of a
+   left shift, the whole-width rule) */
+static int operands(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned wrap, unsigned *lt,
+                    unsigned *rt)
 {
     int lc = isconst(n->l), rc = isconst(n->r), shift = is_shift(n->op), bit = is_bit(n->op) && !shift;
+    unsigned lw = wb_modular(ETN_BIN, n->op) || n->op == ETO_LSL || n->op == ETO_ASL ? wrap : 0;
+    unsigned rw = wb_modular(ETN_BIN, n->op) ? wrap : 0;
 
     if (lc && !rc) {
         c->bittaker = bit || shift;
+        c->wrap = rw;
         *rt = typed(c, n->r, want, 0, BIT_NONE);
         if (c->refused)
             return 1;
         c->bittaker = bit || shift;
+        c->wrap = lw;
         *lt = typed(c, n->l, want, shift ? 0 : *rt, shift ? BIT_SHIFTED : bit ? BIT_OPERAND : BIT_NONE);
         return c->refused;
     }
     c->bittaker = bit || shift;
+    c->wrap = lw;
     *lt = typed(c, n->l, want, 0, shift && lc ? BIT_SHIFTED : BIT_NONE);
     if (c->refused)
         return 1;
     c->bittaker = bit || shift;
+    c->wrap = rw;
     *rt = typed(c, n->r, want, rc ? *lt : 0, rc ? (shift ? BIT_COUNT : bit ? BIT_OPERAND : BIT_NONE) : BIT_NONE);
     return c->refused;
 }
@@ -987,13 +1002,196 @@ static unsigned typed_compare(struct ctx *c, struct exprtyping_node *n)
     return ET_WORD;
 }
 
+/* ------------------------------------------- the whole-width rule */
+
+/* The whole-number operations of type-system-rework (task 4.1; spec delta
+   compiler/expression-types, "A whole-number operation is one step wider
+   than its operands", "Optimizations keep the value"; design.md
+   "Decisions" 2 and 3): a node of whole class (exprtyping_classify: cls a
+   Byte, Word or Long, no exception) gives the value of its class, the
+   exact value of + - * and the unary minus up to a Word operand, modulo
+   2^32 for a Long.  The type the operand typing chose (today's, the
+   wanted one among them) stays where its code gives that value for every
+   operand value: under a destination that wraps at n bits through + - *,
+   the unary minus, NOT and the bit operators (their low n bits depend on
+   the operands' low n bits only, design "Narrow whole code"; a / of two
+   Byte or Word operands in its Byte or Word too: DIVS.W keeps the
+   dividend on its one overflow, -32768 / -1, whose low 16 bits are the
+   quotient's), or where the operands' value range fits the code (a range
+   bound: a Word add of values of at most 15 bits, a 16.16 or Float
+   operation within its exact range, MULS.W of two Words).  Elsewhere the
+   operation is computed in the narrowest whole type whose code holds the
+   value: the operands extended (ext) and the Long code, a / of two values
+   in the Word range by #1179's inline DIVS.W with the fall-back for
+   -32768 / -1 (o.fast).  Mod keeps its type (task 4.7: its sign rule and
+   width), its operands get their exact values. */
+
+/* the signed width of v: the least k with -2^(k-1) <= v < 2^(k-1) */
+static unsigned wb_vbits(int64_t v)
+{
+    unsigned k = 1;
+
+    while (k < 63 && (v < -((int64_t)1 << (k - 1)) || v >= ((int64_t)1 << (k - 1))))
+        k++;
+    return k;
+}
+
+static unsigned wb_need(const struct exprtyping_node *n);
+
+/* the signed width of n's value as an operand: at most 32 (a Long wraps) */
+static unsigned wb_bits(const struct exprtyping_node *n)
+{
+    unsigned b = wb_need(n);
+
+    return b > 32 ? 32 : b;
+}
+
+/* the signed width the exact value of n's operation needs (beyond 32: a
+   Long that wraps); a value with a fraction as its whole part, the
+   classes that are no whole number 32 */
+static unsigned wb_need(const struct exprtyping_node *n)
+{
+    unsigned l, r;
+
+    if (folded(n)) {
+        struct rq a = const_value(n);
+
+        return a.ok ? wb_vbits(rq_floor(a)) : 32;
+    }
+    if (n->cls == ET_QUICK && n->kind != ETN_VAR)
+        /* a 16.16 value (rule P+ until task 4.2): its whole part */
+        return n->typed && n->fmt != ETF_Q48 && n->t == ET_QUICK ? 16 : 32;
+    switch (n->kind) {
+    case ETN_VAR:
+        switch (n->type) {
+        case ET_BYTE: return 8;
+        case ET_WORD:
+        case ET_QUICK: return 16;  /* a Quick as a whole number: rounded down */
+        default: return 32;
+        }
+    case ETN_NEG: return wb_bits(n->l) + 1;
+    case ETN_NOT: return wb_bits(n->l);
+    case ETN_BIN: break;
+    default: return 32;
+    }
+    if (exprtype_iscompare(n->op) || n->op == ETO_BITTST)
+        return 1;           /* -1 or 0 */
+    if (n->cls == ET_FLOAT || is_shift(n->op) || n->op == ETO_POW || n->op > ETO_BITTST)
+        return 32;
+    l = wb_bits(n->l);
+    r = wb_bits(n->r);
+    switch (n->op) {
+    case ETO_ADD:
+    case ETO_SUB: return tmax(l, r) + 1;
+    case ETO_MUL: return l + r;
+    case ETO_DIV:
+        if (folded(n->r)) {
+            struct rq d = const_value(n->r);
+
+            if (d.ok && rq_isint(d) && (d.n >= 2 || d.n <= -2))
+                return l;   /* a divisor of at least 2: no wider than the dividend */
+        }
+        return l + 1;       /* -32768 / -1 */
+    case ETO_MOD: return tmax(l, r) + 1;    /* today's sign rule adds the divisor once */
+    default: return tmax(l, r);             /* AND, OR, EOR */
+    }
+}
+
+/* the operation keeps the low n bits of its operands' low n bits (+ - *,
+   the unary minus, NOT, the bit operators; kind ETN_NEG, ETN_NOT or a
+   BIN's op) */
+static int wb_modular(unsigned kind, unsigned op)
+{
+    if (kind != ETN_BIN)
+        return 1;
+    return op == ETO_ADD || op == ETO_SUB || op == ETO_MUL || op == ETO_AND || op == ETO_OR || op == ETO_EOR
+           || op == ETO_AMP || op == ETO_BAR;
+}
+
+static unsigned wb_width(unsigned t)
+{
+    return t == ET_BYTE ? 8 : t == ET_WORD ? 16 : t == ET_LONG || t == ET_ADDR ? 32 : 0;
+}
+
+/* the code of the operation in type t (today's handler; kind and op as
+   wb_modular) takes operands of up to *in bits exactly and holds its
+   result exactly up to the bits returned (64: modulo 2^32, as the class of
+   a Long; 0: never, a / with its fraction) */
+static unsigned wb_cap(unsigned kind, unsigned op, unsigned t, unsigned *in)
+{
+    int bin = kind == ETN_BIN;
+
+    switch (t) {
+    case ET_BYTE:
+        *in = 8;
+        return bin && (op == ETO_ADD || op == ETO_MUL) ? 16 : 8;   /* add.w, muls.w: now a Word */
+    case ET_WORD:
+        *in = 16;
+        return bin && op == ETO_MUL ? 32 : 16;                      /* muls.w: now a Long */
+    case ET_LONG:
+    case ET_ADDR: *in = 32; return 64;
+    case ET_QUICK: *in = 16; return bin && op == ETO_DIV ? 0 : 16;
+    case ET_FLOAT:
+        *in = 24;           /* the FFP mantissa */
+        return bin && op == ETO_DIV ? 0 : 24;
+    default: *in = 0; return 0;
+    }
+}
+
+static int wb_exact(unsigned kind, unsigned op, unsigned t, unsigned lb, unsigned rb, unsigned need)
+{
+    unsigned in, cap = wb_cap(kind, op, t, &in);
+
+    return lb <= in && rb <= in && need <= cap;
+}
+
+/* the type the whole-class node n (kind, op) is computed in: T, the
+   operand typing's, where its code gives the class value, else the
+   narrowest whole type at least its operands' (lt, rt; rt 0 for a unary
+   one) that does; wrap as ctx.wrap at n; *fast: a / of two values in the
+   Word range by the inline DIVS.W */
+static unsigned wb_type(const struct ctx *c, const struct exprtyping_node *n, unsigned T, unsigned lt,
+                        unsigned rt, unsigned wrap, int *fast)
+{
+    unsigned kind = n->kind, op = kind == ETN_BIN ? n->op : 0, lb, rb = 0, need, t, base;
+
+    *fast = 0;
+    if (!c->tsr || c->dry || n->exc || n->cls < ET_BYTE || n->cls > ET_LONG || op == ETO_MOD
+        || is_shift(op) || (op >= ETO_BITTST && kind == ETN_BIN))
+        return T;
+    lb = wb_bits(n->l);
+    if (kind == ETN_BIN)
+        rb = wb_bits(n->r);
+    need = wb_need(n);
+    if (wrap && wb_width(T) >= wrap) {
+        unsigned in;
+
+        if (wb_modular(kind, op))
+            return T;
+        if (op == ETO_DIV && T <= ET_WORD && (wb_cap(kind, op, T, &in), lb <= in && rb <= in))
+            return T;
+    }
+    if (wb_exact(kind, op, T, lb, rb, need))
+        return T;
+    /* the narrowest whole type of the operands (a Quick's whole part a
+       Word, a Float's a Long) that holds the value */
+    base = tmax(lt, rt);
+    base = base == ET_QUICK ? ET_WORD : base >= ET_FLOAT || base == 0 ? ET_LONG : base;
+    for (t = base; t < ET_LONG && !wb_exact(kind, op, t, lb, rb, need); t++)
+        ;
+    if (t == ET_LONG && op == ETO_DIV && lb <= 16 && rb <= 16)
+        *fast = 1;
+    return t;
+}
+
 /* n by the operand typing under want, beside an operand of type beside (a
    constant subtree only); role: the constant's BIT_* */
 static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, unsigned beside, int role)
 {
-    unsigned lt, rt, T, op;
-    int lc, rc;
+    unsigned lt, rt, T, op, wrap = c->wrap;
+    int lc, rc, fast;
 
+    c->wrap = 0;
     if (c->refused)
         return 0;
     if (folded(n))
@@ -1027,24 +1225,33 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
         mark(c, n, n->type, ETF_TYPE);
         return n->type;
     case ETN_NEG:
-        T = typed(c, n->l, want, beside, BIT_NONE);
-        if (c->refused || T == ET_STRING)
+        c->wrap = wrap;
+        lt = typed(c, n->l, want, beside, BIT_NONE);
+        if (c->refused || lt == ET_STRING)
             return refuse(c);
+        /* the whole-width rule: one step wider than its operand, the
+           operand converted first (wide) */
+        T = wb_type(c, n, lt, lt, 0, wrap, &fast);
+        if (!c->dry)
+            n->wide = (unsigned char)(T != lt);
         mark(c, n, T, ETF_TYPE);
         return T;
     case ETN_NOT:
         c->bittaker = 1;
-        T = typed(c, n->l, want, 0, isconst(n->l) ? BIT_OPERAND : BIT_NONE);
+        c->wrap = wrap;
+        lt = typed(c, n->l, want, 0, isconst(n->l) ? BIT_OPERAND : BIT_NONE);
         if (c->refused)
             return 0;
         /* NOT in the higher of want and its operand's type; a Quick under a
            wanted Long rounded down, as today */
+        T = lt;
         if (T == ET_QUICK && want == ET_LONG)
             T = ET_LONG;
         else if (want > T && want != ET_STRING)
             T = want;
         if (T >= ET_FLOAT)
             return refuse(c);
+        T = wb_type(c, n, T, lt, 0, wrap, &fast);
         mark(c, n, T, ETF_TYPE);
         return T;
     default: break;
@@ -1052,7 +1259,7 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
     op = n->op;
     if (exprtype_iscompare(op))
         return typed_compare(c, n);
-    if (operands(c, n, want, &lt, &rt))
+    if (operands(c, n, want, wrap, &lt, &rt))
         return 0;
     if (lt == ET_STRING || rt == ET_STRING)
         return refuse(c);
@@ -1125,7 +1332,10 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
             return T;
         }
     }
+    T = wb_type(c, n, T, lt, rt, wrap, &fast);
     record(c, n, ETY_PLAIN, lc ? ETY_CONST : lt, T, 0, rc ? ETY_CONST : rt, T, 0, handler_result(op, T));
+    if (!c->dry)
+        n->o.fast = (unsigned char)fast;
     mark(c, n, handler_result(op, T), ETF_TYPE);
     return handler_result(op, T);
 }
@@ -1169,7 +1379,7 @@ static void fastpaths(struct exprtyping_node *n)
 static void clear(struct exprtyping_node *n)
 {
     n->typed = 0;
-    n->t = n->fmt = n->own = 0;
+    n->t = n->fmt = n->own = n->wide = 0;
     n->o.path = 0;
     n->o.fast = 0;
     if (n->kind == ETN_BIN) {
@@ -1190,6 +1400,7 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
     res->consumer = ETC_TYPE;
     res->conv = 0;
     c.quickhere = has_quick(root);
+    c.tsr = root->cls != 0;
     if (has_quick(root) && want != ET_FLOAT && !is_floaty(&c, root, want)) {
         /* an expression with a Quick and no Float: the fractional world,
            rounded once at the consumer */
@@ -1226,8 +1437,10 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
         c.reachedf = 1;
         c.fmtfloat = 1;
         t = typed(&c, root, ET_FLOAT, 0, BIT_NONE);
-    } else
+    } else {
+        c.wrap = wb_width(want);    /* a whole destination wraps */
         t = typed(&c, root, want, 0, BIT_NONE);
+    }
     if (!c.refused && want && t != want) {
         if (t == ET_STRING || want == ET_STRING)
             c.refused = 1;
