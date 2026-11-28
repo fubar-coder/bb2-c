@@ -1071,6 +1071,43 @@ TEST_CASE("exprmatrix model: today's division by 0 and 2.0 under a Byte", "[expr
     CHECK(expr("b+1.5", "b.b=3").value(EM_DB, NOW) == "4");
 }
 
+// the values both compilers give on the emulator (#1232; the planner's
+// probes of 2026-11-28, section1-decisions.md), by the original's rules and
+// by P+
+TEST_CASE("exprmatrix model: the emulator's values of a division by 0 and a Quick literal (#1232)",
+          "[exprmatrix][cand][decided]")
+{
+    for (uint64_t r : { ORIG, DEC }) {
+        // a Float division by 0: SPDiv's division trap
+        for (enum em_ctx c : { EM_DF, EM_DL, EM_DW, EM_DQ, EM_PRINT }) {
+            CHECK(expr("fa/fz", "fa.f=1 fz.f=0").value(c, r) == "!trap");
+            CHECK(expr("-1/fz", "fz.f=0").value(c, r) == "!trap");
+        }
+        CHECK(expr("(f*l)/lz+lb", "f.f=1 l.l=2 lz.l=0 lb.l=3").value(EM_DF, r) == "!trap");
+        CHECK(expr("q/lz", "q=3 lz.l=0").value(EM_DF, r) == "!trap");
+        CHECK(expr("la/lz", "la.l=6 lz.l=0").value(EM_DF, r) == "!trap");
+        CHECK(expr("la/lz", "la.l=7 lz.l=0").value(EM_DL, r) == "2147483647");
+        CHECK(expr("w/z", "w.w=7 z.w=0").value(EM_DL, r) == "2147483647");
+        // a Quick reading of a point constant through FFP
+        CHECK(expr("q+30000.3", "q=1").value(EM_DQ, r) == "75314D00");
+        CHECK(expr("qa+(-0.1)", "qa=3").value(EM_DQ, r) == "0002E667");
+        CHECK(expr("q*(-0.3)", "q=157").value(EM_PRINT, r) == "-47.0981");
+    }
+    // a Long division by 0 of a negative dividend: the CD's ldivlib gives
+    // $7FFFFFFF for every sign (1.95 and the port with the CD's libraries on
+    // the emulator), the port's C library the dividend's sign (#200, as
+    // exprarith); a Quick one under a Long destination the dividend's sign
+    // in the port (lqdiv, longdiv) with either library
+    for (enum em_ctx c : { EM_DL, EM_PRINT }) {
+        CHECK(expr("lm/lz", "lm.l=-7 lz.l=0").value(c, ORIG) == "2147483647");
+        CHECK(expr("lm/lz", "lm.l=-7 lz.l=0").value(c, DEC | EM_R_CDLIB) == "2147483647");
+        CHECK(expr("lm/lz", "lm.l=-7 lz.l=0").value(c, DEC) == "-2147483647");
+    }
+    CHECK(expr("qm/qz", "qm=-7 qz=0").value(EM_DL, ORIG) == "2147483647");
+    CHECK(expr("qm/qz", "qm=-7 qz=0").value(EM_DL, DEC | EM_R_CDLIB) == "-2147483647");
+    CHECK(expr("qm/qz", "qm=-7 qz=0").value(EM_DL, DEC) == "-2147483647");
+}
+
 TEST_CASE("exprmatrix model: P+, a bit operator inside a comparison with a Float", "[exprmatrix][cand][decided]")
 {
     // change 8 reaches the Float format into both sides; a bit operator,
@@ -1406,8 +1443,8 @@ TEST_CASE("exprmatrix model: TSR, whole division and its exceptions", "[exprmatr
     // below another operator or another destination
     CHECK(tsr("(7/2) AND 3", "", EM_DQ) == "00030000");
     CHECK(tsr("(7/2)*2", "", EM_DL) == "6");
-    // a divisor 0 of a quotient that keeps its fraction
-    CHECK(tsr("a/z", "a.w=7 z.w=0", EM_DQ) == "7FFFFFFF");
+    // a divisor 0 of a quotient that keeps its fraction: the division trap (D1/D7)
+    CHECK(tsr("a/z", "a.w=7 z.w=0", EM_DQ) == "!trap");
     // beside a Quick (C3, I1)
     CHECK(tsr("q+w/2", "q=0.5 w.w=3", EM_PRINT) == "2");
     CHECK(tsr("w/2+q", "q=0.5 w.w=3", EM_PRINT) == "2");
@@ -1518,7 +1555,8 @@ TEST_CASE("exprmatrix model: TSR, comparisons, folding and Mod", "[exprmatrix][t
     CHECK(tsr("5.25 MOD 2", "", EM_DW) == "1");
     CHECK(tsr("-5.25 MOD 2", "", EM_DQ) == "0000C000");
     CHECK(tsr("-5.25 MOD -2", "", EM_DL) == "-2");
-    CHECK(tsr("l MOD z", "l.l=-7 z.l=0", EM_DL) == "-7");
+    // a divisor 0: the division trap (D1/D7; before: r is -7)
+    CHECK(tsr("l MOD z", "l.l=-7 z.l=0", EM_DL) == "!trap");
     CHECK(tsr("w MOD z", "w.w=7 z.w=0", EM_DW) == "!trap");
 }
 
@@ -1560,13 +1598,26 @@ TEST_CASE("exprmatrix model: TSR, the order of the operands and Quicks as whole 
     CHECK(tsr("l AND q", "l.l=65536 q=-1", EM_IF) == "T");
 }
 
-TEST_CASE("exprmatrix model: TSR, a 48.16 division by 0 and the indexes", "[exprmatrix][tsr]")
+TEST_CASE("exprmatrix model: TSR, a division or Mod by a run-time 0 and the indexes", "[exprmatrix][tsr]")
 {
-    CHECK(tsr("l/q", "l.l=-100 q=0", EM_PRINT) == "-2147483647");
-    CHECK(tsr("l/q", "l.l=100 q=0", EM_DQ) == "7FFFFFFF");
-    CHECK(tsr("l/q", "l.l=100 q=0", EM_DW) == "32767");
-    CHECK(tsr("l/q", "l.l=100 q=0", EM_DB) == "127");
-    CHECK(tsr("q/p", "q=1 p=0", EM_DB) == "127");
+    // the division trap for every type, under every destination (D1/D7)
+    CHECK(tsr("w/z", "w.w=7 z.w=0", EM_DL) == "!trap");
+    CHECK(tsr("l/q", "l.l=100 q=0", EM_DQ) == "!trap");
+    CHECK(tsr("f/fz", "f.f=1 fz.f=0", EM_DF) == "!trap");
+    CHECK(tsr("a/z", "a.w=7 z.w=0", EM_DQ) == "!trap");
+    for (enum em_ctx c : { EM_DB, EM_DW, EM_DL, EM_DQ, EM_DF, EM_PRINT, EM_IF }) {
+        CHECK(tsr("l/q", "l.l=-100 q=0", c) == "!trap");
+        CHECK(tsr("lm/lz", "lm.l=-7 lz.l=0", c) == "!trap");
+        CHECK(tsr("fa/fz", "fa.f=1 fz.f=0", c) == "!trap");
+        CHECK(tsr("q MOD p", "q=7 p=0", c) == "!trap");
+        CHECK(tsr("l MOD l2", "l.l=7 l2.l=0", c) == "!trap");
+        CHECK(tsr("f MOD g", "f.f=7.5 g.f=0", c) == "!trap");
+    }
+    CHECK(tsr("(f*l)/lz+lb", "f.f=1 l.l=2 lz.l=0 lb.l=3", EM_DF) == "!trap");
+    CHECK(tsr("q/lz", "q=3 lz.l=0", EM_DF) == "!trap");
+    // a constant divisor 0 stays the compile error
+    CHECK(tsr("7/0", "", EM_DL) == "!noncompile");
+    CHECK(tsr("q MOD 0", "q=7", EM_DQ) == "!noncompile");
     // every index a Long
     for (enum em_ctx c : { EM_I1, EM_I2 }) {
         CHECK(tsr("y*200/2", "y=200", c) == "20000");
@@ -1574,6 +1625,66 @@ TEST_CASE("exprmatrix model: TSR, a 48.16 division by 0 and the indexes", "[expr
         CHECK(tsr("q*10", "q=1.5", c) == "15");
         CHECK(tsr("wv*2", "wv.w=20000", c) == "40000");
     }
+}
+
+// the answers to the readings of the model (design.md "Answers to the
+// readings of the model (task 1.1)"), with the emulator's values of
+// section1-decisions.md where the spec has no scenario
+TEST_CASE("exprmatrix model: TSR, D only at an arithmetic top operation, D and E not through a minus (D2)",
+          "[exprmatrix][tsr]")
+{
+    CHECK(tsr("(q=0.1)", "q=0.1", EM_DF) == "800000C1");      // -1 (1.95: 0)
+    CHECK(near_f(tsr("-(q2/100)", "q2=20.875", EM_DF), -13680.0 / 65536));    // -.2087402 (1.95: -.20875)
+    CHECK(tsr("-(1 LSR 7)", "", EM_DQ) == "00000000");        // 1.95: -1/128
+    CHECK(tsr("-(b LSR 3)", "b.b=3", EM_DQ) == "00000000");   // 1.95: -.375
+    // C1 reaches through the minus (I4 B)
+    CHECK(tsr("-(7/2)", "", EM_DQ) == "FFFC8000");
+}
+
+TEST_CASE("exprmatrix model: TSR, a point constant under a unary minus and through FFP (D3, P1)",
+          "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q+(-0.1)", "q=3", EM_DQ) == "0002E667");
+    CHECK(tsr("q-0.1", "q=3", EM_DQ) == "0002E667");
+    CHECK(tsr("q3*(-0.3)", "q3=157", EM_PRINT) == "-47.0981");
+    // a Quick reading is the FFP value of the text cut down (P1)
+    CHECK(tsr("q2+30000.3", "q2=1", EM_DQ) == "75314D00");
+    // beside a whole number the minus leaves it a Float (0.1 is not exact)
+    CHECK(tsr("l*(-0.1)", "l.l=100", EM_DL) == "-10");
+    // under D read as the Float of its text, also under the minus
+    CHECK(near_f(tsr("q+(-0.1)", "q=3", EM_DF), 2.9));
+}
+
+TEST_CASE("exprmatrix model: TSR, C3 not at bit operators, the Float quotient of C1 and C3 (D4, I3)",
+          "[exprmatrix][tsr]")
+{
+    CHECK(tsr("q AND w/2", "q=5 w.w=-3", EM_DL) == "5");
+    CHECK(tsr("q2<w2/2", "q2=1 w2.w=3", EM_PRINT) == "-1");
+    CHECK(tsr("q2<w2/2", "q2=1 w2.w=3", EM_IF) == "T");
+    CHECK(tsr("q+w/2", "q=0.5 w.w=3", EM_PRINT) == "2");
+    CHECK(near_f(tsr("q+w/3", "q=0.5 w.w=1", EM_DF), 0.8333334));
+    CHECK(tsr("q+w/3", "q=0.5 w.w=1", EM_DF) == "D5555640");
+}
+
+TEST_CASE("exprmatrix model: TSR, typed parameters take the exceptions (D5)", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("1/16", "", EM_PQ) == "00001000");
+    CHECK(tsr("1 LSL 16", "", EM_PQ) == "00000000");
+    CHECK(near_f(tsr("q/100", "q=20.875", EM_PF), 0.20875));
+    CHECK(tsr("w/9", "w.w=200", EM_PQ) == "001638E3");
+    CHECK(tsr("b LSR 3", "b.b=3", EM_PQ) == "00006000");
+    CHECK(tsr("7/2", "", EM_PF) == "E0000042");
+    // a Long parameter only converts
+    CHECK(tsr("w/9", "w.w=200", EM_PL) == "22");
+}
+
+TEST_CASE("exprmatrix model: TSR, NOT one step wider (D6)", "[exprmatrix][tsr]")
+{
+    CHECK(tsr("(NOT b) LSR 1", "b.b=0", EM_PRINT) == "32767");       // before: 2147483647
+    CHECK(tsr("(NOT w) LSR 1", "w.w=0", EM_PRINT) == "2147483647");
+    CHECK(tsr("(NOT w) LSR 1", "w.w=0", EM_DW) == "-1");
+    CHECK(tsr("(NOT q) LSR 1", "q=0", EM_PRINT) == "2147483647");   // of a Quick a Long
+    CHECK(tsr("NOT b", "b.b=0", EM_PRINT) == "-1");
 }
 
 TEST_CASE("exprmatrix model: TSR, the shapes of #1232", "[exprmatrix][tsr]")
