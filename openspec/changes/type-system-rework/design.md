@@ -730,6 +730,10 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
 9. A Float left operand of a shift is refused (round 2, Q17, precedent).
 10. C3 applies at arithmetic operators, Mod, `^` and comparisons, not at bit
     operators and shifts (D4).
+13. (task 1.5) C3 reaches through a unary minus ("2026-11-28 type-system-rework
+    C3 through a unary minus"): `NPrint q+-(w/2)` -1. A constant with a
+    point left of a shift with no Quick beside it stays a Float and is
+    refused (`-0.1 LSL 2`; the model's 1.5 reading made it a Quick).
 12. A Float division by 0 raises the trap (D1/D7).
 
 ## Risks / Trade-offs

@@ -138,7 +138,7 @@ Under a Quick or Float destination, a `/` of two whole operands that is the whol
 - **THEN** x is -1, y is 3 and z is 6
 
 ### Requirement: A whole division beside a Quick keeps its fraction
-A `/` of two whole operands whose other operand at an arithmetic operator (`+ - * /`, `Mod`, `^`) or a comparison is of Quick class (a Quick variable, a subexpression with a Quick result, a constant with a point that is a Quick; not a Float) SHALL keep its fraction as a 48.16 quotient, under every destination; at a bit operator or a shift it SHALL stay whole.
+A `/` of two whole operands whose other operand at an arithmetic operator (`+ - * /`, `Mod`, `^`) or a comparison is of Quick class (a Quick variable, a subexpression with a Quick result, a constant with a point that is a Quick; not a Float) SHALL keep its fraction as a 48.16 quotient, under every destination, also when a unary minus stands between the `/` and that operator; at a bit operator or a shift it SHALL stay whole.
 
 #### Scenario: Beside a Quick
 - **WHEN** a program executes `NPrint q+w/2` and `NPrint w/2+q` with `q=0.5`, `w.w=3`, and evaluates `x.w=(q2+(w2/2))-2` with `q2=149.75`, `w2.w=135`
@@ -151,6 +151,10 @@ A `/` of two whole operands whose other operand at an arithmetic operator (`+ - 
 #### Scenario: Other operators
 - **WHEN** a program evaluates `x.l=q AND w/2` with `q=5`, `w.w=-3` and executes `NPrint q2<w2/2` with `q2=1`, `w2.w=3`
 - **THEN** x is 5 and it prints -1, as the original
+
+#### Scenario: Through a unary minus
+- **WHEN** a program executes `NPrint q+-(w/2)` with `q=0.5`, `w.w=3`
+- **THEN** it prints -1
 
 ### Requirement: A whole division reached by two exceptions under a Float destination
 Where the whole-division exception and a Quick-class neighbour both reach a whole `/` under a Float destination, its quotient SHALL be the Float quotient of the whole-division exception.
