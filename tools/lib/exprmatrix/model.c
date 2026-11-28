@@ -4049,6 +4049,12 @@ struct tty {
     int div;                    /* a whole / that keeps its fraction beside a Quick (C3) when told so */
     int shiftx;                 /* E: a right shift with 16 fraction bits */
     int jwrap;                  /* J: the top left shift converted to the Quick wrapped */
+    /* the places where an exception gives another type or conversion than
+       the standard rules (spec compiler/warnings, "The type exceptions
+       warn"; "type-system-rework I9 and exception warnings"): the
+       whole-division exception (divfrac), a whole / beside a Quick
+       (divquick), the top operation under a Float (floattop) */
+    int c1, c3, ftopw;
 };
 
 struct tv {
@@ -4262,6 +4268,11 @@ static void tsr_class(const struct tsr *t, const struct em_tnode *n, int reach, 
         if (t->dest == TF && (reach & TSR_ROOT) && (arith_op(n->op) || n->op == EM_POW)
             && (ka == K_Q || kb == K_Q)) {
             o->ftop = 1;
+            /* another type than the standard rules: an operation of a Quick
+               and no Float, or a constant with a point read as a Float
+               where it is a Quick (^ is Float by the standard rules) */
+            o->ftopw = n->op == EM_POW ? (pc_node(n->l) && ka == K_Q) || (pc_node(n->r) && kb == K_Q)
+                                       : ka != K_F && kb != K_F;
             if (pc_node(n->l))
                 o->lsib = SIB_FTOP;
             if (pc_node(n->r))
@@ -4291,9 +4302,9 @@ static void tsr_class(const struct tsr *t, const struct em_tnode *n, int reach, 
                the unary minus under a Quick or Float destination, a 48.16
                quotient or one computed in Float (Q9, "Q12 C1 Ja, für alle",
                I3 A, I4 B) */
-            o->k = t->dest;
+            o->k = t->dest, o->c1 = 1;
         else if (n->op == EM_DIV && sib == K_Q)
-            o->k = K_Q;         /* C3, told by the parent */
+            o->k = K_Q, o->c3 = 1;      /* C3, told by the parent */
         else {
             o->k = K_W;
             o->n = wider(tmax(a.n, b.n));
@@ -4740,6 +4751,51 @@ static int tsr_value(struct ev *e, const struct em_tnode *root, int asked, struc
     return 0;
 }
 
+/* the classes of the nodes of root under the destination asked by the
+   rules of type-system-rework (em_exprval.sig under EM_R_TSR), in post
+   order, one entry per node separated by a space: B, W, L a whole number
+   of 8, 16 or 32 bits, Q 48.16, F Float; then the places of the
+   exceptions that give another type or conversion than the standard
+   rules: d the whole-division exception (divfrac), c a whole / beside a
+   Quick (divquick), t the top operation under a Float (floattop), s the
+   shift exception (shiftfrac), j the left-shift wrap (shiftwrap).  "!":
+   an operator refused ("Illegal Operator for Type"); a constant divisor 0
+   is no class of its own (the value refuses it) */
+static int tsr_sig(const struct tsr *t, const struct em_tnode *n, int reach, int sib, char *out, size_t cap)
+{
+    struct tty ty;
+    size_t at;
+
+    tsr_class(t, n, reach, sib, &ty);
+    if (ty.refused)
+        return 1;
+    switch (n->kind) {
+    case TN_VAR:
+    case TN_CONST: break;
+    case TN_NEG:
+        if (tsr_sig(t, n->l, ty.lreach, ty.lsib, out, cap))
+            return 1;
+        break;
+    case TN_NOT:
+        if (tsr_sig(t, n->l, 0, SIB_NONE, out, cap))
+            return 1;
+        break;
+    default:
+        if (is_shift(n->op)) {
+            if (tsr_sig(t, n->l, 0, SIB_SHIFTL, out, cap) || tsr_sig(t, n->r, 0, SIB_NONE, out, cap))
+                return 1;
+        } else if (tsr_sig(t, n->l, ty.lreach, ty.lsib, out, cap)
+                   || tsr_sig(t, n->r, ty.rreach, ty.rsib, out, cap))
+            return 1;
+        break;
+    }
+    at = strlen(out);
+    snprintf(out + at, cap - at, "%s%c%s%s%s%s%s", at ? " " : "",
+             ty.k == K_W ? (ty.n == 8 ? 'B' : ty.n == 16 ? 'W' : 'L') : ty.k == K_Q ? 'Q' : 'F', ty.c1 ? "d" : "",
+             ty.c3 ? "c" : "", ty.ftopw ? "t" : "", ty.shiftx ? "s" : "", ty.jwrap && t->dest == TQ ? "j" : "");
+    return 0;
+}
+
 static int ctx_want(enum em_ctx x, uint64_t rules)
 {
     if (x == EM_IF || x == EM_PRINT)
@@ -4897,6 +4953,12 @@ void em_expr_eval(const struct em_expr *x, enum em_ctx ctx, uint64_t rules, stru
     tr.ccap = sizeof out->cells;
     tr.cap = sizeof out->sig;
     e.rules = rules;
+    if (rules & EM_R_TSR) {
+        struct tsr t = { .e = &e, .dest = asked, .powscale = 1 };
+
+        if (tsr_sig(&t, x->root, TSR_ROOT | TSR_C1 | TSR_E, SIB_NONE, out->sig, sizeof out->sig))
+            strcpy(out->sig, "!");
+    }
     e.cd = (rules & EM_R_CDLIB) != 0;
     memset(&r, 0, sizeof r);
     if (tree_value(&e, x->root, asked, rules, &r, &tr)) {

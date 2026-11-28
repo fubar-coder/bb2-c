@@ -1708,6 +1708,41 @@ TEST_CASE("exprmatrix model: TSR, the shapes of #1232", "[exprmatrix][tsr]")
     CHECK(tsr("3/7*f", "f.f=5.25", EM_PRINT) == "0");
 }
 
+// the classes of the nodes (em_exprval.sig under EM_R_TSR: post order, B W L
+// a whole number of 8, 16, 32 bits, Q 48.16, F Float) and the places of the
+// exceptions that warn (spec compiler/warnings, "The type exceptions warn"):
+// d divfrac, c divquick, t floattop, s shiftfrac, j shiftwrap
+TEST_CASE("exprmatrix model: TSR, the classes of the nodes and the exception places", "[exprmatrix][tsr]")
+{
+    auto cls = [](const char *text, const char *vars, enum em_ctx ctx) { return expr(text, vars).typing(ctx, TSR); };
+
+    CHECK(cls("w/9", "w.w=200", EM_DQ) == "W B Qd");
+    CHECK(cls("4/2", "", EM_DQ) == "B B Qd");           // also with an equal value
+    CHECK(cls("w/9", "w.w=200", EM_DL) == "W B L");     // no exception
+    CHECK(cls("w+v", "w.w=1 v.w=1", EM_PRINT) == "W W L");
+    CHECK(cls("1 LSR 7", "", EM_DQ) == "B B Qs");
+    CHECK(cls("1 LSL 16", "", EM_DQ) == "B B Lj");
+    CHECK(cls("1 LSL 16", "", EM_DL) == "B B L");
+    CHECK(cls("q LSL 2", "q=1", EM_DQ) == "Q B Qj");
+    CHECK(cls("(v LSL 4)+p", "v.w=1 p=1", EM_DQ) == "W B L Q Q");   // a left shift in a sum: no J
+    CHECK(cls("q/100", "q=1", EM_DF) == "Q B Ft");
+    CHECK(cls("q*0.002", "q=1", EM_DF) == "Q F Ft");    // the constant read as a Float
+    CHECK(cls("q*0.002", "q=1", EM_DQ) == "Q Q Q");
+    CHECK(cls("q*f", "q=1 f.f=1", EM_DF) == "Q F F");   // Float by the standard rules
+    CHECK(cls("q^2", "q=1", EM_DF) == "Q B F");
+    CHECK(cls("q+w/2", "q=1 w.w=1", EM_PRINT) == "Q W B Qc Q");
+    CHECK(cls("q+-(w/2)", "q=1 w.w=1", EM_PRINT) == "Q W B Qc Q Q");
+    CHECK(cls("f+w/2", "f.f=1 w.w=1", EM_PRINT) == "F W B L F");
+    CHECK(cls("q AND w/2", "q=1 w.w=1", EM_DL) == "Q W B L L");
+    CHECK(cls("q+w/3", "q=1 w.w=1", EM_DF) == "Q W B Fd F");
+    CHECK(cls("(a/b)/c", "a.w=1 b.w=1 c.w=1", EM_DQ) == "W W Qd W Q");
+    CHECK(cls("-8 LSR 1", "", EM_PRINT) == "B W B W");
+    CHECK(cls("NOT q", "q=1", EM_PRINT) == "Q L");
+    CHECK(cls("l AND f", "l.l=1 f.f=1", EM_DL) == "!");
+    CHECK(cls("1.5 LSL 2", "", EM_DL) == "Q B Q");
+    CHECK(cls("-0.1 LSL 2", "", EM_DL) == "!");
+}
+
 // #1232: the model stopped with SIGFPE on (1.25/1000)^7 under a whole
 // destination (an exact rational whose denominator wrapped to 0); under
 // these rules the tiny Float is cut towards zero whatever SPPow's last bits

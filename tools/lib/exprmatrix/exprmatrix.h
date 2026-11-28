@@ -556,8 +556,9 @@ struct em_optype {
 
 /* the value of an expression under ctx (not an index context) by rules,
    with the typing of every operation (sig: one entry per operation in
-   post order, "OP LFROM>LAS RFROM>RAS PATH RESULT;") and the one of the
-   last (top) operation */
+   post order, "OP LFROM>LAS RFROM>RAS PATH RESULT;"; under EM_R_TSR the
+   class of every node in post order and the places of the exceptions,
+   model.c's tsr_sig) and the one of the last (top) operation */
 struct em_exprval {
     struct em_value v;
     char sig[1024];
