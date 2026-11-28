@@ -412,7 +412,9 @@ their ID, the first field behind `=`: it matches `[a-z][a-z0-9_]*`, has
 at most 15 characters, is unique among the elements of `jobline`, and is
 none of the runner's names (`j000` the driver's job, `b` and three
 digits a data source's job, `r001` the run from the editor in a cell
-with `editor-run = "on"`) nor `log` or `inject`; otherwise the
+with `editor-run = "on"`) nor `log`, `inject`, `warnings` or `rc` (they
+would be the queries `compile.log`, `compile.inject`, `compile.warnings`
+and `compile.rc`); otherwise the
 configuration is refused naming file, line and ID. The names are those
 of the queries `compile.log.NAME` and `compile.NAME`
 ([Assertions](#assertions)).
@@ -561,6 +563,8 @@ query      = "rc" | "requester" | "compile" | "compile.log" | "compile.inject"
            | "check." NAMESPACE "." NAME [ ".expected" | ".actual" ]
            | "data." FILE | "run." NAMESPACE "." NAME [ ".rc" | ".output" ]
            | "compile.log." JOB | "compile." JOB
+           | "compile.warnings" [ "." K ] | "compile.rc"
+K          = digits, from 1, no leading zero
 predicate  = CMP value | ["not "] "contains" string | "matches" string
            | ["not "] "exists" | "count" CMP integer
 CMP        = "==" | "!=" | "<" | "<=" | ">" | ">="
@@ -587,6 +591,9 @@ name that is no job of the test is refused naming file, line and query.
 | `compile.inject` | inject's report of the compiler: the lines of the compiler's output that start with `inject:`, of a cell whose compiler runs through inject (a `wrap` of `@INJECT@`); of any other cell not captured (`compile.log` keeps the lines) | as `inject` |
 | `compile.log.JOB` | the block of the job `JOB` in tedstub's log (below), with the size of `RESULT ID ok SIZE` removed as in `compile.log`; in the block of a data source its job ID is written as its file and its staged source as `@DATA:FILE@`; a job that logged nothing: not captured | as `compile.log` |
 | `compile.JOB` | the compile result of the `jobline` job `JOB` (`job=` or `resident=`): `ok`, `error LINE MESSAGE` (the line of the compiled source; for a job of `@DRIVER@` the driver's line), another result of its `RESULT` line, or `none`; no default. Refused for `j000` (the query is `compile`), for a data source (`data.FILE`) and for a `run=` or `menu=` step and `r001` (their outcome is in their block, `compile.log.JOB`) | as `compile` |
+| `compile.warnings` | the warnings of the driver's compile, one line per warning in the order the compiler gave them (below); the empty text if it gave none; not captured if the compile did not end. No default. Refused in a cell of `compiler = "amiblitz3"` (its warnings have another form and other names) | `==`/`!=` string, `contains`, `not contains`, `matches`, `exists`, `count CMP integer` (the number of entries) |
+| `compile.warnings.K` | the K-th entry of `compile.warnings` (K from 1) without its newline; beyond the list not captured | as `compile.warnings` but `count` |
+| `compile.rc` | the return code of a compile from the command line (`compiler = "ab3"` or `"amiblitz3"`: the `rc=` line behind the compiler's output); not captured if the compile did not end. No default. Refused in a cell of the editor path (`port`, `orig195`, `orig210`), whose return code is that of the whole job list | `CMP integer`, `exists` |
 | `session` | how the session ended | `==`/`!=` with `done`, `timeout`, `halt` |
 | `end.case`, `end.run` | the end entry of the case, of the run | `exists`, `not exists` |
 | `check.NS.NAME` | the check's verdict: `fail` if any of its entries failed, `not-run` without entries; of a named `!ExpectError`: `ok` its requester came, `fail` it did not | `==`/`!=` with `ok`, `fail`, `not-run` |
@@ -624,6 +631,51 @@ nothing of a kind" is `not contains` on a line of the block or
 `compile.JOB`. inject's report of the compiler (`compile.inject`) is one
 for the whole compiler process, written when it ends after all jobs: it
 has no query per job.
+
+**The warnings of a compile.** `compile.warnings` is a text of entries,
+one per line, each `PLACE NAME TEXT` with blanks between the fields and a
+newline at its end: `PLACE` the line of the test source the warning
+names, `driver:N` for a line N of the driver outside it (as `error
+driver:N` of `compile`), for a warning in another file the place as the
+compiler prints it (`CORPUS:ID.test/inc.ab3:3`; the session's volume
+`CELLk:` of the cell is written as `CORPUS:`) and `-` without a place;
+`NAME` the warning's name (`shared/ab3job/warnlist.h`) or `-` where the
+compiler names none; `TEXT` the message. In the editor path (blitz2
+through tedstub, BB2 mode: `port`, `orig195`, `orig210`) the entries are
+the `WARNING` lines of the block of `j000`: `Warning: line N: TEXT
+[NAME]` (N the driver's line), `Warning: NAME: K more` (the editor shows
+at most 8 places per name and counts the rest) as the entry `- NAME K
+more`, and any other `Warning: TEXT` (`Clash in Residents: #NAME`) as `-
+- TEXT`; the original compilers give none, so their list is empty. On the
+command line (`compiler = "ab3"`, AB3 and BB2 mode) they are the lines
+`SOURCE: warning: MESSAGE [NAME]` and `SOURCE:LINE: warning: MESSAGE
+[NAME]` of the console, `SOURCE` the driver giving the line of the test
+source (`-` for a driver without a line). A line the runner cannot read
+and a name that is none of `warnlist.h` make the queries of the warnings
+and `compile.rc` of the cell cannot-be-judged (ERROR), naming the line.
+A case that asserts them runs on its own (an observation of the whole
+program). The warnings are judged apart from the rest of the compiler's
+output: a missing, an added, a changed and a reordered entry each fail.
+Assert the whole list by `==` (the text ends with a newline), or each
+entry by `compile.warnings.K` and the number by `count`, so that "these
+and no more" is one line each:
+
+```toml
+# an example, not a file of the tree: warn-datafrac.test.toml
+compiler = "ab3"
+
+[asserts]
+"compile.warnings.1" = "== \"14 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings" = "count == 1"
+"compile.rc" = "== 5"
+```
+
+There is no default assertion of the warnings, so existing tests do not fail on a
+warning they do not name; "none" is `count == 0` or `== ""`. A test of
+`tests/ab3/model/` that has the cell `amiblitz3` too excludes it
+(`exclude = ["compiler=amiblitz3"]`) or selects `compiler=ab3`. The warnings
+of a data source or a `jobline` job stay in their block
+(`compile.log.JOB`).
 
 **What `requester` sees** (a limit, see `TODO.md`): reqtrap
 (`tests/corpus/amiga/reqtrap.c`) writes each requester as a line
