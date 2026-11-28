@@ -494,6 +494,49 @@ static int check_editor_run(const struct tc_config *conf, const struct tc_matrix
     return 0;
 }
 
+/* the queries of a compile's warnings and return code against the cells
+   (spec testing/basic-test-runner): compile.rc only in a cell that compiles
+   from the command line (ab3, amiblitz3); compile.warnings and
+   compile.warnings.K not in a cell of amiblitz3, whose warnings have
+   another form and other names.  An alternative end names no such query
+   (end_query refuses them). */
+static int check_warning_queries(const struct tc_config *conf, const struct tc_matrix *m, char *err, size_t errlen)
+{
+    for (size_t t = 0; t < 2; t++) {
+        const struct tc_tabkey *v = t == 0 ? conf->asserts : conf->deviations;
+        size_t n = t == 0 ? conf->nasserts : conf->ndeviations;
+
+        for (size_t i = 0; i < n; i++) {
+            const char *k = v[i].key;
+            int rc = !strcmp(k, "compile.rc");
+            int warn = !strncmp(k, "compile.warnings", 16) && (!k[16] || k[16] == '.');
+
+            if (!rc && !warn)
+                continue;
+            for (size_t c = 0; c < m->ncells; c++) {
+                char b[24];
+                const char *comp = tc_cell_value(conf, m, c, tc_key("compiler"), b);
+                int bad = rc ? strcmp(comp, "ab3") && strcmp(comp, "amiblitz3") : !strcmp(comp, "amiblitz3");
+                int r;
+
+                if (!bad)
+                    continue;
+                if ((r = sel_cell(v[i].sel, conf, m, c)) == -2)
+                    return tc_err(err, errlen, "out of memory");
+                if (r == 1)
+                    return tc_err(err, errlen, "%s:%u: %s: %s on %s in the cell %s of compiler = \"%s\": %s",
+                                  v[i].at.file, v[i].at.line, k, t == 0 ? "an assertion" : "a deviation", k,
+                                  m->cells[c].name, comp,
+                                  rc ? "only a compile from the command line (compiler = \"ab3\" or "
+                                       "\"amiblitz3\") has a return code"
+                                     : "the warnings of AmiBlitz3 have another form and other names (exclude the "
+                                       "cell or select compiler=ab3)");
+            }
+        }
+    }
+    return 0;
+}
+
 /* the cells of AB3 mode (tc_matrix_build in testconf.h): source-mode only
    with the compilers ab3 and amiblitz3, bb2 not with amiblitz3; the
    deviations of amiblitz3 cells with their variant, no variant elsewhere */
@@ -681,7 +724,8 @@ int tc_matrix_build(const struct tc_config *conf, struct tc_matrix *m, char *err
                 goto out;
             }
     }
-    if (check_editor_run(conf, m, err, errlen) || check_ab3(conf, m, err, errlen))
+    if (check_editor_run(conf, m, err, errlen) || check_ab3(conf, m, err, errlen)
+        || check_warning_queries(conf, m, err, errlen))
         goto out;
     r = 0;
     goto out;

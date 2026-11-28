@@ -23,6 +23,8 @@ static const struct {
     { "compile", TC_Q_COMPILE },
     { "compile.log", TC_Q_COMPILE_LOG },
     { "compile.inject", TC_Q_COMPILE_INJECT },
+    { "compile.warnings", TC_Q_COMPILE_WARNINGS },
+    { "compile.rc", TC_Q_COMPILE_RC },
     { "output", TC_Q_OUTPUT },
     { "serial", TC_Q_SERIAL },
     { "inject", TC_Q_INJECT },
@@ -98,6 +100,20 @@ int tc_query_parse(const char *text, struct tc_query *q, char *msg, size_t msgle
         q->rest[n] = 0;
         return 0;
     }
+    if (!strncmp(text, "compile.warnings.", 17)) {
+        /* compile.warnings.K: K a decimal from 1, no leading zero */
+        const char *k = text + 17, *p = k;
+
+        while (*p >= '0' && *p <= '9')
+            p++;
+        if (p == k || *p || *k == '0' || p - k > 9)
+            return tc_err(msg, msglen, "the query \"%s\": compile.warnings.K expected (K a decimal number from 1 "
+                          "without leading zeros)", text);
+        q->kind = TC_Q_COMPILE_WARNING;
+        if (!(q->rest = tc_strdup(k)))
+            return -2;
+        return 0;
+    }
     if (!strncmp(text, "compile.", 8)) {
         /* compile.log.NAME, compile.NAME: a named compile job (checked
            against the jobs of the test by check_entries) */
@@ -154,12 +170,15 @@ static unsigned allowed_ops(int qkind)
     case TC_Q_COMPILE:
     case TC_Q_COMPILE_JOB:
     case TC_Q_DATA: return TEXT;
+    case TC_Q_COMPILE_WARNING:
     case TC_Q_COMPILE_LOG:
     case TC_Q_COMPILE_LOG_JOB:
     case TC_Q_OUTPUT:
     case TC_Q_SERIAL:
     case TC_Q_INJECT:
     case TC_Q_COMPILE_INJECT: return TEXT | EX;
+    case TC_Q_COMPILE_WARNINGS: return TEXT | EX | B(TC_P_COUNT);
+    case TC_Q_COMPILE_RC: return CMP | EX;
     case TC_Q_SESSION: return B(TC_P_EQ) | B(TC_P_NE);
     case TC_Q_END_CASE:
     case TC_Q_END_RUN: return EX;
@@ -341,9 +360,10 @@ int tc_pred_parse(const char *text, int qkind, struct tc_pred *pr, char *msg, si
         else if (op == TC_P_EXISTS || op == TC_P_NOT_EXISTS)
             ok = 1;
         else if (op == TC_P_EQ || op == TC_P_NE)
-            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK || qkind == TC_Q_RUN_RC))
+            ok = (pr->vtype == TC_PV_INT && (qkind == TC_Q_RC || qkind == TC_Q_CHECK || qkind == TC_Q_RUN_RC
+                                             || qkind == TC_Q_COMPILE_RC))
                  || (pr->vtype == TC_PV_STR && qkind != TC_Q_RC && qkind != TC_Q_SESSION && qkind != TC_Q_RUN
-                     && qkind != TC_Q_RUN_RC)
+                     && qkind != TC_Q_RUN_RC && qkind != TC_Q_COMPILE_RC)
                  || (pr->vtype == TC_PV_WORD && word_in(allowed_words(qkind), pr->str));
         else
             ok = pr->vtype == TC_PV_INT;

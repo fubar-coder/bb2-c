@@ -81,7 +81,8 @@ TEST_CASE("testassert: queries", "[testassert]")
     } all[] = { { "rc", TC_Q_RC }, { "requester", TC_Q_REQUESTER }, { "compile", TC_Q_COMPILE },
                 { "compile.log", TC_Q_COMPILE_LOG }, { "output", TC_Q_OUTPUT }, { "serial", TC_Q_SERIAL },
                 { "inject", TC_Q_INJECT }, { "session", TC_Q_SESSION }, { "end.case", TC_Q_END_CASE },
-                { "end.run", TC_Q_END_RUN }, { "compile.inject", TC_Q_COMPILE_INJECT } };
+                { "end.run", TC_Q_END_RUN }, { "compile.inject", TC_Q_COMPILE_INJECT },
+                { "compile.warnings", TC_Q_COMPILE_WARNINGS }, { "compile.rc", TC_Q_COMPILE_RC } };
     for (const auto &q : all) {
         INFO(q.t);
         CHECK(query(q.t, &k) == 0);
@@ -122,6 +123,20 @@ TEST_CASE("testassert: queries", "[testassert]")
     CHECK(strstr(msg, "compile.log.NAME expected") != nullptr);
     CHECK(query("compile.") == -1);
     CHECK(strstr(msg, "compile.NAME expected") != nullptr);
+
+    // compile.warnings.K: K a decimal from 1, no leading zero
+    CHECK(query("compile.warnings.1", &k, &ns, &rest) == 0);
+    CHECK(k == TC_Q_COMPILE_WARNING);
+    CHECK(rest == "1");
+    CHECK(query("compile.warnings.12", &k, &ns, &rest) == 0);
+    CHECK(rest == "12");
+    for (const char *bad : { "compile.warnings.0", "compile.warnings.02", "compile.warnings.x", "compile.warnings.",
+                             "compile.warnings.1x", "compile.warnings.-1", "compile.warnings.1.2",
+                             "compile.warnings.12345678901" }) {
+        INFO(bad);
+        CHECK(query(bad) == -1);
+        CHECK(strstr(msg, "compile.warnings.K expected") != nullptr);
+    }
 }
 
 TEST_CASE("testassert: predicates", "[testassert]")
@@ -173,6 +188,40 @@ TEST_CASE("testassert: predicates", "[testassert]")
     CHECK(pred("not exists", TC_Q_COMPILE_INJECT).rc == 0);
     pred_refused("count == 1", TC_Q_COMPILE_INJECT, "count is not allowed for this query");
     pred_refused("== 0", TC_Q_COMPILE_INJECT, "the value does not fit ==");
+}
+
+TEST_CASE("testassert: the warnings of a compile and its return code", "[testassert]")
+{
+    pr p;
+
+    // compile.warnings: the string predicates, exists, count
+    CHECK(pred("== \"11 datafrac Fraction of a Data.b value discarded\n\"", TC_Q_COMPILE_WARNINGS).rc == 0);
+    CHECK(pred("!= \"\"", TC_Q_COMPILE_WARNINGS).rc == 0);
+    CHECK(pred("contains \"datafrac\"", TC_Q_COMPILE_WARNINGS).rc == 0);
+    CHECK(pred("not contains \"divfrac\"", TC_Q_COMPILE_WARNINGS).rc == 0);
+    CHECK(pred("matches \"# datafrac *\"", TC_Q_COMPILE_WARNINGS).rc == 0);
+    CHECK(pred("exists", TC_Q_COMPILE_WARNINGS).op == TC_P_EXISTS);
+    CHECK(pred("not exists", TC_Q_COMPILE_WARNINGS).op == TC_P_NOT_EXISTS);
+    p = pred("count == 9", TC_Q_COMPILE_WARNINGS);
+    CHECK((p.rc == 0 && p.op == TC_P_COUNT && p.cmp == TC_P_EQ && p.num == 9));
+    CHECK(pred("count <= 3", TC_Q_COMPILE_WARNINGS).cmp == TC_P_LE);
+    pred_refused("== 1", TC_Q_COMPILE_WARNINGS, "the value does not fit ==");
+    pred_refused("< 1", TC_Q_COMPILE_WARNINGS, "< is not allowed for this query");
+    // compile.warnings.K: the same but count
+    CHECK(pred("== \"14 datafrac Fraction of a Data.b value discarded\"", TC_Q_COMPILE_WARNING).rc == 0);
+    CHECK(pred("contains \"datafrac\"", TC_Q_COMPILE_WARNING).rc == 0);
+    CHECK(pred("matches \"- datafrac # more\"", TC_Q_COMPILE_WARNING).rc == 0);
+    CHECK(pred("exists", TC_Q_COMPILE_WARNING).rc == 0);
+    pred_refused("count == 1", TC_Q_COMPILE_WARNING, "count is not allowed for this query");
+    // compile.rc: comparisons and exists with integers
+    p = pred("== 5", TC_Q_COMPILE_RC);
+    CHECK((p.rc == 0 && p.op == TC_P_EQ && p.num == 5));
+    CHECK(pred("!= 0", TC_Q_COMPILE_RC).rc == 0);
+    CHECK(pred("< 10", TC_Q_COMPILE_RC).rc == 0);
+    CHECK(pred("exists", TC_Q_COMPILE_RC).rc == 0);
+    pred_refused("contains \"5\"", TC_Q_COMPILE_RC, "contains is not allowed for this query");
+    pred_refused("== \"5\"", TC_Q_COMPILE_RC, "the value does not fit ==");
+    pred_refused("count == 1", TC_Q_COMPILE_RC, "count is not allowed for this query");
 }
 
 TEST_CASE("testassert: refused predicates", "[testassert]")

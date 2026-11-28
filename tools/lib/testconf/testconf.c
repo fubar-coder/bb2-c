@@ -1163,7 +1163,8 @@ static int check_jobline(const struct tc_config *c, char *err, size_t errlen)
                     && id[3] >= '0' && id[3] <= '9'))
                 return tc_err(err, errlen, "%s:%u: jobline: the job ID %.*s is the runner's (j000 the driver, bNNN "
                               "a data source)", jl->at.file, jl->at.line, (int)n, id);
-            if ((n == 3 && !memcmp(id, "log", 3)) || (n == 6 && !memcmp(id, "inject", 6)))
+            if ((n == 3 && !memcmp(id, "log", 3)) || (n == 6 && !memcmp(id, "inject", 6))
+                || (n == 8 && !memcmp(id, "warnings", 8)) || (n == 2 && !memcmp(id, "rc", 2)))
                 return tc_err(err, errlen, "%s:%u: jobline: the job ID %.*s is a query (compile.%.*s)", jl->at.file,
                               jl->at.line, (int)n, id, (int)n, id);
             for (k = 0; k < i; k++) {

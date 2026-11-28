@@ -537,3 +537,87 @@ TEST_CASE("testmatrix: the session key in one test", "[testmatrix]")
     t.write("tests.toml", "root = true\nserial = \"on\"\n[matrix]\nlibs = [\"cd\", \"clib\"]\n");
     CHECK(session_key(t, "x.test.bas", 0) != session_key(t, "x.test.bas", 1));
 }
+
+// the queries of a compile's warnings and return code (change
+// test-model-warnings): compile.rc only in a cell that compiles from the
+// command line, compile.warnings and compile.warnings.K not in a cell of
+// amiblitz3
+TEST_CASE("testmatrix: the queries of the warnings and the return code", "[testmatrix]")
+{
+    tree t;
+    const std::string top = t.path("tests.toml");
+
+    // compile.rc: the cells of ab3 and amiblitz3 take it
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n[asserts]\n"
+                          "\"compile.rc\" = \"== 0\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    // the editor path has no return code of the driver's compile: refused, naming file, line and the compiler
+    t.write("tests.toml", "root = true\n[asserts]\n\"compile.rc\" = \"== 0\"\n");
+    refused(t, top + ":3: compile.rc: an assertion on compile.rc in the cell default of compiler = \"port\"");
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"orig195\"]\n[asserts]\n"
+                          "\"compile.rc\" = \"== 0\"\n");
+    refused(t, top + ":5: compile.rc: an assertion on compile.rc in the cell orig195 of compiler = \"orig195\"");
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"orig195\"]\n"
+                          "[asserts.\"compiler=ab3\"]\n\"compile.rc\" = \"== 5\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    // a deviation is refused as well
+    t.write("tests.toml", "root = true\n");
+    t.write("x.test.toml", "[deviations.\"compiler=port\"]\n\"compile.rc\" = \"== 0\"\n");
+    refused(t, t.path("x.test.toml") + ":2: compile.rc: a deviation on compile.rc in the cell default of compiler = "
+                                      "\"port\"");
+    fs::remove(t.root / "x.test.toml");
+
+    // compile.warnings and compile.warnings.K: not with a cell of amiblitz3
+    for (const char *q : { "compile.warnings", "compile.warnings.1" }) {
+        const std::string key = std::string("\"") + q + "\" = \"exists\"\n";
+
+        t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n[asserts]\n" + key);
+        refused(t, top + ":5: " + q + ": an assertion on " + q + " in the cell amiblitz3 of compiler = \"amiblitz3\"");
+        // excluding the cell, selecting compiler=ab3, or a test of the editor path
+        t.write("tests.toml", "root = true\nexclude = [\"compiler=amiblitz3\"]\n[matrix]\ncompiler = [\"ab3\", "
+                              "\"amiblitz3\"]\n[asserts]\n" + key);
+        {
+            built b(t);
+            CHECK(b.rc == 0);
+        }
+        t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n"
+                              "[asserts.\"compiler=ab3\"]\n" + key);
+        {
+            built b(t);
+            CHECK(b.rc == 0);
+        }
+        t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"port\", \"orig195\"]\n[asserts]\n" + key);
+        {
+            built b(t);
+            CHECK(b.rc == 0);
+        }
+    }
+    // a deviation of the original compilers on the warnings is a deviation of the editor path
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"port\", \"orig195\"]\n[asserts]\n"
+                          "\"compile.warnings\" = \"count == 1\"\n");
+    t.write("x.test.toml", "[deviations.\"compiler=orig195\"]\n\"compile.warnings\" = \"count == 0\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == 0);
+    }
+    fs::remove(t.root / "x.test.toml");
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n");
+    t.write("x.test.toml", "[deviations.\"compiler=amiblitz3\"]\nvariant = \"x\"\n\"compile.warnings\" = "
+                           "\"count == 0\"\n");
+    refused(t, t.path("x.test.toml") + ":3: compile.warnings: a deviation on compile.warnings in the cell amiblitz3");
+    fs::remove(t.root / "x.test.toml");
+    // the other queries are untouched: compile.warn is a compile job, not a query of the warnings
+    t.write("tests.toml", "root = true\n[matrix]\ncompiler = [\"ab3\", \"amiblitz3\"]\n[asserts]\n"
+                          "\"compile.warn\" = \"ok\"\n");
+    {
+        built b(t);
+        CHECK(b.rc == -1);
+        CHECK(strstr(err, "the test has no compile job warn") != nullptr);
+    }
+}

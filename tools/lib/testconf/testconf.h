@@ -554,9 +554,16 @@ enum tc_qkind {
                                    compiler (wrap of inject) */
     TC_Q_COMPILE_LOG_JOB,       /* compile.log.NAME: the block of the job NAME
                                    in tedstub's log */
-    TC_Q_COMPILE_JOB            /* compile.NAME: the compile result of the
+    TC_Q_COMPILE_JOB,           /* compile.NAME: the compile result of the
                                    jobline job= or resident= job NAME (ok,
                                    error LINE MESSAGE, none) */
+    TC_Q_COMPILE_WARNINGS,      /* compile.warnings: the warnings of the
+                                   driver's compile, one entry per line
+                                   (PLACE NAME TEXT) */
+    TC_Q_COMPILE_WARNING,       /* compile.warnings.K: its K-th entry (rest:
+                                   K, decimal from 1) */
+    TC_Q_COMPILE_RC             /* compile.rc: the return code of a
+                                   command-line compile */
 };
 
 /** @brief A parsed query. */
@@ -567,7 +574,8 @@ struct tc_query {
                                    NAME.actual (the judge splits it against
                                    the names of the checks); TC_Q_DATA: FILE;
                                    TC_Q_RUN*: NAME; TC_Q_COMPILE_LOG_JOB,
-                                   TC_Q_COMPILE_JOB: the job's name */
+                                   TC_Q_COMPILE_JOB: the job's name;
+                                   TC_Q_COMPILE_WARNING: K */
 };
 
 /** @brief The operators of a predicate. */

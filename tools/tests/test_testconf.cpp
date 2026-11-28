@@ -467,6 +467,10 @@ TEST_CASE("testconf: the IDs of the jobline jobs", "[testconf]")
     refused(t, "x.test.bas", { top + ":2: jobline: the job ID log is a query" });
     t.write("tests.toml", "root = true\njobline = [\"job=inject|@DRIVER@|CORPUS:out/a\"]\n");
     refused(t, "x.test.bas", { top + ":2: jobline: the job ID inject is a query" });
+    t.write("tests.toml", "root = true\njobline = [\"job=warnings|@DRIVER@|CORPUS:out/a\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID warnings is a query" });
+    t.write("tests.toml", "root = true\njobline = [\"menu=rc|9\"]\n");
+    refused(t, "x.test.bas", { top + ":2: jobline: the job ID rc is a query" });
     t.write("tests.toml", "root = true\njobline = [\"job=J001|@DRIVER@|CORPUS:out/a\"]\n");
     refused(t, "x.test.bas", { top + ":2: jobline: the job ID \"J001\"", "[a-z][a-z0-9_]*, at most 15" });
     t.write("tests.toml", "root = true\njobline = [\"job=1a|@DRIVER@|CORPUS:out/a\"]\n");
