@@ -242,6 +242,10 @@ A Quick left operand SHALL keep its fraction bits: `LSL`, `ASL`, `ASR` in 48.16,
 - **WHEN** a program executes `NPrint q LSL 1` with `q=20000`
 - **THEN** it prints 40000
 
+#### Scenario: A shift under a Float destination
+- **WHEN** a program evaluates `rf.f=b LSR 1` with `b.b=3`, `rf.f=q ASL 1` with `q=1.25` and `rf.f=f LSR 1` with `f.f=1.5`
+- **THEN** rf is 1.0 and 2.5, the shift converted to Float at the end (before and in the original: "Illegal Operator for Type"), and the third gives "Illegal Operator for Type"
+
 ### Requirement: A shift at the top under a Quick destination
 Under a Quick destination, a shift of a whole left operand that is the whole expression or is reached from it through binary `+`, `-` only (not through a unary minus) SHALL be the shift exception: a right shift (`LSR`, `ASR`) shifts the value with 16 fraction bits (on the 16.16 bits inside the Quick range, in 48.16 beyond it); a left shift (`LSL`, `ASL`) shifts it as a Long.
 
