@@ -757,3 +757,46 @@ coordinator-decisions.md "2026-11-28 ... task 1.3":
 - [The cost of I4 B is not measured] -> more inner divisions run in 48.16
   or Float; the CD has three such places, all under a Float destination;
   D-007 asks for an A500 cycle comparison of the nested forms (task 5.1).
+
+## Findings of the warning scaffold (tasks 3.5, 3.6)
+
+- **The call for the typing pass.** `typewarn(W_NAME)` (`parse.h`) raises
+  a type warning at `linenumat`; the names come from one list,
+  `shared/ab3job/warnlist.h` (core `W_*`, job `AB3JOB_W_*`,
+  `ab3args_warnings`). Only the first pass of a compile reports (a second
+  pass for the smallest code or after more memory repeats every place).
+  `exprtyping.c` is also a host-compiled file without `parse.h`: tasks
+  3.1/3.2 need a way out of it to `typewarn` (a callback or a flag the
+  caller reads), not a direct call.
+- **The editor's text.** The spec asks that the requesters "name the
+  places"; the requester reads `Warning: line N: TEXT [NAME]` (N the
+  editor's line, the INCLUDE line for a place in an include), then
+  `Warning: NAME: K more`. The requesters are kept and shown when the
+  pass has ended, after the progress requester closed (docs/architecture.md
+  "Warnings": one during the compile would sit under it). On the console
+  every place is printed at once, inside an include with the include's
+  name and line (as an error's place).
+- **`datafrac`** is raised in `dodata` after the value is accepted (no
+  warning before a "Bad Data" error); the value stays the one of today:
+  the Byte keeps the value cut towards zero, `Data.b -1.5` -1, as the
+  scenario "Data.b with a point" gives.
+- **`longwrap` has no place yet.** Today no compile-time conversion of a
+  Float constant to a Long exists: `r.l=1e10` converts at run time
+  (`floattolong`, SPFix, saturating), `Data.l` refuses a Float as bad
+  data. The place comes with task 3.4 (folding) and the conversion of
+  task 4.3.
+- **Task 3.6: RETURN_WARN accepted, the warnings not disabled.** The
+  runners of corpus, CD, matrix and site examples compile in the editor
+  path (tedstub): it took any message during the compile for the error;
+  it now logs a message `Warning: ...` as a line `WARNING ID MESSAGE` and
+  the compile goes on (the result is the `RESULT` line as before). The
+  command-line runner of the test model (`caserun`, `cr_cli_compile`)
+  already judges the compile by the executable, so rc 5 is a compile
+  "ok". Disabling the warnings for the runners would hide what the
+  warning tests check through the same runner (`warn-datafrac-limit`); a
+  warning in the error set stays an error in both paths.
+- An executable with runtime error checking holds values that depend on
+  where the compile had the source in memory (the `TRAP #1` records of
+  its lines, observed: they differ between two compiles), so two compiles of
+  one source in one session differ; the byte comparison with the warning
+  disabled is made with `-r` (`ab3_cli` `datafrac_r`/`datafrac_off`).

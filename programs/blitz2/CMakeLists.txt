@@ -20,7 +20,8 @@ option(BLITZ2_COVERAGE "blitz2 and blitz2-ab3 with function coverage" OFF)
 include(${PROJECT_SOURCE_DIR}/shared/cov/cov.cmake)
 # blitz2_compile(TARGET): the compiler options of the program's sources
 function(blitz2_compile target)
-	target_include_directories(${target} PRIVATE src)
+	# shared/ab3job: the list of the warnings (warnlist.h, parse.h)
+	target_include_directories(${target} PRIVATE src ${PROJECT_SOURCE_DIR}/shared/ab3job)
 	target_compile_options(${target} PRIVATE
 		-fomit-frame-pointer
 		-fno-strict-aliasing                # raw W_()/L_() accesses to patched templates and loaded images

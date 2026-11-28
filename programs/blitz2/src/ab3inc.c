@@ -328,20 +328,31 @@ void ext_incdone(struct include *inc)
    session. */
 void ext_errpos(void)
 {
-    struct include *inc;
-    int i;
+    const char *name;
+    ULONG line;
 
     if (!ab3job || ab3job->errset)
         return;
     ab3job->errset = 1;
     ab3job->errline = 0;
-    /* the innermost include with a line read; one just opened (an error
-       in opening it, or of its kind) belongs to the INCLUDE line outside */
+    if ((name = ab3_incplace(&line))) {
+        strncpy(ab3job->errfile, name, AB3JOB_PATHLEN - 1);
+        ab3job->errfile[AB3JOB_PATHLEN - 1] = 0;
+        ab3job->errline = line;
+    }
+}
+
+/* the innermost include with a line read; one just opened (an error in
+   opening it, or of its kind) belongs to the INCLUDE line outside */
+const char *ab3_incplace(ULONG *line)
+{
+    struct include *inc;
+    int i;
+
     for (inc = firstinc; inc; inc = inc->next)
         if ((i = incslot(inc)) < MAXINC && incs[i].line) {
-            strncpy(ab3job->errfile, inc->name, AB3JOB_PATHLEN - 1);
-            ab3job->errfile[AB3JOB_PATHLEN - 1] = 0;
-            ab3job->errline = incs[i].line;
-            return;
+            *line = incs[i].line;
+            return (const char *)inc->name;
         }
+    return NULL;
 }

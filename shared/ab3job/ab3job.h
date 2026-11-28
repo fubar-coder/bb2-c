@@ -22,6 +22,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "warnlist.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,12 +47,14 @@ enum ab3job_rc {
 
 /**
  * @brief The compiler's warnings (change compiler-warnings, design D1):
- *        their numbers, bit n of a warning set.  The compiler core has the
- *        same numbers in parse.h (W_*); ab3main.c checks that they agree.
+ *        their numbers, bit n of a warning set, in the order of
+ *        warnlist.h.  The compiler core has the same numbers in parse.h
+ *        (W_*, from the same list); ab3main.c checks that they agree.
  */
 enum ab3job_warning {
-    AB3JOB_W_RESCLASH,          /* a constant of the residents with two
-                                   values (stmts.c checkconstclash) */
+#define AB3JOB_W_ENTRY(id, name) AB3JOB_W_##id,
+    WARNLIST(AB3JOB_W_ENTRY)
+#undef AB3JOB_W_ENTRY
     AB3JOB_W_COUNT
 };
 /** @brief The set of all warnings. */

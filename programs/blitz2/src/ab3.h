@@ -66,6 +66,11 @@ BOOL ab3_incheaderline(void);
  *         "" in the main source (ab3inc.c): \\__THIS_INCLUDE. */
 const char *ab3_incfile(void);
 
+/** @brief The place of an error or a warning inside an include
+ *         (ab3inc.c): the name of the innermost include that has a line
+ *         read and that line (*line, from 1); NULL in the main source. */
+const char *ab3_incplace(ULONG *line);
+
 /** @brief The next line of the program is read (ext_nextline, ab3syn.c;
  *         also each line it joins with @@): \\__CODELINE counts it
  *         (ab3str.c). */

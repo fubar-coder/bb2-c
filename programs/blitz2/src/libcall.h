@@ -50,6 +50,11 @@
    binary (%) go to fetchhex/fetchbin (chunk 06), which end in fetchnum2. */
 ULONG fetchdata(UWORD *type, ULONG *raw);
 
+/* No asm counterpart: the value fetchdata read last was sized as a Byte
+   (Data.b) from a literal with a point whose fraction is not zero, which
+   the Byte cuts: the warning datafrac (dodata) */
+extern BOOL datafrac;
+
 /* blitz2.s:10709 fetchfrac - number starting with '.', c = '.'
    (a point alone is a syntax error; "1." is the float 1, Fixed (#10);
    the E exponent counts after a zero fraction too, "1.0e5", Fixed (#11)). */

@@ -168,9 +168,23 @@ APTR ext_editorarg(APTR arg)
     return ab3job ? (APTR)ab3job : arg;
 }
 
-/* the warnings: the numbers of the compiler core are the job's */
-_Static_assert(W_RESCLASH == AB3JOB_W_RESCLASH, "W_RESCLASH");
-_Static_assert(W_COUNT == AB3JOB_W_COUNT && W_ALL == AB3JOB_W_ALL, "W_COUNT");
+/* the warnings: the numbers of the compiler core are the job's (both
+   from warnlist.h) */
+_Static_assert((int)W_RESCLASH == (int)AB3JOB_W_RESCLASH, "W_RESCLASH");
+_Static_assert((int)W_COUNT == (int)AB3JOB_W_COUNT && W_ALL == AB3JOB_W_ALL, "W_COUNT");
+
+/* n in decimal on the console */
+static void saynum(ULONG n)
+{
+    char t[12];
+    int k = 11;
+
+    t[k] = 0;
+    do
+        t[--k] = (char)('0' + n % 10);
+    while ((n /= 10));
+    say(t + k);
+}
 
 /* a command line run: -w and -werr change the setting of the source
    (design D4 of the change compiler-warnings) */
@@ -183,11 +197,16 @@ void ext_warnsets(ULONG *enabled, ULONG *errors)
 }
 
 /* a command line run: "SOURCE: warning: MSG (DETAIL) [NAME]" on the
-   console, counted (ab3cli's rc 5 when the compile succeeds); a warning
-   that is an error is counted (ab3cli's rc 10) and printed by ab3cli as
-   the error that follows */
-BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
+   console ("SOURCE:LINE: ..." for a warning with a line, the place as
+   ab3cli gives an error's: inside an include its name and line), every
+   one, counted (ab3cli's rc 5 when the compile succeeds); a warning that
+   is an error is counted (ab3cli's rc 10) and printed by ab3cli as the
+   error that follows */
+BOOL ext_warning(UWORD w, const char *msg, const char *detail, WORD line, BOOL error)
 {
+    const char *inc;
+    ULONG incline;
+
     if (!ab3job)
         return FALSE;
     if (error) {
@@ -197,7 +216,17 @@ BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
     }
     if (job.warnings < 255)
         job.warnings++;
-    say(job.source);
+    if (line >= 0 && (inc = ab3_incplace(&incline))) {
+        say(inc);
+        say(":");
+        saynum(incline);
+    } else {
+        say(job.source);
+        if (line >= 0) {
+            say(":");
+            saynum((ULONG)line + 1);
+        }
+    }
     say(": warning: ");
     say(msg);
     if (detail) {

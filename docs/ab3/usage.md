@@ -22,8 +22,14 @@ blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
 | `-werr LIST` | the warnings that are errors (an extension of this repository) |
 | `-h`, `-help` | the usage |
 
-**Warnings.** The compiler's warnings have names (so far one,
-`resclash`: a constant defined with different values by two residents).
+**Warnings.** The compiler's warnings have names: `resclash` (a
+constant defined with different values by two residents) and the type
+warnings `divfrac`, `divquick`, `floattop`, `shiftfrac`, `shiftwrap`,
+`longwrap` and `datafrac` (OpenSpec change `type-system-rework`; so far
+only `datafrac` is raised: a `Data.b` value with a fraction, which the
+Byte cuts). A type warning names its line; on the console every place
+is printed, the editor shows the first 8 of each warning a compile and
+then `NAME: N more`.
 It keeps two sets: the warnings that are shown and the warnings that are
 errors; a warning that is not shown is never an error. The source's
 setting (the editor's "WARNINGS: OFF / ON / ERRORS" in the second

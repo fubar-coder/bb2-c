@@ -632,14 +632,127 @@ void warn(UWORD w, const char *msg, const char *detail)
     if (!(enabled & (1UL << w)))
         return;
     if (errors & (1UL << w)) {
-        ext_warning(w, msg, detail, TRUE);
+        ext_warning(w, msg, detail, -1, TRUE);
         err(msg);
     }
-    if (ext_warning(w, msg, detail, FALSE))
+    if (ext_warning(w, msg, detail, -1, FALSE))
         return;
     strcpy(text, "Warning: ");
     strncat(text, msg, sizeof text - 10);
     ed_error(text);
+}
+
+const char *const warnnames[W_COUNT] = {
+#define W_NAME(id, name) name,
+    WARNLIST(W_NAME)
+#undef W_NAME
+};
+
+/* the texts of the type warnings (W_TYPEFIRST ..; spec compiler/warnings) */
+static const char *const typewarntext[W_TYPELAST - W_TYPEFIRST + 1] = {
+    "Whole division keeps its fraction",                    /* divfrac */
+    "Whole division beside a Quick keeps its fraction",     /* divquick */
+    "Quick operation computed in Float",                    /* floattop */
+    "Whole shift computed with fraction bits",              /* shiftfrac */
+    "Left shift wraps instead of saturating",               /* shiftwrap */
+    "Float beyond the Long range wraps",                    /* longwrap */
+    "Fraction of a Data.b value discarded",                 /* datafrac */
+};
+
+/* the places of each type warning in this compile that go to the editor
+   (not to the console), the first TYPEWARNSHOWN of each kept in source
+   order for typewarnend; typewarnon: the compile's first pass runs (it
+   reports) */
+#define TYPEWARNS (W_TYPELAST - W_TYPEFIRST + 1)
+static ULONG typewarnplaces[TYPEWARNS];
+static struct {
+    UWORD w;
+    WORD line;                          /* linenumat */
+} typewarnq[TYPEWARNS * TYPEWARNSHOWN];
+static UWORD typewarnqn;
+static UBYTE typewarnfirst, typewarnon;
+
+void typewarnstart(void)
+{
+    memset(typewarnplaces, 0, sizeof typewarnplaces);
+    typewarnqn = 0;
+    typewarnfirst = 1;
+    typewarnon = 0;
+}
+
+void typewarnpass(void)
+{
+    typewarnon = typewarnfirst;
+    typewarnfirst = 0;
+}
+
+/* n in decimal at the end of s */
+static void catdec(char *s, ULONG n)
+{
+    char t[12];
+    int k = 0;
+
+    s += strlen(s);
+    do
+        t[k++] = (char)('0' + n % 10);
+    while ((n /= 10));
+    while (k)
+        *s++ = t[--k];
+    *s = 0;
+}
+
+void typewarn(UWORD w)
+{
+    const char *msg = typewarntext[w - W_TYPEFIRST];
+    ULONG enabled, errors;
+
+    if (dirmode || !typewarnon)
+        return;
+    warnsets(&enabled, &errors);
+    if (!(enabled & (1UL << w)))
+        return;
+    if (errors & (1UL << w)) {
+        ext_warning(w, msg, NULL, linenumat, TRUE);
+        err(msg);
+    }
+    if (ext_warning(w, msg, NULL, linenumat, FALSE))
+        return;
+    if (++typewarnplaces[w - W_TYPEFIRST] > TYPEWARNSHOWN)
+        return;
+    typewarnq[typewarnqn].w = w;
+    typewarnq[typewarnqn++].line = linenumat;
+}
+
+/* the editor's requesters of the first pass, after its stop requester
+   closed (a requester during the compile would sit under it) */
+void typewarnend(void)
+{
+    static char text[100];  /* "Warning: line N: TEXT [NAME]", "Warning: NAME: K more" */
+    UWORD i, w;
+
+    if (!typewarnon)
+        return;
+    typewarnon = 0;
+    for (i = 0; i < typewarnqn; i++) {
+        w = typewarnq[i].w;
+        strcpy(text, "Warning: line ");
+        catdec(text, (ULONG)(typewarnq[i].line + 1));
+        strcat(text, ": ");
+        strcat(text, typewarntext[w - W_TYPEFIRST]);
+        strcat(text, " [");
+        strcat(text, warnnames[w]);
+        strcat(text, "]");
+        ed_error(text);
+    }
+    for (w = W_TYPEFIRST; w <= W_TYPELAST; w++)
+        if (typewarnplaces[w - W_TYPEFIRST] > TYPEWARNSHOWN) {
+            strcpy(text, "Warning: ");
+            strcat(text, warnnames[w]);
+            strcat(text, ": ");
+            catdec(text, typewarnplaces[w - W_TYPEFIRST] - TYPEWARNSHOWN);
+            strcat(text, " more");
+            ed_error(text);
+        }
 }
 
 /* blitz2.s:7360 asmerr2 / 7361 asmerr - linenumat = 12(a2).w */

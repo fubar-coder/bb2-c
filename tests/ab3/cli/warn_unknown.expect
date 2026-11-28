@@ -1,5 +1,5 @@
 [compile]
-blitz2-ab3: unknown warning "nosuch" in -w (known: all, none, resclash)
+blitz2-ab3: unknown warning "nosuch" in -w (known: all, none, resclash, divfrac, divquick, floattop, shiftfrac, shiftwrap, longwrap, datafrac)
 usage: blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
   -s, -source FILE   the source to compile (text or tokenised)
   -e, -exe FILE      the executable to write
@@ -10,7 +10,9 @@ usage: blitz2-ab3 -s SOURCE -e EXE [-r] [-mode ab3|bb2] [-w LIST] [-werr LIST]
   -w LIST            the warnings shown (default: the source's setting)
   -werr LIST         the warnings that are errors
                      LIST: all, none, NAME, -NAME, comma-separated,
-                     left to right; NAME: resclash
+                     left to right; NAME: resclash, divfrac,
+                     divquick, floattop, shiftfrac, shiftwrap,
+                     longwrap, datafrac
   -h, -help          this text
 Without options blitz2-ab3 starts the editor like blitz2.
 rc=20

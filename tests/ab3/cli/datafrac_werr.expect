@@ -1,0 +1,5 @@
+[compile]
+datafrac.ab3:11: Fraction of a Data.b value discarded
+rc=10
+[run]
+no executable

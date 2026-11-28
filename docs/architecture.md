@@ -291,8 +291,8 @@ code, not tried out].
 **Warnings** (C port, OpenSpec change `compiler-warnings`): `warn(w,
 msg, detail)` (`parse.c`) beside `err`. Every warning has a number
 (`W_*`, `parse.h`) and a name (`ab3args_warnings`,
-`shared/ab3job/ab3job.h`; so far `resclash`, a constant of the
-residents with two values, `stmts.c checkconstclash`). `warnsets` gives
+`shared/ab3job/ab3job.h`: `resclash`, a constant of the residents with
+two values, `stmts.c checkconstclash`; the type warnings below). `warnsets` gives
 the enabled warnings and the ones that are errors: from the editor's
 setting `warnopt` (`.xtra` word +24: off, on, errors; the button
 "WARNINGS:" of the second options requester, `runerropts`, steps it
@@ -304,10 +304,19 @@ otherwise it shows `Warning: MSG` through the same editor service
 `comdata+12` (in a command line run `ext_warning` prints
 `SOURCE: warning: MSG (DETAIL) [NAME]` instead and counts it: the run
 ends with return code 5 instead of 0) and returns: the compile or the
-load goes on and the executable is unchanged. Only warnings
-outside a compile exist so far (`loadres`); one during a compile would
-need a queue shown after the compile (the requester would sit under the
-progress requester).
+load goes on and the executable is unchanged. The type warnings
+(OpenSpec change `type-system-rework`: `divfrac` .. `datafrac`) come
+during a compile, at a line: `typewarn(w)` (`parse.c`) at `linenumat`.
+On the console every place is printed at once (`SOURCE:LINE: warning:
+TEXT [NAME]`, inside an include its name and line as for an error). In
+the editor the first 8 places of each warning a compile are kept and
+shown when the pass has ended, after its progress requester closed (a
+requester during the compile would sit under it): `Warning: line N:
+TEXT [NAME]` each, then `Warning: NAME: K more`. Only the first pass of
+a compile reports (`typewarnstart`, `typewarnpass`, `typewarnend` in
+`compile`/`dopass`); a warning that is an error stops the compile at
+its place. The names of all warnings come from one list,
+`shared/ab3job/warnlist.h`.
 
 ### 3.7 Run, Create Executable and debugger
 

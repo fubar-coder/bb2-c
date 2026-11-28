@@ -1,0 +1,6 @@
+[compile]
+TEST:src/datafrac_inc_data.ab3:3: warning: Fraction of a Data.b value discarded [datafrac]
+rc=5
+[run]
+2
+rc=0

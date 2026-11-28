@@ -95,13 +95,25 @@ NORETURN void nomemerr(void);
 void nomemnote(void);
 void nomemshow(void);
 
-/* Warnings (change compiler-warnings, design D1/D2).  Every warning has a
-   number, bit n of a warning set; the names are those of shared/ab3job
-   (ab3job.h AB3JOB_W_*, the same numbers: ab3main.c checks them). */
-#define W_RESCLASH 0                    /* "resclash": a constant of the
-                                           residents with two values */
-#define W_COUNT    1
+/* Warnings (change compiler-warnings, design D1/D2; spec
+   compiler/warnings).  Every warning has a number, bit n of a warning
+   set, and a name: W_ID of shared/ab3job/warnlist.h, the list the job
+   has too (ab3job.h AB3JOB_W_*, the same numbers: ab3main.c checks
+   them).  W_RESCLASH: a constant of the residents with two values;
+   W_DIVFRAC .. W_DATAFRAC: the type warnings (typewarn, below). */
+#include "warnlist.h"
+enum {
+#define W_ENTRY(id, name) W_##id,
+    WARNLIST(W_ENTRY)
+#undef W_ENTRY
+    W_COUNT
+};
 #define W_ALL      ((1UL << W_COUNT) - 1)
+#define W_TYPEFIRST W_DIVFRAC           /* the type warnings: */
+#define W_TYPELAST  W_DATAFRAC          /* W_TYPEFIRST .. W_TYPELAST */
+
+/* The names of the warnings by number (warnlist.h), W_COUNT entries. */
+extern const char *const warnnames[W_COUNT];
 
 /* The enabled warnings and the warnings that are errors now: the
    editor's setting (warnopt, data.h), changed by ext_warnsets (the
@@ -114,6 +126,34 @@ void warnsets(ULONG *enabled, ULONG *errors);
    line run (ext_warning), otherwise the editor's requester with
    "Warning: msg" - and returns. */
 void warn(UWORD w, const char *msg, const char *detail);
+
+/* A type warning (W_TYPEFIRST .. W_TYPELAST; spec compiler/warnings, the
+   delta of the change type-system-rework) at the line being compiled
+   (linenumat), with its text ("Whole division keeps its fraction", ...).
+   The place to call it: where the compiler gives a value another type or
+   conversion than the standard rules - the typing pass at a node an
+   exception types (divfrac, divquick, floattop, shiftfrac, shiftwrap:
+   tasks 3.1/3.2), a Float constant whose conversion to a Long wraps
+   (longwrap: task 3.4), a Data.b value with a fraction (datafrac,
+   dodata).  Call it once per place, also in the later passes of a compile
+   (smallest code, more memory): only the first pass reports.  Silent in
+   direct mode and when the warning is disabled; a warning that is an
+   error is err(text) (does not return).  Otherwise on the console of a
+   command line run (ext_warning) every place, at once; in the editor
+   the first TYPEWARNSHOWN places of each warning a compile, kept and
+   shown when the pass has ended (typewarnend: after the stop requester
+   closed), each its requester "Warning: line N: TEXT [NAME]", then one
+   "Warning: NAME: K more" for each warning with more places. */
+void typewarn(UWORD w);
+#define TYPEWARNSHOWN 8
+
+/* the type warnings of a compile (compile.c): typewarnstart at the start
+   of the compile (the counters reset), typewarnpass at the start of
+   every pass, typewarnend at its end (the editor's requesters of the
+   first pass) */
+void typewarnstart(void);
+void typewarnpass(void);
+void typewarnend(void);
 extern WORD ezerr;          /* 7636 !=0: simple error, skip compile cleanup */
 
 /* blitz2.s:7360/7361 asmerr2/asmerr - NOT errors: linenumat = asm line of

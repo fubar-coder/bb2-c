@@ -22,13 +22,18 @@ const char ab3args_usage[] =
     "  -w LIST            the warnings shown (default: the source's setting)\n"
     "  -werr LIST         the warnings that are errors\n"
     "                     LIST: all, none, NAME, -NAME, comma-separated,\n"
-    "                     left to right; NAME: resclash\n"
+    "                     left to right; NAME: resclash, divfrac,\n"
+    "                     divquick, floattop, shiftfrac, shiftwrap,\n"
+    "                     longwrap, datafrac\n"
     "  -h, -help          this text\n"
     "Without options blitz2-ab3 starts the editor like blitz2.\n";
 
-/* the names by number (enum ab3job_warning); the usage text lists them */
+/* the names by number (enum ab3job_warning, warnlist.h); the usage text
+   lists them (a host test checks it) */
 const char *const ab3args_warnings[] = {
-    "resclash",
+#define NAME(id, name) name,
+    WARNLIST(NAME)
+#undef NAME
     0
 };
 /* one name per warning: a check of the build (C99, no _Static_assert) */

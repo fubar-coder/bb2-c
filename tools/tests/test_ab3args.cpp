@@ -201,10 +201,17 @@ parsed compile_with(std::vector<std::string> opts)
 
 TEST_CASE("warnings: the names", "[ab3args]")
 {
-    CHECK(AB3JOB_W_COUNT == 1);
-    CHECK(std::string(ab3args_warnings[AB3JOB_W_RESCLASH]) == "resclash");
+    // resclash, then the type warnings (spec compiler/warnings, the delta
+    // of the change type-system-rework)
+    const char *names[] = { "resclash", "divfrac", "divquick", "floattop",
+                            "shiftfrac", "shiftwrap", "longwrap", "datafrac" };
+    CHECK(AB3JOB_W_COUNT == 8);
+    for (int k = 0; k < 8; k++)
+        CHECK(std::string(ab3args_warnings[k]) == names[k]);
+    CHECK(ab3args_warnings[AB3JOB_W_RESCLASH] == std::string("resclash"));
+    CHECK(ab3args_warnings[AB3JOB_W_DATAFRAC] == std::string("datafrac"));
     CHECK(ab3args_warnings[AB3JOB_W_COUNT] == nullptr);
-    CHECK(AB3JOB_W_ALL == 1u);
+    CHECK(AB3JOB_W_ALL == 0xffu);
 }
 
 TEST_CASE("warnings: without -w and -werr the source's setting", "[ab3args]")
@@ -234,11 +241,11 @@ TEST_CASE("warnings: the items of a list", "[ab3args]")
         { "none", 0, 0 },
         { "resclash", R, AB3JOB_W_ALL },
         { "-resclash", 0, AB3JOB_W_ALL & ~R },
-        { "all,-resclash", 0, 0 },
+        { "all,-resclash", AB3JOB_W_ALL & ~R, AB3JOB_W_ALL & ~R },
         { "none,resclash", R, R },
         { "-resclash,resclash", R, AB3JOB_W_ALL },
         { "resclash,none", 0, 0 },
-        { "ALL,-ResClash", 0, 0 },
+        { "ALL,-ResClash", AB3JOB_W_ALL & ~R, AB3JOB_W_ALL & ~R },
     };
     for (auto &c : cases) {
         for (const char *o : { "-w", "-W", "-werr", "-WERR" }) {
@@ -261,12 +268,12 @@ TEST_CASE("warnings: several options are applied in order", "[ab3args]")
 {
     auto p = compile_with({ "-w", "none", "-w", "resclash", "-werr", "resclash", "-werr", "-resclash" });
     CHECK(p.result == AB3ARGS_COMPILE);
-    CHECK(applied(0, p.job.warn_keep, p.job.warn_add) == AB3JOB_W_ALL);
-    CHECK(applied(AB3JOB_W_ALL, p.job.werr_keep, p.job.werr_add) == 0u);
+    CHECK(applied(0, p.job.warn_keep, p.job.warn_add) == (1u << AB3JOB_W_RESCLASH));
+    CHECK(applied(AB3JOB_W_ALL, p.job.werr_keep, p.job.werr_add) == (AB3JOB_W_ALL & ~(1u << AB3JOB_W_RESCLASH)));
     // in any position, also before -s
     auto q = parse({ "-werr", "resclash", "-s", "a", "-e", "b" });
     CHECK(q.result == AB3ARGS_COMPILE);
-    CHECK(applied(0, q.job.werr_keep, q.job.werr_add) == AB3JOB_W_ALL);
+    CHECK(applied(0, q.job.werr_keep, q.job.werr_add) == (1u << AB3JOB_W_RESCLASH));
 }
 
 TEST_CASE("warnings: broken lists", "[ab3args]")
@@ -275,11 +282,11 @@ TEST_CASE("warnings: broken lists", "[ab3args]")
         std::vector<std::string> opts;
         const char *msg;
     } cases[] = {
-        { { "-w", "nosuch" }, "unknown warning \"nosuch\" in -w (known: all, none, resclash)" },
+        { { "-w", "nosuch" }, "unknown warning \"nosuch\" in -w (known: all, none, resclash, divfrac, divquick, floattop, shiftfrac, shiftwrap, longwrap, datafrac)" },
         { { "-werr", "all,resclashx" },
-          "unknown warning \"resclashx\" in -werr (known: all, none, resclash)" },
-        { { "-w", "-all" }, "unknown warning \"-all\" in -w (known: all, none, resclash)" },
-        { { "-w", "res" }, "unknown warning \"res\" in -w (known: all, none, resclash)" },
+          "unknown warning \"resclashx\" in -werr (known: all, none, resclash, divfrac, divquick, floattop, shiftfrac, shiftwrap, longwrap, datafrac)" },
+        { { "-w", "-all" }, "unknown warning \"-all\" in -w (known: all, none, resclash, divfrac, divquick, floattop, shiftfrac, shiftwrap, longwrap, datafrac)" },
+        { { "-w", "res" }, "unknown warning \"res\" in -w (known: all, none, resclash, divfrac, divquick, floattop, shiftfrac, shiftwrap, longwrap, datafrac)" },
         { { "-w", "all,,resclash" }, "empty item in -w \"all,,resclash\"" },
         { { "-w", "resclash," }, "empty item in -w \"resclash,\"" },
         { { "-werr", "," }, "empty item in -werr \",\"" },

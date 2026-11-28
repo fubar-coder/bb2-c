@@ -1,0 +1,18 @@
+# warn-datafrac-limit.test.bas: the warnings are lines of tedstub's log
+# (WARNING of the job j000: the editor's requesters, "line N" the line of
+# the driver: of the test source + 71); the first 8 places and one "2
+# more", nothing between them. The test of an extension of the port (the
+# type warnings of the rework, #1235); the original gives no warning and
+# reads the same values
+extension = 1235
+exclude = ["compiler=port,libs=cd", "compiler=orig195,libs=clib"]
+
+[matrix]
+compiler = ["port", "orig195"]
+libs = ["cd", "clib"]
+
+[asserts]
+"compile.log" = "contains \"WARNING\tj000\tWarning: line 85: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 86: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 87: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 88: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 89: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 90: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 91: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: line 92: Fraction of a Data.b value discarded [datafrac]\nWARNING\tj000\tWarning: datafrac: 2 more\n\""
+
+[deviations."compiler=orig195"]
+"compile.log" = "not contains \"datafrac\""

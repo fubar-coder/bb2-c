@@ -236,6 +236,7 @@ void compile(void)
     intstring = 0;
     smallpass = 0;
     fixdebugconst();            /* change debug-constant */
+    typewarnstart();            /* the type warnings of this compile */
     ext_compilestart();
 
 l_retry:
@@ -831,6 +832,7 @@ void dopass(void)
 
     resetlibs();
     freeemup();
+    typewarnpass();             /* only the first pass reports */
     ext_passstart();
 
     for (i = 1; i <= 4; i++)
@@ -927,6 +929,7 @@ void dopass(void)
 
     endstop();
     pointeron();
+    typewarnend();              /* the editor's warnings of the first pass */
 }
 
 /* blitz2.s:2688 pointchk */

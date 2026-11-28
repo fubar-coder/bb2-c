@@ -47,6 +47,8 @@ static WORD numfloat;   /* asm d6: 0 int, != 0 float */
    comparison it may be the left operand of (eval.c ownleft) */
 static BOOL litcut;
 
+BOOL datafrac;          /* libcall.h */
+
 /* Fixed (#1070): the literal consttype2 sizes next is negated (litneg in
    libcall.h); consttype2 takes it and clears it */
 BOOL litneg;
@@ -87,6 +89,7 @@ ULONG fetchdata(UWORD *type, ULONG *raw)
     ULONG val;
 
     /* (asm: dfetch = -1; C passes data = TRUE down the fetch routines) */
+    datafrac = FALSE;
     c = getchar3();
     if (c != '-') {
         litneg = FALSE;
@@ -482,6 +485,7 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
     (void)val;
     litneg = FALSE;
     litcut = FALSE;                 /* #1186 */
+    datafrac = FALSE;
     constint = numval;              /* the typing pass (p5constleaf) */
 
     k.point = numfloat != 0;
@@ -491,11 +495,13 @@ static ULONG consttype2(UWORD *type, ULONG val, BOOL data)
     else if (tsf == T_BYTE || tsf == T_QUICK) {
         k.fix = makeint(&whole);
         if (k.fix && tsf == T_BYTE) {
+            BOOL w = !ffpcall(SPSub, numval, ffpcall(SPFlt, whole, 0, NULL), NULL);
+
             k.size = constsize(whole);
             /* Fixed (#1188): whether the literal is the whole number (a
-               Data value keeps the cut: not asked) */
-            k.whole = !data
-                      && !ffpcall(SPSub, numval, ffpcall(SPFlt, whole, 0, NULL), NULL);
+               Data value keeps the cut) */
+            k.whole = !data && w;
+            datafrac = data && !w;      /* the warning datafrac (dodata) */
         } else if (k.fix)
             k.qfit = quickconst(whole, neg, &q);
     }

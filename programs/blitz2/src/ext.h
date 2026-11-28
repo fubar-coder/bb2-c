@@ -147,13 +147,15 @@ void ext_errpos(void);
 void ext_warnsets(ULONG *enabled, ULONG *errors);
 
 /**
- * @brief warn (parse.c): warning w with the text msg (detail or NULL: more
- *        for the console) is shown (error FALSE) or is an error (TRUE: err
- *        follows).
+ * @brief warn, typewarn (parse.c): warning w with the text msg (detail or
+ *        NULL: more for the console) is shown (error FALSE) or is an error
+ *        (TRUE: err follows).  line: the line being compiled (linenumat,
+ *        from 0) of a warning at a place of the source (typewarn), -1 for
+ *        one without a line (warn).
  * @return TRUE if it was shown (the editor's requester is not used); not
  *         looked at for an error
  */
-BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error);
+BOOL ext_warning(UWORD w, const char *msg, const char *detail, WORD line, BOOL error);
 
 /** @brief A built-in token tok (without bit 15) is compiled as a
  *         statement or a function; may stop the compile with err(). */

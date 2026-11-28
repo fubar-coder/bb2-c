@@ -732,6 +732,11 @@ void dodata(UWORD c)
                     baddaterr();                /* .notb */
                 }
             }
+            /* a Data.b value with a point and a fraction: the Byte keeps
+               the value cut towards zero (consttype2, "Data.b -1.5" -1);
+               the warning datafrac (change type-system-rework, I8) */
+            if (want == T_BYTE && datafrac)
+                typewarn(W_DATAFRAC);
             if (want < T_LONG)                  /* .dataok */
                 pokedata2((UWORD)val);
             else

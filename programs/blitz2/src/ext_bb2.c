@@ -86,7 +86,7 @@ void ext_warnsets(ULONG *enabled, ULONG *errors)
 {
 }
 
-BOOL ext_warning(UWORD w, const char *msg, const char *detail, BOOL error)
+BOOL ext_warning(UWORD w, const char *msg, const char *detail, WORD line, BOOL error)
 {
     return FALSE;
 }
