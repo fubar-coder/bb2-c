@@ -1,0 +1,13 @@
+# The warning inside an include of text: the place is the include as the
+# compiler prints it (its path, then its line 3) and not a line of this
+# source. The include is the test's own data, staged by copy. Moved from
+# ab3_cli (datafrac_inc).
+exclude = ["compiler=amiblitz3"]
+
+[data]
+"datafrac_inc_data.ab3" = "copy"
+
+[asserts]
+"compile.warnings.1" = "== \"CORPUS:warn-datafrac-inc.test/datafrac_inc_data.ab3:3 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings" = "count == 1"
+"compile.rc" = "== 5"

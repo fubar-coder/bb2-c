@@ -1,0 +1,18 @@
+# The console gives every one of the 10 places of datafrac, in the order of
+# the source, and the return code 5 (the editor shows 8 and "datafrac: 2
+# more"). Moved from ab3_cli (datafrac_many).
+exclude = ["compiler=amiblitz3"]
+
+[asserts]
+"compile.warnings.1" = "== \"10 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.2" = "== \"11 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.3" = "== \"12 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.4" = "== \"13 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.5" = "== \"14 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.6" = "== \"15 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.7" = "== \"16 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.8" = "== \"17 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.9" = "== \"18 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings.10" = "== \"19 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings" = "count == 10"
+"compile.rc" = "== 5"

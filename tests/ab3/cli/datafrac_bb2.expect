@@ -1,7 +1,0 @@
-[compile]
-datafrac_bb2.bb:12: warning: Fraction of a Data.b value discarded [datafrac]
-rc=5
-[run]
--1
-1
-rc=0

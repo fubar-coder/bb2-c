@@ -214,7 +214,9 @@ add_custom_target(ab3_cli_sources ALL DEPENDS ${cli_made})
 #              [RUN_DATESTAMP ISO-DATE]): a case of the suite (a case that
 #              only checks the program's output without other arguments
 #              than -r is a test of tests/ab3/model/ instead, change
-#              ab3-test-model); DATESTAMP: the
+#              ab3-test-model, and so is a case of the warnings of a
+#              compile and its return code, change test-model-warnings);
+#              DATESTAMP: the
 #              compiler runs under inject datestamp=DATE (cli.cmake:
 #              dos.library's DateStamp gives that date, so a compile-time
 #              date is fixed), RUN_DATESTAMP: the same for the program (its
@@ -371,19 +373,18 @@ ab3_cli_case(wclash_off wclash.ab3 ARGS -w -resclash)
 ab3_cli_case(wclash_offerr wclash.ab3 ARGS -w all,-resclash -werr all)
 ab3_cli_case(wclash_err wclash_err.ab3)
 # the type warnings (change type-system-rework, spec compiler/warnings):
-# datafrac, the one with a place today - its line, text and name and rc 5
-# in AB3 and BB2 mode, every one of 10 places, the place inside an
-# include; disabled (-w) the same executable and rc 0 (release: an
+# the warning lists of a compile without other arguments (datafrac: its
+# line, text, name and rc 5 in AB3 and BB2 mode, every one of 10 places,
+# the place inside an include) are tests of the model
+# (tests/ab3/model/warn-datafrac*, change test-model-warnings). Here stay
+# the cases that need other arguments or SAME: datafrac with -r (the
+# release compile), disabled (-w) the same executable and rc 0 (release: an
 # executable with runtime error checking holds values that depend on
-# where the source lay in memory), as an error (-werr)
-# rc 10 and no executable
-ab3_cli_case(datafrac datafrac.ab3)
-ab3_cli_case(datafrac_bb2 datafrac_bb2.bb)
+# where the source lay in memory), as an error (-werr) rc 10 and no
+# executable
 ab3_cli_case(datafrac_r datafrac.ab3 ARGS -r)
 ab3_cli_case(datafrac_off datafrac.ab3 ARGS -r -w -datafrac SAME datafrac_r)
 ab3_cli_case(datafrac_werr datafrac.ab3 ARGS -werr datafrac)
-ab3_cli_case(datafrac_many datafrac_many.ab3)
-ab3_cli_case(datafrac_inc datafrac_inc.ab3)
 # the directives of AB3 mode (change ab3-mode-g2, spec ab3-compat/directives)
 ab3_cli_case(opt_fpu opt_fpu.ab3 REF REF_EXPECT opt_fpu.ref.expect)
 ab3_cli_case(syntax2_none syntax2_none.ab3 ARGS -r REF)

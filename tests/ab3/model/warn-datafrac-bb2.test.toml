@@ -1,0 +1,10 @@
+# BB2 mode from the command line (AmiBlitz3 has none): the warning datafrac
+# with its line, name and text, and the return code 5. Moved from ab3_cli
+# (datafrac_bb2).
+source-mode = "bb2"
+exclude = ["compiler=amiblitz3"]
+
+[asserts]
+"compile.warnings.1" = "== \"11 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings" = "count == 1"
+"compile.rc" = "== 5"

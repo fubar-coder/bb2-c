@@ -1,0 +1,10 @@
+# The warning datafrac on the console of blitz2-ab3: its line in this
+# source, name and text, and the return code 5 of a compile with a warning
+# (the executable is written and run). Moved from ab3_cli (datafrac);
+# AmiBlitz3 has no such warning.
+exclude = ["compiler=amiblitz3"]
+
+[asserts]
+"compile.warnings.1" = "== \"14 datafrac Fraction of a Data.b value discarded\""
+"compile.warnings" = "count == 1"
+"compile.rc" = "== 5"
