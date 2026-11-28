@@ -139,7 +139,11 @@ set(CORPUS_EXPECT ${CMAKE_CURRENT_SOURCE_DIR}/expect)
 # (exit status 2), one whose output is as expected again is STALE (the pass
 # fails, corpus.h unjudged=)
 set(CORPUS_UNJUDGED
-	"corpus_runerr_originals:port:t01_int|the port's compiler with the CD's libraries: the division by 0 does not trap (the CD's library, #200, fixed in the C libraries) and Quick Mod gives 1.5 (the compiler, #1216): neither t01_int.orig.out nor t01_int.fixed-200.out")
+	"corpus_runerr_originals:port:t01_int|the port's compiler with the CD's libraries: the division by 0 does not trap (the CD's library, #200, fixed in the C libraries) and Quick Mod gives 1.5 (the compiler, #1216): neither t01_int.orig.out nor t01_int.fixed-200.out"
+	"corpus_originals:port:t05_proc|the port's compiler with the CD's libraries: fact{10} saturates at the Quick destination (type-system-rework, #1235) and the CD's Print shows $7FFFFFFF as 32767. - neither t05_proc.orig.out nor t05_proc.fixed-199.out"
+	"corpus_originals:orig-clib:t05_proc|the original compiler with the C libraries: fact{10} wraps in 16.16 (the original's rule) and the C lmullib is fixed (#199), 24320 - neither t05_proc.orig.out nor t05_proc.fixed-199.out"
+	"corpus_runerr_originals:port:t05_proc|the port's compiler with the CD's libraries: fact{10} saturates at the Quick destination (type-system-rework, #1235) and the CD's Print shows $7FFFFFFF as 32767. - neither t05_proc.orig.out nor t05_proc.fixed-199.out"
+	"corpus_runerr_originals:orig-clib:t05_proc|the original compiler with the C libraries: fact{10} wraps in 16.16 (the original's rule) and the C lmullib is fixed (#199), 24320 - neither t05_proc.orig.out nor t05_proc.fixed-199.out")
 
 # corpus_pass(NAME [RUNTIME_ERRORS] [SERIAL] LAUNCHER TARGET [GATE TARGET]
 #             [FIXTURE] SOURCES FILES... [DATA FILES...]): the pass files +
