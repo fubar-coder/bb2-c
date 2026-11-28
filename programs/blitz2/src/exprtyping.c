@@ -656,6 +656,7 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
 static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned want, int whole);
 
 static int is_floaty(struct ctx *c, const struct exprtyping_node *n, unsigned want);
+static int q48_class(const struct exprtyping_node *n);
 
 /* is_floaty of an operand: a comparison's result is a whole number, also
    when it compares in Float ("expr-tree-5 group 3: three readings of the
@@ -741,6 +742,10 @@ static int has_long(struct ctx *c, struct exprtyping_node *n, unsigned want)
 
         return rq_isint(a) && !rq_fits(a, ET_WORD);
     }
+    if (c->tsr && q48_class(n))
+        /* the classes: an operation of Quick class by its operands, as one
+           with a Quick in it (its typing is the fractional world's) */
+        return has_long(c, n->l, want) || (n->kind == ETN_BIN && has_long(c, n->r, want));
     if (!has_quick(n)) {
         if (n->kind == ETN_VAR)
             return n->type == ET_LONG;
@@ -767,6 +772,14 @@ static int has_long(struct ctx *c, struct exprtyping_node *n, unsigned want)
 
 /* -------------------------------------------- the fractional world */
 
+/* an operation of Quick class (exprtyping_classify) that the classes
+   compute in 48.16 (task 4.2): + - * / and Mod (Mod's format still rule
+   P+'s, task 4.7) and the unary minus, not a constant subtree */
+static int q48_class(const struct exprtyping_node *n)
+{
+    return n->cls == ET_QUICK && !folded(n) && (n->kind == ETN_NEG || (n->kind == ETN_BIN && is_arith(n->op)));
+}
+
 /* the format of a fractional value (ETF_*) as the bits of the model's
    formats: 0 whole, 16 (16.16), 32 (48.16; a Float side 32 too) */
 enum { FW_WHOLE = 0, FW_16 = 16, FW_48 = 32 };
@@ -791,6 +804,21 @@ static unsigned frac_other(struct ctx *c, struct exprtyping_node *n, unsigned wa
 static unsigned frac_side(struct ctx *c, struct exprtyping_node *n, unsigned want, int force, int whole,
                           unsigned *from)
 {
+    if (c->tsr) {
+        /* the classes (task 4.2): a node of Quick class in the fractional
+           world, a whole one as the whole number its class is (not in a
+           fractional format: P+'s part 7 goes) */
+        if (folded(n)) {
+            *from = ETY_CONST;
+            return FW_WHOLE;
+        }
+        if (n->cls == ET_QUICK) {
+            *from = ET_QUICK;
+            return frac_value(c, n, want, force, whole, from);
+        }
+        *from = typed(c, n, 0, 0, BIT_NONE);   /* no destination reaches it */
+        return FW_WHOLE;
+    }
     if (has_quick(n)
         || (whole && !isconst(n) && (n->kind == ETN_NEG || (n->kind == ETN_BIN && is_arith(n->op))))) {
         *from = ET_QUICK;
@@ -818,6 +846,13 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
         return FW_16;
     case ETN_NEG:
         f = frac_side(c, n->l, want, force, whole, &lf);
+        if (c->tsr && n->cls == ET_QUICK) {
+            /* the classes: a minus sign of Quick class in 48.16 (its operand
+               widened first: -q of -32768 is 32768) */
+            if (!c->dry)
+                n->wide = (unsigned char)(f != FW_48);
+            f = FW_48;
+        }
         mark(c, n, f ? ET_QUICK : lf, f == FW_48 ? ETF_Q48 : f ? ETF_Q16 : ETF_TYPE);
         return f;
     case ETN_NOT: return frac_other(c, n, want);
@@ -831,7 +866,8 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
         int save = c->cmplong, sq = c->quickhere, fc;
 
         c->cmplong = 1;
-        fc = has_long(c, n->l, 0) || has_long(c, n->r, 0);
+        /* the classes: each side by its class (a Quick operation 48.16) */
+        fc = !c->tsr && (has_long(c, n->l, 0) || has_long(c, n->r, 0));
         c->quickhere = has_quick(n->l);
         fl = frac_side(c, n->l, 0, fc, 1, &lf);
         c->quickhere = has_quick(n->r);
@@ -845,11 +881,24 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
     }
     /* part 1: under a wanted Byte, Word or Quick an operation with a Long
        in it is 48.16, and so is everything below it */
-    if (want >= ET_BYTE && want <= ET_QUICK && has_long(c, n, want))
-        force = 1;
-    frac_side(c, n->l, want, force, whole, &lf);
-    frac_side(c, n->r, want, force, whole, &rf);
-    f = force || want == ET_LONG ? FW_48 : FW_16;
+    if (c->tsr && n->op != ETO_MOD) {
+        /* the classes (task 4.2): every + - * / of Quick class in 48.16,
+           its operands by their classes */
+        frac_side(c, n->l, want, 0, 0, &lf);
+        frac_side(c, n->r, want, 0, 0, &rf);
+        f = FW_48;
+    } else {
+        if (want >= ET_BYTE && want <= ET_QUICK && has_long(c, n, want))
+            force = 1;
+        if (c->tsr && has_long(c, n, want))
+            force = 1;          /* the classes: a Mod with a Long in it in 48.16, also in a
+                                   comparison and without a destination (rule P+'s force) */
+        fl = frac_side(c, n->l, want, force, whole, &lf);
+        fr = frac_side(c, n->r, want, force, whole, &rf);
+        f = force || want == ET_LONG ? FW_48 : FW_16;
+        if (c->tsr && (fl == FW_48 || fr == FW_48))
+            f = FW_48;          /* Mod (task 4.7) of a 48.16 operand */
+    }
     record(c, n, f == FW_48 ? ETY_Q48 : ETY_Q16, isconst(n->l) ? ETY_CONST : lf, ET_QUICK, f == FW_48,
            isconst(n->r) ? ETY_CONST : rf, ET_QUICK, f == FW_48, f == FW_48 ? ET_LONG : ET_QUICK);
     mark(c, n, f == FW_48 ? ET_LONG : ET_QUICK, f == FW_48 ? ETF_Q48 : ETF_Q16);
@@ -867,12 +916,19 @@ static unsigned frac_value(struct ctx *c, struct exprtyping_node *n, unsigned wa
 static unsigned frac_operand(struct ctx *c, struct exprtyping_node *n, unsigned want, int whole)
 {
     unsigned from, f, t;
-    int force = !want && !is_cmp(n) ? has_long(c, n, 0) : 0, bit = c->bittaker;
+    int force = !want && !is_cmp(n) ? has_long(c, n, 0) : 0, bit = c->bittaker, plong = 0;
 
+    if (c->tsr && bit && !is_cmp(n))
+        /* the classes: a bit operator, shift or NOT takes the 48.16 value
+           as rule P+ takes its operand there: the Long rounded down where
+           P+ computes it in 48.16, else the Quick of its low 32 bits (the
+           16.16 value of P+; the bit operators', shifts' and Mod's tasks
+           4.4, 4.7) */
+        plong = want == ET_LONG || ((!want || (want >= ET_BYTE && want <= ET_QUICK)) && has_long(c, n, want));
     f = frac_value(c, n, want, force, whole || (want != ET_LONG && !is_cmp(n)), &from);
     if (is_cmp(n))
         return ET_WORD;
-    t = f != FW_48 ? ET_QUICK : bit ? ET_LONG : ET_FLOAT;
+    t = f != FW_48 ? ET_QUICK : bit ? (c->tsr && !plong ? ET_QUICK : ET_LONG) : ET_FLOAT;
     if (!c->dry) {
         n->t = (unsigned char)t;
         n->fmt = f == FW_48 ? ETF_Q48 : ETF_Q16;
@@ -1221,7 +1277,17 @@ static unsigned typed(struct ctx *c, struct exprtyping_node *n, unsigned want, u
             n->t = ET_FLOAT;
         return ET_FLOAT;
     }
-    if (has_quick(n) && (n->kind == ETN_NEG || (n->kind == ETN_BIN && (is_arith(n->op) || exprtype_iscompare(n->op))))) {
+    if (c->tsr && q48_class(n)) {
+        /* the classes (task 4.2): an operation of Quick class in 48.16
+           wherever it is (beside a Float taken as a Float, by a bit
+           operator, shift or NOT as frac_operand says), unless rule P+
+           reads a constant with a point in it as a Float (part 2; the
+           reading of constants is task 3.3) */
+        unsigned w = want == ET_FLOAT ? 0 : want;
+
+        if (want != ET_STRING && !is_floaty(c, n, c->reachedf && want == ET_FLOAT ? 0 : want))
+            return frac_operand(c, n, w, 0);
+    } else if (has_quick(n) && (is_cmp(n) || (!c->tsr && (n->kind == ETN_NEG || (n->kind == ETN_BIN && is_arith(n->op)))))) {
         /* part 6, 7: a fractional subtree inside the operand typing */
         if (c->reachedf && want == ET_FLOAT && !is_floaty(c, n, 0))
             return frac_operand(c, n, 0, 1);
@@ -1409,7 +1475,29 @@ int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtypi
     res->conv = 0;
     c.quickhere = has_quick(root);
     c.tsr = root->cls != 0;
-    if (has_quick(root) && want != ET_FLOAT && !is_floaty(&c, root, want)) {
+    if (c.tsr && want != ET_STRING && q48_class(root) && !is_floaty(&c, root, want)) {
+        /* the classes (task 4.2): an operation of Quick class at the top,
+           computed in 48.16 (Mod as rule P+ decides, task 4.7), its value
+           taken by the destination */
+        unsigned from, f = frac_value(&c, root, want == ET_FLOAT ? 0 : want, 0, 0, &from);
+
+        res->fmt = f == FW_48 ? ETF_Q48 : ETF_Q16;
+        if (c.refused)
+            ;
+        else if (want == ET_QUICK || !want) {
+            t = ET_QUICK;
+            res->consumer = f != FW_48 ? ETC_KEEP : want ? ETC_SAT : ETC_FIT;
+        } else if (want == ET_FLOAT) {
+            t = f == FW_48 ? ET_FLOAT : ET_QUICK;
+            res->consumer = f == FW_48 ? ETC_TOFLOAT : ETC_TYPE;
+        } else {
+            t = ET_LONG;
+            res->consumer = ETC_FLOOR;  /* rounded down (spec: the conversion to a whole destination) */
+        }
+    } else if (has_quick(root) && want != ET_FLOAT && !is_floaty(&c, root, want)
+               && !(c.tsr && root->cls != ET_QUICK
+                    && (root->kind == ETN_NEG || (root->kind == ETN_BIN && is_arith(root->op))))) {
+        /* (the classes: a whole operation at the top is no fractional one) */
         /* an expression with a Quick and no Float: the fractional world,
            rounded once at the consumer */
         int cmp = is_cmp(root);

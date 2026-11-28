@@ -94,8 +94,10 @@ enum {
     EVF_P5 = 8,                 /* the code is the typing pass's (rule P+, eval.c p5exit): left
                                    its root (a struct p5node), vtype how its value is taken
                                    (exprtyping.h ETC_*) */
-    EVF_FIT = 16                /* p5exit writes the type got (no wanted type, 48.16: a Quick
+    EVF_FIT = 16,               /* p5exit writes the type got (no wanted type, 48.16: a Quick
                                    or a Long at run time) */
+    EVF_QWRAP = 32              /* the conversion to a Quick wraps (the left-shift wrap at the
+                                   top, type-system-rework's ETX_SHIFTWRAP), not saturated */
 };
 
 /** @brief The kinds of call (exprnode.op of a CALL).

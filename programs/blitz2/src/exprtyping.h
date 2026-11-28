@@ -109,8 +109,12 @@ enum {
                                    shift or NOT): that value */
     ETC_FLOOR,                  /* the whole part, rounded down, as a Long */
     ETC_TRUNC,                  /* a / at the top under a wanted Byte, Word or Long: towards zero, as a Long */
-    ETC_FIT                     /* no wanted type, 48.16: a Quick when the value fits one, else
+    ETC_FIT,                    /* no wanted type, 48.16: a Quick when the value fits one, else
                                    its whole part rounded down as a Long (decided at run time) */
+    ETC_SAT,                    /* a wanted Quick, 48.16 (the classes, task 4.2 of
+                                   type-system-rework): the Quick rounded down and saturated,
+                                   $7FFFFFFF above and $80000000 below the Quick range */
+    ETC_TOFLOAT                 /* a wanted Float, 48.16 (the classes): the Float of the value */
 };
 
 /** @brief The decision for a binary operator (the out part of a BIN).
@@ -187,8 +191,18 @@ struct exprtyping_result {
  * operators; or within a range bound), else in the narrowest whole type
  * that does (the operands extended, the Long code; a minus sign wide, a
  * Long / of two Word-range values o.fast).  Mod and the shifts keep their
- * types (tasks 4.7, 4.4); the fractional world is rule P+ (task 4.2).
- * Without the classes (the host test of rule P+) the pass is P+ alone.
+ * types (tasks 4.7, 4.4).  Every operation of Quick class (+ - * / and the
+ * unary minus; task 4.2) is computed in 48.16 (ETY_Q48, ETF_Q48) wherever
+ * it is, its operands typed by their classes (a whole operand as a whole
+ * number, not in a fractional format); the value is taken at the root by
+ * the destination: a Quick saturated (ETC_SAT), a whole number rounded
+ * down (ETC_FLOOR), a Float (ETC_TOFLOAT), none as ETC_FIT; inside the
+ * operation with a Float as a Float, by a bit operator, shift or NOT as
+ * the Quick or Long rule P+ takes there (tasks 4.4, 4.7).  Where rule P+
+ * reads a constant with a point in such an operation as a Float (part 2),
+ * the operation stays rule P+'s Float one until the reading of constants
+ * switches (task 3.3).  Without the classes (the host test of rule P+)
+ * the pass is P+ alone.
  */
 int exprtyping_type(struct exprtyping_node *root, unsigned want, struct exprtyping_result *res);
 

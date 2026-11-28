@@ -28,10 +28,11 @@
   !CheckEq{r,12,"long_quick_float"}
   r=f+q+l
   !CheckEq{r,12,"float_quick_long"}
-  ; the limit: an intermediate leaves its format, both orders typed alike
+  ; the limit: only a 48.16 intermediate beyond 48 bits wraps (type-system-rework,
+  ; #1235, task 4.2; before: q*q2 left the 16.16 format, 6116)
   q.q=300 : q2.q=300 : rr.q=0.25 : xq.q=0
   xq=q*q2*rr
-  !CheckQEq{xq,6116,"wrapped_product"}
+  !CheckQEq{xq,22500,"wrapped_product"}
   xq=rr*q*q2
   !CheckQEq{xq,22500,"scaled_first"}
 !EndTestCase

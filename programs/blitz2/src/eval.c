@@ -267,6 +267,7 @@ void exprtree_runact(struct expract *a)
    code (it records a position or a state) */
 static void negemit(struct expract *a);
 static void convprep(UWORD from, UWORD to);
+static void overuse(UWORD token);
 
 static struct expract *recordact(exprtree_actfn *fn, void *p, ULONG x, UWORD y, BOOL nocode)
 {
@@ -715,6 +716,83 @@ void floattoquick(void)
     qtof2(fltoqu);
 }
 
+/* compilerlib's conversions of type-system-rework (task 4.3) */
+#define q48sat 0xd612
+#define f2q 0xd614
+
+/* No asm counterpart (type-system-rework task 4.2; spec delta
+   compiler/expression-types, "The conversion to a Quick rounds down and
+   saturates"): the conversion of a whole number or a Float of type from
+   in D(regat) to a Quick at a destination or a parameter (evalexit): a
+   Long as the 48.16 value l << 16 saturated as compilerlib's q48sat does
+   ($7FFFFFFF above and $80000000 below the Quick range; inline, in D7
+   q48sat itself), a Float by f2q (rounded down to
+   1/65536, saturated); a Byte or a Word fits and converts as before.  The
+   overflow checks of runtime error checking stay before them, as in
+   longtoquick and floattoquick.  prep: the libraries used while the
+   expression is built (convprep's part). */
+static void quicksat(UWORD from, BOOL prep)
+{
+    ULONG push, pull;
+
+    if (from == T_ADDR)
+        from = T_LONG;
+    if (from == T_FLOAT) {
+        if (prep) {
+            overuse(ftowover);
+            tokuse(f2q);
+            return;
+        }
+        overchk(ftowover);
+        qtof2(f2q);
+        return;
+    }
+    if (from != T_LONG) {
+        if (prep)
+            convprep(from, T_QUICK);
+        else
+            convtype(from, T_QUICK);
+        return;
+    }
+    if (prep) {
+        overuse(ltowover);
+        if (regat >= 7)
+            tokuse(q48sat);
+        return;
+    }
+    overchk(ltowover);
+    if (regat < 7) {
+        /* q48sat's test inline, D(regat+1) its scratch (free at the end
+           of the evaluation): l fits when its low word extended is l */
+        UWORD n = regat, t = regat + 1;
+
+        pokewd(0x3000 | (t << 9) | n);  /* move.w Dn,Dt */
+        pokewd(0x48c0 | t);             /* ext.l Dt */
+        pokewd(0xb080 | (t << 9) | n);  /* cmp.l Dn,Dt */
+        pokewd(0x6606);                 /* bne.s .sat */
+        pokewd(0x4840 | n);             /* swap Dn */
+        pokewd(0x4240 | n);             /* clr.w Dn: l << 16 */
+        pokewd(0x600a);                 /* bra.s .done */
+        pokewd(0xd080 | (n << 9) | n);  /* .sat: add.l Dn,Dn */
+        pokewd(0x9180 | (n << 9) | n);  /* subx.l Dn,Dn: -1 below, 0 above */
+        pokewd(0x4680 | n);             /* not.l Dn */
+        pokewd(0x0840 | n);             /* bchg #31,Dn */
+        pokewd(31);
+        return;                         /* .done */
+    }
+    savereg(&push, &pull);
+    pokemovem(push);
+    ritetod0();
+    pokewd(0x2200);                 /* move.l d0,d1 */
+    pokewd(0x4841);                 /* swap d1 */
+    pokewd(0x48c1);                 /* ext.l d1: the high 32 bits of l << 16 */
+    pokewd(0x4840);                 /* swap d0 */
+    pokewd(0x4240);                 /* clr.w d0: its low 32 bits */
+    tokejsr(q48sat);
+    ritefromd0();
+    pokemovem(pull);
+}
+
 /* blitz2.s:8681 stringtolong */
 void stringtolong(void)
 {
@@ -1063,7 +1141,9 @@ static void evalexit(struct expract *a)
 
     if (e->lflags & EVF_P5)
         p5exit(e, (WORD)a->y);      /* the pass's consumer (#1216) */
-    if (e->lflags & EVF_CONV)
+    if ((e->lflags & EVF_CONV) && t == T_QUICK && !(e->lflags & EVF_QWRAP))
+        quicksat(e->tbefore, FALSE);    /* type-system-rework: saturated */
+    else if (e->lflags & EVF_CONV)
         convtype(e->tbefore, t);    /* exg d2,d3 / convtype */
     pushflag = (WORD)a->y;
     if (pushflag > 0) {
@@ -1136,7 +1216,10 @@ static UWORD evalbuild(WORD push, UWORD *type, WORD unk)
     evaldepth--;
     e->tbefore = t;
     if (asked && !unk) {            /* type asked for */
-        convprep(t, asked);
+        if (asked == T_QUICK && !(e->lflags & EVF_QWRAP))
+            quicksat(t, TRUE);
+        else
+            convprep(t, asked);
         e->lflags |= EVF_CONV;
         t = asked;
     }
@@ -5346,6 +5429,10 @@ static BOOL p5prep;
 /* the path of an operation whose value is taken as its low 32 bits only
    (p5lowmark: an ETY_Q48 operation under ETC_KEEP, task 4.3) */
 #define P5Y_LOW 'l'
+/* the path of a + or - of two 16.16 values at the top under a wanted
+   Quick (p5satmark, task 4.2): the 16.16 operation, saturated on its
+   overflow */
+#define P5Y_SAT 'v'
 
 /* compilerlib's 48.16 routines (libs/compilerlib; q48add $D603 and q48sub
    $D604 are written inline) */
@@ -6211,8 +6298,33 @@ static void p5floor48(UWORD r)
     p5w(0x2000 | (r << 9) | (r + 1));       /* move.l D(r+1),D(r) */
 }
 
-/* the 48.16 pair D(r)/D(r+1) to a Float in D(r): high * 65536 + (low
-   >> 1) * 2^-15 (the FFP value of both, rounded) */
+/* the 48.16 pair D(r)/D(r+1) to a Quick in D(r), saturated (task 4.2;
+   compilerlib's q48sat inline, D(r+2) its scratch): the low 32 bits when
+   the high 32 bits are their sign, else $7FFFFFFF for a positive and
+   $80000000 for a negative value */
+static void p5sat(UWORD r)
+{
+    UWORD t = r + 2;
+
+    if (p5prep)
+        return;
+    p5reg(t);
+    p5w(0x2000 | (t << 9) | r);             /* move.l D(r),Dt */
+    p5w(0xd080 | (t << 9) | t);             /* add.l Dt,Dt */
+    p5w(0x9180 | (t << 9) | t);             /* subx.l Dt,Dt: the sign of the low part */
+    p5w(0xb080 | (t << 9) | (r + 1));       /* cmp.l D(r+1),Dt */
+    p5w(0x670c);                            /* beq.s .done: it fits */
+    p5w(0x2000 | (r << 9) | (r + 1));       /* move.l D(r+1),D(r) */
+    p5w(0xd080 | (r << 9) | r);             /* add.l D(r),D(r) */
+    p5w(0x9180 | (r << 9) | r);             /* subx.l D(r),D(r): -1 below, 0 above */
+    p5w(0x4680 | r);                        /* not.l D(r) */
+    p5w(0x0840 | r);                        /* bchg #31,D(r) */
+    p5w(31);
+}
+
+/* the 48.16 pair D(r)/D(r+1) to a Float in D(r): of its magnitude high *
+   65536 + (low >> 1) * 2^-15 (the FFP value of both, rounded), negated for
+   a negative value */
 static void p5q48tof(UWORD r)
 {
     ULONG push, pull;
@@ -6228,8 +6340,19 @@ static void p5q48tof(UWORD r)
     regat = s;
     pokemovem(push);
     tokejsr(getffpbase);
-    p5w(0x2f00 | r);                        /* move.l D(r),-(a7): the low part */
-    p5w(0x2000 | (r + 1));                  /* move.l D(r+1),d0 */
+    if (r) {
+        p5w(0x2000 | r);                    /* move.l D(r),d0 */
+        p5w(0x2200 | (r + 1));              /* move.l D(r+1),d1 */
+    }
+    /* the magnitude (a negative value just below a whole number lost its
+       fraction in the sum of -1 * 65536 and the low part), the sign at
+       the end (task 4.2) */
+    p5w(0x2f01);                            /* move.l d1,-(a7): the sign */
+    p5w(0x6a04);                            /* bpl.s */
+    p5w(0x4480);                            /* neg.l d0 */
+    p5w(0x4081);                            /* negx.l d1 */
+    p5w(0x2f00);                            /* move.l d0,-(a7): the low part */
+    p5w(0x2001);                            /* move.l d1,d0 */
     p5ffp(P5_SPFLT);
     p5w(0x223c);                            /* move.l #65536.0,d1 */
     p5l(0x80000051);
@@ -6244,6 +6367,9 @@ static void p5q48tof(UWORD r)
     p5ffp(P5_SPMUL);
     p5w(0x221f);                            /* move.l (a7)+,d1 */
     p5ffp(P5_SPADD);
+    p5w(0x4a9f);                            /* tst.l (a7)+: the sign */
+    p5w(0x6a04);                            /* bpl.s */
+    p5ffp(P5_SPNEG);
     if (r)
         p5w(0x2000 | (r << 9));             /* move.l d0,D(r) */
     pokemovem(pull);
@@ -6509,9 +6635,13 @@ static void p5scratchend(UWORD r)
    48.16 cut in the final direction (E)"): the cut at 1/65536 of the 48.16
    operation p, a * or /, rounds down: under a wanted Byte, Word or Long
    (a / under a wanted Long, and one at the top under a wanted Byte or Word,
-   P5F_LDIV (#1222), is a whole number towards zero instead) */
+   P5F_LDIV (#1222), is a whole number towards zero instead).  Under the
+   classes of type-system-rework (the node classed) every cut rounds down
+   (spec "An operation with a Quick is computed in 48.16") */
 static BOOL p5down(const struct p5node *p)
 {
+    if (p->t.cls)
+        return TRUE;                /* the classes (task 4.2): always cut down */
     if (p->flags & P5F_LDIV)
         return FALSE;
     return p->want == T_BYTE || p->want == T_WORD || (p->want == T_LONG && p->t.op == ETO_MUL);
@@ -6922,7 +7052,8 @@ static void p5wholediv(UWORD tok, UWORD ftok, UWORD at, BOOL longa, BOOL ldiv, B
             p5widen(2, T_QUICK);
         }
         tokejsr(ftok);
-        p5truncd0();
+        if (ldiv)
+            p5truncd0();
         done2 = p5bra(0x6000);                  /* bra.s .done */
     }
     p5patch(nul);
@@ -7244,8 +7375,13 @@ static void p5bin(struct p5node *p, UWORD r)
             break;
         }
         /* #1222: at the top under a wanted Word or Byte towards zero, as
-           q48div cuts (q48divw, q48divb for their division by 0) */
+           q48div cuts (q48divw, q48divb for their division by 0).  The
+           classes (task 4.2): the quotient cut down (q48divw's cut; tok
+           only for the value of a division by 0, which stays the wanted
+           type's largest until task 4.7) */
         ftok = wdiv ? q48div : tok;
+        if (op == ETO_DIV && p->t.cls && tok != q48divw && tok != q48divb)
+            ftok = q48divw;
         if ((op == ETO_DIV || (op == ETO_MOD && !p5modfrac(R))) && !rw && rt == T_QUICK) {
             /* a 16.16 divisor: whole at run time, the division or Mod
                inline (not a Mod by a constant with a fraction); a whole
@@ -7279,9 +7415,9 @@ static void p5bin(struct p5node *p, UWORD r)
                 p5w(0x48c2);                /* ext.l d2 */
             if (!p5prep)
                 tokejsr(q48mull);
-        } else if (op == ETO_DIV && wdiv && !p5folded(&R->t)) {
+        } else if (op == ETO_DIV && ftok != tok && !p5folded(&R->t)) {
             /* #1222: towards zero (q48div), a divisor 0 by tok for its
-               value */
+               value (the classes: ftok cuts down, q48divw) */
             ULONG z, z2, done;
 
             p5callin(0, r, lt, lw, rt, rw, FALSE, FALSE);
@@ -7300,11 +7436,12 @@ static void p5bin(struct p5node *p, UWORD r)
             p5patch(z2);
             tokejsr(ftok);                  /* .div */
             p5patch(done);
-            p5truncd0();
+            if (ldiv)
+                p5truncd0();
         } else {
             /* a constant divisor at the top under a wanted Word or Byte:
-               q48div (#1222), tok when it is 0 */
-            p5callin(wdiv && p5qval(&R->t).ok && p5qval(&R->t).n ? ftok : tok, r, lt, lw, rt, rw, FALSE, FALSE);
+               q48div (#1222), tok when it is 0 (the classes: ftok) */
+            p5callin(ftok != tok && p5qval(&R->t).ok && p5qval(&R->t).n ? ftok : tok, r, lt, lw, rt, rw, FALSE, FALSE);
             if (ldiv && !p5prep)
                 p5truncd0();
         }
@@ -7316,7 +7453,7 @@ static void p5bin(struct p5node *p, UWORD r)
             p5w(0x9383);                    /* subx.l d3,d1 */
         }
         p5callout(r, !ldiv);
-        if (op == ETO_DIV && p->want == T_LONG && !ldiv && !p5prep) {
+        if (op == ETO_DIV && p->want == T_LONG && !ldiv && !p->t.cls && !p5prep) {
             /* part 3 (EM_R_PDIVL): under a wanted Long the quotient is a
                whole number towards zero at the operator */
             p5w(0x4a80 | (r + 1));          /* tst.l D(r+1) */
@@ -7358,6 +7495,20 @@ static void p5bin(struct p5node *p, UWORD r)
         T = lt == T_QUICK || rt == T_QUICK ? T_QUICK : p5max(lt, rt);
         p5operands(L, R, r, q, T, T);
         p5doop(op, T, FALSE);
+        break;
+    case P5Y_SAT:
+        /* the 16.16 sum or difference, on an overflow saturated: the true
+           value has the other sign than the result, $7FFFFFFF for a
+           negative result, $80000000 for a positive one (the 48.16
+           operation's value under a wanted Quick, design.md
+           "Optimizations") */
+        p5operands(L, R, r, q, T_QUICK, T_QUICK);
+        p5w((op == ETO_ADD ? 0xd080 : 0x9080) | (r << 9) | (r + 1));   /* add.l / sub.l D(r+1),D(r) */
+        p5w(0x6808);                                /* bvc.s .done */
+        p5w(0xd080 | (r << 9) | r);                 /* add.l D(r),D(r): X the sign */
+        p5w(0x9180 | (r << 9) | r);                 /* subx.l D(r),D(r): -1 or 0 */
+        p5w(0x0840 | r);                            /* bchg #31,D(r) */
+        p5w(31);
         break;
     case P5Y_LOW:
         /* the low 32 bits of the 48.16 value: a whole operand as l << 16
@@ -7489,14 +7640,20 @@ static void p5neg(const struct p5node *p)
 {
     const struct p5node *c = P5(p->t.l);
     UWORD k, t = c->dt;
+    BOOL pair = p->df == ETF_Q48;
 
-    if (p->t.wide) {
+    if (pair && c->df != ETF_Q48) {
+        /* the classes (task 4.2): a minus sign of Quick class in 48.16,
+           its operand widened in place */
+        p5reg(regat + 1);
+        p5widen(regat, c->dt);
+    } else if (p->t.wide) {
         /* the whole-width rule: one step wider than its operand */
         p5conv(c->dt, c->df, p->dt, FALSE);
         t = p->dt;
     }
     for (k = p->x->op; k; k--) {
-        if (c->df == ETF_Q48 && !p->t.wide) {
+        if (pair) {
             p5reg(regat + 1);
             p5w(0x4480 | regat);                /* neg.l D(r) */
             p5w(0x4080 | (regat + 1));          /* negx.l D(r+1) */
@@ -7731,8 +7888,13 @@ static void p5apply(struct p5node *p, UWORD take, BOOL bit, UWORD want)
     case ETN_NEG:
         c = P5(p->t.l);
         p5apply(c, take, FALSE, want);
-        p->dt = p->t.wide ? p->t.t : c->dt;
-        p->df = p->t.wide ? ETF_TYPE : c->df;
+        if (p->t.cls == ET_QUICK && p->t.fmt == ETF_Q48) {
+            p->dt = T_LONG;         /* the classes: a 48.16 pair */
+            p->df = ETF_Q48;
+        } else {
+            p->dt = p->t.wide ? p->t.t : c->dt;
+            p->df = p->t.wide ? ETF_TYPE : c->df;
+        }
         p->act->fn = p5negact;
         p->act->x = (ULONG)p;
         p5prep = TRUE;
@@ -7936,6 +8098,40 @@ static void p5lowmark(struct p5node *root, struct exprtyping_result *res)
     res->fmt = ETF_TYPE;
 }
 
+/* an operand of p5satmark's 16.16 operation: a value of the Quick range
+   held exactly in 16.16 (a Quick, a Byte or a Word variable, a constant
+   of the Quick range, a whole operation of a Byte or Word result) */
+static BOOL p5narrowq(const struct exprtyping_node *n)
+{
+    if (p5folded(n))
+        return p5qquick(p5qval(n));
+    if (n->kind == ETN_VAR)
+        return n->type == ET_QUICK || n->type == ET_BYTE || n->type == ET_WORD;
+    return n->typed && n->fmt == ETF_TYPE && (n->t == ET_BYTE || n->t == ET_WORD) && n->kind == ETN_BIN;
+}
+
+/* task 4.2 (design.md "Optimizations", "16.16 with an overflow test under
+   a Quick destination"): a + or - at the top under a wanted Quick (ETC_SAT)
+   of two values held exactly in 16.16 is the 16.16 operation with a BVS to
+   the saturation (P5Y_SAT): its value is the 48.16 operation's, saturated
+   (the sum of two values of the Quick range overflows 32 bits at most
+   once) */
+static void p5satmark(struct p5node *root, struct exprtyping_result *res)
+{
+    struct exprtyping_op *o = &root->t.o;
+
+    if (res->consumer != ETC_SAT || res->fmt != ETF_Q48 || root->t.kind != ETN_BIN || o->path != ETY_Q48
+        || (root->t.op != ETO_ADD && root->t.op != ETO_SUB) || !p5narrowq(root->t.l) || !p5narrowq(root->t.r))
+        return;
+    o->path = P5Y_SAT;
+    o->las = o->ras = o->result = ET_QUICK;
+    o->lwide = o->rwide = 0;
+    o->fast = 0;
+    root->t.t = ET_QUICK;
+    root->t.fmt = ETF_TYPE;
+    res->fmt = ETF_TYPE;
+}
+
 /* the evaluation is built (asked: the type asked for, unk: none): the
    pass of rule P+; TRUE: its code is the pass's, *type the type it gets
    (e: the evaluation's node) */
@@ -7995,8 +8191,20 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
     if (!pair) {
         p5mixfloor(root, &res);
         p5lowmark(root, &res);
+        p5satmark(root, &res);
     }
-    if (!relax && !pair && p5same(root, &res, want))
+    /* the left-shift wrap at the top under a Quick destination (J): the
+       Long converts wrapped, not saturated */
+    if (want == T_QUICK && (root->t.exc & ETX_SHIFTWRAP))
+        e->lflags |= EVF_QWRAP;
+    /* a Long or Float value under a wanted Quick converts at the end,
+       saturated (type-system-rework task 4.2): not the build's code, which
+       converts it as it fetches it (zq.q=l); a constant keeps the build's
+       reading until task 3.3 (#1070's literal near 32768) */
+    if (!relax && !pair
+        && !(want == T_QUICK && !(e->lflags & EVF_QWRAP) && (res.t == T_LONG || res.t == T_FLOAT)
+             && !p5folded(&root->t))
+        && p5same(root, &res, want))
         return FALSE;
     /* the pass's code: the conversions of the raw Quicks (#1178) and
        getelement's spills of this evaluation whole longs */
@@ -8023,6 +8231,14 @@ static BOOL p5end(UWORD asked, WORD unk, UWORD *type, struct exprnode *e, WORD p
     switch (res.consumer) {
     case ETC_BOOL: S = T_WORD; break;
     case ETC_FLOOR: S = root->df == ETF_Q48 ? T_LONG : root->dt; break;
+    case ETC_SAT:
+        S = root->df == ETF_Q48 ? T_QUICK : root->dt;
+        break;
+    case ETC_TOFLOAT:
+        S = root->df == ETF_Q48 ? T_FLOAT : root->dt;
+        if (root->df == ETF_Q48)
+            tokuse(getffpbase);
+        break;
     case ETC_TRUNC:
     case ETC_FIT: S = T_LONG; break;
     default: S = root->df == ETF_Q48 ? T_QUICK : root->dt; break;
@@ -8079,6 +8295,8 @@ static void p5exit(struct exprnode *e, WORD push)
         return;
     switch (e->vtype) {
     case ETC_FLOOR: p5floor48(r); break;
+    case ETC_SAT: p5sat(r); break;
+    case ETC_TOFLOAT: p5q48tof(r); break;
     case ETC_FIT:
         /* a Quick when the value fits one, else its whole part */
         p5reg(r + 2);
@@ -8118,13 +8336,13 @@ static void p5check(const struct expract *a)
         } else if (a->fn == p5negact || a->fn == p5notact) {
             const struct p5node *p = a->fn == p5negact ? P5(a->x) : P5(a->p);
 
-            if (P5(p->t.l)->df == ETF_Q48)
+            if (P5(p->t.l)->df == ETF_Q48 || p->df == ETF_Q48)
                 need = r + 1;
         } else if (a->fn == evalexit) {
             const struct exprnode *e = a->p;
 
             if ((e->lflags & EVF_P5) && (P5(e->left)->df == ETF_Q48 || e->vtype == P5C_PAIR))
-                need = r + ((e->lflags & EVF_FIT) ? 2 : 1);
+                need = r + ((e->lflags & EVF_FIT) || e->vtype == ETC_SAT ? 2 : 1);
         }
         if (need > 7)
             conmemerr();            /* "Expression too Complex" */

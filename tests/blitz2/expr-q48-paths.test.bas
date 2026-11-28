@@ -15,6 +15,14 @@
 ; checks on main ad8396cf9, every such Mod through q48mod; the checks of
 ; the speed review's candidates, wd2_ and after, on main 8f9a8bee1); a
 ; regression test of the fixed port, no key, as select-fraction.test.bas.
+; Since type-system-rework (#1235, task 4.2; spec compiler/expression-types,
+; "An operation with a Quick is computed in 48.16", "The conversion to a
+; Quick rounds down and saturates") every Quick operation is 48.16 cut
+; down, a value beyond the Quick range under a wanted Quick saturates
+; ($7FFFFFFF, $80000000) instead of keeping its low 32 bits, a / under a
+; wanted Long rounds down instead of towards zero, and a whole Long
+; operation wraps (lb+lb is -2); each check whose value changed names the
+; one before in its comment.
 Function.l pl1{a.l,b.l,c.l,d.l,e.l,f.l}
   Function Return a
 End Function
@@ -147,9 +155,11 @@ End Function
   x=l*q
   !CheckEq{Peek.l(&x),16384000,"x_l_mul_q"}
   x=lx*q
-  !CheckEq{Peek.l(&x),-795869184,"x_lx_mul_q"}
+  ; before: -795869184
+  !CheckEq{Peek.l(&x),2147483647,"x_lx_mul_q"}
   x=ln*qn
-  !CheckEq{Peek.l(&x),-1416101888,"x_ln_mul_qn"}
+  ; before: -1416101888
+  !CheckEq{Peek.l(&x),2147483647,"x_ln_mul_qn"}
   x=q*w
   !CheckEq{Peek.l(&x),491520,"x_q_mul_w"}
   x=wn*qn
@@ -159,13 +169,16 @@ End Function
   x=3.5*l
   !CheckEq{Peek.l(&x),22937600,"x_c_mul_l"}
   x=lm*q
-  !CheckEq{Peek.l(&x),-163840,"x_lm_mul_q"}
+  ; before: -163840
+  !CheckEq{Peek.l(&x),2147483647,"x_lm_mul_q"}
   x=lm*qn
-  !CheckEq{Peek.l(&x),114688,"x_lm_mul_qn"}
+  ; before: 114688
+  !CheckEq{Peek.l(&x),-2147483648,"x_lm_mul_qn"}
   x=ln*qs
   !CheckEq{Peek.l(&x),-100000,"x_ln_mul_qs"}
   x=l*qm
-  !CheckEq{Peek.l(&x),0,"x_l_mul_qm"}
+  ; before: 0
+  !CheckEq{Peek.l(&x),-2147483648,"x_l_mul_qm"}
   x=-l*q
   !CheckEq{Peek.l(&x),-16384000,"x_negl_mul_q"}
   x=lz*q
@@ -181,21 +194,27 @@ End Function
   x=q-l+p
   !CheckEq{Peek.l(&x),-6307840,"x_q_sub_l_add_p"}
   x=lx+q
-  !CheckEq{Peek.l(&x),-2036170752,"x_lx_add_q"}
+  ; before: -2036170752
+  !CheckEq{Peek.l(&x),2147483647,"x_lx_add_q"}
   x=l+q-lx
-  !CheckEq{Peek.l(&x),2043052032,"x_l_add_q_sub_lx"}
+  ; before: 2043052032
+  !CheckEq{Peek.l(&x),-2147483648,"x_l_add_q_sub_lx"}
   x=lm+qn
-  !CheckEq{Peek.l(&x),-180224,"x_lm_add_qn"}
+  ; before: -180224
+  !CheckEq{Peek.l(&x),2147483647,"x_lm_add_qn"}
   x=qn-lm
-  !CheckEq{Peek.l(&x),-49152,"x_qn_sub_lm"}
+  ; before: -49152
+  !CheckEq{Peek.l(&x),-2147483648,"x_qn_sub_lm"}
   x=l+qs-p
   !CheckEq{Peek.l(&x),6471681,"x_l_add_qs_sub_p"}
   x=-l+q
   !CheckEq{Peek.l(&x),-6389760,"x_negl_add_q"}
   x=(l+q)-(lx-p)
-  !CheckEq{Peek.l(&x),2043133952,"x_brackets_sub"}
+  ; before: 2043133952
+  !CheckEq{Peek.l(&x),-2147483648,"x_brackets_sub"}
   x=(l-q)+(p-ln)
-  !CheckEq{Peek.l(&x),-2029862912,"x_brackets_add"}
+  ; before: -2029862912
+  !CheckEq{Peek.l(&x),2147483647,"x_brackets_add"}
   x=w+l+q
   !CheckEq{Peek.l(&x),6914048,"x_w_add_l_add_q"}
   x=l+1.25+q
@@ -205,13 +224,16 @@ End Function
   x=l*q+p
   !CheckEq{Peek.l(&x),16465920,"x_l_mul_q_add_p"}
   x=q+lx*p
-  !CheckEq{Peek.l(&x),-397770752,"x_q_add_lx_mul_p"}
+  ; before: -397770752
+  !CheckEq{Peek.l(&x),2147483647,"x_q_add_lx_mul_p"}
   x=l/q+p
   !CheckEq{Peek.l(&x),2703360,"x_l_div_q_add_p"}
   x=lb+q
-  !CheckEq{Peek.l(&x),98304,"x_lb_add_q"}
+  ; before: 98304
+  !CheckEq{Peek.l(&x),2147483647,"x_lb_add_q"}
   x=lb*qn
-  !CheckEq{Peek.l(&x),114688,"x_lb_mul_qn"}
+  ; before: 114688
+  !CheckEq{Peek.l(&x),-2147483648,"x_lb_mul_qn"}
   r=0 : If l+q>p Then r=1
   !CheckEq{r,1,"if_gt"}
   r=0 : If p<l+q Then r=1
@@ -313,7 +335,8 @@ End Function
   r=pq1{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
   !CheckEq{r,16384000,"pq_a_1"}
   r=pq2{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
-  !CheckEq{r,-795869184,"pq_a_2"}
+  ; before: -795869184
+  !CheckEq{r,2147483647,"pq_a_2"}
   r=pq3{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
   !CheckEq{r,6717440,"pq_a_3"}
   r=pq4{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
@@ -321,7 +344,8 @@ End Function
   r=pq5{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
   !CheckEq{r,-11468800,"pq_a_5"}
   r=pq6{l*q,lx*q,l+q,q-l,l*qn,lx*qn}
-  !CheckEq{r,1416101888,"pq_a_6"}
+  ; before: 1416101888
+  !CheckEq{r,-2147483648,"pq_a_6"}
   r=pq1{q,p,l*q,lx*q,ln*qn,lx+q}
   !CheckEq{r,163840,"pq_b_1"}
   r=pq2{q,p,l*q,lx*q,ln*qn,lx+q}
@@ -329,11 +353,14 @@ End Function
   r=pq3{q,p,l*q,lx*q,ln*qn,lx+q}
   !CheckEq{r,16384000,"pq_b_3"}
   r=pq4{q,p,l*q,lx*q,ln*qn,lx+q}
-  !CheckEq{r,-795869184,"pq_b_4"}
+  ; before: -795869184
+  !CheckEq{r,2147483647,"pq_b_4"}
   r=pq5{q,p,l*q,lx*q,ln*qn,lx+q}
-  !CheckEq{r,-1416101888,"pq_b_5"}
+  ; before: -1416101888
+  !CheckEq{r,2147483647,"pq_b_5"}
   r=pq6{q,p,l*q,lx*q,ln*qn,lx+q}
-  !CheckEq{r,-2036170752,"pq_b_6"}
+  ; before: -2036170752
+  !CheckEq{r,2147483647,"pq_b_6"}
   r=pq1{q,p,qn,l+q-p,lx-q,l*q}
   !CheckEq{r,163840,"pq_c_1"}
   r=pq2{q,p,qn,l+q-p,lx-q,l*q}
@@ -343,7 +370,8 @@ End Function
   r=pq4{q,p,qn,l+q-p,lx-q,l*q}
   !CheckEq{r,6635520,"pq_c_4"}
   r=pq5{q,p,qn,l+q-p,lx-q,l*q}
-  !CheckEq{r,-2036498432,"pq_c_5"}
+  ; before: -2036498432
+  !CheckEq{r,2147483647,"pq_c_5"}
   r=pq6{q,p,qn,l+q-p,lx-q,l*q}
   !CheckEq{r,16384000,"pq_c_6"}
   r=pl1{1,l+q>p,l*q=250,lx*qn<ln,lx+q>lx,5}
@@ -366,19 +394,24 @@ End Function
   r=q/2+l
   !CheckEq{r,101,"fast_r_q_div2_add_l"}
   r=qn/2+l
-  !CheckEq{r,100,"fast_r_qn_div2_add_l"}
+  ; before: 100
+  !CheckEq{r,99,"fast_r_qn_div2_add_l"}
   r=qm/3+l
-  !CheckEq{r,-10822,"fast_r_qm_div3_add_l"}
+  ; before: -10822
+  !CheckEq{r,-10823,"fast_r_qm_div3_add_l"}
   r=qs/-2+l
-  !CheckEq{r,100,"fast_r_qs_divm2_add_l"}
+  ; before: 100
+  !CheckEq{r,99,"fast_r_qs_divm2_add_l"}
   r=q/10+lx
   !CheckEq{r,100000,"fast_r_q_div10_add_lx"}
   r=qn/-3+ln
   !CheckEq{r,-100000,"fast_r_qn_divm3_add_ln"}
   r=qm/65535+l
-  !CheckEq{r,100,"fast_r_qm_div65535_add_l"}
+  ; before: 100
+  !CheckEq{r,99,"fast_r_qm_div65535_add_l"}
   r=qn/7-l
-  !CheckEq{r,-100,"fast_r_qn_div7_sub_l"}
+  ; before: -100
+  !CheckEq{r,-101,"fast_r_qn_div7_sub_l"}
   r=q*0.5+l
   !CheckEq{r,101,"fast_r_q_mulh_add_l"}
   r=qn*-0.5+l
@@ -408,9 +441,11 @@ End Function
   r=q/2
   !CheckEq{r,1,"fast_r_q_div2"}
   r=qn/2
-  !CheckEq{r,0,"fast_r_qn_div2"}
+  ; before: 0
+  !CheckEq{r,-1,"fast_r_qn_div2"}
   r=qm/3
-  !CheckEq{r,-10922,"fast_r_qm_div3"}
+  ; before: -10922
+  !CheckEq{r,-10923,"fast_r_qm_div3"}
   r=qn/-2
   !CheckEq{r,0,"fast_r_qn_divm2"}
   r=qs/2
@@ -428,15 +463,18 @@ End Function
   x=q/2+l
   !CheckEq{Peek.l(&x),6635520,"fast_x_q_div2_add_l"}
   x=qn/3-l
-  !CheckEq{Peek.l(&x),-6591829,"fast_x_qn_div3_sub_l"}
+  ; before: -6591829
+  !CheckEq{Peek.l(&x),-6591830,"fast_x_qn_div3_sub_l"}
   x=q*w+lx
-  !CheckEq{Peek.l(&x),-2035843072,"fast_x_q_mul_w_add_lx"}
+  ; before: -2035843072
+  !CheckEq{Peek.l(&x),2147483647,"fast_x_q_mul_w_add_lx"}
   x=qn*0.5+l
   !CheckEq{Peek.l(&x),6496256,"fast_x_qn_mulh_add_l"}
   x=q*w
   !CheckEq{Peek.l(&x),491520,"fast_x_q_mul_w"}
   x=qm/2+lb
-  !CheckEq{Peek.l(&x),-1073807360,"fast_x_qm_div2_add_lb"}
+  ; before: -1073807360
+  !CheckEq{Peek.l(&x),2147483647,"fast_x_qm_div2_add_lb"}
   x=qn*wn+l
   !CheckEq{Peek.l(&x),7356416,"fast_x_qn_mul_wn_add_l"}
   x=(qn/2)*l
@@ -468,13 +506,17 @@ End Function
   r=lb/qw
   !CheckEq{r,536870911,"wdiv_r_lb_div_qw"}
   r=lb/qm
-  !CheckEq{r,-65535,"wdiv_r_lb_div_qm"}
+  ; before: -65535
+  !CheckEq{r,-65536,"wdiv_r_lb_div_qm"}
   r=ln/qbig
-  !CheckEq{r,-3,"wdiv_r_ln_div_qbig"}
+  ; before: -3
+  !CheckEq{r,-4,"wdiv_r_ln_div_qbig"}
   r=(l+q)/qnw
-  !CheckEq{r,-34,"wdiv_r_lpq_div_qnw"}
+  ; before: -34
+  !CheckEq{r,-35,"wdiv_r_lpq_div_qnw"}
   r=(lb+q)/qnw
-  !CheckEq{r,-715827883,"wdiv_r_lbpq_div_qnw"}
+  ; before: -715827883
+  !CheckEq{r,-715827884,"wdiv_r_lbpq_div_qnw"}
   r=l/q
   !CheckEq{r,40,"wdiv_r_l_div_q"}
   r=l/qz
@@ -500,7 +542,8 @@ End Function
   x=l/q
   !CheckEq{Peek.l(&x),2621440,"wdiv_x_l_div_q"}
   x=lx/qnw
-  !CheckEq{Peek.l(&x),2110433963,"wdiv_x_lx_div_qnw"}
+  ; before: 2110433963
+  !CheckEq{Peek.l(&x),-2147483648,"wdiv_x_lx_div_qnw"}
   x=(l+q)/qw
   !CheckEq{Peek.l(&x),1679360,"wdiv_x_lpq_div_qw"}
   x=l/qbig
@@ -600,7 +643,8 @@ End Function
   x=(ln-q) Mod qnw
   !CheckEq{Peek.l(&x),-229376,"wmod_x_lnmq_mod_qnw"}
   x=(lb+lb+q) Mod qnw
-  !CheckEq{Peek.l(&x),98304,"wmod_x_lblbq_mod_qnw"}
+  ; before: 98304
+  !CheckEq{Peek.l(&x),32768,"wmod_x_lblbq_mod_qnw"}
   x=(lb*qbig) Mod qm
   !CheckEq{Peek.l(&x),65536,"wmod_x_lbmulqbig_mod_qm"}
   x=l Mod qz
@@ -633,7 +677,8 @@ End Function
   r=lx/qw
   !CheckEq{r,25000,"wd2_r_lx_div_qw"}
   r=lx/qnw
-  !CheckEq{r,-33333,"wd2_r_lx_div_qnw"}
+  ; before: -33333
+  !CheckEq{r,-33334,"wd2_r_lx_div_qnw"}
   r=w/qw
   !CheckEq{r,0,"wd2_r_w_div_qw"}
   r=wn/qnw
@@ -647,13 +692,15 @@ End Function
   r=lmn/qm
   !CheckEq{r,65536,"wd2_r_lmn_div_qm"}
   r=(lb+lb+q)/qnw
-  !CheckEq{r,0,"wd2_r_lblbq_div_qnw"}
+  ; before: 0
+  !CheckEq{r,-1,"wd2_r_lblbq_div_qnw"}
   r=(lx*qbig)/qw
   !CheckEq{r,819175000,"wd2_r_lxqbig_div_qw"}
   r=(l+q)/qw
   !CheckEq{r,25,"wd2_r_lpq_div_qw"}
   r=(ln-q)/qw
-  !CheckEq{r,-25000,"wd2_r_lnmq_div_qw"}
+  ; before: -25000
+  !CheckEq{r,-25001,"wd2_r_lnmq_div_qw"}
   r=(ln-q)/q
   !CheckEq{r,-40001,"wd2_r_lnmq_div_q"}
   r=ln/q
@@ -663,25 +710,31 @@ End Function
   x=ln/qw
   !CheckEq{Peek.l(&x),-1638400000,"wd2_x_ln_div_qw"}
   x=lmn/qnw
-  !CheckEq{Peek.l(&x),-1431655766,"wd2_x_lmn_div_qnw"}
+  ; before: -1431655766
+  !CheckEq{Peek.l(&x),2147483647,"wd2_x_lmn_div_qnw"}
   x=wn/qnw
   !CheckEq{Peek.l(&x),152917,"wd2_x_wn_div_qnw"}
   x=(lb+lb+q)/qnw
-  !CheckEq{Peek.l(&x),-1431666688,"wd2_x_lblbq_div_qnw"}
+  ; before: -1431666688
+  !CheckEq{Peek.l(&x),-10923,"wd2_x_lblbq_div_qnw"}
   x=(lx*qbig)/qnw
-  !CheckEq{Peek.l(&x),-678778197,"wd2_x_lxqbig_div_qnw"}
+  ; before: -678778197
+  !CheckEq{Peek.l(&x),-2147483648,"wd2_x_lxqbig_div_qnw"}
   r=pl3{l,l,lx/qw,l,l,l}
   !CheckEq{r,25000,"wd2_pl3"}
   r=pl4{l,l,l,ln/qnw,l,l}
   !CheckEq{r,33333,"wd2_pl4"}
   r=pl5{l,l,l,l,(lb+lb+q)/qnw,l}
-  !CheckEq{r,0,"wd2_pl5"}
+  ; before: 0
+  !CheckEq{r,-1,"wd2_pl5"}
   r=pl6{l,l,l,l,l,ln/q}
   !CheckEq{r,-40000,"wd2_pl6"}
   r=pq4{q,p,q,lx/qnw,q,q}
-  !CheckEq{r,2110433963,"wd2_pq4"}
+  ; before: 2110433963
+  !CheckEq{r,-2147483648,"wd2_pq4"}
   x=ln Mod qm
-  !CheckEq{Peek.l(&x),2036334592,"wm2_x_ln_mod_qm"}
+  ; before: 2036334592
+  !CheckEq{Peek.l(&x),-2147483648,"wm2_x_ln_mod_qm"}
   r=ln Mod qm
   !CheckEq{r,-34464,"wm2_r_ln_mod_qm"}
   x=wn Mod qnw
@@ -697,11 +750,13 @@ End Function
   x=lx Mod qbig
   !CheckEq{Peek.l(&x),111345664,"wm2_x_lx_mod_qbig"}
   x=(lb+lb+q) Mod qbig
-  !CheckEq{Peek.l(&x),294912,"wm2_x_lblbq_mod_qbig"}
+  ; before: 294912
+  !CheckEq{Peek.l(&x),32768,"wm2_x_lblbq_mod_qbig"}
   x=(lx*qbig) Mod qnw
   !CheckEq{Peek.l(&x),65536,"wm2_x_lxqbig_mod_qnw"}
   r=pq5{q,p,q,p,ln Mod qm,q}
-  !CheckEq{r,2036334592,"wm2_pq5"}
+  ; before: 2036334592
+  !CheckEq{r,-2147483648,"wm2_pq5"}
   r=pl4{l,l,l,lx Mod qnw,l,l}
   !CheckEq{r,1,"wm2_pl4"}
   ; Mod with a fraction: the exact 16.16 Mod without q48mod
@@ -795,7 +850,8 @@ End Function
   r=w*2.5*p
   !CheckEq{r,9,"lq_r_w_mul_c_mul_p"}
   x=lx*q+p
-  !CheckEq{Peek.l(&x),-795787264,"lq_x_lx_mul_q_add_p"}
+  ; before: -795787264
+  !CheckEq{Peek.l(&x),2147483647,"lq_x_lx_mul_q_add_p"}
   x=ln*qt+p
   !CheckEq{Peek.l(&x),-18080,"lq_x_ln_mul_qt_add_p"}
   r=pl3{l,l,lx*q+p,l,l,l}
@@ -852,7 +908,8 @@ End Function
   x=qn*p-l
   !CheckEq{Peek.l(&x),-6696960,"qq_x_qn_mul_p_sub_l"}
   x=l+qm*qm
-  !CheckEq{Peek.l(&x),6553600,"qq_x_l_add_qm_mul_qm"}
+  ; before: 6553600
+  !CheckEq{Peek.l(&x),2147483647,"qq_x_l_add_qm_mul_qm"}
   r=pl3{l,l,q*p,l,l,l}
   !CheckEq{r,3,"qq_pl3"}
   r=pl4{l,l,l,qn*p+l,l,l}

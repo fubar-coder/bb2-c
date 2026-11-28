@@ -10,7 +10,11 @@
 ; operand or ^ takes the Quick with its fraction (spec
 ; compiler/expression-types).  Since the fix of #1216 (rule P+) the
 ; operands of a chain or a bracket keep their fractions and the result is
-; rounded once where the Long takes it: (q+p)*l is 42, l+q+p 14.
+; rounded once where the Long takes it: (q+p)*l is 42, l+q+p 14.  Since
+; type-system-rework (#1235, task 4.2) a quotient with a Quick is a 48.16
+; value cut down and the Long takes it rounded down, not towards zero
+; (l/n with l=10, n=-1.5 is -7); the checks that changed name the value
+; before.
 
 Function.q fq{x.q}
   Function Return x
@@ -29,23 +33,23 @@ DEFTYPE .tq s
   aq(1)=1.5 : s\v=1.5
   r.l=0 : t.w=0 : adr.l=0
   r=l/n
-  !CheckEq{r,-6,"c01"} ; r.l=l/n
+  !CheckEq{r,-7,"c01"} ; r.l=l/n (before: -6)
   r=m/n
   !CheckEq{r,-6,"c02"} ; r.l=m/n
   r=k/q
-  !CheckEq{r,-6,"c03"} ; r.l=k/q
+  !CheckEq{r,-7,"c03"} ; r.l=k/q (before: -6)
   r=n/l
-  !CheckEq{r,0,"c04"} ; r.l=n/l
+  !CheckEq{r,-1,"c04"} ; r.l=n/l (before: 0)
   r=n/2
-  !CheckEq{r,0,"c05"} ; r.l=n/2
+  !CheckEq{r,-1,"c05"} ; r.l=n/2 (before: 0)
   r=g/h
-  !CheckEq{r,-1,"c06"} ; r.l=g/h
+  !CheckEq{r,-2,"c06"} ; r.l=g/h (before: -1)
   r=l/q
   !CheckEq{r,6,"c07"} ; r.l=l/q
   r=k/n
   !CheckEq{r,6,"c08"} ; r.l=k/n
   r=l/x
-  !CheckEq{r,-3,"c09"} ; r.l=l/x
+  !CheckEq{r,-4,"c09"} ; r.l=l/x (before: -3)
   r=-q*2
   !CheckEq{r,-3,"c10"} ; r.l=-q*2
   r=0-q

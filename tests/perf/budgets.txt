@@ -500,6 +500,10 @@
 # r=n/q 1965.7 -> 1198.7 (2890.7), rb=n/q 1877.7 -> 1142.7 (3701.7),
 # rw=w/q 1951.2 -> 1134.7 (3799.7), rw=n/qw 544.1 -> 586.6 (3691.2: the
 # test and the cut towards zero).
+# bmath.f2q from two runs of type-system-rework task 4.2 (2026-11-28):
+# q3=f1 through compilerlib's f2q (rounded down, saturated) instead of
+# fltoqu, 1784 -> 180.7. The loops over their budgets after task 4.2 keep
+# their budgets until the user's decision of task 5.1 (Q16).
 #
 # COMMAND                 BUDGET     TARGET  LOOP
 banim.emptylong                 3          -  the empty loop again, 150000 iterations (the subtraction)
@@ -644,7 +648,7 @@ bmath.wmod                    253      248.5  w3=w1 MOD w2
 bmath.qmod                    648      276.5  q3=q1 MOD q2 (P+: exact, compilerlib q16mod: one DIVU estimate, two MULU)
 bmath.fmod                   2430     3700.5  c=f1 MOD f2 (P+: exact, inline mathffp)
 bmath.q2f                    1922     1907.5  f3=q1
-bmath.f2q                    1784     1762.5  q3=f1
+bmath.f2q                     186     1762.5  q3=f1 (type-system-rework 4.2: compilerlib f2q, rounded down and saturated)
 bmath.plocal                  333      391.5  plocal{a} (a Statement with two Long locals: link, clrloc)
 bmath.wmul                   89       84.5  w3=w1*w2
 bmath.wdiv                    198      192.0  w3=w1/w2

@@ -3,8 +3,11 @@
 # are #1178's fixed tests) is the declared deviation
 fixed-orig = 1216
 
+# 09 and 10 (type-system-rework #1235, task 4.2): the sum in 48.16, printed
+# as its whole part while the value has no Quick form (before: -25535.5;
+# 40000.5 with the run-time Float form of task 4.5)
 [asserts]
-output = "== \"01 1+1+1+q 4.5\n02 w+v+q 8.5\n03 q+w+v 8.5\n04 w*v+q 13.5\n05 q+&l-&l 1.5\n06 Int(q)*100000 100000\n07 q+w/2 2\n08 w/2+q 2\n09 w+v+q -25535.5\n10 q+w+v -25535.5\n\""
+output = "== \"01 1+1+1+q 4.5\n02 w+v+q 8.5\n03 q+w+v 8.5\n04 w*v+q 13.5\n05 q+&l-&l 1.5\n06 Int(q)*100000 100000\n07 q+w/2 2\n08 w/2+q 2\n09 w+v+q 40000\n10 q+w+v 40000\n\""
 
 [deviations."compiler=orig195"]
 output = "== \"01 1+1+1+q 4\n02 w+v+q 8\n03 q+w+v 8.5\n04 w*v+q 13\n05 q+&l-&l 1\n06 Int(q)*100000 100000\n07 q+w/2 2\n08 w/2+q 1.5\n09 w+v+q -25536\n10 q+w+v -25535.5\n\""

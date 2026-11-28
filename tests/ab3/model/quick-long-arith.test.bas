@@ -11,7 +11,8 @@
   r=l*q
   !CheckEq{r,15,"l3"}
   r=l/n
-  !CheckEq{r,-6,"l4"}
+  ; before: -6 (towards zero); type-system-rework (#1235, task 4.2): down
+  !CheckEq{r,-7,"l4"}
   r=q+p
   !CheckEq{r,4,"l5"}
   r=q*p

@@ -1,5 +1,5 @@
 myshow 6 7 42
-fact 1 120 24320
+fact 1 120 32768
 half 2.5
 twice abab
 shared 12

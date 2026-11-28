@@ -964,7 +964,7 @@ TEST_CASE("exprtyping: whole-number operations one step wider (task 4.1)", "[exp
         { "(w+v) LSL 1", "w.w=1 v.w=1", ET_WORD, "add:W lsl:L" },   // the shift as before (4.4)
         { "w/v", "w.w=1 v.w=1", ET_NONE, "div:Lf" },             // -32768 / -1
         { "w/4", "w.w=1", ET_NONE, "div:W" },                    // a divisor of at least 2
-        { "(q+1) AND 1", "q=1", ET_QUICK, "add:Q and:Q" },       // a 16.16 operand (P+ until 4.2)
+        { "(q+1) AND 1", "q=1", ET_QUICK, "add:Q and:L" },       // a 48.16 operand (4.2), rounded down
         { "w/v", "w.w=1 v.w=1", ET_WORD, "div:W" },
         { "b/c", "b.b=1 c.b=1", ET_NONE, "div:W" },
         { "w*v", "w.w=1 v.w=1", ET_NONE, "mul:W" },              // muls.w: the Long
@@ -989,6 +989,132 @@ TEST_CASE("exprtyping: whole-number operations one step wider (task 4.1)", "[exp
         REQUIRE(t.root);
         CHECK(mine_whole(t.root, c.want) == c.code);
     }
+}
+
+// the paths of the operations after the classes (task 4.2), in post order:
+// "OP:P" for an operation (P its path: 3 48.16, p today's handler of the
+// type of its las, 1 16.16, c/x a comparison), "neg:3" for a minus sign in
+// 48.16, and the consumer of the value after "=" (s saturated to a Quick,
+// f rounded down, z a Quick or a Long at run time, F to a Float, t its
+// type, q the 16.16 value)
+void render_q48(const exprtyping_node *n, std::string &out)
+{
+    if (exprtyping_isconst(n))
+        return;
+    if (n->kind == ETN_NEG || n->kind == ETN_NOT)
+        render_q48(n->l, out);
+    if (n->kind == ETN_BIN) {
+        render_q48(n->l, out);
+        render_q48(n->r, out);
+    }
+    if (n->kind != ETN_BIN && n->kind != ETN_NEG)
+        return;
+    if (!out.empty())
+        out += ' ';
+    if (n->kind == ETN_NEG) {
+        out += n->fmt == ETF_Q48 ? std::string("neg:3") : std::string("neg:") + tlet(n->t, 0);
+        return;
+    }
+    out += std::string(opkey(n->op)) + ":";
+    if (n->o.path == ETY_PLAIN)
+        out += tlet(n->o.las, 0);
+    else
+        out += (char)n->o.path;
+}
+
+std::string mine_q48(exprtyping_node *root, unsigned want)
+{
+    unsigned w;
+    exprtyping_result r;
+    std::string out;
+
+    if (exprtyping_classify(root, want, &w) || exprtyping_type(root, want, &r))
+        return "!";
+    render_q48(root, out);
+    switch (r.consumer) {
+    case ETC_SAT: return out + " =s";
+    case ETC_FLOOR: return out + " =f";
+    case ETC_FIT: return out + " =z";
+    case ETC_TOFLOAT: return out + " =F";
+    case ETC_KEEP: return out + " =q";
+    case ETC_BOOL: return out + " =c";
+    default: return out + " =t";
+    }
+}
+
+TEST_CASE("exprtyping: every Quick operation in 48.16 (task 4.2)", "[exprtyping][tsr]")
+{
+    // the spec delta's "An operation with a Quick is computed in 48.16",
+    // "The conversion to a Quick rounds down and saturates", the
+    // whole-division exception and C3 (their quotients 48.16), "The top
+    // operation under a Float destination runs in Float"
+    struct {
+        const char *text, *vars;
+        unsigned want;
+        const char *code;
+    } cases[] = {
+        { "q+p", "q=1 p=1", ET_QUICK, "add:3 =s" },
+        { "q+p", "q=1 p=1", ET_LONG, "add:3 =f" },
+        { "q+p", "q=1 p=1", ET_WORD, "add:3 =f" },
+        { "q+p", "q=1 p=1", ET_NONE, "add:3 =z" },
+        { "q+p", "q=1 p=1", ET_FLOAT, "add:F =t" },                 // D: the top in Float
+        { "q*p*r", "q=1 p=1 r=1", ET_QUICK, "mul:3 mul:3 =s" },
+        { "q*p*r", "q=1 p=1 r=1", ET_FLOAT, "mul:3 mul:F =t" },     // q*p 48.16, then D
+        { "q/2", "q=1", ET_LONG, "div:3 =f" },                       // rounded down, not towards zero
+        { "q/2", "q=1", ET_BYTE, "div:3 =f" },
+        { "-q", "q=1", ET_QUICK, "neg:3 =s" },
+        { "-q", "q=1", ET_NONE, "neg:3 =z" },
+        { "-(q/100)", "q=1", ET_FLOAT, "div:3 neg:3 =F" },           // not D: a unary minus
+        { "i*300", "i=1", ET_NONE, "mul:3 =z" },
+        { "q+20000", "q=1", ET_NONE, "add:3 =z" },
+        { "w/9", "w.w=1", ET_QUICK, "div:3 =s" },                    // C1
+        { "15-(w/16)", "w.w=1", ET_QUICK, "div:3 sub:3 =s" },
+        { "w/9", "w.w=1", ET_FLOAT, "div:F =t" },                    // C1 under a Float
+        { "q+w/2", "q=1 w.w=1", ET_NONE, "div:3 add:3 =z" },         // C3
+        { "q/100+f", "q=1 f.f=1", ET_FLOAT, "div:3 add:F =t" },      // the 48.16 quotient as a Float
+        { "q*p+f", "q=1 p=1 f.f=1", ET_QUICK, "mul:3 add:F =t" },
+        { "w+v", "w.w=1 v.w=1", ET_QUICK, "add:L =t" },              // whole, then saturated
+        { "q+(w+v)", "q=1 w.w=1 v.w=1", ET_QUICK, "add:L add:3 =s" },   // the whole operand whole
+        { "(q+p) AND 1", "q=1 p=1", ET_LONG, "add:3 and:L =f" },    // its Long as it is
+        { "q+p>r", "q=1 p=1 r=1", ET_NONE, "add:3 gt:x =c" },
+        { "q*0.5", "q=1", ET_LONG, "mul:F =t" },                     // P+'s Float constant (3.3)
+        { "q Mod 2", "q=1", ET_QUICK, "mod:1 =q" },                  // Mod as before (4.7)
+        { "q AND w/2", "q=1 w.w=1", ET_LONG, "div:L and:L =f" },     // C3 not at a bit operator
+        { "q2<w2/2", "q2=1 w2.w=1", ET_NONE, "div:3 lt:x =c" },
+        { "q+-(w/2)", "q=1 w.w=1", ET_NONE, "div:3 neg:3 add:3 =z" },
+        { "q+w/3", "q=1 w.w=1", ET_FLOAT, "div:F add:F =t" },         // C1 and D
+        { "q Mod 2", "q=1", ET_LONG, "mod:3 =f" },
+        { "b Mod 1.5", "b.b=1", ET_QUICK, "mod:1 =q" },             // no Quick variable in it
+    };
+
+    for (const auto &c : cases) {
+        tree t(c.text, c.vars);
+
+        INFO(c.text, " ", c.want);
+        REQUIRE(t.root);
+        CHECK(mine_q48(t.root, c.want) == c.code);
+    }
+}
+
+TEST_CASE("exprtyping: the pass ends on every cell of the matrix under the classes", "[exprtyping][tsr]")
+{
+    std::string text = readfile(EXPRMATRIX_TXT);
+    em_matrix m{};
+    char *errors = nullptr;
+    size_t n = 0;
+
+    REQUIRE(em_parse(text.data(), text.size(), EXPRMATRIX_TXT, &m, &errors) == 0);
+    for (size_t i = 0; i < m.ncells; i++) {
+        const em_cell &c = m.cells[i];
+        tree t(cell_text(m, c), CELLVARS);
+
+        if (!t.root)
+            continue;
+        mine_q48(t.root, want_of(c.ctx));
+        n++;
+    }
+    CHECK(n > 30000);
+    em_free(&m);
 }
 
 // the expressions of the CD (task 1.3's dump cd.cases, one per line: "ID

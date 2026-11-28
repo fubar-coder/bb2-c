@@ -75,7 +75,9 @@ End Function
   q2=1+Frac(q1)
 .e2
   !CheckQEq{q2,.25,"plus"}
-  !CheckEq{jsrs{?e1,?e2},rv{3,4},"plus_calls"}
+  ; one call fewer since type-system-rework (#1235, task 4.2): the sum under
+  ; the Quick destination is the 16.16 add with BVS (before: rv{3,4})
+  !CheckEq{jsrs{?e1,?e2},rv{2,3},"plus_calls"}
 .f1
   q2=(Frac(q1))
 .f2
