@@ -49,20 +49,25 @@
 
 !TestCase{if_forms}
   l1.l=10 : w.w=3 : q.q=1.2 : xq.q=3 : q3.q=2 : r.l=0 : rf.f=0 : rq.q=0
+  ; type-system-rework (#1235; spec compiler/expression-types, "A whole
+  ; division rounds towards zero", "Comparisons compare the full value"):
+  ; a whole / is whole unless a Quick-class operand is beside it at its own
+  ; operator (C3): l1/3 is 3, w/2*2 is 2 (before, rule P+: -1 for the four
+  ; l1/3>3.2 checks and 0 for the two w/2*2 checks)
   rf=(l1/3>3.2)
-  !CheckFltNear{rf,-1,0.001,"float_dest"}
+  !CheckFltNear{rf,0,0.001,"float_dest"}
   rq=(l1/3>3.2)
-  !CheckQEq{rq,-1,"quick_dest"}
+  !CheckQEq{rq,0,"quick_dest"}
   r=(l1/3>3.2)
-  !CheckEq{r,-1,"long_dest"}
+  !CheckEq{r,0,"long_dest"}
   r=0 : If l1/3>3.2 Then r=-1
-  !CheckEq{r,-1,"if_quotient"}
+  !CheckEq{r,0,"if_quotient"}
   r=0 : If w/2>q Then r=-1
   !CheckEq{r,-1,"if_word_half_greater"}
   r=0 : If w/2*2<>xq Then r=-1
-  !CheckEq{r,0,"if_word_half_twice_differs"}
+  !CheckEq{r,-1,"if_word_half_twice_differs"}
   r=0 : If w/2*2=q3 Then r=-1
-  !CheckEq{r,0,"if_word_half_twice_equals"}
+  !CheckEq{r,-1,"if_word_half_twice_equals"}
   r=0 : If w/2*2=w Then r=-1
   !CheckEq{r,0,"if_word_half_twice_word"}
 !EndTestCase

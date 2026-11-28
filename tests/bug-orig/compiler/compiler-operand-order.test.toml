@@ -1,7 +1,7 @@
 # compiler-operand-order.test.bas: the original's values of the forms of
 # #1216 are the declared deviations; the checks the original passes
-# (float_quick_long, scaled_first, float_dest, quick_dest,
-# if_word_half_twice_word) have none
+# (float_quick_long, scaled_first, long_dest, if_quotient, the three
+# if_word_half_twice checks) have none
 fixed-orig = 1216
 
 [deviations."compiler=orig195"]
@@ -17,16 +17,12 @@ fixed-orig = 1216
 "check.bits.lsl_long_first.actual" = "== 24"
 "check.bits.not_long_first" = "== fail"
 "check.bits.not_long_first.actual" = "== -13"
-"check.if_forms.long_dest" = "== fail"
-"check.if_forms.long_dest.actual" = "== 0"
-"check.if_forms.if_quotient" = "== fail"
-"check.if_forms.if_quotient.actual" = "== 0"
+"check.if_forms.float_dest" = "== fail"
+"check.if_forms.float_dest.actual" = "== $800000C1"
+"check.if_forms.quick_dest" = "== fail"
+"check.if_forms.quick_dest.actual" = "== $FFFF0000"
 "check.if_forms.if_word_half_greater" = "== fail"
 "check.if_forms.if_word_half_greater.actual" = "== 0"
-"check.if_forms.if_word_half_twice_differs" = "== fail"
-"check.if_forms.if_word_half_twice_differs.actual" = "== -1"
-"check.if_forms.if_word_half_twice_equals" = "== fail"
-"check.if_forms.if_word_half_twice_equals.actual" = "== -1"
 "check.mod_fraction.quick_mod" = "== fail"
 "check.mod_fraction.quick_mod.actual" = "== $00010000"
 "check.word_sum.word_dest" = "== fail"
