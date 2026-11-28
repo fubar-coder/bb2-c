@@ -439,7 +439,7 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
                 struct tj_msgs *msgs)
 {
     const struct tc_pred *p = &a->p;
-    char got[300];
+    char got[1600];
     int ok = 0;
 
     got[0] = 0;
@@ -505,6 +505,75 @@ static int eval(const struct tj_test *t, struct run *r, const struct tj_obs *obs
             snprintf(got, sizeof got, "\"%.200s\"%s", v, strlen(v) > 200 ? "..." : "");
         break;
     }
+    case TC_Q_COMPILE_WARNINGS:
+    case TC_Q_COMPILE_WARNING: {
+        const char *v = obs->warnings;
+        char *one = NULL;
+
+        if (obs->warnings_error)
+            return msg(msgs, "%s:%u: %s: %s, it cannot be judged", a->at.file, a->at.line, a->query,
+                       obs->warnings_error) ? -1 : TJ_ERROR;
+        if (v && a->q.kind == TC_Q_COMPILE_WARNING) {
+            /* the K-th entry without its newline; beyond the list: not captured */
+            unsigned long k = strtoul(a->q.rest, NULL, 10);
+
+            for (; k > 1 && v; k--) {
+                v = strchr(v, '\n');
+                v = v && v[1] ? v + 1 : NULL;
+            }
+            if (v) {
+                size_t n = strcspn(v, "\n");
+
+                if (!(one = strndup(v, n)))
+                    return -1;
+                v = one;
+            }
+        }
+        if (p->op == TC_P_COUNT) {
+            long long n = 0;
+
+            for (const char *x = v; x && *x; x = strchr(x, '\n') + 1)
+                n++;
+            ok = v && cmp_int(p->cmp, n, p->num);
+            snprintf(got, sizeof got, "%s", v ? "" : "not captured");
+            if (v)
+                snprintf(got, sizeof got, "%lld entries", n);
+        } else {
+            ok = text_pred(p, v);
+            if (!v) {
+                snprintf(got, sizeof got, "not captured");
+            } else if (a->q.kind == TC_Q_COMPILE_WARNINGS) {
+                /* the list, its entries between | and a mark of the end */
+                size_t o = 0;
+
+                o += (size_t)snprintf(got, sizeof got, "the list is ");
+                if (!*v)
+                    snprintf(got + o, sizeof got - o, "empty");
+                for (const char *x = v; *x && o + 8 < sizeof got; ) {
+                    size_t n = strcspn(x, "\n");
+
+                    o += (size_t)snprintf(got + o, sizeof got - o, "%s\"%.*s\"", x == v ? "" : ", ", (int)n, x);
+                    x += n + (x[n] == '\n');
+                }
+            } else {
+                snprintf(got, sizeof got, "\"%.200s\"", v);
+            }
+        }
+        free(one);
+        break;
+    }
+    case TC_Q_COMPILE_RC:
+        if (obs->warnings_error)
+            return msg(msgs, "%s:%u: %s: %s, it cannot be judged", a->at.file, a->at.line, a->query,
+                       obs->warnings_error) ? -1 : TJ_ERROR;
+        if (!obs->has_compile_rc) {
+            ok = p->op == TC_P_NOT_EXISTS;
+            snprintf(got, sizeof got, "not captured");
+        } else {
+            ok = p->op == TC_P_EXISTS || (p->op != TC_P_NOT_EXISTS && cmp_int(p->op, obs->compile_rc, p->num));
+            snprintf(got, sizeof got, "%lld", obs->compile_rc);
+        }
+        break;
     case TC_Q_COMPILE_LOG_JOB:
     case TC_Q_COMPILE_JOB: {
         const char *v = NULL;
@@ -1011,6 +1080,9 @@ static int whole_program(int kind)
     case TC_Q_COMPILE_INJECT:
     case TC_Q_COMPILE_LOG_JOB:
     case TC_Q_COMPILE_JOB:
+    case TC_Q_COMPILE_WARNINGS:
+    case TC_Q_COMPILE_WARNING:
+    case TC_Q_COMPILE_RC:
     case TC_Q_SESSION:
     case TC_Q_END_RUN:
         return 1;

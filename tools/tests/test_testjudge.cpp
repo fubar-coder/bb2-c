@@ -1528,3 +1528,196 @@ TEST_CASE("testjudge: a case with test-local data is not bundled", "[testjudge]"
     }
     fs::remove_all(root);
 }
+
+// the warnings of a compile and its return code (change test-model-warnings):
+// the entries PLACE NAME TEXT one per line; a missing, an added, a changed
+// and a reordered entry each fail; count; the K-th entry; not captured; a
+// line the runner could not read
+TEST_CASE("testjudge: the warnings of a compile", "[testjudge]")
+{
+    std::string m;
+    const std::string w9 = "9 datafrac Fraction of a Data.b value discarded\n";
+    const std::string w10 = "10 datafrac Fraction of a Data.b value discarded\n";
+    const std::string tc = "[asserts]\n";
+    const std::string both = w9 + w10;
+
+    // the whole list, in order
+    {
+        fixture f("", tc + "\"compile.warnings\" = \"== \\\"" + w9.substr(0, w9.size() - 1) + "\\n"
+                              + w10.substr(0, w10.size() - 1) + "\\n\\\"\"\n");
+        obs o(good);
+
+        o.o.warnings = both.c_str();
+        CHECK(judge(f, o, m) == TJ_PASS);
+        // missing
+        o.o.warnings = w10.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.warnings == ") && has(m, "does not hold: the list is \"10 datafrac"));
+        o.o.warnings = "";
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: the list is empty"));
+        // added
+        std::string three = w9 + w10 + "11 datafrac Fraction of a Data.b value discarded\n";
+        o.o.warnings = three.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "\"11 datafrac Fraction of a Data.b value discarded\""));
+        // reordered
+        std::string rev = w10 + w9;
+        o.o.warnings = rev.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "\"10 datafrac Fraction of a Data.b value discarded\", \"9 datafrac"));
+        // changed: another place, another name, another text
+        for (const char *x : { "9 datafrac Fraction of a Data.b value discarded\n11 datafrac Fraction of a Data.b "
+                               "value discarded\n",
+                               "9 divfrac Fraction of a Data.b value discarded\n10 datafrac Fraction of a Data.b "
+                               "value discarded\n",
+                               "9 datafrac Fraction of a Data.b value gone\n10 datafrac Fraction of a Data.b value "
+                               "discarded\n" }) {
+            o.o.warnings = x;
+            INFO(x);
+            CHECK(judge(f, o, m) == TJ_FAIL);
+        }
+        // not captured (the compile did not end)
+        o.o.warnings = nullptr;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: not captured"));
+    }
+    // the entries by number plus count
+    {
+        fixture f("", tc + "\"compile.warnings.1\" = \"== \\\"9 datafrac Fraction of a Data.b value discarded\\\"\"\n"
+                          "\"compile.warnings.2\" = \"matches \\\"# datafrac *\\\"\"\n"
+                          "\"compile.warnings\" = \"count == 2\"\n");
+        obs o(good);
+
+        o.o.warnings = both.c_str();
+        CHECK(judge(f, o, m) == TJ_PASS);
+        // a third warning: count fails
+        std::string three = w9 + w10 + "11 datafrac x\n";
+        o.o.warnings = three.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.warnings count == 2") && has(m, "does not hold: 3 entries"));
+        // the first one differs
+        std::string other = "8 datafrac Fraction of a Data.b value discarded\n" + w10;
+        o.o.warnings = other.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.warnings.1 == ") && has(m, "does not hold: \"8 datafrac"));
+        // the second beyond a list of one: not captured
+        o.o.warnings = w9.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.warnings.2 matches") && has(m, "does not hold: not captured"));
+        // reordered: entry 1 fails
+        std::string rev = w10 + w9;
+        o.o.warnings = rev.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "assertion compile.warnings.1"));
+    }
+    // count == 0 and not exists on the empty list; exists and the editor's "more" entry
+    {
+        fixture f("", tc + "\"compile.warnings\" = \"count == 0\"\n");
+        obs o(good);
+
+        o.o.warnings = "";
+        CHECK(judge(f, o, m) == TJ_PASS);
+        o.o.warnings = w9.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+        CHECK(has(m, "does not hold: 1 entries"));
+        o.o.warnings = nullptr;
+        CHECK(judge(f, o, m) == TJ_FAIL);
+    }
+    {
+        fixture f("", tc + "\"compile.warnings\" = \"not exists\"\n");
+        obs o(good);
+
+        o.o.warnings = "";
+        CHECK(judge(f, o, m) == TJ_PASS);
+        o.o.warnings = w9.c_str();
+        CHECK(judge(f, o, m) == TJ_FAIL);
+    }
+    {
+        fixture f("", tc + "\"compile.warnings.9\" = \"== \\\"- datafrac 2 more\\\"\"\n"
+                          "\"compile.warnings\" = \"count == 9\"\n");
+        obs o(good);
+        std::string l;
+
+        for (int i = 1; i <= 8; i++)
+            l += std::to_string(13 + i) + " datafrac Fraction of a Data.b value discarded\n";
+        l += "- datafrac 2 more\n";
+        o.o.warnings = l.c_str();
+        CHECK(judge(f, o, m) == TJ_PASS);
+    }
+    // an entry that is not there: "not contains"
+    {
+        fixture f("", tc + "\"compile.warnings\" = \"not contains \\\"divfrac\\\"\"\n");
+        obs o(good);
+
+        o.o.warnings = w9.c_str();
+        CHECK(judge(f, o, m) == TJ_PASS);
+        o.o.warnings = "9 divfrac x\n";
+        CHECK(judge(f, o, m) == TJ_FAIL);
+    }
+    // a line the runner could not read: cannot be judged, naming it
+    {
+        fixture f("", tc + "\"compile.warnings\" = \"count == 0\"\n");
+        obs o(good);
+
+        o.o.warnings_error = "the warning line \"x.ab3:3: warning: Something [nosuch]\" of the compiler's console "
+                             "cannot be read";
+        CHECK(judge(f, o, m) == TJ_ERROR);
+        CHECK(has(m, "compile.warnings") && has(m, "x.ab3:3: warning: Something [nosuch]"));
+    }
+}
+
+TEST_CASE("testjudge: the return code of a command-line compile", "[testjudge]")
+{
+    std::string m;
+    fixture f("compiler = \"ab3\"\n", "[asserts]\n\"compile.rc\" = \"== 5\"\n");
+    obs o(good);
+
+    o.o.has_compile_rc = 1;
+    o.o.compile_rc = 5;
+    CHECK(judge(f, o, m) == TJ_PASS);
+    o.o.compile_rc = 0;
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    CHECK(has(m, "assertion compile.rc == 5") && has(m, "does not hold: 0"));
+    o.o.compile_rc = 10;
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    // the compile did not end: not captured
+    o.o.has_compile_rc = 0;
+    CHECK(judge(f, o, m) == TJ_FAIL);
+    CHECK(has(m, "does not hold: not captured"));
+    {
+        fixture g("compiler = \"ab3\"\n", "[asserts]\n\"compile.rc\" = \"exists\"\n");
+
+        o.o.has_compile_rc = 1;
+        CHECK(judge(g, o, m) == TJ_PASS);
+        o.o.has_compile_rc = 0;
+        CHECK(judge(g, o, m) == TJ_FAIL);
+    }
+    {
+        fixture g("compiler = \"ab3\"\n", "[asserts]\n\"compile.rc\" = \"== 5\"\n");
+        obs p(good);
+
+        p.o.has_compile_rc = 1;
+        p.o.compile_rc = 5;
+        p.o.warnings_error = "the line \"rc=x\" of the compiler's console cannot be read as a return code";
+        CHECK(judge(g, p, m) == TJ_ERROR);
+        CHECK(has(m, "rc=x"));
+    }
+}
+
+TEST_CASE("testjudge: the cases that assert the warnings run on their own", "[testjudge]")
+{
+    for (const char *q : { "\"compile.warnings\" = \"count == 0\"", "\"compile.warnings.1\" = \"exists\"" }) {
+        fixture f("", std::string("[asserts.\"case=b\"]\n") + q + "\n", "a", sharedsrc);
+
+        INFO(q);
+        CHECK(alone_of(f, "b") == 1);
+        CHECK(alone_of(f, "a") == 0);
+    }
+    {
+        fixture f("compiler = \"ab3\"\n", "[asserts.\"case=b\"]\n\"compile.rc\" = \"== 5\"\n", "a", sharedsrc);
+
+        CHECK(alone_of(f, "b") == 1);
+        CHECK(alone_of(f, "a") == 0);
+    }
+}

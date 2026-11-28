@@ -123,6 +123,16 @@ struct tj_obs {
     const char *serial;
     const char *inject;
     const char *compile_inject; /* inject's report of the compiler (a wrap of inject) */
+    const char *warnings;       /* the warnings of the driver's compile: one
+                                   line PLACE NAME TEXT per warning (the empty
+                                   text: none); NULL: not captured */
+    int has_compile_rc;         /* the compile was a command-line compile that
+                                   ended */
+    long long compile_rc;       /* its return code */
+    const char *warnings_error; /* a warning line or an rc line the runner
+                                   could not read (the line): the queries of
+                                   the warnings and of compile.rc cannot be
+                                   judged */
     int editor_run;             /* the program ran from the editor: its exit
                                    code and its requesters are not captured */
     int has_rc;
@@ -207,7 +217,8 @@ int tj_editor_run_refused(const char *file, const struct tp_source *src, const s
  *        the faulty cell with the deviations, the others as if their axis
  *        terms matched), an assertion other than a default names an
  *        observation of the whole program (rc, requester, compile,
- *        compile.log, compile.inject, output, serial, inject, session,
+ *        compile.log, compile.inject, compile.warnings,
+ *        compile.rc, output, serial, inject, session,
  *        end.run), or the case's namespace holds an
  *        !ExpectError or a !RunProgram (the table of the preprocessor), or
  *        a !RunProgram stands outside every case (a procedure, the batch
